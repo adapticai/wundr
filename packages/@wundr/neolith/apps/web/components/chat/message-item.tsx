@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback, memo } from 'react';
-
+import { memo, useCallback, useMemo, useState } from 'react';
+import { UserAvatar, GroupAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
-
+import type { Message, User } from '@/types/chat';
 import { ReactionDisplay } from './reaction-display';
 import { ReactionPickerTrigger } from './reaction-picker';
-
-import type { Message, User } from '@/types/chat';
 
 /**
  * Props for the MessageItem component
@@ -100,8 +98,13 @@ export const MessageItem = memo(function MessageItem({
   );
 
   const handleSaveEdit = useCallback(() => {
-    if (editContent.trim() !== message.content) {
-      onEdit?.({ ...message, content: editContent.trim() });
+    const trimmedContent = editContent.trim();
+    if (!trimmedContent) {
+      // Don't allow saving empty messages
+      return;
+    }
+    if (trimmedContent !== message.content) {
+      onEdit?.({ ...message, content: trimmedContent });
     }
     setIsEditing(false);
   }, [editContent, message, onEdit]);
@@ -153,19 +156,7 @@ export const MessageItem = memo(function MessageItem({
         <div className="flex gap-3">
           {/* Avatar */}
           <div className="shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-
-            {author.image ? (
-              <img
-                src={author.image}
-                alt={author.name}
-                className="h-10 w-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-                {author.name.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <UserAvatar user={author} size="md" shape="rounded" />
           </div>
 
           {/* Content */}
@@ -234,33 +225,21 @@ export const MessageItem = memo(function MessageItem({
                 type="button"
                 onClick={() => onOpenThread?.(message)}
                 className="mt-2 inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10 hover:text-primary"
+                aria-label={`View thread with ${message.replyCount} ${message.replyCount === 1 ? 'reply' : 'replies'}`}
               >
                 <ThreadIcon className="h-4 w-4" />
                 <span className="font-semibold">
                   {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
                 </span>
                 {message.replyPreview && message.replyPreview.length > 0 && (
-                  <div className="flex -space-x-1.5">
-                    {message.replyPreview.slice(0, 3).map((reply) => (
-                      reply.author.image ? (
-                        <img
-                          key={reply.id}
-                          src={reply.author.image}
-                          alt={reply.author.name}
-                          className="h-6 w-6 rounded-full border-2 border-background object-cover ring-1 ring-border"
-                          title={reply.author.name}
-                        />
-                      ) : (
-                        <div
-                          key={reply.id}
-                          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-[10px] font-medium text-primary-foreground ring-1 ring-border"
-                          title={reply.author.name}
-                        >
-                          {reply.author.name.charAt(0).toUpperCase()}
-                        </div>
-                      )
-                    ))}
-                  </div>
+                  <GroupAvatar
+                    users={message.replyPreview
+                      .slice(0, 3)
+                      .filter((reply) => reply.author)
+                      .map((reply) => reply.author!)}
+                    max={3}
+                    size="xs"
+                  />
                 )}
                 <span className="text-xs text-muted-foreground">View thread →</span>
               </button>

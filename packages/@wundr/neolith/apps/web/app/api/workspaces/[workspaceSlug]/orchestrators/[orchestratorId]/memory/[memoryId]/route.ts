@@ -88,7 +88,15 @@ async function verifyMemoryAccess(
     return { allowed: false };
   }
 
-  return { allowed: true, memory };
+  // Transform to MemoryContent format (ISO 8601 strings)
+  const memoryContent = {
+    id: memory.id,
+    content: memory.content,
+    type: memory.memoryType,
+    createdAt: memory.createdAt.toISOString(),
+  };
+
+  return { allowed: true, memory: memoryContent };
 }
 
 /**

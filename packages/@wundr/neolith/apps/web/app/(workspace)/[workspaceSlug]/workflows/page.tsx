@@ -25,6 +25,8 @@ import {
 
 import type {
   Workflow,
+  WorkflowId,
+  ActionId,
   WorkflowStatus,
   WorkflowTemplate,
   WorkflowTemplateCategory,
@@ -34,13 +36,29 @@ import type {
 } from '@/types/workflow';
 
 // =============================================================================
+// Default Trigger Configurations
+// =============================================================================
+
+const DEFAULT_TRIGGER_CONFIGS: Record<TriggerConfig['type'], TriggerConfig> = {
+  message: { type: 'message', message: {} },
+  reaction: { type: 'reaction', reaction: {} },
+  webhook: { type: 'webhook', webhook: {} },
+  mention: { type: 'mention', mention: {} },
+  schedule: { type: 'schedule', schedule: { cron: '0 9 * * 1-5' } },
+  keyword: { type: 'keyword', keyword: { keywords: [], matchType: 'contains' } },
+  channel_join: { type: 'channel_join', channel: {} },
+  channel_leave: { type: 'channel_leave', channel: {} },
+  user_join: { type: 'user_join' },
+};
+
+// =============================================================================
 // Main Page Component
 // =============================================================================
 
 export default function WorkflowsPage() {
   const params = useParams();
   const router = useRouter();
-  const workspaceSlug = params?.workspaceSlug as string;
+  const workspaceSlug = (params?.workspaceSlug ?? '') as string;
   const { setPageHeader } = usePageHeader();
 
   // Set page header
@@ -109,13 +127,13 @@ export default function WorkflowsPage() {
     // Create temporary workflow object from template for UI builder
     // Note: createdBy will be set by API from session when actually saved
     setSelectedWorkflow({
-      id: '',
+      id: '' as WorkflowId,
       workspaceId: workspaceSlug,
       name: template.name,
       description: template.description,
       status: 'draft',
-      trigger: { ...template.trigger, type: template.trigger.type },
-      actions: template.actions.map((a, i) => ({ ...a, id: `temp_${i}`, order: i })),
+      trigger: { ...template.trigger, type: template.trigger.type } as TriggerConfig,
+      actions: template.actions.map((a, i) => ({ ...a, id: `temp_${i}` as ActionId, order: i } as ActionConfig)),
       variables: template.variables?.map((v) => ({ ...v, source: 'custom' as const })) ?? [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -135,27 +153,32 @@ export default function WorkflowsPage() {
           type="button"
           onClick={() => setShowTemplates(true)}
           className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+          aria-label="Browse workflow templates"
         >
-          <TemplateIcon className="h-4 w-4" />
+          <TemplateIcon className="h-4 w-4" aria-hidden="true" />
           Templates
         </button>
         <button
           type="button"
           onClick={() => router.push(`/${workspaceSlug}/workflows/new`)}
           className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          aria-label="Create new workflow"
         >
-          <PlusIcon className="h-4 w-4" />
+          <PlusIcon className="h-4 w-4" aria-hidden="true" />
           Create Workflow
         </button>
       </div>
 
       {/* Tab Navigation */}
       <div className="border-b border-border">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-8" role="tablist" aria-label="Workflow status filter">
           {(['all', 'active', 'inactive', 'draft'] as const).map((tab) => (
             <button
               key={tab}
               type="button"
+              role="tab"
+              aria-selected={statusFilter === tab}
+              aria-controls={`${tab}-workflows-panel`}
               onClick={() => setStatusFilter(tab)}
               className={cn(
                 'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors',
@@ -172,6 +195,7 @@ export default function WorkflowsPage() {
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted text-muted-foreground',
                 )}
+                aria-label={`${workflowStats[tab]} workflows`}
               >
                 {workflowStats[tab]}
               </span>
@@ -182,9 +206,9 @@ export default function WorkflowsPage() {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20" role="alert" aria-live="assertive">
           <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
-            <AlertIcon className="h-5 w-5" />
+            <AlertIcon className="h-5 w-5" aria-hidden="true" />
             <p className="text-sm font-medium">Failed to load workflows</p>
           </div>
           <p className="mt-1 text-sm text-red-600 dark:text-red-300">{error.message}</p>
@@ -192,6 +216,7 @@ export default function WorkflowsPage() {
             type="button"
             onClick={() => mutate()}
             className="mt-2 text-sm font-medium text-red-800 hover:text-red-900 dark:text-red-200"
+            aria-label="Retry loading workflows"
           >
             Try again
           </button>
@@ -200,10 +225,11 @@ export default function WorkflowsPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading workflows">
           {Array.from({ length: 6 }).map((_, i) => (
             <WorkflowCardSkeleton key={i} />
           ))}
+          <span className="sr-only">Loading workflows...</span>
         </div>
       )}
 
@@ -501,7 +527,7 @@ return;
               onClick={() =>
                 addAction({
                   type: 'send_message',
-                  config: { message: '' },
+                  config: { channelId: '', message: '' },
                 })
               }
               className="mt-4 inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80"
@@ -552,7 +578,7 @@ function TriggerSelector({ value, onChange }: TriggerSelectorProps) {
         <button
           key={type}
           type="button"
-          onClick={() => onChange({ type: type as TriggerConfig['type'] })}
+          onClick={() => onChange(DEFAULT_TRIGGER_CONFIGS[type as TriggerConfig['type']])}
           className={cn(
             'rounded-lg border p-3 text-left transition-colors hover:border-primary',
             value?.type === type
@@ -605,7 +631,7 @@ function ActionList({ actions, onUpdate, onRemove }: ActionListProps) {
                 onUpdate(action.id, {
                   type: newType,
                   config: DEFAULT_ACTION_CONFIGS[newType] || {},
-                });
+                } as Partial<ActionConfig>);
               }}
               className="rounded-md border border-input bg-background px-2 py-1 text-sm"
             >

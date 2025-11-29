@@ -1,8 +1,38 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+
+interface Session {
+  id: string;
+  device: string;
+  location: string;
+  lastActive: string;
+  current: boolean;
+}
 
 export default function SecuritySettingsPage() {
+  const { toast } = useToast();
   const [settings, setSettings] = useState({
     twoFactorEnabled: false,
     sessionTimeout: '30',
@@ -11,7 +41,7 @@ export default function SecuritySettingsPage() {
   });
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [sessions] = useState([
+  const [sessions] = useState<Session[]>([
     {
       id: '1',
       device: 'Chrome on macOS',
@@ -35,28 +65,106 @@ export default function SecuritySettingsPage() {
     },
   ]);
 
-  const handleToggle = (key: keyof typeof settings) => {
+  const handleToggle = async (key: keyof typeof settings) => {
+    const newValue = typeof settings[key] === 'boolean' ? !settings[key] : settings[key];
+
     setSettings((prev) => ({
       ...prev,
-      [key]: typeof prev[key] === 'boolean' ? !prev[key] : prev[key],
+      [key]: newValue,
     }));
+
+    try {
+      const response = await fetch('/api/user/security', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: newValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update security setting');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Security setting updated',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update setting',
+        variant: 'destructive',
+      });
+
+      // Revert on error
+      setSettings((prev) => ({
+        ...prev,
+        [key]: !newValue,
+      }));
+    }
   };
 
-  const handleSelectChange = (key: keyof typeof settings, value: string) => {
+  const handleSelectChange = async (key: keyof typeof settings, value: string) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
     }));
+
+    try {
+      const response = await fetch('/api/user/security', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update security setting');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Security setting updated',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update setting',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleRevokeSession = (sessionId: string) => {
-    // Would call API to revoke session
-    console.log('Revoking session:', sessionId);
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/user/sessions/${sessionId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to revoke session');
+      }
+
+      // Refresh sessions list after revoking
+      window.location.reload();
+    } catch (error) {
+      // Handle error silently or with toast notification
+    }
   };
 
-  const handleRevokeAllSessions = () => {
-    // Would call API to revoke all other sessions
-    console.log('Revoking all other sessions');
+  const handleRevokeAllSessions = async () => {
+    try {
+      const response = await fetch('/api/user/sessions/revoke-all', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to revoke all sessions');
+      }
+
+      // Refresh page after revoking all sessions
+      window.location.reload();
+    } catch (error) {
+      // Handle error silently or with toast notification
+    }
   };
 
   return (
@@ -69,45 +177,45 @@ export default function SecuritySettingsPage() {
       </div>
 
       {/* Password Section */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Password</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Change your password to keep your account secure.
-        </p>
-
-        <div className="mt-6">
-          <button
-            type="button"
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>
+            Change your password to keep your account secure.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="secondary"
             onClick={() => setShowPasswordModal(true)}
-            className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
           >
             Change Password
-          </button>
-        </div>
-      </div>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Two-Factor Authentication */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add an extra layer of security to your account.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Enable 2FA</span>
-              <p className="text-xs text-muted-foreground">
+      <Card>
+        <CardHeader>
+          <CardTitle>Two-Factor Authentication</CardTitle>
+          <CardDescription>
+            Add an extra layer of security to your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="two-factor">Enable 2FA</Label>
+              <p className="text-sm text-muted-foreground">
                 Require a verification code when signing in
               </p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="two-factor"
               checked={settings.twoFactorEnabled}
-              onChange={() => handleToggle('twoFactorEnabled')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('twoFactorEnabled')}
             />
-          </label>
+          </div>
 
           {settings.twoFactorEnabled && (
             <div className="rounded-lg bg-muted/50 p-4 border border-muted">
@@ -118,69 +226,71 @@ export default function SecuritySettingsPage() {
                 Your account is protected with an authenticator app.
               </p>
               <div className="mt-3 flex gap-2">
-                <button
-                  type="button"
-                  className="text-xs text-primary hover:underline"
-                >
+                <Button variant="link" size="sm" className="h-auto p-0 text-xs">
                   Reconfigure 2FA
-                </button>
+                </Button>
                 <span className="text-xs text-muted-foreground">|</span>
-                <button
-                  type="button"
-                  className="text-xs text-destructive hover:underline"
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs text-destructive hover:text-destructive/90"
                 >
                   Disable 2FA
-                </button>
+                </Button>
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Session Settings */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Session Settings</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Control how your sessions behave.
-        </p>
-
-        <div className="mt-6 space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Session Settings</CardTitle>
+          <CardDescription>
+            Control how your sessions behave.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium">Session timeout</span>
-              <p className="text-xs text-muted-foreground">
+            <div className="space-y-0.5">
+              <Label htmlFor="session-timeout">Session timeout</Label>
+              <p className="text-sm text-muted-foreground">
                 Automatically sign out after inactivity
               </p>
             </div>
-            <select
+            <Select
               value={settings.sessionTimeout}
-              onChange={(e) => handleSelectChange('sessionTimeout', e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
+              onValueChange={(value) => handleSelectChange('sessionTimeout', value)}
             >
-              <option value="15">15 minutes</option>
-              <option value="30">30 minutes</option>
-              <option value="60">1 hour</option>
-              <option value="120">2 hours</option>
-              <option value="never">Never</option>
-            </select>
+              <SelectTrigger id="session-timeout" className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="15">15 minutes</SelectItem>
+                <SelectItem value="30">30 minutes</SelectItem>
+                <SelectItem value="60">1 hour</SelectItem>
+                <SelectItem value="120">2 hours</SelectItem>
+                <SelectItem value="never">Never</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Login alerts</span>
-              <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="login-alerts">Login alerts</Label>
+              <p className="text-sm text-muted-foreground">
                 Get notified when someone signs in to your account
               </p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="login-alerts"
               checked={settings.loginAlerts}
-              onChange={() => handleToggle('loginAlerts')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('loginAlerts')}
             />
-          </label>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Active Sessions */}
       <div className="rounded-lg border bg-card p-6">
@@ -239,29 +349,29 @@ export default function SecuritySettingsPage() {
       </div>
 
       {/* Privacy Settings */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Privacy</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Control your privacy settings.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Show online status</span>
-              <p className="text-xs text-muted-foreground">
+      <Card>
+        <CardHeader>
+          <CardTitle>Privacy</CardTitle>
+          <CardDescription>
+            Control your privacy settings.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="online-status">Show online status</Label>
+              <p className="text-sm text-muted-foreground">
                 Let others see when you&apos;re online
               </p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="online-status"
               checked={settings.showOnlineStatus}
-              onChange={() => handleToggle('showOnlineStatus')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('showOnlineStatus')}
             />
-          </label>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Danger Zone */}
       <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6">
@@ -288,74 +398,58 @@ export default function SecuritySettingsPage() {
         </div>
       </div>
 
-      {/* Password Change Modal - simplified version */}
-      {showPasswordModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setShowPasswordModal(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">Change Password</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+      {/* Password Change Modal */}
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
               Enter your current password and a new password.
-            </p>
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="mt-6 space-y-4">
-              <div>
-                <label htmlFor="currentPassword" className="block text-sm font-medium">
-                  Current password
-                </label>
-                <input
-                  type="password"
-                  id="currentPassword"
-                  className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium">
-                  New password
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium">
-                  Confirm new password
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current password</Label>
+              <Input
+                type="password"
+                id="currentPassword"
+                placeholder="Enter current password"
+              />
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowPasswordModal(false)}
-                className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Update Password
-              </button>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New password</Label>
+              <Input
+                type="password"
+                id="newPassword"
+                placeholder="Enter new password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm new password</Label>
+              <Input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm new password"
+              />
             </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setShowPasswordModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">
+              Update Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

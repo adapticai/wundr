@@ -71,13 +71,18 @@ export interface DaemonRegistrationResponse {
 }
 
 /**
+ * Daemon activity status
+ */
+export type DaemonActivityStatus = 'active' | 'idle' | 'busy';
+
+/**
  * Daemon heartbeat request payload
  */
 export interface DaemonHeartbeat {
   /** Optional session identifier */
   sessionId?: string;
   /** Current daemon status */
-  status?: 'active' | 'idle' | 'busy';
+  status?: DaemonActivityStatus;
   /** Optional performance metrics */
   metrics?: DaemonMetrics;
 }
@@ -119,13 +124,18 @@ export interface DaemonHeartbeatResponse {
 }
 
 /**
+ * Session type enumeration
+ */
+export type SessionType = 'daemon' | 'user' | 'system';
+
+/**
  * Session creation request payload
  */
 export interface SessionCreate {
   /** Orchestrator identifier */
   orchestratorId: string;
   /** Session type */
-  type: 'daemon' | 'user' | 'system';
+  type: SessionType;
   /** Optional session metadata */
   metadata?: SessionMetadata;
   /** Session timeout in seconds (default: 7 days) */
@@ -178,7 +188,7 @@ export interface Session {
   /** Orchestrator identifier */
   orchestratorId: string;
   /** Session type */
-  type: 'daemon' | 'user' | 'system';
+  type: SessionType;
   /** Current session status */
   status: SessionStatus;
   /** ISO 8601 timestamp of session creation */
@@ -192,7 +202,7 @@ export interface Session {
   /** ISO 8601 timestamp of last heartbeat */
   lastHeartbeat?: string;
   /** Last reported status from heartbeat */
-  lastStatus?: 'active' | 'idle' | 'busy';
+  lastStatus?: DaemonActivityStatus;
 }
 
 /**
@@ -290,6 +300,11 @@ export interface DaemonErrorResponse {
 }
 
 /**
+ * Daemon connection status
+ */
+export type DaemonConnectionStatus = 'online' | 'offline' | 'degraded';
+
+/**
  * Daemon status information
  */
 export interface DaemonStatus {
@@ -298,7 +313,7 @@ export interface DaemonStatus {
   /** Daemon instance ID */
   daemonId: string;
   /** Current status */
-  status: 'online' | 'offline' | 'degraded';
+  status: DaemonConnectionStatus;
   /** Last heartbeat timestamp (ISO 8601) */
   lastHeartbeat?: string;
   /** Current metrics */

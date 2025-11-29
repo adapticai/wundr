@@ -24,17 +24,29 @@ export default async function SettingsLayout({
   children,
   params,
 }: SettingsLayoutProps) {
-  const { workspaceSlug: workspaceId } = await params;
+  const { workspaceSlug } = await params;
   const session = await auth();
 
   if (!session?.user?.id) {
     redirect('/login');
   }
 
+  // Find workspace by ID or slug
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+    },
+    select: { id: true, slug: true },
+  });
+
+  if (!workspace) {
+    redirect('/');
+  }
+
   // Verify user has access to this workspace
   const membership = await prisma.workspaceMember.findFirst({
     where: {
-      workspaceId,
+      workspaceId: workspace.id,
       userId: session.user.id,
     },
   });
@@ -70,12 +82,12 @@ export default async function SettingsLayout({
   }
 
   const navItems = [
-    { href: `/${workspaceId}/settings`, label: 'General', icon: SettingsIcon },
-    { href: `/${workspaceId}/settings/appearance`, label: 'Appearance', icon: PaletteIcon },
-    { href: `/${workspaceId}/settings/profile`, label: 'Profile', icon: UserIcon },
-    { href: `/${workspaceId}/settings/integrations`, label: 'Integrations', icon: PlugIcon },
-    { href: `/${workspaceId}/settings/notifications`, label: 'Notifications', icon: BellIcon },
-    { href: `/${workspaceId}/settings/security`, label: 'Security', icon: ShieldIcon },
+    { href: `/${workspaceSlug}/settings`, label: 'General', icon: SettingsIcon },
+    { href: `/${workspaceSlug}/settings/appearance`, label: 'Appearance', icon: PaletteIcon },
+    { href: `/${workspaceSlug}/settings/profile`, label: 'Profile', icon: UserIcon },
+    { href: `/${workspaceSlug}/settings/integrations`, label: 'Integrations', icon: PlugIcon },
+    { href: `/${workspaceSlug}/settings/notifications`, label: 'Notifications', icon: BellIcon },
+    { href: `/${workspaceSlug}/settings/security`, label: 'Security', icon: ShieldIcon },
   ];
 
   return (
@@ -87,7 +99,7 @@ export default async function SettingsLayout({
           <div className="border-b px-4 py-3">
             <nav className="flex items-center gap-1 text-sm text-muted-foreground">
               <Link
-                href={`/${workspaceId}/dashboard`}
+                href={`/${workspaceSlug}/dashboard`}
                 className="hover:text-foreground"
               >
                 Workspace
@@ -119,7 +131,7 @@ export default async function SettingsLayout({
       </aside>
 
       {/* Mobile Navigation */}
-      <MobileSettingsNav workspaceId={workspaceId} navItems={navItems} />
+      <MobileSettingsNav workspaceId={workspaceSlug} navItems={navItems} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">

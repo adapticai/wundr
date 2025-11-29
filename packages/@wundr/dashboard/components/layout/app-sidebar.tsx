@@ -1,37 +1,36 @@
 'use client'
 
-import * as React from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import {
-  BarChart3,
-  GitBranch,
-  Zap,
-  Settings,
-  Monitor,
-  Activity,
-  Network,
-  FileCode,
-  Cpu,
-  Shield,
-  Database,
-  Terminal
-} from 'lucide-react'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-} from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar'
+import {
+    Activity,
+    BarChart3,
+    Cpu,
+    Database,
+    FileCode,
+    GitBranch,
+    Monitor,
+    Network,
+    Settings,
+    Shield,
+    Terminal,
+    Zap
+} from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 // Navigation items
 const navigationItems = [
@@ -226,7 +225,7 @@ export function AppSidebar() {
         </SidebarMenu>
         
         <div className="flex items-center gap-3 px-3 py-2">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage src="/avatars/user.png" alt="User" />
             <AvatarFallback>WU</AvatarFallback>
           </Avatar>

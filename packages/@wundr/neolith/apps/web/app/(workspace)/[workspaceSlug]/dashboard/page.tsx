@@ -28,7 +28,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
   return (
     <DashboardContent
-      userName={session.user?.name || 'User'}
       workspaceId={workspaceId}
     />
   );

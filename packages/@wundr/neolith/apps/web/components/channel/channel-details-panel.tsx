@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { Channel, ChannelMember, ChannelPermissions } from '@/types/channel';
 
@@ -69,11 +69,19 @@ export function ChannelDetailsPanel({
     if (activeTab === 'members' && isOpen) {
       setIsLoadingMembers(true);
       fetch(`/api/channels/${channel.id}/members`)
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('Failed to fetch members');
+          }
+          return res.json();
+        })
         .then((data) => {
           setMembers(data.data || []);
         })
-        .catch(console.error)
+        .catch((error) => {
+          console.error('Failed to fetch members:', error);
+          setMembers([]);
+        })
         .finally(() => {
           setIsLoadingMembers(false);
         });
@@ -203,16 +211,16 @@ export function ChannelDetailsPanel({
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-sm font-medium">
                           {member.user.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={member.user.image}
                               alt={member.user.name}
-                              className="h-full w-full rounded-full object-cover"
+                              className="h-full w-full rounded-lg object-cover"
                             />
                           ) : (
-                            member.user.name.charAt(0).toUpperCase()
+                            getInitials(member.user.name)
                           )}
                         </div>
                         {member.user.status === 'online' && (

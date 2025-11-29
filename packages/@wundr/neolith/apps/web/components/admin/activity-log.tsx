@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import type { AdminActivityApiResponse } from '@/types/api';
 
 /**
@@ -391,7 +391,7 @@ return 'billing';
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={activity.actor.image} alt={activity.actor.name} />
                             <AvatarFallback className="text-xs">
-                              {activity.actor.name.charAt(0).toUpperCase()}
+                              {getInitials(activity.actor.name)}
                             </AvatarFallback>
                           </Avatar>
                           <a

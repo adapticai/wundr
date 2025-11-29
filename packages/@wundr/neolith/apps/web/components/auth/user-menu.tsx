@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
 import { useAuth } from '@/hooks/use-auth';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
 
 interface UserMenuProps {
@@ -11,6 +13,8 @@ interface UserMenuProps {
 
 export function UserMenu({ className }: UserMenuProps) {
   const { user, isAuthenticated, signOut } = useAuth();
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string | undefined;
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +50,11 @@ export function UserMenu({ className }: UserMenuProps) {
     return null;
   }
 
-  const initials = getInitials(user.name || user.email || 'U');
+  // Map user data for UserAvatar - use name or email as fallback for initials
+  const avatarUser = {
+    name: user.name || user.email || 'User',
+    image: user.image,
+  };
 
   return (
     <div className={cn('relative', className)} ref={menuRef}>
@@ -58,19 +66,7 @@ export function UserMenu({ className }: UserMenuProps) {
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-
-        {user.image ? (
-          <img
-            src={user.image}
-            alt={user.name || 'User avatar'}
-            className="h-8 w-8 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-            {initials}
-          </div>
-        )}
+        <UserAvatar user={avatarUser} size="md" />
       </button>
 
       {/* Dropdown Menu */}
@@ -84,13 +80,13 @@ export function UserMenu({ className }: UserMenuProps) {
 
           {/* Menu Items */}
           <div className="py-1">
-            <MenuItem href="/profile" icon={<UserIcon />}>
+            <MenuItem href={workspaceSlug ? `/${workspaceSlug}/settings/profile` : '/profile'} icon={<UserIcon />}>
               Profile
             </MenuItem>
-            <MenuItem href="/settings" icon={<SettingsIcon />}>
+            <MenuItem href={workspaceSlug ? `/${workspaceSlug}/user-settings/notifications` : '/settings'} icon={<SettingsIcon />}>
               Settings
             </MenuItem>
-            <MenuItem href="/help" icon={<HelpIcon />}>
+            <MenuItem href={workspaceSlug ? `/${workspaceSlug}/help` : '/help'} icon={<HelpIcon />}>
               Help & Support
             </MenuItem>
           </div>
@@ -128,14 +124,6 @@ function MenuItem({ href, icon, children }: MenuItemProps) {
       {children}
     </a>
   );
-}
-
-function getInitials(name: string): string {
-  const parts = name.split(' ').filter(Boolean);
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
 }
 
 // Icons

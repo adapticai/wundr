@@ -82,15 +82,24 @@ export function WebhookDeliveryLog({
         let startDate: Date;
 
         switch (dateRange) {
-          case 'today':
-            startDate = new Date(now.setHours(0, 0, 0, 0));
+          case 'today': {
+            const todayStart = new Date(now);
+            todayStart.setHours(0, 0, 0, 0);
+            startDate = todayStart;
             break;
-          case 'week':
-            startDate = new Date(now.setDate(now.getDate() - 7));
+          }
+          case 'week': {
+            const weekStart = new Date(now);
+            weekStart.setDate(weekStart.getDate() - 7);
+            startDate = weekStart;
             break;
-          case 'month':
-            startDate = new Date(now.setMonth(now.getMonth() - 1));
+          }
+          case 'month': {
+            const monthStart = new Date(now);
+            monthStart.setMonth(monthStart.getMonth() - 1);
+            startDate = monthStart;
             break;
+          }
         }
 
         if (deliveryDate < startDate) {

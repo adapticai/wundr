@@ -30,6 +30,9 @@ import type {
   WorkflowTemplate,
   TriggerConfig,
   ActionConfig,
+  WorkflowId,
+  ActionId,
+  ExecutionId,
 } from '@/types/workflow';
 
 // =============================================================================
@@ -125,7 +128,7 @@ function _createMockRequest(
 // Factory function for creating mock workflows
 function createMockWorkflow(overrides: Partial<Workflow> = {}): Workflow {
   return {
-    id: 'wf_test123',
+    id: 'wf_test123' as WorkflowId,
     workspaceId: 'ws_test',
     name: 'Test Workflow',
     description: 'A test workflow for automated testing',
@@ -139,7 +142,7 @@ function createMockWorkflow(overrides: Partial<Workflow> = {}): Workflow {
     },
     actions: [
       {
-        id: 'a1',
+        id: 'a1' as ActionId,
         type: 'send_message',
         order: 0,
         config: {
@@ -155,14 +158,14 @@ function createMockWorkflow(overrides: Partial<Workflow> = {}): Workflow {
     runCount: 0,
     errorCount: 0,
     ...overrides,
-  };
+  } as Workflow;
 }
 
 // Factory function for creating mock executions
 function createMockExecution(overrides: Partial<WorkflowExecution> = {}): WorkflowExecution {
   return {
-    id: 'exec_test123',
-    workflowId: 'wf_test123',
+    id: 'exec_test123' as ExecutionId,
+    workflowId: 'wf_test123' as WorkflowId,
     status: 'completed',
     startedAt: new Date().toISOString(),
     completedAt: new Date().toISOString(),
@@ -171,7 +174,7 @@ function createMockExecution(overrides: Partial<WorkflowExecution> = {}): Workfl
     triggerData: { keyword: 'help' },
     actionResults: [
       {
-        actionId: 'a1',
+        actionId: 'a1' as ActionId,
         actionType: 'send_message',
         status: 'completed',
         startedAt: new Date().toISOString(),
@@ -181,7 +184,7 @@ function createMockExecution(overrides: Partial<WorkflowExecution> = {}): Workfl
       },
     ],
     ...overrides,
-  };
+  } as WorkflowExecution;
 }
 
 // Factory function for creating mock templates
@@ -199,6 +202,7 @@ function createMockTemplate(overrides: Partial<WorkflowTemplate> = {}): Workflow
         type: 'send_message',
         order: 0,
         config: {
+          channelId: 'ch_default',
           message: 'Welcome to our workspace!',
         },
       },
@@ -206,7 +210,7 @@ function createMockTemplate(overrides: Partial<WorkflowTemplate> = {}): Workflow
     usageCount: 100,
     tags: ['onboarding', 'welcome'],
     ...overrides,
-  };
+  } as WorkflowTemplate;
 }
 
 // =============================================================================
@@ -258,10 +262,10 @@ describe('Workflow API Routes', () => {
 
       const mockWorkflow = createMockWorkflow({
         actions: [
-          { id: 'a1', type: 'send_message', order: 0, config: { message: 'Hello' } },
-          { id: 'a2', type: 'wait', order: 1, config: { duration: 5, unit: 'seconds' } },
-          { id: 'a3', type: 'send_dm', order: 2, config: { message: 'Follow up' } },
-        ],
+          { id: 'a1' as ActionId, type: 'send_message', order: 0, config: { channelId: 'ch_1', message: 'Hello' } },
+          { id: 'a2' as ActionId, type: 'wait', order: 1, config: { duration: 5, unit: 'seconds' } },
+          { id: 'a3' as ActionId, type: 'send_dm', order: 2, config: { userId: 'user_1', message: 'Follow up' } },
+        ] as ActionConfig[],
       });
       mockWorkflowService.createWorkflow.mockResolvedValue(mockWorkflow);
 
@@ -425,9 +429,9 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflows = [
-        createMockWorkflow({ id: 'wf_1', name: 'Workflow 1' }),
-        createMockWorkflow({ id: 'wf_2', name: 'Workflow 2' }),
-        createMockWorkflow({ id: 'wf_3', name: 'Workflow 3' }),
+        createMockWorkflow({ id: 'wf_1' as WorkflowId, name: 'Workflow 1' }),
+        createMockWorkflow({ id: 'wf_2' as WorkflowId, name: 'Workflow 2' }),
+        createMockWorkflow({ id: 'wf_3' as WorkflowId, name: 'Workflow 3' }),
       ];
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: mockWorkflows,
@@ -446,8 +450,8 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const activeWorkflows = [
-        createMockWorkflow({ id: 'wf_1', status: 'active' }),
-        createMockWorkflow({ id: 'wf_2', status: 'active' }),
+        createMockWorkflow({ id: 'wf_1' as WorkflowId, status: 'active' }),
+        createMockWorkflow({ id: 'wf_2' as WorkflowId, status: 'active' }),
       ];
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: activeWorkflows,
@@ -468,7 +472,7 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const scheduledWorkflows = [
-        createMockWorkflow({ id: 'wf_1', trigger: { type: 'schedule' } }),
+        createMockWorkflow({ id: 'wf_1' as WorkflowId, trigger: { type: 'schedule', schedule: { cron: '0 9 * * *' } } }),
       ];
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: scheduledWorkflows,
@@ -489,7 +493,7 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflows = Array.from({ length: 10 }, (_, i) =>
-        createMockWorkflow({ id: `wf_${i}`, name: `Workflow ${i}` }),
+        createMockWorkflow({ id: `wf_${i}` as WorkflowId, name: `Workflow ${i}` }),
       );
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: mockWorkflows,
@@ -513,8 +517,8 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const searchResults = [
-        createMockWorkflow({ id: 'wf_1', name: 'Welcome workflow' }),
-        createMockWorkflow({ id: 'wf_2', name: 'Welcome message' }),
+        createMockWorkflow({ id: 'wf_1' as WorkflowId, name: 'Welcome workflow' }),
+        createMockWorkflow({ id: 'wf_2' as WorkflowId, name: 'Welcome message' }),
       ];
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: searchResults,
@@ -657,7 +661,7 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const newActions: ActionConfig[] = [
-        { id: 'a1', type: 'send_message', order: 0, config: { message: 'Updated message' } },
+        { id: 'a1' as ActionId, type: 'send_message', order: 0, config: { channelId: 'ch_1', message: 'Updated message' } },
       ];
       const updatedWorkflow = createMockWorkflow({ actions: newActions });
       mockWorkflowService.updateWorkflow.mockResolvedValue(updatedWorkflow);
@@ -893,7 +897,7 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const testExecution = createMockExecution({
-        id: 'exec_test',
+        id: 'exec_test' as ExecutionId,
         triggerData: { testMode: true },
       });
       mockWorkflowService.executeWorkflow.mockResolvedValue(testExecution);
@@ -956,7 +960,7 @@ describe('Workflow API Routes', () => {
         error: 'Action failed: send_message',
         actionResults: [
           {
-            actionId: 'a1',
+            actionId: 'a1' as ActionId,
             actionType: 'send_message',
             status: 'failed',
             error: 'Channel not found',
@@ -982,9 +986,9 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const executions = [
-        createMockExecution({ id: 'exec_1' }),
-        createMockExecution({ id: 'exec_2' }),
-        createMockExecution({ id: 'exec_3' }),
+        createMockExecution({ id: 'exec_1' as ExecutionId }),
+        createMockExecution({ id: 'exec_2' as ExecutionId }),
+        createMockExecution({ id: 'exec_3' as ExecutionId }),
       ];
       mockWorkflowService.getExecutions.mockResolvedValue({
         executions,
@@ -1002,7 +1006,7 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const failedExecutions = [
-        createMockExecution({ id: 'exec_1', status: 'failed' }),
+        createMockExecution({ id: 'exec_1' as ExecutionId, status: 'failed' }),
       ];
       mockWorkflowService.getExecutions.mockResolvedValue({
         executions: failedExecutions,
@@ -1023,7 +1027,7 @@ describe('Workflow API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       const executions = Array.from({ length: 20 }, (_, i) =>
-        createMockExecution({ id: `exec_${i}` }),
+        createMockExecution({ id: `exec_${i}` as ExecutionId }),
       );
       mockWorkflowService.getExecutions.mockResolvedValue({
         executions,

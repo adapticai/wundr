@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { GroupAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
 
 import { MessageInput } from './message-input';
@@ -107,19 +108,7 @@ return null;
           {/* Participants */}
           {thread.participants.length > 0 && (
             <div className="flex items-center gap-2 border-b px-4 py-2">
-              <div className="flex -space-x-2">
-                {thread.participants.slice(0, 5).map((participant) => (
-                  <ParticipantAvatar
-                    key={participant.id}
-                    user={participant}
-                  />
-                ))}
-                {thread.participants.length > 5 && (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-medium">
-                    +{thread.participants.length - 5}
-                  </div>
-                )}
-              </div>
+              <GroupAvatar users={thread.participants} max={5} size="sm" />
               <span className="text-xs text-muted-foreground">
                 {thread.participants.length}{' '}
                 {thread.participants.length === 1 ? 'participant' : 'participants'}
@@ -158,33 +147,6 @@ return null;
             </p>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-interface ParticipantAvatarProps {
-  user: User;
-}
-
-function ParticipantAvatar({ user }: ParticipantAvatarProps) {
-  return (
-    <div className="relative" title={user.name}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-
-      {user.image ? (
-        <img
-          src={user.image}
-          alt={user.name}
-          className="h-6 w-6 rounded-full border-2 border-background object-cover"
-        />
-      ) : (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-xs font-medium text-primary-foreground">
-          {user.name.charAt(0).toUpperCase()}
-        </div>
-      )}
-      {user.status === 'online' && (
-        <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-green-500" />
       )}
     </div>
   );

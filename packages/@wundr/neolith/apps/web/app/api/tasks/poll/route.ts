@@ -117,19 +117,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Add priority filter if provided (minPriority = CRITICAL > HIGH > MEDIUM > LOW)
     if (input.minPriority) {
-      const priorityOrder = {
+      const priorityOrder: Record<TaskPriority, number> = {
         CRITICAL: 0,
         HIGH: 1,
         MEDIUM: 2,
         LOW: 3,
       };
 
-      const minValue = priorityOrder[input.minPriority as keyof typeof priorityOrder];
-      const includedPriorities = Object.keys(priorityOrder).filter(
-        (p) => (priorityOrder[p as keyof typeof priorityOrder] || 0) <= minValue,
+      const minValue = priorityOrder[input.minPriority as TaskPriority];
+      const includedPriorities = (Object.keys(priorityOrder) as TaskPriority[]).filter(
+        (p) => priorityOrder[p] <= minValue,
       );
 
-      where.priority = { in: includedPriorities as TaskPriority[] };
+      where.priority = { in: includedPriorities };
     }
 
     // Add timestamp filter for delta updates

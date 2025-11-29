@@ -24,7 +24,7 @@
  * ```
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 
 import type {
   Deployment,
@@ -70,11 +70,20 @@ export function useDeployments(
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchDeployments = useCallback(async () => {
     if (!workspaceId) {
       return;
     }
+
+    // Cancel any pending requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
 
     setIsLoading(true);
     setError(null);
@@ -95,14 +104,27 @@ export function useDeployments(
       }
 
       const url = `/api/workspaces/${workspaceId}/deployments?${params.toString()}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch deployments');
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to fetch deployments (${response.status}): ${errorText}`
+        );
       }
 
       const data = await response.json();
+
+      if (!data || !Array.isArray(data.deployments)) {
+        throw new Error('Invalid response format: expected deployments array');
+      }
+
       setDeployments(data.deployments);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Request was cancelled, don't update error state
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
@@ -111,6 +133,13 @@ export function useDeployments(
 
   useEffect(() => {
     fetchDeployments();
+
+    // Cleanup on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchDeployments]);
 
   const createDeployment = useCallback(
@@ -123,14 +152,23 @@ export function useDeployments(
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create deployment');
+          const errorText = await response.text().catch(() => 'Unknown error');
+          throw new Error(
+            `Failed to create deployment (${response.status}): ${errorText}`
+          );
         }
 
         const data = await response.json();
+
+        if (!data || !data.deployment) {
+          throw new Error('Invalid response format: expected deployment object');
+        }
+
         setDeployments((prev) => [data.deployment, ...prev]);
         return data.deployment;
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        setError(error);
         return null;
       }
     },
@@ -187,11 +225,20 @@ export function useDeployment(
   const [deployment, setDeployment] = useState<Deployment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchDeployment = useCallback(async () => {
     if (!workspaceId || !deploymentId) {
       return;
     }
+
+    // Cancel any pending requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
 
     setIsLoading(true);
     setError(null);
@@ -199,17 +246,31 @@ export function useDeployment(
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}`,
+        { signal }
       );
+
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error('Deployment not found');
+          throw new Error(`Deployment not found: ${deploymentId}`);
         }
-        throw new Error('Failed to fetch deployment');
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to fetch deployment (${response.status}): ${errorText}`
+        );
       }
 
       const data = await response.json();
+
+      if (!data || !data.deployment) {
+        throw new Error('Invalid response format: expected deployment object');
+      }
+
       setDeployment(data.deployment);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Request was cancelled, don't update error state
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
@@ -218,6 +279,13 @@ export function useDeployment(
 
   useEffect(() => {
     fetchDeployment();
+
+    // Cleanup on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchDeployment]);
 
   const updateDeployment = useCallback(
@@ -233,14 +301,23 @@ export function useDeployment(
         );
 
         if (!response.ok) {
-          throw new Error('Failed to update deployment');
+          const errorText = await response.text().catch(() => 'Unknown error');
+          throw new Error(
+            `Failed to update deployment (${response.status}): ${errorText}`
+          );
         }
 
         const data = await response.json();
+
+        if (!data || !data.deployment) {
+          throw new Error('Invalid response format: expected deployment object');
+        }
+
         setDeployment(data.deployment);
         return data.deployment;
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        setError(error);
         return null;
       }
     },
@@ -257,52 +334,72 @@ export function useDeployment(
       );
 
       if (!response.ok) {
-        throw new Error('Failed to delete deployment');
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to delete deployment (${response.status}): ${errorText}`
+        );
       }
 
       setDeployment(null);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return false;
     }
   }, [workspaceId, deploymentId]);
 
   const restartDeployment = useCallback(async (): Promise<boolean> => {
     try {
-      // Update status to show restarting
-      if (deployment) {
-        setDeployment({ ...deployment, status: 'updating' });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/deployments/${deploymentId}/restart`,
+        {
+          method: 'POST',
+        },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to restart deployment (${response.status}): ${errorText}`
+        );
       }
 
-      // Simulate restart (would call actual API endpoint in production)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Refresh deployment data
+      // Refresh deployment data to get updated status
       await fetchDeployment();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return false;
     }
-  }, [deployment, fetchDeployment]);
+  }, [workspaceId, deploymentId, fetchDeployment]);
 
   const stopDeployment = useCallback(async (): Promise<boolean> => {
     try {
-      // Update status to show stopping
-      if (deployment) {
-        setDeployment({ ...deployment, status: 'stopped' });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/deployments/${deploymentId}/stop`,
+        {
+          method: 'POST',
+        },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to stop deployment (${response.status}): ${errorText}`
+        );
       }
 
-      // Simulate stop (would call actual API endpoint in production)
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
+      // Refresh deployment data to get updated status
+      await fetchDeployment();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return false;
     }
-  }, [deployment]);
+  }, [workspaceId, deploymentId, fetchDeployment]);
 
   return {
     deployment,
@@ -364,47 +461,88 @@ export function useDeploymentLogs(
   const [logs, setLogs] = useState<DeploymentLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [hasMore] = useState(false); // Would be set based on API response
+  const [hasMore, setHasMore] = useState(false);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchLogs = useCallback(async () => {
-    if (!workspaceId || !deploymentId) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      if (options?.level) {
-        params.set('level', options.level);
-      }
-      const limit = options?.limit ?? 100;
-      params.set('limit', String(limit));
-
-      const url = `/api/workspaces/${workspaceId}/deployments/${deploymentId}/logs?${params.toString()}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch logs');
+  const fetchLogs = useCallback(
+    async (append: boolean = false) => {
+      if (!workspaceId || !deploymentId) {
+        return;
       }
 
-      const data = await response.json();
-      setLogs(data.logs);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId, deploymentId, options?.level, options?.limit]);
+      // Cancel any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams();
+        if (options?.level) {
+          params.set('level', options.level);
+        }
+        const limit = options?.limit ?? 100;
+        params.set('limit', String(limit));
+
+        // Add cursor for pagination
+        if (append && cursor) {
+          params.set('cursor', cursor);
+        }
+
+        const url = `/api/workspaces/${workspaceId}/deployments/${deploymentId}/logs?${params.toString()}`;
+        const response = await fetch(url, { signal });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Unknown error');
+          throw new Error(
+            `Failed to fetch logs (${response.status}): ${errorText}`
+          );
+        }
+
+        const data = await response.json();
+
+        if (!data || !Array.isArray(data.logs)) {
+          throw new Error('Invalid response format: expected logs array');
+        }
+
+        setLogs((prev) => (append ? [...prev, ...data.logs] : data.logs));
+        setHasMore(data.hasMore ?? false);
+        setCursor(data.nextCursor ?? null);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          // Request was cancelled, don't update error state
+          return;
+        }
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [workspaceId, deploymentId, options?.level, options?.limit, cursor]
+  );
 
   useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+    fetchLogs(false);
+
+    // Cleanup on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [workspaceId, deploymentId, options?.level, options?.limit]);
 
   const loadMore = useCallback(() => {
-    // In a real implementation, this would fetch the next page of logs
-    console.log('Load more logs');
-  }, []);
+    if (hasMore && !isLoading) {
+      fetchLogs(true);
+    }
+  }, [hasMore, isLoading, fetchLogs]);
 
   return {
     logs,

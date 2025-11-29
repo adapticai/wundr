@@ -187,7 +187,11 @@ export async function GET(
     }));
 
     // Get custom roles from workspace settings
-    const customRoles = (access.workspace.settings as Record<string, unknown>)?.customRoles as Role[] || [];
+    const settings = access.workspace.settings as Record<string, unknown> | null;
+    const customRoles: Role[] =
+      settings && typeof settings === 'object' && 'customRoles' in settings && Array.isArray(settings.customRoles)
+        ? settings.customRoles as Role[]
+        : [];
 
     // Combine system and custom roles
     const allRoles = [...systemRoles, ...customRoles];
@@ -322,8 +326,11 @@ export async function POST(
     }
 
     // Get existing custom roles
-    const settings = (access.workspace.settings as Record<string, unknown>) || {};
-    const customRoles = (settings.customRoles as Role[]) || [];
+    const settings = (access.workspace.settings as Record<string, unknown> | null) || {};
+    const customRoles: Role[] =
+      typeof settings === 'object' && settings !== null && 'customRoles' in settings && Array.isArray(settings.customRoles)
+        ? settings.customRoles as Role[]
+        : [];
 
     // Check if role name conflicts with existing custom roles
     const existingCustomRole = customRoles.find(
@@ -364,13 +371,16 @@ export async function POST(
     });
 
     // Log admin action (optional - table may not exist)
-    await prisma.$executeRaw`
-      INSERT INTO admin_actions (id, workspace_id, action, actor_id, target_type, target_id, target_name, metadata, created_at)
-      VALUES (gen_random_uuid(), ${workspaceId}, 'role.created', ${session.user.id}, 'role', ${newRole.id}, ${newRole.name}, ${JSON.stringify({})}::jsonb, NOW())
-      ON CONFLICT DO NOTHING
-    `.catch(() => {
-      // Ignore if admin_actions table doesn't exist
-    });
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO admin_actions (id, workspace_id, action, actor_id, target_type, target_id, target_name, metadata, created_at)
+        VALUES (gen_random_uuid(), ${workspaceId}, 'role.created', ${session.user.id}, 'role', ${newRole.id}, ${newRole.name}, ${JSON.stringify({})}::jsonb, NOW())
+        ON CONFLICT DO NOTHING
+      `;
+    } catch (error) {
+      // Silently ignore if admin_actions table doesn't exist
+      console.debug('[POST /api/workspaces/:workspaceId/roles] Admin action logging skipped:', error);
+    }
 
     return NextResponse.json(
       { role: newRole },

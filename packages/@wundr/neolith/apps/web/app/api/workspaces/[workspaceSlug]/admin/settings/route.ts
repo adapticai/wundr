@@ -1,3 +1,4 @@
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -19,34 +20,76 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { workspaceSlug: workspaceId } = await context.params;
+    const { workspaceSlug } = await context.params;
 
-    // Return default settings
+    // Fetch actual workspace data from database
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        avatarUrl: true,
+        visibility: true,
+        settings: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!workspace) {
+      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+    }
+
+    // Parse settings JSON if it exists
+    const workspaceSettings = (workspace.settings as Record<string, unknown>) || {};
+
+    // Return combined workspace data and settings
     return NextResponse.json({
       settings: {
-        id: 'settings_' + workspaceId,
-        workspaceId,
+        id: 'settings_' + workspace.id,
+        workspaceId: workspace.id,
+        // Core workspace fields
+        name: workspace.name,
+        slug: workspace.slug,
+        description: workspace.description || '',
+        icon: workspace.avatarUrl, // Map avatarUrl to icon for frontend
+        visibility: workspace.visibility?.toLowerCase() || 'private',
+        // Settings from JSON field
+        allowGuestAccess: workspaceSettings.allowGuestAccess ?? false,
+        defaultRole: workspaceSettings.defaultRole,
+        messageRetention: workspaceSettings.messageRetention,
+        fileRetention: workspaceSettings.fileRetention,
+        twoFactorRequired: workspaceSettings.twoFactorRequired ?? false,
+        ssoEnabled: workspaceSettings.ssoEnabled ?? false,
+        notificationDefaults: workspaceSettings.notificationDefaults ?? {
+          email: true,
+          push: true,
+          desktop: true,
+        },
         general: {
-          displayName: 'Workspace',
-          timezone: 'UTC',
-          locale: 'en-US',
-          allowGuestAccess: false,
-          requireApprovalToJoin: true,
+          displayName: workspace.name,
+          timezone: workspaceSettings.timezone ?? 'UTC',
+          locale: workspaceSettings.locale ?? 'en-US',
+          allowGuestAccess: workspaceSettings.allowGuestAccess ?? false,
+          requireApprovalToJoin: workspaceSettings.requireApprovalToJoin ?? true,
         },
         security: {
-          sessionTimeout: 480,
-          mfaRequired: false,
-          ssoEnabled: false,
+          sessionTimeout: workspaceSettings.sessionTimeout ?? 480,
+          mfaRequired: workspaceSettings.twoFactorRequired ?? false,
+          ssoEnabled: workspaceSettings.ssoEnabled ?? false,
         },
         messaging: {
-          allowEditing: true,
-          editWindowMinutes: 15,
-          allowDeleting: true,
-          maxMessageLength: 10000,
-          enableThreads: true,
-          enableReactions: true,
+          allowEditing: workspaceSettings.allowEditing ?? true,
+          editWindowMinutes: workspaceSettings.editWindowMinutes ?? 15,
+          allowDeleting: workspaceSettings.allowDeleting ?? true,
+          maxMessageLength: workspaceSettings.maxMessageLength ?? 10000,
+          enableThreads: workspaceSettings.enableThreads ?? true,
+          enableReactions: workspaceSettings.enableReactions ?? true,
         },
-        updatedAt: new Date().toISOString(),
+        updatedAt: workspace.updatedAt.toISOString(),
       },
     });
   } catch (error) {
@@ -65,16 +108,78 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { workspaceSlug: workspaceId } = await context.params;
+    const { workspaceSlug } = await context.params;
     const updates = await request.json();
 
-    // In production, validate admin role and update in database
+    // Find the workspace
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
+    });
+
+    if (!workspace) {
+      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+    }
+
+    // Prepare updates for workspace table
+    const workspaceUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) workspaceUpdates.name = updates.name;
+    if (updates.description !== undefined) workspaceUpdates.description = updates.description;
+
+    // Prepare settings JSON updates
+    const currentSettings = (workspace.settings as Record<string, unknown>) || {};
+    const settingsUpdates = { ...currentSettings };
+
+    // Copy settings-specific fields to settings JSON
+    const settingsFields = [
+      'allowGuestAccess', 'defaultRole', 'messageRetention', 'fileRetention',
+      'twoFactorRequired', 'ssoEnabled', 'notificationDefaults', 'timezone',
+      'locale', 'requireApprovalToJoin', 'sessionTimeout', 'allowEditing',
+      'editWindowMinutes', 'allowDeleting', 'maxMessageLength', 'enableThreads',
+      'enableReactions', 'dataRetentionDays', 'exportEnabled', 'apiRateLimit',
+      'notifyOnNewMember', 'notifyOnSecurityEvent', 'weeklyDigest', 'requireTwoFactor',
+      'allowedDomains'
+    ];
+
+    for (const field of settingsFields) {
+      if (updates[field] !== undefined) {
+        settingsUpdates[field] = updates[field];
+      }
+    }
+
+    // Update workspace with both direct fields and settings JSON
+    const updatedWorkspace = await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: {
+        ...workspaceUpdates,
+        settings: settingsUpdates as Prisma.InputJsonValue,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        avatarUrl: true,
+        visibility: true,
+        settings: true,
+        updatedAt: true,
+      },
+    });
+
+    const finalSettings = (updatedWorkspace.settings as Record<string, unknown>) || {};
+
     return NextResponse.json({
       settings: {
-        id: 'settings_' + workspaceId,
-        workspaceId,
-        ...updates,
-        updatedAt: new Date().toISOString(),
+        id: 'settings_' + updatedWorkspace.id,
+        workspaceId: updatedWorkspace.id,
+        name: updatedWorkspace.name,
+        slug: updatedWorkspace.slug,
+        description: updatedWorkspace.description || '',
+        icon: updatedWorkspace.avatarUrl,
+        visibility: updatedWorkspace.visibility?.toLowerCase() || 'private',
+        ...finalSettings,
+        updatedAt: updatedWorkspace.updatedAt.toISOString(),
         updatedBy: session.user.id,
       },
     });

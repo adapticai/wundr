@@ -382,7 +382,8 @@ export async function GET(
         total: allTemplates.length,
       },
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('[GET /api/workspaces/:workspaceId/workflows/templates] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -651,7 +652,8 @@ export async function POST(
         { status: 201 },
       );
     }
-  } catch (_error) {
+  } catch (error) {
+    console.error('[POST /api/workspaces/:workspaceId/workflows/templates] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

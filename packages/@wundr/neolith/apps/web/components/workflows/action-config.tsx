@@ -3,8 +3,13 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import type { ActionConfig, ActionType, WorkflowVariable } from '@/types/workflow';
+import type { ActionConfig, ActionType, WorkflowVariable, ChannelType } from '@/types/workflow';
 import { ACTION_TYPE_CONFIG, DEFAULT_ACTION_CONFIGS } from '@/types/workflow';
+
+/**
+ * Loose config type for form access - allows accessing any property on config objects
+ */
+type ConfigRecord = Record<string, unknown>;
 
 export interface ActionConfigPanelProps {
   action: ActionConfig;
@@ -26,11 +31,11 @@ export function ActionConfigPanel({
   const handleTypeChange = (type: ActionType) => {
     // Use default config for the selected action type
     const defaultConfig = DEFAULT_ACTION_CONFIGS[type] || {};
-    onChange({ type, config: defaultConfig });
+    onChange({ type, config: defaultConfig } as Partial<ActionConfig>);
   };
 
-  const handleConfigChange = (updates: Partial<ActionConfig['config']>) => {
-    onChange({ config: { ...action.config, ...updates } });
+  const handleConfigChange = (updates: ConfigRecord) => {
+    onChange({ config: { ...action.config, ...updates } } as Partial<ActionConfig>);
   };
 
   const handleErrorHandlingChange = (updates: Partial<NonNullable<ActionConfig['errorHandling']>>) => {
@@ -119,7 +124,7 @@ export function ActionConfigPanel({
       <div className="space-y-4">
         {(action.type === 'send_message' || action.type === 'send_dm') && (
           <MessageActionConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
             isDM={action.type === 'send_dm'}
           />
@@ -127,56 +132,56 @@ export function ActionConfigPanel({
 
         {action.type === 'create_channel' && (
           <CreateChannelConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'invite_to_channel' && (
           <InviteToChannelConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'assign_role' && (
           <AssignRoleConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'add_reaction' && (
           <AddReactionConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'http_request' && (
           <HttpRequestConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'wait' && (
           <WaitConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'condition' && (
           <ConditionConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
 
         {action.type === 'notify_orchestrator' && (
           <NotifyOrchestratorConfig
-            config={action.config}
+            config={action.config as ConfigRecord}
             onChange={handleConfigChange}
           />
         )}
@@ -250,12 +255,13 @@ export function ActionConfigPanel({
 
 // Message Action Configuration
 interface MessageActionConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
   isDM: boolean;
 }
 
 function MessageActionConfig({ config, onChange, isDM }: MessageActionConfigProps) {
+
   return (
     <div className="space-y-4">
       {isDM ? (
@@ -266,7 +272,7 @@ function MessageActionConfig({ config, onChange, isDM }: MessageActionConfigProp
           <input
             id="user-id"
             type="text"
-            value={config.userId || ''}
+            value={(config.userId as string) || ''}
             onChange={(e) => onChange({ userId: e.target.value })}
             placeholder="Enter user ID or use {{trigger.user.id}}"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -280,7 +286,7 @@ function MessageActionConfig({ config, onChange, isDM }: MessageActionConfigProp
           <input
             id="channel-id"
             type="text"
-            value={config.channelId || ''}
+            value={(config.channelId as string) || ''}
             onChange={(e) => onChange({ channelId: e.target.value })}
             placeholder="Enter channel ID or use {{trigger.channel.id}}"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -294,7 +300,7 @@ function MessageActionConfig({ config, onChange, isDM }: MessageActionConfigProp
         </label>
         <textarea
           id="message"
-          value={config.message || ''}
+          value={(config.message as string) || ''}
           onChange={(e) => onChange({ message: e.target.value })}
           placeholder="Enter your message. Use {{variable}} to insert dynamic content."
           rows={4}
@@ -310,8 +316,8 @@ function MessageActionConfig({ config, onChange, isDM }: MessageActionConfigProp
 
 // Create Channel Configuration
 interface CreateChannelConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function CreateChannelConfig({ config, onChange }: CreateChannelConfigProps) {
@@ -324,7 +330,7 @@ function CreateChannelConfig({ config, onChange }: CreateChannelConfigProps) {
         <input
           id="channel-name"
           type="text"
-          value={config.channelName || ''}
+          value={(config.channelName as string) || ''}
           onChange={(e) => onChange({ channelName: e.target.value })}
           placeholder="Enter channel name"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -337,8 +343,8 @@ function CreateChannelConfig({ config, onChange }: CreateChannelConfigProps) {
         </label>
         <select
           id="channel-type"
-          value={config.channelType || 'public'}
-          onChange={(e) => onChange({ channelType: e.target.value as 'public' | 'private' })}
+          value={(config.channelType as string) || 'public'}
+          onChange={(e) => onChange({ channelType: e.target.value as ChannelType })}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="public">Public</option>
@@ -351,8 +357,8 @@ function CreateChannelConfig({ config, onChange }: CreateChannelConfigProps) {
 
 // Invite to Channel Configuration
 interface InviteToChannelConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function InviteToChannelConfig({ config, onChange }: InviteToChannelConfigProps) {
@@ -365,7 +371,7 @@ function InviteToChannelConfig({ config, onChange }: InviteToChannelConfigProps)
         <input
           id="invite-channel-id"
           type="text"
-          value={config.channelId || ''}
+          value={(config.channelId as string) || ''}
           onChange={(e) => onChange({ channelId: e.target.value })}
           placeholder="Enter channel ID"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -379,7 +385,7 @@ function InviteToChannelConfig({ config, onChange }: InviteToChannelConfigProps)
         <input
           id="invite-user-id"
           type="text"
-          value={config.userId || ''}
+          value={(config.userId as string) || ''}
           onChange={(e) => onChange({ userId: e.target.value })}
           placeholder="Enter user ID or use {{trigger.user.id}}"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -391,8 +397,8 @@ function InviteToChannelConfig({ config, onChange }: InviteToChannelConfigProps)
 
 // Assign Role Configuration
 interface AssignRoleConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function AssignRoleConfig({ config, onChange }: AssignRoleConfigProps) {
@@ -405,7 +411,7 @@ function AssignRoleConfig({ config, onChange }: AssignRoleConfigProps) {
         <input
           id="role-id"
           type="text"
-          value={config.roleId || ''}
+          value={(config.roleId as string) || ''}
           onChange={(e) => onChange({ roleId: e.target.value })}
           placeholder="Enter role ID"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -419,7 +425,7 @@ function AssignRoleConfig({ config, onChange }: AssignRoleConfigProps) {
         <input
           id="role-user-id"
           type="text"
-          value={config.userId || ''}
+          value={(config.userId as string) || ''}
           onChange={(e) => onChange({ userId: e.target.value })}
           placeholder="Enter user ID or use {{trigger.user.id}}"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -431,8 +437,8 @@ function AssignRoleConfig({ config, onChange }: AssignRoleConfigProps) {
 
 // Add Reaction Configuration
 interface AddReactionConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function AddReactionConfig({ config, onChange }: AddReactionConfigProps) {
@@ -444,7 +450,7 @@ function AddReactionConfig({ config, onChange }: AddReactionConfigProps) {
       <input
         id="emoji"
         type="text"
-        value={config.emoji || ''}
+        value={(config.emoji as string) || ''}
         onChange={(e) => onChange({ emoji: e.target.value })}
         placeholder="Enter emoji (e.g., :thumbsup: or actual emoji)"
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -455,8 +461,8 @@ function AddReactionConfig({ config, onChange }: AddReactionConfigProps) {
 
 // HTTP Request Configuration
 interface HttpRequestConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function HttpRequestConfig({ config, onChange }: HttpRequestConfigProps) {
@@ -483,7 +489,7 @@ function HttpRequestConfig({ config, onChange }: HttpRequestConfigProps) {
           </label>
           <select
             id="http-method"
-            value={config.method || 'POST'}
+            value={(config.method as string) || 'POST'}
             onChange={(e) =>
               onChange({ method: e.target.value as 'GET' | 'POST' | 'PUT' | 'DELETE' })
             }
@@ -503,7 +509,7 @@ function HttpRequestConfig({ config, onChange }: HttpRequestConfigProps) {
           <input
             id="http-url"
             type="text"
-            value={config.url || ''}
+            value={(config.url as string) || ''}
             onChange={(e) => onChange({ url: e.target.value })}
             placeholder="https://api.example.com/webhook"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -525,14 +531,14 @@ function HttpRequestConfig({ config, onChange }: HttpRequestConfigProps) {
         />
       </div>
 
-      {config.method !== 'GET' && (
+      {(config.method as string) !== 'GET' && (
         <div>
           <label htmlFor="http-body" className="mb-1.5 block text-sm font-medium text-foreground">
             Body
           </label>
           <textarea
             id="http-body"
-            value={config.body || ''}
+            value={(config.body as string) || ''}
             onChange={(e) => onChange({ body: e.target.value })}
             placeholder='{"key": "{{trigger.message.content}}"}'
             rows={4}
@@ -546,8 +552,8 @@ function HttpRequestConfig({ config, onChange }: HttpRequestConfigProps) {
 
 // Wait Configuration
 interface WaitConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function WaitConfig({ config, onChange }: WaitConfigProps) {
@@ -561,7 +567,7 @@ function WaitConfig({ config, onChange }: WaitConfigProps) {
           id="wait-duration"
           type="number"
           min="1"
-          value={config.duration || 1}
+          value={(config.duration as number) || 1}
           onChange={(e) => onChange({ duration: parseInt(e.target.value) })}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
@@ -573,7 +579,7 @@ function WaitConfig({ config, onChange }: WaitConfigProps) {
         </label>
         <select
           id="wait-unit"
-          value={config.unit || 'seconds'}
+          value={(config.unit as string) || 'seconds'}
           onChange={(e) =>
             onChange({ unit: e.target.value as 'seconds' | 'minutes' | 'hours' | 'days' })
           }
@@ -591,11 +597,13 @@ function WaitConfig({ config, onChange }: WaitConfigProps) {
 
 // Condition Configuration
 interface ConditionConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function ConditionConfig({ config, onChange }: ConditionConfigProps) {
+  const condition = config.condition as { field?: string; operator?: string; value?: string } | undefined;
+
   return (
     <div className="space-y-4">
       <div className="rounded-md bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-400">
@@ -609,14 +617,14 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
         <input
           id="condition-field"
           type="text"
-          value={config.condition?.field || ''}
+          value={condition?.field || ''}
           onChange={(e) =>
             onChange({
               condition: {
-                ...config.condition,
+                ...condition,
                 field: e.target.value,
-                operator: config.condition?.operator || 'equals',
-                value: config.condition?.value || '',
+                operator: condition?.operator || 'equals',
+                value: condition?.value || '',
               },
             })
           }
@@ -631,14 +639,14 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
         </label>
         <select
           id="condition-operator"
-          value={config.condition?.operator || 'equals'}
+          value={condition?.operator || 'equals'}
           onChange={(e) =>
             onChange({
               condition: {
-                ...config.condition,
-                field: config.condition?.field || '',
+                ...condition,
+                field: condition?.field || '',
                 operator: e.target.value as 'equals' | 'contains' | 'greater_than' | 'less_than' | 'exists',
-                value: config.condition?.value || '',
+                value: condition?.value || '',
               },
             })
           }
@@ -659,13 +667,13 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
         <input
           id="condition-value"
           type="text"
-          value={config.condition?.value || ''}
+          value={condition?.value || ''}
           onChange={(e) =>
             onChange({
               condition: {
-                ...config.condition,
-                field: config.condition?.field || '',
-                operator: config.condition?.operator || 'equals',
+                ...condition,
+                field: condition?.field || '',
+                operator: condition?.operator || 'equals',
                 value: e.target.value,
               },
             })
@@ -680,8 +688,8 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
 
 // Notify Orchestrator Configuration
 interface NotifyOrchestratorConfigProps {
-  config: ActionConfig['config'];
-  onChange: (updates: Partial<ActionConfig['config']>) => void;
+  config: ConfigRecord;
+  onChange: (updates: ConfigRecord) => void;
 }
 
 function NotifyOrchestratorConfig({ config, onChange }: NotifyOrchestratorConfigProps) {
@@ -694,7 +702,7 @@ function NotifyOrchestratorConfig({ config, onChange }: NotifyOrchestratorConfig
         <input
           id="orchestrator-id"
           type="text"
-          value={config.orchestratorId || ''}
+          value={(config.orchestratorId as string) || ''}
           onChange={(e) => onChange({ orchestratorId: e.target.value })}
           placeholder="Enter OrchestratorID"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -710,7 +718,7 @@ function NotifyOrchestratorConfig({ config, onChange }: NotifyOrchestratorConfig
         </label>
         <textarea
           id="orchestrator-message"
-          value={config.message || ''}
+          value={(config.message as string) || ''}
           onChange={(e) => onChange({ message: e.target.value })}
           placeholder="Additional context for the Orchestrator"
           rows={3}

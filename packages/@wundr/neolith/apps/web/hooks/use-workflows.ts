@@ -39,6 +39,7 @@ import type {
   WorkflowTemplateCategory,
   TriggerConfig,
   ActionConfig,
+  ActionId,
   WorkflowVariable,
   CreateWorkflowInput,
   UpdateWorkflowInput,
@@ -120,6 +121,7 @@ export function useWorkflows(
 return;
 }
 
+    const abortController = new AbortController();
     setIsLoading(true);
     setError(null);
 
@@ -133,28 +135,34 @@ return;
       }
 
       const url = `/api/workspaces/${workspaceId}/workflows?${params.toString()}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: abortController.signal });
       if (!response.ok) {
-        throw new Error('Failed to fetch workflows');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch workflows');
       }
 
       const data = await response.json();
-      setWorkflows(
-        data.workflows.map((w: Workflow) => ({
-          ...w,
-          createdAt: w.createdAt,
-          updatedAt: w.updatedAt,
-        })),
-      );
+      if (!data.workflows || !Array.isArray(data.workflows)) {
+        throw new Error('Invalid response format');
+      }
+      setWorkflows(data.workflows);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
     }
+
+    return () => abortController.abort();
   }, [workspaceId, options?.status, options?.triggerType]);
 
   useEffect(() => {
-    fetchWorkflows();
+    const cleanup = fetchWorkflows();
+    return () => {
+      cleanup?.then((abort) => abort?.());
+    };
   }, [fetchWorkflows]);
 
   const filteredWorkflows = useMemo(() => {
@@ -175,10 +183,14 @@ return;
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create workflow');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to create workflow');
         }
 
         const data = await response.json();
+        if (!data.workflow) {
+          throw new Error('Invalid response format');
+        }
         // API returns { workflow, message }
         setWorkflows((prev) => [data.workflow, ...prev]);
         return data.workflow;
@@ -271,34 +283,45 @@ export function useWorkflow(workspaceId: string, workflowId: string): UseWorkflo
 return;
 }
 
+    const abortController = new AbortController();
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`, {
+        signal: abortController.signal,
+      });
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Workflow not found');
         }
-        throw new Error('Failed to fetch workflow');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch workflow');
       }
 
       const data = await response.json();
+      if (!data.workflow) {
+        throw new Error('Invalid response format');
+      }
       // API returns { workflow, executions, statistics }
-      setWorkflow({
-        ...data.workflow,
-        createdAt: data.workflow.createdAt,
-        updatedAt: data.workflow.updatedAt,
-      });
+      setWorkflow(data.workflow);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
     }
+
+    return () => abortController.abort();
   }, [workspaceId, workflowId]);
 
   useEffect(() => {
-    fetchWorkflow();
+    const cleanup = fetchWorkflow();
+    return () => {
+      cleanup?.then((abort) => abort?.());
+    };
   }, [fetchWorkflow]);
 
   const updateWorkflow = useCallback(
@@ -311,10 +334,14 @@ return;
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update workflow');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to update workflow');
         }
 
         const data = await response.json();
+        if (!data.workflow) {
+          throw new Error('Invalid response format');
+        }
         // API returns { workflow, message }
         setWorkflow(data.workflow);
         return data.workflow;
@@ -333,7 +360,8 @@ return;
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete workflow');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete workflow');
       }
 
       // API archives the workflow (soft delete)
@@ -352,10 +380,14 @@ return;
       });
 
       if (!response.ok) {
-        throw new Error('Failed to activate workflow');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to activate workflow');
       }
 
       const data = await response.json();
+      if (!data.workflow) {
+        throw new Error('Invalid response format');
+      }
       // API returns { workflow, message }
       setWorkflow(data.workflow);
       return true;
@@ -372,10 +404,14 @@ return;
       });
 
       if (!response.ok) {
-        throw new Error('Failed to deactivate workflow');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to deactivate workflow');
       }
 
       const data = await response.json();
+      if (!data.workflow) {
+        throw new Error('Invalid response format');
+      }
       // API returns { workflow, message }
       setWorkflow(data.workflow);
       return true;
@@ -395,10 +431,14 @@ return;
         });
 
         if (!response.ok) {
-          throw new Error('Failed to execute workflow');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to execute workflow');
         }
 
         const data = await response.json();
+        if (!data.execution) {
+          throw new Error('Invalid response format');
+        }
         // API returns { execution }
         return data.execution;
       } catch (err) {
@@ -507,6 +547,7 @@ export function useWorkflowExecutions(
 return;
 }
 
+      const abortController = new AbortController();
       setIsLoading(true);
       setError(null);
 
@@ -522,18 +563,18 @@ params.set('status', options.status);
         params.set('offset', String(currentOffset));
 
         const url = `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions?${params.toString()}`;
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: abortController.signal });
         if (!response.ok) {
-          throw new Error('Failed to fetch executions');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to fetch executions');
         }
 
         const data = await response.json();
+        if (!data.executions || !Array.isArray(data.executions)) {
+          throw new Error('Invalid response format');
+        }
         // API returns { executions, total }
-        const newExecutions = data.executions.map((e: WorkflowExecution) => ({
-          ...e,
-          startedAt: e.startedAt,
-          completedAt: e.completedAt,
-        }));
+        const newExecutions = data.executions;
 
         if (loadMore) {
           setExecutions((prev) => [...prev, ...newExecutions]);
@@ -545,10 +586,15 @@ params.set('status', options.status);
 
         setHasMore((loadMore ? offset + newExecutions.length : newExecutions.length) < data.total);
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setIsLoading(false);
       }
+
+      return () => abortController.abort();
     },
     [workspaceId, workflowId, options?.status, options?.limit, offset],
   );
@@ -574,7 +620,8 @@ params.set('status', options.status);
         );
 
         if (!response.ok) {
-          throw new Error('Failed to cancel execution');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to cancel execution');
         }
 
         setExecutions((prev) =>
@@ -665,6 +712,7 @@ export function useWorkflowTemplates(
       return;
     }
 
+    const abortController = new AbortController();
     setIsLoading(true);
     setError(null);
 
@@ -675,22 +723,34 @@ export function useWorkflowTemplates(
       }
 
       const url = `/api/workspaces/${workspaceId}/workflows/templates?${params.toString()}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: abortController.signal });
       if (!response.ok) {
-        throw new Error('Failed to fetch templates');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch templates');
       }
 
       const data = await response.json();
-      setTemplates(data.templates || []);
+      if (!data.templates || !Array.isArray(data.templates)) {
+        throw new Error('Invalid response format');
+      }
+      setTemplates(data.templates);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
     }
+
+    return () => abortController.abort();
   }, [workspaceId, category]);
 
   useEffect(() => {
-    fetchTemplates();
+    const cleanup = fetchTemplates();
+    return () => {
+      cleanup?.then((abort) => abort?.());
+    };
   }, [fetchTemplates]);
 
   const createFromTemplate = useCallback(
@@ -710,10 +770,15 @@ export function useWorkflowTemplates(
         );
 
         if (!response.ok) {
-          throw new Error('Failed to create workflow from template');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to create workflow from template');
         }
 
-        return await response.json();
+        const data = await response.json();
+        if (!data.workflow) {
+          throw new Error('Invalid response format');
+        }
+        return data.workflow;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
@@ -773,18 +838,18 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     case 'SET_TRIGGER':
       return { ...state, trigger: action.payload };
     case 'ADD_ACTION': {
-      const newAction: ActionConfig = {
+      const newAction = {
         ...action.payload,
-        id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `action_${Date.now()}_${crypto.randomUUID().slice(0, 8)}` as ActionId,
         order: state.actions.length,
-      };
+      } as ActionConfig;
       return { ...state, actions: [...state.actions, newAction] };
     }
     case 'UPDATE_ACTION':
       return {
         ...state,
         actions: state.actions.map((a) =>
-          a.id === action.payload.id ? { ...a, ...action.payload.config } : a,
+          a.id === action.payload.id ? ({ ...a, ...action.payload.config } as ActionConfig) : a,
         ),
       };
     case 'REMOVE_ACTION':
@@ -808,8 +873,8 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     case 'RESET':
       return {
         trigger: action.payload?.trigger ?? null,
-        actions: action.payload?.actions ?? [],
-        variables: action.payload?.variables ?? [],
+        actions: action.payload?.actions ? [...action.payload.actions] : [],
+        variables: action.payload?.variables ? [...action.payload.variables] : [],
         errors: {},
       };
     default:
@@ -897,8 +962,8 @@ export function useWorkflowBuilder(
 ): UseWorkflowBuilderReturn {
   const [state, dispatch] = useReducer(builderReducer, {
     trigger: initialWorkflow?.trigger ?? null,
-    actions: initialWorkflow?.actions ?? [],
-    variables: initialWorkflow?.variables ?? [],
+    actions: initialWorkflow?.actions ? [...initialWorkflow.actions] : [],
+    variables: initialWorkflow?.variables ? [...initialWorkflow.variables] : [],
     errors: {},
   });
 

@@ -15,6 +15,7 @@ import crypto from 'crypto';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
+import { sendPasswordResetEmail } from '@/lib/email';
 import {
   AUTH_ERROR_CODES,
   createAuthErrorResponse,
@@ -132,26 +133,50 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
       }
 
-      // TODO: Send email with reset link
-      // For now, we'll just log the reset token (DEVELOPMENT ONLY!)
-      // In production, this should use an email service like SendGrid, AWS SES, or Resend
-      const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+      // Send password reset email
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+      const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
-      // eslint-disable-next-line no-console
-      console.log('[DEVELOPMENT] Password reset requested for:', user.email);
-      // eslint-disable-next-line no-console
-      console.log('[DEVELOPMENT] Reset URL:', resetUrl);
-      // eslint-disable-next-line no-console
-      console.log('[DEVELOPMENT] Token expires at:', expiresAt.toISOString());
+      try {
+        // Attempt to send the password reset email
+        const emailResult = await sendPasswordResetEmail(user.email, resetUrl);
 
-      // In a real implementation, send email here:
-      /*
-      await sendPasswordResetEmail({
-        to: user.email,
-        resetUrl,
-        userName: user.name || user.email,
-      });
-      */
+        if (!emailResult.success) {
+          // Log the error for debugging, but don't expose to client
+          console.error(
+            '[POST /api/auth/forgot-password] Failed to send password reset email:',
+            {
+              email: user.email,
+              error: emailResult.error,
+              timestamp: new Date().toISOString(),
+            },
+          );
+        }
+
+        // SECURITY: Only log reset details in development
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
+          console.log('[DEVELOPMENT] Password reset requested for:', user.email);
+          // eslint-disable-next-line no-console
+          console.log('[DEVELOPMENT] Reset URL:', resetUrl);
+          // eslint-disable-next-line no-console
+          console.log('[DEVELOPMENT] Token expires at:', expiresAt.toISOString());
+          // eslint-disable-next-line no-console
+          console.log('[DEVELOPMENT] Email sent:', emailResult.success);
+        }
+      } catch (emailError) {
+        // Catch any unexpected errors during email sending
+        // Log for debugging but don't expose to client for security
+        console.error(
+          '[POST /api/auth/forgot-password] Unexpected error sending password reset email:',
+          {
+            email: user.email,
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+            timestamp: new Date().toISOString(),
+          },
+        );
+        // Continue execution - we still return success to prevent email enumeration
+      }
     }
 
     // Always return success for security (don't reveal if email exists)
@@ -163,7 +188,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 200 },
     );
   } catch (error) {
-    console.error('[POST /api/auth/forgot-password] Error:', error);
+    // Only log detailed error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[POST /api/auth/forgot-password] Error:', error);
+    } else {
+      console.error('[POST /api/auth/forgot-password] Password reset request error');
+    }
 
     return NextResponse.json(
       createAuthErrorResponse('An internal error occurred', AUTH_ERROR_CODES.INTERNAL_ERROR),

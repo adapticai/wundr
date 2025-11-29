@@ -1,8 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 export default function NotificationsSettingsPage() {
+  const { toast } = useToast();
   const [settings, setSettings] = useState({
     // Email notifications
     emailNotifications: true,
@@ -28,18 +41,62 @@ export default function NotificationsSettingsPage() {
     quietHoursEnd: '08:00',
   });
 
-  const handleToggle = (key: keyof typeof settings) => {
+  const handleToggle = async (key: keyof typeof settings) => {
+    const newValue = typeof settings[key] === 'boolean' ? !settings[key] : settings[key];
+
     setSettings((prev) => ({
       ...prev,
-      [key]: typeof prev[key] === 'boolean' ? !prev[key] : prev[key],
+      [key]: newValue,
     }));
+
+    try {
+      const response = await fetch('/api/user/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: newValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update notification setting');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update setting',
+        variant: 'destructive',
+      });
+
+      // Revert on error
+      setSettings((prev) => ({
+        ...prev,
+        [key]: !newValue,
+      }));
+    }
   };
 
-  const handleSelectChange = (key: keyof typeof settings, value: string) => {
+  const handleSelectChange = async (key: keyof typeof settings, value: string) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
     }));
+
+    try {
+      const response = await fetch('/api/user/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update notification setting');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update setting',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -52,255 +109,235 @@ export default function NotificationsSettingsPage() {
       </div>
 
       {/* Email Notifications */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Email Notifications</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Control what email notifications you receive.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Email notifications</span>
-              <p className="text-xs text-muted-foreground">Receive email notifications</p>
-            </div>
-            <input
-              type="checkbox"
-              checked={settings.emailNotifications}
-              onChange={() => handleToggle('emailNotifications')}
-              className="h-5 w-5 accent-primary"
-            />
-          </label>
-
+      <Card>
+        <CardHeader>
+          <CardTitle>Email Notifications</CardTitle>
+          <CardDescription>
+            Control what email notifications you receive.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium">Email digest</span>
-              <p className="text-xs text-muted-foreground">Receive a summary of activity</p>
+            <div className="space-y-0.5">
+              <Label htmlFor="email-notifications">Email notifications</Label>
+              <p className="text-sm text-muted-foreground">Receive email notifications</p>
             </div>
-            <select
-              value={settings.emailDigest}
-              onChange={(e) => handleSelectChange('emailDigest', e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
-            >
-              <option value="none">Never</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-            </select>
+            <Switch
+              id="email-notifications"
+              checked={settings.emailNotifications}
+              onCheckedChange={() => handleToggle('emailNotifications')}
+            />
           </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Mentions</span>
-              <p className="text-xs text-muted-foreground">When someone mentions you</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="email-digest">Email digest</Label>
+              <p className="text-sm text-muted-foreground">Receive a summary of activity</p>
             </div>
-            <input
-              type="checkbox"
+            <Select
+              value={settings.emailDigest}
+              onValueChange={(value) => handleSelectChange('emailDigest', value)}
+            >
+              <SelectTrigger id="email-digest" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Never</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="email-mentions">Mentions</Label>
+              <p className="text-sm text-muted-foreground">When someone mentions you</p>
+            </div>
+            <Switch
+              id="email-mentions"
               checked={settings.emailMentions}
-              onChange={() => handleToggle('emailMentions')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('emailMentions')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Orchestrator updates</span>
-              <p className="text-xs text-muted-foreground">Updates from your Orchestrators</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="email-vp-updates">Orchestrator updates</Label>
+              <p className="text-sm text-muted-foreground">Updates from your Orchestrators</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="email-vp-updates"
               checked={settings.emailVPUpdates}
-              onChange={() => handleToggle('emailVPUpdates')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('emailVPUpdates')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Workflow alerts</span>
-              <p className="text-xs text-muted-foreground">Notifications about workflow executions</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="email-workflow-alerts">Workflow alerts</Label>
+              <p className="text-sm text-muted-foreground">Notifications about workflow executions</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="email-workflow-alerts"
               checked={settings.emailWorkflowAlerts}
-              onChange={() => handleToggle('emailWorkflowAlerts')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('emailWorkflowAlerts')}
             />
-          </label>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Push Notifications */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Push Notifications</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Configure browser and mobile push notifications.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Push notifications</span>
-              <p className="text-xs text-muted-foreground">Enable push notifications</p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Push Notifications</CardTitle>
+          <CardDescription>
+            Configure browser and mobile push notifications.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="push-notifications">Push notifications</Label>
+              <p className="text-sm text-muted-foreground">Enable push notifications</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="push-notifications"
               checked={settings.pushNotifications}
-              onChange={() => handleToggle('pushNotifications')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('pushNotifications')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Mentions</span>
-              <p className="text-xs text-muted-foreground">When someone mentions you</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="push-mentions">Mentions</Label>
+              <p className="text-sm text-muted-foreground">When someone mentions you</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="push-mentions"
               checked={settings.pushMentions}
-              onChange={() => handleToggle('pushMentions')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('pushMentions')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Direct messages</span>
-              <p className="text-xs text-muted-foreground">When you receive a direct message</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="push-dm">Direct messages</Label>
+              <p className="text-sm text-muted-foreground">When you receive a direct message</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="push-dm"
               checked={settings.pushDirectMessages}
-              onChange={() => handleToggle('pushDirectMessages')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('pushDirectMessages')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Workflow alerts</span>
-              <p className="text-xs text-muted-foreground">Critical workflow notifications</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="push-workflow-alerts">Workflow alerts</Label>
+              <p className="text-sm text-muted-foreground">Critical workflow notifications</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="push-workflow-alerts"
               checked={settings.pushWorkflowAlerts}
-              onChange={() => handleToggle('pushWorkflowAlerts')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('pushWorkflowAlerts')}
             />
-          </label>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* In-App Notifications */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">In-App Notifications</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Configure notifications within the Neolith interface.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">In-app notifications</span>
-              <p className="text-xs text-muted-foreground">Show notifications in the app</p>
+      <Card>
+        <CardHeader>
+          <CardTitle>In-App Notifications</CardTitle>
+          <CardDescription>
+            Configure notifications within the Neolith interface.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="in-app-notifications">In-app notifications</Label>
+              <p className="text-sm text-muted-foreground">Show notifications in the app</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="in-app-notifications"
               checked={settings.inAppNotifications}
-              onChange={() => handleToggle('inAppNotifications')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('inAppNotifications')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Notification sounds</span>
-              <p className="text-xs text-muted-foreground">Play sounds for notifications</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="in-app-sounds">Notification sounds</Label>
+              <p className="text-sm text-muted-foreground">Play sounds for notifications</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="in-app-sounds"
               checked={settings.inAppSounds}
-              onChange={() => handleToggle('inAppSounds')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('inAppSounds')}
             />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Desktop alerts</span>
-              <p className="text-xs text-muted-foreground">Show desktop notification alerts</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="in-app-desktop-alerts">Desktop alerts</Label>
+              <p className="text-sm text-muted-foreground">Show desktop notification alerts</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="in-app-desktop-alerts"
               checked={settings.inAppDesktopAlerts}
-              onChange={() => handleToggle('inAppDesktopAlerts')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('inAppDesktopAlerts')}
             />
-          </label>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quiet Hours */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold">Quiet Hours</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Set times when you don&apos;t want to be disturbed.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <span className="text-sm font-medium">Enable quiet hours</span>
-              <p className="text-xs text-muted-foreground">Pause notifications during set times</p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Quiet Hours</CardTitle>
+          <CardDescription>
+            Set times when you don&apos;t want to be disturbed.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="quiet-hours">Enable quiet hours</Label>
+              <p className="text-sm text-muted-foreground">Pause notifications during set times</p>
             </div>
-            <input
-              type="checkbox"
+            <Switch
+              id="quiet-hours"
               checked={settings.quietHoursEnabled}
-              onChange={() => handleToggle('quietHoursEnabled')}
-              className="h-5 w-5 accent-primary"
+              onCheckedChange={() => handleToggle('quietHoursEnabled')}
             />
-          </label>
+          </div>
 
           {settings.quietHoursEnabled && (
-            <div className="flex items-center gap-4">
-              <div>
-                <label htmlFor="quietStart" className="block text-xs text-muted-foreground mb-1">
-                  Start time
-                </label>
-                <input
+            <div className="flex items-center gap-4 pt-2">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="quiet-start">Start time</Label>
+                <Input
                   type="time"
-                  id="quietStart"
+                  id="quiet-start"
                   value={settings.quietHoursStart}
                   onChange={(e) => handleSelectChange('quietHoursStart', e.target.value)}
-                  className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
                 />
               </div>
-              <div>
-                <label htmlFor="quietEnd" className="block text-xs text-muted-foreground mb-1">
-                  End time
-                </label>
-                <input
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="quiet-end">End time</Label>
+                <Input
                   type="time"
-                  id="quietEnd"
+                  id="quiet-end"
                   value={settings.quietHoursEnd}
                   onChange={(e) => handleSelectChange('quietHoursEnd', e.target.value)}
-                  className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
                 />
               </div>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <button
-          type="button"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 active:scale-95 transition-colors"
-        >
-          Save Changes
-        </button>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -39,9 +39,9 @@ const NOTIFICATION_TYPE_LABELS: Record<NotificationType, { label: string; descri
     label: 'Missed Calls',
     description: 'Notifications about missed calls',
   },
-  vp_update: {
+  orchestrator_update: {
     label: 'Orchestrator Updates',
-    description: 'Updates from your Virtual Professionals',
+    description: 'Updates from your Orchestrators',
   },
   system: {
     label: 'System Notifications',

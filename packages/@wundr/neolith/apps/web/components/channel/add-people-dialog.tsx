@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { X, Bot, Mail, ArrowLeft, ChevronRight } from 'lucide-react';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
+import { ArrowLeft, Bot, ChevronRight, Mail, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Recipient {
   id: string;
@@ -243,13 +242,8 @@ export function AddPeopleDialog({
                     key={recipient.id}
                     className="flex items-center gap-1.5 rounded-full bg-accent px-2 py-1 text-sm"
                   >
-                    {recipient.type === 'user' && recipient.image ? (
-                      <Avatar className="h-4 w-4">
-                        <AvatarImage src={recipient.image} alt={recipient.name} />
-                        <AvatarFallback className="text-[10px]">
-                          {recipient.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                    {recipient.type === 'user' ? (
+                      <UserAvatar user={recipient} size="xs" />
                     ) : recipient.type === 'orchestrator' ? (
                       <Bot className="h-3 w-3" />
                     ) : (
@@ -325,10 +319,7 @@ export function AddPeopleDialog({
                               </div>
                             ) : (
                               <>
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={result.image || undefined} alt={result.name} />
-                                  <AvatarFallback>{result.name.charAt(0).toUpperCase()}</AvatarFallback>
-                                </Avatar>
+                                <UserAvatar user={result} size="md" shape="rounded" />
                                 {result.status && (
                                   <span
                                     className={cn(
@@ -408,12 +399,7 @@ export function AddPeopleDialog({
                           <Mail className="h-3 w-3 text-blue-500" />
                         </div>
                       ) : (
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={recipient.image || undefined} alt={recipient.name} />
-                          <AvatarFallback className="text-xs">
-                            {recipient.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar user={recipient} size="sm" />
                       )}
                       <span className="text-sm font-medium">{recipient.name}</span>
                     </div>

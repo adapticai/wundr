@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useMembers, useInvites, useRoles } from '@/hooks/use-admin';
@@ -318,21 +318,7 @@ function MemberRow({ member, onEdit, onSuspend, onRemove }: MemberRowProps) {
     <tr className="hover:bg-muted/50">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone/10">
-            {member.image ? (
-              <Image
-                src={member.image}
-                alt={member.name || 'Member'}
-                width={40}
-                height={40}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-sm font-medium text-stone">
-                {member.name?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            )}
-          </div>
+          <UserAvatar user={member} size="lg" />
           <div>
             <p className="font-medium text-foreground">{member.name || 'Unknown'}</p>
             <p className="text-sm text-muted-foreground">{member.email}</p>
@@ -630,21 +616,7 @@ function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberMod
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-stone/10">
-            {member.image ? (
-              <Image
-                src={member.image}
-                alt={member.name || 'Member'}
-                width={48}
-                height={48}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-lg font-medium text-stone">
-                {member.name?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            )}
-          </div>
+          <UserAvatar user={member} size="xl" />
           <div>
             <p className="font-medium text-foreground">{member.name}</p>
             <p className="text-sm text-muted-foreground">{member.email}</p>

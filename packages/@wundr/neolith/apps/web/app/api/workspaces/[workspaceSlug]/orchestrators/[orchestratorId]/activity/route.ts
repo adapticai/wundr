@@ -281,15 +281,15 @@ export async function GET(
     if (channelId || taskId) {
       items = items.filter((activity) => {
         const metadata = activity.metadata as Record<string, unknown> | null;
-        if (!metadata) {
-return false;
-}
+        if (!metadata || typeof metadata !== 'object') {
+          return false;
+        }
         if (channelId && metadata.channelId !== channelId) {
-return false;
-}
+          return false;
+        }
         if (taskId && metadata.taskId !== taskId) {
-return false;
-}
+          return false;
+        }
         return true;
       });
     }

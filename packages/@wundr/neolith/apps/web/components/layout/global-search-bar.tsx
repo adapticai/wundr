@@ -28,7 +28,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 /**
  * Props for the GlobalSearchBar component
@@ -617,7 +617,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                           <Avatar className="mr-2 h-5 w-5">
                             <AvatarImage src={result.image || undefined} />
                             <AvatarFallback className="text-[10px]">
-                              {result.name.charAt(0).toUpperCase()}
+                              {getInitials(result.name)}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -654,7 +654,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                           <Avatar className="mr-2 h-5 w-5">
                             <AvatarImage src={result.image || undefined} />
                             <AvatarFallback className="text-[10px]">
-                              {result.name.charAt(0).toUpperCase()}
+                              {getInitials(result.name)}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -875,7 +875,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                           <Avatar className="mr-2 h-5 w-5">
                             <AvatarImage src={item.image} />
                             <AvatarFallback className="text-[10px]">
-                              {item.name.charAt(0).toUpperCase()}
+                              {getInitials(item.name)}
                             </AvatarFallback>
                           </Avatar>
                         ) : (

@@ -30,7 +30,7 @@ export function OrchestratorConfigForm({
   const [selectedTraits, setSelectedTraits] = useState<PersonalityTrait[]>(
     (orchestrator.charter?.personality?.traits as PersonalityTrait[]) || [],
   );
-  const [expertise, setExpertise] = useState<string[]>(orchestrator.charter?.expertise || []);
+  const [expertise, setExpertise] = useState<string[]>([...(orchestrator.charter?.expertise || [])]);
   const [newExpertise, setNewExpertise] = useState('');
   const [communicationTone, setCommunicationTone] = useState<'formal' | 'casual' | 'professional' | 'friendly'>(
     orchestrator.charter?.communicationPreferences?.tone || 'professional',
@@ -102,7 +102,7 @@ export function OrchestratorConfigForm({
   const handleReset = useCallback(() => {
     setSystemPrompt(orchestrator.systemPrompt || '');
     setSelectedTraits((orchestrator.charter?.personality?.traits as PersonalityTrait[]) || []);
-    setExpertise(orchestrator.charter?.expertise || []);
+    setExpertise([...(orchestrator.charter?.expertise || [])]);
     setCommunicationTone(orchestrator.charter?.communicationPreferences?.tone || 'professional');
     setResponseLength(orchestrator.charter?.communicationPreferences?.responseLength || 'balanced');
     setUseEmoji(orchestrator.charter?.communicationPreferences?.useEmoji || false);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   DEFAULT_MAX_FILE_SIZE,
@@ -106,9 +106,11 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
   const [isPaused, setIsPaused] = useState(false);
   const uploadQueueRef = useRef<Map<string, AbortController>>(new Map());
 
-  const isUploading = uploads.some((u) => u.status === 'uploading');
-  const progress =
-    uploads.length > 0 ? uploads.reduce((acc, u) => acc + u.progress, 0) / uploads.length : 0;
+  const isUploading = useMemo(() => uploads.some((u) => u.status === 'uploading'), [uploads]);
+  const progress = useMemo(
+    () => (uploads.length > 0 ? uploads.reduce((acc, u) => acc + u.progress, 0) / uploads.length : 0),
+    [uploads],
+  );
 
   /**
    * Validate file against constraints
@@ -189,7 +191,16 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
                 resolve('');
               }
             } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`));
+              let errorMessage = `Upload failed with status ${xhr.status}`;
+              try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                if (errorResponse.error || errorResponse.message) {
+                  errorMessage = errorResponse.error || errorResponse.message;
+                }
+              } catch {
+                // Use default error message
+              }
+              reject(new Error(errorMessage));
             }
           };
 
@@ -313,33 +324,34 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    * Retry failed uploads
    */
   const retryFailed = useCallback(() => {
-    const failedUploads = uploads.filter((u) => u.status === 'error');
-    failedUploads.forEach((uploadState) => {
-      setUploads((prev) =>
-        prev.map((u) =>
-          u.id === uploadState.id ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
-        ),
+    setUploads((prev) => {
+      const failedUploads = prev.filter((u) => u.status === 'error');
+      failedUploads.forEach((uploadState) => {
+        uploadFile(uploadState);
+      });
+      return prev.map((u) =>
+        u.status === 'error' ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
       );
-      uploadFile(uploadState);
     });
-  }, [uploads, uploadFile]);
+  }, [uploadFile]);
 
   /**
    * Retry a specific failed upload
    */
   const retry = useCallback(
     (fileId: string) => {
-      const uploadState = uploads.find((u) => u.id === fileId);
-      if (uploadState && uploadState.status === 'error') {
-        setUploads((prev) =>
-          prev.map((u) =>
+      setUploads((prev) => {
+        const uploadState = prev.find((u) => u.id === fileId);
+        if (uploadState && uploadState.status === 'error') {
+          uploadFile(uploadState);
+          return prev.map((u) =>
             u.id === fileId ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
-          ),
-        );
-        uploadFile(uploadState);
-      }
+          );
+        }
+        return prev;
+      });
     },
-    [uploads, uploadFile],
+    [uploadFile],
   );
 
   /**
@@ -382,12 +394,15 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    */
   const resumeAll = useCallback(() => {
     setIsPaused(false);
-    uploads
-      .filter((u) => u.status === 'pending')
-      .forEach((uploadState) => {
-        uploadFile(uploadState);
-      });
-  }, [uploads, uploadFile]);
+    setUploads((prev) => {
+      prev
+        .filter((u) => u.status === 'pending')
+        .forEach((uploadState) => {
+          uploadFile(uploadState);
+        });
+      return prev;
+    });
+  }, [uploadFile]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -422,9 +437,18 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
 export function useSignedUpload(channelId: string): UseSignedUploadReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const getUploadUrl = useCallback(
     async (filename: string, contentType: string): Promise<SignedUrl> => {
+      // Abort any pending request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
       setIsLoading(true);
       setError(null);
 
@@ -439,6 +463,7 @@ export function useSignedUpload(channelId: string): UseSignedUploadReturn {
             filename,
             contentType,
           }),
+          signal: abortController.signal,
         });
 
         if (!response.ok) {
@@ -452,15 +477,30 @@ export function useSignedUpload(channelId: string): UseSignedUploadReturn {
           expiresAt: new Date(data.expiresAt),
         };
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          throw err;
+        }
         const errorMessage = err instanceof Error ? err.message : 'Failed to get upload URL';
         setError(errorMessage);
         throw err;
       } finally {
+        if (abortControllerRef.current === abortController) {
+          abortControllerRef.current = null;
+        }
         setIsLoading(false);
       }
     },
     [channelId],
   );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     getUploadUrl,
@@ -478,13 +518,24 @@ export function useChannelFiles(channelId: string): UseChannelFilesReturn {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isLoadingRef = useRef(false);
 
   const fetchFiles = useCallback(
     async (reset = false) => {
-      if (isLoading || (!hasMore && !reset)) {
-return;
-}
+      if (isLoadingRef.current || (!hasMore && !reset)) {
+        return;
+      }
 
+      // Abort any pending request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      isLoadingRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -498,7 +549,9 @@ return;
           params.append('cursor', cursor);
         }
 
-        const response = await fetch(`/api/files?${params}`);
+        const response = await fetch(`/api/files?${params}`, {
+          signal: abortController.signal,
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch files');
@@ -515,13 +568,20 @@ return;
         setHasMore(data.hasMore);
         setCursor(data.nextCursor);
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch files';
         setError(errorMessage);
       } finally {
+        if (abortControllerRef.current === abortController) {
+          abortControllerRef.current = null;
+        }
+        isLoadingRef.current = false;
         setIsLoading(false);
       }
     },
-    [channelId, cursor, hasMore, isLoading],
+    [channelId, cursor, hasMore],
   );
 
   const loadMore = useCallback(() => {
@@ -540,7 +600,17 @@ return;
     setHasMore(true);
     setFiles([]);
     fetchFiles(true);
-  }, [channelId]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channelId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     files,

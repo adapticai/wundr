@@ -37,8 +37,11 @@ interface RouteContext {
  * Helper to check workspace access by slug
  */
 async function checkWorkspaceAccess(workspaceSlug: string, userId: string) {
+  // Support both workspace ID and slug for lookup
   const workspace = await prisma.workspace.findFirst({
-    where: { slug: workspaceSlug },
+    where: {
+      OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+    },
   });
 
   if (!workspace) {

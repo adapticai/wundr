@@ -80,11 +80,13 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
   const [usage, setUsage] = useState<BillingUsage | null>(null);
   const [history, setHistory] = useState<BillingHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showPlanComparison, setShowPlanComparison] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const fetchBillingData = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [planRes, usageRes, historyRes] = await Promise.all([
         fetch(`/api/workspaces/${workspaceId}/admin/billing/plan`),
@@ -92,20 +94,22 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
         fetch(`/api/workspaces/${workspaceId}/admin/billing/history`),
       ]);
 
-      if (planRes.ok) {
-        const data = await planRes.json();
-        setCurrentPlan(data.plan || AVAILABLE_PLANS[0]);
+      if (!planRes.ok || !usageRes.ok || !historyRes.ok) {
+        throw new Error('Failed to fetch billing data');
       }
-      if (usageRes.ok) {
-        const data = await usageRes.json();
-        setUsage(data);
-      }
-      if (historyRes.ok) {
-        const data = await historyRes.json();
-        setHistory(data.invoices || []);
-      }
-    } catch {
-      // Handle error
+
+      const [planData, usageData, historyData] = await Promise.all([
+        planRes.json(),
+        usageRes.json(),
+        historyRes.json(),
+      ]);
+
+      setCurrentPlan(planData.plan || AVAILABLE_PLANS[0]);
+      setUsage(usageData);
+      setHistory(historyData.invoices || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load billing data');
+      console.error('Failed to fetch billing data:', err);
     } finally {
       setIsLoading(false);
     }
@@ -117,22 +121,28 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
 
   const handleUpgrade = async (planId: string) => {
     setIsUpgrading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/workspaces/${workspaceId}/admin/billing/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId }),
       });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
-        } else {
-          fetchBillingData();
-        }
+
+      if (!response.ok) {
+        throw new Error('Failed to upgrade plan');
       }
-    } catch {
-      // Handle error
+
+      const data = await response.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        fetchBillingData();
+        setShowPlanComparison(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upgrade plan');
+      console.error('Failed to upgrade plan:', err);
     } finally {
       setIsUpgrading(false);
     }
@@ -148,7 +158,25 @@ return `${Math.round(gb * 1024)} MB`;
   if (isLoading) {
     return (
       <div className={cn('flex items-center justify-center py-12', className)}>
-        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" role="status" aria-label="Loading billing data" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn('space-y-4', className)}>
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-destructive font-medium">Error loading billing data</p>
+          <p className="text-sm text-destructive/80 mt-1">{error}</p>
+          <button
+            onClick={() => fetchBillingData()}
+            className="mt-3 px-4 py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg text-sm font-medium"
+            type="button"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }

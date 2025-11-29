@@ -16,7 +16,7 @@ import type { Message, User } from '@/types/chat';
  */
 interface MessageListProps {
   /** Array of messages to display */
-  messages: Message[];
+  messages: readonly Message[];
   /** The current authenticated user */
   currentUser: User;
   /** Whether the initial load is in progress */
@@ -123,7 +123,15 @@ return;
 
   // Scroll to bottom
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    bottomRef.current?.scrollIntoView({ behavior });
+    try {
+      bottomRef.current?.scrollIntoView({ behavior });
+    } catch (error) {
+      // Fallback for browsers that don't support smooth scrolling
+      console.warn('Scroll to bottom failed, using fallback:', error);
+      if (containerRef.current) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+      }
+    }
   }, []);
 
   // Auto-scroll on new messages and restore scroll position after loading more

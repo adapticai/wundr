@@ -138,7 +138,6 @@ export default function NewOrchestratorPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Create New Orchestrator</h1>
           <p className="text-sm text-muted-foreground">
             {viewMode === 'conversation'
               ? 'Chat with AI to define your orchestrator'
@@ -196,8 +195,8 @@ export default function NewOrchestratorPage() {
 
 function extractDiscipline(spec: EntitySpec): string {
   // Try to extract from properties or role
-  if (spec.properties?.discipline) {
-    return spec.properties.discipline as string;
+  if (spec.properties?.discipline && typeof spec.properties.discipline === 'string') {
+    return spec.properties.discipline;
   }
 
   // Default disciplines based on role keywords
@@ -225,15 +224,23 @@ function extractDiscipline(spec: EntitySpec): string {
 }
 
 function extractValues(spec: EntitySpec): string[] {
-  if (spec.properties?.values && Array.isArray(spec.properties.values)) {
-    return spec.properties.values as string[];
+  if (
+    spec.properties?.values &&
+    Array.isArray(spec.properties.values) &&
+    spec.properties.values.every((item): item is string => typeof item === 'string')
+  ) {
+    return spec.properties.values;
   }
   return ['Collaboration', 'Excellence', 'Innovation'];
 }
 
 function extractTraits(spec: EntitySpec): string[] {
-  if (spec.properties?.traits && Array.isArray(spec.properties.traits)) {
-    return spec.properties.traits as string[];
+  if (
+    spec.properties?.traits &&
+    Array.isArray(spec.properties.traits) &&
+    spec.properties.traits.every((item): item is string => typeof item === 'string')
+  ) {
+    return spec.properties.traits;
   }
 
   // Extract from charter or role
@@ -268,8 +275,8 @@ function extractTraits(spec: EntitySpec): string[] {
 }
 
 function extractCommunicationStyle(spec: EntitySpec): string {
-  if (spec.properties?.communicationStyle) {
-    return spec.properties.communicationStyle as string;
+  if (spec.properties?.communicationStyle && typeof spec.properties.communicationStyle === 'string') {
+    return spec.properties.communicationStyle;
   }
 
   const role = (spec.role || '').toLowerCase();
@@ -287,8 +294,8 @@ function extractCommunicationStyle(spec: EntitySpec): string {
 }
 
 function extractDecisionMakingStyle(spec: EntitySpec): string {
-  if (spec.properties?.decisionMakingStyle) {
-    return spec.properties.decisionMakingStyle as string;
+  if (spec.properties?.decisionMakingStyle && typeof spec.properties.decisionMakingStyle === 'string') {
+    return spec.properties.decisionMakingStyle;
   }
 
   const role = (spec.role || '').toLowerCase();
@@ -303,8 +310,12 @@ function extractDecisionMakingStyle(spec: EntitySpec): string {
 }
 
 function extractExpertise(spec: EntitySpec): string[] {
-  if (spec.properties?.expertise && Array.isArray(spec.properties.expertise)) {
-    return spec.properties.expertise as string[];
+  if (
+    spec.properties?.expertise &&
+    Array.isArray(spec.properties.expertise) &&
+    spec.properties.expertise.every((item): item is string => typeof item === 'string')
+  ) {
+    return spec.properties.expertise;
   }
 
   const role = (spec.role || '').toLowerCase();
@@ -341,8 +352,12 @@ function extractExpertise(spec: EntitySpec): string[] {
 }
 
 function extractCapabilities(spec: EntitySpec): string[] {
-  if (spec.properties?.capabilities && Array.isArray(spec.properties.capabilities)) {
-    return spec.properties.capabilities as string[];
+  if (
+    spec.properties?.capabilities &&
+    Array.isArray(spec.properties.capabilities) &&
+    spec.properties.capabilities.every((item): item is string => typeof item === 'string')
+  ) {
+    return spec.properties.capabilities;
   }
 
   // Default capabilities for orchestrators

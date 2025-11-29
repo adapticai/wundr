@@ -420,8 +420,8 @@ export async function POST(
       requiredOrchestratorIds.map((orchestratorId) => {
         const orchestrator = orchestrators.find((v) => v.id === orchestratorId);
         if (!orchestrator) {
-return Promise.resolve();
-}
+          return Promise.resolve();
+        }
 
         return prisma.notification.create({
           data: {

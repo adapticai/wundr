@@ -125,8 +125,8 @@ export function RoleEditor({
 
   const handleSave = async () => {
     if (!validate()) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -145,11 +145,16 @@ return;
         }),
       });
 
-      if (response.ok) {
-        onSave();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save role');
       }
-    } catch {
-      // Handle error
+
+      onSave();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save role';
+      setErrors({ ...errors, save: errorMessage });
+      console.error('Failed to save role:', err);
     } finally {
       setIsSaving(false);
     }
@@ -198,6 +203,12 @@ grouped[resource] = [];
 
         {/* Content */}
         <div className="p-4 max-h-[70vh] overflow-auto">
+          {errors.save && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-sm text-destructive">{errors.save}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left column - Basic info */}
             <div className="space-y-4">
@@ -216,9 +227,11 @@ grouped[resource] = [];
                     role?.isSystem && 'opacity-50 cursor-not-allowed',
                   )}
                   placeholder="e.g., Team Lead"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? 'name-error' : undefined}
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-destructive">{errors.name}</p>
+                  <p id="name-error" className="mt-1 text-sm text-destructive">{errors.name}</p>
                 )}
               </div>
 

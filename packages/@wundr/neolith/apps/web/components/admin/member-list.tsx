@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import { MemberTableSkeleton } from '@/components/skeletons';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
 
 export interface WorkspaceMember {
@@ -297,19 +298,7 @@ return `${diffDays}d ago`;
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-
-                          {member.image ? (
-                            <img
-                              src={member.image}
-                              alt={member.name}
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          ) : (
-                            member.name.charAt(0).toUpperCase()
-                          )}
-                        </div>
+                        <UserAvatar user={member} size="lg" />
                         {member.status === 'active' && (
                           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
                         )}

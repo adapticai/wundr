@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
 
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { useMembers, useInvites, useRoles } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
@@ -246,21 +246,7 @@ function MemberCard({ member }: MemberCardProps) {
       <div className="flex flex-col items-center text-center">
         {/* Avatar */}
         <div className="relative mb-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-stone/10">
-            {member.image ? (
-              <Image
-                src={member.image}
-                alt={member.name || 'Member'}
-                width={64}
-                height={64}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-xl font-medium text-stone">
-                {member.name?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            )}
-          </div>
+          <UserAvatar user={member} size="2xl" />
           {/* Status Indicator */}
           {member.status === 'active' && (
             <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-card bg-green-500" />

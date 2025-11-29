@@ -191,12 +191,13 @@ export type { AdminAction, AdminActionType } from '@/lib/validations/admin';
 // =============================================================================
 
 /**
- * Generic fetcher function for SWR
+ * Generic fetcher function for SWR with proper error handling
  */
 const fetcher = async <T>(url: string): Promise<T> => {
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error('Failed to fetch');
+    const errorData = await res.json().catch(() => ({ message: 'Failed to fetch' }));
+    throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
   }
   return res.json() as Promise<T>;
 };
@@ -276,12 +277,11 @@ export function useMembers(
   const [page, setPage] = useState(1);
   const limit = options.limit ?? 50;
 
-  const queryParams = new URLSearchParams({
-    page: String(page),
-    limit: String(limit),
-    ...(options.status && { status: options.status }),
-    ...(options.search && { search: options.search }),
-  });
+  const queryParams = new URLSearchParams();
+  queryParams.set('page', String(page));
+  queryParams.set('limit', String(limit));
+  if (options.status) queryParams.set('status', options.status);
+  if (options.search) queryParams.set('search', options.search);
 
   const { data, error, isLoading, mutate } = useSWR<{
     members: Member[];
@@ -291,11 +291,15 @@ export function useMembers(
 
   const updateMember = useCallback(
     async (memberId: string, updates: Partial<Member>) => {
-      await fetch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to update member' }));
+        throw new Error(error.message || 'Failed to update member');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -303,9 +307,13 @@ export function useMembers(
 
   const suspendMember = useCallback(
     async (memberId: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/members/${memberId}/suspend`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members/${memberId}/suspend`, {
         method: 'POST',
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to suspend member' }));
+        throw new Error(error.message || 'Failed to suspend member');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -313,9 +321,13 @@ export function useMembers(
 
   const removeMember = useCallback(
     async (memberId: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
         method: 'DELETE',
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to remove member' }));
+        throw new Error(error.message || 'Failed to remove member');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -394,7 +406,11 @@ export function useRoles(workspaceId: string): UseRolesReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(role),
       });
-      const created = await res.json();
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to create role' }));
+        throw new Error(error.message || 'Failed to create role');
+      }
+      const created = (await res.json()) as Role;
       await mutate();
       return created;
     },
@@ -403,11 +419,15 @@ export function useRoles(workspaceId: string): UseRolesReturn {
 
   const updateRole = useCallback(
     async (roleId: string, updates: Partial<Role>) => {
-      await fetch(`/api/workspaces/${workspaceId}/admin/roles/${roleId}`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/roles/${roleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to update role' }));
+        throw new Error(error.message || 'Failed to update role');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -415,9 +435,13 @@ export function useRoles(workspaceId: string): UseRolesReturn {
 
   const deleteRole = useCallback(
     async (roleId: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/admin/roles/${roleId}`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/roles/${roleId}`, {
         method: 'DELETE',
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to delete role' }));
+        throw new Error(error.message || 'Failed to delete role');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -484,11 +508,15 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
 
   const createInvites = useCallback(
     async (emails: string[], roleId?: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/invites`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emails, roleId }),
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to create invites' }));
+        throw new Error(error.message || 'Failed to create invites');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -496,9 +524,13 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
 
   const revokeInvite = useCallback(
     async (inviteId: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/invites/${inviteId}`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/invites/${inviteId}`, {
         method: 'DELETE',
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to revoke invite' }));
+        throw new Error(error.message || 'Failed to revoke invite');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -506,9 +538,13 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
 
   const resendInvite = useCallback(
     async (inviteId: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/invites/${inviteId}/resend`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/invites/${inviteId}/resend`, {
         method: 'POST',
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to resend invite' }));
+        throw new Error(error.message || 'Failed to resend invite');
+      }
     },
     [workspaceId],
   );
@@ -570,11 +606,15 @@ export function useWorkspaceSettings(workspaceId: string): UseWorkspaceSettingsR
 
   const updateSettings = useCallback(
     async (updates: Partial<WorkspaceSettings>) => {
-      await fetch(`/api/workspaces/${workspaceId}/admin/settings`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/settings`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to update settings' }));
+        throw new Error(error.message || 'Failed to update settings');
+      }
       await mutate();
     },
     [workspaceId, mutate],
@@ -639,26 +679,38 @@ export function useBilling(workspaceId: string): UseBillingReturn {
 
   const updatePlan = useCallback(
     async (plan: BillingInfo['plan']) => {
-      await fetch(`/api/workspaces/${workspaceId}/billing/plan`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/billing/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to update plan' }));
+        throw new Error(error.message || 'Failed to update plan');
+      }
       await mutate();
     },
     [workspaceId, mutate],
   );
 
   const cancelSubscription = useCallback(async () => {
-    await fetch(`/api/workspaces/${workspaceId}/billing/cancel`, {
+    const res = await fetch(`/api/workspaces/${workspaceId}/billing/cancel`, {
       method: 'POST',
     });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Failed to cancel subscription' }));
+      throw new Error(error.message || 'Failed to cancel subscription');
+    }
     await mutate();
   }, [workspaceId, mutate]);
 
   const downloadInvoice = useCallback(
     async (invoiceId: string) => {
       const res = await fetch(`/api/workspaces/${workspaceId}/billing/invoices/${invoiceId}`);
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Failed to download invoice' }));
+        throw new Error(error.message || 'Failed to download invoice');
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -752,12 +804,11 @@ export function useAdminActivity(
   const [allActivities, setAllActivities] = useState<AdminAction[]>([]);
   const limit = options.limit ?? 50;
 
-  const queryParams = new URLSearchParams({
-    offset: String(offset),
-    limit: String(limit),
-    ...(options.type && { action: options.type }),
-    ...(options.actorId && { actorId: options.actorId }),
-  });
+  const queryParams = new URLSearchParams();
+  queryParams.set('offset', String(offset));
+  queryParams.set('limit', String(limit));
+  if (options.type) queryParams.set('action', options.type);
+  if (options.actorId) queryParams.set('actorId', options.actorId);
 
   const { data, error, isLoading, mutate } = useSWR<{
     actions: AdminAction[];
@@ -766,13 +817,9 @@ export function useAdminActivity(
 
   useEffect(() => {
     if (data?.actions) {
-      if (offset === 0) {
-        setAllActivities(data.actions);
-      } else {
-        setAllActivities((prev) => [...prev, ...data.actions]);
-      }
+      setAllActivities((prev) => (offset === 0 ? data.actions : [...prev, ...data.actions]));
     }
-  }, [data, offset]);
+  }, [data?.actions, offset]);
 
   const hasMore = data ? allActivities.length < data.total : false;
 
@@ -783,11 +830,11 @@ export function useAdminActivity(
     hasMore,
     error: error as Error | undefined,
     loadMore: () => setOffset((o) => o + limit),
-    refresh: () => {
+    refresh: useCallback(() => {
       setOffset(0);
       setAllActivities([]);
-      mutate();
-    },
+      void mutate();
+    }, [mutate]),
   };
 }
 

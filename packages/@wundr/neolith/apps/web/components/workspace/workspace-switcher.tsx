@@ -1,9 +1,6 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { ChevronsUpDown, Plus, Building2, AlertCircle } from 'lucide-react';
-
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,34 +17,17 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { useUserWorkspaces } from '@/hooks/use-workspaces';
+import { AlertCircle, Building2, ChevronsUpDown, Plus } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import * as React from 'react';
 
 export interface Workspace {
   id: string;
   name: string;
   slug: string;
-  plan?: string;
   avatarUrl?: string | null;
   settings?: Record<string, unknown> | null;
-}
-
-// Helper to determine workspace plan/tier from settings
-function getWorkspacePlan(workspace: Workspace): string {
-  if (workspace.plan) return workspace.plan;
-  if (workspace.settings && typeof workspace.settings === 'object') {
-    const settings = workspace.settings as { plan?: string };
-    if (settings.plan) return settings.plan;
-  }
-  return 'Free';
-}
-
-// Helper to get plan badge variant
-function getPlanBadgeVariant(plan: string): 'default' | 'secondary' | 'outline' {
-  const normalizedPlan = plan.toLowerCase();
-  if (normalizedPlan === 'enterprise') return 'default';
-  if (normalizedPlan === 'pro') return 'secondary';
-  return 'outline';
 }
 
 // Loading skeleton component
@@ -133,15 +113,24 @@ export function WorkspaceSwitcher() {
     return null;
   }
 
-  const handleWorkspaceChange = (workspace: Workspace) => {
+  const handleWorkspaceChange = async (workspace: Workspace) => {
+    // Update user's current workspace preference in backend
+    try {
+      await fetch('/api/users/me/current-workspace', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceSlug: workspace.slug }),
+      });
+    } catch (error) {
+      // Non-blocking - continue with navigation even if preference update fails
+      console.error('Failed to update current workspace preference:', error);
+    }
     router.push(`/${workspace.slug}/dashboard`);
   };
 
   const handleCreateWorkspace = () => {
     router.push('/workspaces/new');
   };
-
-  const activePlan = getWorkspacePlan(activeWorkspace);
 
   return (
     <SidebarMenu>
@@ -150,23 +139,23 @@ export function WorkspaceSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="border min-w-9 min-h-9 data-[state=open]:border-white data-[state=open]:text-sidebar-accent-foreground hover:bg-none hover:opacity-80"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <div className="flex shrink-0 aspect-square size-9 items-center justify-center rounded-lg bg-card text-sidebar-primary-foreground overflow-hidden">
                 {activeWorkspace.avatarUrl ? (
-                  <span className="text-sm font-bold">
-                    {activeWorkspace.name.charAt(0).toUpperCase()}
-                  </span>
-                ) : (
-                  <Building2 className="size-4" />
-                )}
+                    <Avatar className="size-9 rounded-none">
+                      <AvatarImage src={activeWorkspace.avatarUrl} alt={activeWorkspace.name} />
+                      <AvatarFallback className="text-[10px]">
+                        {activeWorkspace.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    ) : (
+                      <Building2 className="size-4 shrink-0 m-2" />
+                    )} 
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
                   {activeWorkspace.name}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {activePlan}
                 </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -182,32 +171,27 @@ export function WorkspaceSwitcher() {
               Workspaces
             </DropdownMenuLabel>
             {workspaces.map((workspace, index) => {
-              const plan = getWorkspacePlan(workspace);
 
               return (
                 <DropdownMenuItem
                   key={workspace.id}
                   onClick={() => handleWorkspaceChange(workspace)}
-                  className="gap-2 p-2"
+                  className="gap-2"
                 >
-                  <div className="flex size-6 items-center justify-center rounded-sm border">
+                  <div className="flex size-6 items-center justify-center rounded-sm border overflow-hidden">
                     {workspace.avatarUrl ? (
-                      <span className="text-xs font-bold">
+                    <Avatar className="h-6 w-6 rounded-none">
+                      <AvatarImage src={workspace.avatarUrl} alt={workspace.name} />
+                      <AvatarFallback className="text-[10px]">
                         {workspace.name.charAt(0).toUpperCase()}
-                      </span>
+                      </AvatarFallback>
+                    </Avatar>
                     ) : (
-                      <Building2 className="size-4 shrink-0" />
-                    )}
+                      <Building2 className="size-4 shrink-0 m-2" />
+                    )} 
                   </div>
-                  <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-                    <span className="truncate font-medium">{workspace.name}</span>
-                    <Badge
-                      variant={getPlanBadgeVariant(plan)}
-                      className="w-fit text-[10px] px-1.5 py-0"
-                    >
-                      {plan}
-                    </Badge>
-                  </div>
+                                      <div className="font-bold text-sm">{workspace.name}</div>
+
                   {index < 9 && (
                     <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
                   )}

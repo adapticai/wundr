@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 
@@ -139,6 +139,8 @@ return null;
               placeholder="Search by name or email..."
               className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               disabled={isLoading || isSubmitting}
+              aria-label="Search users to invite"
+              autoComplete="off"
             />
             {isSearchingUsers && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -156,7 +158,7 @@ return null;
                   className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-sm text-primary"
                 >
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                    {user.name.charAt(0).toUpperCase()}
+                    {getInitials(user.name)}
                   </span>
                   {user.name}
                   <button
@@ -188,17 +190,17 @@ return null;
                     onClick={() => handleAddUser(user)}
                     className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-medium">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
 
                       {user.image ? (
                         <img
                           src={user.image}
                           alt={user.name}
-                          className="h-full w-full rounded-full object-cover"
+                          className="h-full w-full rounded-lg object-cover"
                         />
                       ) : (
-                        user.name.charAt(0).toUpperCase()
+                        getInitials(user.name || user.email)
                       )}
                     </div>
                     <div>

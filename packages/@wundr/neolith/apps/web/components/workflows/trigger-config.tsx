@@ -3,8 +3,33 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import type { TriggerConfig, TriggerType } from '@/types/workflow';
+import type {
+  TriggerConfig,
+  TriggerType,
+  ScheduleTrigger,
+  MessageTrigger,
+  KeywordTrigger,
+  ChannelJoinTrigger,
+  ReactionTrigger,
+  MentionTrigger,
+  WebhookTrigger,
+} from '@/types/workflow';
 import { TRIGGER_TYPE_CONFIG } from '@/types/workflow';
+
+/**
+ * Default trigger configurations for each trigger type
+ */
+const DEFAULT_TRIGGER_CONFIGS: Record<TriggerType, TriggerConfig> = {
+  schedule: { type: 'schedule', schedule: { cron: '0 9 * * *' } },
+  message: { type: 'message', message: {} },
+  keyword: { type: 'keyword', keyword: { keywords: [], matchType: 'contains' } },
+  channel_join: { type: 'channel_join', channel: {} },
+  channel_leave: { type: 'channel_leave', channel: {} },
+  user_join: { type: 'user_join' },
+  reaction: { type: 'reaction', reaction: {} },
+  mention: { type: 'mention', mention: {} },
+  webhook: { type: 'webhook', webhook: {} },
+};
 
 export interface TriggerConfigPanelProps {
   trigger: TriggerConfig;
@@ -20,7 +45,7 @@ export function TriggerConfigPanel({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const handleTypeChange = (type: TriggerType) => {
-    onChange({ type });
+    onChange(DEFAULT_TRIGGER_CONFIGS[type]);
   };
 
   return (
@@ -143,8 +168,8 @@ export function TriggerConfigPanel({
 
 // Schedule Configuration
 interface ScheduleConfigProps {
-  schedule?: TriggerConfig['schedule'];
-  onChange: (schedule: TriggerConfig['schedule']) => void;
+  schedule?: ScheduleTrigger['schedule'];
+  onChange: (schedule: ScheduleTrigger['schedule']) => void;
 }
 
 function ScheduleConfig({ schedule, onChange }: ScheduleConfigProps) {
@@ -336,8 +361,8 @@ function ScheduleConfig({ schedule, onChange }: ScheduleConfigProps) {
 
 // Message Configuration
 interface MessageConfigProps {
-  message?: TriggerConfig['message'];
-  onChange: (message: TriggerConfig['message']) => void;
+  message?: MessageTrigger['message'];
+  onChange: (message: MessageTrigger['message']) => void;
 }
 
 function MessageConfig({ message, onChange }: MessageConfigProps) {
@@ -390,8 +415,8 @@ function MessageConfig({ message, onChange }: MessageConfigProps) {
 
 // Keyword Configuration
 interface KeywordConfigProps {
-  keyword?: TriggerConfig['keyword'];
-  onChange: (keyword: TriggerConfig['keyword']) => void;
+  keyword?: KeywordTrigger['keyword'];
+  onChange: (keyword: KeywordTrigger['keyword']) => void;
 }
 
 function KeywordConfig({ keyword, onChange }: KeywordConfigProps) {
@@ -484,8 +509,8 @@ function KeywordConfig({ keyword, onChange }: KeywordConfigProps) {
 
 // Channel Configuration
 interface ChannelConfigProps {
-  channel?: TriggerConfig['channel'];
-  onChange: (channel: TriggerConfig['channel']) => void;
+  channel?: ChannelJoinTrigger['channel'];
+  onChange: (channel: ChannelJoinTrigger['channel']) => void;
 }
 
 function ChannelConfig({ channel, onChange }: ChannelConfigProps) {
@@ -518,8 +543,8 @@ function ChannelConfig({ channel, onChange }: ChannelConfigProps) {
 
 // Reaction Configuration
 interface ReactionConfigProps {
-  reaction?: TriggerConfig['reaction'];
-  onChange: (reaction: TriggerConfig['reaction']) => void;
+  reaction?: ReactionTrigger['reaction'];
+  onChange: (reaction: ReactionTrigger['reaction']) => void;
 }
 
 function ReactionConfig({ reaction, onChange }: ReactionConfigProps) {
@@ -569,8 +594,8 @@ function ReactionConfig({ reaction, onChange }: ReactionConfigProps) {
 
 // Mention Configuration
 interface MentionConfigProps {
-  mention?: TriggerConfig['mention'];
-  onChange: (mention: TriggerConfig['mention']) => void;
+  mention?: MentionTrigger['mention'];
+  onChange: (mention: MentionTrigger['mention']) => void;
 }
 
 function MentionConfig({ mention, onChange }: MentionConfigProps) {
@@ -627,8 +652,8 @@ function MentionConfig({ mention, onChange }: MentionConfigProps) {
 
 // Webhook Configuration
 interface WebhookConfigProps {
-  webhook?: TriggerConfig['webhook'];
-  onChange: (webhook: TriggerConfig['webhook']) => void;
+  webhook?: WebhookTrigger['webhook'];
+  onChange: (webhook: WebhookTrigger['webhook']) => void;
 }
 
 function WebhookConfig({ webhook, onChange }: WebhookConfigProps) {

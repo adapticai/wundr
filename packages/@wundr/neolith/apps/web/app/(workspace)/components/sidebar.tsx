@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
 import { ChannelList } from '@/components/channel';
 import { Logo } from '@/components/ui/Logo';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { useChannelMutations, useChannels, useDirectMessages } from '@/hooks/use-channel';
 import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
 import { cn } from '@/lib/utils';
@@ -224,22 +224,17 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
             href={`/${workspaceId}/settings/profile`}
             className="flex items-center gap-3 rounded-lg p-2 hover:bg-stone-900"
           >
-            <div className="relative">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-800 text-sm font-medium text-stone-100 overflow-hidden">
-                {user?.image ? (
-                  <Image
-                    src={user.image}
-                    alt={user.name || 'User'}
-                    width={36}
-                    height={36}
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                ) : (
-                  user?.name?.charAt(0).toUpperCase() || 'U'
-                )}
-              </div>
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-stone-950 bg-green-500" />
-            </div>
+            <UserAvatar
+              user={{
+                name: user?.name,
+                image: user?.image,
+                status: 'online',
+              }}
+              size="lg"
+              shape="rounded"
+              showStatus
+              fallbackClassName="bg-stone-800 text-stone-100"
+            />
             <div className="flex-1 min-w-0">
               <p className="truncate text-sm font-medium text-stone-100">
                 {user?.name || 'User'}

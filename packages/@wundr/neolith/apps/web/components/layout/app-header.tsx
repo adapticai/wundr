@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { NotificationCenter } from '@/components/notifications/notification-center';
 import { useNotifications } from '@/hooks/use-notifications';
 import { ThemeToggle } from './theme-toggle';
+import { getInitials } from '@/lib/utils';
 
 import type { Notification } from '@/types/notification';
 
@@ -113,7 +114,7 @@ export function AppHeader({ user, compact = false }: AppHeaderProps) {
             aria-expanded={isMenuOpen}
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+              {getInitials(user?.name)}
             </div>
             <ChevronDownIcon />
           </button>

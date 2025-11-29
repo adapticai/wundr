@@ -125,8 +125,11 @@ export async function GET(
     }
 
     // Extract aiConfig from settings, apply defaults if not set
-    const settings = workspace.settings as { aiConfig?: Partial<AIConfig> } | null;
-    const aiConfig = aiConfigSchema.parse(settings?.aiConfig || {});
+    const settings = workspace.settings as Record<string, unknown> | null;
+    const rawAiConfig = settings && typeof settings === 'object' && 'aiConfig' in settings
+      ? settings.aiConfig
+      : {};
+    const aiConfig = aiConfigSchema.parse(rawAiConfig);
 
     const response: AIConfigResponse = {
       id: workspace.id,
@@ -224,8 +227,11 @@ export async function PATCH(
     }
 
     // Merge with existing config
-    const currentSettings = workspace.settings as { aiConfig?: Partial<AIConfig> } | null;
-    const currentConfig = currentSettings?.aiConfig || {};
+    const currentSettings = workspace.settings as Record<string, unknown> | null;
+    const currentConfig =
+      currentSettings && typeof currentSettings === 'object' && 'aiConfig' in currentSettings
+        ? (currentSettings.aiConfig as Partial<AIConfig>)
+        : {};
     const mergedConfig = { ...currentConfig, ...validatedConfig };
 
     // Update workspace settings
@@ -247,8 +253,12 @@ export async function PATCH(
     });
 
     // Parse final config with defaults
-    const finalSettings = updatedWorkspace.settings as { aiConfig?: Partial<AIConfig> } | null;
-    const finalConfig = aiConfigSchema.parse(finalSettings?.aiConfig || {});
+    const finalSettings = updatedWorkspace.settings as Record<string, unknown> | null;
+    const rawFinalConfig =
+      finalSettings && typeof finalSettings === 'object' && 'aiConfig' in finalSettings
+        ? finalSettings.aiConfig
+        : {};
+    const finalConfig = aiConfigSchema.parse(rawFinalConfig);
 
     const response: AIConfigResponse = {
       id: updatedWorkspace.id,

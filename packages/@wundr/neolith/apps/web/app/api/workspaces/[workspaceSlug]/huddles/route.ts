@@ -58,9 +58,11 @@ export async function GET(
 
     const { workspaceSlug } = await context.params;
 
-    // Lookup workspace by slug
+    // Lookup workspace by ID or slug
     const workspace = await prisma.workspace.findFirst({
-      where: { slug: workspaceSlug },
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
       select: { id: true },
     });
 
@@ -130,9 +132,11 @@ export async function POST(
 
     const { workspaceSlug } = await context.params;
 
-    // Lookup workspace by slug
+    // Lookup workspace by ID or slug
     const workspace = await prisma.workspace.findFirst({
-      where: { slug: workspaceSlug },
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
       select: { id: true },
     });
 

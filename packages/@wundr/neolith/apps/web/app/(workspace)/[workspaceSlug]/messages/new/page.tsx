@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
 /**
@@ -581,7 +581,7 @@ function RecipientChip({
         <Avatar className="h-4 w-4">
           <AvatarImage src={recipient.image} alt={recipient.name} />
           <AvatarFallback className="text-[10px]">
-            {recipient.name.charAt(0).toUpperCase()}
+            {getInitials(recipient.name)}
           </AvatarFallback>
         </Avatar>
       ) : recipient.type === 'orchestrator' ? (
@@ -637,7 +637,7 @@ function SearchResultItem({
             {result.participants?.slice(0, 2).map((p, i) => (
               <Avatar key={p.id} className="h-7 w-7 border-2 border-popover" style={{ zIndex: 2 - i }}>
                 <AvatarImage src={p.image || undefined} alt={p.name} />
-                <AvatarFallback className="text-[10px]">{p.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-[10px]">{getInitials(p.name)}</AvatarFallback>
               </Avatar>
             ))}
             {(result.participantCount || 0) > 2 && (
@@ -664,7 +664,7 @@ function SearchResultItem({
           <div className="relative">
             <Avatar className="h-9 w-9">
               <AvatarImage src={result.image || undefined} alt={result.name} />
-              <AvatarFallback>{result.name.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{getInitials(result.name)}</AvatarFallback>
             </Avatar>
             {result.status && (
               <span
@@ -721,7 +721,7 @@ function SingleRecipientCard({
       {/* Large avatar */}
       <Avatar className="h-32 w-32 mb-4">
         <AvatarImage src={recipient.image || undefined} alt={recipient.name} />
-        <AvatarFallback className="text-4xl">{recipient.name.charAt(0).toUpperCase()}</AvatarFallback>
+        <AvatarFallback className="text-4xl">{getInitials(recipient.name)}</AvatarFallback>
       </Avatar>
 
       {/* Name and status */}
@@ -783,7 +783,7 @@ function MultiRecipientIntro({
         {recipients.slice(0, 4).map((recipient) => (
           <Avatar key={recipient.id} className="h-16 w-16">
             <AvatarImage src={recipient.image || undefined} alt={recipient.name} />
-            <AvatarFallback className="text-xl">{recipient.name.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="text-xl">{getInitials(recipient.name)}</AvatarFallback>
           </Avatar>
         ))}
         {recipients.length > 4 && (

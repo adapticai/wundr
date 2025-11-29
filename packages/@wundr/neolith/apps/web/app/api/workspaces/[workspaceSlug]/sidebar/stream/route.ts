@@ -201,9 +201,11 @@ export async function GET(
       return createSSEErrorResponse('Workspace slug is required', ORG_ERROR_CODES.VALIDATION_ERROR, 400);
     }
 
-    // Get workspace
+    // Get workspace - support both ID and slug for lookup
     const workspace = await prisma.workspace.findFirst({
-      where: { slug: workspaceSlug },
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
     });
 
     if (!workspace) {

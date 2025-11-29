@@ -25,8 +25,8 @@ import type { WorkflowExecution, ActionConfig } from '@/types/workflow';
 export default function WorkflowDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const workspaceId = params?.workspaceSlug as string;
-  const workflowId = params?.workflowId as string;
+  const workspaceId = (params?.workspaceSlug ?? '') as string;
+  const workflowId = (params?.workflowId ?? '') as string;
   const { setPageHeader } = usePageHeader();
 
   // State
@@ -130,14 +130,15 @@ export default function WorkflowDetailPage() {
           <Link
             href={`/${workspaceId}/workflows`}
             className="rounded-md p-2 hover:bg-accent"
+            aria-label="Back to workflows list"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <h1 className="text-2xl font-bold">Workflow Not Found</h1>
         </div>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20" role="alert">
           <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
-            <AlertCircle className="h-5 w-5" />
+            <AlertCircle className="h-5 w-5" aria-hidden="true" />
             <p className="font-medium">
               {workflowError?.message || 'Workflow not found'}
             </p>
@@ -188,11 +189,12 @@ export default function WorkflowDetailPage() {
             onClick={handleExecute}
             disabled={isExecuting || workflow.status === 'archived' || workflow.status === 'inactive'}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            aria-label={isExecuting ? 'Executing workflow' : 'Execute workflow now'}
           >
             {isExecuting ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
+              <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              <Play className="h-4 w-4" />
+              <Play className="h-4 w-4" aria-hidden="true" />
             )}
             {isExecuting ? 'Executing...' : 'Execute'}
           </button>
@@ -200,15 +202,16 @@ export default function WorkflowDetailPage() {
             type="button"
             onClick={handleToggleStatus}
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+            aria-label={workflow.status === 'active' ? 'Deactivate workflow' : 'Activate workflow'}
           >
             {workflow.status === 'active' ? (
               <>
-                <Pause className="h-4 w-4" />
+                <Pause className="h-4 w-4" aria-hidden="true" />
                 Deactivate
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4" aria-hidden="true" />
                 Activate
               </>
             )}
@@ -217,16 +220,18 @@ export default function WorkflowDetailPage() {
             type="button"
             onClick={handleEdit}
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+            aria-label="Edit workflow"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-4 w-4" aria-hidden="true" />
             Edit
           </button>
           <button
             type="button"
             onClick={() => setShowDeleteModal(true)}
             className="inline-flex items-center gap-2 rounded-md border border-red-200 bg-background px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+            aria-label="Delete workflow"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
             Delete
           </button>
         </div>

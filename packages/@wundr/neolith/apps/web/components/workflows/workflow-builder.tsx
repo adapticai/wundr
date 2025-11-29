@@ -69,7 +69,8 @@ export function WorkflowBuilder({
   }, [workflow, reset]);
 
   // Get available variables from trigger
-  const availableVariables = getAvailableVariables(trigger || { type: 'message' }, actions);
+  const defaultTrigger: TriggerConfig = { type: 'message', message: {} };
+  const availableVariables = getAvailableVariables(trigger || defaultTrigger, actions);
 
   const handleAddAction = useCallback(() => {
     const defaultType = 'send_message';
@@ -265,7 +266,7 @@ export function WorkflowBuilder({
                 </button>
               </div>
               <TriggerConfigPanel
-                trigger={trigger || { type: 'message' }}
+                trigger={trigger || defaultTrigger}
                 onChange={setTrigger}
               />
             </div>
@@ -367,7 +368,7 @@ export function WorkflowBuilder({
           <WorkflowPreview
             name={name}
             description={description}
-            trigger={trigger || { type: 'message' }}
+            trigger={trigger || defaultTrigger}
             actions={actions}
           />
         </div>
@@ -377,7 +378,7 @@ export function WorkflowBuilder({
         <div className="flex-1 overflow-auto p-6">
           <WorkflowTestMode
             name={name}
-            trigger={trigger || { type: 'message' }}
+            trigger={trigger || defaultTrigger}
             actions={actions}
           />
         </div>
@@ -432,7 +433,7 @@ function ActionItem({
         <span className="font-medium text-foreground">
           {action.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
         </span>
-        {action.config.message && (
+        {'message' in action.config && typeof action.config.message === 'string' && (
           <span className="mt-0.5 truncate text-sm text-muted-foreground max-w-full">
             {action.config.message.substring(0, 50)}
             {action.config.message.length > 50 && '...'}
@@ -518,7 +519,7 @@ function WorkflowPreview({ name, description, trigger, actions }: WorkflowPrevie
                 <p className="font-medium text-foreground">
                   {action.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </p>
-                {action.config.message && (
+                {'message' in action.config && typeof action.config.message === 'string' && (
                   <p className="text-sm text-muted-foreground">
                     {action.config.message.substring(0, 100)}
                     {action.config.message.length > 100 && '...'}

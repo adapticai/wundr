@@ -69,19 +69,19 @@ export function WorkflowPreview({
                     <p className="font-medium text-foreground">
                       {actionConfig?.label || action.type.replace(/_/g, ' ')}
                     </p>
-                    {action.config.message && (
+                    {'message' in action.config && action.config.message && (
                       <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                        {action.config.message}
+                        {String(action.config.message)}
                       </p>
                     )}
-                    {action.config.channelId && (
+                    {'channelId' in action.config && action.config.channelId && (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Channel: {action.config.channelId}
+                        Channel: {String(action.config.channelId)}
                       </p>
                     )}
-                    {action.config.url && (
+                    {'url' in action.config && action.config.url && (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        URL: {action.config.url}
+                        URL: {String(action.config.url)}
                       </p>
                     )}
                     {action.errorHandling && (

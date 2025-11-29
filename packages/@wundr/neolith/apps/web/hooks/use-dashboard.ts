@@ -317,6 +317,8 @@ export function useDashboardStats(
       }
       setError(null);
 
+      const abortController = new AbortController();
+
       try {
         const params = new URLSearchParams({
           timeRange,
@@ -326,6 +328,7 @@ export function useDashboardStats(
 
         const response = await fetch(
           `/api/workspaces/${workspaceId}/dashboard/stats?${params.toString()}`,
+          { signal: abortController.signal },
         );
 
         if (!response.ok) {
@@ -346,6 +349,10 @@ export function useDashboardStats(
         setStats(result.data);
         setMetadata(result.metadata);
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          // Fetch was aborted, don't update error state
+          return;
+        }
         const error = err instanceof Error ? err : new Error('Unknown error');
         setError(error);
         setStats(null);
@@ -360,7 +367,19 @@ export function useDashboardStats(
 
   // Initial fetch and refetch on dependencies change
   useEffect(() => {
-    fetchStats();
+    let cancelled = false;
+
+    const runFetch = async () => {
+      if (!cancelled) {
+        await fetchStats();
+      }
+    };
+
+    runFetch();
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchStats]);
 
   // Set up auto-refresh interval if provided
@@ -476,6 +495,8 @@ export function useDashboardActivity(
       }
       setError(null);
 
+      const abortController = new AbortController();
+
       try {
         const params = new URLSearchParams({
           limit: String(limit),
@@ -500,6 +521,7 @@ export function useDashboardActivity(
 
         const response = await fetch(
           `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`,
+          { signal: abortController.signal },
         );
 
         if (!response.ok) {
@@ -524,6 +546,10 @@ export function useDashboardActivity(
         setPagination(result.pagination);
         setWorkspace(result.workspace);
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          // Fetch was aborted, don't update error state
+          return;
+        }
         const error = err instanceof Error ? err : new Error('Unknown error');
         setError(error);
         if (!append) {
@@ -542,7 +568,19 @@ export function useDashboardActivity(
 
   // Initial fetch and refetch on dependencies change
   useEffect(() => {
-    fetchActivity();
+    let cancelled = false;
+
+    const runFetch = async () => {
+      if (!cancelled) {
+        await fetchActivity();
+      }
+    };
+
+    runFetch();
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchActivity]);
 
   // Set up auto-refresh interval if provided

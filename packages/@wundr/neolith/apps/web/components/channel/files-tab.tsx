@@ -48,6 +48,7 @@ interface FilesTabProps {
 export function FilesTab({ channelId, className }: FilesTabProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FileTypeFilter>('all');
   const [hasMore, setHasMore] = useState(false);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
     if (!channelId) return;
 
     setIsLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       params.set('limit', '20');
@@ -84,6 +86,10 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
       setCursor(result.pagination?.nextCursor || null);
     } catch (error) {
       console.error('Failed to fetch files:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load files');
+      if (!loadMore) {
+        setFiles([]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -125,6 +131,21 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
     { key: 'audio', label: 'Audio' },
     { key: 'archive', label: 'Archives' },
   ];
+
+  if (error && !isLoading) {
+    return (
+      <div className={cn('flex flex-1 flex-col items-center justify-center p-8', className)}>
+        <div className="mb-8 rounded-full bg-destructive/10 p-6">
+          <FileText className="h-12 w-12 text-destructive" />
+        </div>
+        <h2 className="mb-2 text-xl font-semibold">Failed to load files</h2>
+        <p className="max-w-md text-center text-muted-foreground mb-4">{error}</p>
+        <Button onClick={() => fetchFiles()} variant="outline">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
   if (!isLoading && files.length === 0) {
     return (

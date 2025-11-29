@@ -1,9 +1,9 @@
 /**
  * Analytics Loading State
- * @module app/(workspace)/[workspaceId]/analytics/loading
+ * @module app/(workspace)/[workspaceSlug]/analytics/loading
  */
 import { AnalyticsSkeleton } from '@/components/skeletons';
 
-export default function AnalyticsLoading() {
+export default function AnalyticsLoading(): JSX.Element {
   return <AnalyticsSkeleton />;
 }

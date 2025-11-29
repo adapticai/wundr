@@ -156,13 +156,13 @@ async function main(): Promise<void> {
     where: {
       organizationId_slug: {
         organizationId: organization.id,
-        slug: 'main-workspace'
+        slug: 'adaptic-ai'
       }
     },
     update: {},
     create: {
-      name: 'Main Workspace',
-      slug: 'main-workspace',
+      name: 'Adaptic AI',
+      slug: 'adaptic-ai',
       description: 'Primary workspace for Adaptic AI team',
       visibility: 'PRIVATE',
       organizationId: organization.id,

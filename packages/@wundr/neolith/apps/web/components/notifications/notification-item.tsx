@@ -157,11 +157,11 @@ return;
                 <img
                   src={notification.actor.image}
                   alt={notification.actor.name}
-                  className="h-4 w-4 rounded-full object-cover"
+                  className="h-4 w-4 rounded-sm object-cover"
                 />
               ) : (
-                <div className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-medium text-primary-foreground">
-                  {notification.actor.name.charAt(0).toUpperCase()}
+                <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[8px] font-medium text-primary-foreground">
+                  {notification.actor.name?.charAt(0)?.toUpperCase() || '?'}
                 </div>
               )}
               <span className="text-xs text-muted-foreground">
@@ -261,7 +261,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
           <PhoneIcon className="h-4 w-4" />
         </div>
       );
-    case 'vp_update':
+    case 'orchestrator_update':
       return (
         <div className={cn(iconClasses, 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400')}>
           <BotIcon className="h-4 w-4" />

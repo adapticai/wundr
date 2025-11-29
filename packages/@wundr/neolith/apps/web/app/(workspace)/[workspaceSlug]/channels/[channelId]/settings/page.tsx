@@ -8,7 +8,7 @@ import { InviteDialog } from '@/components/channel/invite-dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import { useChannel, useChannelMembers, useChannelMutations, useChannelPermissions } from '@/hooks/use-channel';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { ChannelMember } from '@/types/channel';
 
@@ -625,17 +625,17 @@ function MemberRow({
 
   return (
     <div className="relative flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent/50">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium overflow-hidden">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium overflow-hidden">
         {member.user.image ? (
           <Image
             src={member.user.image}
             alt={member.user.name}
             width={40}
             height={40}
-            className="h-full w-full rounded-full object-cover"
+            className="h-full w-full rounded-lg object-cover"
           />
         ) : (
-          member.user.name.charAt(0).toUpperCase()
+          getInitials(member.user.name || member.user.email)
         )}
       </div>
       <div className="flex-1 min-w-0">

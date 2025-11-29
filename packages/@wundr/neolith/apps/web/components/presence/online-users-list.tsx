@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
 
 import { PresenceIndicator, statusLabels } from './presence-indicator';
@@ -217,19 +218,7 @@ function UserListItem({
       >
         {/* Avatar with presence indicator */}
         <div className="relative flex-shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-
-            {user.image ? (
-              <img
-                src={user.image}
-                alt={user.name}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              getInitials(user.name)
-            )}
-          </div>
+          <UserAvatar user={user} size="md" />
           <PresenceIndicator
             status={user.status}
             size="sm"
@@ -278,15 +267,6 @@ function UserListItem({
       )}
     </div>
   );
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 // Icons

@@ -36,11 +36,15 @@ interface RouteContext {
  * Note: In production, use the official livekit-server-sdk package:
  * import { AccessToken } from 'livekit-server-sdk';
  *
+ * WARNING: This is a simplified implementation for development only.
+ * Replace with the official LiveKit SDK in production.
+ *
  * @param roomName - The LiveKit room name
  * @param identity - Unique identifier for the participant
  * @param name - Display name for the participant
  * @param audioOnly - Whether to restrict to audio only
  * @returns JWT access token for LiveKit
+ * @throws Error if LiveKit credentials are not configured
  */
 async function generateLiveKitToken(
   roomName: string,
@@ -335,7 +339,8 @@ export async function POST(
           left_at = NULL,
           display_name = ${participantName}
       `;
-    } catch {
+    } catch (participantError) {
+      console.error('[POST /api/calls/:callId/join] Participant tracking not available:', participantError);
       // Participant tracking table may not exist
     }
 
@@ -347,23 +352,28 @@ export async function POST(
           SET status = 'active', started_at = ${now}, updated_at = ${now}
           WHERE id = ${params.callId} AND status = 'pending'
         `;
-      } catch {
+      } catch (updateError) {
+        console.error('[POST /api/calls/:callId/join] Error updating call status, trying channel settings:', updateError);
         // Try channel settings
-        const currentSettings = channel.settings as { activeCall?: { status: string } } | null;
-        if (currentSettings?.activeCall?.status === 'pending') {
-          await prisma.channel.update({
-            where: { id: channel.id },
-            data: {
-              settings: {
-                ...currentSettings,
-                activeCall: {
-                  ...currentSettings.activeCall,
-                  status: 'active',
-                  startedAt: now.toISOString(),
+        try {
+          const currentSettings = channel.settings as { activeCall?: { status: string } } | null;
+          if (currentSettings?.activeCall?.status === 'pending') {
+            await prisma.channel.update({
+              where: { id: channel.id },
+              data: {
+                settings: {
+                  ...currentSettings,
+                  activeCall: {
+                    ...currentSettings.activeCall,
+                    status: 'active',
+                    startedAt: now.toISOString(),
+                  },
                 },
               },
-            },
-          });
+            });
+          }
+        } catch (settingsError) {
+          console.error('[POST /api/calls/:callId/join] Error updating channel settings:', settingsError);
         }
       }
     }

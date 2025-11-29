@@ -222,7 +222,8 @@ export async function GET(
       limit: filters.limit,
       totalPages: Math.ceil(totalCount / filters.limit),
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('[GET /api/workspaces/:workspaceId/workflows] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -370,11 +371,11 @@ export async function POST(
       { workflow: enhancedWorkflow, message: 'Workflow created successfully' },
       { status: 201 },
     );
-  } catch (_error) {
+  } catch (error) {
     // Handle Prisma unique constraint errors
     if (
-      _error instanceof Prisma.PrismaClientKnownRequestError &&
-      _error.code === 'P2002'
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
     ) {
       return NextResponse.json(
         createErrorResponse(
@@ -385,6 +386,7 @@ export async function POST(
       );
     }
 
+    console.error('[POST /api/workspaces/:workspaceId/workflows] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

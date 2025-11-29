@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Eye,
   Copy,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import { ChannelListSkeleton } from '@/components/skeletons';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
 import { useWorkspaceUsers } from '@/hooks/use-channel';
 import {
@@ -110,7 +111,6 @@ export function ChannelList({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [messageSearchResults, setMessageSearchResults] = useState<MessageSearchResult[]>([]);
   const [isSearchingMessages, setIsSearchingMessages] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Get workspace users for people search
   const { users: workspaceUsers, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
@@ -316,33 +316,6 @@ export function ChannelList({
 
   return (
     <div className={cn('flex flex-col', className)}>
-      {/* Search */}
-      <div>
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Messages and Channels..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-8 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                searchInputRef.current?.focus();
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className="flex-1 overflow-y-auto">
         {/* Search Results Mode */}
         {isSearchMode ? (
@@ -973,30 +946,20 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
               // Group DM: Stacked avatars (Slack-style)
               <>
                 {/* First avatar (back, slightly offset) */}
-                <div className="absolute left-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium border-2 border-background z-10 overflow-hidden">
-                  {firstParticipant.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={firstParticipant.avatarUrl}
-                      alt={firstParticipant.name}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    firstParticipant.name.charAt(0).toUpperCase()
-                  )}
+                <div className="absolute left-0 top-0 z-10">
+                  <UserAvatar
+                    user={{ name: firstParticipant.name, avatarUrl: firstParticipant.avatarUrl }}
+                    size="xs"
+                    className="border-2 border-background"
+                  />
                 </div>
                 {/* Second avatar (front, overlapping) */}
-                <div className="absolute left-2.5 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium border-2 border-background z-20 overflow-hidden">
-                  {secondParticipant.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={secondParticipant.avatarUrl}
-                      alt={secondParticipant.name}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    secondParticipant.name.charAt(0).toUpperCase()
-                  )}
+                <div className="absolute left-2.5 top-2 z-20">
+                  <UserAvatar
+                    user={{ name: secondParticipant.name, avatarUrl: secondParticipant.avatarUrl }}
+                    size="xs"
+                    className="border-2 border-background"
+                  />
                 </div>
                 {/* Participant count badge - only show if more than 2 others */}
                 {participantCount > 2 && (
@@ -1008,18 +971,10 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
             ) : firstParticipant ? (
               // 1:1 DM: Single avatar
               <>
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium overflow-hidden">
-                  {firstParticipant.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={firstParticipant.avatarUrl}
-                      alt={firstParticipant.name}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    firstParticipant.name.charAt(0).toUpperCase()
-                  )}
-                </div>
+                <UserAvatar
+                  user={{ name: firstParticipant.name, avatarUrl: firstParticipant.avatarUrl }}
+                  size="sm"
+                />
                 {/* Online status indicator */}
                 {firstParticipant.status === 'online' && (
                   <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500" />
@@ -1033,20 +988,10 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
               </>
             ) : selfParticipant ? (
               // Self-DM fallback
-              <>
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium overflow-hidden">
-                  {selfParticipant.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={selfParticipant.avatarUrl}
-                      alt={selfParticipant.name}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    selfParticipant.name.charAt(0).toUpperCase()
-                  )}
-                </div>
-              </>
+              <UserAvatar
+                user={{ name: selfParticipant.name, avatarUrl: selfParticipant.avatarUrl }}
+                size="sm"
+              />
             ) : (
               // Fallback avatar
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
@@ -1163,23 +1108,6 @@ function ChannelTypeIcon({ type, className }: ChannelTypeIconProps) {
   );
 }
 
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
 function ChevronIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -1247,23 +1175,6 @@ function AlertCircleIcon({ className }: { className?: string }) {
   );
 }
 
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
-}
-
 function LoadingSpinner({ className }: { className?: string }) {
   return (
     <svg
@@ -1302,18 +1213,7 @@ function UserSearchItem({ user, onStartDM }: UserSearchItemProps) {
       className="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent"
     >
       <div className="relative shrink-0">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
-          {user.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.image}
-              alt={user.name}
-              className="h-full w-full rounded-full object-cover"
-            />
-          ) : (
-            user.name?.charAt(0).toUpperCase() || '?'
-          )}
-        </div>
+        <UserAvatar user={user} size="sm" />
         {user.status === 'online' && (
           <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500" />
         )}

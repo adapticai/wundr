@@ -120,7 +120,7 @@ export const workflowStepSchema = z.object({
   description: z.string().optional(),
   agentId: z.string().optional(),
   action: z.string().optional(),
-  parameters: z.record(z.any()).optional(),
+  parameters: z.record(z.unknown()).optional(),
   onSuccess: z.string().optional(),
   onFailure: z.string().optional(),
 });

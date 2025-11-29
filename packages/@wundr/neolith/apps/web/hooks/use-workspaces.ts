@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 // =============================================================================
 // Types
@@ -139,11 +140,48 @@ export interface UseUserWorkspacesReturn {
 // =============================================================================
 
 /**
+ * Fetcher function for SWR
+ */
+const userWorkspacesFetcher = async (url: string) => {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to fetch workspaces');
+  }
+
+  const response_data = await response.json();
+  // API returns { data: { workspaces, invites } }, extract the nested data
+  const data = response_data.data || response_data;
+
+  // Transform workspaces with date parsing and ensure proper types
+  const transformedWorkspaces = (data.workspaces || []).map((workspace: Workspace) => ({
+    ...workspace,
+    createdAt: new Date(workspace.createdAt),
+    updatedAt: new Date(workspace.updatedAt),
+    settings: workspace.settings || {},
+    visibility: workspace.visibility || 'PRIVATE',
+  }));
+
+  // Transform invites with date parsing
+  const transformedInvites = (data.invites || []).map((invite: WorkspaceInvite) => ({
+    ...invite,
+    createdAt: new Date(invite.createdAt),
+    expiresAt: invite.expiresAt ? new Date(invite.expiresAt) : null,
+  }));
+
+  return { workspaces: transformedWorkspaces, invites: transformedInvites };
+};
+
+/**
  * Hook for fetching user's workspaces and pending invites
  *
  * Fetches from GET /api/user/workspaces which returns:
  * - workspaces: All workspaces the authenticated user is a member of
  * - invites: All pending workspace invitations
+ *
+ * Uses SWR for automatic revalidation and cache management.
+ * Call `mutate('/api/user/workspaces')` from anywhere to trigger a refetch.
  *
  * @returns Object containing workspaces, invites, loading state, error, and refetch function
  *
@@ -174,64 +212,21 @@ export interface UseUserWorkspacesReturn {
  * ```
  */
 export function useUserWorkspaces(): UseUserWorkspacesReturn {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [invites, setInvites] = useState<WorkspaceInvite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data, error, isLoading, mutate } = useSWR<{
+    workspaces: Workspace[];
+    invites: WorkspaceInvite[];
+  }>('/api/user/workspaces', userWorkspacesFetcher);
 
-  const fetchUserWorkspaces = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/user/workspaces');
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to fetch workspaces');
-      }
-
-      const response_data = await response.json();
-      // API returns { data: { workspaces, invites } }, extract the nested data
-      const data = response_data.data || response_data;
-
-      // Transform workspaces with date parsing and ensure proper types
-      const transformedWorkspaces = (data.workspaces || []).map((workspace: any) => ({
-        ...workspace,
-        createdAt: new Date(workspace.createdAt),
-        updatedAt: new Date(workspace.updatedAt),
-        settings: workspace.settings || {},
-        visibility: workspace.visibility || 'PRIVATE',
-      }));
-
-      // Transform invites with date parsing
-      const transformedInvites = (data.invites || []).map((invite: any) => ({
-        ...invite,
-        createdAt: new Date(invite.createdAt),
-        expiresAt: invite.expiresAt ? new Date(invite.expiresAt) : null,
-      }));
-
-      setWorkspaces(transformedWorkspaces);
-      setInvites(transformedInvites);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      setWorkspaces([]);
-      setInvites([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUserWorkspaces();
-  }, [fetchUserWorkspaces]);
+  const refetch = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
 
   return {
-    workspaces,
-    invites,
+    workspaces: data?.workspaces ?? [],
+    invites: data?.invites ?? [],
     isLoading,
-    error,
-    refetch: fetchUserWorkspaces,
+    error: error as Error | null,
+    refetch,
   };
 }
 
@@ -269,19 +264,39 @@ export function useWorkspace(workspaceId: string | null): UseWorkspaceReturn {
       return;
     }
 
+    const abortController = new AbortController();
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/workspaces/${workspaceId}`);
+      const response = await fetch(`/api/workspaces/${workspaceId}`, {
+        signal: abortController.signal,
+      });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch workspace: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to fetch workspace: ${response.statusText}`);
       }
 
       const result = await response.json();
-      setWorkspace(result.data);
+      const workspaceData = result.data;
+
+      // Transform dates if present
+      if (workspaceData) {
+        setWorkspace({
+          ...workspaceData,
+          createdAt: new Date(workspaceData.createdAt),
+          updatedAt: new Date(workspaceData.updatedAt),
+        });
+      } else {
+        setWorkspace(null);
+      }
     } catch (err) {
+      // Don't set error if request was aborted
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       const error = err instanceof Error ? err : new Error('Failed to fetch workspace');
       setError(error);
       console.error('[useWorkspace] Error:', error);

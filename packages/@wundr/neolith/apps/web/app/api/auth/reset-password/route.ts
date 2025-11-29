@@ -16,6 +16,7 @@ import crypto from 'crypto';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
+import { sendPasswordChangedEmail } from '@/lib/email';
 import {
   AUTH_ERROR_CODES,
   createAuthErrorResponse,
@@ -38,6 +39,26 @@ async function hashPassword(password: string): Promise<string> {
       resolve(`${salt}:${derivedKey.toString('hex')}`);
     });
   });
+}
+
+/**
+ * Extract IP address from request headers
+ */
+function getIpAddress(request: NextRequest): string | undefined {
+  // Check common proxy headers
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    // x-forwarded-for can contain multiple IPs, get the first one
+    return forwardedFor.split(',')[0].trim();
+  }
+
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) {
+    return realIp;
+  }
+
+  // Fallback to other common headers
+  return request.headers.get('cf-connecting-ip') || undefined;
 }
 
 /**
@@ -125,6 +146,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check if token has expired
     const now = Math.floor(Date.now() / 1000);
     if (!account.expiresAt || account.expiresAt < now) {
+      // SECURITY: Invalidate expired token immediately
+      await prisma.account.update({
+        where: { id: account.id },
+        data: {
+          accessToken: null,
+          expiresAt: null,
+        },
+      });
+
       return NextResponse.json(
         createAuthErrorResponse('Reset token has expired', AUTH_ERROR_CODES.EXPIRED_TOKEN),
         { status: 400 },
@@ -144,8 +174,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // eslint-disable-next-line no-console
-    console.log('[POST /api/auth/reset-password] Password reset successfully for user:', account.user.email);
+    // SECURITY: Only log in development, avoid exposing user email in production logs
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('[POST /api/auth/reset-password] Password reset successfully for user:', account.user.email);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('[POST /api/auth/reset-password] Password reset successful');
+    }
+
+    // Send password changed confirmation email (non-blocking)
+    // Don't await to avoid blocking the response
+    const timestamp = new Date();
+    const ipAddress = getIpAddress(request);
+
+    sendPasswordChangedEmail(
+      account.user.email,
+      account.user.name || account.user.email,
+      timestamp,
+      ipAddress,
+    ).catch((error) => {
+      // Log error but don't fail the request
+      console.error('[POST /api/auth/reset-password] Failed to send confirmation email:', {
+        email: account.user.email,
+        error: error.message,
+        timestamp: timestamp.toISOString(),
+        ipAddress,
+      });
+    });
 
     return NextResponse.json(
       {
@@ -154,7 +210,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 200 },
     );
   } catch (error) {
-    console.error('[POST /api/auth/reset-password] Error:', error);
+    // Only log detailed error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[POST /api/auth/reset-password] Error:', error);
+    } else {
+      console.error('[POST /api/auth/reset-password] Password reset error');
+    }
 
     return NextResponse.json(
       createAuthErrorResponse('An internal error occurred', AUTH_ERROR_CODES.INTERNAL_ERROR),

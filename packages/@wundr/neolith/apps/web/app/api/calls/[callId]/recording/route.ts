@@ -33,9 +33,35 @@ interface RouteContext {
 }
 
 /**
+ * Result of call access verification with recording permissions
+ */
+interface CallAccessWithRecording {
+  call: {
+    id: string;
+    channelId: string;
+    status: string;
+    roomName: string;
+    createdById: string;
+  };
+  channel: {
+    id: string;
+    type: string;
+    name: string;
+    workspace: {
+      id: string;
+      organizationId: string;
+    };
+  };
+  canManageRecording: boolean;
+}
+
+/**
  * Helper to get call with access verification
  */
-async function getCallWithAccess(callId: string, userId: string) {
+async function getCallWithAccess(
+  callId: string,
+  userId: string
+): Promise<CallAccessWithRecording | null> {
   let call: {
     id: string;
     channelId: string;
@@ -312,7 +338,8 @@ export async function POST(
           ${now}
         )
       `;
-    } catch {
+    } catch (recordingError) {
+      console.error('[POST /api/calls/:callId/recording] Recording table not available:', recordingError);
       // Table may not exist, store in call metadata
       try {
         await prisma.$executeRaw`
@@ -330,8 +357,9 @@ export async function POST(
           updated_at = ${now}
           WHERE id = ${params.callId}
         `;
-      } catch {
-        // Store in channel settings
+      } catch (metadataError) {
+        console.error('[POST /api/calls/:callId/recording] Error storing in call metadata:', metadataError);
+        // Store in channel settings as last resort
       }
     }
 
@@ -443,7 +471,8 @@ export async function DELETE(
         SET status = 'stopping', updated_at = ${now}
         WHERE id = ${currentRecording.id}
       `;
-    } catch {
+    } catch (updateError) {
+      console.error('[DELETE /api/calls/:callId/recording] Error updating recording status:', updateError);
       // Table may not exist
     }
 

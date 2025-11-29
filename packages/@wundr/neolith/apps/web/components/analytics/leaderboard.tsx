@@ -2,6 +2,7 @@
 
 import { clsx } from 'clsx';
 import Image from 'next/image';
+import { getInitials } from '@/lib/utils';
 
 /**
  * Props for the Leaderboard component.
@@ -107,7 +108,7 @@ export function Leaderboard({
               ) : null}
               {!item.avatarUrl && (
                 <span className="text-primary text-sm font-medium">
-                  {item.name.charAt(0).toUpperCase()}
+                  {getInitials(item.name)}
                 </span>
               )}
             </div>

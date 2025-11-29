@@ -40,7 +40,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 // Types
 interface DMParticipant {
@@ -151,7 +151,7 @@ function StackedAvatars({
                 {participant.isOrchestrator ? (
                   <Bot className="h-3 w-3" />
                 ) : (
-                  participant.name.charAt(0).toUpperCase()
+                  getInitials(participant.name)
                 )}
               </AvatarFallback>
             </Avatar>
@@ -358,7 +358,7 @@ export function DMHeader({
   const isGroupDM = participants.length > 1;
 
   return (
-    <div className={cn('flex flex-col border-b bg-background', className)}>
+    <div className={cn('flex flex-col border-b bg-card/30', className)}>
       {/* Main header row */}
       <div className="flex h-12 items-center justify-between px-4">
         {/* Left section - Star button, Avatars and names */}

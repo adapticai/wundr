@@ -3,7 +3,7 @@
 import { X, UserPlus, Users, Mail, Bot, MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 interface DMUser {
   id: string;
@@ -119,7 +119,7 @@ export function DMDetailsPanel({
                         {member.isOrchestrator ? (
                           <Bot className="h-4 w-4" />
                         ) : (
-                          member.name.charAt(0).toUpperCase()
+                          getInitials(member.name)
                         )}
                       </AvatarFallback>
                     </Avatar>

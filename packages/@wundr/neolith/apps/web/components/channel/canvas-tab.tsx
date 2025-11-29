@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { FileText, Plus, Sparkles, Calendar, List, Table as TableIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 /**
  * Canvas item type
@@ -134,7 +134,7 @@ export function CanvasTab({ channelId: _channelId, className }: CanvasTabProps) 
               )}
               <div className="mt-3 flex items-center gap-2">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
-                  {item.createdBy.name.charAt(0)}
+                  {getInitials(item.createdBy.name)}
                 </div>
                 <span className="text-xs text-muted-foreground">{item.createdBy.name}</span>
               </div>

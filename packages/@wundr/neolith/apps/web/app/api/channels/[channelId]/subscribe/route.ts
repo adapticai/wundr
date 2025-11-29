@@ -145,19 +145,23 @@ function transformMessage(message: {
   _count: {
     replies: number;
   };
-}) {
+}, currentUserId: string) {
   // Group reactions by emoji
-  const reactionMap = new Map<string, { emoji: string; count: number; userIds: string[] }>();
+  const reactionMap = new Map<string, { emoji: string; count: number; userIds: string[]; hasReacted: boolean }>();
   for (const reaction of message.reactions) {
     const existing = reactionMap.get(reaction.emoji);
     if (existing) {
       existing.count++;
       existing.userIds.push(reaction.userId);
+      if (reaction.userId === currentUserId) {
+        existing.hasReacted = true;
+      }
     } else {
       reactionMap.set(reaction.emoji, {
         emoji: reaction.emoji,
         count: 1,
         userIds: [reaction.userId],
+        hasReacted: reaction.userId === currentUserId,
       });
     }
   }
@@ -336,7 +340,7 @@ export async function GET(
                 encoder.encode(
                   formatSSEMessage('new_message', {
                     type: 'new_message',
-                    message: transformMessage(message),
+                    message: transformMessage(message, session.user.id),
                   }),
                 ),
               );
@@ -389,7 +393,7 @@ export async function GET(
                 encoder.encode(
                   formatSSEMessage('message_updated', {
                     type: 'message_updated',
-                    message: transformMessage(message),
+                    message: transformMessage(message, session.user.id),
                   }),
                 ),
               );

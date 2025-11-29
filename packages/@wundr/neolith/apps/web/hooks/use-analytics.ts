@@ -455,14 +455,14 @@ export function useWorkspaceAnalytics(
     try {
       const queryParams = new URLSearchParams();
       if (params.startDate) {
-queryParams.set('startDate', params.startDate);
-}
+        queryParams.set('startDate', params.startDate);
+      }
       if (params.endDate) {
-queryParams.set('endDate', params.endDate);
-}
+        queryParams.set('endDate', params.endDate);
+      }
       if (params.granularity) {
-queryParams.set('granularity', params.granularity);
-}
+        queryParams.set('granularity', params.granularity);
+      }
 
       const queryString = queryParams.toString();
       const url = `/api/workspaces/${workspaceId}/analytics${queryString ? `?${queryString}` : ''}`;
@@ -493,17 +493,17 @@ queryParams.set('granularity', params.granularity);
         const queryParams = new URLSearchParams();
         queryParams.set('format', options.format);
         if (params.startDate) {
-queryParams.set('from', params.startDate);
-}
+          queryParams.set('from', params.startDate);
+        }
         if (params.endDate) {
-queryParams.set('to', params.endDate);
-}
+          queryParams.set('to', params.endDate);
+        }
         if (options.metrics) {
-queryParams.set('metrics', options.metrics.join(','));
-}
+          queryParams.set('metrics', options.metrics.join(','));
+        }
         if (options.stream) {
-queryParams.set('stream', 'true');
-}
+          queryParams.set('stream', 'true');
+        }
 
         const url = `/api/workspaces/${workspaceId}/analytics/export?${queryParams.toString()}`;
         const response = await fetch(url);
@@ -603,13 +603,16 @@ export function useMetrics(workspaceId: string, period: string = 'month'): UseMe
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch metrics');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to fetch metrics: ${response.statusText}`);
       }
 
       const data: UsageMetrics = await response.json();
       setMetrics(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      console.error('[useMetrics] Fetch error:', err);
     } finally {
       setIsLoading(false);
     }

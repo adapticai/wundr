@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { UserAvatar } from '@/components/ui/user-avatar';
 import type { User } from '@/types/chat';
 import { ReactionPickerTrigger } from './reaction-picker';
 
@@ -116,8 +117,14 @@ export function MessageInput({
             (member: User) => member.id !== currentUser.id,
           );
           setMentionUsers(filteredMembers);
+        } else {
+          // Handle non-OK responses gracefully
+          console.warn('Failed to fetch mention suggestions:', response.status);
+          setMentionUsers([]);
         }
-      } catch {
+      } catch (error) {
+        // Handle network errors or JSON parsing failures
+        console.error('Error fetching mention suggestions:', error);
         setMentionUsers([]);
       }
     },
@@ -441,21 +448,12 @@ export function MessageInput({
                   )}
                 >
                   {/* Avatar */}
-                  {user.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="h-7 w-7 rounded-md object-cover"
-                    />
-                  ) : user.isOrchestrator ? (
+                  {user.isOrchestrator ? (
                     <div className="flex h-7 w-7 items-center justify-center rounded-md bg-violet-500 text-white">
                       <OrchestratorIcon className="h-4 w-4" />
                     </div>
                   ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
+                    <UserAvatar user={user} size="md" shape="rounded" />
                   )}
                   {/* Name and username */}
                   <div className="flex-1 min-w-0">
@@ -495,6 +493,9 @@ export function MessageInput({
             placeholder={inputPlaceholder}
             disabled={disabled}
             rows={1}
+            aria-label={inputPlaceholder}
+            aria-invalid={content.length > maxLength}
+            aria-describedby={showCharCount ? 'char-count' : undefined}
             className={cn(
               'max-h-[200px] min-h-[24px] w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
             )}
@@ -570,10 +571,12 @@ export function MessageInput({
           <div className="flex items-center">
             {showCharCount && (
               <span
+                id="char-count"
                 className={cn(
                   'mr-2 text-xs',
                   isNearLimit ? 'text-destructive' : 'text-muted-foreground',
                 )}
+                aria-live="polite"
               >
                 {remainingChars}
               </span>

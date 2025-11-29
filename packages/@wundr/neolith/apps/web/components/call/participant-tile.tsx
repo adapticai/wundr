@@ -9,6 +9,7 @@ import {
 } from '@livekit/components-react';
 import { clsx } from 'clsx';
 import { Track } from 'livekit-client';
+import { getInitials } from '@/lib/utils';
 import { useRef, useCallback, useMemo } from 'react';
 
 import type { TrackReferenceOrPlaceholder } from '@livekit/components-react';
@@ -207,7 +208,7 @@ export function ParticipantTile({
               size === 'small' ? 'w-12 h-12 text-lg' : 'w-20 h-20 text-2xl',
             )}
           >
-            {(participant.name || participant.identity || '?').charAt(0).toUpperCase()}
+            {getInitials(participant.name || participant.identity)}
           </div>
         </div>
       )}

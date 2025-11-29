@@ -89,6 +89,7 @@ export function SecuritySettings({ workspaceId, className }: SecuritySettingsPro
   const [config, setConfig] = useState<SecurityConfig>(DEFAULT_CONFIG);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['password', 'session', 'mfa']),
   );
@@ -97,14 +98,17 @@ export function SecuritySettings({ workspaceId, className }: SecuritySettingsPro
 
   const fetchConfig = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/workspaces/${workspaceId}/admin/security`);
-      if (response.ok) {
-        const data = await response.json();
-        setConfig({ ...DEFAULT_CONFIG, ...data });
+      if (!response.ok) {
+        throw new Error('Failed to fetch security settings');
       }
-    } catch {
-      // Handle error
+      const data = await response.json();
+      setConfig({ ...DEFAULT_CONFIG, ...data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load security settings');
+      console.error('Failed to fetch security settings:', err);
     } finally {
       setIsLoading(false);
     }
@@ -116,14 +120,20 @@ export function SecuritySettings({ workspaceId, className }: SecuritySettingsPro
 
   const saveConfig = async () => {
     setIsSaving(true);
+    setError(null);
     try {
-      await fetch(`/api/workspaces/${workspaceId}/admin/security`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/security`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
       });
-    } catch {
-      // Handle error
+
+      if (!response.ok) {
+        throw new Error('Failed to save security settings');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save security settings');
+      console.error('Failed to save security settings:', err);
     } finally {
       setIsSaving(false);
     }
@@ -190,13 +200,38 @@ export function SecuritySettings({ workspaceId, className }: SecuritySettingsPro
   if (isLoading) {
     return (
       <div className={cn('flex items-center justify-center py-12', className)}>
-        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" role="status" aria-label="Loading security settings" />
+      </div>
+    );
+  }
+
+  if (error && !config) {
+    return (
+      <div className={cn('space-y-4', className)}>
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-destructive font-medium">Error loading security settings</p>
+          <p className="text-sm text-destructive/80 mt-1">{error}</p>
+          <button
+            onClick={() => fetchConfig()}
+            className="mt-3 px-4 py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg text-sm font-medium"
+            type="button"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={cn('space-y-6', className)}>
+      {/* Error Display */}
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
       {/* Password Policy */}
       <Section
         title="Password Policy"

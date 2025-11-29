@@ -11,7 +11,7 @@ import type { Reaction } from '@/types/chat';
  */
 interface ReactionDisplayProps {
   /** Array of reactions to display */
-  reactions: Reaction[];
+  reactions: readonly Reaction[];
   /** Callback fired when toggling a reaction */
   onToggleReaction: (emoji: string) => void;
   /** Additional CSS class names */
@@ -52,23 +52,19 @@ interface ReactionBadgeProps {
 const ReactionBadge = memo(function ReactionBadge({ reaction, onClick }: ReactionBadgeProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const getUserNames = useCallback(() => {
-    if (reaction.users.length === 0) {
+  const getTooltipText = useCallback(() => {
+    const count = reaction.userIds.length;
+    if (count === 0) {
       return '';
     }
-    if (reaction.users.length === 1) {
-      return reaction.users[0].name;
+    if (count === 1) {
+      return reaction.hasReacted ? 'You reacted' : '1 person reacted';
     }
-    if (reaction.users.length === 2) {
-      return `${reaction.users[0].name} and ${reaction.users[1].name}`;
+    if (reaction.hasReacted) {
+      return count === 2 ? 'You and 1 other' : `You and ${count - 1} others`;
     }
-    if (reaction.users.length <= 5) {
-      const names = reaction.users.slice(0, -1).map((u) => u.name).join(', ');
-      return `${names}, and ${reaction.users[reaction.users.length - 1].name}`;
-    }
-    const names = reaction.users.slice(0, 3).map((u) => u.name).join(', ');
-    return `${names}, and ${reaction.users.length - 3} others`;
-  }, [reaction.users]);
+    return `${count} ${count === 1 ? 'person' : 'people'} reacted`;
+  }, [reaction.userIds.length, reaction.hasReacted]);
 
   const handleMouseEnter = useCallback(() => setShowTooltip(true), []);
   const handleMouseLeave = useCallback(() => setShowTooltip(false), []);
@@ -95,12 +91,12 @@ const ReactionBadge = memo(function ReactionBadge({ reaction, onClick }: Reactio
       </button>
 
       {/* Tooltip */}
-      {showTooltip && reaction.users.length > 0 && (
+      {showTooltip && reaction.userIds.length > 0 && (
         <div
           className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-lg ring-1 ring-border"
           role="tooltip"
         >
-          {getUserNames()}
+          {getTooltipText()}
           <div className="absolute left-1/2 top-full -translate-x-1/2">
             <div className="h-0 w-0 border-x-4 border-t-4 border-x-transparent border-t-popover" />
           </div>

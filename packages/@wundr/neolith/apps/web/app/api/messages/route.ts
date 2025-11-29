@@ -229,7 +229,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Upload files and create file records
-    const uploadedFiles = [];
+    type UploadedFile = Awaited<ReturnType<typeof uploadFile>>;
+    const uploadedFiles: UploadedFile[] = [];
+    const uploadErrors: string[] = [];
+
     for (const file of attachmentFiles) {
       if (file && file.size > 0) {
         try {
@@ -237,9 +240,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           uploadedFiles.push(fileRecord);
         } catch (error) {
           console.error('[POST /api/messages] File upload error:', error);
+          uploadErrors.push(file.name);
           // Continue with other files
         }
       }
+    }
+
+    // Log if some files failed to upload
+    if (uploadErrors.length > 0) {
+      console.warn('[POST /api/messages] Failed to upload files:', uploadErrors);
     }
 
     // Create the message with attachments
@@ -314,7 +323,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           userId,
           type: 'MENTION' as const,
           title: 'You were mentioned',
-          body: `${session.user.name || 'Someone'} mentioned you in a message`,
+          body: `${session.user.name ?? 'Someone'} mentioned you in a message`,
           resourceId: message.id,
           resourceType: 'message',
           actionUrl: `/workspace/${membership.channel.workspaceId}/channels/${channelId}`,

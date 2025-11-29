@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 interface DMUser {
   id: string;
@@ -130,7 +130,7 @@ export function ConversationDetailsDialog({
                       {member.isOrchestrator ? (
                         <Bot className="h-4 w-4" />
                       ) : (
-                        member.name.charAt(0).toUpperCase()
+                        getInitials(member.name)
                       )}
                     </AvatarFallback>
                   </Avatar>
@@ -152,7 +152,7 @@ export function ConversationDetailsDialog({
                     {members[0]?.isOrchestrator ? (
                       <Bot className="h-8 w-8" />
                     ) : (
-                      members[0]?.name.charAt(0).toUpperCase()
+                      getInitials(members[0]?.name)
                     )}
                   </AvatarFallback>
                 </Avatar>
@@ -347,7 +347,7 @@ export function ConversationDetailsDialog({
                             {member.isOrchestrator ? (
                               <Bot className="h-4 w-4" />
                             ) : (
-                              member.name.charAt(0).toUpperCase()
+                              getInitials(member.name)
                             )}
                           </AvatarFallback>
                         </Avatar>

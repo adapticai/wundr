@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { DirectMessageChannel } from '@/types/channel';
 import type { User } from '@/types/chat';
@@ -164,6 +164,8 @@ return null;
                 }
                 className="w-full border-0 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none"
                 disabled={isLoading || isSubmitting}
+                aria-label="Search for users to start a conversation"
+                autoComplete="off"
               />
               {isSearchingUsers && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -213,30 +215,30 @@ return null;
 
                       {dm.participants.length === 1 ? (
                         <div className="relative">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
                             {dm.participants[0].user.image ? (
                               <img
                                 src={dm.participants[0].user.image}
                                 alt={dm.participants[0].user.name}
-                                className="h-full w-full rounded-full object-cover"
+                                className="h-full w-full rounded-lg object-cover"
                               />
                             ) : (
-                              dm.participants[0].user.name.charAt(0).toUpperCase()
+                              getInitials(dm.participants[0].user.name)
                             )}
                           </div>
                           {dm.participants[0].isOrchestrator && (
-                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
+                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-md bg-primary text-[8px] font-bold text-primary-foreground">
                               AI
                             </span>
                           )}
                         </div>
                       ) : (
                         <div className="relative h-10 w-10">
-                          <div className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium">
-                            {dm.participants[0]?.user.name.charAt(0).toUpperCase()}
+                          <div className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium">
+                            {getInitials(dm.participants[0]?.user.name)}
                           </div>
-                          <div className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium">
-                            {dm.participants[1]?.user.name.charAt(0).toUpperCase()}
+                          <div className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium">
+                            {getInitials(dm.participants[1]?.user.name)}
                           </div>
                         </div>
                       )}
@@ -305,17 +307,17 @@ function UserItem({ user, isOrchestrator, onSelect }: UserItemProps) {
       className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent"
     >
       <div className="relative">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
           {/* eslint-disable-next-line @next/next/no-img-element */}
 
           {user.image ? (
             <img
               src={user.image}
               alt={user.name}
-              className="h-full w-full rounded-full object-cover"
+              className="h-full w-full rounded-lg object-cover"
             />
           ) : (
-            user.name.charAt(0).toUpperCase()
+            getInitials(user.name)
           )}
         </div>
         <span

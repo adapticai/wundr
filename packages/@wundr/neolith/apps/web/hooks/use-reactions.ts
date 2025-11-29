@@ -146,9 +146,9 @@ export function useReactions(
                 {
                   emoji,
                   count: 1,
-                  users: [],
+                  userIds: [],
                   hasReacted: true,
-                },
+                } as Reaction,
               ];
             }
           });

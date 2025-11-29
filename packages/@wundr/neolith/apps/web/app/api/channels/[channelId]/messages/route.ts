@@ -49,6 +49,36 @@ function extractMentions(content: string): string[] {
 }
 
 /**
+ * Group reactions by emoji and include hasReacted flag for current user
+ */
+function groupReactions(
+  reactions: Array<{ id: string; emoji: string; userId: string; user: { id: string; name: string | null } }>,
+  currentUserId: string,
+): Array<{ emoji: string; count: number; userIds: string[]; hasReacted: boolean }> {
+  const reactionMap = new Map<string, { emoji: string; count: number; userIds: string[]; hasReacted: boolean }>();
+
+  for (const reaction of reactions) {
+    const existing = reactionMap.get(reaction.emoji);
+    if (existing) {
+      existing.count++;
+      existing.userIds.push(reaction.userId);
+      if (reaction.userId === currentUserId) {
+        existing.hasReacted = true;
+      }
+    } else {
+      reactionMap.set(reaction.emoji, {
+        emoji: reaction.emoji,
+        count: 1,
+        userIds: [reaction.userId],
+        hasReacted: reaction.userId === currentUserId,
+      });
+    }
+  }
+
+  return Array.from(reactionMap.values());
+}
+
+/**
  * Helper function to check if user is a member of the channel
  */
 async function checkChannelMembership(channelId: string, userId: string) {
@@ -252,8 +282,14 @@ export async function GET(
       },
     });
 
+    // Transform messages to include grouped reactions with hasReacted flag
+    const transformedMessages = resultMessages.map((message) => ({
+      ...message,
+      reactions: groupReactions(message.reactions, session.user.id),
+    }));
+
     return NextResponse.json({
-      data: resultMessages,
+      data: transformedMessages,
       pagination: {
         hasMore,
         nextCursor,

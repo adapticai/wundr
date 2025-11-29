@@ -3,7 +3,7 @@
  *
  * This page redirects users based on their authentication status:
  * - Unauthenticated users → /login
- * - Authenticated users → their first workspace dashboard
+ * - Authenticated users → their last-visited workspace dashboard (or first workspace)
  *
  * @module app/page
  */
@@ -25,8 +25,29 @@ export default async function HomePage() {
     redirect('/login');
   }
 
-  // User is authenticated - find their workspaces
+  // User is authenticated - check for preferred workspace
   try {
+    // First, get the user's current workspace preference
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { currentWorkspaceSlug: true },
+    });
+
+    // If user has a saved workspace preference, verify they still have access
+    if (user?.currentWorkspaceSlug) {
+      const hasAccess = await prisma.workspaceMember.findFirst({
+        where: {
+          userId: session.user.id,
+          workspace: { slug: user.currentWorkspaceSlug },
+        },
+      });
+
+      if (hasAccess) {
+        redirect(`/${user.currentWorkspaceSlug}/dashboard`);
+      }
+    }
+
+    // Fall back to first workspace user has access to
     const userWorkspaces = await prisma.workspaceMember.findMany({
       where: {
         userId: session.user.id,
@@ -40,16 +61,27 @@ export default async function HomePage() {
       take: 1,
     });
 
-    // If user has a workspace, redirect to it
+    // If user has a workspace, redirect to it and save preference
     if (userWorkspaces.length > 0 && userWorkspaces[0]) {
       const workspaceSlug = userWorkspaces[0].workspace.slug;
+
+      // Save this as their current workspace
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { currentWorkspaceSlug: workspaceSlug },
+      });
+
       redirect(`/${workspaceSlug}/dashboard`);
     }
 
     // No workspace found - redirect to default workspace
     redirect(`/${DEFAULT_WORKSPACE}/dashboard`);
   } catch (error) {
-    // If there's an error fetching workspaces, redirect to default workspace
+    // Check if it's a redirect error (which is expected)
+    if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
+      throw error; // Re-throw redirect errors
+    }
+    // If there's an actual error fetching workspaces, redirect to default workspace
     console.error('Error fetching user workspaces:', error);
     redirect(`/${DEFAULT_WORKSPACE}/dashboard`);
   }

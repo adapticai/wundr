@@ -3,6 +3,8 @@
 import { clsx } from 'clsx';
 import { useState, useCallback } from 'react';
 
+import { getInitials } from '@/lib/utils';
+
 import type { Huddle, HuddleParticipant } from '@/types/call';
 
 /**
@@ -57,10 +59,10 @@ function ParticipantAvatar({
         <img
           src={avatarUrl}
           alt={participant.user.name || 'User'}
-          className="w-full h-full rounded-full object-cover"
+          className="w-full h-full rounded-lg object-cover"
         />
       ) : (
-        (participant.user.name || participant.user.email || '?').charAt(0).toUpperCase()
+        getInitials(participant.user.name || participant.user.email)
       )}
       {/* Speaking indicator */}
       {participant.isSpeaking && (

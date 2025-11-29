@@ -84,6 +84,7 @@ export interface UsePresenceSubscriptionReturn {
 const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const PRESENCE_POLL_INTERVAL = 10000; // 10 seconds
 const ORCHESTRATOR_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
+const FETCH_TIMEOUT = 10000; // 10 seconds
 
 /**
  * Hook for fetching a single user's presence
@@ -95,12 +96,22 @@ export function useUserPresence(userId: string): UseUserPresenceReturn {
 
   useEffect(() => {
     if (!userId) {
-return;
-}
+      return;
+    }
+
+    const abortController = new AbortController();
+    let timeoutId: NodeJS.Timeout;
 
     const fetchPresence = async () => {
       try {
-        const response = await fetch(`/api/presence/${userId}`);
+        timeoutId = setTimeout(() => abortController.abort(), FETCH_TIMEOUT);
+
+        const response = await fetch(`/api/presence/${userId}`, {
+          signal: abortController.signal,
+        });
+
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           const data = await response.json();
           setPresence({
@@ -109,15 +120,24 @@ return;
             updatedAt: new Date(data.updatedAt),
           });
         }
-      } catch {
+      } catch (error) {
+        clearTimeout(timeoutId);
         // Silently fail - presence is non-critical
+        // AbortError is expected on cleanup
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.debug('Failed to fetch user presence:', error.message);
+        }
       }
     };
 
-    fetchPresence();
-    const interval = setInterval(fetchPresence, PRESENCE_POLL_INTERVAL);
+    void fetchPresence();
+    const interval = setInterval(() => void fetchPresence(), PRESENCE_POLL_INTERVAL);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, [userId]);
 
   return presence;
@@ -134,16 +154,24 @@ export function useMultiplePresence(userIds: string[]): UseMultiplePresenceRetur
 
   useEffect(() => {
     if (userIds.length === 0) {
-return;
-}
+      return;
+    }
+
+    const abortController = new AbortController();
+    let timeoutId: NodeJS.Timeout;
 
     const fetchPresence = async () => {
       try {
+        timeoutId = setTimeout(() => abortController.abort(), FETCH_TIMEOUT);
+
         const response = await fetch('/api/presence/batch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userIds }),
+          signal: abortController.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -159,15 +187,22 @@ return;
 
           setPresenceMap(newMap);
         }
-      } catch {
-        // Silently fail
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.debug('Failed to fetch multiple presence:', error.message);
+        }
       }
     };
 
-    fetchPresence();
-    const interval = setInterval(fetchPresence, PRESENCE_POLL_INTERVAL);
+    void fetchPresence();
+    const interval = setInterval(() => void fetchPresence(), PRESENCE_POLL_INTERVAL);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, [userIdsKey, userIds]);
 
   return presenceMap;
@@ -183,12 +218,22 @@ export function useChannelPresence(channelId: string): UseChannelPresenceReturn 
 
   useEffect(() => {
     if (!channelId) {
-return;
-}
+      return;
+    }
+
+    const abortController = new AbortController();
+    let timeoutId: NodeJS.Timeout;
 
     const fetchPresence = async () => {
       try {
-        const response = await fetch(`/api/channels/${channelId}/presence`);
+        timeoutId = setTimeout(() => abortController.abort(), FETCH_TIMEOUT);
+
+        const response = await fetch(`/api/channels/${channelId}/presence`, {
+          signal: abortController.signal,
+        });
+
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           const data = await response.json();
           setPresenceList(
@@ -199,15 +244,22 @@ return;
             })),
           );
         }
-      } catch {
-        // Silently fail
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.debug('Failed to fetch channel presence:', error.message);
+        }
       }
     };
 
-    fetchPresence();
-    const interval = setInterval(fetchPresence, PRESENCE_POLL_INTERVAL);
+    void fetchPresence();
+    const interval = setInterval(() => void fetchPresence(), PRESENCE_POLL_INTERVAL);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, [channelId]);
 
   return presenceList;
@@ -219,18 +271,37 @@ return;
  */
 export function useSetStatus(): UseSetStatusReturn {
   const [isUpdating, setIsUpdating] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const setStatus = useCallback(
     async (status: PresenceStatus, customText?: string): Promise<boolean> => {
+      // Cancel any pending request
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+
       setIsUpdating(true);
+      const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), FETCH_TIMEOUT);
+
       try {
         const response = await fetch('/api/presence/me', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status, customStatus: customText }),
+          signal: abortControllerRef.current.signal,
         });
+        clearTimeout(timeoutId);
         return response.ok;
-      } catch {
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Failed to set status:', error.message);
+        }
         return false;
       } finally {
         setIsUpdating(false);
@@ -240,13 +311,25 @@ export function useSetStatus(): UseSetStatusReturn {
   );
 
   const clearStatus = useCallback(async (): Promise<boolean> => {
+    // Cancel any pending request
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     setIsUpdating(true);
+    const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), FETCH_TIMEOUT);
+
     try {
       const response = await fetch('/api/presence/me/custom-status', {
         method: 'DELETE',
+        signal: abortControllerRef.current.signal,
       });
+      clearTimeout(timeoutId);
       return response.ok;
-    } catch {
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Failed to clear status:', error.message);
+      }
       return false;
     } finally {
       setIsUpdating(false);
@@ -266,12 +349,22 @@ export function useOrchestratorHealth(orchestratorId: string): UseOrchestratorHe
 
   useEffect(() => {
     if (!orchestratorId) {
-return;
-}
+      return;
+    }
+
+    const abortController = new AbortController();
+    let timeoutId: NodeJS.Timeout;
 
     const fetchHealth = async () => {
       try {
-        const response = await fetch(`/api/orchestrators/${orchestratorId}/health`);
+        timeoutId = setTimeout(() => abortController.abort(), FETCH_TIMEOUT);
+
+        const response = await fetch(`/api/orchestrators/${orchestratorId}/health`, {
+          signal: abortController.signal,
+        });
+
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           const data = await response.json();
           setHealth({
@@ -279,15 +372,22 @@ return;
             lastHeartbeat: data.lastHeartbeat ? new Date(data.lastHeartbeat) : null,
           });
         }
-      } catch {
-        // Silently fail
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.debug('Failed to fetch orchestrator health:', error.message);
+        }
       }
     };
 
-    fetchHealth();
-    const interval = setInterval(fetchHealth, ORCHESTRATOR_HEALTH_POLL_INTERVAL);
+    void fetchHealth();
+    const interval = setInterval(() => void fetchHealth(), ORCHESTRATOR_HEALTH_POLL_INTERVAL);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, [orchestratorId]);
 
   return health;
@@ -301,14 +401,26 @@ return;
 export function useOrchestratorHealthList(workspaceId: string): UseOrchestratorHealthListReturn {
   const [orchestratorList, setOrchestratorList] = useState<OrchestratorHealthStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchHealth = useCallback(async () => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
+
+    // Cancel any pending request
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
+    const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), FETCH_TIMEOUT);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/orchestrators/health`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/orchestrators/health`, {
+        signal: abortControllerRef.current.signal,
+      });
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         setOrchestratorList(
@@ -318,17 +430,24 @@ return;
           })),
         );
       }
-    } catch {
-      // Silently fail
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.debug('Failed to fetch orchestrator health list:', error.message);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [workspaceId]);
 
   useEffect(() => {
-    fetchHealth();
-    const interval = setInterval(fetchHealth, ORCHESTRATOR_HEALTH_POLL_INTERVAL);
-    return () => clearInterval(interval);
+    void fetchHealth();
+    const interval = setInterval(() => void fetchHealth(), ORCHESTRATOR_HEALTH_POLL_INTERVAL);
+
+    return () => {
+      clearInterval(interval);
+      abortControllerRef.current?.abort();
+    };
   }, [fetchHealth]);
 
   return { orchestratorList, isLoading, refetch: fetchHealth };
@@ -339,6 +458,7 @@ return;
  */
 export function usePresenceHeartbeat(enabled: boolean = true): void {
   const isEnabled = useRef(enabled);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     isEnabled.current = enabled;
@@ -346,33 +466,44 @@ export function usePresenceHeartbeat(enabled: boolean = true): void {
 
   useEffect(() => {
     if (!enabled) {
-return;
-}
+      return;
+    }
 
     const sendHeartbeat = async () => {
       if (!isEnabled.current) {
-return;
-}
+        return;
+      }
+
+      // Cancel any pending heartbeat
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+
+      const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), FETCH_TIMEOUT);
 
       try {
         await fetch('/api/presence/heartbeat', {
           method: 'POST',
+          signal: abortControllerRef.current.signal,
         });
-      } catch {
-        // Silently fail
+        clearTimeout(timeoutId);
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.debug('Failed to send heartbeat:', error.message);
+        }
       }
     };
 
     // Send initial heartbeat
-    sendHeartbeat();
+    void sendHeartbeat();
 
     // Set up interval
-    const interval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
+    const interval = setInterval(() => void sendHeartbeat(), HEARTBEAT_INTERVAL);
 
     // Handle visibility change
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        sendHeartbeat();
+        void sendHeartbeat();
       }
     };
 
@@ -381,6 +512,7 @@ return;
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      abortControllerRef.current?.abort();
     };
   }, [enabled]);
 }
@@ -398,23 +530,48 @@ export function usePresenceSubscription(
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<Error | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onPresenceUpdateRef = useRef(onPresenceUpdate);
+
+  // Update callback ref without triggering reconnection
+  useEffect(() => {
+    onPresenceUpdateRef.current = onPresenceUpdate;
+  }, [onPresenceUpdate]);
 
   useEffect(() => {
     if (!channelId) {
-return;
-}
+      return;
+    }
+
+    let isMounted = true;
 
     const connect = () => {
+      if (!isMounted) {
+        return;
+      }
+
+      // Clear any existing connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
       const eventSource = new EventSource(
-        `/api/presence/stream?channelIds=${channelId}`,
+        `/api/presence/stream?channelIds=${encodeURIComponent(channelId)}`,
       );
 
       eventSource.onopen = () => {
+        if (!isMounted) {
+          return;
+        }
         setIsConnected(true);
         setConnectionError(null);
       };
 
       eventSource.onmessage = (event) => {
+        if (!isMounted) {
+          return;
+        }
+
         try {
           const data = JSON.parse(event.data);
           const presence: UserPresence = {
@@ -422,19 +579,28 @@ return;
             lastSeen: data.lastSeen ? new Date(data.lastSeen) : null,
             updatedAt: new Date(data.updatedAt),
           };
-          onPresenceUpdate?.(presence);
-        } catch {
+          onPresenceUpdateRef.current?.(presence);
+        } catch (error) {
           // Ignore parse errors
+          console.debug('Failed to parse presence update:', error);
         }
       };
 
       eventSource.onerror = () => {
+        if (!isMounted) {
+          return;
+        }
+
         setIsConnected(false);
         setConnectionError(new Error('Connection lost'));
         eventSource.close();
 
         // Attempt to reconnect after 5 seconds
-        setTimeout(connect, 5000);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (isMounted) {
+            connect();
+          }
+        }, 5000);
       };
 
       eventSourceRef.current = eventSource;
@@ -443,9 +609,13 @@ return;
     connect();
 
     return () => {
+      isMounted = false;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
       eventSourceRef.current?.close();
     };
-  }, [channelId, onPresenceUpdate]);
+  }, [channelId]);
 
   return { isConnected, connectionError };
 }

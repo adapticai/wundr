@@ -42,14 +42,13 @@ export function OrchestratorCard({
         <div className="flex items-center gap-3">
           {/* Avatar */}
           <div className="relative">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-lg font-semibold text-primary">
               {orchestrator.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={orchestrator.avatarUrl}
                   alt={orchestrator.title}
-                  className="h-full w-full rounded-full object-cover"
+                  className="h-full w-full rounded-lg object-cover"
                 />
               ) : (
                 getInitials(orchestrator.title)

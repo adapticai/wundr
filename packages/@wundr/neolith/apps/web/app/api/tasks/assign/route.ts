@@ -147,19 +147,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         for (const taskId of foundTaskIds) {
           try {
+            // Fetch current metadata
+            const currentTask = await tx.task.findUnique({
+              where: { id: taskId },
+              select: { metadata: true },
+            });
+
+            const currentMetadata = currentTask?.metadata as Record<string, unknown> | null;
+
             const updated = await tx.task.update({
               where: { id: taskId },
               data: {
                 assignedToId: input.assigneeId,
                 metadata: {
-                  ...((await tx.task.findUnique({
-                    where: { id: taskId },
-                    select: { metadata: true },
-                  })) as any)?.metadata,
+                  ...(currentMetadata || {}),
                   ...(input.metadata || {}),
                   ...(input.reason && { assignmentReason: input.reason }),
                   lastAssignedAt: new Date().toISOString(),
-                },
+                } as Prisma.InputJsonValue,
               },
               include: {
                 assignedTo: { select: { id: true, name: true, email: true, isOrchestrator: true } },
@@ -198,7 +203,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Send notifications for successfully assigned tasks
       for (const result of assignedTasks.filter(r => r.success)) {
-        const taskTitle = (result.data as any)?.title || `Task #${result.taskId.slice(-6)}`;
+        const taskData = result.data as { title?: string } | undefined;
+        const taskTitle = taskData?.title || `Task #${result.taskId.slice(-6)}`;
         NotificationService.notifyTaskAssigned(
           input.assigneeId,
           result.taskId,

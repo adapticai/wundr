@@ -58,9 +58,45 @@ interface RouteContext {
 }
 
 /**
+ * Result of getting a call with access verification
+ */
+interface CallWithAccess {
+  call: {
+    id: string;
+    channelId: string;
+    type: 'audio' | 'video';
+    status: 'pending' | 'active' | 'ended' | 'failed';
+    roomName: string;
+    startedAt: Date | null;
+    endedAt: Date | null;
+    createdAt: Date;
+    createdById: string;
+  };
+  channel: {
+    id: string;
+    type: string;
+    name: string;
+    workspace: {
+      id: string;
+      organizationId: string;
+    };
+  };
+  orgMembership: {
+    id: string;
+    role: string;
+    userId: string;
+    organizationId: string;
+  };
+  fromSettings?: boolean;
+}
+
+/**
  * Helper to get call with access check
  */
-async function getCallWithAccess(callId: string, userId: string) {
+async function getCallWithAccess(
+  callId: string,
+  userId: string
+): Promise<CallWithAccess | null> {
   // Try to get call from dedicated table first
   try {
     const calls = await prisma.$queryRaw<Array<{
@@ -428,18 +464,26 @@ export async function DELETE(
       });
     } else {
       // Update calls table
-      await prisma.$executeRaw`
-        UPDATE calls
-        SET status = 'ended', ended_at = ${now}, updated_at = ${now}
-        WHERE id = ${params.callId}
-      `.catch(() => {});
+      try {
+        await prisma.$executeRaw`
+          UPDATE calls
+          SET status = 'ended', ended_at = ${now}, updated_at = ${now}
+          WHERE id = ${params.callId}
+        `;
+      } catch (updateError) {
+        console.error('[DELETE /api/calls/:callId] Error updating call status:', updateError);
+      }
 
       // Update all participants' left_at
-      await prisma.$executeRaw`
-        UPDATE call_participants
-        SET left_at = ${now}
-        WHERE call_id = ${params.callId} AND left_at IS NULL
-      `.catch(() => {});
+      try {
+        await prisma.$executeRaw`
+          UPDATE call_participants
+          SET left_at = ${now}
+          WHERE call_id = ${params.callId} AND left_at IS NULL
+        `;
+      } catch (participantError) {
+        console.error('[DELETE /api/calls/:callId] Error updating participants:', participantError);
+      }
     }
 
     // Close the LiveKit room to end the call for all participants

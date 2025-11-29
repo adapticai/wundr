@@ -22,7 +22,9 @@ import type {
   AgentStatus,
   CreateAgentInput,
   AgentModelConfig,
+  AvailableTool,
 } from '@/types/agent';
+import { isAvailableTool } from '@/types/agent';
 import { DEFAULT_MODEL_CONFIGS } from '@/types/agent';
 import type { Prisma } from '@prisma/client';
 
@@ -53,7 +55,18 @@ const createAgentSchema = z.object({
     })
     .optional(),
   systemPrompt: z.string().optional(),
-  tools: z.array(z.string()).optional(),
+  tools: z.array(z.enum([
+    'web_search',
+    'code_execution',
+    'file_operations',
+    'data_analysis',
+    'api_calls',
+    'database_query',
+    'image_generation',
+    'text_analysis',
+    'translation',
+    'summarization',
+  ])).optional(),
 });
 
 /**
@@ -149,7 +162,7 @@ export async function GET(
         presencePenalty: dbAgent.presencePenalty || undefined,
       },
       systemPrompt: dbAgent.systemPrompt || '',
-      tools: dbAgent.tools,
+      tools: dbAgent.tools.filter(isAvailableTool) as AvailableTool[],
       stats: {
         tasksCompleted: dbAgent.tasksCompleted,
         successRate: dbAgent.successRate,
@@ -273,7 +286,7 @@ export async function POST(
         presencePenalty: dbAgent.presencePenalty || undefined,
       },
       systemPrompt: dbAgent.systemPrompt || '',
-      tools: dbAgent.tools,
+      tools: dbAgent.tools.filter(isAvailableTool) as AvailableTool[],
       stats: {
         tasksCompleted: dbAgent.tasksCompleted,
         successRate: dbAgent.successRate,

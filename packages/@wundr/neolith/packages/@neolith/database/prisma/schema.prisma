@@ -381,20 +381,21 @@ model task {
 }
 
 model user {
-  id                  String               @id @default(cuid())
-  email               String               @unique
-  name                String?
-  displayName         String?              @map("display_name")
-  avatarUrl           String?              @map("avatar_url")
-  bio                 String?
-  status              UserStatus           @default(PENDING)
-  isOrchestrator      Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
-  orchestratorConfig  Json?                @map("vp_config") // Orchestrator configuration settings
-  preferences         Json                 @default("{}")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
-  lastActiveAt        DateTime?            @map("last_active_at")
-  emailVerified       DateTime?            @map("email_verified")
+  id                   String               @id @default(cuid())
+  email                String               @unique
+  name                 String?
+  displayName          String?              @map("display_name")
+  avatarUrl            String?              @map("avatar_url")
+  bio                  String?
+  status               UserStatus           @default(PENDING)
+  isOrchestrator       Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
+  orchestratorConfig   Json?                @map("vp_config") // Orchestrator configuration settings
+  preferences          Json                 @default("{}")
+  currentWorkspaceSlug String?              @map("current_workspace_slug") // User's last-visited workspace slug
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  lastActiveAt         DateTime?            @map("last_active_at")
+  emailVerified        DateTime?            @map("email_verified")
   accounts            account[]
   channelMembers      channelMember[]
   channels            channel[]

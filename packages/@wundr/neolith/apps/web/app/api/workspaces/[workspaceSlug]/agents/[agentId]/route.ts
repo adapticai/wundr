@@ -16,7 +16,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
-import type { Agent, UpdateAgentInput, AgentType, AgentStatus } from '@/types/agent';
+import type { Agent, UpdateAgentInput, AgentType, AgentStatus, AvailableTool } from '@/types/agent';
+import { isAvailableTool } from '@/types/agent';
 import type { Prisma } from '@prisma/client';
 
 import type { NextRequest } from 'next/server';
@@ -47,7 +48,18 @@ const updateAgentSchema = z.object({
     })
     .optional(),
   systemPrompt: z.string().optional(),
-  tools: z.array(z.string()).optional(),
+  tools: z.array(z.enum([
+    'web_search',
+    'code_execution',
+    'file_operations',
+    'data_analysis',
+    'api_calls',
+    'database_query',
+    'image_generation',
+    'text_analysis',
+    'translation',
+    'summarization',
+  ])).optional(),
 });
 
 /**
@@ -108,7 +120,7 @@ export async function GET(
         presencePenalty: dbAgent.presencePenalty || undefined,
       },
       systemPrompt: dbAgent.systemPrompt || '',
-      tools: dbAgent.tools,
+      tools: dbAgent.tools.filter(isAvailableTool) as AvailableTool[],
       stats: {
         tasksCompleted: dbAgent.tasksCompleted,
         successRate: dbAgent.successRate,
@@ -255,7 +267,7 @@ export async function PATCH(
         presencePenalty: dbAgent.presencePenalty || undefined,
       },
       systemPrompt: dbAgent.systemPrompt || '',
-      tools: dbAgent.tools,
+      tools: dbAgent.tools.filter(isAvailableTool) as AvailableTool[],
       stats: {
         tasksCompleted: dbAgent.tasksCompleted,
         successRate: dbAgent.successRate,

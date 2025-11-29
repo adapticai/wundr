@@ -17,6 +17,7 @@ import { NextResponse } from 'next/server';
 
 
 import { auth } from '@/lib/auth';
+import { sendInvitationEmail, type EmailResponse } from '@/lib/email';
 import {
   inviteFiltersSchema,
   batchCreateInvitesSchema,
@@ -261,6 +262,53 @@ export async function POST(
       },
     });
 
+    // Get workspace details for email
+    const workspaceDetails = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        name: true,
+        slug: true,
+      },
+    });
+
+    const workspaceName = workspaceDetails?.name || 'Neolith Workspace';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    // Send invitation emails
+    const emailResults: { email: string; success: boolean; error?: string }[] = [];
+
+    for (const invite of newInvites) {
+      try {
+        const invitationUrl = `${baseUrl}/invite/accept?token=${invite.token}`;
+
+        const emailResult: EmailResponse = await sendInvitationEmail({
+          email: invite.email,
+          inviterName: membership.user.name || membership.user.email || 'Team member',
+          workspaceName,
+          invitationUrl,
+          role: invite.role,
+          message: invite.message || undefined,
+        });
+
+        emailResults.push({
+          email: invite.email,
+          success: emailResult.success,
+          error: emailResult.error?.message,
+        });
+
+        if (!emailResult.success) {
+          console.error(`[Admin Invites] Failed to send email to ${invite.email}:`, emailResult.error);
+        }
+      } catch (error) {
+        console.error(`[Admin Invites] Exception sending email to ${invite.email}:`, error);
+        emailResults.push({
+          email: invite.email,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
     // Log admin action
     await prisma.$executeRaw`
       INSERT INTO admin_actions (id, workspace_id, action, actor_id, metadata, created_at)
@@ -270,7 +318,19 @@ export async function POST(
       // Admin actions table may not exist yet, ignore
     });
 
-    return NextResponse.json({ invites: newInvites }, { status: 201 });
+    // Count successful and failed emails
+    const successCount = emailResults.filter(r => r.success).length;
+    const failedCount = emailResults.filter(r => !r.success).length;
+
+    return NextResponse.json({
+      invites: newInvites,
+      emailResults: {
+        total: emailResults.length,
+        succeeded: successCount,
+        failed: failedCount,
+        details: emailResults,
+      },
+    }, { status: 201 });
   } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse('Failed to create invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),

@@ -15,6 +15,7 @@ import { FilesTab } from '@/components/channel/files-tab';
 import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
 import { NotificationsDialog } from '@/components/channel/notifications-dialog';
 import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel';
+import { InviteDialog } from '@/components/channel/invite-dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -44,6 +45,7 @@ export default function ChannelPage() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   // isStarred is derived from channel data, with local state for optimistic updates
   const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
 
@@ -62,15 +64,17 @@ export default function ChannelPage() {
   }, [authUser]);
 
   // Fetch channel details
-  const { channel, isLoading: isChannelLoading } = useChannel(channelId);
+  const { channel, isLoading: isChannelLoading, refetch: refetchChannel } = useChannel(channelId);
 
   // Derive isStarred: use local state for optimistic updates, fallback to channel data
-  const isStarred = localIsStarred ?? (channel as any)?.isStarred ?? false;
+  const channelWithStarred = channel as typeof channel & { isStarred?: boolean };
+  const isStarred = localIsStarred ?? channelWithStarred?.isStarred ?? false;
 
   // Sync local starred state when channel data loads
   useEffect(() => {
     if (channel && localIsStarred === null) {
-      setLocalIsStarred((channel as any).isStarred ?? false);
+      const channelData = channel as typeof channel & { isStarred?: boolean };
+      setLocalIsStarred(channelData.isStarred ?? false);
     }
   }, [channel, localIsStarred]);
 
@@ -115,13 +119,15 @@ export default function ChannelPage() {
 
   // Handle send message
   const handleSendMessage = useCallback(
-    async (content: string, mentions: string[], attachments: File[]) => {
+    async (content: string, mentions: string[], _attachments: File[]) => {
       if (!currentUser) {
         return;
       }
 
+      // Note: attachments should be converted to attachmentIds before sending
+      // For now, we'll send without attachments until the upload flow is implemented
       const { optimisticId, message } = await sendMessage(
-        { content, channelId, mentions, attachments },
+        { content, channelId, mentions },
         currentUser,
       );
 
@@ -133,8 +139,8 @@ export default function ChannelPage() {
         author: currentUser,
         channelId,
         parentId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         reactions: [],
         replyCount: 0,
         mentions: [],
@@ -154,13 +160,15 @@ export default function ChannelPage() {
 
   // Handle send thread reply
   const handleSendThreadReply = useCallback(
-    async (content: string, mentions: string[], attachments: File[]) => {
+    async (content: string, mentions: string[], _attachments: File[]) => {
       if (!activeThreadId || !currentUser) {
-return;
-}
+        return;
+      }
 
+      // Note: attachments should be converted to attachmentIds before sending
+      // For now, we'll send without attachments until the upload flow is implemented
       const { optimisticId } = await sendMessage(
-        { content, channelId, parentId: activeThreadId, mentions, attachments },
+        { content, channelId, parentId: activeThreadId, mentions },
         currentUser,
       );
 
@@ -172,8 +180,8 @@ return;
         author: currentUser,
         channelId,
         parentId: activeThreadId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         reactions: [],
         replyCount: 0,
         mentions: [],
@@ -238,7 +246,7 @@ return;
                     ...r,
                     count: r.count - 1,
                     hasReacted: false,
-                    users: r.users.filter((u) => u.id !== currentUser.id),
+                    userIds: (r.userIds || []).filter((id) => id !== currentUser.id),
                   }
                 : r,
             );
@@ -251,7 +259,7 @@ return;
                   ...r,
                   count: r.count + 1,
                   hasReacted: true,
-                  users: [...r.users, currentUser],
+                  userIds: [...(r.userIds || []), currentUser.id],
                 }
               : r,
           );
@@ -262,21 +270,34 @@ return;
           emoji,
           count: 1,
           hasReacted: true,
-          users: [currentUser],
+          userIds: [currentUser.id],
         });
       }
 
       updateOptimisticMessage(messageId, { reactions: updatedReactions });
 
-      // Send to server
+      // Send to server - use DELETE if removing, POST if adding
+      const isRemoving = existingReaction?.hasReacted;
       try {
-        await fetch(`/api/messages/${messageId}/reactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ emoji }),
-        });
+        let response: Response;
+        if (isRemoving) {
+          response = await fetch(`/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`, {
+            method: 'DELETE',
+          });
+        } else {
+          response = await fetch(`/api/messages/${messageId}/reactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emoji }),
+          });
+        }
+        // Handle 409 Conflict (already reacted) - no need to revert, state is already correct
+        if (!response.ok && response.status !== 409) {
+          // Revert on actual error (not conflict)
+          updateOptimisticMessage(messageId, { reactions: message.reactions });
+        }
       } catch {
-        // Revert on error
+        // Revert on network error
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
@@ -346,8 +367,8 @@ return;
       throw new Error('Failed to update channel');
     }
     // Refetch channel data
-    window.location.reload();
-  }, [channelId]);
+    await refetchChannel();
+  }, [channelId, refetchChannel]);
 
   // Remove member handler - must be before conditional returns
   const handleRemoveMember = useCallback(async (userId: string) => {
@@ -370,6 +391,20 @@ return;
       throw new Error('Failed to change member role');
     }
   }, [channelId]);
+
+  // Invite members handler - must be before conditional returns
+  const handleInviteMembers = useCallback(async (userIds: string[], role: 'admin' | 'member') => {
+    const response = await fetch(`/api/channels/${channelId}/members`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds, role: role.toUpperCase() }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to invite members');
+    }
+    // Refetch channel data to update member count
+    await refetchChannel();
+  }, [channelId, refetchChannel]);
 
   // Tab change handler
   const handleTabChange = useCallback((tab: ChannelTab) => {
@@ -396,6 +431,25 @@ return;
   }
 
   // Transform channel data for ChannelHeader component
+  type ChannelMemberRaw = {
+    id?: string;
+    userId?: string;
+    displayName?: string;
+    name?: string;
+    email?: string;
+    avatarUrl?: string;
+    image?: string;
+    role?: string;
+    user?: {
+      id?: string;
+      displayName?: string;
+      name?: string;
+      email?: string;
+      avatarUrl?: string;
+      image?: string;
+    };
+  };
+
   const channelForHeader: Channel | null = channel ? {
     id: channel.id,
     name: channel.name,
@@ -405,11 +459,11 @@ return;
     createdAt: new Date(),
     updatedAt: new Date(),
     createdById: '',
-    members: (channel.members || []).map((m: any) => ({
-      id: m.id || m.userId,
-      userId: m.userId || m.id,
+    members: ((channel.members || []) as ChannelMemberRaw[]).map((m) => ({
+      id: m.id || m.userId || '',
+      userId: m.userId || m.id || '',
       user: {
-        id: m.userId || m.user?.id || m.id,
+        id: m.userId || m.user?.id || m.id || '',
         name: m.displayName || m.name || m.user?.displayName || m.user?.name || 'Unknown',
         email: m.email || m.user?.email || '',
         image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
@@ -425,7 +479,8 @@ return;
     isArchived: false,
   } : null;
 
-  // Default permissions (TODO: get from API)
+  // TODO: Replace with actual permissions from API/hook
+  // Currently using permissive defaults - should be based on user role and channel settings
   const permissions: ChannelPermissions = {
     canEdit: true,
     canDelete: true,
@@ -546,10 +601,22 @@ return;
               setShowDetailsPanel(false);
               setShowNotificationsDialog(true);
             }}
-            onInvite={() => console.log('Invite - feature coming soon')}
+            onInvite={() => {
+              setShowDetailsPanel(false);
+              setShowInviteDialog(true);
+            }}
             onRemoveMember={handleRemoveMember}
             onChangeMemberRole={handleChangeMemberRole}
             currentUserId={currentUser?.id || ''}
+          />
+
+          <InviteDialog
+            isOpen={showInviteDialog}
+            onClose={() => setShowInviteDialog(false)}
+            onInvite={handleInviteMembers}
+            workspaceId={workspaceSlug}
+            channelName={channelForHeader.name}
+            existingMemberIds={channelForHeader.members.map((m) => m.userId)}
           />
         </>
       )}

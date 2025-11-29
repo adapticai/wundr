@@ -130,9 +130,11 @@ export async function GET(
     const personLimit = Math.min(parseInt(searchParams.get('personLimit') || '5', 10), 10);
     const fileLimit = Math.min(parseInt(searchParams.get('fileLimit') || '3', 10), 10);
 
-    // Get workspace by slug
+    // Get workspace by ID or slug
     const workspace = await prisma.workspace.findFirst({
-      where: { slug: workspaceSlug },
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
       select: { id: true, organizationId: true },
     });
 

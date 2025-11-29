@@ -170,10 +170,11 @@ export interface UseVirtualizedDataReturn<T> {
 export function useRenderMetrics(_componentName: string): RenderMetrics {
   const renderCount = useRef(0);
   const renderTimes = useRef<number[]>([]);
-  const lastRenderStart = useRef(performance.now());
+  const lastRenderStart = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   useEffect(() => {
-    const renderTime = performance.now() - lastRenderStart.current;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const renderTime = now - lastRenderStart.current;
     renderCount.current++;
     renderTimes.current.push(renderTime);
 
@@ -184,7 +185,7 @@ export function useRenderMetrics(_componentName: string): RenderMetrics {
   });
 
   // Reset timer before each render
-  lastRenderStart.current = performance.now();
+  lastRenderStart.current = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
   return {
     renderCount: renderCount.current,
@@ -361,17 +362,23 @@ export function useLazyLoad<T extends HTMLElement>(
 ): UseLazyLoadReturn<T> {
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const onVisibleRef = useRef(onVisible);
+
+  // Keep callback ref up to date
+  useEffect(() => {
+    onVisibleRef.current = onVisible;
+  }, [onVisible]);
 
   useEffect(() => {
     const element = ref.current;
     if (!element || isVisible) {
-return;
-}
+      return;
+    }
 
     const observer = createLazyObserver(
       () => {
         setIsVisible(true);
-        onVisible();
+        onVisibleRef.current();
       },
       options,
     );
@@ -382,9 +389,10 @@ return;
     } else {
       // Fallback for browsers without IntersectionObserver
       setIsVisible(true);
-      onVisible();
+      onVisibleRef.current();
     }
-  }, [onVisible, options, isVisible]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible, options.root, options.rootMargin, options.threshold]);
 
   return { ref, isVisible };
 }
@@ -433,19 +441,26 @@ export function useDeferredLoad<T>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const loaderRef = useRef(loader);
+
+  // Keep loader ref up to date
+  useEffect(() => {
+    loaderRef.current = loader;
+  }, [loader]);
 
   useEffect(() => {
     let mounted = true;
+    const abortController = new AbortController();
 
     const load = async () => {
       try {
-        const result = await loader();
-        if (mounted) {
+        const result = await loaderRef.current();
+        if (mounted && !abortController.signal.aborted) {
           setData(result);
           setLoading(false);
         }
       } catch (err) {
-        if (mounted) {
+        if (mounted && !abortController.signal.aborted) {
           setError(err as Error);
           setLoading(false);
         }
@@ -454,26 +469,35 @@ export function useDeferredLoad<T>(
 
     if (options.onIdle) {
       const handle = requestIdleCallbackPolyfill(() => {
-        load();
+        if (!abortController.signal.aborted) {
+          load();
+        }
       }, { timeout: options.delay ?? 2000 });
 
       return () => {
         mounted = false;
+        abortController.abort();
         cancelIdleCallbackPolyfill(handle);
       };
     } else if (options.delay) {
-      const timeout = setTimeout(load, options.delay);
+      const timeout = setTimeout(() => {
+        if (!abortController.signal.aborted) {
+          load();
+        }
+      }, options.delay);
       return () => {
         mounted = false;
+        abortController.abort();
         clearTimeout(timeout);
       };
     } else {
       load();
       return () => {
         mounted = false;
+        abortController.abort();
       };
     }
-  }, [loader, options.delay, options.onIdle]);
+  }, [options.delay, options.onIdle]);
 
   return { data, loading, error };
 }
@@ -551,9 +575,17 @@ export function usePerformanceMark(name: string): void {
   const endMark = `${name}-end`;
 
   useEffect(() => {
+    if (typeof performance === 'undefined' || !performance.mark) {
+      return;
+    }
+
     performance.mark(startMark);
 
     return () => {
+      if (typeof performance === 'undefined' || !performance.mark) {
+        return;
+      }
+
       performance.mark(endMark);
       try {
         performance.measure(name, startMark, endMark);
@@ -617,7 +649,7 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
  * Uses explicit type parameters to avoid 'unknown' in the signature
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ThrottledFunction = (...args: never[]) => void;
+type ThrottledFunction = (...args: any[]) => void;
 
 /**
  * Hook for throttled callback

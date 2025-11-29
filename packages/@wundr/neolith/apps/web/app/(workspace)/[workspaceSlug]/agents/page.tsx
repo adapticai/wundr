@@ -21,6 +21,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useAgents, useAgentMutations } from '@/hooks/use-agents';
 import { useToast } from '@/hooks/use-toast';
+import { Plus } from 'lucide-react';
 import type { Agent, AgentType, AgentStatus } from '@/types/agent';
 
 export default function AgentsPage() {
@@ -175,7 +176,7 @@ export default function AgentsPage() {
       {/* Action Button */}
       <div className="flex justify-end">
         <Button onClick={() => setIsCreateModalOpen(true)}>
-          <PlusIcon className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 h-4 w-4" />
           Create Agent
         </Button>
       </div>
@@ -319,23 +320,5 @@ export default function AgentsPage() {
         />
       )}
     </div>
-  );
-}
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
-    </svg>
   );
 }

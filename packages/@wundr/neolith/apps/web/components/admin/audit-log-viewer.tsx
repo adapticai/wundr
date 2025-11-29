@@ -56,8 +56,11 @@ export function AuditLogViewer({ workspaceId, className }: AuditLogViewerProps) 
 
   const pageSize = 50;
 
+  const [error, setError] = useState<string | null>(null);
+
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
 
     try {
       const params = new URLSearchParams({
@@ -66,26 +69,29 @@ export function AuditLogViewer({ workspaceId, className }: AuditLogViewerProps) 
       });
 
       if (filters.severity) {
-params.set('severity', filters.severity);
-}
+        params.set('severity', filters.severity);
+      }
       if (filters.category) {
-params.set('category', filters.category);
-}
+        params.set('category', filters.category);
+      }
       if (filters.search) {
-params.set('search', filters.search);
-}
+        params.set('search', filters.search);
+      }
 
       const response = await fetch(
         `/api/workspaces/${workspaceId}/admin/audit-logs?${params.toString()}`,
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        setEntries(data.entries || []);
-        setTotal(data.total || 0);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch audit logs: ${response.statusText}`);
       }
-    } catch {
-      // Handle error
+
+      const data = await response.json();
+      setEntries(data.entries || []);
+      setTotal(data.total || 0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load audit logs');
+      console.error('Failed to fetch audit logs:', err);
     } finally {
       setIsLoading(false);
     }
@@ -96,19 +102,27 @@ params.set('search', filters.search);
   }, [fetchLogs]);
 
   const handleExport = async () => {
-    const response = await fetch(
-      `/api/workspaces/${workspaceId}/admin/audit-logs/export`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ format: 'csv', filters }),
-      },
-    );
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/admin/audit-logs/export`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ format: 'csv', filters }),
+        },
+      );
 
-    if (response.ok) {
+      if (!response.ok) {
+        throw new Error('Failed to export audit logs');
+      }
+
       const data = await response.json();
-      // Handle export URL
-      window.open(data.downloadUrl, '_blank');
+      if (data.downloadUrl) {
+        window.open(data.downloadUrl, '_blank');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to export audit logs');
+      console.error('Failed to export audit logs:', err);
     }
   };
 
@@ -159,6 +173,22 @@ params.set('search', filters.search);
         </Button>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <div className="flex items-start gap-3">
+            <p className="text-sm text-destructive flex-1">{error}</p>
+            <button
+              onClick={() => fetchLogs()}
+              className="text-sm text-destructive hover:underline"
+              type="button"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="rounded-lg border border-border">
         <Table>
@@ -178,6 +208,12 @@ params.set('search', filters.search);
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground">
                   Loading...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-destructive">
+                  Error loading audit logs
                 </TableCell>
               </TableRow>
             ) : entries.length === 0 ? (

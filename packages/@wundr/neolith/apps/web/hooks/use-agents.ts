@@ -113,7 +113,7 @@ export function useAgents(workspaceId: string, filters?: AgentFilters): UseAgent
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAgents = useCallback(async (): Promise<void> => {
+  const fetchAgents = useCallback(async (signal?: AbortSignal): Promise<void> => {
     if (!workspaceId) {
       return;
     }
@@ -145,7 +145,7 @@ export function useAgents(workspaceId: string, filters?: AgentFilters): UseAgent
         ? `/api/workspaces/${workspaceId}/agents?${queryString}`
         : `/api/workspaces/${workspaceId}/agents`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, { signal });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error?.message || 'Failed to fetch agents');
@@ -154,6 +154,10 @@ export function useAgents(workspaceId: string, filters?: AgentFilters): UseAgent
 
       setAgents(result.data || []);
     } catch (err) {
+      // Don't set error for aborted requests
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
       setAgents([]);
     } finally {
@@ -162,7 +166,12 @@ export function useAgents(workspaceId: string, filters?: AgentFilters): UseAgent
   }, [workspaceId, filters?.type, filters?.status, filters?.search, filters?.page, filters?.limit]);
 
   useEffect(() => {
-    fetchAgents();
+    const abortController = new AbortController();
+    fetchAgents(abortController.signal);
+
+    return () => {
+      abortController.abort();
+    };
   }, [fetchAgents]);
 
   const refetch = useCallback(() => {
@@ -240,7 +249,7 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAgent = useCallback(async (): Promise<void> => {
+  const fetchAgent = useCallback(async (signal?: AbortSignal): Promise<void> => {
     if (!workspaceId || !agentId) {
       return;
     }
@@ -249,21 +258,32 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
     setError(null);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/agents/${agentId}`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/agents/${agentId}`, { signal });
       if (!response.ok) {
-        throw new Error('Failed to fetch agent');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to fetch agent');
       }
       const result: { data: Agent } = await response.json();
       setAgent(result.data);
     } catch (err) {
+      // Don't set error for aborted requests
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
+      setAgent(null);
     } finally {
       setIsLoading(false);
     }
   }, [workspaceId, agentId]);
 
   useEffect(() => {
-    fetchAgent();
+    const abortController = new AbortController();
+    fetchAgent(abortController.signal);
+
+    return () => {
+      abortController.abort();
+    };
   }, [fetchAgent]);
 
   const refetch = useCallback((): void => {

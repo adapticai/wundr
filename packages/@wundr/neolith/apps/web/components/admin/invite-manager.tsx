@@ -43,6 +43,7 @@ export function InviteManager({
 }: InviteManagerProps) {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
@@ -56,14 +57,17 @@ export function InviteManager({
 
   const fetchInvites = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/workspaces/${workspaceId}/admin/invites`);
-      if (response.ok) {
-        const data = await response.json();
-        setInvites(data.invites || []);
+      if (!response.ok) {
+        throw new Error('Failed to fetch invites');
       }
-    } catch {
-      // Handle error
+      const data = await response.json();
+      setInvites(data.invites || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load invites');
+      console.error('Failed to fetch invites:', err);
     } finally {
       setIsLoading(false);
     }
@@ -79,10 +83,11 @@ export function InviteManager({
       : [email.trim()];
 
     if (emails.length === 0) {
-return;
-}
+      return;
+    }
 
     setIsSending(true);
+    setError(null);
     try {
       const response = await fetch(`/api/workspaces/${workspaceId}/admin/invites`, {
         method: 'POST',
@@ -94,47 +99,73 @@ return;
         }),
       });
 
-      if (response.ok) {
-        setEmail('');
-        setBulkEmails('');
-        setMessage('');
-        setShowInviteForm(false);
-        fetchInvites();
+      if (!response.ok) {
+        throw new Error('Failed to send invites');
       }
-    } catch {
-      // Handle error
+
+      const data = await response.json();
+
+      // Show warning if some emails failed
+      if (data.emailResults && data.emailResults.failed > 0) {
+        const failedEmails = data.emailResults.details
+          .filter((r: any) => !r.success)
+          .map((r: any) => r.email)
+          .join(', ');
+        console.warn(`Some invitation emails failed: ${failedEmails}`);
+        // You could show a warning toast here
+      }
+
+      setEmail('');
+      setBulkEmails('');
+      setMessage('');
+      setShowInviteForm(false);
+      fetchInvites();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send invites');
+      console.error('Failed to send invites:', err);
     } finally {
       setIsSending(false);
     }
   };
 
   const handleResendInvite = async (inviteId: string) => {
+    setError(null);
     try {
-      await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}/resend`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}/resend`, {
         method: 'POST',
       });
+      if (!response.ok) {
+        throw new Error('Failed to resend invite');
+      }
       fetchInvites();
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend invite');
+      console.error('Failed to resend invite:', err);
     }
   };
 
   const handleRevokeInvite = async (inviteId: string) => {
     if (!confirm('Are you sure you want to revoke this invite?')) {
-return;
-}
+      return;
+    }
 
+    setError(null);
     try {
-      await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}`, {
         method: 'DELETE',
       });
+      if (!response.ok) {
+        throw new Error('Failed to revoke invite');
+      }
       fetchInvites();
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to revoke invite');
+      console.error('Failed to revoke invite:', err);
     }
   };
 
   const handleGenerateLink = async () => {
+    setError(null);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceId}/admin/invites/link`,
@@ -144,12 +175,14 @@ return;
           body: JSON.stringify({ role: selectedRole }),
         },
       );
-      if (response.ok) {
-        const data = await response.json();
-        setInviteLink(data.link);
+      if (!response.ok) {
+        throw new Error('Failed to generate invite link');
       }
-    } catch {
-      // Handle error
+      const data = await response.json();
+      setInviteLink(data.link);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate invite link');
+      console.error('Failed to generate invite link:', err);
     }
   };
 
@@ -173,6 +206,13 @@ return;
           Invite Members
         </Button>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       {/* Invite form modal */}
       <Dialog open={showInviteForm} onOpenChange={setShowInviteForm}>

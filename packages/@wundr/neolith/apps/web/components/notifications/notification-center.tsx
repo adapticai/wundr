@@ -88,8 +88,12 @@ return true;
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+      try {
+        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      } catch (error) {
+        console.error('Error handling outside click:', error);
       }
     };
 
@@ -104,13 +108,17 @@ return true;
 
   // Infinite scroll
   const handleScroll = useCallback(() => {
-    if (!scrollRef.current || !hasMore || isLoading) {
-return;
-}
+    try {
+      if (!scrollRef.current || !hasMore || isLoading) {
+        return;
+      }
 
-    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-    if (scrollHeight - scrollTop - clientHeight < 100) {
-      onLoadMore?.();
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        onLoadMore?.();
+      }
+    } catch (error) {
+      console.error('Error handling scroll:', error);
     }
   }, [hasMore, isLoading, onLoadMore]);
 

@@ -133,9 +133,33 @@ function generateRoomName(channelId: string): string {
 }
 
 /**
+ * Result of channel access verification
+ */
+interface ChannelAccessResult {
+  channel: {
+    id: string;
+    name: string;
+    type: string;
+    workspace: {
+      id: string;
+      organizationId: string;
+    };
+  };
+  orgMembership: {
+    id: string;
+    role: string;
+    userId: string;
+    organizationId: string;
+  };
+}
+
+/**
  * Helper to verify user has access to channel
  */
-async function verifyChannelAccess(channelId: string, userId: string) {
+async function verifyChannelAccess(
+  channelId: string,
+  userId: string
+): Promise<ChannelAccessResult | null> {
   const channel = await prisma.channel.findUnique({
     where: { id: channelId },
     include: {
@@ -144,8 +168,8 @@ async function verifyChannelAccess(channelId: string, userId: string) {
   });
 
   if (!channel) {
-return null;
-}
+    return null;
+  }
 
   // Check organization membership
   const orgMembership = await prisma.organizationMember.findUnique({
@@ -158,8 +182,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   // For private channels, check channel membership
   if (channel.type === 'PRIVATE') {
@@ -172,8 +196,8 @@ return null;
       },
     });
     if (!channelMembership) {
-return null;
-}
+      return null;
+    }
   }
 
   return { channel, orgMembership };
@@ -233,12 +257,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if there's already an active call in this channel
-    const existingCall = await prisma.$queryRaw<{ id: string }[]>`
-      SELECT id FROM calls
-      WHERE channel_id = ${channelId}
-      AND status = 'active'
-      LIMIT 1
-    `.catch(() => []);
+    let existingCall: { id: string }[] = [];
+    try {
+      existingCall = await prisma.$queryRaw<{ id: string }[]>`
+        SELECT id FROM calls
+        WHERE channel_id = ${channelId}
+        AND status = 'active'
+        LIMIT 1
+      `;
+    } catch (error) {
+      console.error('[POST /api/calls] Error checking existing call:', error);
+      existingCall = [];
+    }
 
     if (existingCall.length > 0) {
       return NextResponse.json(
@@ -265,10 +295,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Note: In production, you would have a Call model in Prisma schema
     // For now, we'll create the structure but you may need to add the model
-    await prisma.$executeRaw`
-      INSERT INTO calls (id, channel_id, type, status, room_name, created_by_id, created_at, updated_at)
-      VALUES (${callId}, ${channelId}, ${type}, 'pending', ${roomName}, ${session.user.id}, ${now}, ${now})
-    `.catch(async () => {
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO calls (id, channel_id, type, status, room_name, created_by_id, created_at, updated_at)
+        VALUES (${callId}, ${channelId}, ${type}, 'pending', ${roomName}, ${session.user.id}, ${now}, ${now})
+      `;
+    } catch (callsTableError) {
+      console.error('[POST /api/calls] Calls table not available, using channel settings:', callsTableError);
       // If calls table doesn't exist, store in channel settings temporarily
       await prisma.channel.update({
         where: { id: channelId },
@@ -285,15 +318,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
         },
       });
-    });
+    }
 
     // Add creator as first participant
-    await prisma.$executeRaw`
-      INSERT INTO call_participants (id, call_id, user_id, joined_at, is_audio_enabled, is_video_enabled)
-      VALUES (${`part_${Date.now().toString(36)}`}, ${callId}, ${session.user.id}, ${now}, true, ${type === 'video'})
-    `.catch(() => {
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO call_participants (id, call_id, user_id, joined_at, is_audio_enabled, is_video_enabled)
+        VALUES (${`part_${Date.now().toString(36)}`}, ${callId}, ${session.user.id}, ${now}, true, ${type === 'video'})
+      `;
+    } catch (participantError) {
+      console.error('[POST /api/calls] Participant tracking not available:', participantError);
       // Table may not exist yet
-    });
+    }
 
     const response: CallResponse = {
       id: callId,

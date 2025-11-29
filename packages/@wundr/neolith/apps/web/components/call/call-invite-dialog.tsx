@@ -3,6 +3,8 @@
 import { clsx } from 'clsx';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
+import { getInitials } from '@/lib/utils';
+
 import type { User } from '@/types/chat';
 
 /**
@@ -64,10 +66,10 @@ function UserSearchItem({
           <img
             src={avatarUrl}
             alt={user.name || 'User'}
-            className="w-full h-full rounded-full object-cover"
+            className="w-full h-full rounded-lg object-cover"
           />
         ) : (
-          (user.name || user.email || '?').charAt(0).toUpperCase()
+          getInitials(user.name || user.email)
         )}
       </div>
       <div className="flex-1 text-left min-w-0">

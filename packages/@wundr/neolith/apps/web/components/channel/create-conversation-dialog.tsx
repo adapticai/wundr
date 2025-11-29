@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 
@@ -232,16 +232,16 @@ export function CreateConversationDialog({
                 Selected user
               </label>
               <div className="flex items-center gap-3 rounded-lg border bg-secondary p-3">
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
                   {selectedUser.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={selectedUser.image}
                       alt={selectedUser.name}
-                      className="h-full w-full rounded-full object-cover"
+                      className="h-full w-full rounded-lg object-cover"
                     />
                   ) : (
-                    selectedUser.name.charAt(0).toUpperCase()
+                    getInitials(selectedUser.name || selectedUser.email)
                   )}
                   {selectedUser.status && (
                     <span
@@ -292,6 +292,7 @@ export function CreateConversationDialog({
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   disabled={isSubmitting}
                   autoFocus
+                  aria-label="Search for users by name or email"
                 />
                 {isSearchingUsers && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -310,16 +311,16 @@ export function CreateConversationDialog({
                       onClick={() => handleSelectUser(user)}
                       className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent"
                     >
-                      <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                      <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
                         {user.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={user.image}
                             alt={user.name}
-                            className="h-full w-full rounded-full object-cover"
+                            className="h-full w-full rounded-lg object-cover"
                           />
                         ) : (
-                          user.name.charAt(0).toUpperCase()
+                          getInitials(user.name || user.email)
                         )}
                         {user.status && (
                           <span

@@ -15,6 +15,7 @@ import { WorkflowPreview } from '@/components/workflows/workflow-preview';
 import type {
   TriggerConfig,
   ActionConfig,
+  ActionId,
   CreateWorkflowInput,
 } from '@/types/workflow';
 
@@ -50,7 +51,7 @@ What would you like your workflow to do?`;
 export default function ConversationalWorkflowCreationPage() {
   const params = useParams();
   const router = useRouter();
-  const workspaceId = params?.workspaceSlug as string;
+  const workspaceId = (params?.workspaceSlug ?? '') as string;
 
   const [messages, setMessages] = React.useState<Message[]>([
     {
@@ -342,9 +343,9 @@ export default function ConversationalWorkflowCreationPage() {
                 trigger={generatedSpec.trigger}
                 actions={generatedSpec.actions.map((action, index) => ({
                   ...action,
-                  id: `preview-${index}`,
+                  id: `preview-${index}` as ActionId,
                   order: index,
-                }))}
+                } as ActionConfig))}
               />
             )}
 

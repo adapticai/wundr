@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { INTEGRATION_PROVIDERS, INTEGRATION_STATUS_CONFIG } from '@/types/integration';
 
-import type { IntegrationConfig } from '@/types/integration';
+import type { IntegrationConfig, WebhookEventType } from '@/types/integration';
 
 /**
  * Props for the IntegrationSettings component
@@ -48,7 +48,7 @@ export function IntegrationSettings({
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     integration.config.notificationPreferences?.enabled ?? true,
   );
-  const [selectedEvents, setSelectedEvents] = useState<string[]>(
+  const [selectedEvents, setSelectedEvents] = useState<WebhookEventType[]>(
     integration.config.notificationPreferences?.events || [],
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -111,7 +111,7 @@ export function IntegrationSettings({
     }
   }, [onDisconnect, onClose]);
 
-  const handleEventToggle = useCallback((event: string) => {
+  const handleEventToggle = useCallback((event: WebhookEventType) => {
     setSelectedEvents((prev) =>
       prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event],
     );
@@ -346,18 +346,26 @@ return null;
                 <div>
                   <h4 className="mb-2 text-sm font-medium text-foreground">Events</h4>
                   <div className="space-y-2">
-                    {['messages', 'mentions', 'updates', 'errors'].map((event) => (
+                    {([
+                      { type: 'message.created' as const, label: 'New Messages' },
+                      { type: 'message.updated' as const, label: 'Message Updates' },
+                      { type: 'channel.created' as const, label: 'Channel Created' },
+                      { type: 'member.joined' as const, label: 'Member Joined' },
+                      { type: 'orchestrator.message' as const, label: 'Orchestrator Messages' },
+                      { type: 'task.completed' as const, label: 'Task Completed' },
+                      { type: 'workflow.triggered' as const, label: 'Workflow Triggered' },
+                    ]).map(({ type, label }) => (
                       <label
-                        key={event}
+                        key={type}
                         className="flex items-center gap-3 rounded-lg border bg-background p-3 cursor-pointer hover:bg-accent"
                       >
                         <input
                           type="checkbox"
-                          checked={selectedEvents.includes(event)}
-                          onChange={() => handleEventToggle(event)}
+                          checked={selectedEvents.includes(type)}
+                          onChange={() => handleEventToggle(type)}
                           className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
                         />
-                        <span className="text-sm text-foreground capitalize">{event}</span>
+                        <span className="text-sm text-foreground">{label}</span>
                       </label>
                     ))}
                   </div>

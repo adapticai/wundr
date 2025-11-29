@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import type { Channel, ChannelPermissions } from '@/types/channel';
 import {
   Bell,
@@ -133,7 +133,7 @@ return;
   }, [onLeave]);
 
   return (
-    <div className={cn('border-b bg-card', className)}>
+    <div className={cn('border-b bg-card/30', className)}>
       {/* Top row: Channel name, star, members */}
       <div className="flex h-12 items-center justify-between px-4">
         
@@ -249,7 +249,7 @@ return;
               {channel.members.slice(0, 3).map((member, index) => (
                 <div
                   key={member.userId}
-                  className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium"
+                  className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium"
                   style={{ zIndex: 3 - index }}
                 >
                   {member.user.image ? (
@@ -257,15 +257,15 @@ return;
                     <img
                       src={member.user.image}
                       alt={member.user.name}
-                      className="h-full w-full rounded-full object-cover"
+                      className="h-full w-full rounded-md object-cover"
                     />
                   ) : (
-                    member.user.name.charAt(0).toUpperCase()
+                    getInitials(member.user.name)
                   )}
                 </div>
               ))}
               {channel.memberCount > 3 && (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-[10px] font-medium">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-card bg-muted text-[10px] font-medium">
                   +{channel.memberCount - 3}
                 </div>
               )}

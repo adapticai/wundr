@@ -308,8 +308,14 @@ export async function POST(
       select: { settings: true },
     });
 
-    const currentSettings = (workspace?.settings as Record<string, unknown>) || {};
-    const consensuses = (currentSettings.consensuses as Record<string, ConsensusMetadata>) || {};
+    const currentSettings =
+      workspace?.settings && typeof workspace.settings === 'object' && !Array.isArray(workspace.settings)
+        ? (workspace.settings as Record<string, unknown>)
+        : {};
+    const consensuses =
+      currentSettings.consensuses && typeof currentSettings.consensuses === 'object' && !Array.isArray(currentSettings.consensuses)
+        ? (currentSettings.consensuses as Record<string, ConsensusMetadata>)
+        : {};
     consensuses[consensusId] = consensusMetadata;
 
     await prisma.workspace.update({
@@ -425,8 +431,14 @@ export async function GET(
       select: { settings: true },
     });
 
-    const currentSettings = (workspace?.settings as Record<string, unknown>) || {};
-    const consensuses = (currentSettings.consensuses as Record<string, ConsensusMetadata>) || {};
+    const currentSettings =
+      workspace?.settings && typeof workspace.settings === 'object' && !Array.isArray(workspace.settings)
+        ? (workspace.settings as Record<string, unknown>)
+        : {};
+    const consensuses =
+      currentSettings.consensuses && typeof currentSettings.consensuses === 'object' && !Array.isArray(currentSettings.consensuses)
+        ? (currentSettings.consensuses as Record<string, ConsensusMetadata>)
+        : {};
 
     // Convert to array and filter
     let consensusArray = Object.values(consensuses);
@@ -558,8 +570,14 @@ export async function PATCH(
       select: { settings: true },
     });
 
-    const currentSettings = (workspace?.settings as Record<string, unknown>) || {};
-    const consensuses = (currentSettings.consensuses as Record<string, ConsensusMetadata>) || {};
+    const currentSettings =
+      workspace?.settings && typeof workspace.settings === 'object' && !Array.isArray(workspace.settings)
+        ? (workspace.settings as Record<string, unknown>)
+        : {};
+    const consensuses =
+      currentSettings.consensuses && typeof currentSettings.consensuses === 'object' && !Array.isArray(currentSettings.consensuses)
+        ? (currentSettings.consensuses as Record<string, ConsensusMetadata>)
+        : {};
 
     const consensus = consensuses[consensusId];
 

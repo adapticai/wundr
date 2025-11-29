@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
-import type { Notification, NotificationType } from '@/types/notification';
+import type { Notification, NotificationType, NotificationPriority } from '@/types/notification';
 
 /**
  * Props for the NotificationToast component
@@ -70,17 +70,26 @@ export function NotificationToast({
       try {
         audioRef.current = new Audio('/sounds/notification.mp3');
         audioRef.current.volume = 0.5;
-        audioRef.current.play().catch(() => {
+        audioRef.current.play().catch((error: Error) => {
           // Silently fail if audio can't play (e.g., user hasn't interacted with page)
+          // This is expected behavior due to browser autoplay policies
+          console.debug('Notification sound blocked:', error.message);
         });
-      } catch {
-        // Audio not supported
+      } catch (error) {
+        // Audio not supported or other initialization errors
+        console.debug('Notification sound initialization failed:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
     return () => {
       if (audioRef.current) {
-        audioRef.current.pause();
+        try {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        } catch (error) {
+          // Ignore cleanup errors
+          console.debug('Audio cleanup failed:', error instanceof Error ? error.message : 'Unknown error');
+        }
         audioRef.current = null;
       }
     };
@@ -160,11 +169,11 @@ export function NotificationToast({
                   <img
                     src={notification.actor.image}
                     alt={notification.actor.name}
-                    className="h-5 w-5 rounded-full object-cover"
+                    className="h-5 w-5 rounded-md object-cover"
                   />
                 ) : (
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                    {notification.actor.name.charAt(0).toUpperCase()}
+                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary text-[10px] font-medium text-primary-foreground">
+                    {getInitials(notification.actor.name)}
                   </div>
                 )}
                 <span className="text-xs text-muted-foreground">
@@ -243,7 +252,7 @@ export function ToastContainer({
 
 interface ToastIconProps {
   type: NotificationType;
-  priority: string;
+  priority: NotificationPriority;
 }
 
 function ToastIcon({ type, priority }: ToastIconProps) {

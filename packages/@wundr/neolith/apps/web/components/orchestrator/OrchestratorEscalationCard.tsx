@@ -252,8 +252,9 @@ export function OrchestratorEscalationCard({
               variant="outline"
               size="sm"
               onClick={() => {
-                const resolution = prompt('Enter resolution details:');
-                if (resolution) {
+                // TODO: Replace with proper modal dialog for production
+                const resolution = window.prompt('Enter resolution details:');
+                if (resolution && resolution.trim()) {
                   onResolve(escalation.id, resolution);
                 }
               }}
@@ -267,8 +268,9 @@ export function OrchestratorEscalationCard({
               variant="outline"
               size="sm"
               onClick={() => {
-                const response = prompt('Enter your response:');
-                if (response) {
+                // TODO: Replace with proper modal dialog for production
+                const response = window.prompt('Enter your response:');
+                if (response && response.trim()) {
                   onRespond(escalation.id, response);
                 }
               }}

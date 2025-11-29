@@ -417,7 +417,7 @@ export async function POST(
       data: {
         content: input.content,
         type: input.type,
-        metadata: input.metadata as Prisma.InputJsonValue,
+        metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
         channelId: parentMessage.channelId,
         authorId: session.user.id,
         parentId: params.id,

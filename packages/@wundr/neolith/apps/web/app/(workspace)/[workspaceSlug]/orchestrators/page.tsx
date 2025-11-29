@@ -124,32 +124,25 @@ export default function OrchestratorsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Orchestrators</h1>
-          <p className="text-muted-foreground">AI-powered orchestrators managing your workspace operations</p>
-        </div>
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            onClick={handleNewOrchestrator}
-            className="inline-flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            New Orchestrator
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="inline-flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Quick Create
-          </Button>
-        </div>
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          onClick={handleNewOrchestrator}
+          className="inline-flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          New Orchestrator
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="inline-flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Quick Create
+        </Button>
       </div>
 
       {/* Stats Overview */}

@@ -199,6 +199,7 @@ function toCallParticipant(
     isPinned: pinnedParticipants.has(participant.sid),
     connectionQuality: mapConnectionQuality(participant.connectionQuality),
     isLocal,
+    joinedAt: participant.joinedAt?.toISOString() ?? new Date().toISOString(),
   };
 }
 
@@ -217,11 +218,11 @@ export function useCall(roomName: string): UseCallReturn {
   const [pinnedParticipants, setPinnedParticipants] = useState<Set<string>>(new Set());
   const roomRef = useRef<Room | null>(null);
 
-  // Update participants list
+  // Update participants list whenever room state or pins change
   const updateParticipants = useCallback(() => {
     if (!roomRef.current) {
-return;
-}
+      return;
+    }
 
     const allParticipants: CallParticipant[] = [];
 
@@ -243,9 +244,15 @@ return;
   // Connect to room
   const connect = useCallback(
     async (token: string) => {
-      if (!roomName || isConnecting || connectionState === ConnectionState.Connected) {
-return;
-}
+      // Validate inputs and prevent duplicate connections
+      if (!roomName || !token) {
+        setError(new Error('Room name and token are required'));
+        return;
+      }
+
+      if (isConnecting || connectionState === ConnectionState.Connected) {
+        return;
+      }
 
       setIsConnecting(true);
       setError(null);
@@ -293,6 +300,11 @@ return;
         updateParticipants();
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to connect to room'));
+        // Clean up if connection failed
+        roomRef.current = null;
+        setRoom(null);
+        setLocalParticipant(null);
+        setParticipants([]);
       } finally {
         setIsConnecting(false);
       }
@@ -324,6 +336,11 @@ return;
       return newSet;
     });
   }, []);
+
+  // Update participants when pins change
+  useEffect(() => {
+    updateParticipants();
+  }, [pinnedParticipants, updateParticipants]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -532,14 +549,22 @@ export function useLocalMedia(): UseLocalMediaReturn {
   // Change video device
   const setVideoDevice = useCallback(
     async (deviceId: string) => {
-      setSelectedVideoDevice(deviceId);
-      if (isVideoEnabled && videoTrack) {
-        videoTrack.stop();
-        const newTrack = await createLocalVideoTrack({
-          deviceId,
-          resolution: VideoPresets.h720.resolution,
-        });
-        setVideoTrack(newTrack);
+      try {
+        setSelectedVideoDevice(deviceId);
+        if (isVideoEnabled && videoTrack) {
+          videoTrack.stop();
+          const newTrack = await createLocalVideoTrack({
+            deviceId,
+            resolution: VideoPresets.h720.resolution,
+          });
+          setVideoTrack(newTrack);
+          setError(null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to change video device'));
+        // Restore previous state on error
+        setIsVideoEnabled(false);
+        setVideoTrack(null);
       }
     },
     [isVideoEnabled, videoTrack],
@@ -548,16 +573,24 @@ export function useLocalMedia(): UseLocalMediaReturn {
   // Change audio device
   const setAudioDevice = useCallback(
     async (deviceId: string) => {
-      setSelectedAudioDevice(deviceId);
-      if (isAudioEnabled && audioTrack) {
-        audioTrack.stop();
-        const newTrack = await createLocalAudioTrack({
-          deviceId,
-          noiseSuppression: true,
-          echoCancellation: true,
-          autoGainControl: true,
-        });
-        setAudioTrack(newTrack);
+      try {
+        setSelectedAudioDevice(deviceId);
+        if (isAudioEnabled && audioTrack) {
+          audioTrack.stop();
+          const newTrack = await createLocalAudioTrack({
+            deviceId,
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoGainControl: true,
+          });
+          setAudioTrack(newTrack);
+          setError(null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to change audio device'));
+        // Restore previous state on error
+        setIsAudioEnabled(false);
+        setAudioTrack(null);
       }
     },
     [isAudioEnabled, audioTrack],
@@ -614,8 +647,8 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
   // Fetch available huddles
   const fetchHuddles = useCallback(async () => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -623,7 +656,7 @@ return;
     try {
       const response = await fetch(`/api/workspaces/${workspaceId}/huddles`);
       if (!response.ok) {
-        throw new Error('Failed to fetch huddles');
+        throw new Error(`Failed to fetch huddles: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -638,7 +671,7 @@ return;
         })),
       );
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(err instanceof Error ? err : new Error('Failed to fetch huddles'));
     } finally {
       setIsLoading(false);
     }
@@ -647,64 +680,85 @@ return;
   // Subscribe to huddle updates
   useEffect(() => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     fetchHuddles();
 
-    // Set up SSE for real-time huddle updates
-    const eventSource = new EventSource(`/api/workspaces/${workspaceId}/huddles/subscribe`);
+    let eventSource: EventSource | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'huddle_created') {
-          setHuddles((prev) => [
-            ...prev,
-            {
-              ...data.huddle,
-              createdAt: new Date(data.huddle.createdAt),
-            },
-          ]);
-        } else if (data.type === 'huddle_updated') {
-          setHuddles((prev) =>
-            prev.map((h) =>
-              h.id === data.huddle.id
-                ? {
-                    ...data.huddle,
-                    createdAt: new Date(data.huddle.createdAt),
-                  }
-                : h,
-            ),
-          );
-          // Update active huddle if it's the one being updated
-          if (activeHuddle?.id === data.huddle.id) {
-            setActiveHuddle({
-              ...data.huddle,
-              createdAt: new Date(data.huddle.createdAt),
-            });
+    const setupEventSource = () => {
+      // Set up SSE for real-time huddle updates
+      eventSource = new EventSource(`/api/workspaces/${workspaceId}/huddles/subscribe`);
+
+      eventSource.onmessage = (event) => {
+        try {
+          reconnectAttempts = 0; // Reset on successful message
+          const data = JSON.parse(event.data);
+          if (data.type === 'huddle_created') {
+            setHuddles((prev) => [
+              ...prev,
+              {
+                ...data.huddle,
+                createdAt: new Date(data.huddle.createdAt),
+              },
+            ]);
+          } else if (data.type === 'huddle_updated') {
+            setHuddles((prev) =>
+              prev.map((h) =>
+                h.id === data.huddle.id
+                  ? {
+                      ...data.huddle,
+                      createdAt: new Date(data.huddle.createdAt),
+                    }
+                  : h,
+              ),
+            );
+            // Update active huddle if it's the one being updated
+            if (activeHuddle?.id === data.huddle.id) {
+              setActiveHuddle({
+                ...data.huddle,
+                createdAt: new Date(data.huddle.createdAt),
+              });
+            }
+          } else if (data.type === 'huddle_ended') {
+            setHuddles((prev) => prev.filter((h) => h.id !== data.huddleId));
+            if (activeHuddle?.id === data.huddleId) {
+              setActiveHuddle(null);
+            }
           }
-        } else if (data.type === 'huddle_ended') {
-          setHuddles((prev) => prev.filter((h) => h.id !== data.huddleId));
-          if (activeHuddle?.id === data.huddleId) {
-            setActiveHuddle(null);
-          }
+        } catch {
+          // Ignore parse errors
         }
-      } catch {
-        // Ignore parse errors
-      }
+      };
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+
+        // Exponential backoff with max attempts
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
+          reconnectTimeout = setTimeout(() => {
+            fetchHuddles();
+            setupEventSource();
+          }, delay);
+        } else {
+          setError(new Error('Failed to maintain connection to huddle updates'));
+        }
+      };
     };
 
-    eventSource.onerror = () => {
-      eventSource.close();
-      // Retry connection after a delay
-      setTimeout(() => {
-        fetchHuddles();
-      }, 5000);
-    };
+    setupEventSource();
 
     return () => {
-      eventSource.close();
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      eventSource?.close();
     };
   }, [workspaceId, fetchHuddles, activeHuddle?.id]);
 
@@ -712,8 +766,8 @@ return;
   const joinHuddle = useCallback(
     async (huddleId: string) => {
       if (!workspaceId) {
-return;
-}
+        return;
+      }
 
       setIsJoining(true);
       setError(null);
@@ -724,7 +778,7 @@ return;
         });
 
         if (!response.ok) {
-          throw new Error('Failed to join huddle');
+          throw new Error(`Failed to join huddle: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -733,7 +787,7 @@ return;
           createdAt: new Date(data.huddle.createdAt),
         });
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setError(err instanceof Error ? err : new Error('Failed to join huddle'));
       } finally {
         setIsJoining(false);
       }
@@ -744,13 +798,17 @@ return;
   // Leave the active huddle
   const leaveHuddle = useCallback(async () => {
     if (!workspaceId || !activeHuddle) {
-return;
-}
+      return;
+    }
 
     try {
-      await fetch(`/api/workspaces/${workspaceId}/huddles/${activeHuddle.id}/leave`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/huddles/${activeHuddle.id}/leave`, {
         method: 'POST',
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to leave huddle: ${response.statusText}`);
+      }
 
       setActiveHuddle(null);
     } catch (err) {
@@ -762,8 +820,13 @@ return;
   const createHuddle = useCallback(
     async (name: string, channelId?: string): Promise<Huddle | null> => {
       if (!workspaceId) {
-return null;
-}
+        return null;
+      }
+
+      if (!name || name.trim().length === 0) {
+        setError(new Error('Huddle name is required'));
+        return null;
+      }
 
       setIsLoading(true);
       setError(null);
@@ -776,7 +839,7 @@ return null;
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create huddle');
+          throw new Error(`Failed to create huddle: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -790,7 +853,7 @@ return null;
 
         return huddle;
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setError(err instanceof Error ? err : new Error('Failed to create huddle'));
         return null;
       } finally {
         setIsLoading(false);

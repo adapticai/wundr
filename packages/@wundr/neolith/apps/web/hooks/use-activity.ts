@@ -7,7 +7,7 @@
  * @module hooks/use-activity
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Activity type enumeration
@@ -47,7 +47,7 @@ export interface ActivityEntry {
   target?: ActivityTarget;
   content?: string;
   metadata: Record<string, unknown>;
-  timestamp: string;
+  timestamp: string; // ISO 8601 string from API
 }
 
 /**
@@ -72,10 +72,24 @@ export interface PaginationInfo {
 }
 
 /**
+ * Raw activity entry from API (timestamp is Date)
+ */
+interface RawActivityEntry {
+  id: string;
+  type: ActivityType;
+  action: string;
+  actor: Actor;
+  target?: ActivityTarget;
+  content?: string;
+  metadata: Record<string, unknown>;
+  timestamp: Date | string; // API returns Date, but JSON.parse converts to string
+}
+
+/**
  * Activity feed response
  */
 interface ActivityResponse {
-  data: ActivityEntry[];
+  data: RawActivityEntry[];
   pagination: PaginationInfo;
   workspace: {
     id: string;
@@ -139,6 +153,7 @@ export function useActivity(
   const [error, setError] = useState<Error | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
    * Build API URL with query parameters
@@ -151,20 +166,20 @@ export function useActivity(
       });
 
       if (cursor) {
-params.set('cursor', cursor);
-}
+        params.set('cursor', cursor);
+      }
       if (dateFrom) {
-params.set('dateFrom', dateFrom);
-}
+        params.set('dateFrom', dateFrom);
+      }
       if (dateTo) {
-params.set('dateTo', dateTo);
-}
+        params.set('dateTo', dateTo);
+      }
       if (channelId) {
-params.set('channelId', channelId);
-}
+        params.set('channelId', channelId);
+      }
       if (userId) {
-params.set('userId', userId);
-}
+        params.set('userId', userId);
+      }
 
       return `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`;
     },
@@ -172,13 +187,34 @@ params.set('userId', userId);
   );
 
   /**
+   * Normalize activity timestamp to ISO string
+   */
+  const normalizeActivity = useCallback((raw: RawActivityEntry): ActivityEntry => {
+    return {
+      ...raw,
+      timestamp: typeof raw.timestamp === 'string'
+        ? raw.timestamp
+        : raw.timestamp.toISOString(),
+    };
+  }, []);
+
+  /**
    * Fetch activities from API
    */
   const fetchActivities = useCallback(
     async (cursor?: string | null, append = false) => {
       if (!enabled) {
-return;
-}
+        return;
+      }
+
+      // Cancel any in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Create new abort controller for this request
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
       if (!append) {
         setIsLoading(true);
@@ -188,7 +224,9 @@ return;
       setError(null);
 
       try {
-        const response = await fetch(buildUrl(cursor));
+        const response = await fetch(buildUrl(cursor), {
+          signal: abortController.signal,
+        });
 
         if (!response.ok) {
           throw new Error(
@@ -198,23 +236,40 @@ return;
 
         const result: ActivityResponse = await response.json();
 
+        // Validate response structure
+        if (!result.data || !Array.isArray(result.data) || !result.pagination) {
+          throw new Error('Invalid API response structure');
+        }
+
+        // Normalize timestamps to strings
+        const normalizedActivities = result.data.map(normalizeActivity);
+
         if (append) {
-          setActivities((prev) => [...prev, ...result.data]);
+          setActivities((prev) => [...prev, ...normalizedActivities]);
         } else {
-          setActivities(result.data);
+          setActivities(normalizedActivities);
         }
 
         setPagination(result.pagination);
       } catch (err) {
+        // Ignore abort errors
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+
         const error = err instanceof Error ? err : new Error('Failed to fetch activities');
         setError(error);
         console.error('[useActivity] Error fetching activities:', error);
       } finally {
-        setIsLoading(false);
-        setIsLoadingMore(false);
+        // Only update loading states if this request wasn't aborted
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+          setIsLoadingMore(false);
+          abortControllerRef.current = null;
+        }
       }
     },
-    [enabled, buildUrl],
+    [enabled, buildUrl, normalizeActivity],
   );
 
   /**
@@ -222,8 +277,8 @@ return;
    */
   const loadMore = useCallback(async () => {
     if (!pagination?.hasMore || isLoadingMore) {
-return;
-}
+      return;
+    }
 
     await fetchActivities(pagination.nextCursor, true);
   }, [pagination, isLoadingMore, fetchActivities]);
@@ -240,6 +295,14 @@ return;
    */
   useEffect(() => {
     fetchActivities(null, false);
+
+    // Cleanup: abort any in-flight request when component unmounts or dependencies change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
   }, [fetchActivities]);
 
   return {

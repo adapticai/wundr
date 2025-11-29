@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { WorkspaceMember } from './member-list';
 
@@ -44,30 +44,36 @@ export function MemberEditModal({
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'danger'>('details');
 
   const fetchMemberDetails = useCallback(async () => {
     if (!member) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
+    setError(null);
     try {
       const [detailsRes, activityRes] = await Promise.all([
         fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}`),
         fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/activity`),
       ]);
 
-      if (detailsRes.ok) {
-        const data = await detailsRes.json();
-        setCustomFields(data.customFields || {});
+      if (!detailsRes.ok || !activityRes.ok) {
+        throw new Error('Failed to fetch member details');
       }
-      if (activityRes.ok) {
-        const data = await activityRes.json();
-        setActivity(data.activity || []);
-      }
-    } catch {
-      // Handle error
+
+      const [detailsData, activityData] = await Promise.all([
+        detailsRes.json(),
+        activityRes.json(),
+      ]);
+
+      setCustomFields(detailsData.customFields || {});
+      setActivity(activityData.activity || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load member details');
+      console.error('Failed to fetch member details:', err);
     } finally {
       setIsLoading(false);
     }
@@ -82,10 +88,11 @@ return;
 
   const handleSaveRole = async () => {
     if (!member) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
+    setError(null);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceId}/admin/members/${member.id}`,
@@ -95,11 +102,13 @@ return;
           body: JSON.stringify({ role: selectedRole, customFields }),
         },
       );
-      if (response.ok) {
-        onSave();
+      if (!response.ok) {
+        throw new Error('Failed to update member');
       }
-    } catch {
-      // Handle error
+      onSave();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update member');
+      console.error('Failed to update member:', err);
     } finally {
       setIsSaving(false);
     }
@@ -107,56 +116,71 @@ return;
 
   const handleSuspend = async () => {
     if (!member) {
-return;
-}
+      return;
+    }
     if (!confirm(`Are you sure you want to suspend ${member.name}?`)) {
-return;
-}
+      return;
+    }
 
+    setError(null);
     try {
-      await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/suspend`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/suspend`, {
         method: 'POST',
       });
+      if (!response.ok) {
+        throw new Error('Failed to suspend member');
+      }
       onSave();
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to suspend member');
+      console.error('Failed to suspend member:', err);
     }
   };
 
   const handleActivate = async () => {
     if (!member) {
-return;
-}
+      return;
+    }
 
+    setError(null);
     try {
-      await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/activate`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/activate`, {
         method: 'POST',
       });
+      if (!response.ok) {
+        throw new Error('Failed to activate member');
+      }
       onSave();
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to activate member');
+      console.error('Failed to activate member:', err);
     }
   };
 
   const handleRemove = async () => {
     if (!member) {
-return;
-}
+      return;
+    }
     if (
       !confirm(
         `Are you sure you want to remove ${member.name} from this workspace? This action cannot be undone.`,
       )
     ) {
-return;
-}
+      return;
+    }
 
+    setError(null);
     try {
-      await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}`, {
         method: 'DELETE',
       });
+      if (!response.ok) {
+        throw new Error('Failed to remove member');
+      }
       onSave();
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove member');
+      console.error('Failed to remove member:', err);
     }
   };
 
@@ -179,16 +203,16 @@ return null;
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg font-medium">
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg font-medium">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {member.image ? (
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full rounded-lg object-cover"
                 />
               ) : (
-                member.name.charAt(0).toUpperCase()
+                getInitials(member.name || member.email)
               )}
             </div>
             <div>
@@ -231,9 +255,15 @@ return null;
 
         {/* Content */}
         <div className="p-4 max-h-[60vh] overflow-auto">
+          {error && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" role="status" aria-label="Loading member details" />
             </div>
           ) : (
             <>

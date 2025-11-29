@@ -180,7 +180,30 @@ params.set('search', filters.search);
         }
 
         const result = await response.json();
-        const newMessages: Message[] = result.data.map((m: any) => ({
+
+        interface ApiMessage {
+          id: string;
+          content: string;
+          type: string;
+          channelId: string;
+          createdAt: string;
+          updatedAt: string;
+          editedAt?: string | null;
+          author: {
+            id: string;
+            name?: string;
+            displayName?: string;
+            avatarUrl?: string;
+            image?: string;
+          };
+          reactions?: Reaction[];
+          replyCount?: number;
+          mentions?: string[];
+          attachments?: unknown[];
+          parentId?: string | null;
+        }
+
+        const newMessages: Message[] = result.data.map((m: ApiMessage) => ({
           ...m,
           createdAt: new Date(m.createdAt),
           updatedAt: new Date(m.updatedAt),
@@ -188,9 +211,13 @@ params.set('search', filters.search);
           // Transform author's avatarUrl to image for UI compatibility
           author: {
             ...m.author,
-            name: m.author.displayName || m.author.name,
+            name: m.author.displayName || m.author.name || 'Unknown',
             image: m.author.avatarUrl || m.author.image,
           },
+          reactions: m.reactions || [],
+          replyCount: m.replyCount || 0,
+          mentions: m.mentions || [],
+          attachments: m.attachments || [],
         }));
 
         if (loadMore) {
@@ -206,7 +233,7 @@ params.set('search', filters.search);
         setIsLoadingMore(false);
       }
     },
-    [channelId, filters?.limit, filters?.before, filters?.after, filters?.search, messages],
+    [channelId, filters?.limit, filters?.before, filters?.after, filters?.search],
   );
 
   // Initial fetch
@@ -221,6 +248,10 @@ params.set('search', filters.search);
       return;
     }
 
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let isMounted = true;
+
     const subscribe = (): (() => void) | null => {
       const eventSource = new EventSource(`/api/channels/${channelId}/subscribe`);
 
@@ -233,14 +264,18 @@ params.set('search', filters.search);
             const errorData = JSON.parse(messageEvent.data);
             console.error('[Channel Subscribe] Server error:', errorData);
           }
-        } catch {
+        } catch (parseError) {
           // Generic error event (connection failed, etc.)
+          console.warn('[Channel Subscribe] Connection error:', parseError);
         }
       });
 
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          // Reset reconnect attempts on successful message
+          reconnectAttempts = 0;
+
           if (data.type === 'new_message') {
             const newMessage: Message = {
               ...data.message,
@@ -250,7 +285,7 @@ params.set('search', filters.search);
               // Transform author's avatarUrl to image for UI compatibility
               author: data.message.author ? {
                 ...data.message.author,
-                name: data.message.author.displayName || data.message.author.name,
+                name: data.message.author.displayName || data.message.author.name || 'Unknown',
                 image: data.message.author.avatarUrl || data.message.author.image,
               } : data.message.author,
               // Ensure required fields have defaults
@@ -281,7 +316,7 @@ params.set('search', filters.search);
                       // Transform author's avatarUrl to image for UI compatibility
                       author: data.message.author ? {
                         ...data.message.author,
-                        name: data.message.author.displayName || data.message.author.name,
+                        name: data.message.author.displayName || data.message.author.name || 'Unknown',
                         image: data.message.author.avatarUrl || data.message.author.image,
                       } : m.author,
                     }
@@ -291,17 +326,29 @@ params.set('search', filters.search);
           } else if (data.type === 'message_deleted') {
             setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
           }
-        } catch {
-          // Ignore parse errors
+        } catch (parseError) {
+          console.error('[Channel Subscribe] Failed to parse message:', parseError);
         }
       };
 
       eventSource.onerror = () => {
         eventSource.close();
-        // Retry connection after a delay
-        setTimeout(() => {
-          subscriptionRef.current = subscribe();
-        }, 5000);
+
+        // Implement exponential backoff for reconnection
+        if (isMounted && reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          const backoffTime = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          console.warn(`[Channel Subscribe] Reconnecting in ${backoffTime}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+
+          setTimeout(() => {
+            if (isMounted) {
+              subscriptionRef.current = subscribe();
+            }
+          }, backoffTime);
+        } else if (reconnectAttempts >= maxReconnectAttempts) {
+          console.error('[Channel Subscribe] Max reconnection attempts reached');
+          setError(new Error('Real-time connection failed after multiple attempts'));
+        }
       };
 
       return () => eventSource.close();
@@ -310,6 +357,7 @@ params.set('search', filters.search);
     subscriptionRef.current = subscribe();
 
     return () => {
+      isMounted = false;
       subscriptionRef.current?.();
     };
   }, [channelId]);
@@ -378,28 +426,71 @@ return;
       }
 
       const result = await response.json();
+
+      interface ApiAuthor {
+        id: string;
+        name?: string;
+        displayName?: string;
+        avatarUrl?: string;
+        image?: string;
+      }
+
       // Helper to transform author data
-      const transformAuthor = (author: any) => author ? ({
+      const transformAuthor = (author: ApiAuthor | null | undefined) => author ? ({
         ...author,
-        name: author.displayName || author.name,
+        name: author.displayName || author.name || 'Unknown',
         image: author.avatarUrl || author.image,
       }) : author;
+
+      interface ApiThreadMessage {
+        id: string;
+        content: string;
+        type: string;
+        channelId: string;
+        createdAt: string;
+        updatedAt: string;
+        editedAt?: string | null;
+        author: ApiAuthor;
+        reactions?: Reaction[];
+        replyCount?: number;
+        mentions?: string[];
+        attachments?: unknown[];
+        parentId?: string | null;
+      }
+
+      interface ApiParticipant {
+        id: string;
+        name?: string;
+        avatarUrl?: string;
+        image?: string;
+      }
 
       setThread({
         parentMessage: {
           ...result.data.parentMessage,
           createdAt: new Date(result.data.parentMessage.createdAt),
           updatedAt: new Date(result.data.parentMessage.updatedAt),
+          editedAt: result.data.parentMessage.editedAt ? new Date(result.data.parentMessage.editedAt) : null,
           author: transformAuthor(result.data.parentMessage.author),
-        },
-        messages: result.data.replies.map((m: any) => ({
+          reactions: result.data.parentMessage.reactions || [],
+          replyCount: result.data.parentMessage.replyCount || 0,
+          mentions: result.data.parentMessage.mentions || [],
+          attachments: result.data.parentMessage.attachments || [],
+        } as Message,
+        messages: result.data.replies.map((m: ApiThreadMessage) => ({
           ...m,
           createdAt: new Date(m.createdAt),
           updatedAt: new Date(m.updatedAt),
+          editedAt: m.editedAt ? new Date(m.editedAt) : null,
           author: transformAuthor(m.author),
+          reactions: m.reactions || [],
+          replyCount: m.replyCount || 0,
+          mentions: m.mentions || [],
+          attachments: m.attachments || [],
         })),
-        participants: (result.data.participants || []).map((p: any) => ({
+        participants: (result.data.participants || []).map((p: ApiParticipant) => ({
           ...p,
+          name: p.name || 'Unknown',
           image: p.avatarUrl || p.image,
         })),
       });
@@ -574,48 +665,75 @@ export function useReactions(messageId: string): UseReactionsReturn {
   const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  const toggleReactionRef = useRef<AbortController | null>(null);
+
   const toggleReaction = useCallback(
     async (emoji: string): Promise<Reaction[] | null> => {
       if (!messageId) {
-return null;
-}
+        return null;
+      }
+
+      // Cancel any in-flight toggle request
+      if (toggleReactionRef.current) {
+        toggleReactionRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      toggleReactionRef.current = abortController;
 
       setIsToggling(true);
       setError(null);
 
       try {
-        // Check if reaction already exists by fetching current reactions
-        const getResponse = await fetch(`/api/messages/${messageId}/reactions`);
-        if (getResponse.ok) {
-          const getResult = await getResponse.json();
-          const existingReaction = getResult.data?.find(
-            (r: { emoji: string; hasReacted: boolean }) =>
-              r.emoji === emoji && r.hasReacted,
-          );
+        interface ApiReaction {
+          emoji: string;
+          hasReacted: boolean;
+          count?: number;
+          users?: { id: string; name: string }[];
+        }
 
-          // If exists, delete it; otherwise, add it
-          if (existingReaction) {
-            const deleteResponse = await fetch(
-              `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
-              { method: 'DELETE' },
-            );
-            if (!deleteResponse.ok) {
-              throw new Error('Failed to remove reaction');
-            }
-          } else {
-            const addResponse = await fetch(`/api/messages/${messageId}/reactions`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ emoji }),
-            });
-            if (!addResponse.ok) {
-              throw new Error('Failed to add reaction');
-            }
+        // Check if reaction already exists by fetching current reactions
+        const getResponse = await fetch(`/api/messages/${messageId}/reactions`, {
+          signal: abortController.signal,
+        });
+
+        if (!getResponse.ok) {
+          throw new Error('Failed to fetch current reactions');
+        }
+
+        const getResult = await getResponse.json();
+        const existingReaction = getResult.data?.find(
+          (r: ApiReaction) => r.emoji === emoji && r.hasReacted,
+        );
+
+        // If exists, delete it; otherwise, add it
+        if (existingReaction) {
+          const deleteResponse = await fetch(
+            `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
+            {
+              method: 'DELETE',
+              signal: abortController.signal,
+            },
+          );
+          if (!deleteResponse.ok) {
+            throw new Error('Failed to remove reaction');
+          }
+        } else {
+          const addResponse = await fetch(`/api/messages/${messageId}/reactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emoji }),
+            signal: abortController.signal,
+          });
+          if (!addResponse.ok) {
+            throw new Error('Failed to add reaction');
           }
         }
 
         // Fetch updated reactions list
-        const finalResponse = await fetch(`/api/messages/${messageId}/reactions`);
+        const finalResponse = await fetch(`/api/messages/${messageId}/reactions`, {
+          signal: abortController.signal,
+        });
         if (!finalResponse.ok) {
           throw new Error('Failed to fetch reactions');
         }
@@ -623,14 +741,30 @@ return null;
         const result = await finalResponse.json();
         return result.data;
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          // Request was cancelled, don't set error
+          return null;
+        }
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
       } finally {
+        if (toggleReactionRef.current === abortController) {
+          toggleReactionRef.current = null;
+        }
         setIsToggling(false);
       }
     },
     [messageId],
   );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (toggleReactionRef.current) {
+        toggleReactionRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     toggleReaction,
@@ -646,34 +780,49 @@ export function useTypingIndicator(channelId: string, currentUserId: string): Us
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Listen for typing events
+  // Poll for typing events (API returns JSON, not SSE)
   useEffect(() => {
     if (!channelId) {
-return;
-}
+      return;
+    }
 
-    const eventSource = new EventSource(`/api/channels/${channelId}/typing`);
-
-    eventSource.onmessage = (event) => {
+    const pollTypingUsers = async () => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.userId !== currentUserId) {
-          setTypingUsers((prev) => {
-            const filtered = prev.filter((t) => t.user.id !== data.userId);
-            if (data.isTyping) {
-              return [...filtered, { user: data.user, channelId, timestamp: Date.now() }];
-            }
-            return filtered;
-          });
+        const response = await fetch(`/api/channels/${channelId}/typing`);
+        if (!response.ok) {
+          return;
         }
+        const data = await response.json();
+        const users = data.data?.typingUsers || [];
+
+        // Convert API response to TypingUser format
+        setTypingUsers(
+          users
+            .filter((u: { userId: string }) => u.userId !== currentUserId)
+            .map((u: { userId: string; userName: string }) => ({
+              user: { id: u.userId, name: u.userName, email: '', status: 'online' as const },
+              channelId,
+              timestamp: Date.now(),
+            }))
+        );
       } catch {
-        // Ignore parse errors
+        // Silently fail - typing indicators are non-critical
       }
     };
 
+    // Initial poll
+    pollTypingUsers();
+
+    // Poll every 2 seconds
+    pollIntervalRef.current = setInterval(pollTypingUsers, 2000);
+
     return () => {
-      eventSource.close();
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
     };
   }, [channelId, currentUserId]);
 
@@ -687,11 +836,21 @@ return;
     return () => clearInterval(interval);
   }, []);
 
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   // Send typing indicator
   const startTyping = useCallback(() => {
     if (!channelId || isTyping) {
-return;
-}
+      return;
+    }
 
     setIsTyping(true);
 
@@ -699,8 +858,8 @@ return;
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isTyping: true }),
-    }).catch(() => {
-      // Ignore errors
+    }).catch((error) => {
+      console.error('[Typing Indicator] Failed to send start typing:', error);
     });
 
     // Auto-stop typing after 5 seconds of inactivity
@@ -715,8 +874,8 @@ return;
 
   const stopTyping = useCallback(() => {
     if (!channelId || !isTyping) {
-return;
-}
+      return;
+    }
 
     setIsTyping(false);
 
@@ -729,8 +888,8 @@ return;
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isTyping: false }),
-    }).catch(() => {
-      // Ignore errors
+    }).catch((error) => {
+      console.error('[Typing Indicator] Failed to send stop typing:', error);
     });
   }, [channelId, isTyping]);
 
@@ -815,35 +974,73 @@ return;
 export function useMentionSuggestions(channelId: string): UseMentionSuggestionsReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const searchUsers = useCallback(
     async (query: string) => {
+      // Clear existing debounce timeout
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
+      // Cancel any in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
       if (!channelId || query.length < 1) {
         setUsers([]);
         return;
       }
 
-      setIsLoading(true);
+      // Debounce search by 300ms
+      debounceTimeoutRef.current = setTimeout(async () => {
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
 
-      try {
-        const response = await fetch(
-          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
-        );
-        if (!response.ok) {
-          throw new Error('Failed to search users');
+        setIsLoading(true);
+
+        try {
+          const response = await fetch(
+            `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
+            { signal: abortController.signal },
+          );
+          if (!response.ok) {
+            throw new Error('Failed to search users');
+          }
+
+          const data = await response.json();
+          setUsers(data.members || []);
+        } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') {
+            // Request was cancelled, don't update state
+            return;
+          }
+          console.error('[Mention Suggestions] Search failed:', error);
+          setUsers([]);
+        } finally {
+          if (abortControllerRef.current === abortController) {
+            abortControllerRef.current = null;
+          }
+          setIsLoading(false);
         }
-
-        const data = await response.json();
-        setUsers(data.members);
-      } catch {
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
-      }
+      }, 300);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [channelId],
   );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     users,

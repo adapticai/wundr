@@ -280,10 +280,10 @@ function ActivityCard({ activity }: ActivityCardProps) {
             <img
               src={activity.actor.avatarUrl}
               alt={activity.actor.displayName || activity.actor.name || 'User'}
-              className="h-8 w-8 rounded-full object-cover"
+              className="h-8 w-8 rounded-lg object-cover"
             />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
               <span className="text-xs font-medium text-muted-foreground">
                 {(activity.actor.displayName || activity.actor.name || '?')[0].toUpperCase()}
               </span>

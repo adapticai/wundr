@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { CreateAgentInput, AgentType } from '@/types/agent';
+import type { CreateAgentInput, AgentType, AvailableTool } from '@/types/agent';
 import { AGENT_TYPE_METADATA, AVAILABLE_TOOLS, DEFAULT_MODEL_CONFIGS } from '@/types/agent';
 
 interface CreateAgentModalProps {
@@ -26,14 +26,14 @@ interface CreateAgentModalProps {
 
 const AGENT_TYPES: AgentType[] = ['task', 'research', 'coding', 'data', 'qa', 'support', 'custom'];
 
-const AVAILABLE_MODELS = [
+const AVAILABLE_MODELS: ReadonlyArray<{ value: string; label: string }> = [
   { value: 'claude-3-opus', label: 'Claude 3 Opus' },
   { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
   { value: 'claude-3-haiku', label: 'Claude 3 Haiku' },
   { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
   { value: 'gpt-4', label: 'GPT-4' },
   { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
-];
+] as const;
 
 export function CreateAgentModal({
   isOpen,
@@ -48,7 +48,7 @@ export function CreateAgentModal({
   const [selectedModel, setSelectedModel] = useState('claude-3-haiku');
   const [temperature, setTemperature] = useState(0.5);
   const [maxTokens, setMaxTokens] = useState(2048);
-  const [selectedTools, setSelectedTools] = useState<string[]>([]);
+  const [selectedTools, setSelectedTools] = useState<AvailableTool[]>([]);
 
   const resetForm = useCallback(() => {
     setName('');
@@ -74,28 +74,42 @@ export function CreateAgentModal({
     setMaxTokens(defaultConfig.maxTokens);
   }, []);
 
-  const handleToolToggle = useCallback((tool: string) => {
+  const handleToolToggle = useCallback((tool: AvailableTool) => {
     setSelectedTools((prev) =>
       prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool],
     );
   }, []);
 
   const handleCreate = useCallback(async () => {
-    const input: CreateAgentInput = {
-      name,
-      type,
-      description: description || undefined,
-      config: {
-        model: selectedModel,
-        temperature,
-        maxTokens,
-      },
-      systemPrompt: systemPrompt || undefined,
-      tools: selectedTools.length > 0 ? selectedTools : undefined,
-    };
+    if (!name.trim()) {
+      console.error('Agent name is required');
+      return;
+    }
 
-    await onCreate(input);
-    handleClose();
+    if (maxTokens < 256 || maxTokens > 32000) {
+      console.error('Max tokens must be between 256 and 32000');
+      return;
+    }
+
+    try {
+      const input: CreateAgentInput = {
+        name: name.trim(),
+        type,
+        description: description.trim() || undefined,
+        config: {
+          model: selectedModel,
+          temperature,
+          maxTokens,
+        },
+        systemPrompt: systemPrompt.trim() || undefined,
+        tools: selectedTools.length > 0 ? selectedTools : undefined,
+      };
+
+      await onCreate(input);
+      handleClose();
+    } catch (error) {
+      console.error('Failed to create agent:', error);
+    }
   }, [
     name,
     type,
@@ -110,6 +124,20 @@ export function CreateAgentModal({
   ]);
 
   const canCreate = name.trim().length > 0;
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, handleClose]);
 
   if (!isOpen) {
     return null;
@@ -251,7 +279,12 @@ export function CreateAgentModal({
                     max="32000"
                     step="256"
                     value={maxTokens}
-                    onChange={(e) => setMaxTokens(parseInt(e.target.value, 10))}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      if (!isNaN(value)) {
+                        setMaxTokens(value);
+                      }
+                    }}
                     disabled={isLoading}
                   />
                 </div>

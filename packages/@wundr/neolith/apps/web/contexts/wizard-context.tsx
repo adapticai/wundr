@@ -193,7 +193,12 @@ interface StoredWizardState extends WizardState {
   timestamp: number;
 }
 
-function saveToLocalStorage(state: WizardState) {
+function saveToLocalStorage(state: WizardState): void {
+  // Guard against SSR or environments without localStorage
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+
   try {
     const dataToStore: StoredWizardState = {
       ...state,
@@ -206,6 +211,11 @@ function saveToLocalStorage(state: WizardState) {
 }
 
 function loadFromLocalStorage(): Partial<WizardState> | null {
+  // Guard against SSR or environments without localStorage
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return null;
+  }
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
@@ -228,7 +238,12 @@ function loadFromLocalStorage(): Partial<WizardState> | null {
   }
 }
 
-function clearLocalStorage() {
+function clearLocalStorage(): void {
+  // Guard against SSR or environments without localStorage
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
@@ -265,7 +280,7 @@ export function WizardProvider({ children, autoRestore = true }: WizardProviderP
   // Context actions
   const sendMessage = useCallback((content: string) => {
     const message: Message = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       role: 'user',
       content,
       timestamp: Date.now(),
@@ -323,7 +338,7 @@ export function WizardProvider({ children, autoRestore = true }: WizardProviderP
 }
 
 // Hook for consuming the context
-export function useWizard() {
+export function useWizard(): WizardContextValue {
   const context = useContext(WizardContext);
   if (context === undefined) {
     throw new Error('useWizard must be used within a WizardProvider');
@@ -332,16 +347,20 @@ export function useWizard() {
 }
 
 // Utility hook for checking if wizard has unsaved changes
-export function useWizardUnsavedChanges() {
+export function useWizardUnsavedChanges(): boolean {
   const { state } = useWizard();
   return state.isDirty && state.messages.length > 0;
 }
 
 // Utility hook for getting wizard completion status
-export function useWizardCompletionStatus() {
+export function useWizardCompletionStatus(): {
+  isComplete: boolean;
+  canSwitchToEdit: boolean;
+  missingRequiredFields: boolean;
+} {
   const { state } = useWizard();
 
-  const hasMinimumData = () => {
+  const hasMinimumData = (): boolean => {
     const { extractedData, entityType } = state;
 
     switch (entityType) {

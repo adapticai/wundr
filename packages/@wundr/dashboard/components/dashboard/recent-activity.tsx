@@ -1,12 +1,12 @@
 'use client'
 
-import * as React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { GitCommit, GitMerge, GitBranch, Package, AlertCircle } from 'lucide-react'
 import { realtimeStore, WebSocketMessage } from '@/lib/websocket'
 import { RealtimeData } from '@/types'
+import { AlertCircle, GitBranch, GitCommit, GitMerge, Package } from 'lucide-react'
+import * as React from 'react'
 
 interface ActivityItem {
   id: string
@@ -172,7 +172,7 @@ export function RecentActivity() {
           const Icon = getActivityIcon(activity.type)
           return (
             <div key={activity.id} className="flex items-center space-x-3">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={`/avatars/${activity.user.toLowerCase().replace(' ', '')}.jpg`} />
                 <AvatarFallback className="text-xs">
                   {getInitials(activity.user)}

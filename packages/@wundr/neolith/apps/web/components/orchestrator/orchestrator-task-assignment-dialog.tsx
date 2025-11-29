@@ -230,13 +230,14 @@ export function OrchestratorTaskAssignmentDialog({
                           <SelectItem key={orchestrator.id} value={orchestrator.id}>
                             <div className="flex items-center gap-2">
                               {orchestrator.avatarUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={orchestrator.avatarUrl}
                                   alt={orchestrator.title}
-                                  className="h-5 w-5 rounded-full object-cover"
+                                  className="h-5 w-5 rounded-md object-cover"
                                 />
                               ) : (
-                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary">
                                   {orchestrator.title.charAt(0)}
                                 </div>
                               )}

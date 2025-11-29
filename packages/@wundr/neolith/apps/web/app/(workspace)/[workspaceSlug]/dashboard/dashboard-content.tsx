@@ -8,7 +8,6 @@ import { usePageHeader } from '@/contexts/page-header-context';
 import type { DashboardActivityApiResponse } from '@/types/api';
 
 interface DashboardContentProps {
-  userName: string;
   workspaceId: string;
 }
 
@@ -168,18 +167,12 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
 
   return (
     <div className="p-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your workspace</p>
-      </div>
-
       <div className="grid grid-cols-1 gap-8">
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Recent Activity */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h3 className="font-semibold mb-4">Recent Activity</h3>
+            <h3 className="font-semibold mb-4" id="recent-activity-heading">Recent Activity</h3>
             {errors.activities ? (
               <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
                 <p className="font-medium">Error loading activity</p>
@@ -211,7 +204,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
 
           {/* Quick Stats */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h3 className="font-semibold mb-4">Quick Stats</h3>
+            <h3 className="font-semibold mb-4" id="quick-stats-heading">Quick Stats</h3>
             {errors.stats ? (
               <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
                 <p className="font-medium">Error loading statistics</p>
@@ -228,8 +221,8 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
           </div>
 
           {/* Quick Actions */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h3 className="font-semibold mb-4">Quick Actions</h3>
+          <nav className="rounded-lg border bg-card p-6 shadow-sm" aria-labelledby="quick-actions-heading">
+            <h3 className="font-semibold mb-4" id="quick-actions-heading">Quick Actions</h3>
             <div className="space-y-2">
               <QuickAction
                 label="Invite Team Member"
@@ -239,7 +232,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
               <QuickAction label="New Workflow" href={`/${workspaceId}/workflows`} />
               <QuickAction label="View Activity" href={`/${workspaceId}/admin/activity`} />
             </div>
-          </div>
+          </nav>
         </div>
       </div>
     </div>
@@ -282,10 +275,11 @@ function QuickAction({ label, href }: { label: string; href: string }) {
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-lg border p-3 text-sm font-medium transition-colors hover:bg-accent"
+      className="flex items-center justify-between rounded-lg border p-3 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      aria-label={label}
     >
       {label}
-      <ChevronRightIcon />
+      <ChevronRightIcon aria-hidden="true" />
     </Link>
   );
 }

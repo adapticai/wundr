@@ -26,6 +26,12 @@ export function AgentCard({ agent, onEdit, onPause, onResume, onDelete }: AgentC
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const metadata = AGENT_TYPE_METADATA[agent.type];
+
+  if (!metadata) {
+    console.error(`Unknown agent type: ${agent.type}`);
+    return null;
+  }
+
   const statusColor = {
     active: 'bg-green-500/10 text-green-500 border-green-500/20',
     paused: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
@@ -33,7 +39,10 @@ export function AgentCard({ agent, onEdit, onPause, onResume, onDelete }: AgentC
   }[agent.status];
 
   return (
-    <div className="group relative rounded-lg border border-stone-800 bg-stone-900 p-4 transition-all hover:border-stone-700 hover:bg-stone-900/80">
+    <article
+      className="group relative rounded-lg border border-stone-800 bg-stone-900 p-4 transition-all hover:border-stone-700 hover:bg-stone-900/80"
+      aria-label={`Agent card for ${agent.name}`}
+    >
       {/* Header */}
       <div className="mb-3 flex items-start justify-between">
         <div className="flex items-start gap-3">
@@ -52,8 +61,9 @@ export function AgentCard({ agent, onEdit, onPause, onResume, onDelete }: AgentC
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-stone-400 opacity-0 transition-opacity hover:text-stone-100 group-hover:opacity-100"
+              aria-label={`Agent options for ${agent.name}`}
             >
-              <MoreVerticalIcon className="h-4 w-4" />
+              <MoreVerticalIcon className="h-4 w-4" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
@@ -125,7 +135,7 @@ export function AgentCard({ agent, onEdit, onPause, onResume, onDelete }: AgentC
           </p>
         )}
       </div>
-    </div>
+    </article>
   );
 }
 

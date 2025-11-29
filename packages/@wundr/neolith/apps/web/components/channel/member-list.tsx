@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
 
 import type { ChannelMember, ChannelPermissions } from '@/types/channel';
@@ -199,42 +200,25 @@ function MemberItem({
   const canManage = permissions.canChangeRoles || permissions.canRemoveMembers;
   const showActions = canManage && !isCurrentUser;
 
-  const statusColors = {
-    online: 'bg-green-500',
-    offline: 'bg-gray-400',
-    away: 'bg-yellow-500',
-    busy: 'bg-red-500',
-  };
-
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => (showActions ? onToggleMenu() : onViewProfile?.(member.userId))}
         className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-accent"
+        aria-label={`${member.user.name}${isCurrentUser ? ' (you)' : ''}`}
       >
         {/* Avatar with status */}
-        <div className="relative">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-
-            {member.user.image ? (
-              <img
-                src={member.user.image}
-                alt={member.user.name}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              member.user.name.charAt(0).toUpperCase()
-            )}
-          </div>
-          <span
-            className={cn(
-              'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
-              statusColors[member.user.status || 'offline'],
-            )}
-          />
-        </div>
+        <UserAvatar
+          user={{
+            name: member.user.name,
+            image: member.user.image,
+            status: member.user.status || 'offline',
+          }}
+          size="lg"
+          shape="rounded"
+          showStatus
+        />
 
         {/* Info */}
         <div className="flex-1 min-w-0">

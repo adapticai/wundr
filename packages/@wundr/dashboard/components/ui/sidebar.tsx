@@ -1,9 +1,9 @@
 'use client'
 
-import * as React from 'react'
-import { Slot } from '@radix-ui/react-slot'
-import { VariantProps, cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, VariantProps } from 'class-variance-authority'
+import * as React from 'react'
 
 // Cookie configuration for persistent sidebar state
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -118,7 +118,7 @@ const Sidebar = React.forwardRef<
     return (
       <div
         className={cn(
-          'flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground',
+          'flex h-full w-[--sidebar-width] flex-col bg-card text-sidebar-foreground',
           className
         )}
         ref={ref}
@@ -141,7 +141,7 @@ const Sidebar = React.forwardRef<
         <div
           ref={ref}
           className={cn(
-            'fixed inset-y-0 z-50 h-screen w-[--sidebar-width-mobile] bg-sidebar p-0 text-sidebar-foreground shadow-lg transition-transform duration-200 ease-in-out',
+            'fixed inset-y-0 z-50 h-screen w-[--sidebar-width-mobile] bg-card p-0 text-sidebar-foreground shadow-lg transition-transform duration-200 ease-in-out',
             side === 'left' ? 'left-0' : 'right-0',
             side === 'left' && !openMobile && '-translate-x-full',
             side === 'right' && !openMobile && 'translate-x-full',
@@ -362,17 +362,6 @@ const SidebarMenuButton = React.forwardRef<
 SidebarMenuButton.displayName = 'SidebarMenuButton'
 
 export {
-  Sidebar,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar,
+    Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider,
+    SidebarTrigger, useSidebar
 }

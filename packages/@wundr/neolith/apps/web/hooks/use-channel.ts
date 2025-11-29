@@ -14,6 +14,68 @@ import type {
 import type { User } from '@/types/chat';
 
 // =============================================================================
+// API Response Types
+// =============================================================================
+
+interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+interface ChannelApiResponse {
+  id: string;
+  name: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  workspaceId?: string;
+  createdById?: string;
+  description?: string;
+  memberCount?: number;
+  unreadCount?: number;
+  isStarred?: boolean;
+  isArchived?: boolean;
+  members?: ChannelMemberApiResponse[];
+  [key: string]: unknown;
+}
+
+interface ChannelMemberApiResponse {
+  id: string;
+  userId: string;
+  joinedAt: string;
+  role?: string;
+  user: {
+    id: string;
+    displayName?: string;
+    name?: string;
+    email?: string;
+    avatarUrl?: string;
+    image?: string;
+    status?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface WorkspaceMemberApiResponse {
+  id?: string;
+  userId?: string;
+  user?: {
+    id?: string;
+    displayName?: string;
+    name?: string;
+    email?: string;
+    avatarUrl?: string;
+    image?: string;
+    status?: string;
+    isOrchestrator?: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+// =============================================================================
 // Hook Return Types
 // =============================================================================
 
@@ -169,33 +231,67 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
 
   const fetchChannels = useCallback(async () => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
+    const abortController = new AbortController();
+
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/channels`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/channels`, {
+        signal: abortController.signal,
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch channels');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch channels' }));
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch channels');
       }
 
-      const data = await response.json();
+      const result: ApiResponse<ChannelApiResponse[]> = await response.json();
+      const channelsData = result.data || [];
+
       // Normalize API response to match frontend types
       // API returns uppercase types (PUBLIC, PRIVATE), frontend expects lowercase (public, private)
       setChannels(
-        (data.data || []).map((c: any) => ({
-          ...c,
+        channelsData.map((c): Channel => ({
+          id: c.id,
+          name: c.name,
+          description: c.description,
           type: c.type?.toLowerCase() as Channel['type'],
+          workspaceId: c.workspaceId || workspaceId,
+          createdById: c.createdById || '',
           createdAt: new Date(c.createdAt),
           updatedAt: new Date(c.updatedAt),
+          memberCount: c.memberCount ?? c.members?.length ?? 0,
+          unreadCount: c.unreadCount ?? 0,
+          isStarred: c.isStarred,
+          isArchived: c.isArchived,
+          members: (c.members || []).map((m): ChannelMember => ({
+            id: m.id,
+            userId: m.userId,
+            channelId: c.id,
+            role: (m.role as ChannelMember['role']) || 'member',
+            joinedAt: new Date(m.joinedAt),
+            user: {
+              id: m.user.id,
+              name: m.user.displayName || m.user.name || 'Unknown',
+              image: m.user.avatarUrl || m.user.image,
+              email: m.user.email || '',
+              status: (m.user.status as User['status']) || 'offline',
+            },
+          })),
         })),
       );
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Request was cancelled, don't update state
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      abortController.abort();
     }
   }, [workspaceId]);
 
@@ -237,33 +333,68 @@ export function useChannel(channelId: string): UseChannelReturn {
 
   const fetchChannel = useCallback(async () => {
     if (!channelId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
+    const abortController = new AbortController();
+
     try {
-      const response = await fetch(`/api/channels/${channelId}`);
+      const response = await fetch(`/api/channels/${channelId}`, {
+        signal: abortController.signal,
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch channel');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch channel' }));
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch channel');
       }
 
-      const result = await response.json();
-      const data = result.data || result;
+      const result: ApiResponse<ChannelApiResponse> = await response.json();
+      const channelData = result.data;
+
+      if (!channelData || typeof channelData !== 'object') {
+        throw new Error('Invalid channel data received');
+      }
+
+      const c = channelData;
       setChannel({
-        ...data,
-        createdAt: new Date(data.createdAt),
-        updatedAt: new Date(data.updatedAt),
-        members: data.members?.map((m: ChannelMember) => ({
-          ...m,
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        type: c.type?.toLowerCase() as Channel['type'],
+        workspaceId: c.workspaceId || channelId.split('/')[0] || '',
+        createdById: c.createdById || '',
+        createdAt: new Date(c.createdAt),
+        updatedAt: new Date(c.updatedAt),
+        memberCount: c.memberCount ?? c.members?.length ?? 0,
+        unreadCount: c.unreadCount ?? 0,
+        isStarred: c.isStarred,
+        isArchived: c.isArchived,
+        members: (c.members || []).map((m): ChannelMember => ({
+          id: m.id,
+          userId: m.userId,
+          channelId: c.id,
+          role: (m.role as ChannelMember['role']) || 'member',
           joinedAt: new Date(m.joinedAt),
+          user: {
+            id: m.user.id,
+            name: m.user.displayName || m.user.name || 'Unknown',
+            image: m.user.avatarUrl || m.user.image,
+            email: m.user.email || '',
+            status: (m.user.status as User['status']) || 'offline',
+          },
         })),
       });
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Request was cancelled, don't update state
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      abortController.abort();
     }
   }, [channelId]);
 
@@ -290,30 +421,51 @@ export function useChannelMembers(channelId: string): UseChannelMembersReturn {
 
   const fetchMembers = useCallback(async () => {
     if (!channelId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
+    const abortController = new AbortController();
+
     try {
-      const response = await fetch(`/api/channels/${channelId}/members`);
+      const response = await fetch(`/api/channels/${channelId}/members`, {
+        signal: abortController.signal,
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch members');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch members' }));
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch members');
       }
 
-      const result = await response.json();
-      const members = result.data || result.members || [];
+      const result: ApiResponse<ChannelMemberApiResponse[]> & { members?: ChannelMemberApiResponse[] } = await response.json();
+      const membersData = result.data || result.members || [];
+
       setMembers(
-        members.map((m: ChannelMember) => ({
-          ...m,
+        membersData.map((m): ChannelMember => ({
+          id: m.id,
+          userId: m.userId,
+          channelId: channelId,
+          role: (m.role as ChannelMember['role']) || 'member',
           joinedAt: new Date(m.joinedAt),
+          user: {
+            id: m.user.id,
+            name: m.user.displayName || m.user.name || 'Unknown',
+            image: m.user.avatarUrl || m.user.image,
+            email: m.user.email || '',
+            status: (m.user.status as User['status']) || 'offline',
+          },
         })),
       );
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Request was cancelled, don't update state
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      abortController.abort();
     }
   }, [channelId]);
 
@@ -368,18 +520,46 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Failed to create channel');
+          const errorData = await response.json().catch(() => ({ error: 'Failed to create channel' }));
+          throw new Error(errorData.error || errorData.message || 'Failed to create channel');
         }
 
-        const result = await response.json();
-        const data = result.data || result;
+        const result: ApiResponse<ChannelApiResponse> = await response.json();
+        const channelData = result.data;
 
-        return {
-          ...data,
-          createdAt: new Date(data.createdAt),
-          updatedAt: new Date(data.updatedAt),
+        if (!channelData || typeof channelData !== 'object') {
+          throw new Error('Invalid channel data received');
+        }
+
+        const channel: Channel = {
+          id: channelData.id,
+          name: channelData.name,
+          description: channelData.description,
+          type: (channelData.type?.toLowerCase() as Channel['type']) || 'public',
+          workspaceId: channelData.workspaceId || workspaceId,
+          createdById: channelData.createdById || '',
+          createdAt: new Date(channelData.createdAt),
+          updatedAt: new Date(channelData.updatedAt),
+          memberCount: channelData.memberCount ?? channelData.members?.length ?? 0,
+          unreadCount: channelData.unreadCount ?? 0,
+          isStarred: channelData.isStarred,
+          isArchived: channelData.isArchived,
+          members: (channelData.members || []).map((m): ChannelMember => ({
+            id: m.id,
+            userId: m.userId,
+            channelId: channelData.id,
+            role: (m.role as ChannelMember['role']) || 'member',
+            joinedAt: new Date(m.joinedAt),
+            user: {
+              id: m.user.id,
+              name: m.user.displayName || m.user.name || 'Unknown',
+              image: m.user.avatarUrl || m.user.image,
+              email: m.user.email || '',
+              status: (m.user.status as User['status']) || 'offline',
+            },
+          })),
         };
+        return channel;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         throw err;
@@ -403,20 +583,49 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to update channel');
+          const errorData = await response.json().catch(() => ({ error: 'Failed to update channel' }));
+          throw new Error(errorData.error || errorData.message || 'Failed to update channel');
         }
 
-        const result = await response.json();
-        const data = result.data || result;
-        return {
-          ...data,
-          createdAt: new Date(data.createdAt),
-          updatedAt: new Date(data.updatedAt),
+        const result: ApiResponse<ChannelApiResponse> = await response.json();
+        const channelData = result.data;
+
+        if (!channelData || typeof channelData !== 'object') {
+          throw new Error('Invalid channel data received');
+        }
+
+        const channel: Channel = {
+          id: channelData.id,
+          name: channelData.name,
+          description: channelData.description,
+          type: (channelData.type?.toLowerCase() as Channel['type']) || 'public',
+          workspaceId: channelData.workspaceId || '',
+          createdById: channelData.createdById || '',
+          createdAt: new Date(channelData.createdAt),
+          updatedAt: new Date(channelData.updatedAt),
+          memberCount: channelData.memberCount ?? channelData.members?.length ?? 0,
+          unreadCount: channelData.unreadCount ?? 0,
+          isStarred: channelData.isStarred,
+          isArchived: channelData.isArchived,
+          members: (channelData.members || []).map((m): ChannelMember => ({
+            id: m.id,
+            userId: m.userId,
+            channelId: channelData.id,
+            role: (m.role as ChannelMember['role']) || 'member',
+            joinedAt: new Date(m.joinedAt),
+            user: {
+              id: m.user.id,
+              name: m.user.displayName || m.user.name || 'Unknown',
+              image: m.user.avatarUrl || m.user.image,
+              email: m.user.email || '',
+              status: (m.user.status as User['status']) || 'offline',
+            },
+          })),
         };
+        return channel;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
-        return null;
+        throw err; // Throw to maintain consistency with createChannel
       } finally {
         setIsLoading(false);
       }
@@ -692,24 +901,34 @@ export function useDirectMessages(workspaceId: string): UseDirectMessagesReturn 
 
   const fetchDirectMessages = useCallback(async () => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
+    const abortController = new AbortController();
+
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/dm`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/dm`, {
+        signal: abortController.signal,
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch direct messages');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch direct messages' }));
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch direct messages');
       }
 
-      const data = await response.json();
-      setDirectMessages(data.data || []);
+      const result: ApiResponse<DirectMessageChannel[]> = await response.json();
+      setDirectMessages(result.data || []);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Request was cancelled, don't update state
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      abortController.abort();
     }
   }, [workspaceId]);
 
@@ -837,19 +1056,24 @@ export function useWorkspaceMembersForDM(
     setIsLoading(true);
     setError(null);
 
+    const abortController = new AbortController();
+
     try {
       // Fetch both workspace members and existing DMs in parallel
       const [membersResponse, dmsResponse] = await Promise.all([
-        fetch(`/api/workspaces/${workspaceId}/members`),
-        fetch(`/api/workspaces/${workspaceId}/dm`),
+        fetch(`/api/workspaces/${workspaceId}/members`, { signal: abortController.signal }),
+        fetch(`/api/workspaces/${workspaceId}/dm`, { signal: abortController.signal }),
       ]);
 
       if (!membersResponse.ok) {
-        throw new Error('Failed to fetch workspace members');
+        const errorData = await membersResponse.json().catch(() => ({ error: 'Failed to fetch workspace members' }));
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch workspace members');
       }
 
-      const membersData = await membersResponse.json();
-      const dmsData = dmsResponse.ok ? await dmsResponse.json() : { data: [] };
+      const membersData: ApiResponse<WorkspaceMemberApiResponse[]> = await membersResponse.json();
+      const dmsData: ApiResponse<DirectMessageChannel[]> = dmsResponse.ok
+        ? await dmsResponse.json()
+        : { data: [] };
 
       const workspaceMembers = membersData.data || [];
       const existingDMs: DirectMessageChannel[] = dmsData.data || [];
@@ -875,7 +1099,9 @@ export function useWorkspaceMembersForDM(
         if (dm.participants && dm.participants.length > 0) {
           // New API format: participants array contains flat objects with id
           for (const p of dm.participants) {
-            const pId = p.id || (p as any).user?.id;
+            // Work with the raw data structure - p may have id directly or via user object
+            const pData = p as { id?: string; user?: { id?: string } };
+            const pId = pData.id || pData.user?.id;
             if (pId) {
               dmByUserId.set(pId, dmInfo);
             }
@@ -888,20 +1114,20 @@ export function useWorkspaceMembersForDM(
       }
 
       // Transform workspace members to WorkspaceMemberForDM format
-      const transformedMembers: WorkspaceMemberForDM[] = workspaceMembers.map((member: any) => {
+      const transformedMembers: WorkspaceMemberForDM[] = workspaceMembers.map((member): WorkspaceMemberForDM => {
         const user = member.user || member;
-        const userId = user.id || member.userId;
+        const userId = (user.id || member.userId || '') as string;
         const dmInfo = dmByUserId.get(userId);
 
         return {
-          id: member.id || `member-${userId}`,
+          id: (member.id || `member-${userId}`) as string,
           userId,
-          name: user.displayName || user.name || 'Unknown',
-          displayName: user.displayName,
-          email: user.email,
-          avatarUrl: user.avatarUrl || user.image,
-          status: user.status,
-          isOrchestrator: user.isOrchestrator || false,
+          name: ((user.displayName || user.name || 'Unknown') as string),
+          displayName: user.displayName as string | undefined,
+          email: user.email as string | undefined,
+          avatarUrl: (user.avatarUrl || user.image) as string | undefined,
+          status: user.status as string | undefined,
+          isOrchestrator: (user.isOrchestrator || false) as boolean,
           existingDMId: dmInfo?.dmId || null,
           lastMessageAt: dmInfo?.lastMessageAt || null,
           unreadCount: dmInfo?.unreadCount || 0,
@@ -910,9 +1136,13 @@ export function useWorkspaceMembersForDM(
 
       setMembers(transformedMembers);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Request was cancelled, don't update state
+      }
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      abortController.abort();
     }
   }, [workspaceId, currentUserId]);
 

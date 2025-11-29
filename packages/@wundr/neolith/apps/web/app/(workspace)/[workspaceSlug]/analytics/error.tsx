@@ -1,12 +1,27 @@
 'use client';
 
+import { useEffect } from 'react';
+
 interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-export default function AnalyticsError({ error, reset }: ErrorProps) {
-  console.error('Analytics error:', error);
+export default function AnalyticsError({ error, reset }: ErrorProps): JSX.Element {
+  // Log error to error tracking service in production
+  useEffect(() => {
+    // In production, this should send to error tracking service (e.g., Sentry)
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Add error tracking service integration
+      console.error('[Analytics Error]', {
+        message: error.message,
+        digest: error.digest,
+        stack: error.stack,
+      });
+    } else {
+      console.error('Analytics error:', error);
+    }
+  }, [error]);
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">

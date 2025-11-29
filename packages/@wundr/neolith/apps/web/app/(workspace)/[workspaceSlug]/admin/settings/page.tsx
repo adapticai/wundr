@@ -1,10 +1,11 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { mutate } from 'swr';
 
 import { usePageHeader } from '@/contexts/page-header-context';
-
+import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceSettings } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
@@ -107,6 +108,7 @@ export default function AdminSettingsPage() {
                 settings={settings}
                 onSave={handleSave}
                 isSaving={isSaving}
+                workspaceSlug={workspaceSlug}
               />
             )}
             {activeTab === 'security' && (
@@ -176,9 +178,88 @@ interface SettingsSectionProps {
 }
 
 // General Settings Section
-function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
+function GeneralSettings({ settings, onSave, isSaving, workspaceSlug }: SettingsSectionProps & { workspaceSlug?: string }) {
   const [name, setName] = useState(settings?.name ?? '');
   const [description, setDescription] = useState(settings?.description ?? '');
+  const [icon, setIcon] = useState(settings?.icon ?? '');
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  // Sync local state when settings prop changes (e.g., after page refresh)
+  useEffect(() => {
+    if (settings?.name !== undefined) setName(settings.name);
+    if (settings?.description !== undefined) setDescription(settings.description ?? '');
+    if (settings?.icon !== undefined) setIcon(settings.icon ?? '');
+  }, [settings?.name, settings?.description, settings?.icon]);
+
+  const handleIconChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !workspaceSlug) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Error',
+        description: 'Image size must be less than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Error',
+        description: 'Please upload a JPEG, PNG, WebP, or SVG image',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsUploadingIcon(true);
+
+    try {
+      // Upload using FormData to the workspace icon API
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`/api/workspaces/${workspaceSlug}/icon`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload icon');
+      }
+
+      const result = await response.json();
+
+      // Update local state with the new icon URL
+      setIcon(result.workspace?.icon || '');
+
+      // Revalidate workspace data so WorkspaceSwitcher updates
+      await mutate('/api/user/workspaces');
+      // Also revalidate the admin settings to ensure consistency
+      await mutate(`/api/workspaces/${workspaceSlug}/admin/settings`);
+
+      toast({
+        title: 'Success',
+        description: 'Workspace icon updated',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to upload icon',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingIcon(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [workspaceSlug, toast]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -191,7 +272,66 @@ function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-6">
       <div className="space-y-4">
+        {/* Workspace Icon */}
         <div>
+          <label className="block text-sm font-medium text-foreground">
+            Workspace Icon
+          </label>
+          <p className="text-sm text-muted-foreground mb-2">
+            This will be displayed in the sidebar and workspace switcher
+          </p>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className={cn(
+                'h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/25',
+                'flex items-center justify-center overflow-hidden bg-muted',
+              )}>
+                {icon ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={icon}
+                    alt="Workspace icon"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-muted-foreground">
+                    {name?.charAt(0)?.toUpperCase() || 'W'}
+                  </span>
+                )}
+              </div>
+              {isUploadingIcon && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50">
+                  <LoaderIcon className="h-6 w-6 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+            <div>
+              <label htmlFor="icon-upload" className="cursor-pointer">
+                <span className={cn(
+                  'inline-flex items-center rounded-md border border-input bg-background',
+                  'px-3 py-2 text-sm font-medium hover:bg-accent',
+                  isUploadingIcon && 'cursor-not-allowed opacity-50',
+                )}>
+                  {isUploadingIcon ? 'Uploading...' : 'Change Icon'}
+                </span>
+              </label>
+              <input
+                ref={fileInputRef}
+                id="icon-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={handleIconChange}
+                disabled={isUploadingIcon}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                PNG, JPG, WebP or SVG. Max 5MB.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
           <label htmlFor="name" className="block text-sm font-medium text-foreground">
             Workspace Name
           </label>
@@ -241,6 +381,24 @@ function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
         </button>
       </div>
     </form>
+  );
+}
+
+// Loader Icon
+function LoaderIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
   );
 }
 

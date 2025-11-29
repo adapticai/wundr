@@ -287,7 +287,8 @@ export async function POST(
             message = ${message ?? null},
             created_at = ${now}
         `;
-      } catch {
+      } catch (invitationError) {
+        console.error('[POST /api/calls/:callId/invite] Invitation tracking not available:', invitationError);
         // Invitations table may not exist
       }
     }

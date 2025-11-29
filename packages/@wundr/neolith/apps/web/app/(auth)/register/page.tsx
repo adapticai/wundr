@@ -2,27 +2,45 @@
 
 import { Button, Input } from '@neolith/ui';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import { GitHubIcon, GoogleIcon } from '../../../components/icons';
 
 /**
- * Registration page component for new user sign-up.
- *
- * Provides multiple registration methods:
- * - OAuth providers (GitHub, Google)
- * - Email/password form (for future implementation)
- *
- * Features a modern, responsive design with dark mode support.
+ * Loading fallback for the registration form
  */
-export default function RegisterPage() {
+function RegisterFormLoading() {
+  return (
+    <div className='space-y-6'>
+      <div className='space-y-2 text-center'>
+        <h2 className='text-2xl font-semibold tracking-tight'>Create an account</h2>
+        <p className='text-sm text-muted-foreground'>Loading...</p>
+      </div>
+      <div className='space-y-3'>
+        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Registration form component that uses useSearchParams
+ */
+function RegisterForm() {
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+
+  // Determine callback URL based on invite token
+  const callbackUrl = inviteToken ? `/invite/${inviteToken}` : '/dashboard';
 
   /**
    * Handles OAuth sign-up with the specified provider.
@@ -31,7 +49,7 @@ export default function RegisterPage() {
   const handleOAuthSignUp = async (provider: string) => {
     setIsLoading(true);
     try {
-      await signIn(provider, { callbackUrl: '/dashboard' });
+      await signIn(provider, { callbackUrl });
     } catch {
       setIsLoading(false);
     }
@@ -76,7 +94,7 @@ export default function RegisterPage() {
       await signIn('credentials', {
         email,
         password,
-        callbackUrl: '/dashboard',
+        callbackUrl,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -92,7 +110,9 @@ export default function RegisterPage() {
           Create an account
         </h2>
         <p className='text-sm text-muted-foreground'>
-          Get started with Neolith today
+          {inviteToken
+            ? 'Create an account to accept your workspace invitation'
+            : 'Get started with Neolith today'}
         </p>
       </div>
 
@@ -191,5 +211,23 @@ export default function RegisterPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+/**
+ * Registration page component for new user sign-up.
+ *
+ * Provides multiple registration methods:
+ * - OAuth providers (GitHub, Google)
+ * - Email/password form (for future implementation)
+ *
+ * Features a modern, responsive design with dark mode support.
+ * Supports invitation flow via ?invite=token query parameter.
+ */
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterFormLoading />}>
+      <RegisterForm />
+    </Suspense>
   );
 }

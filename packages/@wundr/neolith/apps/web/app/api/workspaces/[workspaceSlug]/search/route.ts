@@ -477,7 +477,7 @@ async function searchFiles(
       filename: file.filename,
       originalName: file.originalName,
       mimeType: file.mimeType,
-      size: file.size,
+      size: file.size, // BigInt will be stringified by JSON.stringify
       thumbnailUrl: file.thumbnailUrl,
       uploadedById: file.uploadedById,
       uploaderName: file.uploadedBy.name,
@@ -778,9 +778,11 @@ export async function GET(
       );
     }
 
-    // Lookup workspace by slug to get ID
+    // Lookup workspace by ID or slug
     const workspace = await prisma.workspace.findFirst({
-      where: { slug: workspaceSlug },
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
       select: { id: true },
     });
 

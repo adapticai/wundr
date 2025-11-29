@@ -67,27 +67,33 @@ export function RetentionSettings({ workspaceId, className }: RetentionSettingsP
   const [policies, setPolicies] = useState<RetentionPolicy[]>([]);
   const [stats, setStats] = useState<RetentionStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editingPolicy, setEditingPolicy] = useState<RetentionPolicy | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [policiesRes, statsRes] = await Promise.all([
         fetch(`/api/workspaces/${workspaceId}/admin/retention/policies`),
         fetch(`/api/workspaces/${workspaceId}/admin/retention/stats`),
       ]);
 
-      if (policiesRes.ok) {
-        const data = await policiesRes.json();
-        setPolicies(data.policies || []);
+      if (!policiesRes.ok || !statsRes.ok) {
+        throw new Error('Failed to fetch retention data');
       }
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setStats(data);
-      }
-    } catch {
-      // Handle error
+
+      const [policiesData, statsData] = await Promise.all([
+        policiesRes.json(),
+        statsRes.json(),
+      ]);
+
+      setPolicies(policiesData.policies || []);
+      setStats(statsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load retention data');
+      console.error('Failed to fetch retention data:', err);
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +131,25 @@ export function RetentionSettings({ workspaceId, className }: RetentionSettingsP
   if (isLoading) {
     return (
       <div className={cn('flex items-center justify-center py-12', className)}>
-        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" role="status" aria-label="Loading retention settings" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn('space-y-4', className)}>
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-destructive font-medium">Error loading retention settings</p>
+          <p className="text-sm text-destructive/80 mt-1">{error}</p>
+          <button
+            onClick={() => fetchData()}
+            className="mt-3 px-4 py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg text-sm font-medium"
+            type="button"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }

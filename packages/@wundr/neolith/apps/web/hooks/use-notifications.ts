@@ -34,7 +34,7 @@ import {
 } from 'react';
 
 import type {
-  Notification,
+  Notification as AppNotification,
   NotificationSettings,
   SyncStatus,
   QueuedAction,
@@ -61,7 +61,7 @@ export interface UseNotificationsOptions {
  */
 export interface UseNotificationsReturn {
   /** List of notifications sorted by creation time (newest first) */
-  notifications: Notification[];
+  notifications: AppNotification[];
   /** Count of unread notifications */
   unreadCount: number;
   /** Whether notifications are currently being fetched */
@@ -115,18 +115,29 @@ export function useNotifications(
 ): UseNotificationsReturn {
   const { enabled = true, pollInterval = 30000 } = options;
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.read).length,
     [notifications],
   );
+
+  // Type guard for notification type
+  const isValidNotificationType = (type: string): type is AppNotification['type'] => {
+    return ['message', 'mention', 'reaction', 'system'].includes(type.toLowerCase());
+  };
+
+  // Type guard for notification priority
+  const isValidNotificationPriority = (priority: string): priority is AppNotification['priority'] => {
+    return ['low', 'normal', 'high', 'urgent'].includes(priority.toLowerCase());
+  };
 
   // Fetch notifications
   const fetchNotifications = useCallback(
@@ -136,6 +147,13 @@ return;
 }
 
       try {
+        // Cancel any in-flight requests
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
+        abortControllerRef.current = new AbortController();
+
         setIsLoading(true);
         setError(null);
 
@@ -145,7 +163,9 @@ return;
         }
         params.set('limit', '20');
 
-        const response = await fetch(`/api/notifications?${params.toString()}`);
+        const response = await fetch(`/api/notifications?${params.toString()}`, {
+          signal: abortControllerRef.current.signal,
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch notifications');
@@ -154,13 +174,18 @@ return;
         const result = await response.json();
         // API returns { data: [...], pagination: {...} }
         const notificationsData = result.data || [];
-        const newNotifications = notificationsData.map((n: Notification & { type: string; priority: string }) => ({
-          ...n,
-          // Map database type to frontend type (lowercase)
-          type: n.type?.toLowerCase() as Notification['type'],
-          priority: n.priority?.toLowerCase() as Notification['priority'],
-          createdAt: new Date(n.createdAt),
-        }));
+        const newNotifications = notificationsData.map((n: AppNotification & { type: string; priority: string }) => {
+          const normalizedType = n.type?.toLowerCase() || 'system';
+          const normalizedPriority = n.priority?.toLowerCase() || 'normal';
+
+          return {
+            ...n,
+            // Map database type to frontend type with validation
+            type: isValidNotificationType(normalizedType) ? normalizedType : 'system',
+            priority: isValidNotificationPriority(normalizedPriority) ? normalizedPriority : 'normal',
+            createdAt: new Date(n.createdAt),
+          };
+        });
 
         if (refresh) {
           setNotifications(newNotifications);
@@ -178,6 +203,10 @@ return;
           setHasMore(false);
         }
       } catch (err) {
+        // Ignore abort errors
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setIsLoading(false);
@@ -203,6 +232,10 @@ return;
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
       }
+      // Abort any in-flight requests on cleanup
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [enabled, pollInterval, fetchNotifications]);
 
@@ -222,6 +255,7 @@ return;
       );
     } catch (err) {
       console.error('Error marking notification as read:', err);
+      throw err;
     }
   }, []);
 
@@ -239,6 +273,7 @@ return;
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
+      throw err;
     }
   }, []);
 
@@ -256,6 +291,7 @@ return;
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.error('Error dismissing notification:', err);
+      throw err;
     }
   }, []);
 
@@ -395,17 +431,22 @@ return;
       // Subscribe to push
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
 
       // Send subscription to server
-      await fetch('/api/notifications/subscribe', {
+      const subscribeResponse = await fetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscription.toJSON()),
       });
+
+      if (!subscribeResponse.ok) {
+        throw new Error('Failed to send subscription to server');
+      }
     } catch (err) {
       console.error('Error subscribing to push notifications:', err);
+      throw err;
     }
   }, [isSupported, isEnabled]);
 
@@ -423,16 +464,21 @@ return;
         await subscription.unsubscribe();
 
         // Notify server
-        await fetch('/api/notifications/unsubscribe', {
+        const response = await fetch('/api/notifications/unsubscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ endpoint: subscription.endpoint }),
         });
+
+        if (!response.ok) {
+          throw new Error('Failed to notify server of unsubscription');
+        }
       }
 
       setIsEnabled(false);
     } catch (err) {
       console.error('Error unsubscribing from push notifications:', err);
+      throw err;
     }
   }, [isSupported]);
 
@@ -548,50 +594,6 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
     }
   }, [queuedActions]);
 
-  // Online/offline detection
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      // Auto-sync when coming back online
-      forceSync();
-    };
-
-    const handleOffline = () => {
-      setIsOnline(false);
-      setSyncStatus('idle');
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Queue an action for offline sync
-  const queueAction = useCallback(
-    (action: Omit<QueuedAction, 'id' | 'createdAt' | 'retryCount'>) => {
-      const newAction: QueuedAction = {
-        ...action,
-        id: crypto.randomUUID(),
-        createdAt: new Date(),
-        retryCount: 0,
-      };
-
-      setQueuedActions((prev) => [...prev, newAction]);
-
-      // Try to sync immediately if online
-      if (isOnline) {
-        forceSync();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isOnline],
-  );
-
   // Force sync queued actions
   const forceSync = useCallback(async () => {
     if (!isOnline || syncInProgressRef.current || queuedActions.length === 0) {
@@ -662,6 +664,48 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
     }
   }, [isOnline, queuedActions]);
 
+  // Online/offline detection
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Auto-sync when coming back online
+      void forceSync();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setSyncStatus('idle');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [forceSync]);
+
+  // Queue an action for offline sync
+  const queueAction = useCallback(
+    (action: Omit<QueuedAction, 'id' | 'createdAt' | 'retryCount'>) => {
+      const newAction: QueuedAction = {
+        ...action,
+        id: crypto.randomUUID(),
+        createdAt: new Date(),
+        retryCount: 0,
+      };
+
+      setQueuedActions((prev) => [...prev, newAction]);
+
+      // Try to sync immediately if online
+      if (isOnline) {
+        void forceSync();
+      }
+    },
+    [isOnline, forceSync],
+  );
+
   // Resolve a conflict
   const resolveConflict = useCallback(
     async (id: string, resolution: 'local' | 'server' | 'merge') => {
@@ -682,16 +726,19 @@ return;
           }),
         });
 
-        if (response.ok) {
-          setConflicts((prev) => prev.filter((c) => c.id !== id));
+        if (!response.ok) {
+          throw new Error('Failed to resolve conflict');
+        }
 
-          // Update sync status
-          if (conflicts.length === 1) {
-            setSyncStatus('synced');
-          }
+        setConflicts((prev) => prev.filter((c) => c.id !== id));
+
+        // Update sync status
+        if (conflicts.length === 1) {
+          setSyncStatus('synced');
         }
       } catch (err) {
         console.error('Error resolving conflict:', err);
+        throw err;
       }
     },
     [conflicts],
@@ -821,6 +868,7 @@ return;
       } catch (err) {
         setSettings(settings);
         console.error('Error updating settings:', err);
+        throw err;
       }
     },
     [settings],
@@ -855,11 +903,16 @@ return;
   // Send test notification
   const sendTestNotification = useCallback(async () => {
     try {
-      await fetch('/api/notifications/test', {
+      const response = await fetch('/api/notifications/test', {
         method: 'POST',
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to send test notification');
+      }
     } catch (err) {
       console.error('Error sending test notification:', err);
+      throw err;
     }
   }, []);
 
@@ -883,14 +936,15 @@ return;
  * Used for converting VAPID public keys for push subscription.
  *
  * @param base64String - URL-safe Base64 encoded string
- * @returns Decoded Uint8Array
+ * @returns Decoded Uint8Array suitable for use as BufferSource
  * @internal
  */
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
+  const buffer = new ArrayBuffer(rawData.length);
+  const outputArray = new Uint8Array(buffer);
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }

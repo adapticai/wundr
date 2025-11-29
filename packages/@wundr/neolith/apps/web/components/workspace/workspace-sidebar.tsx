@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 import { WorkspaceSwitcher } from './workspace-switcher';
-import { ChannelList } from '@/components/channel';
+import { ChannelList, CollapsedChannelIcons } from '@/components/channel';
 import { CreateChannelDialog } from '@/components/channel/create-channel-dialog';
 import { useChannels, useDirectMessages, useChannelMutations } from '@/hooks/use-channel';
 import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
@@ -47,7 +47,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 interface WorkspaceSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user?: {
@@ -224,7 +224,19 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
 
         <SidebarSeparator />
 
-        {/* Channels Section */}
+        {/* Collapsed Channel Icons - Only visible when sidebar is collapsed */}
+        <SidebarGroup className="hidden group-data-[collapsible=icon]:block">
+          <SidebarGroupContent>
+            <CollapsedChannelIcons
+              channels={effectiveChannels}
+              directMessages={effectiveDMs}
+              starredChannels={starredChannels}
+              starredDMs={starredDMs}
+            />
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Channels Section - Only visible when sidebar is expanded */}
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <SidebarGroupContent>
             <ChannelList
@@ -274,12 +286,11 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   >
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
-                      <AvatarFallback className="rounded-lg">
-                        {user?.name?.charAt(0).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      user={{ name: user?.name, image: user?.image }}
+                      size="md"
+                      shape="rounded"
+                    />
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{user?.name || 'User'}</span>
                       <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
@@ -295,12 +306,11 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
-                      <AvatarFallback className="rounded-lg">
-                        {user?.name?.charAt(0).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      user={{ name: user?.name, image: user?.image }}
+                      size="md"
+                      shape="rounded"
+                    />
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{user?.name || 'User'}</span>
                       <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
@@ -354,11 +364,11 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
               </DropdownMenu>
             ) : (
               <SidebarMenuButton size="lg">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  user={{ name: user?.name, image: user?.image }}
+                  size="md"
+                  shape="rounded"
+                />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user?.name || 'User'}</span>
                   <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>

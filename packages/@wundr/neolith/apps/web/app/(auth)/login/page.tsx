@@ -2,25 +2,43 @@
 
 import { Button, Input } from '@neolith/ui';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import { GitHubIcon, GoogleIcon } from '../../../components/icons';
 
 /**
- * Login page component for user authentication.
- *
- * Provides multiple authentication methods:
- * - OAuth providers (GitHub, Google)
- * - Email/password form (for future implementation)
- *
- * Features a modern, responsive design with dark mode support.
+ * Loading fallback for the login form
  */
-export default function LoginPage() {
+function LoginFormLoading() {
+  return (
+    <div className='space-y-6'>
+      <div className='space-y-2 text-center'>
+        <h2 className='text-2xl font-semibold tracking-tight'>Welcome back</h2>
+        <p className='text-sm text-muted-foreground'>Loading...</p>
+      </div>
+      <div className='space-y-3'>
+        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Login form component that uses useSearchParams
+ */
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  // Determine callback URL based on invite token
+  const callbackUrl = inviteToken ? `/invite/${inviteToken}` : '/dashboard';
 
   /**
    * Handles OAuth sign-in with the specified provider.
@@ -30,7 +48,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
     try {
-      await signIn(provider, { callbackUrl: '/dashboard' });
+      await signIn(provider, { callbackUrl });
     } catch {
       // Error will be handled by NextAuth error page
       setIsLoading(false);
@@ -56,8 +74,8 @@ export default function LoginPage() {
         setError('Invalid email or password');
         setIsLoading(false);
       } else if (result?.ok) {
-        // Redirect to dashboard on success
-        window.location.href = '/dashboard';
+        // Redirect based on invite token or default to dashboard
+        window.location.href = callbackUrl;
       }
     } catch {
       setError('An error occurred. Please try again.');
@@ -71,7 +89,9 @@ export default function LoginPage() {
       <div className='space-y-2 text-center'>
         <h2 className='text-2xl font-semibold tracking-tight'>Welcome back</h2>
         <p className='text-sm text-muted-foreground'>
-          Sign in to your account to continue
+          {inviteToken
+            ? 'Sign in to accept your workspace invitation'
+            : 'Sign in to your account to continue'}
         </p>
       </div>
 
@@ -165,5 +185,23 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+/**
+ * Login page component for user authentication.
+ *
+ * Provides multiple authentication methods:
+ * - OAuth providers (GitHub, Google)
+ * - Email/password form (for future implementation)
+ *
+ * Features a modern, responsive design with dark mode support.
+ * Supports invitation flow via ?invite=token query parameter.
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFormLoading />}>
+      <LoginForm />
+    </Suspense>
   );
 }

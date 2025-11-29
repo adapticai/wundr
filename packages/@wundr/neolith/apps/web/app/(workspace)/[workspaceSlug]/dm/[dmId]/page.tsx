@@ -164,17 +164,19 @@ export default function DMPage() {
 
   // Handle send message
   const handleSendMessage = useCallback(
-    async (content: string, mentions: string[], attachments: File[]) => {
+    async (content: string, mentions: string[], _attachments: File[]) => {
       if (!currentUser) {
         return;
       }
 
+      // TODO: Implement file upload to get attachmentIds before sending
       const { optimisticId, message } = await sendMessage(
-        { content, channelId: dmId, mentions, attachments },
+        { content, channelId: dmId, mentions },
         currentUser,
       );
 
       // Add optimistic message
+      const now = new Date().toISOString();
       addOptimisticMessage({
         id: optimisticId,
         content,
@@ -182,8 +184,8 @@ export default function DMPage() {
         author: currentUser,
         channelId: dmId,
         parentId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
         reactions: [],
         replyCount: 0,
         mentions: [],
@@ -203,17 +205,19 @@ export default function DMPage() {
 
   // Handle send thread reply
   const handleSendThreadReply = useCallback(
-    async (content: string, mentions: string[], attachments: File[]) => {
+    async (content: string, mentions: string[], _attachments: File[]) => {
       if (!activeThreadId || !currentUser) {
         return;
       }
 
+      // TODO: Implement file upload to get attachmentIds before sending
       const { optimisticId } = await sendMessage(
-        { content, channelId: dmId, parentId: activeThreadId, mentions, attachments },
+        { content, channelId: dmId, parentId: activeThreadId, mentions },
         currentUser,
       );
 
       // Add optimistic reply
+      const now = new Date().toISOString();
       addOptimisticReply({
         id: optimisticId,
         content,
@@ -221,8 +225,8 @@ export default function DMPage() {
         author: currentUser,
         channelId: dmId,
         parentId: activeThreadId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
         reactions: [],
         replyCount: 0,
         mentions: [],
@@ -285,9 +289,9 @@ export default function DMPage() {
               r.emoji === emoji
                 ? {
                     ...r,
-                    count: r.count - 1,
+                    count: (r.count || 1) - 1,
                     hasReacted: false,
-                    users: r.users.filter((u) => u.id !== currentUser.id),
+                    userIds: (r.userIds || []).filter((id) => id !== currentUser.id),
                   }
                 : r,
             );
@@ -298,9 +302,9 @@ export default function DMPage() {
             r.emoji === emoji
               ? {
                   ...r,
-                  count: r.count + 1,
+                  count: (r.count || 0) + 1,
                   hasReacted: true,
-                  users: [...r.users, currentUser],
+                  userIds: [...(r.userIds || []), currentUser.id],
                 }
               : r,
           );
@@ -311,21 +315,34 @@ export default function DMPage() {
           emoji,
           count: 1,
           hasReacted: true,
-          users: [currentUser],
+          userIds: [currentUser.id],
         });
       }
 
       updateOptimisticMessage(messageId, { reactions: updatedReactions });
 
-      // Send to server
+      // Send to server - use DELETE if removing, POST if adding
+      const isRemoving = existingReaction?.hasReacted;
       try {
-        await fetch(`/api/messages/${messageId}/reactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ emoji }),
-        });
+        let response: Response;
+        if (isRemoving) {
+          response = await fetch(`/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`, {
+            method: 'DELETE',
+          });
+        } else {
+          response = await fetch(`/api/messages/${messageId}/reactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emoji }),
+          });
+        }
+        // Handle 409 Conflict (already reacted) - no need to revert, state is already correct
+        if (!response.ok && response.status !== 409) {
+          // Revert on actual error (not conflict)
+          updateOptimisticMessage(messageId, { reactions: message.reactions });
+        }
       } catch {
-        // Revert on error
+        // Revert on network error
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },

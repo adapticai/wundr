@@ -17,6 +17,7 @@ import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
+import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/email';
 import {
   AUTH_ERROR_CODES,
   createAuthErrorResponse,
@@ -41,6 +42,17 @@ reject(err);
 
 // Password hashing uses Node.js crypto with PBKDF2 (100,000 iterations, SHA-512)
 
+// Configuration
+const TOKEN_EXPIRATION_HOURS = 24;
+const EMAIL_VERIFICATION_REQUIRED = process.env.EMAIL_VERIFICATION_REQUIRED === 'true';
+
+/**
+ * Generate a verification token
+ */
+function generateVerificationToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
 /**
  * POST /api/auth/register
  *
@@ -61,7 +73,7 @@ reject(err);
  * }
  * ```
  *
- * @example Response (201 Created)
+ * @example Response (201 Created - No Verification Required)
  * ```json
  * {
  *   "data": {
@@ -71,7 +83,23 @@ reject(err);
  *     "avatarUrl": "https://...",
  *     "status": "ACTIVE"
  *   },
- *   "message": "User registered successfully"
+ *   "message": "User registered successfully",
+ *   "requiresVerification": false
+ * }
+ * ```
+ *
+ * @example Response (201 Created - Verification Required)
+ * ```json
+ * {
+ *   "data": {
+ *     "id": "clx123456",
+ *     "email": "user@example.com",
+ *     "name": "John Doe",
+ *     "avatarUrl": "https://...",
+ *     "status": "ACTIVE"
+ *   },
+ *   "message": "User registered successfully. Please check your email to verify your account.",
+ *   "requiresVerification": true
  * }
  * ```
  *
@@ -156,6 +184,71 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return user;
     });
 
+    // Handle email verification if required
+    let verificationToken: string | null = null;
+    if (EMAIL_VERIFICATION_REQUIRED) {
+      try {
+        // Generate verification token
+        verificationToken = generateVerificationToken();
+        const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000);
+
+        // Store verification token in database
+        await prisma.verificationToken.create({
+          data: {
+            identifier: newUser.email,
+            token: verificationToken,
+            expires: expiresAt,
+          },
+        });
+
+        // Construct verification URL
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+
+        // Send verification email (non-blocking)
+        sendVerificationEmail(
+          newUser.email,
+          newUser.name || newUser.email,
+          verificationUrl,
+        ).catch((emailError) => {
+          // Log email errors but don't fail the registration
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[POST /api/auth/register] Verification email failed:', emailError);
+          } else {
+            console.error('[POST /api/auth/register] Verification email failed');
+          }
+        });
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[POST /api/auth/register] Verification token created for: ${newUser.email}`);
+        }
+      } catch (tokenError) {
+        // Log error but don't fail registration
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[POST /api/auth/register] Verification token creation failed:', tokenError);
+        } else {
+          console.error('[POST /api/auth/register] Verification token creation failed');
+        }
+      }
+    }
+
+    // Send welcome email asynchronously (fire-and-forget)
+    // Don't block the registration response on email sending
+    sendWelcomeEmail(
+      newUser.email,
+      newUser.name || newUser.email,
+      process.env.NEXT_PUBLIC_APP_URL
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
+        : undefined,
+    ).catch((emailError) => {
+      // Log email errors but don't fail the registration
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[POST /api/auth/register] Welcome email failed:', emailError);
+      } else {
+        console.error('[POST /api/auth/register] Welcome email failed');
+      }
+    });
+
     // Generate fallback avatar with user's name or email
     try {
       await avatarService.generateFallbackAvatar({
@@ -177,15 +270,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
       });
 
+      const message = EMAIL_VERIFICATION_REQUIRED
+        ? 'User registered successfully. Please check your email to verify your account.'
+        : 'User registered successfully';
+
       return NextResponse.json(
         {
           data: userWithAvatar,
-          message: 'User registered successfully',
+          message,
+          requiresVerification: EMAIL_VERIFICATION_REQUIRED,
         },
         { status: 201 },
       );
     } catch (avatarError) {
-      console.error('[POST /api/auth/register] Avatar generation failed:', avatarError);
+      // Only log error message in production, not full error object
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[POST /api/auth/register] Avatar generation failed:', avatarError);
+      } else {
+        console.error('[POST /api/auth/register] Avatar generation failed');
+      }
 
       // Return user without avatar if generation fails
       // This is not a critical failure
@@ -199,16 +302,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createdAt: newUser.createdAt,
       };
 
+      const message = EMAIL_VERIFICATION_REQUIRED
+        ? 'User registered successfully. Please check your email to verify your account.'
+        : 'User registered successfully';
+
       return NextResponse.json(
         {
           data: userWithoutAvatar,
-          message: 'User registered successfully',
+          message,
+          requiresVerification: EMAIL_VERIFICATION_REQUIRED,
         },
         { status: 201 },
       );
     }
   } catch (error) {
-    console.error('[POST /api/auth/register] Error:', error);
+    // Only log detailed error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[POST /api/auth/register] Error:', error);
+    } else {
+      console.error('[POST /api/auth/register] Registration error occurred');
+    }
 
     // Handle Prisma unique constraint errors
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

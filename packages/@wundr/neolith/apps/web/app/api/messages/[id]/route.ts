@@ -276,12 +276,25 @@ export async function PATCH(
     }
 
     // Track edit history in metadata
-    const currentMetadata = result.metadata as Record<string, unknown> || {};
-    const editHistory = (currentMetadata.editHistory as Array<{
-      content: string;
-      editedAt: string;
-      editedBy: string;
-    }>) || [];
+    interface MessageMetadata {
+      editHistory?: Array<{
+        content: string;
+        editedAt: string;
+        editedBy: string;
+      }>;
+      mentions?: string[];
+      [key: string]: unknown;
+    }
+
+    // Safely parse current metadata
+    const currentMetadata: MessageMetadata =
+      typeof result.metadata === 'object' && result.metadata !== null
+        ? (result.metadata as MessageMetadata)
+        : {};
+
+    const editHistory = Array.isArray(currentMetadata.editHistory)
+      ? currentMetadata.editHistory
+      : [];
 
     // Add current content to edit history
     editHistory.push({
@@ -290,10 +303,15 @@ export async function PATCH(
       editedBy: session.user.id,
     });
 
-    // Merge metadata
-    const updatedMetadata = {
+    // Merge metadata with proper typing
+    const inputMetadata: MessageMetadata =
+      typeof input.metadata === 'object' && input.metadata !== null
+        ? (input.metadata as MessageMetadata)
+        : {};
+
+    const updatedMetadata: MessageMetadata = {
       ...currentMetadata,
-      ...(input.metadata || {}),
+      ...inputMetadata,
       editHistory,
     };
 

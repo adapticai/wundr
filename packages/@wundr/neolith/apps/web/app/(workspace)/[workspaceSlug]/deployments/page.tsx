@@ -27,7 +27,7 @@ export default function DeploymentsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedDeploymentId, setSelectedDeploymentId] = useState<string | null>(null);
 
-  const { deployments, isLoading, createDeployment, mutate } = useDeployments(workspaceSlug, {
+  const { deployments, isLoading, error, createDeployment, mutate } = useDeployments(workspaceSlug, {
     environment: environment === 'all' ? undefined : environment,
     search: searchQuery || undefined,
   });
@@ -52,44 +52,64 @@ export default function DeploymentsPage() {
   };
 
   const handleRestart = async (deploymentId: string) => {
-    console.log('Restart deployment:', deploymentId);
-    // In production, would call API endpoint
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    mutate();
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}/restart`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to restart deployment');
+      }
+
+      mutate();
+    } catch (error) {
+      console.error('Failed to restart deployment:', error);
+      alert('Failed to restart deployment. Please try again.');
+    }
   };
 
   const handleStop = async (deploymentId: string) => {
-    console.log('Stop deployment:', deploymentId);
-    // In production, would call API endpoint
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    mutate();
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}/stop`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to stop deployment');
+      }
+
+      mutate();
+    } catch (error) {
+      console.error('Failed to stop deployment:', error);
+      alert('Failed to stop deployment. Please try again.');
+    }
   };
 
   const handleDelete = async (deploymentId: string) => {
-    if (!confirm('Are you sure you want to delete this deployment?')) {
+    if (!confirm('Are you sure you want to delete this deployment? This action cannot be undone.')) {
       return;
     }
-    console.log('Delete deployment:', deploymentId);
-    // In production, would call API endpoint
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    mutate();
+
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}`,
+        { method: 'DELETE' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete deployment');
+      }
+
+      mutate();
+    } catch (error) {
+      console.error('Failed to delete deployment:', error);
+      alert('Failed to delete deployment. Please try again.');
+    }
   };
 
-  const filteredDeployments = deployments.filter((d) => {
-    if (environment !== 'all' && d.environment !== environment) {
-      return false;
-    }
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        d.name.toLowerCase().includes(query) ||
-        d.description?.toLowerCase().includes(query)
-      );
-    }
-    return true;
-  });
-
-  // Group deployments by environment for stats
+  // Group all deployments by environment for stats (before client-side filtering)
   const stats = {
     total: deployments.length,
     production: deployments.filter((d) => d.environment === 'production').length,
@@ -97,6 +117,9 @@ export default function DeploymentsPage() {
     development: deployments.filter((d) => d.environment === 'development').length,
     running: deployments.filter((d) => d.status === 'running').length,
   };
+
+  // Client-side filtering is no longer needed as API handles it
+  const filteredDeployments = deployments;
 
   return (
     <div className="space-y-6">
@@ -197,14 +220,44 @@ export default function DeploymentsPage() {
         </div>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <div className="flex items-start gap-3">
+            <svg
+              className="h-5 w-5 flex-shrink-0 text-red-600"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-800">Failed to load deployments</h3>
+              <p className="mt-1 text-sm text-red-700">{error.message}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => mutate()}
+              className="text-sm font-medium text-red-600 hover:text-red-500"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Deployments Grid */}
-      {isLoading ? (
+      {!error && isLoading ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
-            <DeploymentCardSkeleton key={i} />
+          {Array.from({ length: 4 }, (_, i) => (
+            <DeploymentCardSkeleton key={`skeleton-${i}`} />
           ))}
         </div>
-      ) : filteredDeployments.length === 0 ? (
+      ) : !error && filteredDeployments.length === 0 ? (
         <div className="rounded-lg border bg-card p-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <DeployIcon className="h-6 w-6 text-muted-foreground" />

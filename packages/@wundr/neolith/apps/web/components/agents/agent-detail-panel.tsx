@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { Agent, AgentType, UpdateAgentInput } from '@/types/agent';
+import type { Agent, AgentType, UpdateAgentInput, AvailableTool } from '@/types/agent';
 import { AGENT_TYPE_METADATA, AVAILABLE_TOOLS } from '@/types/agent';
 
 interface AgentDetailPanelProps {
@@ -37,23 +37,37 @@ export function AgentDetailPanel({
   const [systemPrompt, setSystemPrompt] = useState(agent.systemPrompt);
   const [temperature, setTemperature] = useState(agent.config.temperature);
   const [maxTokens, setMaxTokens] = useState(agent.config.maxTokens);
-  const [selectedTools, setSelectedTools] = useState<string[]>(agent.tools);
+  const [selectedTools, setSelectedTools] = useState<AvailableTool[]>(agent.tools);
 
   const handleSave = async () => {
-    const input: UpdateAgentInput = {
-      name,
-      type: type as AgentType,
-      description,
-      systemPrompt,
-      config: {
-        temperature,
-        maxTokens,
-      },
-      tools: selectedTools,
-    };
+    if (!name.trim()) {
+      console.error('Agent name is required');
+      return;
+    }
 
-    await onUpdate(agent.id, input);
-    setIsEditing(false);
+    if (maxTokens < 256 || maxTokens > 32000) {
+      console.error('Max tokens must be between 256 and 32000');
+      return;
+    }
+
+    try {
+      const input: UpdateAgentInput = {
+        name: name.trim(),
+        type: type as AgentType,
+        description: description.trim() || undefined,
+        systemPrompt: systemPrompt.trim() || undefined,
+        config: {
+          temperature,
+          maxTokens,
+        },
+        tools: selectedTools,
+      };
+
+      await onUpdate(agent.id, input);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update agent:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -68,22 +82,47 @@ export function AgentDetailPanel({
   };
 
   const handleDelete = async () => {
-    await onDelete(agent.id);
-    setShowDeleteConfirm(false);
-    onClose();
+    try {
+      await onDelete(agent.id);
+      setShowDeleteConfirm(false);
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+      setShowDeleteConfirm(false);
+    }
   };
 
-  const handleToolToggle = (tool: string) => {
+  const handleToolToggle = (tool: AvailableTool) => {
     setSelectedTools((prev) =>
       prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool],
     );
   };
+
+  // Handle Escape key to close panel
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, onClose]);
 
   if (!isOpen) {
     return null;
   }
 
   const metadata = AGENT_TYPE_METADATA[agent.type];
+
+  if (!metadata) {
+    console.error(`Unknown agent type: ${agent.type}`);
+    return null;
+  }
+
   const statusColor = {
     active: 'bg-green-500/10 text-green-500 border-green-500/20',
     paused: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
@@ -288,7 +327,12 @@ export function AgentDetailPanel({
                     max="32000"
                     step="256"
                     value={maxTokens}
-                    onChange={(e) => setMaxTokens(parseInt(e.target.value, 10))}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      if (!isNaN(value)) {
+                        setMaxTokens(value);
+                      }
+                    }}
                     disabled={isLoading}
                   />
                 </div>
@@ -348,7 +392,7 @@ export function AgentDetailPanel({
               <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={isLoading}>
+              <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

@@ -259,12 +259,14 @@ export async function GET(
 
       activities.push(
         ...channelActivities
-          .filter(c => c.createdBy)
+          .filter((c): c is typeof c & { createdBy: NonNullable<typeof c.createdBy>; createdById: string } =>
+            c.createdBy !== null && c.createdById !== null
+          )
           .map(c => ({
             id: `channel-${c.id}`,
             type: 'channel.created' as ActivityType,
-            userId: c.createdById!,
-            user: c.createdBy!,
+            userId: c.createdById,
+            user: c.createdBy,
             resourceType: 'channel',
             resourceId: c.id,
             resourceName: c.name,
@@ -395,21 +397,31 @@ export async function GET(
 
       activities.push(
         ...workflowActivities
-          .filter(w => creatorMap.has(w.createdBy))
-          .map(w => ({
-            id: `workflow-${w.id}`,
-            type: 'workflow.created' as ActivityType,
-            userId: w.createdBy,
-            user: creatorMap.get(w.createdBy)!,
-            resourceType: 'workflow',
-            resourceId: w.id,
-            resourceName: w.name,
-            metadata: {
-              status: w.status,
-              executionCount: w.executionCount,
-            },
-            createdAt: w.createdAt,
-          })),
+          .filter((w): w is typeof w & { createdBy: string } => {
+            const creator = creatorMap.get(w.createdBy);
+            return creator !== undefined;
+          })
+          .map(w => {
+            const creator = creatorMap.get(w.createdBy);
+            // Type guard ensures creator exists, but TypeScript needs explicit check
+            if (!creator) {
+              throw new Error('Creator not found'); // This should never happen due to filter
+            }
+            return {
+              id: `workflow-${w.id}`,
+              type: 'workflow.created' as ActivityType,
+              userId: w.createdBy,
+              user: creator,
+              resourceType: 'workflow',
+              resourceId: w.id,
+              resourceName: w.name,
+              metadata: {
+                status: w.status,
+                executionCount: w.executionCount,
+              },
+              createdAt: w.createdAt,
+            };
+          }),
       );
     }
 

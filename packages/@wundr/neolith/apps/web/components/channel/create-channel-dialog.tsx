@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 
@@ -167,10 +167,12 @@ return null;
                 className="w-full rounded-md border border-input bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 disabled={isLoading || isSubmitting}
                 maxLength={80}
+                aria-invalid={!!nameError}
+                aria-describedby={nameError ? 'name-error' : undefined}
               />
             </div>
             {nameError && (
-              <p className="mt-1 text-xs text-destructive">{nameError}</p>
+              <p id="name-error" className="mt-1 text-xs text-destructive" role="alert">{nameError}</p>
             )}
             {name && !nameError && (
               <p className="mt-1 text-xs text-muted-foreground">
@@ -334,17 +336,17 @@ return null;
                       onClick={() => handleAddMember(user)}
                       className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent"
                     >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-medium">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
 
                         {user.image ? (
                           <img
                             src={user.image}
                             alt={user.name}
-                            className="h-full w-full rounded-full object-cover"
+                            className="h-full w-full rounded-lg object-cover"
                           />
                         ) : (
-                          user.name.charAt(0).toUpperCase()
+                          getInitials(user.name)
                         )}
                       </div>
                       <div>
