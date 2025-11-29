@@ -24,7 +24,7 @@ export interface Invite {
   id: string;
   email: string;
   role: string;
-  status: 'pending' | 'accepted' | 'expired' | 'revoked';
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
   invitedBy: string;
   invitedAt: string;
   expiresAt: string;
@@ -226,7 +226,7 @@ export function InviteManager({
     toast.success('Invite link copied to clipboard');
   };
 
-  const pendingInvites = invites.filter((i) => i.status === 'pending');
+  const pendingInvites = invites.filter((i) => i.status === 'PENDING');
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -478,9 +478,9 @@ export function InviteManager({
                         <TableCell className="capitalize">{invite.role}</TableCell>
                         <TableCell>
                           <Badge variant={
-                            invite.status === 'pending' ? 'default' :
-                            invite.status === 'accepted' ? 'secondary' :
-                            invite.status === 'expired' ? 'outline' :
+                            invite.status === 'PENDING' ? 'default' :
+                            invite.status === 'ACCEPTED' ? 'secondary' :
+                            invite.status === 'EXPIRED' ? 'outline' :
                             'destructive'
                           }>
                             {invite.status}
@@ -490,7 +490,7 @@ export function InviteManager({
                           {new Date(invite.invitedAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
-                          {invite.status === 'pending' && (
+                          {invite.status === 'PENDING' && (
                             <div className="flex justify-end gap-2">
                               <Button
                                 variant="link"

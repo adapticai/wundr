@@ -95,6 +95,7 @@ export async function DELETE(
     const invite = invites[inviteIndex];
 
     // Cannot revoke already accepted or revoked invites
+    // Note: status values are uppercase (PENDING, ACCEPTED, EXPIRED, REVOKED)
     if (invite.status === 'ACCEPTED') {
       return NextResponse.json(
         createAdminErrorResponse('Invite has already been accepted', ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED),

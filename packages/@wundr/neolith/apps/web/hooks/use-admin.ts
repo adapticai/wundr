@@ -70,8 +70,9 @@ export interface Role {
 
 /**
  * Invite status for workspace invitations
+ * Note: API returns uppercase values (PENDING, ACCEPTED, EXPIRED, REVOKED)
  */
-export type InviteStatus = 'pending' | 'accepted' | 'expired' | 'revoked';
+export type InviteStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
 
 /**
  * Workspace invitation
@@ -514,7 +515,7 @@ export interface UseInvitesReturn {
  */
 export function useInvites(workspaceId: string): UseInvitesReturn {
   const { data, error, isLoading, mutate } = useSWR<{ invites: Invite[] }>(
-    `/api/workspaces/${workspaceId}/admin/invites`,
+    `/api/workspaces/${workspaceId}/admin/invites?status=PENDING`,
     fetcher,
   );
 
@@ -547,8 +548,9 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
         method: 'DELETE',
       });
       if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Failed to revoke invite' }));
-        throw new Error(error.message || 'Failed to revoke invite');
+        const errorData = await res.json().catch(() => ({ error: 'Failed to revoke invite' }));
+        // API returns { error: string, code: string } format
+        throw new Error(errorData.error || 'Failed to revoke invite');
       }
       await mutate();
     },

@@ -221,7 +221,7 @@ interface Invite {
   id: string;
   email: string;
   roleId?: string;
-  status: 'pending' | 'accepted' | 'expired' | 'revoked';
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
   expiresAt: Date;
   createdAt: Date;
 }
@@ -318,7 +318,7 @@ function StatusBadge({ status }: { status: MemberStatus }) {
 
 // Invite Row Component
 function InviteRow({ invite, onRevoke, roles }: { invite: Invite; onRevoke: () => void; roles: Role[] }) {
-  const isExpired = invite.status === 'expired' || new Date(invite.expiresAt) < new Date();
+  const isExpired = invite.status === 'EXPIRED' || new Date(invite.expiresAt) < new Date();
   const roleName = roles.find(r => r.id === invite.roleId)?.name || 'Member';
 
   return (
