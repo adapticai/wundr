@@ -32,10 +32,14 @@ interface RouteContext {
 
 /**
  * Helper to check workspace access via organization membership
+ * Accepts either workspace ID or slug
  */
-async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
+  // Try to find workspace by ID or slug
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }],
+    },
     include: {
       organization: true,
     },
@@ -91,23 +95,22 @@ export async function GET(
       );
     }
 
-    // Get workspace ID from params
-    const params = await context.params;
-    const { workspaceSlug: workspaceId } = params;
+    // Get workspace slug/id from params
+    const { workspaceSlug } = await context.params;
 
-    // Validate workspace ID format (basic check)
-    if (!workspaceId || workspaceId.trim().length === 0) {
+    // Validate workspace slug/id format (basic check)
+    if (!workspaceSlug || workspaceSlug.trim().length === 0) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid workspace ID format',
+          'Invalid workspace identifier',
           ORG_HIERARCHY_ERROR_CODES.VALIDATION_ERROR,
         ),
         { status: 400 },
       );
     }
 
-    // Check access to workspace
-    const access = await checkWorkspaceAccess(workspaceId, session.user.id);
+    // Check access to workspace (resolves slug or ID to workspace)
+    const access = await checkWorkspaceAccess(workspaceSlug, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(

@@ -4,6 +4,14 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
 import { cn, getInitials } from '@/lib/utils';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+} from '@/components/ui/responsive-modal';
 
 import type { User } from '@/types/chat';
 
@@ -41,6 +49,8 @@ export function CreateChannelDialog({
   const [description, setDescription] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const [emailInvites, setEmailInvites] = useState<string[]>([]);
+  const [emailInput, setEmailInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { users, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
@@ -58,6 +68,8 @@ export function CreateChannelDialog({
     setDescription('');
     setSelectedMembers([]);
     setMemberSearch('');
+    setEmailInvites([]);
+    setEmailInput('');
   }, []);
 
   const handleClose = useCallback(() => {
@@ -102,6 +114,25 @@ return prev;
     setSelectedMembers((prev) => prev.filter((m) => m.id !== userId));
   }, []);
 
+  const handleAddEmail = useCallback(() => {
+    const email = emailInput.trim().toLowerCase();
+    if (email && isValidEmail(email) && !emailInvites.includes(email)) {
+      setEmailInvites((prev) => [...prev, email]);
+      setEmailInput('');
+    }
+  }, [emailInput, emailInvites]);
+
+  const handleRemoveEmail = useCallback((email: string) => {
+    setEmailInvites((prev) => prev.filter((e) => e !== email));
+  }, []);
+
+  const handleEmailKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddEmail();
+    }
+  }, [handleAddEmail]);
+
   // Format channel name as user types
   const displayName = name.trim().toLowerCase().replace(/\s+/g, '-');
 
@@ -111,43 +142,18 @@ return prev;
   const isValid = name.trim().length > 0 && !nameError &&
                   (type === 'public' || selectedMembers.length > 0);
 
-  if (!isOpen) {
-return null;
-}
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="create-channel-title"
-    >
-      <div
-        className="w-full max-w-lg rounded-lg bg-card shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 id="create-channel-title" className="text-lg font-semibold text-foreground">
-            Create a channel
-          </h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Close dialog"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
-          <p className="mb-4 text-sm text-muted-foreground">
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <ResponsiveModalContent className="max-w-lg">
+        <ResponsiveModalHeader>
+          <ResponsiveModalTitle>Create a channel</ResponsiveModalTitle>
+          <ResponsiveModalDescription>
             Channels are where your team communicates. They&apos;re best when organized around a
             topic.
-          </p>
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
+
+        <div className="max-h-[60vh] overflow-y-auto px-6 py-4 md:px-0 md:py-0">
 
           {/* Name input */}
           <div className="mb-4">
@@ -369,15 +375,69 @@ return null;
               </p>
             )}
           </div>
+
+          {/* Invite by email */}
+          <div className="mt-6 border-t pt-4">
+            <label className="mb-1 block text-sm font-medium text-foreground">
+              Invite by email{' '}
+              <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Invite people who aren&apos;t in the workspace yet. They&apos;ll be invited to both the workspace and this channel.
+            </p>
+
+            {/* Email invites */}
+            {emailInvites.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-2">
+                {emailInvites.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-sm text-secondary-foreground"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEmail(email)}
+                      disabled={isLoading || isSubmitting}
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-secondary-foreground/10"
+                      aria-label={`Remove ${email}`}
+                    >
+                      <XIcon className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Email input */}
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                onKeyPress={handleEmailKeyPress}
+                placeholder="email@example.com"
+                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                disabled={isLoading || isSubmitting}
+              />
+              <button
+                type="button"
+                onClick={handleAddEmail}
+                disabled={!emailInput.trim() || !isValidEmail(emailInput.trim()) || isLoading || isSubmitting}
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+              >
+                Add
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
+        <ResponsiveModalFooter className="flex-col gap-2 sm:flex-row">
           <button
             type="button"
             onClick={handleClose}
             disabled={isLoading || isSubmitting}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="w-full rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:w-auto"
           >
             Cancel
           </button>
@@ -385,13 +445,13 @@ return null;
             type="button"
             onClick={handleSubmit}
             disabled={!isValid || isLoading || isSubmitting}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 sm:w-auto"
           >
             {isSubmitting ? 'Creating...' : 'Create Channel'}
           </button>
-        </div>
-      </div>
-    </div>
+        </ResponsiveModalFooter>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
 
@@ -472,4 +532,9 @@ function LoadingSpinner({ className }: { className?: string }) {
       />
     </svg>
   );
+}
+
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }

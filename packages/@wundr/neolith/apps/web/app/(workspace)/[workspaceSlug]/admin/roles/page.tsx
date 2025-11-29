@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { usePageHeader } from '@/contexts/page-header-context';
 
-import { useRoles } from '@/hooks/use-admin';
+import { useRoles, type Role, type RolePermission } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
 
@@ -168,17 +168,7 @@ export default function AdminRolesPage() {
   );
 }
 
-// Types - aligned with useRoles hook
-interface Role {
-  id: string;
-  name: string;
-  description?: string;
-  permissions: string[];
-  isDefault?: boolean;
-  memberCount?: number;
-  // Local extension for UI
-  color?: string;
-}
+// Types - Using Role and RolePermission from use-admin hook
 
 interface Permission {
   id: string;
@@ -222,7 +212,7 @@ function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
           >
             <EditIcon className="h-4 w-4" />
           </button>
-          {!role.isDefault && (
+          {!role.isSystem && (
             <button
               type="button"
               onClick={onDelete}
@@ -241,12 +231,12 @@ function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
       <div className="mt-4">
         <p className="text-xs font-medium text-muted-foreground">Permissions</p>
         <div className="mt-2 flex flex-wrap gap-1">
-          {role.permissions.slice(0, 3).map((permission) => (
+          {role.permissions.slice(0, 3).map((permission, idx) => (
             <span
-              key={permission}
+              key={`${permission.resource}-${idx}`}
               className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground"
             >
-              {permission.replace(/\./g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+              {permission.resource}: {permission.actions.join(', ')}
             </span>
           ))}
           {role.permissions.length > 3 && (
@@ -329,7 +319,8 @@ function RoleEditorModal({
   const [name, setName] = useState(role?.name ?? '');
   const [description, setDescription] = useState(role?.description ?? '');
   const [color, setColor] = useState(role?.color ?? '#6366f1');
-  const [permissions, setPermissions] = useState<string[]>(role?.permissions ?? []);
+  // Store permissions in the API format: { resource, actions }[]
+  const [permissions, setPermissions] = useState<RolePermission[]>(role?.permissions ?? []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -339,12 +330,21 @@ function RoleEditorModal({
     setIsSubmitting(false);
   };
 
+  // Check if a resource is in the permissions list
+  const hasPermission = (resource: string) =>
+    permissions.some(p => p.resource === resource);
+
+  // Toggle a permission by resource name
   const togglePermission = (permissionId: string) => {
-    setPermissions((prev) =>
-      prev.includes(permissionId)
-        ? prev.filter((p) => p !== permissionId)
-        : [...prev, permissionId],
-    );
+    setPermissions((prev) => {
+      const exists = prev.some(p => p.resource === permissionId);
+      if (exists) {
+        return prev.filter((p) => p.resource !== permissionId);
+      } else {
+        // Add with default actions
+        return [...prev, { resource: permissionId, actions: ['read'] }];
+      }
+    });
   };
 
   const colorOptions = [
@@ -442,7 +442,7 @@ function RoleEditorModal({
                   >
                     <input
                       type="checkbox"
-                      checked={permissions.includes(permission.id)}
+                      checked={hasPermission(permission.id)}
                       onChange={() => togglePermission(permission.id)}
                       className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary"
                     />

@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
 
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { useMembers, useInvites, useRoles } from '@/hooks/use-admin';
+import { useMembers, useInvites, useRoles, type Role } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
 
@@ -226,14 +226,7 @@ interface Invite {
   createdAt: Date;
 }
 
-interface Role {
-  id: string;
-  name: string;
-  description?: string;
-  permissions: string[];
-  isDefault?: boolean;
-  memberCount?: number;
-}
+// Role type imported from '@/hooks/use-admin'
 
 // Member Card Component
 interface MemberCardProps {
@@ -241,12 +234,15 @@ interface MemberCardProps {
 }
 
 function MemberCard({ member }: MemberCardProps) {
+  // Create avatar-compatible user object (exclude incompatible status type)
+  const avatarUser = { name: member.name, image: member.image };
+
   return (
     <div className="group rounded-lg border bg-card p-4 transition-all hover:shadow-md">
       <div className="flex flex-col items-center text-center">
         {/* Avatar */}
         <div className="relative mb-3">
-          <UserAvatar user={member} size="2xl" />
+          <UserAvatar user={avatarUser} size="2xl" />
           {/* Status Indicator */}
           {member.status === 'active' && (
             <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-card bg-green-500" />

@@ -18,6 +18,7 @@ import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel'
 import { InviteDialog } from '@/components/channel/invite-dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import {
   useMessages,
   useSendMessage,
@@ -37,6 +38,7 @@ export default function ChannelPage() {
   const channelId = params.channelId as string;
   const workspaceSlug = params.workspaceSlug as string;
   const { user: authUser, isLoading: isAuthLoading } = useAuth();
+  const { toast } = useToast();
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ChannelTab>('messages');
@@ -394,17 +396,66 @@ export default function ChannelPage() {
 
   // Invite members handler - must be before conditional returns
   const handleInviteMembers = useCallback(async (userIds: string[], role: 'admin' | 'member') => {
-    const response = await fetch(`/api/channels/${channelId}/members`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds, role: role.toUpperCase() }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to invite members');
+    try {
+      const response = await fetch(`/api/channels/${channelId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, role: role.toUpperCase() }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to invite members' }));
+        throw new Error(error.message || 'Failed to invite members');
+      }
+
+      // Refetch channel data to update member count
+      await refetchChannel();
+
+      // Show success toast
+      toast({
+        title: 'Success',
+        description: `Successfully invited ${userIds.length} ${userIds.length === 1 ? 'member' : 'members'} to the channel`,
+      });
+    } catch (error) {
+      // Show error toast
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to invite members',
+        variant: 'destructive',
+      });
+      throw error;
     }
-    // Refetch channel data to update member count
-    await refetchChannel();
-  }, [channelId, refetchChannel]);
+  }, [channelId, refetchChannel, toast]);
+
+  // Invite members by email handler - must be before conditional returns
+  const handleInviteByEmail = useCallback(async (emails: string[], role: 'admin' | 'member') => {
+    try {
+      const response = await fetch(`/api/channels/${channelId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails, role: role.toUpperCase() }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to send email invites' }));
+        throw new Error(error.message || 'Failed to send email invites');
+      }
+
+      // Show success toast
+      toast({
+        title: 'Success',
+        description: `Successfully sent ${emails.length} email ${emails.length === 1 ? 'invite' : 'invites'}`,
+      });
+    } catch (error) {
+      // Show error toast
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send email invites',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }, [channelId, toast]);
 
   // Tab change handler
   const handleTabChange = useCallback((tab: ChannelTab) => {
@@ -614,7 +665,9 @@ export default function ChannelPage() {
             isOpen={showInviteDialog}
             onClose={() => setShowInviteDialog(false)}
             onInvite={handleInviteMembers}
+            onInviteByEmail={handleInviteByEmail}
             workspaceId={workspaceSlug}
+            channelId={channelId}
             channelName={channelForHeader.name}
             existingMemberIds={channelForHeader.members.map((m) => m.userId)}
           />

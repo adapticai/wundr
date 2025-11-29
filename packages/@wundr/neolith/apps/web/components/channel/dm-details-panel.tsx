@@ -1,9 +1,12 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import { X, UserPlus, Users, Mail, Bot, MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn, getInitials } from '@/lib/utils';
+import { DMAddPeopleModal } from './dm-add-people-modal';
+import { useToast } from '@/hooks/use-toast';
 
 interface DMUser {
   id: string;
@@ -18,6 +21,9 @@ interface DMDetailsPanelProps {
   isOpen: boolean;
   members: DMUser[];
   currentUserId?: string;
+  workspaceId: string;
+  channelId: string;
+  conversationName?: string;
   onClose: () => void;
   onAddPeople?: () => void;
   onViewProfile?: (userId: string) => void;
@@ -38,12 +44,18 @@ export function DMDetailsPanel({
   isOpen,
   members,
   currentUserId,
+  workspaceId,
+  channelId,
+  conversationName,
   onClose,
   onAddPeople,
   onViewProfile,
   onStartDM,
   className,
 }: DMDetailsPanelProps) {
+  const { toast } = useToast();
+  const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
+
   if (!isOpen) return null;
 
   const statusColors = {
@@ -54,6 +66,78 @@ export function DMDetailsPanel({
   };
 
   const isGroupDM = members.length > 1;
+  const existingMemberIds = members.map((m) => m.id);
+
+  const handleOpenAddPeopleModal = useCallback(() => {
+    if (onAddPeople) {
+      onAddPeople();
+    }
+    setIsAddPeopleModalOpen(true);
+  }, [onAddPeople]);
+
+  const handleCloseAddPeopleModal = useCallback(() => {
+    setIsAddPeopleModalOpen(false);
+  }, []);
+
+  const handleAddMembers = useCallback(
+    async (userIds: string[]) => {
+      try {
+        const response = await fetch(`/api/channels/${channelId}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to add members');
+        }
+
+        toast({
+          title: 'Members added',
+          description: `Successfully added ${userIds.length} ${userIds.length === 1 ? 'person' : 'people'} to the conversation`,
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to add members',
+          variant: 'destructive',
+        });
+        throw error;
+      }
+    },
+    [channelId, toast],
+  );
+
+  const handleInviteByEmail = useCallback(
+    async (emails: string[]) => {
+      try {
+        const response = await fetch(`/api/channels/${channelId}/invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emails }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to send invitations');
+        }
+
+        toast({
+          title: 'Invitations sent',
+          description: `Successfully sent ${emails.length} ${emails.length === 1 ? 'invitation' : 'invitations'}`,
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to send invitations',
+          variant: 'destructive',
+        });
+        throw error;
+      }
+    },
+    [channelId, toast],
+  );
 
   return (
     <div
@@ -86,16 +170,14 @@ export function DMDetailsPanel({
       <div className="flex-1 overflow-y-auto">
         <div className="p-4">
           {/* Add People Button */}
-          {onAddPeople && (
-            <Button
-              variant="outline"
-              className="mb-4 w-full justify-start gap-2"
-              onClick={onAddPeople}
-            >
-              <UserPlus className="h-4 w-4" />
-              Add people
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            className="mb-4 w-full justify-start gap-2"
+            onClick={handleOpenAddPeopleModal}
+          >
+            <UserPlus className="h-4 w-4" />
+            Add people
+          </Button>
 
           {/* Members List */}
           <div className="space-y-1">
@@ -198,6 +280,17 @@ export function DMDetailsPanel({
             : 'This is a private conversation between you and this person.'}
         </p>
       </div>
+
+      {/* Add People Modal */}
+      <DMAddPeopleModal
+        isOpen={isAddPeopleModalOpen}
+        onClose={handleCloseAddPeopleModal}
+        onAddMembers={handleAddMembers}
+        onInviteByEmail={handleInviteByEmail}
+        workspaceId={workspaceId}
+        existingMemberIds={existingMemberIds}
+        conversationName={conversationName}
+      />
     </div>
   );
 }

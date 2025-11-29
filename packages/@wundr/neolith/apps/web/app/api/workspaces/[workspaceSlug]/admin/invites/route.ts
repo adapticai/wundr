@@ -65,7 +65,24 @@ export async function GET(
       );
     }
 
-    const { workspaceSlug: workspaceId } = await context.params;
+    const { workspaceSlug } = await context.params;
+
+    // Resolve workspace by slug or ID
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
+      select: { id: true },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    const workspaceId = workspace.id;
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -99,12 +116,12 @@ export async function GET(
     }
 
     // Get invites from workspace settings (in production, this would be a separate table)
-    const workspace = await prisma.workspace.findUnique({
+    const workspaceData = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: { settings: true },
     });
 
-    const settings = (workspace?.settings as Record<string, unknown>) || {};
+    const settings = (workspaceData?.settings as Record<string, unknown>) || {};
     let invites = (settings.invites as Invite[]) || [];
 
     // Update expired invites
@@ -152,7 +169,24 @@ export async function POST(
       );
     }
 
-    const { workspaceSlug: workspaceId } = await context.params;
+    const { workspaceSlug } = await context.params;
+
+    // Resolve workspace by slug or ID
+    const workspaceRecord = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
+      select: { id: true },
+    });
+
+    if (!workspaceRecord) {
+      return NextResponse.json(
+        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    const workspaceId = workspaceRecord.id;
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -220,12 +254,12 @@ export async function POST(
     }
 
     // Get current invites
-    const workspace = await prisma.workspace.findUnique({
+    const workspaceWithSettings = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: { settings: true },
     });
 
-    const settings = (workspace?.settings as Record<string, unknown>) || {};
+    const settings = (workspaceWithSettings?.settings as Record<string, unknown>) || {};
     const currentInvites = (settings.invites as Invite[]) || [];
 
     // Create new invites

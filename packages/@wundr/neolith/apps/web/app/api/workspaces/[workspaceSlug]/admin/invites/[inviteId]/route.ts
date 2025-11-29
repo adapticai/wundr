@@ -49,7 +49,24 @@ export async function DELETE(
       );
     }
 
-    const { workspaceSlug: workspaceId, inviteId } = await context.params;
+    const { workspaceSlug, inviteId } = await context.params;
+
+    // Resolve workspace by slug or ID
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
+      select: { id: true, settings: true },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    const workspaceId = workspace.id;
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -62,12 +79,6 @@ export async function DELETE(
         { status: 403 },
       );
     }
-
-    // Get current invites
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { settings: true },
-    });
 
     const settings = (workspace?.settings as Record<string, unknown>) || {};
     const invites = (settings.invites as Invite[]) || [];
@@ -106,13 +117,16 @@ export async function DELETE(
       return i;
     });
 
+    // Build the updated settings object for Prisma JSON field
+    const updatedSettings = {
+      ...settings,
+      invites: updatedInvites,
+    };
+
     await prisma.workspace.update({
       where: { id: workspaceId },
       data: {
-        settings: {
-          ...settings,
-          invites: updatedInvites,
-        },
+        settings: updatedSettings,
       },
     });
 
@@ -127,9 +141,12 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Invite revoked successfully' });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/admin/invites/:inviteId] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error('[DELETE /api/workspaces/:workspaceId/admin/invites/:inviteId] Error:', errorMessage);
+    console.error('Stack:', errorStack);
     return NextResponse.json(
-      createAdminErrorResponse('Failed to revoke invite', ADMIN_ERROR_CODES.INTERNAL_ERROR),
+      createAdminErrorResponse(`Failed to revoke invite: ${errorMessage}`, ADMIN_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
     );
   }

@@ -43,7 +43,7 @@ export default function AdminPage() {
         />
         <StatCard
           title="Custom Roles"
-          value={roles.filter(r => !r.isDefault).length}
+          value={roles.filter(r => !r.isSystem).length}
           description="Custom permission roles"
           icon={<ShieldIcon className="h-5 w-5" />}
           href={`/${workspaceSlug}/admin/roles`}

@@ -1,9 +1,25 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
 import { cn, getInitials } from '@/lib/utils';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalFooter,
+} from '@/components/ui/responsive-modal';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 import type { User } from '@/types/chat';
 
@@ -18,8 +34,12 @@ interface InviteDialogProps {
   onClose: () => void;
   /** Callback fired when inviting users with a specific role */
   onInvite: (userIds: string[], role: 'admin' | 'member') => Promise<void>;
+  /** Callback fired when inviting by email with a specific role */
+  onInviteByEmail?: (emails: string[], role: 'admin' | 'member') => Promise<void>;
   /** The workspace ID for user search */
   workspaceId: string;
+  /** The channel ID for email invites */
+  channelId?: string;
   /** The channel name for display */
   channelName: string;
   /** IDs of existing members to exclude from search results */
@@ -32,7 +52,9 @@ export function InviteDialog({
   isOpen,
   onClose,
   onInvite,
+  onInviteByEmail,
   workspaceId,
+  channelId: _channelId,
   channelName,
   existingMemberIds,
   isLoading = false,
@@ -41,6 +63,10 @@ export function InviteDialog({
   const [role, setRole] = useState<'admin' | 'member'>('member');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inviteMode, setInviteMode] = useState<'users' | 'email'>('users');
+  const [emailInput, setEmailInput] = useState('');
+  const [emailList, setEmailList] = useState<string[]>([]);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const { users, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
 
@@ -61,6 +87,10 @@ export function InviteDialog({
     setSelectedUsers([]);
     setRole('member');
     setSearchQuery('');
+    setInviteMode('users');
+    setEmailInput('');
+    setEmailList([]);
+    setEmailError(null);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -69,21 +99,52 @@ export function InviteDialog({
   }, [resetForm, onClose]);
 
   const handleSubmit = useCallback(async () => {
-    if (selectedUsers.length === 0 || isSubmitting) {
-return;
-}
+    if (isSubmitting) {
+      return;
+    }
+
+    if (inviteMode === 'users' && selectedUsers.length === 0) {
+      return;
+    }
+
+    if (inviteMode === 'email' && emailList.length === 0) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await onInvite(
-        selectedUsers.map((u) => u.id),
-        role,
-      );
+      if (inviteMode === 'users') {
+        await onInvite(
+          selectedUsers.map((u) => u.id),
+          role,
+        );
+
+        // Show success toast for user invites
+        if (selectedUsers.length === 1) {
+          toast.success(`Invitation sent to ${selectedUsers[0].name}`);
+        } else {
+          toast.success(`${selectedUsers.length} invitations sent successfully`);
+        }
+      } else if (inviteMode === 'email' && onInviteByEmail) {
+        await onInviteByEmail(emailList, role);
+
+        // Show success toast for email invites
+        if (emailList.length === 1) {
+          toast.success(`Invitation sent to ${emailList[0]}`);
+        } else {
+          toast.success(`${emailList.length} invitations sent successfully`);
+        }
+      }
       handleClose();
+    } catch (err) {
+      // Show error toast
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send invitation';
+      toast.error(errorMessage);
+      console.error('Failed to send invite:', err);
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedUsers, role, isSubmitting, onInvite, handleClose]);
+  }, [inviteMode, selectedUsers, emailList, role, isSubmitting, onInvite, onInviteByEmail, handleClose]);
 
   const handleAddUser = useCallback((user: User) => {
     setSelectedUsers((prev) => [...prev, user]);
@@ -94,63 +155,146 @@ return;
     setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
   }, []);
 
-  if (!isOpen) {
-return null;
-}
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleAddEmail = useCallback(() => {
+    const trimmedEmail = emailInput.trim();
+
+    if (!trimmedEmail) {
+      return;
+    }
+
+    if (!validateEmail(trimmedEmail)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    if (emailList.includes(trimmedEmail)) {
+      setEmailError('This email has already been added');
+      return;
+    }
+
+    setEmailList((prev) => [...prev, trimmedEmail]);
+    setEmailInput('');
+    setEmailError(null);
+  }, [emailInput, emailList]);
+
+  const handleRemoveEmail = useCallback((email: string) => {
+    setEmailList((prev) => prev.filter((e) => e !== email));
+  }, []);
+
+  const handleEmailKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddEmail();
+    }
+  }, [handleAddEmail]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="invite-dialog-title"
-    >
-      <div
-        className="w-full max-w-md rounded-lg bg-card shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div>
-            <h2 id="invite-dialog-title" className="text-lg font-semibold text-foreground">
-              Invite people to #{channelName}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Close dialog"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <ResponsiveModalContent className="sm:max-w-md">
+        <ResponsiveModalHeader>
+          <ResponsiveModalTitle>Invite people to #{channelName}</ResponsiveModalTitle>
+        </ResponsiveModalHeader>
 
-        {/* Content */}
-        <div className="px-6 py-4">
-          {/* Search input */}
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name or email..."
-              className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              disabled={isLoading || isSubmitting}
-              aria-label="Search users to invite"
-              autoComplete="off"
-            />
-            {isSearchingUsers && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <LoadingSpinner className="h-4 w-4" />
+        <div className="space-y-4 px-6 py-4">
+          {/* Mode toggle */}
+          {onInviteByEmail && (
+            <div className="flex gap-2 rounded-md border border-input bg-muted/30 p-1">
+              <button
+                type="button"
+                onClick={() => setInviteMode('users')}
+                className={cn(
+                  'flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
+                  inviteMode === 'users'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Workspace Members
+              </button>
+              <button
+                type="button"
+                onClick={() => setInviteMode('email')}
+                className={cn(
+                  'flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
+                  inviteMode === 'email'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Invite by Email
+              </button>
+            </div>
+          )}
+
+          {/* Search input for users */}
+          {inviteMode === 'users' && (
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name or email..."
+                className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                disabled={isLoading || isSubmitting}
+                aria-label="Search users to invite"
+                autoComplete="off"
+              />
+              {isSearchingUsers && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <LoadingSpinner className="h-4 w-4" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Email input for email invites */}
+          {inviteMode === 'email' && (
+            <div className="space-y-2">
+              <div className="relative">
+                <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => {
+                    setEmailInput(e.target.value);
+                    setEmailError(null);
+                  }}
+                  onKeyDown={handleEmailKeyDown}
+                  placeholder="Enter email address..."
+                  className={cn(
+                    'w-full rounded-md border bg-background py-2 pl-9 pr-20 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1',
+                    emailError
+                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                      : 'border-input focus:border-primary focus:ring-primary',
+                  )}
+                  disabled={isLoading || isSubmitting}
+                  aria-label="Enter email address"
+                  autoComplete="off"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAddEmail}
+                  disabled={!emailInput.trim() || isLoading || isSubmitting}
+                  className="absolute right-2 top-1/2 h-7 -translate-y-1/2"
+                >
+                  Add
+                </Button>
               </div>
-            )}
-          </div>
+              {emailError && (
+                <p className="text-xs text-destructive">{emailError}</p>
+              )}
+            </div>
+          )}
 
           {/* Selected users */}
-          {selectedUsers.length > 0 && (
+          {inviteMode === 'users' && selectedUsers.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {selectedUsers.map((user) => (
                 <span
@@ -175,8 +319,32 @@ return null;
             </div>
           )}
 
+          {/* Selected emails */}
+          {inviteMode === 'email' && emailList.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {emailList.map((email) => (
+                <span
+                  key={email}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                >
+                  <MailIcon className="h-3 w-3" />
+                  {email}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveEmail(email)}
+                    disabled={isLoading || isSubmitting}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-primary/20"
+                    aria-label={`Remove ${email}`}
+                  >
+                    <XIcon className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* Search results */}
-          {searchQuery && (
+          {inviteMode === 'users' && searchQuery && (
             <div className="mt-3 max-h-48 overflow-y-auto rounded-md border bg-background">
               {availableUsers.length === 0 ? (
                 <p className="px-3 py-4 text-center text-sm text-muted-foreground">
@@ -214,68 +382,66 @@ return null;
           )}
 
           {/* Role selection */}
-          {selectedUsers.length > 0 && (
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+          {(selectedUsers.length > 0 || emailList.length > 0) && (
+            <div className="space-y-2">
+              <label htmlFor="role-select" className="text-sm font-medium text-foreground">
                 Invite as
               </label>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole('member')}
-                  disabled={isLoading || isSubmitting}
-                  className={cn(
-                    'flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    role === 'member'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/50',
-                  )}
-                >
-                  <MemberIcon className="h-4 w-4" />
-                  Member
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('admin')}
-                  disabled={isLoading || isSubmitting}
-                  className={cn(
-                    'flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    role === 'admin'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/50',
-                  )}
-                >
-                  <ShieldIcon className="h-4 w-4" />
-                  Admin
-                </button>
-              </div>
+              <Select
+                value={role}
+                onValueChange={(value: 'admin' | 'member') => setRole(value)}
+                disabled={isLoading || isSubmitting}
+              >
+                <SelectTrigger id="role-select" className="w-full" aria-label="Select role">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">
+                    <div className="flex items-center gap-2">
+                      <MemberIcon className="h-4 w-4" />
+                      <span>Member</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <ShieldIcon className="h-4 w-4" />
+                      <span>Admin</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
-          <button
+        <ResponsiveModalFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+          <Button
             type="button"
+            variant="outline"
             onClick={handleClose}
             disabled={isLoading || isSubmitting}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSubmit}
-            disabled={selectedUsers.length === 0 || isLoading || isSubmitting}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            disabled={
+              (inviteMode === 'users' && selectedUsers.length === 0) ||
+              (inviteMode === 'email' && emailList.length === 0) ||
+              isLoading ||
+              isSubmitting
+            }
           >
             {isSubmitting
               ? 'Sending...'
-              : `Send Invite${selectedUsers.length > 1 ? 's' : ''}`}
-          </button>
-        </div>
-      </div>
-    </div>
+              : inviteMode === 'users'
+              ? `Send Invite${selectedUsers.length > 1 ? 's' : ''}`
+              : `Send Invite${emailList.length > 1 ? 's' : ''}`}
+          </Button>
+        </ResponsiveModalFooter>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
 
@@ -343,6 +509,23 @@ function ShieldIcon({ className }: { className?: string }) {
     >
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
       <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function MailIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
   );
 }

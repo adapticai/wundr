@@ -73,6 +73,29 @@ export default function ChannelSettingsPage() {
     [channelId, inviteMembers, refetchMembers],
   );
 
+  const handleInviteByEmail = useCallback(
+    async (emails: string[], role: 'admin' | 'member') => {
+      try {
+        const response = await fetch(`/api/channels/${channelId}/invites`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emails, role: role.toUpperCase() }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to send email invites' }));
+          throw new Error(errorData.error || errorData.message || 'Failed to send email invites');
+        }
+
+        refetchMembers();
+      } catch (error) {
+        console.error('Failed to send email invites:', error);
+        throw error;
+      }
+    },
+    [channelId, refetchMembers],
+  );
+
   const handleRemoveMember = useCallback(
     async (userId: string) => {
       const success = await removeMember(channelId, userId);
@@ -214,7 +237,9 @@ export default function ChannelSettingsPage() {
         isOpen={isInviteDialogOpen}
         onClose={() => setIsInviteDialogOpen(false)}
         onInvite={handleInvite}
+        onInviteByEmail={handleInviteByEmail}
         workspaceId={workspaceSlug}
+        channelId={channelId}
         channelName={channel.name}
         existingMemberIds={members.map((m) => m.userId)}
       />

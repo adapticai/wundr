@@ -39,6 +39,16 @@ export interface Member {
 }
 
 /**
+ * Permission definition for a role
+ */
+export interface RolePermission {
+  /** Resource the permission applies to (e.g., 'channels', 'messages', '*') */
+  resource: string;
+  /** Actions allowed on the resource */
+  actions: ('create' | 'read' | 'update' | 'delete' | 'manage')[];
+}
+
+/**
  * Role definition for workspace permissions
  */
 export interface Role {
@@ -47,13 +57,15 @@ export interface Role {
   /** Display name of the role */
   name: string;
   /** Description of the role's purpose */
-  description?: string;
-  /** List of permission identifiers */
-  permissions: string[];
-  /** Whether this is the default role for new members */
-  isDefault?: boolean;
+  description?: string | null;
+  /** List of permissions with resource and actions */
+  permissions: RolePermission[];
+  /** Whether this is a system role (cannot be deleted) */
+  isSystem?: boolean;
   /** Number of members with this role */
   memberCount?: number;
+  /** Color code for the role badge */
+  color?: string | null;
 }
 
 /**
@@ -502,16 +514,23 @@ export interface UseInvitesReturn {
  */
 export function useInvites(workspaceId: string): UseInvitesReturn {
   const { data, error, isLoading, mutate } = useSWR<{ invites: Invite[] }>(
-    `/api/workspaces/${workspaceId}/invites`,
+    `/api/workspaces/${workspaceId}/admin/invites`,
     fetcher,
   );
 
   const createInvites = useCallback(
     async (emails: string[], roleId?: string) => {
-      const res = await fetch(`/api/workspaces/${workspaceId}/invites`, {
+      // Transform emails array into the expected invites format
+      const invites = emails.map(email => ({
+        email,
+        roleId: roleId || undefined,
+        role: roleId ? undefined : 'MEMBER',
+      }));
+
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ emails, roleId }),
+        body: JSON.stringify({ invites }),
       });
       if (!res.ok) {
         const error = await res.json().catch(() => ({ message: 'Failed to create invites' }));
@@ -524,7 +543,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
 
   const revokeInvite = useCallback(
     async (inviteId: string) => {
-      const res = await fetch(`/api/workspaces/${workspaceId}/invites/${inviteId}`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -538,7 +557,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
 
   const resendInvite = useCallback(
     async (inviteId: string) => {
-      const res = await fetch(`/api/workspaces/${workspaceId}/invites/${inviteId}/resend`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}/resend`, {
         method: 'POST',
       });
       if (!res.ok) {
@@ -679,7 +698,7 @@ export function useBilling(workspaceId: string): UseBillingReturn {
 
   const updatePlan = useCallback(
     async (plan: BillingInfo['plan']) => {
-      const res = await fetch(`/api/workspaces/${workspaceId}/billing/plan`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/billing`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
@@ -694,8 +713,10 @@ export function useBilling(workspaceId: string): UseBillingReturn {
   );
 
   const cancelSubscription = useCallback(async () => {
-    const res = await fetch(`/api/workspaces/${workspaceId}/billing/cancel`, {
+    const res = await fetch(`/api/workspaces/${workspaceId}/billing`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel' }),
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({ message: 'Failed to cancel subscription' }));

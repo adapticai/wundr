@@ -1,13 +1,20 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalFooter,
+} from '@/components/ui/responsive-modal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,7 +57,7 @@ export function InviteManager({
   // Form state
   const [email, setEmail] = useState('');
   const [bulkEmails, setBulkEmails] = useState('');
-  const [selectedRole, setSelectedRole] = useState(availableRoles[0]?.id || '');
+  const [selectedRole, setSelectedRole] = useState('');
   const [message, setMessage] = useState('');
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -82,7 +89,9 @@ export function InviteManager({
       ? bulkEmails.split(/[,\n]/).map((e) => e.trim()).filter(Boolean)
       : [email.trim()];
 
-    if (emails.length === 0) {
+    if (emails.length === 0 || !selectedRole) {
+      setError('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -107,12 +116,21 @@ export function InviteManager({
 
       // Show warning if some emails failed
       if (data.emailResults && data.emailResults.failed > 0) {
+        const succeeded = data.emailResults.succeeded || 0;
+        const failed = data.emailResults.failed;
         const failedEmails = data.emailResults.details
           .filter((r: any) => !r.success)
           .map((r: any) => r.email)
           .join(', ');
         console.warn(`Some invitation emails failed: ${failedEmails}`);
-        // You could show a warning toast here
+        toast.warning(`${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`);
+      } else {
+        // All succeeded
+        if (emails.length === 1) {
+          toast.success(`Invitation sent to ${emails[0]}`);
+        } else {
+          toast.success(`${emails.length} invitations sent successfully`);
+        }
       }
 
       setEmail('');
@@ -121,7 +139,9 @@ export function InviteManager({
       setShowInviteForm(false);
       fetchInvites();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send invites');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send invites';
+      setError(errorMessage);
+      toast.error(errorMessage);
       console.error('Failed to send invites:', err);
     } finally {
       setIsSending(false);
@@ -137,9 +157,12 @@ export function InviteManager({
       if (!response.ok) {
         throw new Error('Failed to resend invite');
       }
+      toast.success('Invitation resent successfully');
       fetchInvites();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to resend invite');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to resend invite';
+      setError(errorMessage);
+      toast.error(errorMessage);
       console.error('Failed to resend invite:', err);
     }
   };
@@ -157,14 +180,23 @@ export function InviteManager({
       if (!response.ok) {
         throw new Error('Failed to revoke invite');
       }
+      toast.success('Invitation revoked successfully');
       fetchInvites();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to revoke invite');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to revoke invite';
+      setError(errorMessage);
+      toast.error(errorMessage);
       console.error('Failed to revoke invite:', err);
     }
   };
 
   const handleGenerateLink = async () => {
+    if (!selectedRole) {
+      setError('Please select a role first');
+      toast.error('Please select a role first');
+      return;
+    }
+
     setError(null);
     try {
       const response = await fetch(
@@ -180,14 +212,18 @@ export function InviteManager({
       }
       const data = await response.json();
       setInviteLink(data.link);
+      toast.success('Invite link generated successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate invite link');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate invite link';
+      setError(errorMessage);
+      toast.error(errorMessage);
       console.error('Failed to generate invite link:', err);
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    toast.success('Invite link copied to clipboard');
   };
 
   const pendingInvites = invites.filter((i) => i.status === 'pending');
@@ -215,13 +251,13 @@ export function InviteManager({
       )}
 
       {/* Invite form modal */}
-      <Dialog open={showInviteForm} onOpenChange={setShowInviteForm}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Invite Members</DialogTitle>
-          </DialogHeader>
+      <ResponsiveModal open={showInviteForm} onOpenChange={setShowInviteForm}>
+        <ResponsiveModalContent className="max-w-md">
+          <ResponsiveModalHeader>
+            <ResponsiveModalTitle>Invite Members</ResponsiveModalTitle>
+          </ResponsiveModalHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-4 px-4 md:px-0">
             {/* Mode toggle */}
             <div className="flex gap-2">
               <Button
@@ -270,10 +306,10 @@ export function InviteManager({
 
             {/* Role selector */}
             <div>
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role">Role *</Label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger id="role">
-                  <SelectValue />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableRoles.map((role) => (
@@ -331,7 +367,7 @@ export function InviteManager({
             </div>
           </div>
 
-          <DialogFooter>
+          <ResponsiveModalFooter className="px-4 md:px-0">
             <Button
               variant="outline"
               onClick={() => setShowInviteForm(false)}
@@ -342,14 +378,15 @@ export function InviteManager({
               onClick={handleSendInvites}
               disabled={
                 isSending ||
+                !selectedRole ||
                 (isBulkMode ? !bulkEmails.trim() : !email.trim())
               }
             >
               {isSending ? 'Sending...' : 'Send Invite'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveModalFooter>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
 
       {/* Pending invites */}
       {isLoading ? (

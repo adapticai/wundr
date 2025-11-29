@@ -5,8 +5,24 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { Button } from '@/components/ui/button';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+} from '@/components/ui/responsive-modal';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-import { useMembers, useInvites, useRoles } from '@/hooks/use-admin';
+import { useMembers, useInvites, useRoles, type Role } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
 
@@ -251,24 +267,21 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Invite Modal */}
-      {showInviteModal && (
-        <InviteModal
-          roles={roles}
-          isLoading={invitesLoading}
-          onInvite={handleInvite}
-          onClose={() => setShowInviteModal(false)}
-        />
-      )}
+      <InviteModal
+        open={showInviteModal}
+        roles={roles}
+        isLoading={invitesLoading}
+        onInvite={handleInvite}
+        onClose={() => setShowInviteModal(false)}
+      />
 
       {/* Edit Member Modal */}
-      {editingMember && (
-        <EditMemberModal
-          member={editingMember}
-          roles={roles}
-          onUpdateRole={(roleId) => handleUpdateRole(editingMember.id, roleId)}
-          onClose={() => setEditingMember(null)}
-        />
-      )}
+      <EditMemberModal
+        member={editingMember}
+        roles={roles}
+        onUpdateRole={(roleId) => editingMember ? handleUpdateRole(editingMember.id, roleId) : Promise.resolve()}
+        onClose={() => setEditingMember(null)}
+      />
     </div>
   );
 }
@@ -294,14 +307,7 @@ interface Invite {
   createdAt: Date;
 }
 
-interface Role {
-  id: string;
-  name: string;
-  description?: string;
-  permissions: string[];
-  isDefault?: boolean;
-  memberCount?: number;
-}
+// Role type imported from '@/hooks/use-admin'
 
 // Member Row Component
 interface MemberRowProps {
@@ -318,7 +324,7 @@ function MemberRow({ member, onEdit, onSuspend, onRemove }: MemberRowProps) {
     <tr className="hover:bg-muted/50">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <UserAvatar user={member} size="lg" />
+          <UserAvatar user={{ name: member.name, image: member.image }} size="lg" />
           <div>
             <p className="font-medium text-foreground">{member.name || 'Unknown'}</p>
             <p className="text-sm text-muted-foreground">{member.email}</p>
@@ -491,13 +497,23 @@ function InviteRow({ invite, onRevoke, roles }: { invite: Invite; onRevoke: () =
 interface InviteModalProps {
   roles: Role[];
   isLoading: boolean;
+  open: boolean;
   onInvite: (emails: string[], roleId?: string) => Promise<void>;
   onClose: () => void;
 }
 
-function InviteModal({ roles, isLoading, onInvite, onClose }: InviteModalProps) {
+function InviteModal({ roles, isLoading, open, onInvite, onClose }: InviteModalProps) {
   const [emails, setEmails] = useState('');
-  const [roleId, setRoleId] = useState(roles[0]?.id ?? '');
+  const [roleId, setRoleId] = useState('');
+
+  // Set default role when roles are loaded
+  useEffect(() => {
+    if (roles.length > 0 && !roleId) {
+      // Default to 'Member' role if available, otherwise first role
+      const memberRole = roles.find(r => r.name.toLowerCase() === 'member');
+      setRoleId(memberRole?.id ?? roles[0]?.id ?? '');
+    }
+  }, [roles, roleId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -507,22 +523,23 @@ function InviteModal({ roles, isLoading, onInvite, onClose }: InviteModalProps) 
       .filter(Boolean);
     if (emailList.length > 0) {
       await onInvite(emailList, roleId);
+      setEmails(''); // Clear emails after successful invite
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Invite Members</h2>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
+    <ResponsiveModal open={open} onOpenChange={onClose}>
+      <ResponsiveModalContent className="sm:max-w-md">
+        <ResponsiveModalHeader>
+          <ResponsiveModalTitle>Invite Members</ResponsiveModalTitle>
+          <ResponsiveModalDescription>
+            Send email invitations to new workspace members
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="emails" className="block text-sm font-medium text-foreground">
+            <label htmlFor="emails" className="block text-sm font-medium text-foreground mb-1">
               Email Addresses
             </label>
             <textarea
@@ -532,142 +549,141 @@ function InviteModal({ roles, isLoading, onInvite, onClose }: InviteModalProps) 
               placeholder="Enter email addresses (separated by comma or newline)"
               rows={4}
               className={cn(
-                'mt-1 block w-full rounded-md border border-input bg-background',
+                'block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                'focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
               )}
             />
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-foreground">
+            <label htmlFor="role" className="block text-sm font-medium text-foreground mb-1">
               Role
             </label>
-            <select
-              id="role"
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className={cn(
-                'mt-1 block w-full rounded-md border border-input bg-background',
-                'px-3 py-2 text-sm',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              )}
-            >
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
+            <Select value={roleId} onValueChange={setRoleId}>
+              <SelectTrigger id="role">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((role) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                    {role.description && (
+                      <span className="text-muted-foreground ml-2">
+                        - {role.description}
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
+          <ResponsiveModalFooter>
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-muted"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isLoading || !emails.trim()}
-              className={cn(
-                'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
-              )}
             >
               {isLoading ? 'Sending...' : 'Send Invites'}
-            </button>
-          </div>
+            </Button>
+          </ResponsiveModalFooter>
         </form>
-      </div>
-    </div>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
 
 // Edit Member Modal Component
 interface EditMemberModalProps {
-  member: Member;
+  member: Member | null;
   roles: Role[];
   onUpdateRole: (roleId: string) => Promise<void>;
   onClose: () => void;
 }
 
 function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberModalProps) {
-  const [roleId, setRoleId] = useState(member.roleId || '');
+  const [roleId, setRoleId] = useState(member?.roleId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await onUpdateRole(roleId);
-    setIsSubmitting(false);
+    try {
+      await onUpdateRole(roleId);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Edit Member</h2>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
+  if (!member) return null;
 
-        <div className="mt-4 flex items-center gap-3">
-          <UserAvatar user={member} size="xl" />
+  return (
+    <ResponsiveModal open={!!member} onOpenChange={onClose}>
+      <ResponsiveModalContent className="sm:max-w-md">
+        <ResponsiveModalHeader>
+          <ResponsiveModalTitle>Edit Member</ResponsiveModalTitle>
+          <ResponsiveModalDescription>
+            Update the role for this workspace member
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
+
+        <div className="flex items-center gap-3 py-4">
+          <UserAvatar user={{ name: member.name, image: member.image }} size="xl" />
           <div>
             <p className="font-medium text-foreground">{member.name}</p>
             <p className="text-sm text-muted-foreground">{member.email}</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="memberRole" className="block text-sm font-medium text-foreground">
+            <label htmlFor="memberRole" className="block text-sm font-medium text-foreground mb-1">
               Role
             </label>
-            <select
-              id="memberRole"
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className={cn(
-                'mt-1 block w-full rounded-md border border-input bg-background',
-                'px-3 py-2 text-sm',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              )}
-            >
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
+            <Select value={roleId} onValueChange={setRoleId}>
+              <SelectTrigger id="memberRole">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((role) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                    {role.description && (
+                      <span className="text-muted-foreground ml-2">
+                        - {role.description}
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
+          <ResponsiveModalFooter>
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-muted"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className={cn(
-                'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
-              )}
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
+            </Button>
+          </ResponsiveModalFooter>
         </form>
-      </div>
-    </div>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
 
@@ -732,14 +748,6 @@ function MailIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
     </svg>
   );
 }

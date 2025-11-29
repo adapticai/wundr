@@ -19,4 +19,6 @@ export { ChannelDetailsPanel } from './channel-details-panel';
 export { DMHeader } from './dm-header';
 export { DMDetailsPanel } from './dm-details-panel';
 export { AddPeopleDialog } from './add-people-dialog';
+export { DMAddPeopleModal } from './dm-add-people-modal';
+export type { DMAddPeopleModalProps } from './dm-add-people-modal';
 export { CollapsedChannelIcons } from './collapsed-channel-icons';

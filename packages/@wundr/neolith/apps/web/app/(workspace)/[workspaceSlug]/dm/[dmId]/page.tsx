@@ -640,6 +640,9 @@ export default function DMPage() {
           isOpen={isDetailsPanelOpen}
           members={allMembers}
           currentUserId={currentUser.id}
+          workspaceId={channel?.workspaceId || workspaceSlug}
+          channelId={dmId}
+          conversationName={channel?.name}
           onClose={() => setIsDetailsPanelOpen(false)}
           onAddPeople={() => setIsAddPeopleOpen(true)}
           onStartDM={handleStartDMWithMember}

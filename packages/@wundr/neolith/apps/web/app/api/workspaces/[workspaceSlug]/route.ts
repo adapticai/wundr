@@ -16,7 +16,6 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  workspaceIdParamSchema,
   updateWorkspaceSchema,
   createErrorResponse,
   ORG_ERROR_CODES,
@@ -35,10 +34,14 @@ interface RouteContext {
 
 /**
  * Helper to check workspace access via organization membership
+ * Accepts either workspace ID or slug
  */
-async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
+  // Try to find workspace by ID or slug
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }],
+    },
     include: {
       organization: true,
     },
@@ -64,7 +67,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },
@@ -100,18 +103,11 @@ export async function GET(
       );
     }
 
-    // Validate workspace ID parameter
-    const { workspaceSlug: workspaceId } = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    if (!paramResult.success) {
-      return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
-      );
-    }
+    // Get workspace slug/id parameter
+    const { workspaceSlug } = await context.params;
 
-    // Check access
-    const access = await checkWorkspaceAccess(workspaceId, session.user.id);
+    // Check access (resolves slug or ID to workspace)
+    const access = await checkWorkspaceAccess(workspaceSlug, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -121,6 +117,8 @@ export async function GET(
         { status: 404 },
       );
     }
+
+    const workspaceId = access.workspace.id;
 
     // Fetch workspace with details
     const workspace = await prisma.workspace.findUnique({
@@ -186,18 +184,11 @@ export async function PATCH(
       );
     }
 
-    // Validate workspace ID parameter
-    const { workspaceSlug: workspaceId } = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    if (!paramResult.success) {
-      return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
-      );
-    }
+    // Get workspace slug/id parameter
+    const { workspaceSlug } = await context.params;
 
-    // Check access and permission
-    const access = await checkWorkspaceAccess(workspaceId, session.user.id);
+    // Check access and permission (resolves slug or ID to workspace)
+    const access = await checkWorkspaceAccess(workspaceSlug, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -207,6 +198,8 @@ export async function PATCH(
         { status: 404 },
       );
     }
+
+    const workspaceId = access.workspace.id;
 
     // Check permission: org admin/owner or workspace admin
     const isOrgAdmin = ['OWNER', 'ADMIN'].includes(access.orgMembership.role);
@@ -313,18 +306,11 @@ export async function DELETE(
       );
     }
 
-    // Validate workspace ID parameter
-    const { workspaceSlug: workspaceId } = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    if (!paramResult.success) {
-      return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
-      );
-    }
+    // Get workspace slug/id parameter
+    const { workspaceSlug } = await context.params;
 
-    // Check access and permission
-    const access = await checkWorkspaceAccess(workspaceId, session.user.id);
+    // Check access and permission (resolves slug or ID to workspace)
+    const access = await checkWorkspaceAccess(workspaceSlug, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -334,6 +320,8 @@ export async function DELETE(
         { status: 404 },
       );
     }
+
+    const workspaceId = access.workspace.id;
 
     // Only org admin/owner can delete workspaces
     if (!['OWNER', 'ADMIN'].includes(access.orgMembership.role)) {

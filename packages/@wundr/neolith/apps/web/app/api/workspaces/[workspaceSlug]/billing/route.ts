@@ -164,23 +164,24 @@ export async function GET(
       );
     }
 
-    // Get workspace ID from params
-    const params = await context.params;
-    const { workspaceSlug: workspaceId } = params;
+    // Get workspace slug/id from params
+    const { workspaceSlug } = await context.params;
 
-    if (!workspaceId) {
+    if (!workspaceSlug) {
       return NextResponse.json(
         {
-          error: 'Workspace ID is required',
+          error: 'Workspace identifier is required',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 },
       );
     }
 
-    // Verify workspace exists and user has access
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    // Resolve workspace by slug or ID and verify user has access
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
       include: {
         workspaceMembers: {
           where: { userId: session.user.id },
@@ -288,7 +289,7 @@ export async function GET(
         date: invoice.createdAt.toISOString(),
         amount: invoice.amount / 100, // Convert cents to dollars
         status: invoice.status.toLowerCase() as 'paid' | 'pending' | 'failed',
-        invoiceUrl: invoice.invoiceUrl || `/api/workspaces/${workspaceId}/billing/invoices/${invoice.id}`,
+        invoiceUrl: invoice.invoiceUrl || `/api/workspaces/${workspace.id}/billing/invoices/${invoice.id}`,
       })),
     };
 
@@ -340,23 +341,24 @@ export async function POST(
       );
     }
 
-    // Get workspace ID from params
-    const params = await context.params;
-    const { workspaceSlug: workspaceId } = params;
+    // Get workspace slug/id from params
+    const { workspaceSlug } = await context.params;
 
-    if (!workspaceId) {
+    if (!workspaceSlug) {
       return NextResponse.json(
         {
-          error: 'Workspace ID is required',
+          error: 'Workspace identifier is required',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 },
       );
     }
 
-    // Verify workspace exists and user is admin
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    // Resolve workspace by slug or ID and verify user is admin
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
+      },
       include: {
         workspaceMembers: {
           where: {
@@ -513,7 +515,7 @@ export async function POST(
         date: invoice.createdAt.toISOString(),
         amount: invoice.amount / 100,
         status: invoice.status.toLowerCase() as 'paid' | 'pending' | 'failed',
-        invoiceUrl: invoice.invoiceUrl || `/api/workspaces/${workspaceId}/billing/invoices/${invoice.id}`,
+        invoiceUrl: invoice.invoiceUrl || `/api/workspaces/${workspace.id}/billing/invoices/${invoice.id}`,
       })),
     };
 
