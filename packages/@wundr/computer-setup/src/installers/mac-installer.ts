@@ -15,6 +15,7 @@ import type { BaseInstaller } from './index';
 
 interface ExecaError extends Error {
   stderr?: string;
+  timedOut?: boolean;
 }
 
 export class MacInstaller implements BaseInstaller {
@@ -233,16 +234,34 @@ export class MacInstaller implements BaseInstaller {
 
   private async installApplications(profile: DeveloperProfile): Promise<void> {
     const applications = this.getApplicationsForProfile(profile);
-    
+
     // Install cask applications
-    for (const app of applications.casks) {
+    const totalApps = applications.casks.length;
+    for (let i = 0; i < totalApps; i++) {
+      const app = applications.casks[i];
       try {
-        await execa('brew', ['install', '--cask', app]);
+        this.logger.info(`Installing ${app} (${i + 1}/${totalApps})...`);
+
+        // Check if already installed first
+        try {
+          const { stdout } = await execa('brew', ['list', '--cask', app], { timeout: 10000 });
+          if (stdout) {
+            this.logger.info(`${app} already installed, skipping`);
+            continue;
+          }
+        } catch {
+          // Not installed, proceed with installation
+        }
+
+        // Install with timeout of 5 minutes per app
+        await execa('brew', ['install', '--cask', app], { timeout: 300000 });
         this.logger.info(`Installed ${app}`);
       } catch (error: unknown) {
         const execaErr = error as ExecaError;
-        if (execaErr.stderr?.includes('already an App at')) {
+        if (execaErr.stderr?.includes('already an App at') || execaErr.stderr?.includes('is already installed')) {
           this.logger.info(`${app} already installed, skipping`);
+        } else if (execaErr.timedOut) {
+          this.logger.warn(`${app} installation timed out after 5 minutes, skipping`);
         } else {
           const errorMessage = error instanceof Error ? error.message : String(error);
           this.logger.warn(`Failed to install ${app}: ${errorMessage}`);
