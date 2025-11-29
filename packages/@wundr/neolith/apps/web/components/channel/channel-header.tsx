@@ -322,7 +322,7 @@ return;
       </div>
 
       {/* Bottom row: Tabs */}
-      <div className="flex items-center gap-1 px-4 pb-1">
+      <div className="flex items-center gap-1 px-4 pb-3">
         <TabButton
           active={activeTab === 'messages'}
           onClick={() => onTabChange?.('messages')}
