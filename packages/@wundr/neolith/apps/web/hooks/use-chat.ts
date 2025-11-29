@@ -557,6 +557,7 @@ export function useSendMessage(): UseSendMessageReturn {
             type: input.type || 'TEXT',
             parentId: input.parentId,
             metadata: input.metadata || {},
+            attachmentIds: input.attachmentIds || [],
           }),
         });
 

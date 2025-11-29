@@ -38,14 +38,21 @@ type FileTypeFilter = 'all' | 'image' | 'document' | 'video' | 'audio' | 'archiv
 interface FilesTabProps {
   channelId: string;
   className?: string;
+  /**
+   * Mode determines which API endpoint to use:
+   * - 'channel': uses /api/channels/:id/files (default)
+   * - 'conversation': uses /api/conversations/:id/files
+   */
+  mode?: 'channel' | 'conversation';
 }
 
 /**
  * Files Tab Component
  *
- * Displays all files shared in the channel with filtering and download options.
+ * Displays all files shared in the channel or conversation with filtering and download options.
+ * Supports both regular channels and DM conversations.
  */
-export function FilesTab({ channelId, className }: FilesTabProps) {
+export function FilesTab({ channelId, className, mode = 'channel' }: FilesTabProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +75,11 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
         params.set('cursor', cursor);
       }
 
-      const response = await fetch(`/api/channels/${channelId}/files?${params.toString()}`);
+      // Use different endpoint based on mode
+      const endpoint = mode === 'conversation'
+        ? `/api/conversations/${channelId}/files`
+        : `/api/channels/${channelId}/files`;
+      const response = await fetch(`${endpoint}?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch files');
       }
@@ -93,7 +104,7 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [channelId, filter, cursor]);
+  }, [channelId, filter, cursor, mode]);
 
   useEffect(() => {
     fetchFiles();
@@ -148,6 +159,7 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
   }
 
   if (!isLoading && files.length === 0) {
+    const contextText = mode === 'conversation' ? 'conversation' : 'channel';
     return (
       <div className={cn('flex flex-1 flex-col items-center justify-center p-8', className)}>
         <div className="mb-8 rounded-full bg-muted p-6">
@@ -155,7 +167,7 @@ export function FilesTab({ channelId, className }: FilesTabProps) {
         </div>
         <h2 className="mb-2 text-xl font-semibold">No files yet</h2>
         <p className="max-w-md text-center text-muted-foreground">
-          Files shared in this channel will appear here. Share files by attaching them to messages.
+          Files shared in this {contextText} will appear here. Share files by attaching them to messages.
         </p>
       </div>
     );

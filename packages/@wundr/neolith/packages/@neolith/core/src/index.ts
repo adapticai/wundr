@@ -482,6 +482,46 @@ export {
 } from './services';
 
 // =============================================================================
+// Orchestrator Daemon Exports
+// =============================================================================
+
+export {
+  // Daemon Core
+  OrchestratorDaemon,
+  createOrchestratorDaemon,
+  shouldRunDaemon,
+
+  // Daemon Manager
+  OrchestratorDaemonManager,
+  getDaemonManager,
+  initializeDaemonManager,
+
+  // Configuration
+  isOrchestratorModeEnabled,
+  isDaemonAutoStartEnabled,
+  getDaemonHeartbeatInterval,
+  getHealthCheckInterval,
+  isDaemonAutoRestartEnabled,
+  getMaxRestartAttempts,
+  isDaemonVerboseEnabled,
+  getMaxConcurrentConversations,
+  buildDaemonManagerConfig,
+  buildDaemonConfig,
+  DEFAULT_DAEMON_CONFIG,
+  DAEMON_STATUS,
+  ACTION_TYPES as ORCHESTRATOR_ACTION_TYPES,
+
+  // Types
+  type DaemonConfig,
+  type DaemonStatus,
+  type IncomingMessage,
+  type OutgoingMessage,
+  type OrchestratorAction,
+  type DaemonHealthStatus,
+  type DaemonManagerConfig,
+} from './orchestrator';
+
+// =============================================================================
 // Type Exports
 // =============================================================================
 
@@ -946,7 +986,7 @@ export type {
   DaemonHeartbeat,
   DaemonEventType,
   DaemonEvent,
-  DaemonConfig,
+  DaemonConfig as DaemonAuthConfig,
   DaemonAuthErrorCode,
 
   // Retention types

@@ -45,3 +45,42 @@ export {
   Separator,
   type SeparatorProps,
 } from './components/ui/separator';
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from './components/ui/dialog';
+export {
+  Progress,
+  type ProgressProps,
+} from './components/ui/progress';
+
+// File Preview Components
+export {
+  FilePreview,
+  ImagePreview,
+  VideoPreview,
+  AudioPreview,
+  DocumentPreview,
+  GenericFilePreview,
+  type FilePreviewProps,
+  type ImagePreviewProps,
+  type VideoPreviewProps,
+  type AudioPreviewProps,
+  type DocumentPreviewProps,
+  type GenericFilePreviewProps,
+  formatFileSize,
+  getFileExtension,
+  detectFileType,
+  isPreviewableImage,
+  isPreviewableVideo,
+  truncateFilename,
+  type FileType,
+} from './components/file-preview';

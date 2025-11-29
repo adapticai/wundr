@@ -713,3 +713,52 @@ export {
   AvatarProcessingError,
   AvatarDownloadError,
 } from './avatar-service';
+
+// =============================================================================
+// Orchestrator Router
+// =============================================================================
+
+export {
+  // Service implementation
+  OrchestratorRouter,
+  createOrchestratorRouter,
+  orchestratorRouter,
+
+  // Interfaces and types
+  type MessageRoutingStatus,
+  type MessageRoutingMetadata,
+  type RoutingRetryConfig,
+  type OfflineQueueConfig,
+  type OrchestratorRouterConfig,
+  type RouteMessageResult,
+  type OrchestratorSessionInfo,
+
+  // Errors
+  OrchestratorRoutingError,
+  OrchestratorOfflineError,
+  NoActiveSessionError,
+} from './orchestrator-router';
+
+// =============================================================================
+// LLM Service
+// =============================================================================
+// NOTE: LLM Service is currently WIP and excluded from build
+// Uncomment when @adaptic/lumic-utils is available
+// export {
+//   // Service implementation
+//   LLMService,
+//   getLLMService,
+//
+//   // Direct access to lumic utilities
+//   lumic,
+//
+//   // Interfaces and types
+//   type LLMServiceConfig,
+//   type ChatMessage,
+//   type StreamCallback,
+//   type LLMOptions,
+//   type LLMResponse,
+//   type LLMUsage,
+//   type OpenAIModel,
+//   type OpenAIResponseFormat,
+// } from './llm-service';

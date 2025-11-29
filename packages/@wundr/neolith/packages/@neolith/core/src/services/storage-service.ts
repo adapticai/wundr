@@ -393,8 +393,10 @@ export class StorageServiceImpl implements StorageService {
     };
 
     // Add ACL if not using R2 (R2 doesn't support ACL)
-    if (this.config.provider !== 'r2' && input.acl) {
-      commandInput.ACL = input.acl;
+    // Use input.acl if provided, otherwise fall back to config.defaultACL
+    const acl = input.acl ?? this.config.defaultACL;
+    if (this.config.provider !== 'r2' && acl) {
+      commandInput.ACL = acl;
     }
 
     // Add cache control
@@ -1088,6 +1090,8 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
   const maxFileSize = process.env.STORAGE_MAX_FILE_SIZE
     ? parseInt(process.env.STORAGE_MAX_FILE_SIZE, 10)
     : undefined;
+  // Default to 'public-read' for user-facing files (avatars, icons, etc.)
+  const defaultACL = (process.env.STORAGE_DEFAULT_ACL || 'public-read') as 'private' | 'public-read';
 
   if (!bucket || !accessKeyId || !secretAccessKey) {
     throw new StorageConfigError(
@@ -1102,6 +1106,7 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
     endpoint,
     publicUrlBase,
     maxFileSize,
+    defaultACL,
     credentials: {
       accessKeyId,
       secretAccessKey,

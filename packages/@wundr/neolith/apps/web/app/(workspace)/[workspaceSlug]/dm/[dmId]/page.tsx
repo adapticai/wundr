@@ -14,6 +14,7 @@ import { DMHeader } from '@/components/channel/dm-header';
 import { DMDetailsPanel } from '@/components/channel/dm-details-panel';
 import { AddPeopleDialog } from '@/components/channel/add-people-dialog';
 import { ConversationDetailsDialog } from '@/components/channel/conversation-details-dialog';
+import { FilesTab } from '@/components/channel/files-tab';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -593,47 +594,68 @@ export default function DMPage() {
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-1 flex-col">
-          <MessageList
-            messages={messages}
+        {/* Tab content */}
+        {activeTab === 'messages' && (
+          <div className="flex flex-1 flex-col">
+            <MessageList
+              messages={messages}
+              currentUser={currentUser}
+              isLoadingMore={isLoadingMore}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              onReply={handleReply}
+              onEdit={handleEditMessage}
+              onDelete={handleDeleteMessage}
+              onReaction={handleReaction}
+              onOpenThread={handleOpenThread}
+            />
+
+            {/* Typing indicator */}
+            <TypingIndicator typingUsers={typingUsers} />
+
+            {/* Message input */}
+            <MessageInput
+              channelId={dmId}
+              currentUser={currentUser}
+              placeholder={`Message ${conversationDisplayName}...`}
+              onSend={handleSendMessage}
+              onTyping={startTyping}
+              onStopTyping={stopTyping}
+            />
+          </div>
+        )}
+
+        {activeTab === 'files' && (
+          <FilesTab channelId={dmId} mode="conversation" className="flex-1" />
+        )}
+
+        {activeTab === 'canvas' && (
+          <div className="flex flex-1 items-center justify-center text-muted-foreground">
+            Canvas tab coming soon
+          </div>
+        )}
+
+        {(activeTab === 'lists' || activeTab === 'workflows' || activeTab === 'bookmarks') && (
+          <div className="flex flex-1 items-center justify-center text-muted-foreground">
+            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab coming soon
+          </div>
+        )}
+
+        {/* Thread panel - only show on messages tab */}
+        {activeTab === 'messages' && (
+          <ThreadPanel
+            thread={thread}
             currentUser={currentUser}
-            isLoadingMore={isLoadingMore}
-            hasMore={hasMore}
-            onLoadMore={loadMore}
-            onReply={handleReply}
-            onEdit={handleEditMessage}
-            onDelete={handleDeleteMessage}
-            onReaction={handleReaction}
-            onOpenThread={handleOpenThread}
-          />
-
-          {/* Typing indicator */}
-          <TypingIndicator typingUsers={typingUsers} />
-
-          {/* Message input */}
-          <MessageInput
             channelId={dmId}
-            currentUser={currentUser}
-            placeholder={`Message ${conversationDisplayName}...`}
-            onSend={handleSendMessage}
-            onTyping={startTyping}
-            onStopTyping={stopTyping}
+            isLoading={isThreadLoading}
+            isOpen={!!activeThreadId}
+            onClose={handleCloseThread}
+            onSendReply={handleSendThreadReply}
+            onEditMessage={handleEditMessage}
+            onDeleteMessage={handleDeleteMessage}
+            onReaction={handleReaction}
           />
-        </div>
-
-        {/* Thread panel */}
-        <ThreadPanel
-          thread={thread}
-          currentUser={currentUser}
-          channelId={dmId}
-          isLoading={isThreadLoading}
-          isOpen={!!activeThreadId}
-          onClose={handleCloseThread}
-          onSendReply={handleSendThreadReply}
-          onEditMessage={handleEditMessage}
-          onDeleteMessage={handleDeleteMessage}
-          onReaction={handleReaction}
-        />
+        )}
 
         {/* Details panel */}
         <DMDetailsPanel

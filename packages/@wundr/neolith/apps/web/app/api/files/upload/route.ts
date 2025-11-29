@@ -1,19 +1,22 @@
 /**
  * File Upload API Route
  *
- * Handles direct file uploads for message attachments.
- * Supports multipart form data uploads with S3 integration.
+ * Handles two types of uploads:
+ * 1. POST with JSON body - Generate presigned upload URL for direct browser-to-S3 uploads
+ * 2. POST with FormData - Direct file upload through API (for small files)
  *
  * Routes:
- * - POST /api/files/upload - Upload file directly to S3 and create File record
+ * - POST /api/files/upload - Generate presigned upload URL OR direct upload
  *
  * @module app/api/files/upload/route
  */
 
 import crypto from 'crypto';
 
+import { getStorageService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
@@ -27,6 +30,20 @@ import {
 } from '@/lib/validations/upload';
 
 import type { NextRequest } from 'next/server';
+
+/**
+ * Schema for presigned upload URL request
+ */
+const presignedUploadSchema = z.object({
+  filename: z.string().min(1).max(255),
+  mimeType: z.string().min(1),
+  size: z.number().int().positive(),
+  workspaceId: z.string().min(1),
+  channelId: z.string().optional(),
+  expiresIn: z.number().int().positive().max(3600).optional().default(3600),
+});
+
+type PresignedUploadInput = z.infer<typeof presignedUploadSchema>;
 
 /**
  * Generate a unique file key for S3 storage
@@ -187,6 +204,143 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Check Content-Type to determine request type
+    const contentType = request.headers.get('content-type') || '';
+
+    // Handle presigned URL request (JSON body)
+    if (contentType.includes('application/json')) {
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        return NextResponse.json(
+          createErrorResponse('Invalid JSON body', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
+          { status: 400 },
+        );
+      }
+
+      const parseResult = presignedUploadSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Invalid request parameters',
+            UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+            { errors: parseResult.error.flatten().fieldErrors },
+          ),
+          { status: 400 },
+        );
+      }
+
+      const input: PresignedUploadInput = parseResult.data;
+
+      // Check workspace membership
+      const membership = await prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: input.workspaceId,
+            userId: session.user.id,
+          },
+        },
+      });
+
+      if (!membership) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Not a member of this workspace',
+            UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          ),
+          { status: 403 },
+        );
+      }
+
+      // Validate file type
+      if (!isAllowedFileType(input.mimeType)) {
+        return NextResponse.json(
+          createErrorResponse(
+            `File type '${input.mimeType}' is not allowed`,
+            UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED,
+          ),
+          { status: 400 },
+        );
+      }
+
+      // Validate file size
+      const maxSize = getMaxFileSize(input.mimeType);
+      if (input.size > maxSize) {
+        return NextResponse.json(
+          createErrorResponse(
+            `File size exceeds maximum allowed for ${getFileCategory(input.mimeType)} files`,
+            UPLOAD_ERROR_CODES.FILE_TOO_LARGE,
+            { maxSize },
+          ),
+          { status: 400 },
+        );
+      }
+
+      // Get storage service
+      const storage = getStorageService();
+
+      // Generate S3 key
+      const s3Key = storage.generateKey({
+        workspaceId: input.workspaceId,
+        channelId: input.channelId,
+        filename: input.filename,
+      });
+
+      // Generate presigned upload URL
+      const uploadUrl = await storage.getSignedUploadUrl(s3Key, {
+        contentType: input.mimeType,
+        expiresIn: input.expiresIn,
+        maxContentLength: input.size,
+        metadata: {
+          originalFilename: input.filename,
+          uploadedBy: session.user.id,
+          workspaceId: input.workspaceId,
+          ...(input.channelId && { channelId: input.channelId }),
+        },
+      });
+
+      // Create pending file record in database
+      const fileRecord = await prisma.file.create({
+        data: {
+          filename: input.filename,
+          originalName: input.filename,
+          mimeType: input.mimeType,
+          size: BigInt(input.size),
+          s3Key,
+          s3Bucket: storage.getConfig().bucket,
+          status: 'PENDING',
+          uploadedById: session.user.id,
+          workspaceId: input.workspaceId,
+          metadata: {
+            category: getFileCategory(input.mimeType),
+            uploadType: 'presigned',
+            expiresAt: uploadUrl.expiresAt.toISOString(),
+          },
+        },
+        select: {
+          id: true,
+          s3Key: true,
+          s3Bucket: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      return NextResponse.json({
+        data: {
+          fileId: fileRecord.id,
+          uploadUrl: uploadUrl.url,
+          method: uploadUrl.method,
+          headers: uploadUrl.headers,
+          expiresAt: uploadUrl.expiresAt.toISOString(),
+          s3Key,
+        },
+        message: 'Presigned upload URL generated successfully',
+      });
+    }
+
+    // Handle direct upload (FormData)
     // Parse FormData
     let formData: FormData;
     try {

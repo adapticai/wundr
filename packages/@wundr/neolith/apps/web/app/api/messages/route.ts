@@ -136,6 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const channelId = formData.get('channelId') as string;
     const parentId = (formData.get('parentId') as string) || null;
     const mentionsStr = (formData.get('mentions') as string) || null;
+    const attachmentIdsStr = (formData.get('attachmentIds') as string) || null;
     const attachmentFiles = formData.getAll('attachments') as File[];
 
     // Validate required fields
@@ -172,6 +173,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       } catch {
         return NextResponse.json(
           createErrorResponse('Invalid mentions format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
+          { status: 400 },
+        );
+      }
+    }
+
+    // Parse attachment IDs (already uploaded files)
+    let attachmentIds: string[] = [];
+    if (attachmentIdsStr) {
+      try {
+        attachmentIds = JSON.parse(attachmentIdsStr);
+        if (!Array.isArray(attachmentIds)) {
+          throw new Error('Attachment IDs must be an array');
+        }
+      } catch {
+        return NextResponse.json(
+          createErrorResponse('Invalid attachment IDs format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
           { status: 400 },
         );
       }
@@ -228,7 +245,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Upload files and create file records
+    // Upload files and create file records (legacy support for direct file upload)
     type UploadedFile = Awaited<ReturnType<typeof uploadFile>>;
     const uploadedFiles: UploadedFile[] = [];
     const uploadErrors: string[] = [];
@@ -251,6 +268,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       console.warn('[POST /api/messages] Failed to upload files:', uploadErrors);
     }
 
+    // Combine uploaded files with pre-uploaded attachment IDs
+    const allFileIds = [
+      ...uploadedFiles.map((f) => f.id),
+      ...attachmentIds,
+    ];
+
     // Create the message with attachments
     const message = await prisma.message.create({
       data: {
@@ -262,9 +285,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         metadata: {
           mentions,
         } as Prisma.InputJsonValue,
-        messageAttachments: uploadedFiles.length > 0 ? {
-          create: uploadedFiles.map((file) => ({
-            fileId: file.id,
+        messageAttachments: allFileIds.length > 0 ? {
+          create: allFileIds.map((fileId) => ({
+            fileId,
           })),
         } : undefined,
       },

@@ -315,7 +315,7 @@ async function extractWithOpenAI(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4-turbo-preview',
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       max_tokens: parseInt(process.env.DEFAULT_MAX_TOKENS || '4096', 10),
       temperature: 0, // Use deterministic extraction
       messages: [

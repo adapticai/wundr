@@ -121,81 +121,147 @@ export default function ChannelPage() {
 
   // Handle send message
   const handleSendMessage = useCallback(
-    async (content: string, mentions: string[], _attachments: File[]) => {
+    async (content: string, mentions: string[], attachments: File[]) => {
       if (!currentUser) {
         return;
       }
 
-      // Note: attachments should be converted to attachmentIds before sending
-      // For now, we'll send without attachments until the upload flow is implemented
-      const { optimisticId, message } = await sendMessage(
-        { content, channelId, mentions },
-        currentUser,
-      );
+      try {
+        // Upload files if any
+        let uploadedFileIds: string[] = [];
+        if (attachments.length > 0) {
+          const uploadPromises = attachments.map(async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('workspaceId', workspaceSlug);
+            formData.append('channelId', channelId);
 
-      // Add optimistic message
-      addOptimisticMessage({
-        id: optimisticId,
-        content,
-        authorId: currentUser.id,
-        author: currentUser,
-        channelId,
-        parentId: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        reactions: [],
-        replyCount: 0,
-        mentions: [],
-        attachments: [],
-      });
+            const response = await fetch('/api/files/upload', {
+              method: 'POST',
+              body: formData,
+            });
 
-      // Replace optimistic message with real one
-      if (message) {
-        updateOptimisticMessage(optimisticId, { ...message, id: message.id });
-      } else {
-        // Remove on failure
-        removeOptimisticMessage(optimisticId);
+            if (!response.ok) {
+              throw new Error(`Failed to upload ${file.name}`);
+            }
+
+            const result = await response.json();
+            return result.data.file.id;
+          });
+
+          uploadedFileIds = await Promise.all(uploadPromises);
+        }
+
+        // Send message with file IDs
+        const { optimisticId, message } = await sendMessage(
+          { content, channelId, mentions, attachmentIds: uploadedFileIds },
+          currentUser,
+        );
+
+        // Add optimistic message
+        addOptimisticMessage({
+          id: optimisticId,
+          content,
+          authorId: currentUser.id,
+          author: currentUser,
+          channelId,
+          parentId: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          reactions: [],
+          replyCount: 0,
+          mentions: [],
+          attachments: [],
+        });
+
+        // Replace optimistic message with real one
+        if (message) {
+          updateOptimisticMessage(optimisticId, { ...message, id: message.id });
+        } else {
+          // Remove on failure
+          removeOptimisticMessage(optimisticId);
+        }
+      } catch (error) {
+        console.error('Failed to send message:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to send message',
+          variant: 'destructive',
+        });
       }
     },
-    [channelId, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
+    [channelId, workspaceSlug, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage, toast],
   );
 
   // Handle send thread reply
   const handleSendThreadReply = useCallback(
-    async (content: string, mentions: string[], _attachments: File[]) => {
+    async (content: string, mentions: string[], attachments: File[]) => {
       if (!activeThreadId || !currentUser) {
         return;
       }
 
-      // Note: attachments should be converted to attachmentIds before sending
-      // For now, we'll send without attachments until the upload flow is implemented
-      const { optimisticId } = await sendMessage(
-        { content, channelId, parentId: activeThreadId, mentions },
-        currentUser,
-      );
+      try {
+        // Upload files if any
+        let uploadedFileIds: string[] = [];
+        if (attachments.length > 0) {
+          const uploadPromises = attachments.map(async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('workspaceId', workspaceSlug);
+            formData.append('channelId', channelId);
 
-      // Add optimistic reply
-      addOptimisticReply({
-        id: optimisticId,
-        content,
-        authorId: currentUser.id,
-        author: currentUser,
-        channelId,
-        parentId: activeThreadId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        reactions: [],
-        replyCount: 0,
-        mentions: [],
-        attachments: [],
-      });
+            const response = await fetch('/api/files/upload', {
+              method: 'POST',
+              body: formData,
+            });
 
-      // Update reply count on parent
-      updateOptimisticMessage(activeThreadId, {
-        replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
-      });
+            if (!response.ok) {
+              throw new Error(`Failed to upload ${file.name}`);
+            }
+
+            const result = await response.json();
+            return result.data.file.id;
+          });
+
+          uploadedFileIds = await Promise.all(uploadPromises);
+        }
+
+        // Send message with file IDs
+        const { optimisticId } = await sendMessage(
+          { content, channelId, parentId: activeThreadId, mentions, attachmentIds: uploadedFileIds },
+          currentUser,
+        );
+
+        // Add optimistic reply
+        addOptimisticReply({
+          id: optimisticId,
+          content,
+          authorId: currentUser.id,
+          author: currentUser,
+          channelId,
+          parentId: activeThreadId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          reactions: [],
+          replyCount: 0,
+          mentions: [],
+          attachments: [],
+        });
+
+        // Update reply count on parent
+        updateOptimisticMessage(activeThreadId, {
+          replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
+        });
+      } catch (error) {
+        console.error('Failed to send thread reply:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to send reply',
+          variant: 'destructive',
+        });
+      }
     },
-    [activeThreadId, channelId, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
+    [activeThreadId, channelId, workspaceSlug, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages, toast],
   );
 
   // Handle edit message

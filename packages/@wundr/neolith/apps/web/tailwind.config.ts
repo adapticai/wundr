@@ -99,7 +99,8 @@ const config: Config = {
   			'slide-down': 'slide-down 0.5s ease-out',
   			'scale-in': 'scale-in 0.2s ease-out',
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'pulse-subtle': 'pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
   		},
   		keyframes: {
   			'fade-in': {
@@ -154,6 +155,14 @@ const config: Config = {
   				},
   				to: {
   					height: '0'
+  				}
+  			},
+  			'pulse-subtle': {
+  				'0%, 100%': {
+  					opacity: '1'
+  				},
+  				'50%': {
+  					opacity: '0.7'
   				}
   			}
   		}

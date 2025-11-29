@@ -5,18 +5,23 @@
 
 import {
   Body,
-  Button,
   Container,
   Head,
-  Heading,
-  Hr,
   Html,
   Link,
   Preview,
   Section,
-  Text,
 } from '@react-email/components';
 import * as React from 'react';
+import {
+  EmailHeader,
+  EmailFooter,
+  EmailButton,
+  EmailText,
+  main,
+  container,
+  colors,
+} from './components';
 
 export type NotificationType = 'mention' | 'message' | 'channel' | 'task' | 'system';
 
@@ -35,11 +40,11 @@ const notificationConfig: Record<
   NotificationType,
   { label: string; color: string; emoji: string }
 > = {
-  mention: { label: 'Mention', color: '#10b981', emoji: '@' },
-  message: { label: 'New Message', color: '#5469d4', emoji: '💬' },
-  channel: { label: 'Channel Update', color: '#f59e0b', emoji: '#' },
-  task: { label: 'Task Assignment', color: '#8b5cf6', emoji: '✓' },
-  system: { label: 'System Notification', color: '#6b7280', emoji: 'ℹ' },
+  mention: { label: 'Mention', color: colors.success, emoji: '@' },
+  message: { label: 'New Message', color: colors.black, emoji: '💬' },
+  channel: { label: 'Channel Update', color: colors.warning, emoji: '#' },
+  task: { label: 'Task Assignment', color: colors.gray700, emoji: '✓' },
+  system: { label: 'System Notification', color: colors.gray600, emoji: 'ℹ' },
 };
 
 export const NotificationEmail = ({
@@ -64,61 +69,48 @@ export const NotificationEmail = ({
       <Preview>{title}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Notification Type Badge */}
-          <Section style={badgeContainer}>
-            <div style={getBadgeStyle(config.color)}>
-              <span style={badgeEmoji}>{config.emoji}</span>
-              <span style={badgeText}>{config.label}</span>
-            </div>
-          </Section>
+          <EmailHeader />
 
-          {/* Title */}
-          <Heading style={h1}>{title}</Heading>
-
-          {/* Message */}
-          <Text style={messageText}>{message}</Text>
-
-          {/* Action Button */}
-          {actionUrl && actionText && (
-            <Section style={buttonContainer}>
-              <Button style={button} href={actionUrl}>
-                {actionText}
-              </Button>
+          <Section style={contentSection}>
+            {/* Notification Type Badge */}
+            <Section style={badgeContainer}>
+              <div style={getBadgeStyle(config.color)}>
+                <span style={badgeEmoji}>{config.emoji}</span>
+                <span style={badgeText}>{config.label}</span>
+              </div>
             </Section>
-          )}
 
-          {/* Timestamp */}
-          <Text style={timestampText}>{formattedTimestamp}</Text>
+            {/* Title */}
+            <EmailText variant="h1">{title}</EmailText>
 
-          <Hr style={hr} />
+            {/* Message */}
+            <EmailText>{message}</EmailText>
 
-          {/* Preferences Section */}
-          <Section style={preferencesSection}>
-            <Text style={preferencesText}>
-              <Link href={preferencesUrl} style={link}>
-                Manage notification preferences
-              </Link>
-            </Text>
+            {/* Action Button */}
+            {actionUrl && actionText && (
+              <Section style={buttonContainer}>
+                <EmailButton href={actionUrl}>
+                  {actionText}
+                </EmailButton>
+              </Section>
+            )}
+
+            {/* Timestamp */}
+            <EmailText variant="caption" style={timestampText}>
+              {formattedTimestamp}
+            </EmailText>
+
+            {/* Preferences Section */}
+            <Section style={preferencesSection}>
+              <EmailText style={preferencesText}>
+                <Link href={preferencesUrl} style={preferencesLink}>
+                  Manage notification preferences
+                </Link>
+              </EmailText>
+            </Section>
           </Section>
 
-          {/* Footer */}
-          <Text style={footer}>
-            You&apos;re receiving this email because you&apos;re a member of a Neolith
-            workspace.
-          </Text>
-          <Text style={footer}>
-            Don&apos;t want to receive these notifications?{' '}
-            <Link href={unsubscribeUrl} style={link}>
-              Unsubscribe
-            </Link>
-          </Text>
-          <Text style={footer}>
-            Need help? Visit our{' '}
-            <Link href='https://neolith.ai/docs' style={link}>
-              documentation
-            </Link>{' '}
-            or reply to this email.
-          </Text>
+          <EmailFooter includeUnsubscribe unsubscribeUrl={unsubscribeUrl} />
         </Container>
       </Body>
     </Html>
@@ -127,35 +119,26 @@ export const NotificationEmail = ({
 
 export default NotificationEmail;
 
-// Styles
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
+// Additional styles
+const contentSection = {
+  padding: '40px 0',
 };
 
 const badgeContainer = {
-  padding: '24px 24px 0',
+  padding: '0 24px 24px',
 };
 
 const getBadgeStyle = (color: string) => ({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '6px',
-  backgroundColor: color + '15', // 15 is hex for ~8% opacity
-  borderRadius: '16px',
-  padding: '6px 12px',
+  gap: '8px',
+  backgroundColor: colors.gray100,
+  borderRadius: '20px',
+  padding: '8px 16px',
   fontSize: '14px',
   fontWeight: '600',
   color: color,
+  border: `2px solid ${color}`,
 });
 
 const badgeEmoji = {
@@ -167,73 +150,31 @@ const badgeText = {
   lineHeight: '1',
 };
 
-const h1 = {
-  color: '#333',
-  fontSize: '28px',
-  fontWeight: '700',
-  margin: '24px 0',
-  padding: '0 24px',
-  lineHeight: '1.3',
-};
-
-const messageText = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 24px',
-  margin: '0 0 20px',
-};
-
 const buttonContainer = {
-  padding: '27px 24px',
-};
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: '600',
-  textDecoration: 'none',
+  padding: '8px 24px 24px',
   textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 24px',
 };
 
 const timestampText = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '20px',
+  color: colors.gray500,
+  fontSize: '13px',
   padding: '0 24px',
   margin: '0',
 };
 
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '32px 0',
-};
-
 const preferencesSection = {
-  padding: '0 24px 20px',
+  padding: '24px 24px 0',
   textAlign: 'center' as const,
 };
 
 const preferencesText = {
-  color: '#5469d4',
-  fontSize: '14px',
-  lineHeight: '20px',
   margin: '0',
+  padding: '0',
 };
 
-const footer = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '24px',
-  padding: '0 24px',
-  marginTop: '8px',
-};
-
-const link = {
-  color: '#5469d4',
+const preferencesLink = {
+  color: colors.black,
   textDecoration: 'underline',
+  fontSize: '14px',
+  fontWeight: '500',
 };

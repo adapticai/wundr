@@ -63,10 +63,13 @@ export function MessageInput({
   const [showFormatting, setShowFormatting] = useState(true);
   const [showScheduleMenu, setShowScheduleMenu] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scheduleMenuRef = useRef<HTMLDivElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   // Auto-resize textarea
   const adjustTextareaHeight = useCallback(() => {
@@ -335,18 +338,83 @@ export function MessageInput({
     ];
   }, []);
 
+  // File validation
+  const validateFile = useCallback((file: File): string | null => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return `${file.name}: File size exceeds 10MB`;
+    }
+    return null;
+  }, []);
+
   // Handle file upload
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setAttachments((prev) => [...prev, ...files]);
+    const errors: string[] = [];
+    const validFiles: File[] = [];
+
+    files.forEach((file) => {
+      const error = validateFile(file);
+      if (error) {
+        errors.push(error);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    setUploadErrors(errors);
+    setAttachments((prev) => [...prev, ...validFiles]);
+
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, []);
+  }, [validateFile]);
 
   const removeAttachment = useCallback((index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   }, []);
+
+  // Drag and drop handlers
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget === dropZoneRef.current) {
+      setIsDraggingOver(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const errors: string[] = [];
+    const validFiles: File[] = [];
+
+    files.forEach((file) => {
+      const error = validateFile(file);
+      if (error) {
+        errors.push(error);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    setUploadErrors(errors);
+    setAttachments((prev) => [...prev, ...validFiles]);
+  }, [validateFile]);
 
   // Handle emoji insert
   const handleEmojiSelect = useCallback((emoji: string) => {
@@ -395,6 +463,18 @@ export function MessageInput({
 
   return (
     <div className={cn('bg-background', className)}>
+      {/* Upload errors */}
+      {uploadErrors.length > 0 && (
+        <div className="mx-4 mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <div className="text-sm text-destructive font-medium mb-1">Upload Errors:</div>
+          {uploadErrors.map((error, index) => (
+            <div key={index} className="text-xs text-destructive/80">
+              {error}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Attachments preview */}
       {attachments.length > 0 && (
         <div className="flex flex-wrap gap-2 border-t border-x rounded-t-lg mx-4 mt-2 p-3 bg-muted/30">
@@ -408,11 +488,30 @@ export function MessageInput({
         </div>
       )}
 
+      {/* Drag overlay */}
+      {isDraggingOver && (
+        <div className="fixed inset-0 z-50 bg-primary/10 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-background border-2 border-dashed border-primary rounded-xl p-12 flex flex-col items-center gap-4">
+            <UploadIcon className="h-16 w-16 text-primary" />
+            <div className="text-xl font-semibold">Drop files to upload</div>
+            <div className="text-sm text-muted-foreground">Maximum file size: 10MB</div>
+          </div>
+        </div>
+      )}
+
       {/* Main input container - Slack style */}
-      <div className={cn(
-        'mx-4 mb-4 border rounded-lg bg-background',
-        attachments.length > 0 ? 'rounded-t-none border-t-0' : '',
-      )}>
+      <div
+        ref={dropZoneRef}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className={cn(
+          'mx-4 mb-4 border rounded-lg bg-background transition-colors',
+          attachments.length > 0 ? 'rounded-t-none border-t-0' : '',
+          isDraggingOver && 'border-primary border-2',
+        )}
+      >
         {/* Formatting toolbar */}
         {showFormatting && (
           <div className="flex items-center gap-0.5 px-3 py-2 border-b">
@@ -1151,6 +1250,16 @@ function ClockIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" x2="12" y1="3" y2="15" />
     </svg>
   );
 }

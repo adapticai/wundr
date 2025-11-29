@@ -1,14 +1,15 @@
 /**
  * File Download API Route
  *
- * Handles generating signed download URLs for files.
+ * Handles generating presigned download URLs for secure file access.
  *
  * Routes:
- * - GET /api/files/:id/download - Redirect to signed download URL
+ * - GET /api/files/:id/download - Get presigned download URL
  *
  * @module app/api/files/[id]/download/route
  */
 
+import { getStorageService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
@@ -29,42 +30,23 @@ interface RouteContext {
 }
 
 /**
- * Generate presigned download URL
- *
- * @param s3Key - S3 object key
- * @param s3Bucket - S3 bucket name
- * @param filename - Original filename for Content-Disposition
- * @returns Presigned download URL
- */
-async function generateDownloadUrl(s3Key: string, s3Bucket: string, filename: string): Promise<string> {
-  // In production, this would use AWS SDK to generate presigned URL
-  const region = process.env.AWS_REGION ?? 'us-east-1';
-  const expiresIn = 3600; // 1 hour
-
-  // Mock presigned URL - in production, this would be a real signed URL
-  const encodedFilename = encodeURIComponent(filename);
-  return `https://${s3Bucket}.s3.${region}.amazonaws.com/${s3Key}?response-content-disposition=attachment%3B%20filename%3D%22${encodedFilename}%22&X-Amz-Expires=${expiresIn}`;
-}
-
-/**
  * GET /api/files/:id/download
  *
- * Redirect to a signed download URL for the file.
- * Requires authentication and access to the file's workspace.
+ * Generate a presigned download URL for secure file access.
+ * The URL allows temporary access to the file stored in S3.
  *
- * @param _request - Next.js request object
+ * @param request - Next.js request object with optional query params
  * @param context - Route context with file ID
- * @returns Redirect to signed download URL
+ * @returns Presigned download URL or redirect
  *
  * @example
  * ```
- * GET /api/files/file_123/download
+ * GET /api/files/file_123/download?expiresIn=600&download=true
+ * GET /api/files/file_123/download?redirect=true
  * ```
- *
- * Response: HTTP 302 redirect to signed S3 URL
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -87,6 +69,24 @@ export async function GET(
       );
     }
 
+    // Parse query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const expiresIn = parseInt(searchParams.get('expiresIn') || '3600', 10);
+    const download = searchParams.get('download') === 'true';
+    const inline = searchParams.get('inline') === 'true';
+    const redirect = searchParams.get('redirect') === 'true';
+
+    // Validate expiresIn
+    if (expiresIn < 1 || expiresIn > 86400) {
+      return NextResponse.json(
+        createErrorResponse(
+          'expiresIn must be between 1 and 86400 seconds',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+        ),
+        { status: 400 },
+      );
+    }
+
     // Fetch file
     const file = await prisma.file.findUnique({
       where: { id: params.id },
@@ -95,6 +95,8 @@ export async function GET(
         s3Key: true,
         s3Bucket: true,
         originalName: true,
+        mimeType: true,
+        size: true,
         workspaceId: true,
         status: true,
       },
@@ -111,11 +113,10 @@ export async function GET(
     if (file.status !== 'READY') {
       return NextResponse.json(
         createErrorResponse(
-          'File is not ready for download',
-          UPLOAD_ERROR_CODES.NOT_FOUND,
-          { status: file.status },
+          `File is not ready for download. Current status: ${file.status}`,
+          UPLOAD_ERROR_CODES.FILE_NOT_READY,
         ),
-        { status: 404 },
+        { status: 400 },
       );
     }
 
@@ -139,11 +140,40 @@ export async function GET(
       );
     }
 
-    // Generate signed download URL
-    const downloadUrl = await generateDownloadUrl(file.s3Key, file.s3Bucket, file.originalName);
+    // Get storage service
+    const storage = getStorageService();
 
-    // Redirect to signed URL
-    return NextResponse.redirect(downloadUrl);
+    // Determine content disposition
+    let responseContentDisposition: string | undefined;
+    if (download) {
+      responseContentDisposition = `attachment; filename="${encodeURIComponent(file.originalName)}"`;
+    } else if (inline) {
+      responseContentDisposition = `inline; filename="${encodeURIComponent(file.originalName)}"`;
+    }
+
+    // Generate presigned download URL
+    const downloadUrl = await storage.getFileUrl(file.s3Key, {
+      expiresIn,
+      responseContentType: file.mimeType,
+      responseContentDisposition,
+    });
+
+    // Redirect if requested (for backward compatibility)
+    if (redirect) {
+      return NextResponse.redirect(downloadUrl);
+    }
+
+    // Return JSON response with URL
+    return NextResponse.json({
+      data: {
+        url: downloadUrl,
+        expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
+        filename: file.originalName,
+        mimeType: file.mimeType,
+        size: Number(file.size),
+      },
+      message: 'Download URL generated successfully',
+    });
   } catch (error) {
     console.error('[GET /api/files/:id/download] Error:', error);
     return NextResponse.json(

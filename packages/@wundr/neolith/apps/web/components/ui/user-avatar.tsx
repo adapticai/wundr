@@ -13,7 +13,7 @@ export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 /**
  * Status options for user presence indicators.
  */
-export type UserStatus = 'online' | 'offline' | 'away' | 'busy' | 'dnd';
+export type UserStatus = 'online' | 'offline' | 'away' | 'busy' | 'dnd' | 'in_call';
 
 /**
  * User data required for avatar display.
@@ -31,6 +31,11 @@ export interface AvatarUser {
 }
 
 /**
+ * Status indicator size options.
+ */
+export type StatusSize = 'sm' | 'md' | 'lg';
+
+/**
  * Props for the UserAvatar component.
  */
 export interface UserAvatarProps {
@@ -44,6 +49,8 @@ export interface UserAvatarProps {
   showStatus?: boolean;
   /** Override status (useful when status comes from a different source) */
   status?: UserStatus | null;
+  /** Size of the status indicator (overrides automatic sizing) */
+  statusSize?: StatusSize;
   /** Optional CSS class name for the root element */
   className?: string;
   /** Optional CSS class name for the fallback element */
@@ -82,6 +89,7 @@ const statusColors: Record<UserStatus, string> = {
   away: 'bg-yellow-500',
   busy: 'bg-red-500',
   dnd: 'bg-red-500',
+  in_call: 'bg-blue-500',
 };
 
 /**
@@ -94,6 +102,15 @@ const statusSizeConfig: Record<AvatarSize, { dot: string; position: string; bord
   lg: { dot: 'h-3 w-3', position: '-bottom-0.5 -right-0.5', border: 'border-2' },
   xl: { dot: 'h-3.5 w-3.5', position: '-bottom-0.5 -right-0.5', border: 'border-2' },
   '2xl': { dot: 'h-4 w-4', position: '-bottom-1 -right-1', border: 'border-2' },
+};
+
+/**
+ * Manual status size overrides.
+ */
+const manualStatusSizeConfig: Record<StatusSize, { dot: string; border: string }> = {
+  sm: { dot: 'h-2 w-2', border: 'border' },
+  md: { dot: 'h-2.5 w-2.5', border: 'border-2' },
+  lg: { dot: 'h-3.5 w-3.5', border: 'border-2' },
 };
 
 /**
@@ -126,6 +143,7 @@ export function UserAvatar({
   shape = 'rounded',
   showStatus = false,
   status,
+  statusSize: manualStatusSize,
   className,
   fallbackClassName,
 }: UserAvatarProps) {
@@ -139,8 +157,18 @@ export function UserAvatar({
 
   // Use status prop if provided, otherwise fall back to user.status
   const currentStatus = status ?? user.status;
-  const shouldShowStatus = showStatus && currentStatus;
-  const statusSize = statusSizeConfig[size];
+
+  // Hide status indicator on very small avatars (xs) unless explicitly overridden
+  const shouldShowStatus = showStatus && currentStatus && (size !== 'xs' || manualStatusSize);
+
+  // Use manual status size if provided, otherwise use automatic sizing
+  const autoStatusSize = statusSizeConfig[size];
+  const statusSizeConfig_final = manualStatusSize
+    ? { ...autoStatusSize, ...manualStatusSizeConfig[manualStatusSize] }
+    : autoStatusSize;
+
+  // Check if status is in_call to render icon instead of dot
+  const isInCall = currentStatus === 'in_call';
 
   return (
     <div className="relative inline-flex">
@@ -164,14 +192,27 @@ export function UserAvatar({
       {shouldShowStatus && (
         <span
           className={cn(
-            'absolute rounded-full border-background',
-            statusSize.dot,
-            statusSize.position,
-            statusSize.border,
+            'absolute rounded-full border-background flex items-center justify-center',
+            statusSizeConfig_final.dot,
+            statusSizeConfig_final.position,
+            statusSizeConfig_final.border,
             statusColors[currentStatus],
+            // Add pulse animation for online status
+            currentStatus === 'online' && 'animate-pulse-subtle',
           )}
           aria-label={`Status: ${currentStatus}`}
-        />
+        >
+          {isInCall && (
+            <svg
+              className="w-full h-full p-0.5 text-white"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+            </svg>
+          )}
+        </span>
       )}
     </div>
   );

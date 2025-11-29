@@ -25,5 +25,5 @@
     "noUnusedParameters": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**", "src/test-utils/**"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**", "src/test-utils/**", "src/services/llm-service.ts"]
 }

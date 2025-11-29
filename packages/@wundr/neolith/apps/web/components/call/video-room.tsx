@@ -15,6 +15,10 @@ import { useLocalMedia, useCallDuration } from '@/hooks/use-call';
 import { CallControls } from './call-controls';
 import { CallHeader } from './call-header';
 import { ParticipantTile } from './participant-tile';
+import { GridView } from './grid-view';
+import { SpeakerView } from './speaker-view';
+import { ParticipantList } from './participant-list';
+import { AddParticipantModal } from './add-participant-modal';
 
 export type LayoutMode = 'grid' | 'spotlight' | 'sidebar';
 
@@ -38,6 +42,12 @@ export interface VideoRoomProps {
   className?: string;
   /** Initial layout mode for the video grid */
   initialLayout?: LayoutMode;
+  /** Call ID for inviting participants */
+  callId?: string;
+  /** Workspace ID for searching users */
+  workspaceId?: string;
+  /** Whether the current user is the host */
+  isHost?: boolean;
 }
 
 /**
@@ -49,16 +59,23 @@ function VideoRoomInner({
   onDisconnect,
   layout,
   setLayout,
+  callId,
+  workspaceId,
+  isHost = false,
 }: {
   roomName: string;
   channelName?: string;
   onDisconnect?: () => void;
   layout: LayoutMode;
   setLayout: (layout: LayoutMode) => void;
+  callId?: string;
+  workspaceId?: string;
+  isHost?: boolean;
 }) {
   const room = useRoomContext();
   const [pinnedParticipantId, setPinnedParticipantId] = useState<string | null>(null);
   const [showParticipantList, setShowParticipantList] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const { formattedDuration } = useCallDuration(startTime);
 
@@ -197,126 +214,119 @@ function VideoRoomInner({
     return speaker || participants[0];
   }, [screenShareTracks, pinnedParticipant, participants]);
 
-  // Get other participants (excluding featured)
-  const otherParticipants = useMemo(() => {
-    if (!featuredParticipant?.participant) {
-return participants;
-}
-    return participants.filter(
-      (p) => p.participant?.sid !== featuredParticipant.participant?.sid,
-    );
-  }, [participants, featuredParticipant]);
+  // Get other participants (excluding featured) - not currently used in new layout
+  // const otherParticipants = useMemo(() => {
+  //   if (!featuredParticipant?.participant) {
+  // return participants;
+  // }
+  //   return participants.filter(
+  //     (p) => p.participant?.sid !== featuredParticipant.participant?.sid,
+  //   );
+  // }, [participants, featuredParticipant]);
+
+  // Handle invite participants
+  const handleInviteParticipants = useCallback(
+    async (userIds: string[], message?: string) => {
+      if (!callId) return;
+
+      try {
+        const response = await fetch(`/api/calls/${callId}/invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds, message }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to invite participants');
+        }
+      } catch (error) {
+        console.error('Error inviting participants:', error);
+        throw error;
+      }
+    },
+    [callId],
+  );
+
+  // Handle mute participant (host only)
+  const handleMuteParticipant = useCallback(
+    async (participantId: string) => {
+      if (!isHost || !room) return;
+
+      // Use LiveKit's API to mute remote participant
+      // This requires server-side implementation
+      console.log('Muting participant:', participantId);
+    },
+    [isHost, room],
+  );
+
+  // Handle kick participant (host only)
+  const handleKickParticipant = useCallback(
+    async (participantId: string) => {
+      if (!isHost || !callId) return;
+
+      try {
+        const response = await fetch(`/api/calls/${callId}/kick`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ participantId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to kick participant');
+        }
+      } catch (error) {
+        console.error('Error kicking participant:', error);
+      }
+    },
+    [isHost, callId],
+  );
 
   // Render grid layout
   const renderGridLayout = () => {
-    const count = participants.length;
-    const gridCols =
-      count <= 1
-        ? 'grid-cols-1'
-        : count <= 4
-          ? 'grid-cols-2'
-          : count <= 9
-            ? 'grid-cols-3'
-            : 'grid-cols-4';
-
     return (
-      <div className={clsx('grid gap-2 p-4 h-full auto-rows-fr', gridCols)}>
-        {participants.map((trackRef) => (
-          <ParticipantTile
-            key={trackRef.participant?.sid || 'unknown'}
-            participant={trackRef.participant!}
-            isLocal={trackRef.participant?.isLocal}
-            isPinned={trackRef.participant?.sid === pinnedParticipantId}
-            onPin={handlePin}
-            size="large"
-            className="group"
-          />
-        ))}
-      </div>
+      <GridView
+        tracks={cameraTracks}
+        pinnedParticipantId={pinnedParticipantId}
+        onPin={handlePin}
+      />
     );
   };
 
   // Render spotlight layout
   const renderSpotlightLayout = () => {
     return (
-      <div className="flex flex-col lg:flex-row h-full gap-2 p-4">
-        {/* Main featured view */}
-        <div className="flex-1 min-h-0">
-          {featuredParticipant?.participant && (
-            <ParticipantTile
-              participant={featuredParticipant.participant}
-              isLocal={featuredParticipant.participant.isLocal}
-              isPinned={featuredParticipant.participant.sid === pinnedParticipantId}
-              onPin={handlePin}
-              size="large"
-              className="w-full h-full group"
-            />
-          )}
-        </div>
-
-        {/* Sidebar with other participants */}
-        {otherParticipants.length > 0 && (
-          <div className="lg:w-64 flex lg:flex-col gap-2 overflow-auto">
-            {otherParticipants.map((trackRef) => (
-              <ParticipantTile
-                key={trackRef.participant?.sid || 'unknown'}
-                participant={trackRef.participant!}
-                isLocal={trackRef.participant?.isLocal}
-                isPinned={trackRef.participant?.sid === pinnedParticipantId}
-                onPin={handlePin}
-                size="small"
-                className="flex-shrink-0 group"
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <SpeakerView
+        tracks={cameraTracks}
+        featuredTrack={featuredParticipant}
+        pinnedParticipantId={pinnedParticipantId}
+        onPin={handlePin}
+      />
     );
   };
 
-  // Render sidebar layout (video grid on left, chat/participants on right)
+  // Render sidebar layout (video grid on left, participants list on right)
   const renderSidebarLayout = () => {
     return (
       <div className="flex h-full gap-2 p-4">
         {/* Video area */}
         <div className="flex-1 min-w-0">
-          {renderGridLayout()}
+          <GridView
+            tracks={cameraTracks}
+            pinnedParticipantId={pinnedParticipantId}
+            onPin={handlePin}
+          />
         </div>
 
-        {/* Sidebar */}
-        {showParticipantList && (
-          <div className="w-80 bg-card rounded-lg border border-border overflow-hidden">
-            <div className="p-4 border-b border-border">
-              <h2 className="font-semibold">Participants ({participants.length})</h2>
-            </div>
-            <div className="p-2 space-y-1 overflow-auto max-h-[calc(100%-60px)]">
-              {participants.map((trackRef) => (
-                <div
-                  key={trackRef.participant?.sid || 'unknown'}
-                  className={clsx(
-                    'flex items-center gap-3 p-2 rounded-lg',
-                    'hover:bg-muted transition-colors',
-                  )}
-                >
-                  <div className="w-8 h-8 rounded-full bg-stone-500/10 flex items-center justify-center text-stone-700 dark:text-stone-300 font-medium">
-                    {(trackRef.participant?.name || trackRef.participant?.identity || '?')
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {trackRef.participant?.name || trackRef.participant?.identity}
-                      {trackRef.participant?.isLocal && ' (You)'}
-                    </p>
-                  </div>
-                  {trackRef.participant?.isSpeaking && (
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Participant List Sidebar */}
+        <div className="w-80">
+          <ParticipantList
+            tracks={cameraTracks}
+            isHost={isHost}
+            currentUserId={room?.localParticipant?.identity}
+            onMuteParticipant={handleMuteParticipant}
+            onKickParticipant={handleKickParticipant}
+          />
+        </div>
       </div>
     );
   };
@@ -426,6 +436,71 @@ return participants;
           onSelectVideoDevice={setAudioDevice}
         />
       </div>
+
+      {/* Invite Modal */}
+      {callId && workspaceId && (
+        <AddParticipantModal
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          onInvite={handleInviteParticipants}
+          callId={callId}
+          workspaceId={workspaceId}
+        />
+      )}
+
+      {/* Participant List Toggle Button (for mobile) */}
+      {layout !== 'sidebar' && (
+        <button
+          onClick={() => setShowParticipantList(!showParticipantList)}
+          className={clsx(
+            'fixed right-4 top-24 z-10',
+            'w-12 h-12 rounded-full',
+            'bg-background/80 backdrop-blur-sm border border-border',
+            'flex items-center justify-center',
+            'hover:bg-muted transition-colors',
+            'shadow-lg',
+          )}
+          aria-label={showParticipantList ? 'Hide participants' : 'Show participants'}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </button>
+      )}
+
+      {/* Participant List Overlay (mobile/tablet) */}
+      {showParticipantList && layout !== 'sidebar' && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-20"
+            onClick={() => setShowParticipantList(false)}
+          />
+
+          {/* Participant List */}
+          <div className="fixed right-0 top-0 bottom-0 w-80 z-30">
+            <ParticipantList
+              tracks={cameraTracks}
+              isHost={isHost}
+              currentUserId={room?.localParticipant?.identity}
+              onMuteParticipant={handleMuteParticipant}
+              onKickParticipant={handleKickParticipant}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -442,6 +517,9 @@ export function VideoRoom({
   onError,
   className,
   initialLayout = 'grid',
+  callId,
+  workspaceId,
+  isHost = false,
 }: VideoRoomProps) {
   const [layout, setLayout] = useState<LayoutMode>(initialLayout);
 
@@ -463,6 +541,9 @@ export function VideoRoom({
           onDisconnect={onDisconnect}
           layout={layout}
           setLayout={setLayout}
+          callId={callId}
+          workspaceId={workspaceId}
+          isHost={isHost}
         />
       </LiveKitRoom>
     </div>

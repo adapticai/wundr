@@ -440,6 +440,11 @@ export async function POST(
         channelId: params.channelId,
         authorId: session.user.id,
         parentId: input.parentId,
+        messageAttachments: input.attachmentIds && input.attachmentIds.length > 0 ? {
+          create: input.attachmentIds.map((fileId) => ({
+            fileId,
+          })),
+        } : undefined,
       },
       include: {
         author: {
@@ -462,6 +467,8 @@ export async function POST(
                 mimeType: true,
                 size: true,
                 thumbnailUrl: true,
+                s3Key: true,
+                s3Bucket: true,
               },
             },
           },

@@ -5,18 +5,22 @@
 
 import {
   Body,
-  Button,
   Container,
   Head,
-  Heading,
-  Hr,
   Html,
-  Link,
   Preview,
   Section,
-  Text,
 } from '@react-email/components';
 import * as React from 'react';
+import {
+  EmailHeader,
+  EmailFooter,
+  EmailButton,
+  EmailText,
+  main,
+  container,
+  colors,
+} from './components';
 
 interface WelcomeEmailProps {
   username?: string;
@@ -33,38 +37,42 @@ export const WelcomeEmail = ({
       <Preview>Welcome to Neolith - Your AI-Powered Workspace</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>Welcome to Neolith</Heading>
-          <Text style={text}>Hello {username},</Text>
-          <Text style={text}>
-            Thank you for signing up for Neolith! We&apos;re excited to have you on
-            board.
-          </Text>
-          <Text style={text}>
-            Neolith is your AI-powered workspace for building and managing
-            intelligent organizations. With Neolith, you can:
-          </Text>
-          <ul style={list}>
-            <li style={listItem}>Create custom AI agent hierarchies</li>
-            <li style={listItem}>Design automated workflows and processes</li>
-            <li style={listItem}>Collaborate with your team in real-time</li>
-            <li style={listItem}>Build governance structures</li>
-          </ul>
-          <Section style={buttonContainer}>
-            <Button style={button} href={loginUrl}>
-              Get Started
-            </Button>
+          <EmailHeader />
+
+          <Section style={contentSection}>
+            <EmailText variant="h1">Welcome to Neolith</EmailText>
+
+            <EmailText>Hello {username},</EmailText>
+
+            <EmailText>
+              Thank you for signing up for Neolith! We&apos;re excited to have you on
+              board.
+            </EmailText>
+
+            <EmailText>
+              Neolith is your AI-powered workspace for building and managing
+              intelligent organizations. With Neolith, you can:
+            </EmailText>
+
+            <ul style={list}>
+              <li style={listItem}>Create custom AI agent hierarchies</li>
+              <li style={listItem}>Design automated workflows and processes</li>
+              <li style={listItem}>Collaborate with your team in real-time</li>
+              <li style={listItem}>Build governance structures</li>
+            </ul>
+
+            <Section style={buttonContainer}>
+              <EmailButton href={loginUrl}>
+                Get Started
+              </EmailButton>
+            </Section>
+
+            <EmailText variant="small">
+              If you didn&apos;t create this account, you can safely ignore this email.
+            </EmailText>
           </Section>
-          <Hr style={hr} />
-          <Text style={footer}>
-            If you didn&apos;t create this account, you can safely ignore this email.
-          </Text>
-          <Text style={footer}>
-            Need help? Reply to this email or visit our{' '}
-            <Link href='https://neolith.ai/docs' style={link}>
-              documentation
-            </Link>
-            .
-          </Text>
+
+          <EmailFooter />
         </Container>
       </Body>
     </Html>
@@ -73,41 +81,17 @@ export const WelcomeEmail = ({
 
 export default WelcomeEmail;
 
-// Styles
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-};
-
-const h1 = {
-  color: '#333',
-  fontSize: '32px',
-  fontWeight: '700',
-  margin: '40px 0',
-  padding: '0 24px',
-};
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 24px',
+// Additional styles
+const contentSection = {
+  padding: '40px 0',
 };
 
 const list = {
-  color: '#333',
+  color: colors.gray800,
   fontSize: '16px',
-  lineHeight: '26px',
+  lineHeight: '1.6',
   paddingLeft: '48px',
+  margin: '0 0 24px',
 };
 
 const listItem = {
@@ -115,34 +99,6 @@ const listItem = {
 };
 
 const buttonContainer = {
-  padding: '27px 24px',
-};
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: '600',
-  textDecoration: 'none',
+  padding: '8px 24px 24px',
   textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 24px',
-};
-
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '20px 0',
-};
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '24px',
-  padding: '0 24px',
-};
-
-const link = {
-  color: '#5469d4',
-  textDecoration: 'underline',
 };

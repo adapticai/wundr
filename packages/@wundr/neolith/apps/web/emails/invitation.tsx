@@ -5,18 +5,23 @@
 
 import {
   Body,
-  Button,
   Container,
   Head,
-  Heading,
-  Hr,
   Html,
   Link,
   Preview,
   Section,
-  Text,
 } from '@react-email/components';
 import * as React from 'react';
+import {
+  EmailHeader,
+  EmailFooter,
+  EmailButton,
+  EmailText,
+  main,
+  container,
+  colors,
+} from './components';
 
 interface InvitationEmailProps {
   inviterName?: string;
@@ -43,59 +48,56 @@ export const InvitationEmail = ({
       </Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>You&apos;re invited!</Heading>
+          <EmailHeader />
 
-          <Text style={text}>
-            <strong>{inviterName}</strong> ({inviterEmail}) has invited you to join{' '}
-            <strong>{workspaceName}</strong> on Neolith.
-          </Text>
+          <Section style={contentSection}>
+            <EmailText variant="h1">You&apos;re invited!</EmailText>
 
-          {workspaceDescription && (
-            <Section style={descriptionSection}>
-              <Text style={descriptionText}>{workspaceDescription}</Text>
+            <EmailText>
+              <strong>{inviterName}</strong> ({inviterEmail}) has invited you to join{' '}
+              <strong>{workspaceName}</strong> on Neolith.
+            </EmailText>
+
+            {workspaceDescription && (
+              <Section style={descriptionSection}>
+                <EmailText style={descriptionText}>{workspaceDescription}</EmailText>
+              </Section>
+            )}
+
+            <EmailText>
+              Neolith is an AI-powered workspace platform that enables you to build
+              intelligent organizations with custom agent hierarchies, automated workflows,
+              and real-time collaboration.
+            </EmailText>
+
+            <Section style={buttonContainer}>
+              <EmailButton href={inviteUrl}>
+                Accept Invitation
+              </EmailButton>
             </Section>
-          )}
 
-          <Text style={text}>
-            Neolith is an AI-powered workspace platform that enables you to build
-            intelligent organizations with custom agent hierarchies, automated workflows,
-            and real-time collaboration.
-          </Text>
+            <EmailText variant="small">
+              Or copy and paste this link into your browser:
+            </EmailText>
+            <EmailText style={urlText}>
+              <Link href={inviteUrl} style={urlLink}>
+                {inviteUrl}
+              </Link>
+            </EmailText>
 
-          <Section style={buttonContainer}>
-            <Button style={button} href={inviteUrl}>
-              Accept Invitation
-            </Button>
+            <Section style={warningSection}>
+              <EmailText style={warningText}>
+                This invitation expires in {expiresAt}. Accept it soon to join the workspace.
+              </EmailText>
+            </Section>
+
+            <EmailText variant="small">
+              If you weren&apos;t expecting this invitation, you can safely ignore this email.
+              The invitation will expire automatically.
+            </EmailText>
           </Section>
 
-          <Text style={linkText}>
-            Or copy and paste this link into your browser:
-          </Text>
-          <Text style={urlText}>
-            <Link href={inviteUrl} style={urlLink}>
-              {inviteUrl}
-            </Link>
-          </Text>
-
-          <Section style={warningSection}>
-            <Text style={warningText}>
-              This invitation expires in {expiresAt}. Accept it soon to join the workspace.
-            </Text>
-          </Section>
-
-          <Hr style={hr} />
-
-          <Text style={footer}>
-            If you weren&apos;t expecting this invitation, you can safely ignore this email.
-            The invitation will expire automatically.
-          </Text>
-          <Text style={footer}>
-            Need help? Reply to this email or contact our support team at{' '}
-            <Link href='mailto:support@neolith.ai' style={link}>
-              support@neolith.ai
-            </Link>
-            .
-          </Text>
+          <EmailFooter />
         </Container>
       </Body>
     </Html>
@@ -104,117 +106,59 @@ export const InvitationEmail = ({
 
 export default InvitationEmail;
 
-// Styles
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-};
-
-const h1 = {
-  color: '#333',
-  fontSize: '32px',
-  fontWeight: '700',
-  margin: '40px 0',
-  padding: '0 24px',
-};
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 24px',
-  marginBottom: '16px',
+// Additional styles
+const contentSection = {
+  padding: '40px 0',
 };
 
 const descriptionSection = {
-  backgroundColor: '#f6f9fc',
-  borderRadius: '4px',
+  backgroundColor: colors.gray50,
+  borderRadius: '8px',
   margin: '24px 24px',
-  padding: '16px',
+  padding: '20px',
 };
 
 const descriptionText = {
-  color: '#555',
+  color: colors.gray700,
   fontSize: '15px',
-  lineHeight: '24px',
-  fontStyle: 'italic',
+  lineHeight: '1.5',
+  fontStyle: 'italic' as const,
   margin: '0',
+  padding: '0',
 };
 
 const buttonContainer = {
-  padding: '27px 24px',
-};
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: '600',
-  textDecoration: 'none',
+  padding: '8px 24px 24px',
   textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 24px',
-};
-
-const linkText = {
-  color: '#666',
-  fontSize: '14px',
-  lineHeight: '24px',
-  padding: '0 24px',
-  marginBottom: '8px',
 };
 
 const urlText = {
-  color: '#333',
+  color: colors.gray700,
   fontSize: '14px',
-  lineHeight: '24px',
+  lineHeight: '1.5',
   padding: '0 24px',
   marginBottom: '24px',
   wordBreak: 'break-all' as const,
 };
 
 const urlLink = {
-  color: '#5469d4',
+  color: colors.black,
   textDecoration: 'underline',
+  fontWeight: '500',
 };
 
 const warningSection = {
-  backgroundColor: '#fff3cd',
-  borderLeft: '4px solid #ffc107',
+  backgroundColor: colors.warningLight,
+  borderLeft: `4px solid ${colors.warning}`,
   margin: '24px 24px',
-  padding: '12px 16px',
+  padding: '16px 20px',
+  borderRadius: '4px',
 };
 
 const warningText = {
-  color: '#856404',
+  color: colors.gray800,
   fontSize: '14px',
-  lineHeight: '22px',
+  lineHeight: '1.5',
   margin: '0',
-};
-
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '20px 0',
-};
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '24px',
-  padding: '0 24px',
-};
-
-const link = {
-  color: '#5469d4',
-  textDecoration: 'underline',
+  padding: '0',
 };

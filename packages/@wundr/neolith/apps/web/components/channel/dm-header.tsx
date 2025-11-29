@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { DMCallButton } from '@/components/call/dm-call-button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,6 +100,8 @@ interface DMHeaderProps {
   onTabChange?: (tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks') => void;
   /** Callback when add tab is clicked */
   onAddTab?: (tabType: string) => void;
+  /** Callback when call is initiated */
+  onCallInitiated?: (callId: string, type: 'audio' | 'video') => void;
   className?: string;
 }
 
@@ -323,6 +326,8 @@ function HeaderTabs({
  */
 export function DMHeader({
   participants,
+  workspaceId,
+  conversationId,
   hasActiveHuddle = false,
   huddleParticipantCount = 0,
   notificationSetting = 'all',
@@ -341,6 +346,7 @@ export function DMHeader({
   onSummarize,
   onTabChange,
   onAddTab,
+  onCallInitiated,
   className,
 }: DMHeaderProps) {
   const [localNotificationSetting, setLocalNotificationSetting] =
@@ -392,6 +398,15 @@ export function DMHeader({
 
         {/* Right section - Actions */}
         <div className="flex items-center gap-1">
+          {/* Call button */}
+          <DMCallButton
+            channelId={conversationId}
+            workspaceId={workspaceId}
+            participantIds={participants.map((p) => p.id)}
+            onCallInitiated={onCallInitiated}
+            iconOnly
+          />
+
           {/* Huddle button with dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
