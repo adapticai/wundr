@@ -51,8 +51,16 @@ const conversationIdParamSchema = z.object({
 function buildMimeTypeFilter(
   type: 'image' | 'document' | 'audio' | 'video' | 'archive',
 ): Prisma.StringFilter {
-  const typeKey = type === 'image' ? 'images' : type === 'document' ? 'documents' : type;
-  const mimeTypes = ALLOWED_FILE_TYPES[typeKey as keyof typeof ALLOWED_FILE_TYPES] as readonly string[];
+  // Map singular type names to their ALLOWED_FILE_TYPES keys
+  const typeKeyMap: Record<string, keyof typeof ALLOWED_FILE_TYPES> = {
+    image: 'images',
+    document: 'documents',
+    audio: 'audio',
+    video: 'video',
+    archive: 'archives',
+  };
+  const typeKey = typeKeyMap[type];
+  const mimeTypes = ALLOWED_FILE_TYPES[typeKey] as readonly string[];
   return {
     in: [...mimeTypes],
   };

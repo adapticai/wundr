@@ -6,6 +6,7 @@ import { FileText, Image, Video, Music, Archive, File, Download, ExternalLink, L
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ShareFileDialog, type ShareFileData } from './share-file-dialog';
+import { DeleteFileDialog } from './delete-file-dialog';
 
 /**
  * File item type
@@ -42,6 +43,8 @@ interface FilesTabProps {
   workspaceSlug: string;
   /** Current user ID */
   currentUserId?: string;
+  /** Current user's role in the workspace (for permission checks) */
+  currentUserRole?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
   className?: string;
   /**
    * Mode determines which API endpoint to use:
@@ -57,7 +60,7 @@ interface FilesTabProps {
  * Displays all files shared in the channel or conversation with filtering and download options.
  * Supports both regular channels and DM conversations.
  */
-export function FilesTab({ channelId, workspaceSlug, currentUserId, className, mode = 'channel' }: FilesTabProps) {
+export function FilesTab({ channelId, workspaceSlug, currentUserId, currentUserRole, className, mode = 'channel' }: FilesTabProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +71,10 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
   // Share dialog state
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [fileToShare, setFileToShare] = useState<ShareFileData | null>(null);
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
 
   // Handler to open share dialog
   const handleOpenShareDialog = useCallback((file: FileItem) => {
@@ -88,6 +95,41 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
     });
     setShareDialogOpen(true);
   }, []);
+
+  // Handler to open delete dialog
+  const handleOpenDeleteDialog = useCallback((file: FileItem) => {
+    setFileToDelete(file);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  // Handler to delete file
+  const handleDeleteFile = useCallback(async (fileId: string) => {
+    try {
+      const response = await fetch(`/api/files/${fileId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to delete file');
+      }
+
+      // Remove file from list
+      setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+      throw error; // Re-throw to let dialog handle the error state
+    }
+  }, []);
+
+  // Check if current user can delete a file
+  const canDeleteFile = useCallback((file: FileItem) => {
+    // User can delete if they uploaded the file OR if they're an admin/owner
+    const isUploader = currentUserId === file.uploadedBy.id;
+    const isAdminOrOwner = currentUserRole === 'ADMIN' || currentUserRole === 'OWNER';
+    // Note: The API will also enforce this on the backend
+    return isUploader || isAdminOrOwner;
+  }, [currentUserId, currentUserRole]);
 
   const fetchFiles = useCallback(async (loadMore = false) => {
     if (!channelId) return;
@@ -272,7 +314,13 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
                     </div>
 
                     {/* Actions */}
-                    <FileActions file={file} workspaceSlug={workspaceSlug} onShare={() => handleOpenShareDialog(file)} />
+                    <FileActions
+                      file={file}
+                      workspaceSlug={workspaceSlug}
+                      onShare={() => handleOpenShareDialog(file)}
+                      onDelete={() => handleOpenDeleteDialog(file)}
+                      canDelete={canDeleteFile(file)}
+                    />
                   </div>
                 );
               })}
@@ -309,6 +357,15 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
           // Could add toast notification here
         }}
       />
+
+      {/* Delete File Dialog */}
+      <DeleteFileDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        file={fileToDelete}
+        onConfirm={handleDeleteFile}
+        canDelete={fileToDelete ? canDeleteFile(fileToDelete) : false}
+      />
     </div>
   );
 }
@@ -322,9 +379,11 @@ interface FileActionsProps {
   file: FileItem;
   workspaceSlug: string;
   onShare?: () => void;
+  onDelete?: () => void;
+  canDelete?: boolean;
 }
 
-function FileActions({ file, workspaceSlug, onShare }: FileActionsProps) {
+function FileActions({ file, workspaceSlug, onShare, onDelete, canDelete = false }: FileActionsProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [savedItemId, setSavedItemId] = useState<string | null>(null);
@@ -518,12 +577,18 @@ function FileActions({ file, workspaceSlug, onShare }: FileActionsProps) {
           <div className="my-1 h-px bg-border" />
           <button
             type="button"
-            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-accent"
+            className={cn(
+              'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent',
+              canDelete ? 'text-destructive' : 'text-muted-foreground cursor-not-allowed'
+            )}
             onClick={() => {
-              // TODO: Implement delete with confirmation
-              console.log('Delete file:', file.id);
+              if (canDelete) {
+                onDelete?.();
+              }
               setShowMenu(false);
             }}
+            disabled={!canDelete}
+            title={canDelete ? 'Delete file' : 'Only the uploader or workspace admin can delete files'}
           >
             <Trash2 className="h-4 w-4" />
             Delete file
