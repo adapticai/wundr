@@ -46,6 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@wundr.io/ai-integration": "workspace:*",
     "eventemitter3": "^5.0.1",
     "ws": "^8.16.0",
     "yaml": "^2.3.4",

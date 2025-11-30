@@ -36,6 +36,8 @@ export * from './github/GitHubIntegration';
 export * from './github/CodeReviewSwarm';
 export * from './github/AutomationEngine';
 
+export * from './llm';
+
 // Types and utilities - use named exports
 export * as aiIntegrationTypes from './types';
 export * as aiIntegrationUtils from './utils';
