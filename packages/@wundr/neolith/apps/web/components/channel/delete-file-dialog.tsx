@@ -128,7 +128,7 @@ export function DeleteFileDialog({
       </div>
 
       {/* File preview */}
-      <div className="rounded-lg border bg-muted/30 p-3">
+      <div className="rounded-lg border bg-muted/30 p-3 overflow-hidden">
         <div className="flex items-center gap-3">
           {/* Thumbnail or Icon */}
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden">
@@ -145,9 +145,9 @@ export function DeleteFileDialog({
           </div>
 
           {/* File info */}
-          <div className="flex-1 min-w-0">
-            <p className="truncate font-medium text-sm">{file.originalName}</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <p className="truncate font-medium text-sm" title={file.originalName}>{file.originalName}</p>
+            <p className="text-xs text-muted-foreground truncate">
               {formatFileSize(file.size)} • Uploaded by {file.uploadedBy.displayName || file.uploadedBy.name}
             </p>
           </div>
