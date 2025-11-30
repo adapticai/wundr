@@ -28,13 +28,13 @@ interface FileItem {
   mimeType: string;
   size: number;
   url?: string;
-  thumbnailUrl?: string;
+  thumbnailUrl?: string | null;
   createdAt: string;
   uploadedBy: {
     id: string;
-    name: string;
-    displayName?: string;
-    avatarUrl?: string;
+    name: string | null;
+    displayName?: string | null;
+    avatarUrl?: string | null;
   };
 }
 
