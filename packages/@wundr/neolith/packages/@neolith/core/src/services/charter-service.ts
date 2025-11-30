@@ -8,15 +8,17 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
+
 import { GenesisError, OrchestratorNotFoundError } from '../errors';
+
 import type {
   CharterDiff,
   CharterVersion,
   CreateCharterVersionInput,
   GovernanceCharter,
 } from '../types/charter';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors

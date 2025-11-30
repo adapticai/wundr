@@ -6,14 +6,7 @@
  */
 
 import OpenAI from 'openai';
-import type {
-  ChatCompletion,
-  ChatCompletionChunk,
-  ChatCompletionCreateParamsNonStreaming,
-  ChatCompletionCreateParamsStreaming,
-  ChatCompletionMessageParam,
-  ChatCompletionTool,
-} from 'openai/resources/chat';
+
 import {
   LLMClient,
   LLMClientConfig,
@@ -21,10 +14,8 @@ import {
   ChatResponse,
   ChatChunk,
   Message,
-  MessageRole,
   ToolDefinition,
   ToolCall,
-  TokenUsage,
   FinishReason,
   LLMError,
   LLMAuthenticationError,
@@ -33,6 +24,15 @@ import {
   LLMInvalidRequestError,
   LLMNetworkError,
 } from '../client';
+
+import type {
+  ChatCompletion,
+  ChatCompletionChunk,
+  ChatCompletionCreateParamsNonStreaming,
+  ChatCompletionCreateParamsStreaming,
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources/chat';
 
 /**
  * OpenAI model token limits

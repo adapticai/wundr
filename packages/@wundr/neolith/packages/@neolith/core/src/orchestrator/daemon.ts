@@ -10,6 +10,7 @@
  */
 
 import { EventEmitter } from 'events';
+
 import type { OrchestratorWithUser } from '../types/orchestrator';
 
 // =============================================================================

@@ -114,7 +114,9 @@ export interface PaginatedSessionManagerResult {
 // =============================================================================
 
 export function isSessionManager(obj: unknown): obj is SessionManager {
-  if (!obj || typeof obj !== 'object') return false;
+  if (!obj || typeof obj !== 'object') {
+return false;
+}
   const sm = obj as Partial<SessionManager>;
 
   return (

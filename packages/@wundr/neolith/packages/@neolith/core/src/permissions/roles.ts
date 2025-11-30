@@ -8,12 +8,13 @@
  */
 
 
+import { Permission } from './permissions';
+
 import type {
   ChannelRole,
   OrganizationRole,
   WorkspaceRole,
 } from '@neolith/database';
-import { Permission } from './permissions';
 
 
 // =============================================================================

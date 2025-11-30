@@ -5,7 +5,7 @@
  * Handles lifecycle management for dynamically compiled AI sessions.
  */
 
-import type { PrismaClient } from '@neolith/database';
+import type { AgentStatus } from '../types/agent-enums';
 import type {
   SessionManagerWithRelations,
   CreateSessionManagerInput,
@@ -13,7 +13,7 @@ import type {
   ListSessionManagersOptions,
   PaginatedSessionManagerResult,
 } from '../types/session-manager';
-import type { AgentStatus } from '../types/agent-enums';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Error Classes

@@ -15,8 +15,6 @@
  * @module @genesis/core/services/search-service
  */
 
-import type { PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
 import type {
   SearchFacets,
   SearchFilters,
@@ -28,6 +26,8 @@ import type {
   SearchSort,
   SearchSuggestion,
 } from '../types/search';
+import type { PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 // =============================================================================
 // TYPES

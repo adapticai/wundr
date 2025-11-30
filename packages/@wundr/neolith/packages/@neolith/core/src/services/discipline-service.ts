@@ -8,12 +8,13 @@
  * @packageDocumentation
  */
 
-import type { Orchestrator, Prisma , PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
+
 import {
   GenesisError,
   OrganizationNotFoundError,
 } from '../errors';
+import { generateSlug } from '../utils';
 
 import type {
   CreateDisciplineInput,
@@ -24,7 +25,7 @@ import type {
   PaginatedDisciplineResult,
   UpdateDisciplineInput,
 } from '../types/organization';
-import { generateSlug } from '../utils';
+import type { Orchestrator, Prisma , PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors

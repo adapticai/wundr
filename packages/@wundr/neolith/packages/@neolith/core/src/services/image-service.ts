@@ -13,36 +13,6 @@
 // Sharp types - we use 'any' for the dynamic import since sharp types are complex
 // and the module is loaded dynamically at runtime
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SharpFunction = (input?: Buffer | string, options?: object) => any;
-
-// Lazy-loaded sharp module to avoid Turbopack bundling issues with native modules
-let _sharp: SharpFunction | null = null;
-
-/**
- * Dynamically loads the sharp module.
- * This is necessary because sharp is a native module that cannot be bundled by Turbopack.
- * @throws Error if sharp cannot be loaded (e.g., not installed or wrong platform)
- */
-async function getSharp(): Promise<SharpFunction> {
-  if (_sharp) {
-    return _sharp;
-  }
-
-  try {
-    // Dynamic import to avoid static analysis by bundlers
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const sharpModule = await import('sharp');
-    _sharp = sharpModule.default || sharpModule;
-    return _sharp;
-  } catch (error) {
-    throw new Error(
-      `Failed to load sharp module. Ensure sharp is installed with the correct platform binaries. ` +
-        `Try: npm install --include=optional sharp\n` +
-        `Original error: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
-}
-
 import {
   THUMBNAIL_SIZES,
   DEFAULT_QUALITY,
@@ -68,6 +38,36 @@ import type {
   ImageValidationOptions,
   ImagePosition,
 } from '../types/image';
+
+type SharpFunction = (input?: Buffer | string, options?: object) => any;
+
+// Lazy-loaded sharp module to avoid Turbopack bundling issues with native modules
+let _sharp: SharpFunction | null = null;
+
+/**
+ * Dynamically loads the sharp module.
+ * This is necessary because sharp is a native module that cannot be bundled by Turbopack.
+ * @throws Error if sharp cannot be loaded (e.g., not installed or wrong platform)
+ */
+async function getSharp(): Promise<SharpFunction> {
+  if (_sharp) {
+    return _sharp;
+  }
+
+  try {
+    // Dynamic import to avoid static analysis by bundlers
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const sharpModule = await import('sharp');
+    _sharp = sharpModule.default || sharpModule;
+    return _sharp;
+  } catch (error) {
+    throw new Error(
+      'Failed to load sharp module. Ensure sharp is installed with the correct platform binaries. ' +
+        'Try: npm install --include=optional sharp\n' +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
 
 // =============================================================================
 // Image Service Interface

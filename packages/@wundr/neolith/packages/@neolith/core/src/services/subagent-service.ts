@@ -7,8 +7,11 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
+
+import { TransactionError } from '../errors';
+
+import type { AgentStatus } from '../types/agent-enums';
 import type {
   SubagentWithRelations,
   CreateSubagentInput,
@@ -16,8 +19,7 @@ import type {
   ListSubagentsOptions,
   PaginatedSubagentResult,
 } from '../types/subagent';
-import type { AgentStatus } from '../types/agent-enums';
-import { TransactionError } from '../errors';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Error Classes
@@ -240,7 +242,7 @@ export class SubagentServiceImpl implements SubagentService {
    */
   async listBySessionManager(
     sessionManagerId: string,
-    options: ListSubagentsOptions = {}
+    options: ListSubagentsOptions = {},
   ): Promise<PaginatedSubagentResult> {
     const {
       status,
@@ -366,16 +368,36 @@ export class SubagentServiceImpl implements SubagentService {
     try {
       // Build update data with proper type casting
       const updateData: any = {};
-      if (data.name !== undefined) updateData.name = data.name;
-      if (data.description !== undefined) updateData.description = data.description;
-      if (data.charterData !== undefined) updateData.charterData = data.charterData;
-      if (data.sessionManagerId !== undefined) updateData.sessionManagerId = data.sessionManagerId;
-      if (data.isGlobal !== undefined) updateData.isGlobal = data.isGlobal;
-      if (data.scope !== undefined) updateData.scope = data.scope;
-      if (data.capabilities !== undefined) updateData.capabilities = data.capabilities;
-      if (data.mcpTools !== undefined) updateData.mcpTools = data.mcpTools;
-      if (data.maxTokensPerTask !== undefined) updateData.maxTokensPerTask = data.maxTokensPerTask;
-      if (data.status !== undefined) updateData.status = data.status;
+      if (data.name !== undefined) {
+updateData.name = data.name;
+}
+      if (data.description !== undefined) {
+updateData.description = data.description;
+}
+      if (data.charterData !== undefined) {
+updateData.charterData = data.charterData;
+}
+      if (data.sessionManagerId !== undefined) {
+updateData.sessionManagerId = data.sessionManagerId;
+}
+      if (data.isGlobal !== undefined) {
+updateData.isGlobal = data.isGlobal;
+}
+      if (data.scope !== undefined) {
+updateData.scope = data.scope;
+}
+      if (data.capabilities !== undefined) {
+updateData.capabilities = data.capabilities;
+}
+      if (data.mcpTools !== undefined) {
+updateData.mcpTools = data.mcpTools;
+}
+      if (data.maxTokensPerTask !== undefined) {
+updateData.maxTokensPerTask = data.maxTokensPerTask;
+}
+      if (data.status !== undefined) {
+updateData.status = data.status;
+}
 
       const result = await this.db.subagent.update({
         where: { id },

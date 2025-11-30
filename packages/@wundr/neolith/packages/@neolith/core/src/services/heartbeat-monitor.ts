@@ -7,20 +7,22 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
+
+import { createHeartbeatService } from './heartbeat-service';
+import {
+  DEFAULT_HEARTBEAT_CONFIG,
+  HEARTBEAT_REDIS_KEYS,
+} from '../types/heartbeat';
+
+import type { HeartbeatService, RedisClient } from './heartbeat-service';
 import type {
   HealthStatus,
   HeartbeatConfig,
   OnOrchestratorRecoveredCallback,
   OnOrchestratorUnhealthyCallback,
 } from '../types/heartbeat';
-import {
-  DEFAULT_HEARTBEAT_CONFIG,
-  HEARTBEAT_REDIS_KEYS,
-} from '../types/heartbeat';
-import type { HeartbeatService, RedisClient } from './heartbeat-service';
-import { createHeartbeatService } from './heartbeat-service';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Heartbeat Monitor Interface

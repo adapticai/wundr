@@ -27,6 +27,13 @@
  */
 
 
+import {
+  ANALYTICS_REDIS_KEYS,
+  ANALYTICS_REDIS_TTL_SECONDS,
+  DEFAULT_ANALYTICS_BATCH_SIZE,
+  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
+} from '../types/analytics';
+
 import type {
   AnalyticsEvent,
   AnalyticsPeriod,
@@ -42,12 +49,6 @@ import type {
   TrendData,
   UsageMetrics,
   UserMetrics,
-} from '../types/analytics';
-import {
-  ANALYTICS_REDIS_KEYS,
-  ANALYTICS_REDIS_TTL_SECONDS,
-  DEFAULT_ANALYTICS_BATCH_SIZE,
-  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
 } from '../types/analytics';
 
 // =============================================================================

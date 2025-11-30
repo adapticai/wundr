@@ -8,13 +8,16 @@
  * @packageDocumentation
  */
 
-import type Redis from 'ioredis';
 import { GenesisError } from '../errors';
 import {
   createRedisClient,
   createSubscriberClient,
   isRedisAvailable,
 } from '../redis/client';
+import {
+  DEFAULT_PRESENCE_CONFIG,
+  PRESENCE_KEY_PATTERNS,
+} from '../types/presence';
 
 import type {
   ChannelPresenceCallback,
@@ -32,10 +35,7 @@ import type {
   VPPresenceCallback,
   VPPresenceEvent,
 } from '../types/presence';
-import {
-  DEFAULT_PRESENCE_CONFIG,
-  PRESENCE_KEY_PATTERNS,
-} from '../types/presence';
+import type Redis from 'ioredis';
 
 /**
  * Union type for all presence event callback functions.

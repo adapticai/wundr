@@ -3,8 +3,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AnalyticsPeriod } from '../../types/analytics';
-import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
+
 import {
   AnalyticsFlushError,
   AnalyticsServiceImpl,
@@ -12,6 +11,9 @@ import {
   getAnalyticsService,
   resetAnalyticsService,
 } from '../analytics-service';
+
+import type { AnalyticsPeriod } from '../../types/analytics';
+import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
 
 // =============================================================================
 // MOCK FACTORIES

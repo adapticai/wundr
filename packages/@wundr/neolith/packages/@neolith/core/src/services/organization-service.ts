@@ -7,13 +7,21 @@
  * @packageDocumentation
  */
 
-import type { Organization, OrganizationMember, OrganizationRole , Prisma, PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
+
 import {
   GenesisError,
   OrganizationNotFoundError,
   TransactionError,
 } from '../errors';
+import {
+  DEFAULT_ORG_LIST_OPTIONS,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_SLUG_LENGTH,
+} from '../types/organization';
+import { generateSlug } from '../utils';
+
 import type {
   CreateOrgInput,
   ListOrgsOptions,
@@ -22,13 +30,7 @@ import type {
   PaginatedOrgResult,
   UpdateOrgInput,
 } from '../types/organization';
-import {
-  DEFAULT_ORG_LIST_OPTIONS,
-  MAX_DESCRIPTION_LENGTH,
-  MAX_NAME_LENGTH,
-  MAX_SLUG_LENGTH,
-} from '../types/organization';
-import { generateSlug } from '../utils';
+import type { Organization, OrganizationMember, OrganizationRole , Prisma, PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors

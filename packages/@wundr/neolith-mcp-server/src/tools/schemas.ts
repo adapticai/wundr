@@ -617,6 +617,140 @@ export const UniversalSubagentListSchema = z.object({
 export type UniversalSubagentListInput = z.infer<typeof UniversalSubagentListSchema>;
 
 // ============================================================================
+// Budget Tool Schemas
+// ============================================================================
+
+/**
+ * Schema for budget-get-status tool
+ */
+export const BudgetGetStatusSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to fetch budget status for'),
+  includeProjections: z.boolean().optional().default(true).describe('Include projected exhaustion time'),
+  includeBreakdown: z.boolean().optional().default(false).describe('Include token usage breakdown by task type'),
+});
+
+export type BudgetGetStatusInput = z.infer<typeof BudgetGetStatusSchema>;
+
+/**
+ * Schema for budget-get-usage-history tool
+ */
+export const BudgetGetUsageHistorySchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to fetch usage history for'),
+  timeRange: z.enum(['1h', '6h', '24h', '7d', '30d', 'all']).optional().default('24h').describe('Time range for usage history'),
+  granularity: z.enum(['hourly', 'daily', 'weekly']).optional().default('hourly').describe('Aggregation granularity'),
+  startTime: z.string().optional().describe('Custom start time (ISO 8601) - overrides timeRange'),
+  endTime: z.string().optional().describe('Custom end time (ISO 8601) - defaults to now'),
+  includeTaskBreakdown: z.boolean().optional().default(false).describe('Include breakdown by task type'),
+  includeModelBreakdown: z.boolean().optional().default(false).describe('Include breakdown by model'),
+  limit: z.number().int().positive().optional().default(100).describe('Maximum number of data points'),
+});
+
+export type BudgetGetUsageHistoryInput = z.infer<typeof BudgetGetUsageHistorySchema>;
+
+/**
+ * Schema for budget-check tool
+ */
+export const BudgetCheckSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to check budget for'),
+  estimatedTokens: z.number().int().positive().describe('Estimated number of tokens for the operation'),
+  model: z.string().optional().describe('LLM model to be used (for more accurate estimation)'),
+  taskType: z.string().optional().describe('Type of task (for tracking purposes)'),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Task priority (affects budget allocation)'),
+  allowOverage: z.boolean().optional().default(false).describe('Allow operation if it would exceed budget by small amount'),
+  overagePercentage: z.number().min(0).max(50).optional().default(10).describe('Maximum overage percentage allowed if allowOverage is true'),
+});
+
+export type BudgetCheckInput = z.infer<typeof BudgetCheckSchema>;
+
+/**
+ * Schema for budget-track-usage tool
+ */
+export const BudgetTrackUsageSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to track usage for'),
+  model: z.string().describe('The LLM model that was used'),
+  inputTokens: z.number().int().min(0).describe('Number of input tokens consumed'),
+  outputTokens: z.number().int().min(0).describe('Number of output tokens generated'),
+  taskId: z.string().optional().describe('Associated task ID for tracking'),
+  taskType: z.string().optional().describe('Type of task performed'),
+  sessionId: z.string().optional().describe('Session ID for grouping related calls'),
+  metadata: z.record(z.unknown()).optional().describe('Additional metadata for tracking'),
+  timestamp: z.string().optional().describe('Timestamp of usage (ISO 8601) - defaults to server time'),
+});
+
+export type BudgetTrackUsageInput = z.infer<typeof BudgetTrackUsageSchema>;
+
+// ============================================================================
+// Realtime Tool Schemas
+// ============================================================================
+
+/**
+ * Schema for broadcast-to-channel tool
+ */
+export const BroadcastToChannelSchema = z.object({
+  channelId: z.string().describe('ID of the channel to broadcast to'),
+  eventType: z.string().min(1).max(100).describe('Custom event type identifier (e.g., "task.updated", "orchestrator.progress")'),
+  payload: z.record(z.unknown()).describe('Event payload data'),
+  metadata: z
+    .object({
+      priority: z.enum(['low', 'medium', 'high', 'urgent']).optional().describe('Event priority level'),
+      ttl: z.number().int().positive().optional().describe('Time-to-live in seconds for the event'),
+      sourceId: z.string().optional().describe('ID of the source (orchestrator, agent, etc.)'),
+      sourceType: z.string().optional().describe('Type of source (orchestrator, subagent, system)'),
+    })
+    .optional()
+    .describe('Optional event metadata'),
+  targetUserIds: z.array(z.string()).optional().describe('Optional array of specific user IDs to target'),
+});
+
+export type BroadcastToChannelInput = z.infer<typeof BroadcastToChannelSchema>;
+
+/**
+ * Schema for get-presence tool
+ */
+export const GetPresenceSchema = z.object({
+  channelId: z.string().describe('ID of the channel to get presence for'),
+  userIds: z.array(z.string()).optional().describe('Optional array of specific user IDs to check'),
+  includeTyping: z.boolean().optional().default(true).describe('Include typing indicator status'),
+  includeLastSeen: z.boolean().optional().default(true).describe('Include last seen timestamp'),
+  includeDeviceInfo: z.boolean().optional().default(false).describe('Include device information'),
+});
+
+export type GetPresenceInput = z.infer<typeof GetPresenceSchema>;
+
+/**
+ * Schema for send-typing tool
+ */
+export const SendTypingSchema = z.object({
+  channelId: z.string().describe('ID of the channel to send typing indicator to'),
+  userId: z.string().optional().describe('ID of the user typing (defaults to authenticated user)'),
+  isTyping: z.boolean().default(true).describe('Whether user is typing (true) or stopped typing (false)'),
+  metadata: z
+    .object({
+      sourceType: z.enum(['user', 'orchestrator', 'subagent']).optional().describe('Source of the typing indicator'),
+      sourceId: z.string().optional().describe('ID of the source (orchestrator ID, subagent ID, etc.)'),
+      composingMessageType: z.enum(['text', 'thread_reply', 'file_upload']).optional().describe('Type of message being composed'),
+    })
+    .optional()
+    .describe('Optional metadata about the typing action'),
+});
+
+export type SendTypingInput = z.infer<typeof SendTypingSchema>;
+
+/**
+ * Schema for get-connection-stats tool
+ */
+export const GetConnectionStatsSchema = z.object({
+  workspaceSlug: z.string().optional().describe('Workspace slug to get stats for (if not provided, returns global stats)'),
+  channelId: z.string().optional().describe('Channel ID to get stats for (if not provided, returns workspace-level stats)'),
+  timeRange: z.enum(['1m', '5m', '15m', '1h', '24h', 'all']).optional().default('5m').describe('Time range for statistics'),
+  includeHistogram: z.boolean().optional().default(false).describe('Include latency histogram data'),
+  includeErrors: z.boolean().optional().default(true).describe('Include error details'),
+  includePerUser: z.boolean().optional().default(false).describe('Include per-user breakdown'),
+});
+
+export type GetConnectionStatsInput = z.infer<typeof GetConnectionStatsSchema>;
+
+// ============================================================================
 // Charter Tool Schemas
 // ============================================================================
 
@@ -770,6 +904,26 @@ export const SubagentToolSchemas = {
   'subagent-create': SubagentCreateSchema,
   'subagent-update': SubagentUpdateSchema,
   'universal-subagents-list': UniversalSubagentListSchema,
+} as const;
+
+/**
+ * Budget tool schemas
+ */
+export const BudgetToolSchemas = {
+  'budget-get-status': BudgetGetStatusSchema,
+  'budget-get-usage-history': BudgetGetUsageHistorySchema,
+  'budget-check': BudgetCheckSchema,
+  'budget-track-usage': BudgetTrackUsageSchema,
+} as const;
+
+/**
+ * Realtime tool schemas
+ */
+export const RealtimeToolSchemas = {
+  'broadcast-to-channel': BroadcastToChannelSchema,
+  'get-presence': GetPresenceSchema,
+  'send-typing': SendTypingSchema,
+  'get-connection-stats': GetConnectionStatsSchema,
 } as const;
 
 /**
@@ -1032,6 +1186,50 @@ export const NeolithToolSchemas = {
     schema: UniversalSubagentListSchema,
     description: 'List all universal subagent templates',
     category: 'subagents',
+  },
+
+  // Budget tools
+  'budget-get-status': {
+    schema: BudgetGetStatusSchema,
+    description: 'Get current token budget status for an orchestrator',
+    category: 'budget',
+  },
+  'budget-get-usage-history': {
+    schema: BudgetGetUsageHistorySchema,
+    description: 'Get token usage history with time range and granularity',
+    category: 'budget',
+  },
+  'budget-check': {
+    schema: BudgetCheckSchema,
+    description: 'Pre-flight check if estimated tokens are within budget',
+    category: 'budget',
+  },
+  'budget-track-usage': {
+    schema: BudgetTrackUsageSchema,
+    description: 'Record token usage after LLM call for budget tracking',
+    category: 'budget',
+  },
+
+  // Realtime tools
+  'broadcast-to-channel': {
+    schema: BroadcastToChannelSchema,
+    description: 'Broadcast a custom event to all channel subscribers',
+    category: 'realtime',
+  },
+  'get-presence': {
+    schema: GetPresenceSchema,
+    description: 'Get presence status for users in a channel',
+    category: 'realtime',
+  },
+  'send-typing': {
+    schema: SendTypingSchema,
+    description: 'Send typing indicator to a channel',
+    category: 'realtime',
+  },
+  'get-connection-stats': {
+    schema: GetConnectionStatsSchema,
+    description: 'Get WebSocket connection statistics',
+    category: 'realtime',
   },
 
   // Charter tools

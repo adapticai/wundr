@@ -5,8 +5,7 @@
  * @packageDocumentation
  */
 
-import type { ChannelType, PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
+import type { DaemonAuthService } from './daemon-auth-service';
 import type {
   DaemonConfig,
   DaemonEvent,
@@ -16,7 +15,8 @@ import type {
   DaemonScope,
   DaemonToken,
 } from '../types/daemon';
-import type { DaemonAuthService } from './daemon-auth-service';
+import type { ChannelType, PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 // =============================================================================
 // Configuration Types

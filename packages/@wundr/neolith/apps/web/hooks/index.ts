@@ -92,6 +92,29 @@ export type {
 } from './use-orchestrator-tasks';
 
 // =============================================================================
+// Budget Hooks
+// =============================================================================
+export {
+  useBudget,
+  useUsageHistory,
+  useBudgetAlerts,
+  useBudgetMutations,
+} from './use-budget';
+export type {
+  BudgetLimits,
+  BudgetStatus,
+  UsageHistoryPoint,
+  HistoryParams,
+  AlertSeverity,
+  BudgetAlert,
+  AlertConfig,
+  UseBudgetReturn,
+  UseUsageHistoryReturn,
+  UseBudgetAlertsReturn,
+  UseBudgetMutationsReturn,
+} from './use-budget';
+
+// =============================================================================
 // Chat Hooks
 // =============================================================================
 export {

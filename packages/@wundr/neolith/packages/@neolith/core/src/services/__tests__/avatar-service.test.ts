@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { AvatarServiceImpl, AVATAR_SIZES } from '../avatar-service';
+
 import type { StorageService } from '../storage-service';
 
 // Mock storage service

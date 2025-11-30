@@ -20,6 +20,14 @@ export interface McpToolResult {
   error?: string;
   /** Additional metadata */
   metadata?: Record<string, unknown>;
+  /** Detailed error information (only present on failure) */
+  errorDetails?: {
+    code: string;
+    message: string;
+    context?: Record<string, unknown>;
+  };
+  /** Warning messages */
+  warnings?: string[];
 }
 
 /**

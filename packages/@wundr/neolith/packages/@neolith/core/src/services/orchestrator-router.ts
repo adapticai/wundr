@@ -8,24 +8,26 @@
  */
 
 import { EventEmitter } from 'events';
-import type { PrismaClient } from '@neolith/database';
-import type Redis from 'ioredis';
+
 import { prisma } from '@neolith/database';
 
 import { GenesisError } from '../errors';
-import type {
-  MessageWithRelations,
-} from '../types/message';
+import {
+  createRedisClient,
+  isRedisAvailable,
+} from '../redis/client';
+
+import type { PresenceServiceImpl } from './presence-service';
 import type {
   DaemonSession,
   DaemonSessionStatus,
   DaemonEventType,
 } from '../types/daemon';
-import type { PresenceServiceImpl } from './presence-service';
-import {
-  createRedisClient,
-  isRedisAvailable,
-} from '../redis/client';
+import type {
+  MessageWithRelations,
+} from '../types/message';
+import type { PrismaClient } from '@neolith/database';
+import type Redis from 'ioredis';
 
 // =============================================================================
 // Type Definitions

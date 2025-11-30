@@ -9,13 +9,15 @@
  */
 
 import { lumic } from '@adaptic/lumic-utils';
+import { ChatCompletionContentPart } from 'openai/resources/chat';
+
 import type {
   LLMOptions,
   LLMResponse,
   OpenAIModel,
   OpenAIResponseFormat,
 } from '@adaptic/lumic-utils';
-import { ChatCompletionContentPart, ChatCompletionMessageParam } from 'openai/resources/chat';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat';
 
 /**
  * Configuration for LLM service
@@ -57,7 +59,7 @@ export class LLMService {
     // Validate API key
     if (!this.config.apiKey && !process.env.OPENAI_API_KEY) {
       console.warn(
-        'LLMService: No API key provided and OPENAI_API_KEY environment variable not set. LLM calls will fail.'
+        'LLMService: No API key provided and OPENAI_API_KEY environment variable not set. LLM calls will fail.',
       );
     }
   }
@@ -71,7 +73,7 @@ export class LLMService {
    */
   async chat<T = string>(
     prompt: string,
-    options: Partial<LLMOptions> = {}
+    options: Partial<LLMOptions> = {},
   ): Promise<LLMResponse<T>> {
     const mergedOptions: LLMOptions = {
       model: this.config.defaultModel,
@@ -93,7 +95,7 @@ export class LLMService {
    */
   async chatJSON<T = any>(
     prompt: string,
-    options: Partial<LLMOptions> = {}
+    options: Partial<LLMOptions> = {},
   ): Promise<LLMResponse<T>> {
     const mergedOptions: LLMOptions = {
       model: this.config.defaultModel,
@@ -121,7 +123,7 @@ export class LLMService {
       properties: Record<string, any>;
       required?: string[];
     },
-    options: Partial<LLMOptions> = {}
+    options: Partial<LLMOptions> = {},
   ): Promise<LLMResponse<T>> {
     const mergedOptions: LLMOptions = {
       model: this.config.defaultModel,
@@ -148,7 +150,7 @@ export class LLMService {
    */
   async chatWithHistory<T = string>(
     messages: ChatMessage[],
-    options: Partial<LLMOptions> = {}
+    options: Partial<LLMOptions> = {},
   ): Promise<LLMResponse<T>> {
     // Convert to OpenAI message format
     const context: ChatCompletionMessageParam[] = messages.map((msg) => ({
@@ -190,7 +192,7 @@ export class LLMService {
       imageBase64?: string;
       imageDetail?: 'low' | 'high' | 'auto';
     } = {},
-    options: Partial<LLMOptions> = {}
+    options: Partial<LLMOptions> = {},
   ): Promise<LLMResponse<T>> {
     return await lumic.llm.responses<T>(prompt, {
       apiKey: this.config.apiKey || options.apiKey,
@@ -214,7 +216,7 @@ export class LLMService {
   async analyzeImage<T = string>(
     imageBase64: string,
     prompt: string = 'What is in this image?',
-    options: Partial<LLMOptions> = {}
+    options: Partial<LLMOptions> = {},
   ): Promise<LLMResponse<T>> {
     return await this.chatAdvanced<T>(
       prompt,
@@ -222,7 +224,7 @@ export class LLMService {
         imageBase64,
         imageDetail: 'high',
       },
-      options
+      options,
     );
   }
 
@@ -239,7 +241,7 @@ export class LLMService {
   async generateEmbedding(text: string): Promise<number[]> {
     throw new Error(
       'Embedding generation is not yet implemented in lumic-utils. ' +
-        'Please use OpenAI SDK directly with text-embedding-3-small or text-embedding-3-large models.'
+        'Please use OpenAI SDK directly with text-embedding-3-small or text-embedding-3-large models.',
     );
   }
 

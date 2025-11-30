@@ -298,7 +298,7 @@ export class CharterConstraintEnforcer {
     const normalizedType = actionType.toLowerCase().trim();
 
     return this.constraints.requireApprovalFor.some((requirement) =>
-      normalizedType.includes(requirement.toLowerCase())
+      normalizedType.includes(requirement.toLowerCase()),
     );
   }
 
@@ -405,7 +405,7 @@ export class CharterConstraintEnforcer {
  * ```
  */
 export function createCharterConstraintEnforcer(
-  charter: GovernanceCharter
+  charter: GovernanceCharter,
 ): CharterConstraintEnforcer {
   return new CharterConstraintEnforcer(charter);
 }

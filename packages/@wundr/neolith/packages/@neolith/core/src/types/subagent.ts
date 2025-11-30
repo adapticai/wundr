@@ -175,7 +175,9 @@ export const UNIVERSAL_SUBAGENTS = {
  * Check if value is a valid Subagent.
  */
 export function isSubagent(value: unknown): value is Subagent {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const sa = value as Record<string, unknown>;
   return (
     typeof sa.id === 'string' &&

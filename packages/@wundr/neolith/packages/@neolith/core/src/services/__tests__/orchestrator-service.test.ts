@@ -11,8 +11,8 @@
  */
 
 
-import type { PrismaClient } from '@prisma/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   APIKeyGenerationError,
   OrchestratorAlreadyExistsError,
@@ -21,6 +21,8 @@ import {
   OrganizationNotFoundError,
 } from '../../errors';
 import { createVPService, OrchestratorServiceImpl } from '../orchestrator-service';
+
+import type { PrismaClient } from '@prisma/client';
 
 // Import service after mocking
 

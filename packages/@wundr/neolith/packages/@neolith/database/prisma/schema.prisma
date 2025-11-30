@@ -454,6 +454,9 @@ model orchestrator {
   orchestratorMemories orchestratorMemory[]
   sessionManagers      sessionManager[]
   charterVersions      charterVersion[]
+  tokenUsage           TokenUsage[]
+  budgetConfig         BudgetConfig?
+  budgetAlerts         BudgetAlert[]
 
   @@index([disciplineId])
   @@index([discipline])
@@ -1223,4 +1226,79 @@ model charterVersion {
   @@index([orchestratorId])
   @@index([charterId])
   @@map("charter_versions")
+}
+
+// =============================================================================
+// Token Usage & Budget Models (Phase 4)
+// =============================================================================
+
+/// TokenUsage - Track token consumption for orchestrators
+model TokenUsage {
+  id             String       @id @default(uuid())
+  orchestratorId String       @map("orchestrator_id")
+  orchestrator   orchestrator @relation(fields: [orchestratorId], references: [id])
+  sessionId      String?      @map("session_id")
+  model          String
+  inputTokens    Int          @map("input_tokens")
+  outputTokens   Int          @map("output_tokens")
+  totalTokens    Int          @map("total_tokens")
+  cost           Decimal?     @db.Decimal(10, 6)
+  taskType       String?      @map("task_type")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([orchestratorId, createdAt])
+  @@map("token_usage")
+}
+
+/// BudgetConfig - Budget configuration and limits for orchestrators
+model BudgetConfig {
+  id              String       @id @default(uuid())
+  orchestratorId  String       @unique @map("orchestrator_id")
+  orchestrator    orchestrator @relation(fields: [orchestratorId], references: [id])
+  hourlyLimit     Int          @default(100000) @map("hourly_limit")
+  dailyLimit      Int          @default(1000000) @map("daily_limit")
+  monthlyLimit    Int          @default(10000000) @map("monthly_limit")
+  autoPause       Boolean      @default(true) @map("auto_pause")
+  alertThresholds Json         @default("[50, 75, 90]") @map("alert_thresholds")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("budget_configs")
+}
+
+/// AuditLog - System-wide audit logging
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String   @map("actor_id")
+  actorType    String   @map("actor_type") // user, orchestrator, daemon, system
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  metadata     Json?
+  ip           String?
+  userAgent    String?  @map("user_agent")
+  severity     String   @default("info")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([resourceType, resourceId])
+  @@map("audit_logs")
+}
+
+/// BudgetAlert - Budget threshold alerts for orchestrators
+model BudgetAlert {
+  id             String       @id @default(uuid())
+  orchestratorId String       @map("orchestrator_id")
+  orchestrator   orchestrator @relation(fields: [orchestratorId], references: [id])
+  level          String // warning, critical, emergency
+  threshold      Int
+  currentUsage   Int          @map("current_usage")
+  message        String
+  acknowledged   Boolean      @default(false)
+  acknowledgedBy String?      @map("acknowledged_by")
+  acknowledgedAt DateTime?    @map("acknowledged_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([orchestratorId, createdAt])
+  @@map("budget_alerts")
 }

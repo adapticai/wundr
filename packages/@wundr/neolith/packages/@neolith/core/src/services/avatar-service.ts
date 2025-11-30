@@ -9,7 +9,17 @@
  * @packageDocumentation
  */
 
+import { prisma } from '@neolith/database';
 import { createId } from '@paralleldrive/cuid2';
+
+
+import { GenesisError } from '../errors';
+import {
+  StorageServiceImpl,
+  type StorageService,
+} from './storage-service';
+
+import type { User } from '@neolith/database';
 
 // Sharp types - use 'any' for dynamic import since sharp types are complex
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,19 +43,11 @@ async function getSharp(): Promise<SharpFunction> {
     return _sharp;
   } catch (error) {
     throw new Error(
-      `Failed to load sharp module. Ensure sharp is installed with correct platform binaries.\n` +
+      'Failed to load sharp module. Ensure sharp is installed with correct platform binaries.\n' +
         `Original error: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
-import { prisma } from '@neolith/database';
-import type { User } from '@neolith/database';
-
-import { GenesisError } from '../errors';
-import {
-  StorageServiceImpl,
-  type StorageService,
-} from './storage-service';
 
 // =============================================================================
 // Types

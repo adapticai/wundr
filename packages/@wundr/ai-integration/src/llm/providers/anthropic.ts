@@ -6,16 +6,15 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import type {
-  MessageCreateParamsNonStreaming,
-  MessageCreateParamsStreaming,
-  Tool as AnthropicTool,
-  TextBlock,
-  ToolUseBlock,
-  ContentBlock,
-  MessageStreamEvent,
-  MessageParam,
-} from '@anthropic-ai/sdk/resources/messages';
+
+import {
+  LLMError,
+  LLMAuthenticationError,
+  LLMRateLimitError,
+  LLMQuotaExceededError,
+  LLMInvalidRequestError,
+  LLMNetworkError,
+} from '../client';
 
 import type {
   LLMClient,
@@ -29,15 +28,17 @@ import type {
   TokenUsage,
   FinishReason,
 } from '../client';
+import type {
+  MessageCreateParamsNonStreaming,
+  MessageCreateParamsStreaming,
+  Tool as AnthropicTool,
+  TextBlock,
+  ToolUseBlock,
+  MessageStreamEvent,
+  MessageParam,
+} from '@anthropic-ai/sdk/resources/messages';
 
-import {
-  LLMError,
-  LLMAuthenticationError,
-  LLMRateLimitError,
-  LLMQuotaExceededError,
-  LLMInvalidRequestError,
-  LLMNetworkError,
-} from '../client';
+
 
 /**
  * Supported Anthropic Claude models
@@ -132,7 +133,7 @@ export class AnthropicClient implements LLMClient {
       const stream = await this.client.messages.stream(requestParams);
 
       let messageId = '';
-      let currentToolCalls: Map<number, Partial<ToolCall>> = new Map();
+      const currentToolCalls: Map<number, Partial<ToolCall>> = new Map();
 
       for await (const event of stream) {
         const chunk = this.convertStreamEvent(event, currentToolCalls);

@@ -5,8 +5,8 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
+import { DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS, DAEMON_TOKEN_EXPIRY } from '../types/daemon';
+
 import type {
   DaemonAuthResult,
   DaemonCredentials,
@@ -19,7 +19,8 @@ import type {
   DaemonTokenPair,
   DaemonTokenPayload,
 } from '../types/daemon';
-import { DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS, DAEMON_TOKEN_EXPIRY } from '../types/daemon';
+import type { PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 // =============================================================================
 // Configuration Types

@@ -6,9 +6,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
 import { createMockPrismaClient } from '../../test-utils/orchestrator-factories';
-import type { DaemonScope, DaemonToken } from '../../types/daemon';
 import { DaemonApiService } from '../daemon-api-service';
 import { DaemonAuthService } from '../daemon-auth-service';
+
+import type { DaemonScope, DaemonToken } from '../../types/daemon';
 
 // =============================================================================
 // Extended Mock Redis with List Operations

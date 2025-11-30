@@ -8,8 +8,10 @@
  */
 
 import { EventEmitter } from 'events';
-import type { OrchestratorWithUser } from '../types/orchestrator';
+
 import { createOrchestratorDaemon, type OrchestratorDaemon, type DaemonConfig } from './daemon';
+
+import type { OrchestratorWithUser } from '../types/orchestrator';
 
 // =============================================================================
 // Types & Interfaces
@@ -191,7 +193,7 @@ export class OrchestratorDaemonManager extends EventEmitter {
       // Check restart attempt limit
       if (managed.restartCount >= this.config.maxRestartAttempts) {
         throw new Error(
-          `Max restart attempts (${this.config.maxRestartAttempts}) reached for orchestrator: ${orchestratorId}`
+          `Max restart attempts (${this.config.maxRestartAttempts}) reached for orchestrator: ${orchestratorId}`,
         );
       }
 
@@ -217,7 +219,7 @@ export class OrchestratorDaemonManager extends EventEmitter {
     const stopPromises = Array.from(this.daemons.keys()).map((orchestratorId) =>
       this.stopDaemon(orchestratorId).catch((error) => {
         this.log(`Error stopping daemon ${orchestratorId}: ${error}`);
-      })
+      }),
     );
 
     await Promise.all(stopPromises);

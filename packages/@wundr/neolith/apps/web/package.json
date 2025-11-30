@@ -85,7 +85,8 @@
     "tailwind-merge": "^2.2.0",
     "vaul": "^1.1.2",
     "web-vitals": "^5.1.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "ioredis": "^5.4.1"
   },
   "devDependencies": {
     "@neolith/eslint-config": "workspace:*",
@@ -94,6 +95,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^20.10.6",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",

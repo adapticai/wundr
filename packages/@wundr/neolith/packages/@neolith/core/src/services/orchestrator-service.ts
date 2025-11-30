@@ -7,8 +7,8 @@
  * @packageDocumentation
  */
 
-import type { Prisma, PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
+
 import {
   APIKeyGenerationError,
   OrchestratorAlreadyExistsError,
@@ -17,18 +17,6 @@ import {
   OrganizationNotFoundError,
   TransactionError,
 } from '../errors';
-import type {
-  APIKeyGenerationResult,
-  APIKeyRotationResult,
-  APIKeyValidationResult,
-  CreateOrchestratorInput,
-  ListOrchestratorsOptions,
-  OrchestratorCharter,
-  OrchestratorServiceAccountConfig,
-  OrchestratorWithUser,
-  PaginatedOrchestratorResult,
-  UpdateOrchestratorInput,
-} from '../types/orchestrator';
 import { DEFAULT_ORCHESTRATOR_CHARTER, isOrchestratorServiceAccountConfig } from '../types/orchestrator';
 import {
   deepMerge,
@@ -41,6 +29,20 @@ import {
   isValidEmail,
   verifyAPIKey,
 } from '../utils';
+
+import type {
+  APIKeyGenerationResult,
+  APIKeyRotationResult,
+  APIKeyValidationResult,
+  CreateOrchestratorInput,
+  ListOrchestratorsOptions,
+  OrchestratorCharter,
+  OrchestratorServiceAccountConfig,
+  OrchestratorWithUser,
+  PaginatedOrchestratorResult,
+  UpdateOrchestratorInput,
+} from '../types/orchestrator';
+import type { Prisma, PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // OrchestratorService Interface
