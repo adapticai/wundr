@@ -263,12 +263,14 @@ export async function DELETE(
 
       // Soft-delete messages that contained this file
       // (the messageAttachment will be cascade-deleted when the file is deleted)
+      // Note: We explicitly set updatedAt so the SSE polling detects the deletion
       if (messageIds.length > 0) {
         await tx.message.updateMany({
           where: { id: { in: messageIds } },
           data: {
             isDeleted: true,
             content: '[Message deleted]',
+            updatedAt: new Date(),
           },
         });
       }
