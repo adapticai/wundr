@@ -32,7 +32,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserAvatar } from '@/components/ui/user-avatar';
 
-import type { SavedItemStatus, SavedItemType } from '@prisma/client';
+import type { SavedItemStatus, SavedItemType } from '@neolith/database';
 
 /**
  * Saved item with included relations (matches Prisma API response)

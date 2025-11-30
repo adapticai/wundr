@@ -11,7 +11,7 @@
  */
 
 import { prisma } from '@neolith/database';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';

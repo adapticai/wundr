@@ -21,7 +21,7 @@ import {
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 import type { CreateChannelInput } from '@/lib/validations/organization';
 import type { NextRequest } from 'next/server';

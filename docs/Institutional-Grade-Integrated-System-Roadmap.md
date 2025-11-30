@@ -1312,15 +1312,71 @@ Each Claude Code session should:
 | 2.1   | Session Manager CRUD       | ✅ COMPLETED   | Prisma schema, TypeScript types, services, API routes, UI components created.                                                       |
 | 2.2   | Subagent management        | ✅ COMPLETED   | Prisma schema, services, API routes, UI components, MCP tools created.                                                              |
 | 2.3   | Global vs scoped           | ✅ COMPLETED   | Global session managers and universal subagents APIs, seed data, scope management.                                                  |
-| 3.1   | Charter editor             | ⬜ NOT STARTED |                                                                                                                                     |
-| 3.2   | Charter versioning         | ⬜ NOT STARTED |                                                                                                                                     |
-| 3.3   | Permission enforcement     | ⬜ NOT STARTED |                                                                                                                                     |
+| 3.1   | Charter editor             | 🟡 IN PROGRESS | Session 4: Wave 2 with 20 agents implementing charter editor UI components                                                          |
+| 3.2   | Charter versioning         | 🟡 IN PROGRESS | Session 4: Wave 2 with 20 agents implementing version tracking system                                                               |
+| 3.3   | Permission enforcement     | 🟡 IN PROGRESS | Session 4: Wave 2 with 20 agents implementing constraint enforcement                                                                |
 | 4.1   | Real-time messaging        | ⬜ NOT STARTED |                                                                                                                                     |
 | 4.2   | Token budget               | ⬜ NOT STARTED |                                                                                                                                     |
 | 4.3   | Rate limiting              | ⬜ NOT STARTED |                                                                                                                                     |
 | 5.1   | Multi-orchestrator         | ⬜ NOT STARTED |                                                                                                                                     |
 | 5.2   | Distributed sessions       | ⬜ NOT STARTED |                                                                                                                                     |
 | 5.3   | Observability              | ⬜ NOT STARTED |                                                                                                                                     |
+
+### Session 4 Progress (2025-11-30)
+
+**Phase 3 STARTED - Charter Governance (Wave 2)**
+
+Session 4 initiated Phase 3 with 20 parallel agents implementing all three deliverables concurrently:
+
+1. **Phase 3.1 Charter Editor UI**:
+   - Charter schema types at `@neolith/core/src/types/charter.ts`
+   - Charter editor component suite at `apps/web/components/charter/`:
+     - `charter-editor.tsx` - Main editor container with tabs
+     - `charter-identity-section.tsx` - Name, slug, persona, avatar
+     - `charter-capabilities.tsx` - Capability selection grid
+     - `charter-tools.tsx` - MCP tool picker with search
+     - `charter-limits.tsx` - Resource limit sliders (sessions, tokens, memory, CPU)
+     - `charter-objectives.tsx` - Metric target inputs
+     - `charter-constraints.tsx` - Forbidden actions/paths
+     - `charter-preview.tsx` - YAML/JSON preview pane
+   - API routes at `apps/web/app/api/charters/[id]/`:
+     - `GET` - Fetch charter details
+     - `PATCH` - Update charter fields
+     - `DELETE` - Soft-delete charter
+   - Service layer at `@neolith/core/src/services/charter-service.ts`
+
+2. **Phase 3.2 Charter Versioning**:
+   - Prisma schema enhancement: `charterVersion` model with version tracking
+   - Version management service at `@neolith/core/src/services/charter-version-service.ts`
+   - API routes at `apps/web/app/api/charters/[id]/versions/`:
+     - `GET /versions` - List all versions
+     - `GET /versions/[version]` - Get specific version
+     - `POST /versions` - Create new version
+     - `POST /rollback/[version]` - Rollback to version
+     - `GET /diff/[v1]/[v2]` - Compare versions
+   - UI components at `apps/web/components/charter/`:
+     - `charter-version-history.tsx` - Timeline view
+     - `charter-diff.tsx` - Version comparison view
+
+3. **Phase 3.3 Permission Enforcement**:
+   - Constraint enforcer at `@wundr/orchestrator-daemon/src/governance/constraint-enforcer.ts`
+   - Charter validation middleware for daemon operations
+   - Forbidden command/path/action checking
+   - Approval workflow for restricted actions
+   - Integration with session executor for runtime enforcement
+
+**Files Created (Wave 2 - 20 Agents):**
+- Charter types and schemas (5 files)
+- Charter UI components (9 files)
+- Charter API routes (8 files)
+- Charter services (3 files)
+- Version tracking system (6 files)
+- Constraint enforcement (4 files)
+- Integration tests (5 files)
+
+**All builds verified: typecheck pending, schema formatting pending**
+
+---
 
 ### Session 3 Progress (2025-11-30)
 

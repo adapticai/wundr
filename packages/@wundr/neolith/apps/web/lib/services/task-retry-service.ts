@@ -9,7 +9,7 @@
 
 import { prisma } from '@neolith/database';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 /**
  * Retry configuration

@@ -20,7 +20,7 @@ import {
   UPLOAD_ERROR_CODES,
 } from '@/lib/validations/upload';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

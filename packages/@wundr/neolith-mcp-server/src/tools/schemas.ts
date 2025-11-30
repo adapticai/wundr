@@ -617,6 +617,58 @@ export const UniversalSubagentListSchema = z.object({
 export type UniversalSubagentListInput = z.infer<typeof UniversalSubagentListSchema>;
 
 // ============================================================================
+// Charter Tool Schemas
+// ============================================================================
+
+/**
+ * Schema for charter-get tool
+ */
+export const CharterGetSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to fetch charter for'),
+});
+
+export type CharterGetInput = z.infer<typeof CharterGetSchema>;
+
+/**
+ * Schema for charter-versions tool
+ */
+export const CharterVersionsSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to list charters for'),
+  includeInactive: z.boolean().optional().default(false).describe('Include inactive charter versions'),
+  limit: z.number().int().positive().optional().default(50).describe('Maximum number of charter versions to return'),
+  offset: z.number().int().min(0).optional().default(0).describe('Offset for pagination'),
+});
+
+export type CharterVersionsInput = z.infer<typeof CharterVersionsSchema>;
+
+/**
+ * Schema for charter-validate-action tool
+ */
+export const CharterValidateActionSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to validate against'),
+  action: z.object({
+    type: z.string().describe('The type of action to validate'),
+    target: z.string().optional().describe('The target resource or entity'),
+    context: z.record(z.unknown()).optional().describe('Additional context for validation'),
+  }).describe('The action to validate'),
+  severity: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Minimum severity level to check'),
+});
+
+export type CharterValidateActionInput = z.infer<typeof CharterValidateActionSchema>;
+
+/**
+ * Schema for charter-constraints tool
+ */
+export const CharterConstraintsSchema = z.object({
+  orchestratorId: z.string().describe('The orchestrator ID to fetch constraints for'),
+  category: z.string().optional().describe('Filter by constraint category'),
+  type: z.enum(['allowed', 'forbidden', 'required']).optional().describe('Filter by constraint type'),
+  severity: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Filter by minimum severity level'),
+});
+
+export type CharterConstraintsInput = z.infer<typeof CharterConstraintsSchema>;
+
+// ============================================================================
 // Schema Registry
 // ============================================================================
 
@@ -718,6 +770,16 @@ export const SubagentToolSchemas = {
   'subagent-create': SubagentCreateSchema,
   'subagent-update': SubagentUpdateSchema,
   'universal-subagents-list': UniversalSubagentListSchema,
+} as const;
+
+/**
+ * Charter tool schemas
+ */
+export const CharterToolSchemas = {
+  'charter-get': CharterGetSchema,
+  'charter-versions': CharterVersionsSchema,
+  'charter-validate-action': CharterValidateActionSchema,
+  'charter-constraints': CharterConstraintsSchema,
 } as const;
 
 /**
@@ -970,6 +1032,28 @@ export const NeolithToolSchemas = {
     schema: UniversalSubagentListSchema,
     description: 'List all universal subagent templates',
     category: 'subagents',
+  },
+
+  // Charter tools
+  'charter-get': {
+    schema: CharterGetSchema,
+    description: 'Get the active charter for a specific orchestrator',
+    category: 'charters',
+  },
+  'charter-versions': {
+    schema: CharterVersionsSchema,
+    description: 'List all charter versions for a specific orchestrator',
+    category: 'charters',
+  },
+  'charter-validate-action': {
+    schema: CharterValidateActionSchema,
+    description: 'Validate an action against charter constraints',
+    category: 'charters',
+  },
+  'charter-constraints': {
+    schema: CharterConstraintsSchema,
+    description: 'Get just the constraints section of the active charter',
+    category: 'charters',
   },
 } as const;
 

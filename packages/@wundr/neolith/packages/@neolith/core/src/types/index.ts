@@ -1430,3 +1430,29 @@ export {
   // Constants
   UNIVERSAL_SUBAGENTS,
 } from './subagent';
+
+// =============================================================================
+// Charter Types
+// =============================================================================
+
+export type {
+  // Core charter types
+  OrchestratorCapability,
+  CharterIdentity,
+  CharterResourceLimits,
+  CharterObjectives,
+  CharterConstraints,
+  GovernanceCharter,
+
+  // Charter versioning types
+  CharterVersion,
+  CreateCharterVersionInput,
+  CharterDiff,
+} from './charter';
+
+export {
+  // Default constants
+  DEFAULT_RESOURCE_LIMITS,
+  DEFAULT_OBJECTIVES,
+  DEFAULT_CONSTRAINTS,
+} from './charter';

@@ -43,6 +43,18 @@
  */
 
 // =============================================================================
+// Governance Exports
+// =============================================================================
+
+export {
+  // Charter Constraint Enforcer
+  CharterConstraintEnforcer,
+  createCharterConstraintEnforcer,
+  type ActionRequest,
+  type ValidationResult,
+} from './governance';
+
+// =============================================================================
 // Service Exports
 // =============================================================================
 
@@ -1467,6 +1479,11 @@ export {
   DEFAULT_TEST_RETRIES,
   DEFAULT_COVERAGE_THRESHOLDS,
   DEFAULT_PERFORMANCE_THRESHOLDS,
+
+  // Charter Constants
+  DEFAULT_RESOURCE_LIMITS,
+  DEFAULT_OBJECTIVES,
+  DEFAULT_CONSTRAINTS,
 } from './types';
 
 // =============================================================================

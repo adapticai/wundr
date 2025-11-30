@@ -27,7 +27,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { ExecutionFiltersInput, WorkflowStepResult } from '@/lib/validations/workflow';
-import type { Prisma, workflowExecution as PrismaworkflowExecution } from '@prisma/client';
+import type { Prisma, WorkflowExecution as PrismaworkflowExecution } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

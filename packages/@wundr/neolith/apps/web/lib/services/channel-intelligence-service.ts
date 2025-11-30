@@ -9,7 +9,7 @@
 
 import { prisma } from '@neolith/database';
 
-import type { ChannelType, MessageType } from '@prisma/client';
+import type { ChannelType, MessageType } from '@neolith/database';
 
 // =============================================================================
 // TYPES

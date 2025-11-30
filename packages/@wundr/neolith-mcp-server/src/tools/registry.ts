@@ -25,7 +25,7 @@ export interface McpTool<TInput = unknown, TOutput = unknown> {
   /** JSON Schema for input validation */
   inputSchema: Record<string, unknown>;
   /** Tool category for organization */
-  category: 'workspace' | 'channels' | 'messaging' | 'files' | 'users' | 'search' | 'orchestrators' | 'session-managers' | 'subagents';
+  category: 'workspace' | 'channels' | 'messaging' | 'files' | 'users' | 'search' | 'orchestrators' | 'session-managers' | 'subagents' | 'charters';
   /** Tool handler function (optional for static tool definitions) */
   handler?: (input: TInput) => Promise<McpToolResult<TOutput>>;
   /** Optional Zod schema for runtime validation */
@@ -115,6 +115,7 @@ export class NeolithToolRegistry {
     this.categories.set('orchestrators', new Set());
     this.categories.set('session-managers', new Set());
     this.categories.set('subagents', new Set());
+    this.categories.set('charters', new Set());
   }
 
   /**
@@ -231,7 +232,7 @@ export class NeolithToolRegistry {
    * @returns Array of tools in category
    */
   getByCategory(
-    category: 'workspace' | 'channels' | 'messaging' | 'files' | 'users' | 'search' | 'orchestrators' | 'session-managers' | 'subagents',
+    category: 'workspace' | 'channels' | 'messaging' | 'files' | 'users' | 'search' | 'orchestrators' | 'session-managers' | 'subagents' | 'charters',
   ): McpTool[] {
     const toolNames = this.categories.get(category);
     if (!toolNames) {

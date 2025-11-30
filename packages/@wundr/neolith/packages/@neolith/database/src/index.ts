@@ -47,6 +47,8 @@ export type {
   orchestrator as Orchestrator,
   workspace as Workspace,
   workspaceMember as WorkspaceMember,
+  workflowExecution as WorkflowExecution,
+  savedItem as SavedItem,
 } from '@prisma/client';
 
 // =============================================================================
@@ -59,7 +61,11 @@ export {
   ChannelType,
   FileStatus,
   MessageType,
+  NotificationPriority,
+  NotificationType,
   OrganizationRole,
+  SavedItemStatus,
+  SavedItemType,
   TaskPriority,
   TaskStatus,
   UserStatus,

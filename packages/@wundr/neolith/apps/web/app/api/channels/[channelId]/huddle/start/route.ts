@@ -25,7 +25,7 @@ import {
 } from '@/lib/validations/call';
 
 import type { NextRequest } from 'next/server';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 /**
  * Route context with channel ID parameter

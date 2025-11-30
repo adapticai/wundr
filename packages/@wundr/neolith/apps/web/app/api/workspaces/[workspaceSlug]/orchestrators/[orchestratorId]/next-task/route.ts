@@ -21,7 +21,7 @@ import {
 } from '@/lib/validations/task-backlog';
 
 import type { NextTaskFiltersInput } from '@/lib/validations/task-backlog';
-import type { Prisma, TaskPriority, TaskStatus } from '@prisma/client';
+import type { Prisma, TaskPriority, TaskStatus } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

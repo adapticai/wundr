@@ -28,7 +28,7 @@ import {
 } from '@/lib/validations/organization';
 import { generateFileUrl } from '@/lib/validations/upload';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

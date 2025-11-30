@@ -11,7 +11,7 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma, TaskPriority, TaskStatus } from '@prisma/client';
+import type { Prisma, TaskPriority, TaskStatus } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import type { TaskPollingInput } from '@/lib/validations/task';

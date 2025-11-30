@@ -23,7 +23,7 @@ import {
   type InviteStatus,
 } from '@/lib/validations/admin';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

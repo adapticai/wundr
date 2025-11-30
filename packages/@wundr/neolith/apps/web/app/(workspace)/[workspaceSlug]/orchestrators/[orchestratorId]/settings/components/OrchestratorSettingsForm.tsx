@@ -21,7 +21,7 @@ import { ResponseTemplates } from './ResponseTemplates';
 import { ModelSelector } from './ModelSelector';
 import { IntegrationSettings } from './IntegrationSettings';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 type OrchestratorWithConfig = Prisma.orchestratorGetPayload<{
   include: {

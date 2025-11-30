@@ -21,7 +21,7 @@ import {
 } from '@/lib/validations/orchestrator-conversation';
 
 import type { StatusUpdateInput } from '@/lib/validations/orchestrator-conversation';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

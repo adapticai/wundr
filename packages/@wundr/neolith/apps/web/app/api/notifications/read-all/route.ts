@@ -18,7 +18,7 @@ import {
   NOTIFICATION_ERROR_CODES,
 } from '@/lib/validations/notification';
 
-import type { NotificationType } from '@prisma/client';
+import type { NotificationType } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

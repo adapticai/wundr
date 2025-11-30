@@ -19,7 +19,7 @@ import {
   WORK_SESSION_ERROR_CODES,
 } from '@/lib/validations/work-session';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

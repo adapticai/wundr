@@ -12,7 +12,7 @@
  */
 
 import { prisma } from '@neolith/database';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -24,7 +24,7 @@ import {
 } from '@/lib/validations/task';
 
 import type { VPBacklogFiltersInput, CreateBacklogItemInput } from '@/lib/validations/task';
-import type { TaskStatus, TaskPriority } from '@prisma/client';
+import type { TaskStatus, TaskPriority } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

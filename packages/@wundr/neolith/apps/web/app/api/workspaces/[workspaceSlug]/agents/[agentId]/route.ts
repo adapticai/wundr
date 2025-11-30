@@ -18,7 +18,7 @@ import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import type { Agent, UpdateAgentInput, AgentType, AgentStatus, AvailableTool } from '@/types/agent';
 import { isAvailableTool } from '@/types/agent';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 import type { NextRequest } from 'next/server';
 

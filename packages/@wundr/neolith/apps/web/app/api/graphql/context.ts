@@ -10,7 +10,7 @@
 
 import { prisma } from '@neolith/database';
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

@@ -23,10 +23,12 @@ import {
   Brain,
   Zap,
   ChevronRight,
+  FileText,
+  History,
+  RotateCcw,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import type React from 'react';
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 import { usePageHeader } from '@/contexts/page-header-context';
 
@@ -42,8 +44,10 @@ import { SessionManagerList } from '@/components/orchestrator/session-manager-li
 import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
 import { SubagentList } from '@/components/orchestrator/subagent-list';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
+import { CharterEditor, CharterDiff } from '@/components/charter';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import type { UpdateOrchestratorInput } from '@/types/orchestrator';
+import type { UpdateOrchestratorInput, OrchestratorCharter } from '@/types/orchestrator';
 
 export default function OrchestratorDetailPage() {
   const params = useParams();
@@ -56,6 +60,9 @@ export default function OrchestratorDetailPage() {
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [editFormData, setEditFormData] = useState<UpdateOrchestratorInput>({});
   const [activeTab, setActiveTab] = useState('overview');
+  const [isCharterEditorOpen, setIsCharterEditorOpen] = useState(false);
+  const [charterVersions, setCharterVersions] = useState<Array<{ version: number; charter: OrchestratorCharter; createdAt: string }>>([]);
+  const [compareVersion, setCompareVersion] = useState<number | null>(null);
 
   // Hooks
   const { orchestrator, isLoading, error, refetch } = useOrchestrator(orchestratorId);
@@ -129,6 +136,62 @@ export default function OrchestratorDetailPage() {
   const handleConfigure = useCallback(() => {
     router.push(`/${workspaceSlug}/orchestrators/${orchestratorId}/settings`);
   }, [router, workspaceSlug, orchestratorId]);
+
+  // Charter handlers
+  const handleOpenCharterEditor = useCallback(() => {
+    setIsCharterEditorOpen(true);
+  }, []);
+
+  const handleCloseCharterEditor = useCallback(() => {
+    setIsCharterEditorOpen(false);
+  }, []);
+
+  const handleSaveCharter = useCallback(async (charter: OrchestratorCharter) => {
+    if (!orchestrator) return;
+    await updateOrchestrator(orchestrator.id, { charter });
+    setIsCharterEditorOpen(false);
+    refetch();
+  }, [orchestrator, updateOrchestrator, refetch]);
+
+  // Fetch charter versions
+  const fetchCharterVersions = useCallback(async () => {
+    if (!orchestratorId) return;
+
+    try {
+      const response = await fetch(`/api/orchestrators/${orchestratorId}/charter/versions`);
+      if (response.ok) {
+        const data = await response.json();
+        setCharterVersions(data.data?.versions || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch charter versions:', error);
+    }
+  }, [orchestratorId]);
+
+  // Rollback to a specific charter version
+  const handleRollbackCharter = useCallback(async (version: number) => {
+    if (!orchestrator) return;
+
+    const confirmRollback = window.confirm(
+      `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`
+    );
+
+    if (!confirmRollback) return;
+
+    const versionData = charterVersions.find(v => v.version === version);
+    if (!versionData) return;
+
+    await updateOrchestrator(orchestrator.id, { charter: versionData.charter });
+    refetch();
+    fetchCharterVersions();
+  }, [orchestrator, charterVersions, updateOrchestrator, refetch, fetchCharterVersions]);
+
+  // Load charter versions when on charter tab
+  useEffect(() => {
+    if (activeTab === 'charter') {
+      fetchCharterVersions();
+    }
+  }, [activeTab, fetchCharterVersions]);
 
   // Loading state
   if (isLoading) {
@@ -317,10 +380,14 @@ export default function OrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">
             <Activity className="h-4 w-4 mr-2" />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value="charter">
+            <FileText className="h-4 w-4 mr-2" />
+            Charter
           </TabsTrigger>
           <TabsTrigger value="session-managers">
             <Users className="h-4 w-4 mr-2" />
@@ -343,6 +410,17 @@ export default function OrchestratorDetailPage() {
             Capabilities
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="charter" className="space-y-4 mt-6">
+          <CharterTab
+            orchestrator={orchestrator}
+            onOpenEditor={handleOpenCharterEditor}
+            versions={charterVersions}
+            onRollback={handleRollbackCharter}
+            compareVersion={compareVersion}
+            onCompareVersion={setCompareVersion}
+          />
+        </TabsContent>
 
         <TabsContent value="session-managers" className="space-y-4 mt-6">
           <SessionManagersTab orchestratorId={orchestrator.id} />
@@ -505,6 +583,21 @@ export default function OrchestratorDetailPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Charter Editor Dialog */}
+      <Dialog open={isCharterEditorOpen} onOpenChange={setIsCharterEditorOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Edit Charter</DialogTitle>
+          </DialogHeader>
+          <CharterEditor
+            orchestratorId={orchestrator.id}
+            initialCharter={orchestrator.charter || undefined}
+            onSave={handleSaveCharter}
+            onCancel={handleCloseCharterEditor}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -953,6 +1046,320 @@ function SubagentsTab() {
           </Card>
         )}
       </div>
+    </>
+  );
+}
+
+/**
+ * Charter Tab Component
+ *
+ * Displays charter information, version history, and management options
+ */
+interface CharterTabProps {
+  orchestrator: Orchestrator;
+  onOpenEditor: () => void;
+  versions: Array<{ version: number; charter: OrchestratorCharter; createdAt: string }>;
+  onRollback: (version: number) => void;
+  compareVersion: number | null;
+  onCompareVersion: (version: number | null) => void;
+}
+
+function CharterTab({
+  orchestrator,
+  onOpenEditor,
+  versions,
+  onRollback,
+  compareVersion,
+  onCompareVersion,
+}: CharterTabProps) {
+  const charter = orchestrator.charter;
+
+  // Calculate charter stats
+  const charterStats = React.useMemo(() => {
+    if (!charter) return null;
+
+    return {
+      concurrentSessions: charter.operationalSettings?.autoEscalation ? 'Unlimited' : '20',
+      tokenBudget: charter.operationalSettings?.responseTimeTarget
+        ? `${charter.operationalSettings.responseTimeTarget}min target`
+        : 'No limit',
+      expertise: charter.expertise?.length || 0,
+      values: charter.values?.length || 0,
+    };
+  }, [charter]);
+
+  return (
+    <>
+      {/* Charter Status Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Charter Status</CardTitle>
+              <CardDescription>
+                Current charter configuration and operational parameters
+              </CardDescription>
+            </div>
+            <Button onClick={onOpenEditor} disabled={!orchestrator}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Charter
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {charter ? (
+            <div className="space-y-6">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <MetricCard label="Version" value={versions.length > 0 ? `v${versions[0]?.version || 1}` : 'v1'} />
+                <MetricCard
+                  label="Last Modified"
+                  value={versions.length > 0
+                    ? new Date(versions[0]?.createdAt).toLocaleDateString()
+                    : new Date(orchestrator.updatedAt).toLocaleDateString()
+                  }
+                />
+                <MetricCard label="Expertise Areas" value={charterStats?.expertise.toString() || '0'} />
+                <MetricCard label="Core Values" value={charterStats?.values.toString() || '0'} />
+              </div>
+
+              <Separator />
+
+              {/* Charter Summary */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Mission Statement
+                  </h4>
+                  <p className="text-sm text-muted-foreground">{charter.mission}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Vision
+                  </h4>
+                  <p className="text-sm text-muted-foreground">{charter.vision}</p>
+                </div>
+
+                {charter.values && charter.values.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Tag className="h-4 w-4" />
+                      Core Values
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {charter.values.map((value, index) => (
+                        <Badge key={index} variant="secondary">
+                          {value}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {charter.expertise && charter.expertise.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Brain className="h-4 w-4" />
+                      Expertise
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {charter.expertise.map((item, index) => (
+                        <Badge key={index} variant="outline">
+                          {item}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Resource Limits */}
+                <div>
+                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Resource Limits
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Concurrent Sessions:</span>
+                      <span className="ml-2 font-medium">{charterStats?.concurrentSessions}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Response Target:</span>
+                      <span className="ml-2 font-medium">{charterStats?.tokenBudget}</span>
+                    </div>
+                    {charter.operationalSettings?.workHours && (
+                      <>
+                        <div>
+                          <span className="text-muted-foreground">Work Hours:</span>
+                          <span className="ml-2 font-medium">
+                            {charter.operationalSettings.workHours.start} - {charter.operationalSettings.workHours.end}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Timezone:</span>
+                          <span className="ml-2 font-medium">{charter.operationalSettings.workHours.timezone}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Communication Preferences */}
+                {charter.communicationPreferences && (
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Communication Preferences
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Tone:</span>
+                        <span className="ml-2 font-medium capitalize">{charter.communicationPreferences.tone}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Response Length:</span>
+                        <span className="ml-2 font-medium capitalize">{charter.communicationPreferences.responseLength}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Formality:</span>
+                        <span className="ml-2 font-medium capitalize">{charter.communicationPreferences.formality}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Use Emoji:</span>
+                        <span className="ml-2 font-medium">{charter.communicationPreferences.useEmoji ? 'Yes' : 'No'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <p className="text-sm font-medium text-muted-foreground">No charter configured</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Create a charter to define mission, values, and operational parameters
+              </p>
+              <Button onClick={onOpenEditor} className="mt-4">
+                <FileText className="h-4 w-4 mr-2" />
+                Create Charter
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Version History */}
+      {charter && versions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Version History
+                </CardTitle>
+                <CardDescription>
+                  Track changes and rollback to previous charter versions
+                </CardDescription>
+              </div>
+              {compareVersion !== null && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCompareVersion(null)}
+                >
+                  Clear Comparison
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {versions.map((versionData, index) => (
+                <div
+                  key={versionData.version}
+                  className={cn(
+                    'flex items-center justify-between p-3 rounded-lg border',
+                    index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-card'
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-medium">
+                      v{versionData.version}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        Version {versionData.version}
+                        {index === 0 && (
+                          <Badge variant="default" className="ml-2">
+                            Current
+                          </Badge>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(versionData.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {index > 0 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onCompareVersion(versionData.version)}
+                        >
+                          Compare
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onRollback(versionData.version)}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Rollback
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Version Comparison */}
+      {compareVersion !== null && charter && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Version Comparison</CardTitle>
+            <CardDescription>
+              Comparing current version with version {compareVersion}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const oldVersion = versions.find(v => v.version === compareVersion);
+              if (!oldVersion) {
+                return <p className="text-sm text-muted-foreground">Version not found</p>;
+              }
+              return (
+                <CharterDiff
+                  oldCharter={oldVersion.charter}
+                  newCharter={charter}
+                  oldVersion={compareVersion}
+                  newVersion={versions[0]?.version || 1}
+                />
+              );
+            })()}
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }

@@ -383,37 +383,38 @@ model task {
 }
 
 model user {
-  id                   String               @id @default(cuid())
-  email                String               @unique
-  name                 String?
-  displayName          String?              @map("display_name")
-  avatarUrl            String?              @map("avatar_url")
-  bio                  String?
-  status               UserStatus           @default(PENDING)
-  isOrchestrator       Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
-  orchestratorConfig   Json?                @map("vp_config") // Orchestrator configuration settings
-  preferences          Json                 @default("{}")
-  currentWorkspaceSlug String?              @map("current_workspace_slug") // User's last-visited workspace slug
-  createdAt            DateTime             @default(now()) @map("created_at")
-  updatedAt            DateTime             @updatedAt @map("updated_at")
-  lastActiveAt         DateTime?            @map("last_active_at")
-  emailVerified        DateTime?            @map("email_verified")
-  accounts             account[]
-  channelMembers       channelMember[]
-  channels             channel[]
-  files                file[]
-  messages             message[]
-  notifications        notification[]
-  organizationMembers  organizationMember[]
-  pushSubscriptions    pushSubscription[]
-  reactions            reaction[]
-  sessions             session[]
-  tasksAssignedTo      task[]               @relation("taskAssignedTo")
-  tasksCreatedBy       task[]               @relation("taskCreatedBy")
-  orchestrator         orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
-  workspaceMembers     workspaceMember[]
-  webhooks             webhook[]
-  savedItems           savedItem[]
+  id                     String               @id @default(cuid())
+  email                  String               @unique
+  name                   String?
+  displayName            String?              @map("display_name")
+  avatarUrl              String?              @map("avatar_url")
+  bio                    String?
+  status                 UserStatus           @default(PENDING)
+  isOrchestrator         Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
+  orchestratorConfig     Json?                @map("vp_config") // Orchestrator configuration settings
+  preferences            Json                 @default("{}")
+  currentWorkspaceSlug   String?              @map("current_workspace_slug") // User's last-visited workspace slug
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+  lastActiveAt           DateTime?            @map("last_active_at")
+  emailVerified          DateTime?            @map("email_verified")
+  accounts               account[]
+  channelMembers         channelMember[]
+  channels               channel[]
+  files                  file[]
+  messages               message[]
+  notifications          notification[]
+  organizationMembers    organizationMember[]
+  pushSubscriptions      pushSubscription[]
+  reactions              reaction[]
+  sessions               session[]
+  tasksAssignedTo        task[]               @relation("taskAssignedTo")
+  tasksCreatedBy         task[]               @relation("taskCreatedBy")
+  orchestrator           orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
+  workspaceMembers       workspaceMember[]
+  webhooks               webhook[]
+  savedItems             savedItem[]
+  charterVersionsCreated charterVersion[]
 
   @@index([email])
   @@index([status])
@@ -452,6 +453,7 @@ model orchestrator {
   user                 user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   orchestratorMemories orchestratorMemory[]
   sessionManagers      sessionManager[]
+  charterVersions      charterVersion[]
 
   @@index([disciplineId])
   @@index([discipline])
@@ -1196,4 +1198,29 @@ enum AgentScope {
   DISCIPLINE // Available within a discipline
   WORKSPACE // Available within a workspace
   PRIVATE // Only available to parent session manager
+}
+
+// =============================================================================
+// Charter Version Tracking Models (Phase 3.2.1)
+// =============================================================================
+
+/// CharterVersion - Version tracking for charter documents
+model charterVersion {
+  id             String   @id @default(cuid())
+  charterId      String   @map("charter_id")
+  orchestratorId String   @map("orchestrator_id")
+  version        Int
+  charterData    Json     @map("charter_data")
+  changeLog      String?  @map("change_log")
+  createdBy      String   @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+  isActive       Boolean  @default(false) @map("is_active")
+
+  orchestrator orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
+  creator      user         @relation(fields: [createdBy], references: [id])
+
+  @@unique([orchestratorId, charterId, version])
+  @@index([orchestratorId])
+  @@index([charterId])
+  @@map("charter_versions")
 }

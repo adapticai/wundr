@@ -20,7 +20,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { ExecutionFiltersInput } from '@/lib/validations/workflow';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

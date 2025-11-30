@@ -26,7 +26,7 @@ import type {
 } from '@/types/agent';
 import { isAvailableTool } from '@/types/agent';
 import { DEFAULT_MODEL_CONFIGS } from '@/types/agent';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 import type { NextRequest } from 'next/server';
 

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@neolith/database';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 
 /**
  * Error codes for session manager operations

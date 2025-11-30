@@ -27,7 +27,7 @@ import {
 } from '@/lib/validations/presence';
 
 import type { UserPresenceResponse, PresenceStatusType } from '@/lib/validations/presence';
-import type { UserStatus, Prisma } from '@prisma/client';
+import type { UserStatus, Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /** Time in ms after which a user is considered offline (5 minutes) */

@@ -24,7 +24,7 @@ import {
 } from '@/lib/validations/message';
 
 import type { SendMessageInput, MessageListInput } from '@/lib/validations/message';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

@@ -21,7 +21,7 @@ import {
 } from '@/lib/validations/orchestrator-conversation';
 
 import type { EscalateTaskInput } from '@/lib/validations/orchestrator-conversation';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

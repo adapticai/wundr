@@ -777,6 +777,25 @@ export {
 } from './orchestrator-router';
 
 // =============================================================================
+// Charter Service
+// =============================================================================
+
+export {
+  // Service implementation
+  CharterServiceImpl,
+  createCharterService,
+  charterService,
+
+  // Interfaces
+  type CharterService,
+
+  // Errors
+  CharterVersionNotFoundError,
+  CharterValidationError,
+  CharterOperationError,
+} from './charter-service';
+
+// =============================================================================
 // LLM Service
 // =============================================================================
 // NOTE: LLM Service is currently WIP and excluded from build

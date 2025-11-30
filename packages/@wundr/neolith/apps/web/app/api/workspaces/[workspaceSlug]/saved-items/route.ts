@@ -11,7 +11,7 @@
  */
 
 import { prisma } from '@neolith/database';
-import { Prisma, SavedItemStatus, SavedItemType } from '@prisma/client';
+import { Prisma, SavedItemStatus, SavedItemType } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
