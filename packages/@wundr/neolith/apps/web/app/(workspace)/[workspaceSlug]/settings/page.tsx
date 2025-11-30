@@ -1,102 +1,106 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
-
-import { ThemeToggleLarge } from '@/components/layout/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
 import { usePageHeader } from '@/contexts/page-header-context';
+import {
+  User,
+  Bell,
+  Palette,
+  Shield,
+  Plug,
+  CheckCircle2,
+  AlertCircle,
+  Mail,
+  ChevronRight,
+} from 'lucide-react';
 
-export default function SettingsPage() {
+interface SettingsCardProps {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+function SettingsCard({ title, description, href, icon }: SettingsCardProps) {
+  return (
+    <Link href={href}>
+      <Card className="h-full transition-all hover:shadow-md hover:border-primary/50 cursor-pointer group">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                {icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-base mb-1">{title}</h3>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 ml-2" />
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+export default function AccountOverviewPage() {
   const { setPageHeader } = usePageHeader();
-  const [isLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const { data: session, status } = useSession();
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string;
 
-  // Set page header
   useEffect(() => {
-    setPageHeader('Settings', 'Manage your account settings and preferences');
+    setPageHeader('Account Overview', 'Manage your account and preferences');
   }, [setPageHeader]);
 
-  // Form state
-  const [profileData, setProfileData] = useState({
-    name: '',
-    email: '',
-    avatar: '',
-  });
+  const isLoading = status === 'loading';
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    weeklyDigest: true,
-    mentionAlerts: true,
-    orchestratorUpdates: true,
-  });
+  // Calculate account health metrics
+  const hasAvatar = !!session?.user?.image;
+  const hasName = !!session?.user?.name;
+  const hasEmail = !!session?.user?.email;
+  const isEmailVerified = true; // TODO: Get from session/user data
 
-  const [accountSettings, setAccountSettings] = useState({
-    twoFactorEnabled: false,
-    sessionTimeout: '30',
-    showOnlineStatus: true,
-  });
+  const completionItems = [
+    { label: 'Profile picture', completed: hasAvatar },
+    { label: 'Display name', completed: hasName },
+    { label: 'Email address', completed: hasEmail },
+    { label: 'Email verified', completed: isEmailVerified },
+  ];
 
-  const handleProfileSave = async () => {
-    setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-  };
-
-  const handleNotificationToggle = (key: keyof typeof notificationSettings) => {
-    setNotificationSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const handleAccountToggle = (key: keyof typeof accountSettings) => {
-    if (key === 'sessionTimeout') {
-      return;
-    }
-    setAccountSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+  const completionPercentage = Math.round(
+    (completionItems.filter((item) => item.completed).length / completionItems.length) * 100
+  );
 
   if (isLoading) {
-    return <SettingsPageSkeleton />;
+    return <AccountOverviewSkeleton />;
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-6">
-
-      {/* Profile Settings Section */}
+    <div className="space-y-8 max-w-6xl mx-auto p-6">
+      {/* Account Summary Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile Settings</CardTitle>
-          <CardDescription>
-            Update your personal information and profile picture
-          </CardDescription>
+          <CardTitle>Account Summary</CardTitle>
+          <CardDescription>Your account information at a glance</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Avatar Upload */}
-          <div className="flex items-center gap-6">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={profileData.avatar} alt={profileData.name} />
-              <AvatarFallback className="text-lg">
-                {profileData.name
-                  ? profileData.name
+        <CardContent>
+          <div className="flex items-start gap-6">
+            {/* Large Avatar */}
+            <Avatar className="h-24 w-24" shape="lg">
+              <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || 'User'} />
+              <AvatarFallback className="text-2xl" shape="lg">
+                {session?.user?.name
+                  ? session.user.name
                       .split(' ')
                       .map((n) => n[0])
                       .join('')
@@ -104,295 +108,157 @@ export default function SettingsPage() {
                   : 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <Button variant="outline" size="sm" asChild>
-                  <span>Change Avatar</span>
-                </Button>
-              </Label>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setProfileData((prev) => ({
-                        ...prev,
-                        avatar: reader.result as string,
-                      }));
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                JPG, PNG or GIF. Max size 2MB.
-              </p>
+
+            {/* User Info */}
+            <div className="flex-1 space-y-3">
+              <div>
+                <h2 className="text-2xl font-bold">{session?.user?.name || 'User'}</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {session?.user?.email || 'No email set'}
+                  </span>
+                  {isEmailVerified && (
+                    <Badge variant="outline" className="gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Verified
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick action link */}
+              <Link
+                href={`/${workspaceSlug}/settings/profile`}
+                className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+              >
+                Edit Profile
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
             </div>
-          </div>
-
-          {/* Name Field */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Display Name</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Enter your name"
-              value={profileData.name}
-              onChange={(e) =>
-                setProfileData((prev) => ({ ...prev, name: e.target.value }))
-              }
-            />
-          </div>
-
-          {/* Email Field */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={profileData.email}
-              onChange={(e) =>
-                setProfileData((prev) => ({ ...prev, email: e.target.value }))
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              Your email is used for account recovery and notifications
-            </p>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button onClick={handleProfileSave} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Theme Settings Section */}
+      {/* Account Health/Completion */}
+      {completionPercentage < 100 && (
+        <Card className="border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                  Complete Your Profile
+                </CardTitle>
+                <CardDescription>
+                  {completionPercentage}% complete - finish setting up your account
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Progress bar */}
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-amber-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+
+            {/* Checklist */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              {completionItems.map((item, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  {item.completed ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />
+                  )}
+                  <span
+                    className={`text-sm ${
+                      item.completed
+                        ? 'text-muted-foreground line-through'
+                        : 'text-foreground font-medium'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Settings Navigation Cards */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Settings</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <SettingsCard
+            title="Profile & Account"
+            description="Manage your personal information and preferences"
+            href={`/${workspaceSlug}/settings/profile`}
+            icon={<User className="h-5 w-5" />}
+          />
+          <SettingsCard
+            title="Notifications"
+            description="Control how and when you receive notifications"
+            href={`/${workspaceSlug}/settings/notifications`}
+            icon={<Bell className="h-5 w-5" />}
+          />
+          <SettingsCard
+            title="Appearance"
+            description="Customize the look and feel of your workspace"
+            href={`/${workspaceSlug}/settings/appearance`}
+            icon={<Palette className="h-5 w-5" />}
+          />
+          <SettingsCard
+            title="Security"
+            description="Manage your account security and privacy"
+            href={`/${workspaceSlug}/settings/security`}
+            icon={<Shield className="h-5 w-5" />}
+          />
+          <SettingsCard
+            title="Integrations"
+            description="Connect third-party apps and services"
+            href={`/${workspaceSlug}/settings/integrations`}
+            icon={<Plug className="h-5 w-5" />}
+          />
+        </div>
+      </div>
+
+      {/* Security Score (Optional - can be expanded later) */}
       <Card>
         <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>
-            Customize how the interface looks and feels
-          </CardDescription>
+          <CardTitle>Security Status</CardTitle>
+          <CardDescription>Keep your account safe and secure</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label className="mb-3 block">Theme</Label>
-            <ThemeToggleLarge />
-          </div>
-
-          <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              Your theme preference is automatically saved and will persist across
-              sessions
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notification Preferences Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notification Preferences</CardTitle>
-          <CardDescription>
-            Control how and when you receive notifications
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="email-notifications">Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive notifications via email
-                </p>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500" />
+                <span className="text-sm font-medium">Strong password</span>
               </div>
-              <Switch
-                id="email-notifications"
-                checked={notificationSettings.emailNotifications}
-                onCheckedChange={() =>
-                  handleNotificationToggle('emailNotifications')
-                }
-              />
             </div>
-
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="push-notifications">Push Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive push notifications on your devices
-                </p>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                <span className="text-sm font-medium">Two-factor authentication</span>
               </div>
-              <Switch
-                id="push-notifications"
-                checked={notificationSettings.pushNotifications}
-                onCheckedChange={() =>
-                  handleNotificationToggle('pushNotifications')
-                }
-              />
+              <Link
+                href={`/${workspaceSlug}/settings/security`}
+                className="text-sm text-primary hover:underline"
+              >
+                Enable
+              </Link>
             </div>
-
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="weekly-digest">Weekly Digest</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get a weekly summary of activity
-                </p>
-              </div>
-              <Switch
-                id="weekly-digest"
-                checked={notificationSettings.weeklyDigest}
-                onCheckedChange={() => handleNotificationToggle('weeklyDigest')}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="mention-alerts">Mention Alerts</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when someone mentions you
-                </p>
-              </div>
-              <Switch
-                id="mention-alerts"
-                checked={notificationSettings.mentionAlerts}
-                onCheckedChange={() => handleNotificationToggle('mentionAlerts')}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="orchestrator-updates">Orchestrator Updates</Label>
-                <p className="text-sm text-muted-foreground">
-                  Notifications from Virtual Professionals
-                </p>
-              </div>
-              <Switch
-                id="orchestrator-updates"
-                checked={notificationSettings.orchestratorUpdates}
-                onCheckedChange={() => handleNotificationToggle('orchestratorUpdates')}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Account Settings Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Settings</CardTitle>
-          <CardDescription>
-            Manage your account security and preferences
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="two-factor">Two-Factor Authentication</Label>
-                <p className="text-sm text-muted-foreground">
-                  Add an extra layer of security to your account
-                </p>
-              </div>
-              <Switch
-                id="two-factor"
-                checked={accountSettings.twoFactorEnabled}
-                onCheckedChange={() => handleAccountToggle('twoFactorEnabled')}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="online-status">Show Online Status</Label>
-                <p className="text-sm text-muted-foreground">
-                  Let others see when you are online
-                </p>
-              </div>
-              <Switch
-                id="online-status"
-                checked={accountSettings.showOnlineStatus}
-                onCheckedChange={() => handleAccountToggle('showOnlineStatus')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="session-timeout">Session Timeout (minutes)</Label>
-              <Input
-                id="session-timeout"
-                type="number"
-                min="5"
-                max="120"
-                value={accountSettings.sessionTimeout}
-                onChange={(e) =>
-                  setAccountSettings((prev) => ({
-                    ...prev,
-                    sessionTimeout: e.target.value,
-                  }))
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                Automatically log out after this period of inactivity
-              </p>
-            </div>
-          </div>
-
-          {/* Danger Zone */}
-          <div className="pt-6 border-t border-destructive/20">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium text-destructive">
-                  Danger Zone
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Irreversible actions that affect your account
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border border-destructive/30 rounded-lg">
-                <div>
-                  <p className="font-medium">Delete Account</p>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently delete your account and all associated data
-                  </p>
-                </div>
-                <Button variant="destructive" size="sm">
-                  Delete Account
-                </Button>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500" />
+                <span className="text-sm font-medium">Email verified</span>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Additional Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle>More Settings</CardTitle>
-          <CardDescription>
-            Access additional configuration options
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <a href="./settings/profile">Advanced Profile Settings</a>
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <a href="./settings/integrations">Integration Settings</a>
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <a href="../user-settings/notifications">
-                Detailed Notification Settings
-              </a>
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -401,27 +267,59 @@ export default function SettingsPage() {
 }
 
 // Loading skeleton component
-function SettingsPageSkeleton() {
+function AccountOverviewSkeleton() {
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-6">
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-4 w-96" />
+    <div className="space-y-8 max-w-6xl mx-auto p-6">
+      {/* Account Summary Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-96 mt-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-6">
+            <Skeleton className="h-24 w-24 rounded-full" />
+            <div className="flex-1 space-y-3">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-80" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Settings Cards Skeleton */}
+      <div>
+        <Skeleton className="h-6 w-24 mb-4" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      {[1, 2, 3, 4].map((i) => (
-        <Card key={i}>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-96 mt-2" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </CardContent>
-        </Card>
-      ))}
+      {/* Security Status Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-64 mt-2" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-full" />
+        </CardContent>
+      </Card>
     </div>
   );
 }

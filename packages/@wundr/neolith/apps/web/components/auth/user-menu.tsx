@@ -83,7 +83,7 @@ export function UserMenu({ className }: UserMenuProps) {
             <MenuItem href={workspaceSlug ? `/${workspaceSlug}/settings/profile` : '/profile'} icon={<UserIcon />}>
               Profile
             </MenuItem>
-            <MenuItem href={workspaceSlug ? `/${workspaceSlug}/user-settings/notifications` : '/settings'} icon={<SettingsIcon />}>
+            <MenuItem href={workspaceSlug ? `/${workspaceSlug}/settings` : '/settings'} icon={<SettingsIcon />}>
               Settings
             </MenuItem>
             <MenuItem href={workspaceSlug ? `/${workspaceSlug}/help` : '/help'} icon={<HelpIcon />}>

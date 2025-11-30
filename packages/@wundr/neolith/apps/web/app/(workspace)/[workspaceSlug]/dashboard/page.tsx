@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
-import { getWorkspaceId } from '@/lib/workspace';
+import { getWorkspaceWithAccess } from '@/lib/workspace';
 
 import { DashboardContent } from './dashboard-content';
 
@@ -20,15 +20,15 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
   const { workspaceSlug } = await params;
 
-  // Resolve slug to workspace ID
-  const workspaceId = await getWorkspaceId(workspaceSlug);
-  if (!workspaceId) {
+  // Resolve slug to workspace ID and check user access
+  const workspaceAccess = await getWorkspaceWithAccess(workspaceSlug, session.user.id);
+  if (!workspaceAccess) {
     notFound();
   }
 
   return (
     <DashboardContent
-      workspaceId={workspaceId}
+      workspaceId={workspaceAccess.workspaceId}
     />
   );
 }

@@ -1,0 +1,715 @@
+{
+  "packageName": "@wundr.io/agent-delegation",
+  "version": "1.0.6",
+  "description": "Hub-and-spoke delegation pattern for AI agent coordination with audit logging and result synthesis",
+  "analysisDate": "2025-11-30",
+
+  "packageStructure": {
+    "sourceFiles": [
+      {
+        "file": "src/types.ts",
+        "purpose": "Type definitions, Zod schemas, and error handling",
+        "exports": [
+          "AgentDefinition", "DelegationTask", "DelegationResult", "SynthesisResult",
+          "AuditLogEntry", "ModelConfig", "DelegationError", "DelegationErrorCode"
+        ],
+        "keyFeatures": [
+          "Comprehensive Zod schemas for runtime validation",
+          "Type-safe TypeScript interfaces derived from schemas",
+          "13 event types for audit logging",
+          "6 synthesis strategies for result combination",
+          "12 error codes for granular error handling"
+        ]
+      },
+      {
+        "file": "src/coordinator.ts",
+        "purpose": "Hub coordinator for task delegation and agent management",
+        "exports": [
+          "HubCoordinator", "createHubCoordinator", "createHubCoordinatorWithExecutor",
+          "createParallelCoordinator"
+        ],
+        "keyFeatures": [
+          "Agent registration and lifecycle management",
+          "Intelligent agent selection based on capabilities",
+          "Single and parallel task delegation",
+          "Result synthesis orchestration",
+          "Retry logic with exponential backoff",
+          "Event-driven callbacks for task lifecycle",
+          "Graceful shutdown with active task cancellation"
+        ],
+        "linesOfCode": 981
+      },
+      {
+        "file": "src/model-selector.ts",
+        "purpose": "Intelligent AI model selection based on task requirements",
+        "exports": [
+          "ModelSelector", "createModelSelector", "createCostOptimizedSelector",
+          "createSpeedOptimizedSelector", "createCapabilityOptimizedSelector"
+        ],
+        "keyFeatures": [
+          "4 selection strategies: capability_match, cost_optimize, speed_optimize, balanced",
+          "Task complexity inference: simple, moderate, complex, expert",
+          "Multi-dimensional scoring: capability, cost, speed, tier",
+          "Built-in model registry with 6 default models",
+          "Caching for repeated selections (5-minute TTL)",
+          "Cost estimation per model"
+        ],
+        "linesOfCode": 740
+      },
+      {
+        "file": "src/result-synthesizer.ts",
+        "purpose": "Multi-agent result synthesis with conflict resolution",
+        "exports": [
+          "ResultSynthesizer", "createResultSynthesizer", "createMergeSynthesizer",
+          "createConsensusSynthesizer", "createVotingSynthesizer"
+        ],
+        "keyFeatures": [
+          "6 synthesis strategies: merge, vote, consensus, best_pick, weighted_average, chain",
+          "Deep object merging with conflict tracking",
+          "Consensus building with configurable thresholds",
+          "Agent weighting for trusted sources",
+          "Confidence scoring for synthesis results",
+          "Conflict resolution and reporting"
+        ],
+        "linesOfCode": 727
+      },
+      {
+        "file": "src/audit-log.ts",
+        "purpose": "Comprehensive audit logging for delegation activities",
+        "exports": [
+          "AuditLogManager", "createAuditLog", "createAuditLogWithHandler"
+        ],
+        "keyFeatures": [
+          "13 event types covering full delegation lifecycle",
+          "Correlation ID support for tracking related operations",
+          "Session ID support for grouping activities",
+          "Flexible querying with filters (type, agent, task, time range)",
+          "Statistics generation (event counts, error rates, time ranges)",
+          "Task timeline and correlation chain tracking",
+          "External log handler integration",
+          "Export/import for persistence"
+        ],
+        "linesOfCode": 769
+      },
+      {
+        "file": "src/index.ts",
+        "purpose": "Main entry point with re-exports",
+        "exports": "All public APIs from other modules",
+        "keyFeatures": [
+          "Clean barrel exports for easy imports",
+          "Separation of types and runtime values",
+          "Default export with all main classes"
+        ],
+        "linesOfCode": 201
+      }
+    ],
+    "totalLinesOfCode": 3418,
+    "dependencies": {
+      "runtime": [
+        "uuid@^11.0.3 - ID generation",
+        "zod@^3.25.76 - Schema validation"
+      ],
+      "development": [
+        "typescript@^5.2.2",
+        "jest@^29.7.0",
+        "eslint@^8.57.1"
+      ]
+    }
+  },
+
+  "delegationModel": {
+    "architecture": "Hub-and-Spoke Pattern",
+    "description": "Central hub coordinator distributes tasks to specialized spoke agents",
+
+    "components": {
+      "hubCoordinator": {
+        "role": "Central orchestrator",
+        "responsibilities": [
+          "Agent registration and lifecycle management",
+          "Task routing and assignment",
+          "Result collection and synthesis",
+          "Audit logging and metrics tracking",
+          "Retry and timeout handling"
+        ]
+      },
+      "spokeAgents": {
+        "role": "Specialized workers",
+        "responsibilities": [
+          "Task execution based on capabilities",
+          "Result generation",
+          "Respect concurrent task limits"
+        ]
+      },
+      "modelSelector": {
+        "role": "AI model recommendation",
+        "responsibilities": [
+          "Match tasks to appropriate AI models",
+          "Optimize for cost, speed, or capability",
+          "Cache selection decisions"
+        ]
+      },
+      "resultSynthesizer": {
+        "role": "Multi-agent result combination",
+        "responsibilities": [
+          "Combine outputs from parallel delegations",
+          "Resolve conflicts between results",
+          "Calculate confidence scores"
+        ]
+      },
+      "auditLogManager": {
+        "role": "Activity tracking and observability",
+        "responsibilities": [
+          "Log all delegation events",
+          "Provide query and analytics capabilities",
+          "Support external storage integration"
+        ]
+      }
+    },
+
+    "dataFlow": {
+      "taskDelegation": [
+        "1. User creates DelegationTask with description and required capabilities",
+        "2. Hub creates task with unique ID and timestamp",
+        "3. Hub logs 'delegation_created' event",
+        "4. Hub selects appropriate agent using capability matching and scoring",
+        "5. Hub logs 'delegation_assigned' event",
+        "6. Hub tracks active delegation with timeout",
+        "7. Hub logs 'delegation_started' event",
+        "8. Hub executes task via TaskExecutor (user-provided or default)",
+        "9. Hub applies retry logic if execution fails (configurable)",
+        "10. Hub receives DelegationResult from agent",
+        "11. Hub logs 'delegation_completed' or 'delegation_failed' event",
+        "12. Hub stores result and updates metrics",
+        "13. Hub returns result to caller"
+      ],
+      "parallelDelegation": [
+        "1. User creates ParallelDelegationRequest with multiple tasks",
+        "2. Hub validates concurrent limit not exceeded",
+        "3. Hub registers any new agents from request",
+        "4. Hub executes all delegations in parallel using Promise.all",
+        "5. Hub collects all results (successful and failed)",
+        "6. Hub triggers synthesis if multiple successful results",
+        "7. Hub logs 'synthesis_started' and 'synthesis_completed' events",
+        "8. Hub returns ParallelDelegationResponse with results and synthesis"
+      ],
+      "agentSelection": [
+        "1. Check for preferred agent ID in task",
+        "2. Get agents below maxConcurrentTasks limit",
+        "3. Filter by required capabilities (all must match)",
+        "4. Score agents: capability match (50%), extra capabilities (10%), expertise level (10%), current load penalty",
+        "5. Return highest-scored agent",
+        "6. Throw CAPABILITY_MISMATCH or NO_AVAILABLE_AGENT if none found"
+      ]
+    },
+
+    "configurationOptions": {
+      "hubAgentId": "Required - Unique identifier for hub coordinator",
+      "maxParallelDelegations": "Default: 5 - Maximum concurrent task delegations",
+      "defaultTimeout": "Default: 60000ms - Task timeout if not specified",
+      "synthesisStrategy": "Default: 'merge' - Strategy for combining results",
+      "enableAuditLogging": "Default: true - Enable/disable audit logging",
+      "retryFailedDelegations": "Default: true - Retry failed tasks automatically",
+      "maxRetries": "Default: 3 - Maximum retry attempts",
+      "aggregatePartialResults": "Default: true - Include partial results in synthesis",
+      "modelSelectionStrategy": "Default: 'balanced' - Strategy for model selection"
+    }
+  },
+
+  "taskHandoff": {
+    "handoffMechanisms": [
+      {
+        "name": "Direct Assignment",
+        "description": "Explicitly specify which agent should handle a task",
+        "implementation": "Set preferredAgentId in DelegationTask",
+        "useCase": "Critical tasks requiring specific agent expertise"
+      },
+      {
+        "name": "Capability Matching",
+        "description": "Automatically select agent based on required capabilities",
+        "implementation": "Hub filters agents by requiredCapabilities array",
+        "useCase": "General task routing based on agent skills"
+      },
+      {
+        "name": "Load Balancing",
+        "description": "Distribute tasks to agents with available capacity",
+        "implementation": "Hub checks agent.maxConcurrentTasks and active delegation count",
+        "useCase": "Prevent agent overload and ensure fair distribution"
+      },
+      {
+        "name": "Priority Queuing",
+        "description": "Tasks have priority levels (low, medium, high, critical)",
+        "implementation": "Priority field in DelegationTask",
+        "useCase": "Ensure critical tasks are handled appropriately",
+        "note": "Priority is currently stored but not used for queue ordering"
+      },
+      {
+        "name": "Parent-Child Tasks",
+        "description": "Create hierarchical task relationships",
+        "implementation": "Set parentTaskId in child DelegationTask",
+        "useCase": "Track sub-tasks of complex operations"
+      }
+    ],
+
+    "taskLifecycle": [
+      "pending - Task created but not assigned",
+      "assigned - Task assigned to agent",
+      "executing - Task currently being executed",
+      "completed - Task successfully completed",
+      "failed - Task execution failed",
+      "cancelled - Task manually cancelled",
+      "timeout - Task exceeded time limit"
+    ],
+
+    "handoffPatterns": {
+      "singleTaskHandoff": {
+        "method": "coordinator.delegateTask(task, correlationId?)",
+        "flow": "Hub -> Agent Selection -> Execution -> Result Return",
+        "returnType": "DelegationResult",
+        "errorHandling": "Automatic retry with exponential backoff"
+      },
+      "parallelTaskHandoff": {
+        "method": "coordinator.delegateParallel(request)",
+        "flow": "Hub -> Multiple Agents (parallel) -> Result Collection -> Synthesis",
+        "returnType": "ParallelDelegationResponse",
+        "errorHandling": "Individual task failures don't block others"
+      },
+      "customExecutorHandoff": {
+        "method": "Provide TaskExecutor function",
+        "flow": "Hub -> Custom Executor -> Agent Implementation -> Result",
+        "returnType": "DelegationResult",
+        "integration": "Allows custom worker pools, message queues, or RPC mechanisms"
+      }
+    },
+
+    "retryStrategy": {
+      "enabled": "Configurable via retryFailedDelegations",
+      "maxRetries": "Per-agent or global configuration",
+      "backoffMs": "Default: 1000ms, configurable per agent",
+      "backoffMultiplier": "Default: 2x, configurable per agent",
+      "retryableErrors": "All errors except explicit cancellation",
+      "tracking": "retryCount field in DelegationResult"
+    }
+  },
+
+  "agentCoordination": {
+    "registrationPattern": {
+      "method": "coordinator.registerAgent(agentDefinition)",
+      "capabilities": [
+        "Define agent capabilities as string array",
+        "Optional capability levels (expert, proficient, intermediate, basic)",
+        "Set concurrent task limits per agent",
+        "Configure agent-specific timeouts and retry policies",
+        "Specify model tier preferences"
+      ],
+      "exampleAgent": {
+        "id": "auto-generated or provided",
+        "name": "Senior Developer",
+        "role": "developer",
+        "capabilities": ["coding", "architecture", "security"],
+        "capabilityLevels": {
+          "coding": "expert",
+          "architecture": "proficient",
+          "security": "intermediate"
+        },
+        "maxConcurrentTasks": 3,
+        "timeout": 120000,
+        "retryPolicy": {
+          "maxRetries": 2,
+          "backoffMs": 500,
+          "backoffMultiplier": 2
+        },
+        "modelPreference": "premium"
+      }
+    },
+
+    "agentSelection": {
+      "selectionAlgorithm": "Multi-factor scoring system",
+      "scoringFactors": [
+        {
+          "factor": "Capability Match",
+          "weight": "50%",
+          "calculation": "matchCount / requiredCapabilities.length"
+        },
+        {
+          "factor": "Extra Capabilities",
+          "weight": "10%",
+          "calculation": "min(10, extraCaps * 2)"
+        },
+        {
+          "factor": "Expertise Level",
+          "weight": "Variable",
+          "calculation": "Expert: +10, Proficient: +5 per capability"
+        },
+        {
+          "factor": "Current Load",
+          "weight": "Penalty",
+          "calculation": "-10 per active task"
+        }
+      ],
+      "tieBreaking": "Highest score wins, first agent if tied"
+    },
+
+    "coordinationMechanisms": {
+      "taskTracking": {
+        "activeDelegations": "Map<taskId, ActiveDelegation>",
+        "completedResults": "Map<taskId, DelegationResult>",
+        "purpose": "Track task execution state and results"
+      },
+      "timeoutManagement": {
+        "implementation": "NodeJS.Timeout per active delegation",
+        "cleanup": "Automatic timeout clear on completion/cancellation",
+        "errorType": "DelegationErrorCode.TIMEOUT"
+      },
+      "metricsTracking": {
+        "totalDelegations": "Count of all delegations",
+        "successfulDelegations": "Count of completed tasks",
+        "failedDelegations": "Count of failed tasks",
+        "averageDuration": "Running average of task durations",
+        "totalTokensUsed": "Sum of tokens used by all tasks",
+        "activeAgents": "Current number of registered agents",
+        "pendingTasks": "Current number of active delegations",
+        "synthesisCount": "Number of result syntheses performed",
+        "lastActivityAt": "Timestamp of last delegation activity"
+      }
+    },
+
+    "lifecycleManagement": {
+      "agentSpawning": {
+        "method": "registerAgent() or registerAgents()",
+        "event": "agent_spawned audit log entry",
+        "registration": "Stored in agents Map"
+      },
+      "agentRemoval": {
+        "method": "removeAgent(agentId)",
+        "behavior": "Cancels active delegations for removed agent",
+        "event": "agent_terminated audit log entry"
+      },
+      "shutdown": {
+        "method": "coordinator.shutdown()",
+        "behavior": [
+          "Cancel all active delegations",
+          "Clear agent registry",
+          "Clear completed results",
+          "Reset metrics counters"
+        ]
+      }
+    }
+  },
+
+  "orchestratorIntegration": {
+    "currentStatus": "Not directly integrated - standalone package",
+    "integrationPattern": "Ready for integration via dependency injection",
+
+    "potentialIntegrationPoints": {
+      "taskExecutor": {
+        "description": "Custom TaskExecutor can delegate to OrchestratorDaemon",
+        "implementation": "Provide TaskExecutor that calls orchestrator's agent execution",
+        "example": "TaskExecutor calls orchestrator.executeWithAgent(task, agent)"
+      },
+      "agentRegistry": {
+        "description": "Orchestrator can populate HubCoordinator with available agents",
+        "implementation": "Orchestrator registers agents with coordinator on startup",
+        "synchronization": "Agents added/removed in orchestrator reflected in coordinator"
+      },
+      "auditLogging": {
+        "description": "Audit logs can feed into orchestrator's observability",
+        "implementation": "Custom logHandler sends entries to orchestrator",
+        "integration": "auditOptions.logHandler = (entry) => orchestrator.logAuditEvent(entry)"
+      },
+      "resultSynthesis": {
+        "description": "Orchestrator can use synthesis for multi-agent scenarios",
+        "implementation": "Orchestrator delegates to multiple agents, coordinator synthesizes",
+        "useCase": "Consensus building, multi-perspective analysis"
+      },
+      "sessionManagement": {
+        "description": "Session IDs can link to orchestrator sessions",
+        "implementation": "Pass orchestrator sessionId to coordinator config",
+        "benefit": "Unified session tracking across systems"
+      }
+    },
+
+    "architecturalFit": {
+      "hubCoordinator": "Could serve as orchestrator's delegation layer",
+      "spokeAgents": "Could be orchestrator's managed agents",
+      "resultSynthesis": "Orchestrator's strategy for combining multi-agent outputs",
+      "auditLog": "Orchestrator's activity tracking and observability"
+    },
+
+    "integrationChallenges": {
+      "noDependency": "agent-delegation has no dependency on orchestrator-daemon",
+      "abstractionMismatch": "Coordinator expects TaskExecutor interface",
+      "stateManagement": "No shared state between packages currently",
+      "eventPropagation": "Events are callback-based, not event-emitter pattern"
+    },
+
+    "recommendedIntegration": {
+      "approach": "Orchestrator wraps HubCoordinator as delegation subsystem",
+      "steps": [
+        "1. Orchestrator creates HubCoordinator instance with custom TaskExecutor",
+        "2. TaskExecutor implementation calls orchestrator's agent execution methods",
+        "3. Orchestrator registers its agents with coordinator",
+        "4. Orchestrator uses coordinator.delegateTask() for multi-agent scenarios",
+        "5. Audit logs flow to orchestrator's logging system via logHandler"
+      ],
+      "benefits": [
+        "Clean separation of concerns",
+        "Reusable delegation patterns",
+        "Built-in result synthesis",
+        "Comprehensive audit logging"
+      ]
+    }
+  },
+
+  "gaps": {
+    "missingFeatures": [
+      {
+        "feature": "Priority Queue Implementation",
+        "status": "Priority field exists but not used for ordering",
+        "impact": "High-priority tasks don't get preferential treatment",
+        "recommendation": "Implement priority-based task queue or agent selection"
+      },
+      {
+        "feature": "Agent Health Monitoring",
+        "status": "No health checks or failure detection",
+        "impact": "Failed agents remain registered and receive tasks",
+        "recommendation": "Add agent heartbeat, health checks, and automatic removal"
+      },
+      {
+        "feature": "Dynamic Agent Scaling",
+        "status": "Manual registration only",
+        "impact": "Cannot auto-scale based on load",
+        "recommendation": "Add auto-spawning/termination based on metrics"
+      },
+      {
+        "feature": "Task Queue Persistence",
+        "status": "In-memory only",
+        "impact": "Tasks lost on coordinator crash",
+        "recommendation": "Add persistent queue backend (Redis, database)"
+      },
+      {
+        "feature": "Backpressure Handling",
+        "status": "Hard limit on parallel tasks",
+        "impact": "Tasks rejected instead of queued",
+        "recommendation": "Add task queue with backpressure mechanisms"
+      },
+      {
+        "feature": "Circuit Breaker",
+        "status": "No circuit breaker for failing agents",
+        "impact": "Repeatedly retrying failed agents wastes resources",
+        "recommendation": "Implement circuit breaker pattern for agent failures"
+      },
+      {
+        "feature": "Distributed Coordination",
+        "status": "Single-node only",
+        "impact": "Cannot scale horizontally",
+        "recommendation": "Add distributed locking and state synchronization"
+      },
+      {
+        "feature": "Agent Affinity/Anti-Affinity",
+        "status": "No task-agent affinity rules",
+        "impact": "Cannot prefer/avoid specific agent combinations",
+        "recommendation": "Add affinity rules for task-agent pairing"
+      },
+      {
+        "feature": "Task Dependencies",
+        "status": "Parent-child links but no dependency graph",
+        "impact": "Cannot wait for prerequisite tasks",
+        "recommendation": "Add DAG-based task dependency system"
+      },
+      {
+        "feature": "Cost Tracking",
+        "status": "tokensUsed tracked but not aggregated",
+        "impact": "No cost visibility per agent/task/session",
+        "recommendation": "Add cost aggregation and budgeting features"
+      }
+    ],
+
+    "limitationsAndConstraints": [
+      {
+        "area": "Scalability",
+        "limitation": "Single-node coordinator with in-memory state",
+        "constraint": "Limited by single machine's memory and CPU",
+        "mitigation": "Consider distributed coordinator with shared state"
+      },
+      {
+        "area": "Fault Tolerance",
+        "limitation": "No coordinator failover or state recovery",
+        "constraint": "Coordinator crash loses all active tasks",
+        "mitigation": "Implement checkpoint/restore or persistent state"
+      },
+      {
+        "area": "Task Execution",
+        "limitation": "Placeholder default executor (100ms sleep)",
+        "constraint": "Requires custom TaskExecutor for real work",
+        "mitigation": "Documented - users must provide executor"
+      },
+      {
+        "area": "Model Selection",
+        "limitation": "Static model registry, no runtime discovery",
+        "constraint": "Models must be registered upfront",
+        "mitigation": "Add dynamic model registration API"
+      },
+      {
+        "area": "Result Storage",
+        "limitation": "completedResults stored in memory with no limit",
+        "constraint": "Memory leak with long-running coordinators",
+        "mitigation": "Add LRU cache or external storage for results"
+      },
+      {
+        "area": "Audit Logging",
+        "limitation": "maxEntries limit causes log rotation",
+        "constraint": "Oldest logs dropped, may lose historical data",
+        "mitigation": "Use logHandler for external persistent storage"
+      }
+    ]
+  },
+
+  "recommendations": {
+    "immediate": [
+      {
+        "priority": "High",
+        "recommendation": "Implement result storage limits",
+        "rationale": "Prevent memory leaks in long-running coordinators",
+        "effort": "Low",
+        "implementation": "Add LRU cache or TTL for completedResults Map"
+      },
+      {
+        "priority": "High",
+        "recommendation": "Add agent health checks",
+        "rationale": "Prevent tasks being assigned to failed agents",
+        "effort": "Medium",
+        "implementation": "Periodic health check, auto-remove unhealthy agents"
+      },
+      {
+        "priority": "Medium",
+        "recommendation": "Implement priority queue ordering",
+        "rationale": "Critical tasks should execute before low-priority ones",
+        "effort": "Low",
+        "implementation": "Sort pending tasks by priority before assignment"
+      },
+      {
+        "priority": "Medium",
+        "recommendation": "Add circuit breaker for failing agents",
+        "rationale": "Stop retrying consistently failing agents",
+        "effort": "Medium",
+        "implementation": "Track agent failure rate, temporarily disable if threshold exceeded"
+      }
+    ],
+
+    "orchestratorIntegration": [
+      {
+        "recommendation": "Create OrchestratorTaskExecutor adapter",
+        "purpose": "Bridge agent-delegation to orchestrator-daemon",
+        "implementation": "TaskExecutor that calls orchestrator's agent methods",
+        "benefits": "Reuse delegation patterns in orchestrator"
+      },
+      {
+        "recommendation": "Sync agent registries",
+        "purpose": "Keep coordinator agents in sync with orchestrator agents",
+        "implementation": "Orchestrator event listener registers/removes agents in coordinator",
+        "benefits": "Single source of truth for available agents"
+      },
+      {
+        "recommendation": "Unified audit logging",
+        "purpose": "Consolidate logs from both systems",
+        "implementation": "Custom logHandler sends to orchestrator's logging system",
+        "benefits": "Single view of all agent activities"
+      },
+      {
+        "recommendation": "Leverage result synthesis in orchestrator",
+        "purpose": "Multi-agent consensus and conflict resolution",
+        "implementation": "Orchestrator uses coordinator for multi-agent scenarios",
+        "benefits": "Built-in synthesis strategies instead of custom implementation"
+      }
+    ],
+
+    "architecturalImprovements": [
+      {
+        "recommendation": "Add persistent state backend",
+        "rationale": "Enable coordinator recovery and horizontal scaling",
+        "technologies": "Redis for state, PostgreSQL for audit logs",
+        "effort": "High"
+      },
+      {
+        "recommendation": "Implement distributed coordination",
+        "rationale": "Scale beyond single node, add fault tolerance",
+        "technologies": "etcd or Consul for distributed locks, shared state",
+        "effort": "High"
+      },
+      {
+        "recommendation": "Add task dependency DAG",
+        "rationale": "Support complex workflows with prerequisites",
+        "technologies": "Graph library for dependency resolution",
+        "effort": "Medium-High"
+      },
+      {
+        "recommendation": "Implement event-driven architecture",
+        "rationale": "Better decoupling and integration with external systems",
+        "technologies": "EventEmitter pattern or message queue",
+        "effort": "Medium"
+      },
+      {
+        "recommendation": "Add metrics export",
+        "rationale": "Integration with monitoring systems (Prometheus, DataDog)",
+        "technologies": "Metrics exporters, OpenTelemetry",
+        "effort": "Low-Medium"
+      }
+    ],
+
+    "bestPractices": [
+      "Always provide custom TaskExecutor for production use",
+      "Use correlation IDs for tracking related operations",
+      "Set appropriate timeouts for different task types",
+      "Configure maxConcurrentTasks based on agent capacity",
+      "Use weighted synthesis for trusted agent sources",
+      "Enable audit logging with external storage for production",
+      "Monitor metrics regularly (getMetrics()) for health",
+      "Implement graceful shutdown in application lifecycle",
+      "Use session IDs to group related activities",
+      "Validate inputs with Zod schemas for safety"
+    ]
+  },
+
+  "useCases": {
+    "wellSuited": [
+      "Multi-agent code review (parallel delegation to reviewers, consensus synthesis)",
+      "Parallel analysis tasks (security, performance, quality checks)",
+      "Multi-perspective document generation (different agents, merge results)",
+      "A/B testing AI models (parallel execution, best_pick synthesis)",
+      "Consensus building for decisions (vote or consensus synthesis)",
+      "Load balancing across agent pool",
+      "Task routing based on specialization",
+      "Hierarchical task decomposition (parent-child tasks)"
+    ],
+    "notIdealFor": [
+      "Real-time streaming responses (batch-oriented design)",
+      "Single-agent sequential workflows (overhead not justified)",
+      "Highly distributed systems (single-node limitation)",
+      "Sub-millisecond latency requirements (coordination overhead)",
+      "Stateful long-running conversations (task-oriented, not session-oriented)",
+      "Complex state machines (simple task lifecycle)"
+    ]
+  },
+
+  "codeQuality": {
+    "strengths": [
+      "Comprehensive TypeScript type coverage",
+      "Zod schema validation for runtime safety",
+      "Well-documented with JSDoc comments",
+      "Clear separation of concerns (coordinator, selector, synthesizer, logger)",
+      "Factory functions for common configurations",
+      "Extensive README with examples",
+      "Error handling with custom error types",
+      "Event-driven hooks for extensibility"
+    ],
+    "areasForImprovement": [
+      "Missing unit tests (test files not found in package)",
+      "No integration tests documented",
+      "Default executor is placeholder (console warning needed)",
+      "Some TODO items may exist for future features",
+      "Limited inline comments in complex logic (e.g., scoring algorithm)",
+      "No performance benchmarks or optimization guidance"
+    ],
+    "maintainability": "High - Clean code structure, good documentation, clear patterns"
+  }
+}

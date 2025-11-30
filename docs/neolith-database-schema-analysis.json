@@ -1,0 +1,1241 @@
+{
+  "schemaLocation": "/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma",
+  "databaseProvider": "postgresql",
+  "totalModels": 35,
+  "totalEnums": 22,
+
+  "models": {
+    "authentication": [
+      {
+        "name": "account",
+        "description": "OAuth provider accounts linked to users",
+        "fields": [
+          "id (String, PK)",
+          "userId (String, FK -> user)",
+          "type (String)",
+          "provider (String)",
+          "providerAccountId (String)",
+          "refreshToken (String?)",
+          "accessToken (String?)",
+          "expiresAt (Int?)",
+          "tokenType (String?)",
+          "scope (String?)",
+          "idToken (String?)",
+          "sessionState (String?)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "indexes": ["userId"],
+        "uniqueConstraints": ["[provider, providerAccountId]"]
+      },
+      {
+        "name": "session",
+        "description": "User authentication sessions",
+        "fields": [
+          "id (String, PK)",
+          "sessionToken (String, unique)",
+          "expires (DateTime)",
+          "userId (String, FK -> user)"
+        ],
+        "indexes": ["sessionToken", "userId"]
+      },
+      {
+        "name": "verificationToken",
+        "description": "Email verification and password reset tokens",
+        "fields": [
+          "identifier (String)",
+          "token (String, unique)",
+          "expires (DateTime)"
+        ],
+        "uniqueConstraints": ["[identifier, token]"]
+      }
+    ],
+
+    "core": [
+      {
+        "name": "user",
+        "description": "Core user model - represents both human users and Orchestrator users",
+        "fields": [
+          "id (String, PK)",
+          "email (String, unique)",
+          "name (String?)",
+          "displayName (String?)",
+          "avatarUrl (String?)",
+          "bio (String?)",
+          "status (UserStatus, default: PENDING)",
+          "isOrchestrator (Boolean, default: false) - Indicates if user is an Orchestrator",
+          "orchestratorConfig (Json?) - Orchestrator configuration settings",
+          "preferences (Json, default: {})",
+          "currentWorkspaceSlug (String?) - Last visited workspace",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "lastActiveAt (DateTime?)",
+          "emailVerified (DateTime?)"
+        ],
+        "relations": [
+          "accounts -> account[]",
+          "sessions -> session[]",
+          "organizationMembers -> organizationMember[]",
+          "workspaceMembers -> workspaceMember[]",
+          "channelMembers -> channelMember[]",
+          "messages -> message[]",
+          "reactions -> reaction[]",
+          "notifications -> notification[]",
+          "files -> file[]",
+          "tasksCreatedBy -> task[]",
+          "tasksAssignedTo -> task[]",
+          "channels -> channel[]",
+          "webhooks -> webhook[]",
+          "pushSubscriptions -> pushSubscription[]",
+          "savedItems -> savedItem[]",
+          "orchestrator -> orchestrator? - One-to-one Orchestrator profile if user is an Orchestrator"
+        ],
+        "indexes": ["email", "status"]
+      },
+      {
+        "name": "organization",
+        "description": "Top-level tenant/company entity",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "slug (String, unique)",
+          "avatarUrl (String?)",
+          "description (String?)",
+          "settings (Json, default: {})",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "workspaces -> workspace[]",
+          "organizationMembers -> organizationMember[]",
+          "disciplines -> discipline[]",
+          "orchestrators -> orchestrator[]"
+        ],
+        "indexes": ["slug"]
+      },
+      {
+        "name": "organizationMember",
+        "description": "Junction table for organization membership",
+        "fields": [
+          "id (String, PK)",
+          "role (OrganizationRole, default: MEMBER)",
+          "organizationId (String, FK)",
+          "userId (String, FK)",
+          "joinedAt (DateTime)"
+        ],
+        "uniqueConstraints": ["[organizationId, userId]"],
+        "indexes": ["organizationId", "userId"]
+      },
+      {
+        "name": "workspace",
+        "description": "Workspace within an organization - primary collaboration space",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "slug (String)",
+          "description (String?)",
+          "avatarUrl (String?)",
+          "visibility (WorkspaceVisibility, default: PRIVATE)",
+          "settings (Json, default: {})",
+          "organizationId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "organization -> organization",
+          "workspaceMembers -> workspaceMember[]",
+          "channels -> channel[]",
+          "tasks -> task[]",
+          "backlogs -> backlog[]",
+          "files -> file[]",
+          "workflows -> workflow[]",
+          "daemonCredentials -> daemonCredential[]",
+          "integrations -> integration[]",
+          "deployments -> deployment[]",
+          "agents -> agent[]",
+          "webhooks -> webhook[]",
+          "savedItems -> savedItem[]"
+        ],
+        "uniqueConstraints": ["[organizationId, slug]"],
+        "indexes": ["organizationId", "slug"]
+      },
+      {
+        "name": "workspaceMember",
+        "description": "Junction table for workspace membership",
+        "fields": [
+          "id (String, PK)",
+          "role (WorkspaceRole, default: MEMBER)",
+          "workspaceId (String, FK)",
+          "userId (String, FK)",
+          "joinedAt (DateTime)"
+        ],
+        "uniqueConstraints": ["[workspaceId, userId]"],
+        "indexes": ["workspaceId", "userId"]
+      }
+    ],
+
+    "messaging": [
+      {
+        "name": "channel",
+        "description": "Communication channel within a workspace",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "slug (String)",
+          "description (String?)",
+          "topic (String?)",
+          "type (ChannelType, default: PUBLIC)",
+          "isArchived (Boolean, default: false)",
+          "settings (Json, default: {})",
+          "workspaceId (String, FK)",
+          "createdById (String?, FK -> user)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "workspace -> workspace",
+          "createdBy -> user?",
+          "channelMembers -> channelMember[]",
+          "messages -> message[]",
+          "tasks -> task[]"
+        ],
+        "uniqueConstraints": ["[workspaceId, slug]"],
+        "indexes": ["workspaceId", "type", "isArchived"]
+      },
+      {
+        "name": "channelMember",
+        "description": "Channel membership with read tracking",
+        "fields": [
+          "id (String, PK)",
+          "role (ChannelRole, default: MEMBER)",
+          "channelId (String, FK)",
+          "userId (String, FK)",
+          "joinedAt (DateTime)",
+          "lastReadAt (DateTime?)",
+          "leftAt (DateTime?)",
+          "isStarred (Boolean, default: false)",
+          "notificationPreference (String, default: 'all')"
+        ],
+        "uniqueConstraints": ["[channelId, userId]"],
+        "indexes": ["channelId", "userId", "leftAt", "isStarred"]
+      },
+      {
+        "name": "message",
+        "description": "Messages in channels with threading support",
+        "fields": [
+          "id (String, PK)",
+          "content (String)",
+          "type (MessageType, default: TEXT)",
+          "metadata (Json, default: {})",
+          "isEdited (Boolean, default: false)",
+          "isDeleted (Boolean, default: false)",
+          "editedAt (DateTime?)",
+          "deletedAt (DateTime?)",
+          "channelId (String, FK)",
+          "authorId (String, FK -> user)",
+          "parentId (String?, FK -> message) - For threading",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "channel -> channel",
+          "author -> user",
+          "parent -> message? - Parent message in thread",
+          "replies -> message[] - Child messages in thread",
+          "reactions -> reaction[]",
+          "messageAttachments -> messageAttachment[]",
+          "savedItems -> savedItem[]"
+        ],
+        "indexes": ["channelId", "authorId", "parentId", "type", "createdAt", "deletedAt"]
+      },
+      {
+        "name": "reaction",
+        "description": "Emoji reactions on messages",
+        "fields": [
+          "id (String, PK)",
+          "emoji (String)",
+          "messageId (String, FK)",
+          "userId (String, FK)",
+          "createdAt (DateTime)"
+        ],
+        "uniqueConstraints": ["[messageId, userId, emoji]"],
+        "indexes": ["messageId", "userId"]
+      },
+      {
+        "name": "notification",
+        "description": "User notifications for various events",
+        "fields": [
+          "id (String, PK)",
+          "title (String)",
+          "body (String)",
+          "type (NotificationType)",
+          "priority (NotificationPriority, default: NORMAL)",
+          "resourceId (String?)",
+          "resourceType (String?)",
+          "actionUrl (String?)",
+          "metadata (Json, default: {})",
+          "read (Boolean, default: false)",
+          "readAt (DateTime?)",
+          "archived (Boolean, default: false)",
+          "expiresAt (DateTime?)",
+          "userId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "indexes": ["userId", "type", "priority", "read", "createdAt"]
+      },
+      {
+        "name": "pushSubscription",
+        "description": "Push notification device registrations",
+        "fields": [
+          "id (String, PK)",
+          "token (String, unique)",
+          "platform (PushPlatform)",
+          "userAgent (String?)",
+          "deviceName (String?)",
+          "deviceModel (String?)",
+          "appVersion (String?)",
+          "active (Boolean, default: true)",
+          "deactivatedAt (DateTime?)",
+          "deactivationReason (String?)",
+          "failureCount (Int, default: 0)",
+          "lastFailureAt (DateTime?)",
+          "lastFailureReason (String?)",
+          "userId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "lastActiveAt (DateTime?)"
+        ],
+        "indexes": ["userId", "token", "platform", "active"]
+      }
+    ],
+
+    "fileManagement": [
+      {
+        "name": "file",
+        "description": "File storage metadata with S3 integration",
+        "fields": [
+          "id (String, PK)",
+          "filename (String)",
+          "originalName (String)",
+          "mimeType (String)",
+          "size (BigInt)",
+          "s3Key (String)",
+          "s3Bucket (String)",
+          "thumbnailUrl (String?)",
+          "status (FileStatus, default: PENDING)",
+          "metadata (Json, default: {})",
+          "workspaceId (String, FK)",
+          "uploadedById (String, FK -> user)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "workspace -> workspace",
+          "uploadedBy -> user",
+          "messageAttachments -> messageAttachment[]",
+          "savedItems -> savedItem[]"
+        ],
+        "indexes": ["workspaceId", "uploadedById", "status", "mimeType"]
+      },
+      {
+        "name": "messageAttachment",
+        "description": "Links files to messages",
+        "fields": [
+          "id (String, PK)",
+          "messageId (String, FK)",
+          "fileId (String, FK)",
+          "createdAt (DateTime)"
+        ],
+        "uniqueConstraints": ["[messageId, fileId]"],
+        "indexes": ["messageId", "fileId"]
+      }
+    ],
+
+    "orchestrator": [
+      {
+        "name": "orchestrator",
+        "description": "AI-powered autonomous agent for task execution and workflow automation (formerly VP)",
+        "fields": [
+          "id (String, PK)",
+          "discipline (String) - Area of expertise (engineering, product, design)",
+          "role (String) - Specific role within discipline",
+          "capabilities (Json, default: []) - List of capabilities and skills",
+          "daemonEndpoint (String?) - Endpoint for daemon process",
+          "status (OrchestratorStatus, default: OFFLINE)",
+          "userId (String, unique, FK -> user) - Associated user account",
+          "organizationId (String, FK)",
+          "workspaceId (String?, FK)",
+          "disciplineId (String?, FK -> discipline)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "user -> user - One-to-one with user account",
+          "organization -> organization",
+          "disciplineRef -> discipline?",
+          "config -> orchestratorConfig? - One-to-one configuration",
+          "backlogs -> backlog[]",
+          "tasks -> task[]",
+          "daemonCredentials -> daemonCredential[]",
+          "orchestratorMemories -> orchestratorMemory[]"
+        ],
+        "indexes": ["userId", "organizationId", "workspaceId", "disciplineId", "discipline", "status"],
+        "tableName": "vps"
+      },
+      {
+        "name": "orchestratorConfig",
+        "description": "Configuration settings for an Orchestrator",
+        "fields": [
+          "id (String, PK)",
+          "orchestratorId (String, unique, FK)",
+          "autoReply (Boolean, default: true)",
+          "replyDelay (Int, default: 0)",
+          "maxDailyActions (Int?)",
+          "maxHourlyActions (Int?)",
+          "triggers (Json, default: [])",
+          "watchedChannels (String[], default: [])",
+          "mentionOnly (Boolean, default: false)",
+          "keywordTriggers (String[], default: [])",
+          "enabledCapabilities (Json, default: {})",
+          "capabilityLimits (Json, default: {})",
+          "responseTemplates (Json, default: {})",
+          "customPrompts (Json, default: {})",
+          "llmProvider (String, default: 'anthropic')",
+          "llmModel (String, default: 'claude-3-5-sonnet-20241022')",
+          "temperature (Float, default: 0.7)",
+          "maxTokens (Int, default: 4096)",
+          "integrationConfig (Json, default: {})",
+          "webhookUrls (String[], default: [])",
+          "assignedWorkspaces (String[], default: [])",
+          "adminOverrides (Json, default: {})",
+          "isLocked (Boolean, default: false)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "indexes": ["orchestratorId"],
+        "tableName": "vp_configs"
+      },
+      {
+        "name": "orchestratorMemory",
+        "description": "Memory entries for Orchestrator conversation context and learned knowledge",
+        "fields": [
+          "id (String, PK)",
+          "orchestratorId (String, FK)",
+          "memoryType (String) - Type: conversation, learned_fact, procedure",
+          "content (String, @db.Text)",
+          "embedding (Json?) - Vector embedding for semantic search",
+          "metadata (Json, default: {})",
+          "importance (Float, default: 0.5) - Retention score (0.0-1.0)",
+          "expiresAt (DateTime?)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "indexes": ["orchestratorId", "memoryType", "importance", "createdAt"],
+        "tableName": "vp_memories"
+      },
+      {
+        "name": "discipline",
+        "description": "Discipline/specialization categories for Orchestrators",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "description (String?)",
+          "color (String?)",
+          "icon (String?)",
+          "organizationId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "organization -> organization",
+          "orchestrators -> orchestrator[]"
+        ],
+        "uniqueConstraints": ["[organizationId, name]"],
+        "indexes": ["organizationId", "name"]
+      },
+      {
+        "name": "daemonCredential",
+        "description": "API credentials for Orchestrator daemon processes",
+        "fields": [
+          "id (String, PK)",
+          "apiKey (String, unique)",
+          "apiSecretHash (String)",
+          "hostname (String?)",
+          "version (String?)",
+          "capabilities (String[])",
+          "metadata (Json?)",
+          "isActive (Boolean, default: true)",
+          "orchestratorId (String, FK)",
+          "workspaceId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "expiresAt (DateTime?)",
+          "lastUsedAt (DateTime?)"
+        ],
+        "indexes": ["apiKey", "isActive", "orchestratorId", "workspaceId"]
+      }
+    ],
+
+    "taskManagement": [
+      {
+        "name": "task",
+        "description": "Tasks managed by Orchestrators",
+        "fields": [
+          "id (String, PK)",
+          "title (String)",
+          "description (String?)",
+          "priority (TaskPriority, default: MEDIUM)",
+          "status (TaskStatus, default: TODO)",
+          "dueDate (DateTime?)",
+          "estimatedHours (Int?)",
+          "tags (String[], default: [])",
+          "metadata (Json, default: {})",
+          "dependsOn (String[], default: []) - Task dependencies",
+          "orchestratorId (String, FK) - Responsible Orchestrator",
+          "workspaceId (String, FK)",
+          "channelId (String?, FK)",
+          "createdById (String, FK -> user)",
+          "assignedToId (String?, FK -> user)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "completedAt (DateTime?)"
+        ],
+        "relations": [
+          "orchestrator -> orchestrator",
+          "workspace -> workspace",
+          "channel -> channel?",
+          "createdBy -> user",
+          "assignedTo -> user?",
+          "backlogItems -> backlogItem[]"
+        ],
+        "indexes": ["orchestratorId", "workspaceId", "channelId", "createdById", "assignedToId", "status", "priority", "dueDate", "createdAt"]
+      },
+      {
+        "name": "backlog",
+        "description": "Organized collections of tasks for Orchestrators",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "description (String?)",
+          "status (String, default: 'active')",
+          "priority (Int, default: 0)",
+          "metadata (Json, default: {})",
+          "orchestratorId (String, FK) - Owning Orchestrator",
+          "workspaceId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "orchestrator -> orchestrator",
+          "workspace -> workspace",
+          "backlogItems -> backlogItem[]"
+        ],
+        "uniqueConstraints": ["[orchestratorId, name]"],
+        "indexes": ["orchestratorId", "workspaceId", "status", "priority"]
+      },
+      {
+        "name": "backlogItem",
+        "description": "Links tasks to backlogs with ordering",
+        "fields": [
+          "id (String, PK)",
+          "position (Int, default: 0)",
+          "backlogId (String, FK)",
+          "taskId (String, FK)",
+          "addedAt (DateTime)"
+        ],
+        "uniqueConstraints": ["[backlogId, taskId]"],
+        "indexes": ["backlogId", "taskId", "position"]
+      }
+    ],
+
+    "automation": [
+      {
+        "name": "workflow",
+        "description": "Automated workflow definitions",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "description (String?)",
+          "trigger (Json) - Workflow trigger configuration",
+          "actions (Json) - Workflow actions",
+          "status (WorkflowStatus, default: DRAFT)",
+          "tags (String[], default: [])",
+          "metadata (Json?)",
+          "executionCount (Int, default: 0)",
+          "successCount (Int, default: 0)",
+          "failureCount (Int, default: 0)",
+          "workspaceId (String, FK)",
+          "createdBy (String)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "lastExecutedAt (DateTime?)"
+        ],
+        "relations": [
+          "workspace -> workspace",
+          "workflowExecutions -> workflowExecution[]"
+        ],
+        "uniqueConstraints": ["[workspaceId, name]"],
+        "indexes": ["workspaceId", "status", "createdBy", "createdAt"]
+      },
+      {
+        "name": "workflowExecution",
+        "description": "Workflow execution history",
+        "fields": [
+          "id (String, PK)",
+          "status (WorkflowExecutionStatus, default: PENDING)",
+          "triggeredBy (String)",
+          "triggerType (String)",
+          "triggerData (Json?)",
+          "steps (Json, default: [])",
+          "error (String?)",
+          "startedAt (DateTime)",
+          "completedAt (DateTime?)",
+          "durationMs (Int?)",
+          "isSimulation (Boolean, default: false)",
+          "workflowId (String, FK)",
+          "workspaceId (String)"
+        ],
+        "indexes": ["workflowId", "workspaceId", "status", "triggeredBy", "startedAt", "isSimulation"]
+      },
+      {
+        "name": "agent",
+        "description": "AI agent for task automation and assistance",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "type (AgentType)",
+          "status (AgentStatus, default: INACTIVE)",
+          "description (String?)",
+          "model (String, default: 'claude-3-5-sonnet')",
+          "temperature (Float, default: 0.7)",
+          "maxTokens (Int, default: 4096)",
+          "topP (Float?)",
+          "frequencyPenalty (Float?)",
+          "presencePenalty (Float?)",
+          "tools (String[], default: [])",
+          "systemPrompt (String?, @db.Text)",
+          "workspaceId (String, FK)",
+          "createdById (String?)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "tasksCompleted (Int, default: 0)",
+          "successRate (Float, default: 0)",
+          "avgResponseTime (Float, default: 0)",
+          "lastActiveAt (DateTime?)",
+          "tokensUsed (Int, default: 0)",
+          "totalCost (Float, default: 0)"
+        ],
+        "indexes": ["workspaceId", "type", "status", "createdById", "createdAt"]
+      }
+    ],
+
+    "integrations": [
+      {
+        "name": "integration",
+        "description": "Third-party service integration configuration",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "description (String?)",
+          "provider (IntegrationProvider)",
+          "status (IntegrationStatus, default: PENDING)",
+          "accessToken (String?, @db.Text)",
+          "refreshToken (String?, @db.Text)",
+          "expiresAt (DateTime?)",
+          "config (Json, default: {})",
+          "syncEnabled (Boolean, default: false)",
+          "lastSyncAt (DateTime?)",
+          "syncError (String?)",
+          "workspaceId (String, FK)",
+          "connectedBy (String)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "connectedAt (DateTime?)"
+        ],
+        "indexes": ["workspaceId", "provider", "status", "connectedBy", "createdAt"]
+      },
+      {
+        "name": "webhook",
+        "description": "Outgoing webhook configuration",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "url (String)",
+          "secret (String?)",
+          "events (String[])",
+          "status (WebhookStatus, default: ACTIVE)",
+          "headers (Json, default: {})",
+          "retryAttempts (Int, default: 3)",
+          "timeout (Int, default: 30000)",
+          "workspaceId (String, FK)",
+          "createdById (String, FK -> user)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "workspace -> workspace",
+          "createdBy -> user",
+          "deliveries -> webhookDelivery[]"
+        ],
+        "indexes": ["workspaceId", "status", "createdById"]
+      },
+      {
+        "name": "webhookDelivery",
+        "description": "Webhook delivery attempt record",
+        "fields": [
+          "id (String, PK)",
+          "webhookId (String, FK)",
+          "event (String)",
+          "payload (Json)",
+          "status (WebhookDeliveryStatus, default: PENDING)",
+          "responseStatus (Int?)",
+          "responseBody (String?, @db.Text)",
+          "error (String?, @db.Text)",
+          "attemptCount (Int, default: 0)",
+          "nextRetryAt (DateTime?)",
+          "createdAt (DateTime)",
+          "completedAt (DateTime?)"
+        ],
+        "indexes": ["webhookId", "status", "createdAt"]
+      }
+    ],
+
+    "deployment": [
+      {
+        "name": "deployment",
+        "description": "Application/service deployments",
+        "fields": [
+          "id (String, PK)",
+          "name (String)",
+          "description (String?)",
+          "type (DeploymentType, default: SERVICE)",
+          "status (DeploymentStatus, default: PENDING)",
+          "environment (DeploymentEnvironment, default: DEVELOPMENT)",
+          "version (String?)",
+          "url (String?)",
+          "commitHash (String?)",
+          "branch (String?)",
+          "buildCommand (String?)",
+          "outputDir (String?)",
+          "envVars (Json?)",
+          "config (Json, default: {})",
+          "health (Json?)",
+          "stats (Json?)",
+          "startedAt (DateTime?)",
+          "completedAt (DateTime?)",
+          "deployedAt (DateTime?)",
+          "duration (Int?) - seconds",
+          "workspaceId (String, FK)",
+          "createdById (String?)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": [
+          "workspace -> workspace",
+          "logs -> deploymentLog[]"
+        ],
+        "indexes": ["workspaceId", "status", "environment", "type", "createdAt"]
+      },
+      {
+        "name": "deploymentLog",
+        "description": "Log entries for deployments",
+        "fields": [
+          "id (String, PK)",
+          "deploymentId (String, FK)",
+          "level (LogLevel, default: INFO)",
+          "message (String, @db.Text)",
+          "metadata (Json?)",
+          "timestamp (DateTime)"
+        ],
+        "indexes": ["deploymentId", "level", "timestamp"]
+      }
+    ],
+
+    "utilities": [
+      {
+        "name": "exportJob",
+        "description": "Background job for large workspace data exports",
+        "fields": [
+          "id (String, PK)",
+          "workspaceId (String)",
+          "type (String) - channels, messages, members, workflows, all",
+          "format (ExportFormat, default: JSON)",
+          "status (ExportStatus, default: PENDING)",
+          "fileUrl (String?)",
+          "fileSize (BigInt?)",
+          "recordCount (Int?)",
+          "error (String?, @db.Text)",
+          "progress (Int, default: 0)",
+          "startDate (DateTime?)",
+          "endDate (DateTime?)",
+          "requestedBy (String)",
+          "createdAt (DateTime)",
+          "startedAt (DateTime?)",
+          "completedAt (DateTime?)"
+        ],
+        "indexes": ["workspaceId", "status", "requestedBy", "createdAt"]
+      },
+      {
+        "name": "savedItem",
+        "description": "User-saved items for later reference (bookmarks)",
+        "fields": [
+          "id (String, PK)",
+          "itemType (SavedItemType)",
+          "status (SavedItemStatus, default: IN_PROGRESS)",
+          "note (String?, @db.Text)",
+          "dueDate (DateTime?)",
+          "messageId (String?, FK)",
+          "fileId (String?, FK)",
+          "userId (String, FK)",
+          "workspaceId (String, FK)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)",
+          "completedAt (DateTime?)",
+          "archivedAt (DateTime?)"
+        ],
+        "relations": [
+          "message -> message?",
+          "file -> file?",
+          "user -> user",
+          "workspace -> workspace"
+        ],
+        "uniqueConstraints": ["[userId, messageId]", "[userId, fileId]"],
+        "indexes": ["userId", "workspaceId", "itemType", "status", "messageId", "fileId", "createdAt"]
+      }
+    ]
+  },
+
+  "entityRelationships": {
+    "hierarchy": [
+      "Organization (1) -> (*) Workspace",
+      "Organization (1) -> (*) OrganizationMember",
+      "Organization (1) -> (*) Discipline",
+      "Organization (1) -> (*) Orchestrator",
+      "Workspace (1) -> (*) WorkspaceMember",
+      "Workspace (1) -> (*) Channel",
+      "Workspace (1) -> (*) Task",
+      "Workspace (1) -> (*) Backlog",
+      "Workspace (1) -> (*) File",
+      "Workspace (1) -> (*) Workflow",
+      "Workspace (1) -> (*) Agent",
+      "Workspace (1) -> (*) Integration",
+      "Workspace (1) -> (*) Deployment",
+      "Workspace (1) -> (*) Webhook",
+      "Channel (1) -> (*) Message",
+      "Channel (1) -> (*) ChannelMember",
+      "Message (1) -> (*) Reaction",
+      "Message (1) -> (*) MessageAttachment",
+      "Message (1) -> (*) Message (threading)",
+      "Orchestrator (1) -> (*) Task",
+      "Orchestrator (1) -> (*) Backlog",
+      "Orchestrator (1) -> (*) DaemonCredential",
+      "Orchestrator (1) -> (1) OrchestratorConfig",
+      "Orchestrator (1) -> (*) OrchestratorMemory"
+    ],
+
+    "userRelations": [
+      "User (1) -> (*) Account (OAuth providers)",
+      "User (1) -> (*) Session",
+      "User (1) -> (*) OrganizationMember",
+      "User (1) -> (*) WorkspaceMember",
+      "User (1) -> (*) ChannelMember",
+      "User (1) -> (*) Message (authored)",
+      "User (1) -> (*) Reaction",
+      "User (1) -> (*) Notification",
+      "User (1) -> (*) File (uploaded)",
+      "User (1) -> (*) Task (created)",
+      "User (1) -> (*) Task (assigned)",
+      "User (1) -> (*) SavedItem",
+      "User (1) -> (1) Orchestrator (if isOrchestrator=true)"
+    ],
+
+    "orchestratorRelations": [
+      "Orchestrator (1) -> (1) User (unique userId)",
+      "Orchestrator (*) -> (1) Organization",
+      "Orchestrator (*) -> (1) Discipline (optional)",
+      "Orchestrator (1) -> (1) OrchestratorConfig",
+      "Orchestrator (1) -> (*) Task (owns/manages)",
+      "Orchestrator (1) -> (*) Backlog (owns)",
+      "Orchestrator (1) -> (*) DaemonCredential (API keys)",
+      "Orchestrator (1) -> (*) OrchestratorMemory (conversation context)"
+    ]
+  },
+
+  "userTables": {
+    "primary": "user",
+    "related": [
+      "account - OAuth provider accounts",
+      "session - Active user sessions",
+      "verificationToken - Email verification",
+      "organizationMember - Organization membership",
+      "workspaceMember - Workspace membership",
+      "channelMember - Channel membership with read tracking",
+      "pushSubscription - Push notification devices",
+      "notification - User notifications",
+      "savedItem - Bookmarked items"
+    ],
+    "keyFields": {
+      "user.isOrchestrator": "Boolean flag indicating if user is an AI Orchestrator",
+      "user.orchestratorConfig": "JSON config for Orchestrator-type users",
+      "user.currentWorkspaceSlug": "Last visited workspace for quick navigation"
+    }
+  },
+
+  "workspaceTables": {
+    "primary": "workspace",
+    "related": [
+      "organization - Parent organization",
+      "workspaceMember - Workspace membership",
+      "channel - Communication channels",
+      "task - Tasks within workspace",
+      "backlog - Task backlogs",
+      "file - Uploaded files",
+      "workflow - Automation workflows",
+      "agent - AI agents",
+      "integration - Third-party integrations",
+      "deployment - Service deployments",
+      "webhook - Outgoing webhooks",
+      "savedItem - User bookmarks",
+      "daemonCredential - Orchestrator API credentials"
+    ]
+  },
+
+  "messageTables": {
+    "primary": "message",
+    "related": [
+      "channel - Parent channel",
+      "channelMember - Channel membership with read state",
+      "reaction - Emoji reactions",
+      "messageAttachment - File attachments",
+      "notification - Message notifications",
+      "savedItem - Saved messages"
+    ],
+    "features": [
+      "Threading support (parent/replies relationship)",
+      "Soft delete (isDeleted, deletedAt)",
+      "Edit tracking (isEdited, editedAt)",
+      "Multiple message types (TEXT, FILE, SYSTEM, COMMAND)",
+      "Metadata field for extensibility"
+    ]
+  },
+
+  "orchestratorTables": {
+    "core": [
+      {
+        "table": "orchestrator",
+        "mapped_from": "vps",
+        "description": "Main Orchestrator entity - AI autonomous agents",
+        "keyFeatures": [
+          "One-to-one relationship with user table (unique userId)",
+          "Discipline-based specialization (engineering, product, design)",
+          "Status tracking (ONLINE, OFFLINE, BUSY, AWAY)",
+          "Daemon endpoint for external process communication",
+          "Capabilities stored as JSON array"
+        ]
+      },
+      {
+        "table": "orchestratorConfig",
+        "mapped_from": "vp_configs",
+        "description": "Configuration for Orchestrator behavior and limits",
+        "keyFeatures": [
+          "Auto-reply settings with delays",
+          "Rate limiting (daily/hourly action limits)",
+          "Channel watching and triggers",
+          "LLM configuration (provider, model, temperature, tokens)",
+          "Capability enable/disable with limits",
+          "Custom prompts and response templates",
+          "Integration and webhook configurations"
+        ]
+      },
+      {
+        "table": "orchestratorMemory",
+        "mapped_from": "vp_memories",
+        "description": "Persistent memory for Orchestrators",
+        "keyFeatures": [
+          "Memory types: conversation, learned_fact, procedure",
+          "Vector embeddings for semantic search",
+          "Importance scoring (0.0-1.0) for retention",
+          "Optional expiration for temporary memories",
+          "Metadata for contextual information"
+        ]
+      },
+      {
+        "table": "daemonCredential",
+        "description": "API credentials for Orchestrator daemon processes",
+        "keyFeatures": [
+          "API key and secret hash for authentication",
+          "Capability declarations",
+          "Expiration and active status",
+          "Last used tracking"
+        ]
+      },
+      {
+        "table": "discipline",
+        "description": "Orchestrator specialization categories",
+        "keyFeatures": [
+          "Organization-scoped disciplines",
+          "Visual attributes (color, icon)",
+          "Many Orchestrators can share a discipline"
+        ]
+      }
+    ],
+
+    "taskManagement": [
+      {
+        "table": "task",
+        "description": "Tasks owned/managed by Orchestrators",
+        "keyFeatures": [
+          "orchestratorId FK - responsible Orchestrator",
+          "Priority and status enums",
+          "Task dependencies (dependsOn array)",
+          "Assignable to users",
+          "Channel association for context",
+          "Metadata for extensibility"
+        ]
+      },
+      {
+        "table": "backlog",
+        "description": "Organized task collections for Orchestrators",
+        "keyFeatures": [
+          "orchestratorId FK - owning Orchestrator",
+          "Unique [orchestratorId, name] constraint",
+          "Priority ordering",
+          "Status tracking"
+        ]
+      },
+      {
+        "table": "backlogItem",
+        "description": "Junction table linking tasks to backlogs",
+        "keyFeatures": [
+          "Position field for ordering",
+          "Unique [backlogId, taskId] constraint"
+        ]
+      }
+    ],
+
+    "integrationPoints": [
+      "User table: isOrchestrator flag and orchestratorConfig JSON",
+      "Message table: Orchestrators can author messages",
+      "Channel table: Orchestrators can be channel members",
+      "Notification table: Orchestrators can receive/generate notifications",
+      "Workflow table: Orchestrators can trigger/execute workflows",
+      "Agent table: Separate from Orchestrators - different purpose"
+    ]
+  },
+
+  "gaps": [
+    {
+      "gap": "No direct calls table in schema.prisma",
+      "note": "Migration file exists (20251130000000_add_calls_table) but not in main schema",
+      "recommendation": "Add call and callParticipant models to schema.prisma"
+    },
+    {
+      "gap": "Limited Orchestrator conversation tracking",
+      "note": "orchestratorMemory exists but no conversation history table",
+      "recommendation": "Consider adding orchestratorConversation table to track full conversation threads with context"
+    },
+    {
+      "gap": "No Orchestrator performance metrics table",
+      "note": "Config has limits but no execution metrics",
+      "recommendation": "Add orchestratorMetrics table to track: tasks completed, response times, success rates, token usage, costs"
+    },
+    {
+      "gap": "No Orchestrator collaboration/handoff tracking",
+      "note": "Multiple Orchestrators may work on same task",
+      "recommendation": "Add orchestratorHandoff table to track when Orchestrators transfer tasks or collaborate"
+    },
+    {
+      "gap": "Limited workflow-Orchestrator linkage",
+      "note": "Workflows exist but not explicitly tied to Orchestrators",
+      "recommendation": "Add workflowOrchestrator junction table or orchestratorId FK to workflow table"
+    },
+    {
+      "gap": "No Orchestrator learning/training data",
+      "note": "Memory exists but no structured training examples",
+      "recommendation": "Add orchestratorTrainingExample table for supervised learning/fine-tuning"
+    },
+    {
+      "gap": "No Orchestrator audit log",
+      "note": "No comprehensive action tracking",
+      "recommendation": "Add orchestratorAuditLog table to track all Orchestrator actions for compliance and debugging"
+    },
+    {
+      "gap": "Agent vs Orchestrator relationship unclear",
+      "note": "Both agent and orchestrator tables exist with similar purposes",
+      "recommendation": "Clarify distinction or merge concepts. Consider: Orchestrators = user-facing AI personas, Agents = background automation workers"
+    },
+    {
+      "gap": "No Orchestrator escalation/approval workflow",
+      "note": "Some actions may require human approval",
+      "recommendation": "Add orchestratorApproval table for pending actions requiring user confirmation"
+    },
+    {
+      "gap": "Limited integration event tracking",
+      "note": "Integration table exists but no event log",
+      "recommendation": "Add integrationEvent table to track sync events, errors, and data flow between Orchestrators and external services"
+    }
+  ],
+
+  "recommendations": {
+    "immediate": [
+      {
+        "priority": "HIGH",
+        "action": "Sync calls table to schema.prisma",
+        "reason": "Migration exists but schema.prisma missing call/callParticipant models",
+        "implementation": "Add models to schema.prisma matching migration SQL"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Add orchestratorMetrics table",
+        "reason": "Essential for tracking Orchestrator performance, costs, and optimization",
+        "schema": {
+          "fields": [
+            "id, orchestratorId (FK)",
+            "period (String) - hourly, daily, weekly",
+            "periodStart (DateTime)",
+            "tasksCompleted (Int)",
+            "tasksSucceeded (Int)",
+            "tasksFailed (Int)",
+            "avgResponseTimeMs (Float)",
+            "tokensConsumed (Int)",
+            "cost (Float)",
+            "llmCalls (Int)",
+            "errorCount (Int)",
+            "createdAt (DateTime)"
+          ]
+        }
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add orchestratorConversation table",
+        "reason": "Better conversation context management than memory alone",
+        "schema": {
+          "fields": [
+            "id, orchestratorId (FK), channelId (FK)?",
+            "userId (FK)? - if DM conversation",
+            "title (String)?",
+            "summary (String)?",
+            "messageCount (Int)",
+            "lastMessageAt (DateTime)",
+            "archived (Boolean)",
+            "createdAt, updatedAt"
+          ]
+        }
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add orchestratorAuditLog table",
+        "reason": "Compliance, debugging, and transparency of Orchestrator actions",
+        "schema": {
+          "fields": [
+            "id, orchestratorId (FK)",
+            "action (String) - message_sent, task_created, workflow_executed",
+            "resourceType (String)?",
+            "resourceId (String)?",
+            "details (Json)",
+            "success (Boolean)",
+            "error (String)?",
+            "durationMs (Int)?",
+            "timestamp (DateTime)"
+          ]
+        }
+      }
+    ],
+
+    "future": [
+      {
+        "priority": "LOW",
+        "action": "Add orchestratorHandoff table",
+        "reason": "Track multi-Orchestrator collaboration",
+        "schema": {
+          "fields": [
+            "id, fromOrchestratorId (FK), toOrchestratorId (FK)",
+            "taskId (FK)?",
+            "reason (String)",
+            "context (Json)",
+            "status (String) - pending, accepted, rejected",
+            "createdAt, respondedAt"
+          ]
+        }
+      },
+      {
+        "priority": "LOW",
+        "action": "Add orchestratorApproval table",
+        "reason": "Human-in-the-loop for sensitive actions",
+        "schema": {
+          "fields": [
+            "id, orchestratorId (FK), userId (FK)",
+            "actionType (String)",
+            "actionPayload (Json)",
+            "status (String) - pending, approved, rejected",
+            "approverComment (String)?",
+            "requestedAt, respondedAt"
+          ]
+        }
+      },
+      {
+        "priority": "LOW",
+        "action": "Clarify Agent vs Orchestrator architecture",
+        "reason": "Currently overlapping concepts",
+        "options": [
+          "Option 1: Merge agent into orchestrator",
+          "Option 2: Orchestrator = user-facing AI persona, Agent = background worker",
+          "Option 3: Orchestrator manages Agents (hierarchical)"
+        ]
+      }
+    ],
+
+    "schemaImprovements": [
+      "Add cascade delete policies review (many use CASCADE, ensure this is desired)",
+      "Consider soft delete for more tables (messages have it, but tasks/backlogs don't)",
+      "Add created_by/updated_by audit fields to more tables",
+      "Consider versioning for Orchestrator configs (orchestratorConfigVersion table)",
+      "Add indexes for common query patterns identified in production",
+      "Consider partitioning for large tables (messages, notifications, orchestratorMemory)"
+    ]
+  },
+
+  "enums": {
+    "ChannelRole": ["OWNER", "ADMIN", "MEMBER"],
+    "ChannelType": ["PUBLIC", "PRIVATE", "DM", "HUDDLE"],
+    "FileStatus": ["PENDING", "PROCESSING", "READY", "FAILED"],
+    "MessageType": ["TEXT", "FILE", "SYSTEM", "COMMAND"],
+    "NotificationPriority": ["LOW", "NORMAL", "HIGH", "URGENT"],
+    "NotificationType": ["MESSAGE", "MENTION", "THREAD_REPLY", "CALL", "CHANNEL_INVITE", "ORGANIZATION_UPDATE", "SYSTEM"],
+    "OrganizationRole": ["OWNER", "ADMIN", "MEMBER"],
+    "PushPlatform": ["web", "ios", "android"],
+    "TaskPriority": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+    "TaskStatus": ["TODO", "IN_PROGRESS", "BLOCKED", "DONE", "CANCELLED"],
+    "UserStatus": ["ACTIVE", "INACTIVE", "PENDING", "SUSPENDED"],
+    "OrchestratorStatus": ["ONLINE", "OFFLINE", "BUSY", "AWAY"],
+    "WorkflowExecutionStatus": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "CANCELLED", "TIMEOUT"],
+    "WorkflowStatus": ["ACTIVE", "INACTIVE", "DRAFT", "ARCHIVED"],
+    "WorkspaceRole": ["OWNER", "ADMIN", "MEMBER", "GUEST"],
+    "WorkspaceVisibility": ["PUBLIC", "PRIVATE", "INTERNAL"],
+    "IntegrationStatus": ["ACTIVE", "INACTIVE", "PENDING", "ERROR", "REVOKED"],
+    "IntegrationProvider": ["SLACK", "GITHUB", "GITLAB", "JIRA", "LINEAR", "NOTION", "GOOGLE_DRIVE", "MICROSOFT_365", "ZAPIER", "CUSTOM"],
+    "WebhookStatus": ["ACTIVE", "INACTIVE", "FAILED"],
+    "WebhookDeliveryStatus": ["PENDING", "SUCCESS", "FAILED", "RETRYING"],
+    "ExportStatus": ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
+    "ExportFormat": ["JSON", "CSV"],
+    "DeploymentStatus": ["PENDING", "BUILDING", "DEPLOYING", "ACTIVE", "FAILED", "STOPPED"],
+    "DeploymentEnvironment": ["DEVELOPMENT", "STAGING", "PRODUCTION"],
+    "LogLevel": ["DEBUG", "INFO", "WARN", "ERROR"],
+    "DeploymentType": ["SERVICE", "AGENT", "WORKFLOW", "INTEGRATION"],
+    "AgentType": ["TASK", "RESEARCH", "CODING", "DATA", "QA", "SUPPORT", "CUSTOM"],
+    "AgentStatus": ["ACTIVE", "PAUSED", "INACTIVE"],
+    "SavedItemType": ["MESSAGE", "FILE", "LINK", "NOTE"],
+    "SavedItemStatus": ["IN_PROGRESS", "ARCHIVED", "COMPLETED"]
+  },
+
+  "notes": {
+    "orchestratorNaming": "Schema uses 'vp' prefix in table names (vps, vp_configs, vp_memories) but model names are 'orchestrator'. This is a historical naming convention.",
+    "orchestratorUserRelation": "Orchestrators are backed by user accounts (one-to-one via unique userId). The user.isOrchestrator flag indicates Orchestrator users.",
+    "databaseProvider": "PostgreSQL with Prisma ORM",
+    "optimizations": "Schema includes comprehensive indexing for query performance",
+    "softDeletes": "Messages support soft delete (isDeleted, deletedAt) but not all entities do",
+    "jsonFields": "Extensive use of Json fields for flexibility (metadata, settings, capabilities, etc.)",
+    "timestamps": "Most tables have createdAt/updatedAt with @updatedAt decorator for automatic updates"
+  }
+}

@@ -1,0 +1,609 @@
+{
+  "authProvider": "NextAuth.js v5 (Auth.js)",
+  "authProviderDetails": {
+    "library": "next-auth",
+    "version": "5.x",
+    "sessionStrategy": "JWT",
+    "sessionMaxAge": "30 days",
+    "sessionUpdateAge": "24 hours",
+    "adapter": "PrismaAdapter",
+    "database": "PostgreSQL via Prisma"
+  },
+  "authFlow": {
+    "userAuthentication": {
+      "methods": [
+        {
+          "type": "credentials",
+          "name": "Email/Password",
+          "description": "Standard credentials-based authentication using PBKDF2 password hashing",
+          "implementation": {
+            "passwordHashing": "PBKDF2 (100,000 iterations, SHA-512)",
+            "storage": "Hashed password stored in account.refreshToken field",
+            "verification": "Constant-time comparison to prevent timing attacks",
+            "emailVerification": "Optional (configurable via EMAIL_VERIFICATION_REQUIRED env var)"
+          },
+          "endpoints": [
+            "POST /api/auth/register - User registration",
+            "POST /api/auth/signin - User sign in",
+            "POST /api/auth/verify-email - Email verification",
+            "POST /api/auth/forgot-password - Password reset request",
+            "POST /api/auth/reset-password - Password reset completion"
+          ]
+        },
+        {
+          "type": "oauth",
+          "name": "GitHub OAuth",
+          "description": "OAuth authentication via GitHub",
+          "provider": "github",
+          "scope": "Standard GitHub OAuth scopes",
+          "avatarHandling": "Automatically uploads provider avatar to S3"
+        },
+        {
+          "type": "oauth",
+          "name": "Google OAuth",
+          "description": "OAuth authentication via Google",
+          "provider": "google",
+          "scope": "Standard Google OAuth scopes",
+          "avatarHandling": "Automatically uploads provider avatar to S3"
+        }
+      ],
+      "sessionManagement": {
+        "type": "JWT",
+        "storage": "HTTP-only cookies",
+        "fields": {
+          "userId": "From token.sub",
+          "isOrchestrator": "Boolean flag indicating AI agent",
+          "role": "User role (ADMIN, MEMBER, VIEWER)"
+        },
+        "callbacks": {
+          "jwt": "Adds custom fields to token on sign-in",
+          "session": "Exposes JWT fields to client session",
+          "signIn": "Validates user status and uploads OAuth avatars"
+        }
+      }
+    },
+    "orchestratorAuthentication": {
+      "description": "Service account authentication for AI agent daemons",
+      "methods": [
+        {
+          "type": "credentials",
+          "name": "Orchestrator API Key/Secret",
+          "description": "Credentials-based authentication for Orchestrator services using NextAuth",
+          "implementation": {
+            "keyFormat": "vp_<orchestratorId>_<random>",
+            "keyHashing": "PBKDF2 (100,000 iterations, SHA-512)",
+            "storage": "API key hash stored in orchestrator.capabilities.apiKeyHash",
+            "verification": "Constant-time comparison using crypto.timingSafeEqual"
+          },
+          "flow": [
+            "Orchestrator provides apiKey and orchestratorId via NextAuth credentials provider",
+            "System extracts orchestratorId from apiKey prefix (vp_<id>_...)",
+            "Verifies API key hash against stored hash in orchestrator.capabilities",
+            "Checks orchestrator status (must not be OFFLINE)",
+            "Returns associated user with isOrchestrator=true flag",
+            "Session managed via standard NextAuth JWT"
+          ],
+          "endpoints": [
+            "POST /api/auth/signin (with apiKey and orchestratorId credentials)"
+          ]
+        },
+        {
+          "type": "daemon-jwt",
+          "name": "Daemon JWT Authentication",
+          "description": "Dedicated JWT-based authentication for Orchestrator daemon services",
+          "implementation": {
+            "keyFormat": "vp_<orchestratorId>_<random>",
+            "keyHashing": "PBKDF2 via hashAPIKey utility",
+            "jwtSecret": "DAEMON_JWT_SECRET environment variable",
+            "accessTokenExpiry": "1 hour",
+            "refreshTokenExpiry": "7 days"
+          },
+          "flow": [
+            "Daemon authenticates with API key/secret via POST /api/daemon/auth",
+            "System validates credentials and generates JWT tokens",
+            "Access token and refresh token returned",
+            "Session stored in Redis with 7-day expiry",
+            "Orchestrator status updated to ONLINE",
+            "Access token refreshable via POST /api/daemon/auth/refresh"
+          ],
+          "endpoints": [
+            "POST /api/daemon/auth - Initial authentication, returns access + refresh tokens",
+            "POST /api/daemon/auth/refresh - Refresh access token using refresh token"
+          ],
+          "tokenPayload": {
+            "accessToken": {
+              "orchestratorId": "ID of the orchestrator",
+              "daemonId": "Session ID",
+              "scopes": "Array of permission scopes",
+              "type": "access"
+            },
+            "refreshToken": {
+              "orchestratorId": "ID of the orchestrator",
+              "daemonId": "Session ID",
+              "type": "refresh"
+            }
+          },
+          "sessionStorage": {
+            "backend": "Redis",
+            "keyFormat": "daemon:session:<sessionId>",
+            "expiry": "7 days",
+            "data": {
+              "orchestratorId": "Orchestrator ID",
+              "scopes": "Permission scopes",
+              "refreshToken": "Hashed refresh token",
+              "createdAt": "Session creation timestamp",
+              "lastHeartbeat": "Last activity timestamp"
+            }
+          }
+        }
+      ],
+      "orchestratorModel": {
+        "table": "orchestrator",
+        "fields": {
+          "id": "Unique orchestrator identifier",
+          "userId": "Associated user account",
+          "discipline": "AI discipline/specialty",
+          "role": "Role in organization",
+          "status": "ONLINE, OFFLINE, BUSY, etc.",
+          "capabilities": "JSON field containing apiKeyHash and other config"
+        },
+        "relationships": {
+          "user": "1-to-1 with user table (isOrchestrator=true)",
+          "organization": "Many-to-1 with organization",
+          "daemonCredentials": "1-to-many with daemonCredential table"
+        }
+      }
+    }
+  },
+  "workspaceAuth": {
+    "model": "Hierarchical organization > workspace > channel membership",
+    "levels": [
+      {
+        "level": "organization",
+        "table": "organization",
+        "membershipTable": "organizationMember",
+        "roles": ["OWNER", "ADMIN", "MEMBER"],
+        "description": "Top-level organization membership",
+        "authorization": "Checked for organization-level operations"
+      },
+      {
+        "level": "workspace",
+        "table": "workspace",
+        "membershipTable": "workspaceMember",
+        "roles": ["OWNER", "ADMIN", "MEMBER", "VIEWER"],
+        "description": "Workspace-level membership and permissions",
+        "authorization": "Most API endpoints check workspace membership",
+        "implementation": {
+          "checkMethod": "Query workspaceMember table with workspaceId_userId composite key",
+          "example": "prisma.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId, userId } } })"
+        }
+      },
+      {
+        "level": "channel",
+        "table": "channel",
+        "membershipTable": "channelMember",
+        "roles": ["OWNER", "ADMIN", "MEMBER"],
+        "types": ["PUBLIC", "PRIVATE", "DM"],
+        "description": "Channel-level membership",
+        "authorization": "Public channels accessible to all workspace members, private channels require membership",
+        "implementation": {
+          "publicChannels": "Automatically accessible to all workspace members",
+          "privateChannels": "Require channelMember record",
+          "dmChannels": "Direct messages between specific users"
+        }
+      }
+    ],
+    "permissionPatterns": {
+      "workspaceMembershipCheck": {
+        "description": "Standard pattern for workspace-level authorization",
+        "code": "const membership = await prisma.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId, userId } } }); if (!membership) { return 403; }",
+        "usedIn": [
+          "/api/workspaces/[workspaceSlug]/search",
+          "/api/workspaces/[workspaceSlug]/command-palette",
+          "/api/workspaces/[workspaceSlug]/saved-items",
+          "/api/files/[id]"
+        ]
+      },
+      "roleBasedAuthorization": {
+        "description": "Check user role for privileged operations",
+        "code": "const isAdmin = membership?.role === 'ADMIN' || membership?.role === 'OWNER';",
+        "usedIn": [
+          "DELETE /api/files/[id] - Only uploader or admins can delete"
+        ]
+      },
+      "channelAccessControl": {
+        "description": "Compute accessible channels for user",
+        "implementation": "Union of public channels + channels user is member of",
+        "code": "getAccessibleChannels() returns array of channel IDs",
+        "usedIn": [
+          "/api/workspaces/[workspaceSlug]/search - Filters search results by accessible channels"
+        ]
+      }
+    }
+  },
+  "apiAuth": {
+    "pattern": "Server-side session validation using auth() helper",
+    "implementation": {
+      "serverComponents": {
+        "method": "await auth()",
+        "description": "Get session in Server Components and API routes",
+        "source": "@/lib/auth"
+      },
+      "clientComponents": {
+        "method": "useSession() hook",
+        "description": "Access session in Client Components",
+        "source": "next-auth/react"
+      }
+    },
+    "protectedEndpoints": {
+      "pattern": "All API routes require authentication unless explicitly public",
+      "authCheck": "const session = await auth(); if (!session?.user?.id) { return 401; }",
+      "examples": [
+        {
+          "endpoint": "GET /api/workspaces/[workspaceSlug]/search",
+          "authRequired": true,
+          "workspaceMembershipRequired": true,
+          "roleRequired": false
+        },
+        {
+          "endpoint": "DELETE /api/files/[id]",
+          "authRequired": true,
+          "workspaceMembershipRequired": true,
+          "roleRequired": "ADMIN or file uploader"
+        },
+        {
+          "endpoint": "POST /api/daemon/auth",
+          "authRequired": false,
+          "description": "Public endpoint for daemon authentication"
+        },
+        {
+          "endpoint": "POST /api/auth/register",
+          "authRequired": false,
+          "description": "Public endpoint for user registration"
+        }
+      ]
+    },
+    "bearerTokenSupport": {
+      "implemented": false,
+      "notes": "No Bearer token authentication detected in API routes. All auth via session cookies."
+    },
+    "apiKeySupport": {
+      "implemented": "Partial - Only for daemon/orchestrator authentication",
+      "endpoint": "POST /api/daemon/auth",
+      "format": "vp_<orchestratorId>_<random>",
+      "usage": "Orchestrator daemons authenticate to receive JWT tokens"
+    }
+  },
+  "agentAuth": {
+    "currentImplementation": {
+      "method": "Orchestrator Credentials via NextAuth",
+      "description": "AI agents authenticate as special user accounts with isOrchestrator=true flag",
+      "flow": [
+        "Orchestrator has associated user account (user.isOrchestrator = true)",
+        "Orchestrator authenticates via Credentials provider with apiKey + orchestratorId",
+        "Receives standard NextAuth session with isOrchestrator flag set",
+        "Session managed via JWT cookies like regular users",
+        "Can access workspace/channel APIs with same authorization model"
+      ],
+      "advantages": [
+        "Leverages existing NextAuth infrastructure",
+        "Standard session management",
+        "Unified authorization model with regular users"
+      ],
+      "disadvantages": [
+        "Requires orchestrator to maintain session cookies",
+        "Not suitable for stateless service-to-service communication",
+        "No fine-grained scope-based permissions"
+      ]
+    },
+    "daemonJWTImplementation": {
+      "method": "Dedicated JWT tokens for daemon services",
+      "description": "Separate authentication system for orchestrator daemons with JWT tokens",
+      "flow": [
+        "Daemon authenticates via POST /api/daemon/auth with API key/secret",
+        "Receives access token (1h expiry) and refresh token (7d expiry)",
+        "Access token includes orchestratorId, daemonId, and scopes",
+        "Token stored in Redis session with 7-day TTL",
+        "Daemon includes access token in Authorization header for API calls",
+        "Access token refreshable via POST /api/daemon/auth/refresh"
+      ],
+      "advantages": [
+        "Stateless authentication suitable for services",
+        "Separate token lifecycle from user sessions",
+        "Scope-based permissions supported",
+        "Redis-backed session tracking",
+        "Refresh token rotation"
+      ],
+      "currentLimitations": [
+        "JWT validation not implemented in API routes yet",
+        "No Bearer token middleware in place",
+        "Scopes defined but not enforced",
+        "No API routes currently accept Bearer tokens"
+      ]
+    },
+    "recommendedPattern": {
+      "description": "Hybrid approach - use daemon JWT for service accounts, NextAuth for interactive agents",
+      "interactiveAgents": "Use NextAuth credentials provider for agents that need web UI access",
+      "serviceAgents": "Use daemon JWT authentication for background services and API-only access",
+      "implementation": "Add Bearer token middleware to API routes to accept both session cookies and JWT tokens"
+    }
+  },
+  "serviceAccounts": {
+    "implemented": true,
+    "model": "Orchestrator-based service accounts",
+    "implementation": {
+      "userAccount": {
+        "description": "Each orchestrator has a user account with isOrchestrator=true",
+        "table": "user",
+        "fields": {
+          "isOrchestrator": "Boolean flag",
+          "status": "User status (ACTIVE, INACTIVE, etc.)"
+        }
+      },
+      "orchestratorAccount": {
+        "description": "Orchestrator metadata and credentials",
+        "table": "orchestrator",
+        "fields": {
+          "id": "Unique orchestrator ID",
+          "userId": "Associated user ID",
+          "discipline": "AI discipline/specialty",
+          "role": "Role in organization",
+          "status": "ONLINE, OFFLINE, BUSY, etc.",
+          "capabilities": "JSON with apiKeyHash and configuration"
+        }
+      },
+      "daemonCredentials": {
+        "description": "Persistent API credentials for daemon services",
+        "table": "daemonCredential",
+        "fields": {
+          "apiKey": "Unique API key (vp_<id>_<random>)",
+          "apiSecretHash": "Hashed API secret",
+          "orchestratorId": "Associated orchestrator",
+          "workspaceId": "Workspace scope",
+          "isActive": "Credential active status",
+          "expiresAt": "Optional expiration",
+          "lastUsedAt": "Last usage timestamp",
+          "capabilities": "Array of capabilities",
+          "metadata": "Additional metadata"
+        },
+        "features": [
+          "Multiple credentials per orchestrator",
+          "Workspace-scoped credentials",
+          "Expiration support",
+          "Usage tracking",
+          "Capability-based permissions"
+        ]
+      }
+    },
+    "credentialManagement": {
+      "creation": "Generated during orchestrator creation or via admin API",
+      "rotation": "Supported via isActive flag and multiple credentials",
+      "revocation": "Set isActive=false or delete credential record",
+      "auditing": "lastUsedAt field tracks credential usage"
+    }
+  },
+  "gaps": {
+    "orchestratorWorkflows": [
+      {
+        "gap": "No Bearer token middleware",
+        "description": "API routes don't validate JWT Bearer tokens from daemon authentication",
+        "impact": "Daemons must use NextAuth session cookies instead of stateless JWT tokens",
+        "recommendation": "Add middleware to extract and validate Bearer tokens alongside session auth"
+      },
+      {
+        "gap": "Scope enforcement not implemented",
+        "description": "Daemon JWT tokens include scopes but they're not validated in API routes",
+        "impact": "All authenticated daemons have full access regardless of scopes",
+        "recommendation": "Implement scope-based authorization middleware"
+      },
+      {
+        "gap": "No API key authentication for regular API calls",
+        "description": "API keys only work for /api/daemon/auth endpoint, not for general API access",
+        "impact": "Services must maintain session cookies instead of using stateless API keys",
+        "recommendation": "Add API key authentication middleware for service-to-service calls"
+      },
+      {
+        "gap": "No service-to-service authentication",
+        "description": "No OAuth2 client credentials flow or service account tokens",
+        "impact": "Services can't authenticate as themselves, must impersonate users",
+        "recommendation": "Implement OAuth2 client credentials flow or similar service account pattern"
+      },
+      {
+        "gap": "Limited credential rotation",
+        "description": "No automated credential rotation or expiration enforcement",
+        "impact": "Credentials remain valid indefinitely unless manually revoked",
+        "recommendation": "Implement automatic credential expiration and rotation policies"
+      },
+      {
+        "gap": "No fine-grained permissions",
+        "description": "Orchestrators inherit workspace member permissions, no resource-level ACLs",
+        "impact": "Can't restrict orchestrator access to specific channels or resources within workspace",
+        "recommendation": "Implement resource-level permissions and ACLs for orchestrators"
+      }
+    ],
+    "securityConcerns": [
+      {
+        "concern": "Default daemon JWT secret",
+        "description": "DAEMON_JWT_SECRET defaults to 'daemon-secret-change-in-production'",
+        "severity": "HIGH",
+        "recommendation": "Require DAEMON_JWT_SECRET in production environments, fail to start if default is used"
+      },
+      {
+        "concern": "No rate limiting",
+        "description": "No rate limiting detected on authentication endpoints",
+        "severity": "MEDIUM",
+        "recommendation": "Implement rate limiting on /api/auth/* and /api/daemon/auth endpoints"
+      },
+      {
+        "concern": "No audit logging",
+        "description": "Limited audit logging for authentication events",
+        "severity": "MEDIUM",
+        "recommendation": "Implement comprehensive audit logging for all auth events, especially failed attempts"
+      },
+      {
+        "concern": "Redis session security",
+        "description": "Redis sessions store hashed refresh tokens but no encryption",
+        "severity": "LOW",
+        "recommendation": "Consider encrypting sensitive session data in Redis"
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      {
+        "priority": "HIGH",
+        "recommendation": "Implement Bearer token middleware for API routes",
+        "details": "Add middleware to validate JWT tokens from daemon authentication alongside session cookies. This enables stateless service authentication.",
+        "implementation": "Create auth middleware that checks both Authorization header and session cookies, validates JWT signature, and extracts orchestratorId/scopes"
+      },
+      {
+        "priority": "HIGH",
+        "recommendation": "Enforce daemon JWT secret in production",
+        "details": "Add startup check to require non-default DAEMON_JWT_SECRET in production environment",
+        "implementation": "Add validation in auth.ts to check NODE_ENV and DAEMON_JWT_SECRET value"
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Implement scope-based authorization",
+        "details": "Validate and enforce scopes from daemon JWT tokens in API routes",
+        "implementation": "Create authorization middleware that checks required scopes against token scopes"
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Add API key authentication middleware",
+        "details": "Allow services to authenticate with API keys for stateless service-to-service calls",
+        "implementation": "Create middleware that validates API keys from Authorization header, looks up daemonCredential, and sets user context"
+      }
+    ],
+    "shortTerm": [
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Implement credential rotation policies",
+        "details": "Add automated credential expiration and rotation workflows",
+        "implementation": "Add background job to check daemonCredential.expiresAt, notify on expiration, auto-disable expired credentials"
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Add rate limiting",
+        "details": "Implement rate limiting on authentication endpoints to prevent brute force attacks",
+        "implementation": "Use Redis-backed rate limiter on /api/auth/* and /api/daemon/auth"
+      },
+      {
+        "priority": "LOW",
+        "recommendation": "Enhance audit logging",
+        "details": "Comprehensive logging of authentication events with retention policy",
+        "implementation": "Create audit log table, log all auth events, implement log rotation"
+      }
+    ],
+    "longTerm": [
+      {
+        "priority": "LOW",
+        "recommendation": "Implement fine-grained permissions",
+        "details": "Resource-level ACLs and permissions for orchestrators",
+        "implementation": "Add orchestratorPermission table, define resource types and actions, enforce in API routes"
+      },
+      {
+        "priority": "LOW",
+        "recommendation": "OAuth2 client credentials flow",
+        "details": "Standard OAuth2 flow for service-to-service authentication",
+        "implementation": "Implement OAuth2 token endpoint, client credentials grant type, token introspection"
+      },
+      {
+        "priority": "LOW",
+        "recommendation": "Multi-tenancy isolation",
+        "details": "Stronger isolation between organizations and workspaces",
+        "implementation": "Add organization-level API keys, workspace-scoped tokens, tenant isolation checks"
+      }
+    ]
+  },
+  "authenticationMatrix": {
+    "description": "Summary of authentication methods and their use cases",
+    "methods": [
+      {
+        "method": "Email/Password",
+        "type": "credentials",
+        "userType": "Human users",
+        "sessionType": "JWT cookie",
+        "stateless": false,
+        "useCases": ["Web UI login", "Mobile app login"],
+        "endpoints": ["POST /api/auth/signin"]
+      },
+      {
+        "method": "GitHub OAuth",
+        "type": "oauth",
+        "userType": "Human users",
+        "sessionType": "JWT cookie",
+        "stateless": false,
+        "useCases": ["Web UI login with GitHub"],
+        "endpoints": ["GET /api/auth/callback/github"]
+      },
+      {
+        "method": "Google OAuth",
+        "type": "oauth",
+        "userType": "Human users",
+        "sessionType": "JWT cookie",
+        "stateless": false,
+        "useCases": ["Web UI login with Google"],
+        "endpoints": ["GET /api/auth/callback/google"]
+      },
+      {
+        "method": "Orchestrator Credentials (NextAuth)",
+        "type": "credentials",
+        "userType": "AI agents (interactive)",
+        "sessionType": "JWT cookie",
+        "stateless": false,
+        "useCases": ["Interactive AI agents with web UI access"],
+        "endpoints": ["POST /api/auth/signin (with apiKey/orchestratorId)"]
+      },
+      {
+        "method": "Daemon JWT",
+        "type": "jwt",
+        "userType": "AI agents (service)",
+        "sessionType": "JWT Bearer token",
+        "stateless": true,
+        "useCases": ["Background services", "API-only access", "Stateless integrations"],
+        "endpoints": ["POST /api/daemon/auth", "POST /api/daemon/auth/refresh"],
+        "limitation": "Not yet supported by API routes - needs Bearer token middleware"
+      }
+    ]
+  },
+  "environmentVariables": {
+    "required": [
+      "NEXTAUTH_SECRET - JWT signing secret",
+      "DATABASE_URL - PostgreSQL connection string"
+    ],
+    "optional": [
+      "GITHUB_CLIENT_ID - GitHub OAuth",
+      "GITHUB_CLIENT_SECRET - GitHub OAuth",
+      "GOOGLE_CLIENT_ID - Google OAuth",
+      "GOOGLE_CLIENT_SECRET - Google OAuth",
+      "EMAIL_VERIFICATION_REQUIRED - Require email verification (default: false)",
+      "DAEMON_JWT_SECRET - JWT secret for daemon auth (default: daemon-secret-change-in-production)"
+    ],
+    "securityNotes": [
+      "DAEMON_JWT_SECRET has insecure default - must be changed in production",
+      "NEXTAUTH_SECRET should be generated with: openssl rand -base64 32"
+    ]
+  },
+  "summary": {
+    "authProvider": "NextAuth.js v5 with JWT sessions",
+    "primaryAuthMethod": "Credentials (email/password) and OAuth (GitHub, Google)",
+    "serviceAccountSupport": "Yes - via Orchestrator model with API key authentication",
+    "workspaceAuthorization": "Hierarchical membership model (organization > workspace > channel)",
+    "apiAuthentication": "Session-based (JWT cookies) via auth() helper",
+    "agentAuthentication": "Dual approach - NextAuth credentials for interactive agents, dedicated JWT for daemon services",
+    "readinessForOrchestration": "Partial - daemon JWT system exists but needs Bearer token middleware implementation",
+    "keyGaps": [
+      "No Bearer token middleware for stateless API authentication",
+      "Scope enforcement not implemented",
+      "Limited credential rotation",
+      "No fine-grained permissions"
+    ],
+    "criticalActions": [
+      "Implement Bearer token middleware",
+      "Enforce non-default daemon JWT secret in production",
+      "Add rate limiting to auth endpoints",
+      "Implement scope-based authorization"
+    ]
+  }
+}

@@ -1,19 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -21,52 +11,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-
-interface Session {
-  id: string;
-  device: string;
-  location: string;
-  lastActive: string;
-  current: boolean;
-}
+import { PasswordSection } from '@/components/settings/security/PasswordSection';
+import { TwoFactorSection } from '@/components/settings/security/TwoFactorSection';
+import { SessionsList, type Session } from '@/components/settings/security/SessionsList';
+import { DangerZone } from '@/components/settings/security/DangerZone';
+import { Shield, Eye, Bell, Chrome, Github } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function SecuritySettingsPage() {
   const { toast } = useToast();
+
   const [settings, setSettings] = useState({
     twoFactorEnabled: false,
     sessionTimeout: '30',
     showOnlineStatus: true,
+    showTypingIndicators: true,
+    showReadReceipts: true,
     loginAlerts: true,
   });
 
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [sessions] = useState<Session[]>([
     {
       id: '1',
       device: 'Chrome on macOS',
+      browser: 'Chrome',
+      os: 'macOS',
       location: 'San Francisco, CA',
       lastActive: 'Active now',
       current: true,
+      deviceType: 'desktop',
     },
     {
       id: '2',
       device: 'Firefox on Windows',
+      browser: 'Firefox',
+      os: 'Windows',
       location: 'New York, NY',
       lastActive: '2 days ago',
       current: false,
+      deviceType: 'desktop',
     },
     {
       id: '3',
       device: 'Safari on iPhone',
+      browser: 'Safari',
+      os: 'iOS',
       location: 'Los Angeles, CA',
       lastActive: '1 week ago',
       current: false,
+      deviceType: 'mobile',
     },
   ]);
 
+  const [connectedAccounts] = useState([
+    { provider: 'google', email: 'user@gmail.com', connected: true },
+    { provider: 'github', username: 'user123', connected: true },
+  ]);
+
   const handleToggle = async (key: keyof typeof settings) => {
-    const newValue = typeof settings[key] === 'boolean' ? !settings[key] : settings[key];
+    const newValue = !settings[key];
 
     setSettings((prev) => ({
       ...prev,
@@ -143,10 +148,19 @@ export default function SecuritySettingsPage() {
         throw new Error('Failed to revoke session');
       }
 
+      toast({
+        title: 'Session revoked',
+        description: 'The session has been signed out',
+      });
+
       // Refresh sessions list after revoking
       window.location.reload();
     } catch (error) {
-      // Handle error silently or with toast notification
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to revoke session',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -160,10 +174,71 @@ export default function SecuritySettingsPage() {
         throw new Error('Failed to revoke all sessions');
       }
 
+      toast({
+        title: 'Sessions revoked',
+        description: 'All other sessions have been signed out',
+      });
+
       // Refresh page after revoking all sessions
       window.location.reload();
     } catch (error) {
-      // Handle error silently or with toast notification
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to revoke sessions',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
+    const response = await fetch('/api/user/password', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to update password');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const response = await fetch('/api/user/account', {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete account');
+    }
+
+    // Redirect to login or home page
+    window.location.href = '/';
+  };
+
+  const handleDisconnectSocial = async (provider: string) => {
+    try {
+      const response = await fetch(`/api/user/social/${provider}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to disconnect account');
+      }
+
+      toast({
+        title: 'Account disconnected',
+        description: `Your ${provider} account has been disconnected`,
+      });
+
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to disconnect account',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -172,91 +247,187 @@ export default function SecuritySettingsPage() {
       <div>
         <h1 className="text-2xl font-bold">Security Settings</h1>
         <p className="mt-1 text-muted-foreground">
-          Manage your account security and privacy settings.
+          Manage your account security and privacy settings
         </p>
       </div>
 
-      {/* Password Section */}
+      {/* Password & Authentication Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Password</CardTitle>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            <CardTitle>Password & Authentication</CardTitle>
+          </div>
           <CardDescription>
-            Change your password to keep your account secure.
+            Manage your password and authentication methods
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <PasswordSection onPasswordChange={handlePasswordChange} />
+
+          <Separator />
+
+          <TwoFactorSection
+            enabled={settings.twoFactorEnabled}
+            onToggle={() => handleToggle('twoFactorEnabled')}
+          />
+
+          <Separator />
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium mb-3">Connected Social Accounts</h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                Sign in with these accounts instead of using your password
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {connectedAccounts.map((account) => (
+                <div
+                  key={account.provider}
+                  className="flex items-center justify-between rounded-lg border p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      {account.provider === 'google' && <Chrome className="h-5 w-5" />}
+                      {account.provider === 'github' && <Github className="h-5 w-5" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium capitalize">{account.provider}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {'email' in account ? account.email : account.username}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDisconnectSocial(account.provider)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    Disconnect
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sessions Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            <CardTitle>Sessions</CardTitle>
+          </div>
+          <CardDescription>
+            Manage and monitor your active sessions
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            variant="secondary"
-            onClick={() => setShowPasswordModal(true)}
-          >
-            Change Password
-          </Button>
+          <SessionsList
+            sessions={sessions}
+            onRevokeSession={handleRevokeSession}
+            onRevokeAllSessions={handleRevokeAllSessions}
+          />
         </CardContent>
       </Card>
 
-      {/* Two-Factor Authentication */}
+      {/* Privacy Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Two-Factor Authentication</CardTitle>
+          <div className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            <CardTitle>Privacy</CardTitle>
+          </div>
           <CardDescription>
-            Add an extra layer of security to your account.
+            Control what others can see about your activity
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="two-factor">Enable 2FA</Label>
+              <Label htmlFor="online-status">Show online status</Label>
               <p className="text-sm text-muted-foreground">
-                Require a verification code when signing in
+                Let others see when you're online
               </p>
             </div>
             <Switch
-              id="two-factor"
-              checked={settings.twoFactorEnabled}
-              onCheckedChange={() => handleToggle('twoFactorEnabled')}
+              id="online-status"
+              checked={settings.showOnlineStatus}
+              onCheckedChange={() => handleToggle('showOnlineStatus')}
             />
           </div>
 
-          {settings.twoFactorEnabled && (
-            <div className="rounded-lg bg-muted/50 p-4 border border-muted">
-              <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                Two-factor authentication is enabled
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="typing-indicators">Show typing indicators</Label>
+              <p className="text-sm text-muted-foreground">
+                Let others see when you're typing a message
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Your account is protected with an authenticator app.
-              </p>
-              <div className="mt-3 flex gap-2">
-                <Button variant="link" size="sm" className="h-auto p-0 text-xs">
-                  Reconfigure 2FA
-                </Button>
-                <span className="text-xs text-muted-foreground">|</span>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0 text-xs text-destructive hover:text-destructive/90"
-                >
-                  Disable 2FA
-                </Button>
-              </div>
             </div>
-          )}
+            <Switch
+              id="typing-indicators"
+              checked={settings.showTypingIndicators}
+              onCheckedChange={() => handleToggle('showTypingIndicators')}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="read-receipts">Show read receipts</Label>
+              <p className="text-sm text-muted-foreground">
+                Let others see when you've read their messages
+              </p>
+            </div>
+            <Switch
+              id="read-receipts"
+              checked={settings.showReadReceipts}
+              onCheckedChange={() => handleToggle('showReadReceipts')}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      {/* Session Settings */}
+      {/* Account Security Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Session Settings</CardTitle>
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            <CardTitle>Account Security</CardTitle>
+          </div>
           <CardDescription>
-            Control how your sessions behave.
+            Configure security alerts and session behavior
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="login-alerts">Login alerts</Label>
+              <p className="text-sm text-muted-foreground">
+                Get notified when someone signs in to your account
+              </p>
+            </div>
+            <Switch
+              id="login-alerts"
+              checked={settings.loginAlerts}
+              onCheckedChange={() => handleToggle('loginAlerts')}
+            />
+          </div>
+
+          <Separator />
+
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="session-timeout">Session timeout</Label>
               <p className="text-sm text-muted-foreground">
-                Automatically sign out after inactivity
+                Automatically sign out after period of inactivity
               </p>
             </div>
             <Select
@@ -275,199 +446,21 @@ export default function SecuritySettingsPage() {
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="login-alerts">Login alerts</Label>
-              <p className="text-sm text-muted-foreground">
-                Get notified when someone signs in to your account
-              </p>
-            </div>
-            <Switch
-              id="login-alerts"
-              checked={settings.loginAlerts}
-              onCheckedChange={() => handleToggle('loginAlerts')}
-            />
-          </div>
         </CardContent>
       </Card>
 
-      {/* Active Sessions */}
-      <div className="rounded-lg border bg-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">Active Sessions</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Devices where you&apos;re currently signed in.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleRevokeAllSessions}
-            className="text-sm text-destructive hover:underline"
-          >
-            Sign out all other sessions
-          </button>
-        </div>
-
-        <div className="mt-6 space-y-3">
-          {sessions.map((session) => (
-            <div
-              key={session.id}
-              className="flex items-center justify-between rounded-lg border p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                  <DeviceIcon />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {session.device}
-                    {session.current && (
-                      <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        Current
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {session.location} · {session.lastActive}
-                  </p>
-                </div>
-              </div>
-              {!session.current && (
-                <button
-                  type="button"
-                  onClick={() => handleRevokeSession(session.id)}
-                  className="text-sm text-destructive hover:underline"
-                >
-                  Revoke
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Privacy Settings */}
-      <Card>
+      {/* Danger Zone Section */}
+      <Card className="border-destructive/20">
         <CardHeader>
-          <CardTitle>Privacy</CardTitle>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
           <CardDescription>
-            Control your privacy settings.
+            Irreversible and destructive actions
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="online-status">Show online status</Label>
-              <p className="text-sm text-muted-foreground">
-                Let others see when you&apos;re online
-              </p>
-            </div>
-            <Switch
-              id="online-status"
-              checked={settings.showOnlineStatus}
-              onCheckedChange={() => handleToggle('showOnlineStatus')}
-            />
-          </div>
+          <DangerZone onDeleteAccount={handleDeleteAccount} />
         </CardContent>
       </Card>
-
-      {/* Danger Zone */}
-      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6">
-        <h2 className="text-lg font-semibold text-destructive">Danger Zone</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Irreversible actions that affect your account.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium">Delete account</span>
-              <p className="text-xs text-muted-foreground">
-                Permanently delete your account and all data
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors"
-            >
-              Delete Account
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Password Change Modal */}
-      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-            <DialogDescription>
-              Enter your current password and a new password.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current password</Label>
-              <Input
-                type="password"
-                id="currentPassword"
-                placeholder="Enter current password"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New password</Label>
-              <Input
-                type="password"
-                id="newPassword"
-                placeholder="Enter new password"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm new password</Label>
-              <Input
-                type="password"
-                id="confirmPassword"
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="secondary"
-              onClick={() => setShowPasswordModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">
-              Update Password
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
-  );
-}
-
-function DeviceIcon() {
-  return (
-    <svg
-      className="h-5 w-5 text-muted-foreground"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-      <line x1="8" y1="21" x2="16" y2="21" />
-      <line x1="12" y1="17" x2="12" y2="21" />
-    </svg>
   );
 }

@@ -3,7 +3,15 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Card, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Separator } from '@/components/ui/separator';
 import {
   useIntegrations,
   useIntegrationMutations,
@@ -24,11 +32,21 @@ import type {
   WebhookEventType,
 } from '@/types/integration';
 
-type Tab = 'integrations' | 'webhooks';
+// OAuth providers that are personal accounts
+const OAUTH_PROVIDERS: IntegrationProvider[] = ['google_drive', 'github', 'gitlab'];
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'integrations', label: 'Integrations' },
-  { id: 'webhooks', label: 'Webhooks' },
+// App-based integrations
+const APP_PROVIDERS: IntegrationProvider[] = [
+  'slack',
+  'discord',
+  'teams',
+  'jira',
+  'notion',
+  'linear',
+  'asana',
+  'trello',
+  'dropbox',
+  'zapier',
 ];
 
 export default function IntegrationsPage() {
@@ -36,11 +54,12 @@ export default function IntegrationsPage() {
   const router = useRouter();
   const workspaceId = params?.workspaceSlug as string;
 
-  const [activeTab, setActiveTab] = useState<Tab>('integrations');
-  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showConnectAccountModal, setShowConnectAccountModal] = useState(false);
+  const [showInstallAppModal, setShowInstallAppModal] = useState(false);
   const [showWebhookForm, setShowWebhookForm] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationConfig | null>(null);
   const [selectedWebhook, setSelectedWebhook] = useState<WebhookConfig | null>(null);
+  const [apiTokens] = useState<string[]>([]);
 
   const {
     integrations,
@@ -67,7 +86,6 @@ export default function IntegrationsPage() {
     async (provider: IntegrationProvider) => {
       const result = await initiateOAuth(workspaceId, provider);
       if (result?.authUrl) {
-        // Redirect to OAuth provider
         window.location.href = result.authUrl;
       }
     },
@@ -85,8 +103,12 @@ export default function IntegrationsPage() {
     [createWebhook, refetchWebhooks],
   );
 
-  const isLoading = activeTab === 'integrations' ? integrationsLoading : webhooksLoading;
-  const error = activeTab === 'integrations' ? integrationsError : webhooksError;
+  // Separate integrations by type
+  const connectedAccounts = integrations.filter((i) => OAUTH_PROVIDERS.includes(i.provider));
+  const installedApps = integrations.filter((i) => APP_PROVIDERS.includes(i.provider));
+
+  const isLoading = integrationsLoading || webhooksLoading;
+  const error = integrationsError || webhooksError;
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
@@ -107,64 +129,269 @@ export default function IntegrationsPage() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b px-6">
-        <nav className="flex gap-6">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'relative py-4 text-sm font-medium transition-colors',
-                activeTab === tab.id
-                  ? 'text-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" />
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
-
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {error && (
-          <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-4">
-            <p className="text-sm text-destructive">{error.message}</p>
-          </div>
-        )}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-5xl space-y-8 p-6">
+          {error && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+              <p className="text-sm text-destructive">{error.message}</p>
+            </div>
+          )}
 
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center">
-            <LoadingSpinner size="lg" />
-          </div>
-        ) : activeTab === 'integrations' ? (
-          <IntegrationsTab
-            integrations={integrations}
-            onConnect={() => setShowConnectModal(true)}
-            onSelect={setSelectedIntegration}
-          />
-        ) : (
-          <WebhooksTab
-            webhooks={webhooks}
-            onCreate={() => setShowWebhookForm(true)}
-            onSelect={setSelectedWebhook}
-          />
-        )}
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <>
+              {/* Connected Accounts Section */}
+              <section>
+                <div className="mb-4 flex items-end justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Connected Accounts</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Personal OAuth connections for accessing your data
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowConnectAccountModal(true)}
+                    className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                    Connect Account
+                  </button>
+                </div>
+
+                {connectedAccounts.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <UserIcon className="h-12 w-12 text-muted-foreground/50" />
+                      <h3 className="mt-4 font-medium text-foreground">No accounts connected</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Connect your Google, GitHub, or GitLab account
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-2">
+                    {connectedAccounts.map((integration) => (
+                      <AccountCard
+                        key={integration.id}
+                        integration={integration}
+                        onClick={() => setSelectedIntegration(integration)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <Separator />
+
+              {/* Installed Apps Section */}
+              <section>
+                <div className="mb-4 flex items-end justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Installed Apps</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Third-party applications connected to your workspace
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowInstallAppModal(true)}
+                    className="flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                  >
+                    <GridIcon className="h-4 w-4" />
+                    Browse Apps
+                  </button>
+                </div>
+
+                {installedApps.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <IntegrationIcon className="h-12 w-12 text-muted-foreground/50" />
+                      <h3 className="mt-4 font-medium text-foreground">No apps installed</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Install apps to extend your workspace functionality
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {installedApps.map((integration) => (
+                      <AppCard
+                        key={integration.id}
+                        integration={integration}
+                        onClick={() => setSelectedIntegration(integration)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <Separator />
+
+              {/* Webhooks Section */}
+              <section>
+                <div className="mb-4 flex items-end justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Webhooks</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Send real-time event notifications to external services
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowWebhookForm(true)}
+                    className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                    Create Webhook
+                  </button>
+                </div>
+
+                {webhooks.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <WebhookIcon className="h-12 w-12 text-muted-foreground/50" />
+                      <h3 className="mt-4 font-medium text-foreground">No webhooks configured</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Create webhooks to receive events from your workspace
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-2">
+                    {webhooks.slice(0, 5).map((webhook) => (
+                      <WebhookListItem
+                        key={webhook.id}
+                        webhook={webhook}
+                        onClick={() => setSelectedWebhook(webhook)}
+                      />
+                    ))}
+                    {webhooks.length > 5 && (
+                      <button
+                        type="button"
+                        className="w-full rounded-md border border-dashed py-2 text-sm text-muted-foreground hover:bg-accent"
+                      >
+                        View all {webhooks.length} webhooks
+                      </button>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              <Separator />
+
+              {/* Developer Settings Section */}
+              <section>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="developer">
+                    <AccordionTrigger className="text-lg font-semibold">
+                      <div className="flex items-center gap-2">
+                        <CodeIcon className="h-5 w-5" />
+                        Developer Settings
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-6 pt-2">
+                        <div>
+                          <h3 className="mb-2 text-sm font-medium text-foreground">
+                            Personal Access Tokens
+                          </h3>
+                          <p className="mb-4 text-sm text-muted-foreground">
+                            Generate tokens to access the API programmatically
+                          </p>
+                          {apiTokens.length === 0 ? (
+                            <Card>
+                              <CardContent className="py-8 text-center">
+                                <p className="text-sm text-muted-foreground">
+                                  No tokens created yet
+                                </p>
+                              </CardContent>
+                            </Card>
+                          ) : (
+                            <div className="space-y-2">
+                              {apiTokens.map((_, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center justify-between rounded-md border p-3"
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium">Token {i + 1}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Created recently
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="text-sm text-destructive hover:underline"
+                                  >
+                                    Revoke
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            className="mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                          >
+                            Generate New Token
+                          </button>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                          <h3 className="mb-2 text-sm font-medium text-foreground">
+                            API Documentation
+                          </h3>
+                          <p className="mb-3 text-sm text-muted-foreground">
+                            Learn how to integrate with our API
+                          </p>
+                          <a
+                            href="/docs/api"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                          >
+                            View API Documentation
+                            <ExternalLinkIcon className="h-4 w-4" />
+                          </a>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </section>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Connect Integration Modal */}
-      {showConnectModal && (
+      {/* Connect Account Modal */}
+      {showConnectAccountModal && (
         <IntegrationConnectModal
-          isOpen={showConnectModal}
-          onClose={() => setShowConnectModal(false)}
+          isOpen={showConnectAccountModal}
+          onClose={() => setShowConnectAccountModal(false)}
           onConnect={handleConnectIntegration}
           isLoading={oauthLoading}
+          providers={OAUTH_PROVIDERS}
+          title="Connect Account"
+        />
+      )}
+
+      {/* Install App Modal */}
+      {showInstallAppModal && (
+        <IntegrationConnectModal
+          isOpen={showInstallAppModal}
+          onClose={() => setShowInstallAppModal(false)}
+          onConnect={handleConnectIntegration}
+          isLoading={oauthLoading}
+          providers={APP_PROVIDERS}
+          title="Browse Apps"
         />
       )}
 
@@ -205,71 +432,69 @@ export default function IntegrationsPage() {
 }
 
 // =============================================================================
-// Integrations Tab
+// Card Components
 // =============================================================================
 
-interface IntegrationsTabProps {
-  integrations: IntegrationConfig[];
-  onConnect: () => void;
-  onSelect: (integration: IntegrationConfig) => void;
-}
-
-function IntegrationsTab({ integrations, onConnect, onSelect }: IntegrationsTabProps) {
-  return (
-    <div className="max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">Connected Integrations</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your connected apps and services
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onConnect}
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Add Integration
-        </button>
-      </div>
-
-      {integrations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <IntegrationIcon className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 font-medium text-foreground">No integrations connected</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Connect your first integration to get started
-          </p>
-          <button
-            type="button"
-            onClick={onConnect}
-            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Connect Integration
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {integrations.map((integration) => (
-            <IntegrationCard
-              key={integration.id}
-              integration={integration}
-              onClick={() => onSelect(integration)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface IntegrationCardProps {
+interface AccountCardProps {
   integration: IntegrationConfig;
   onClick: () => void;
 }
 
-function IntegrationCard({ integration, onClick }: IntegrationCardProps) {
+function AccountCard({ integration, onClick }: AccountCardProps) {
+  const providerInfo = INTEGRATION_PROVIDERS[integration.provider];
+  const statusConfig = INTEGRATION_STATUS_CONFIG[integration.status];
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50"
+    >
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-bold">
+        {providerInfo?.icon || integration.provider.substring(0, 2).toUpperCase()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-foreground">
+            {providerInfo?.name || integration.provider}
+          </h3>
+          <span
+            className={cn(
+              'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+              statusConfig.bgColor,
+              statusConfig.color,
+            )}
+          >
+            {statusConfig.label}
+          </span>
+        </div>
+        <p className="mt-0.5 text-sm text-muted-foreground">{integration.name}</p>
+        {integration.lastSyncAt && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Last synced {new Date(integration.lastSyncAt).toLocaleDateString()}
+          </p>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className="rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent"
+      >
+        Manage
+      </button>
+    </button>
+  );
+}
+
+interface AppCardProps {
+  integration: IntegrationConfig;
+  onClick: () => void;
+}
+
+function AppCard({ integration, onClick }: AppCardProps) {
   const providerInfo = INTEGRATION_PROVIDERS[integration.provider];
   const statusConfig = INTEGRATION_STATUS_CONFIG[integration.status];
 
@@ -304,77 +529,17 @@ function IntegrationCard({ integration, onClick }: IntegrationCardProps) {
           </p>
         )}
       </div>
-      <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+      <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
     </button>
   );
 }
 
-// =============================================================================
-// Webhooks Tab
-// =============================================================================
-
-interface WebhooksTabProps {
-  webhooks: WebhookConfig[];
-  onCreate: () => void;
-  onSelect: (webhook: WebhookConfig) => void;
-}
-
-function WebhooksTab({ webhooks, onCreate, onSelect }: WebhooksTabProps) {
-  return (
-    <div className="max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">Webhooks</h2>
-          <p className="text-sm text-muted-foreground">
-            Send real-time notifications to external services
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Create Webhook
-        </button>
-      </div>
-
-      {webhooks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <WebhookIcon className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 font-medium text-foreground">No webhooks configured</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Create your first webhook to send events to external services
-          </p>
-          <button
-            type="button"
-            onClick={onCreate}
-            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Create Webhook
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {webhooks.map((webhook) => (
-            <WebhookCard
-              key={webhook.id}
-              webhook={webhook}
-              onClick={() => onSelect(webhook)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface WebhookCardProps {
+interface WebhookListItemProps {
   webhook: WebhookConfig;
   onClick: () => void;
 }
 
-function WebhookCard({ webhook, onClick }: WebhookCardProps) {
+function WebhookListItem({ webhook, onClick }: WebhookListItemProps) {
   const statusColor =
     webhook.status === 'active'
       ? 'bg-green-500'
@@ -388,14 +553,14 @@ function WebhookCard({ webhook, onClick }: WebhookCardProps) {
       onClick={onClick}
       className="flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50"
     >
-      <div className={cn('h-3 w-3 shrink-0 rounded-full', statusColor)} />
+      <div className={cn('h-2.5 w-2.5 shrink-0 rounded-full', statusColor)} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className="truncate font-medium text-foreground">{webhook.name}</h3>
         </div>
         <p className="mt-1 truncate text-sm text-muted-foreground">{webhook.url}</p>
         <div className="mt-2 flex flex-wrap gap-1">
-          {webhook.events.slice(0, 3).map((event) => (
+          {webhook.events.slice(0, 2).map((event) => (
             <span
               key={event}
               className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
@@ -403,24 +568,21 @@ function WebhookCard({ webhook, onClick }: WebhookCardProps) {
               {event}
             </span>
           ))}
-          {webhook.events.length > 3 && (
+          {webhook.events.length > 2 && (
             <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-              +{webhook.events.length - 3} more
+              +{webhook.events.length - 2} more
             </span>
           )}
         </div>
       </div>
       <div className="text-right">
-        {webhook.failureCount > 0 && (
+        {webhook.failureCount > 0 ? (
           <p className="text-sm text-destructive">{webhook.failureCount} failures</p>
-        )}
-        {webhook.lastDeliveryAt && (
-          <p className="text-xs text-muted-foreground">
-            Last delivery: {new Date(webhook.lastDeliveryAt).toLocaleDateString()}
-          </p>
+        ) : (
+          <p className="text-sm text-green-600">{webhook.successCount} delivered</p>
         )}
       </div>
-      <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+      <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
     </button>
   );
 }
@@ -434,6 +596,8 @@ interface IntegrationConnectModalProps {
   onClose: () => void;
   onConnect: (provider: IntegrationProvider) => void;
   isLoading: boolean;
+  providers: IntegrationProvider[];
+  title: string;
 }
 
 function IntegrationConnectModal({
@@ -441,19 +605,21 @@ function IntegrationConnectModal({
   onClose,
   onConnect,
   isLoading,
+  providers,
+  title,
 }: IntegrationConnectModalProps) {
-  const providers = Object.entries(INTEGRATION_PROVIDERS) as [IntegrationProvider, { name: string; description: string; icon: string }][];
-
   if (!isOpen) {
-return null;
-}
+    return null;
+  }
+
+  const providerEntries = providers.map((id) => [id, INTEGRATION_PROVIDERS[id]] as const);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative z-10 w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Connect Integration</h2>
+          <h2 className="text-lg font-semibold">{title}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -464,7 +630,7 @@ return null;
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 max-h-96 overflow-y-auto">
-          {providers.map(([id, info]) => (
+          {providerEntries.map(([id, info]) => (
             <button
               key={id}
               type="button"
@@ -977,6 +1143,77 @@ function EyeOffIcon({ className }: { className?: string }) {
       <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
       <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
       <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
+  );
+}
+
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function GridIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </svg>
+  );
+}
+
+function CodeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   );
 }

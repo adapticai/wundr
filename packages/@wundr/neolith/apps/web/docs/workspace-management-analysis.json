@@ -1,0 +1,1087 @@
+{
+  "analysisDate": "2025-11-30",
+  "repository": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web",
+  "summary": {
+    "workspaceArchitecture": "Three-tier hierarchy: Organization → Workspace → Channels",
+    "authModel": "Organization membership grants workspace access, workspace membership for admin",
+    "slugSupport": "Full slug support for workspace URLs (backward compatible with IDs)",
+    "memberManagement": "RBAC with OWNER, ADMIN, MEMBER, GUEST roles",
+    "orchestratorIntegration": "Orchestrators belong to organizations, can be assigned to workspaces"
+  },
+  "workspaceComponents": {
+    "uiComponents": [
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/workspace/workspace-switcher.tsx",
+        "name": "WorkspaceSwitcher",
+        "description": "Dropdown component for switching between workspaces",
+        "features": [
+          "Lists all user workspaces from organization memberships",
+          "Keyboard shortcuts (Cmd+1-9) for quick switching",
+          "Displays workspace avatar or Building2 icon fallback",
+          "Persists current workspace preference via API",
+          "Supports both slug and ID for workspace identification",
+          "Error and loading states with skeleton UI"
+        ],
+        "dependencies": {
+          "hook": "useUserWorkspaces",
+          "apiEndpoint": "/api/users/me/current-workspace"
+        }
+      },
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/workspace/workspace-card.tsx",
+        "name": "WorkspaceCard",
+        "description": "Display card for workspace in listing pages",
+        "features": [
+          "Shows workspace name, description, icon",
+          "Displays agent count and workflow count",
+          "Hover effects with border and shadow",
+          "Skeleton loading state"
+        ]
+      },
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/workspace/workspace-invite-modal.tsx",
+        "name": "WorkspaceInviteModal",
+        "description": "Modal for inviting members to workspace",
+        "features": [
+          "Email-based invitations",
+          "Role assignment (OWNER, ADMIN, MEMBER, GUEST)",
+          "Custom message support",
+          "Batch invite capability"
+        ]
+      },
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/workspace/create-workspace-card.tsx",
+        "name": "CreateWorkspaceCard",
+        "description": "Card component for initiating workspace creation",
+        "features": [
+          "Click to navigate to /workspaces/new",
+          "Plus icon with hover state"
+        ]
+      },
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/workspace/add-account-dialog.tsx",
+        "name": "AddAccountDialog",
+        "description": "Dialog for adding accounts to workspace",
+        "features": [
+          "Multi-account support",
+          "OAuth provider integration"
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/workspaces/page.tsx",
+        "route": "/workspaces",
+        "description": "List all workspaces user has access to",
+        "features": [
+          "Grid layout of workspace cards",
+          "Create new workspace button",
+          "Filterable and searchable"
+        ]
+      },
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx",
+        "route": "/workspaces/new",
+        "description": "Conversational workspace creation wizard",
+        "features": [
+          "4-phase wizard: conversation → review → generating → preview",
+          "AI-powered conversation to extract workspace requirements",
+          "Form-based review and editing of extracted data",
+          "Integrates with org-genesis for organization structure generation",
+          "Creates workspace, default #general channel, and adds creator as admin",
+          "Supports hedge fund / trading workspace configuration"
+        ],
+        "phases": [
+          {
+            "name": "conversation",
+            "description": "Natural language conversation to gather workspace details",
+            "extracts": [
+              "workspaceName",
+              "workspaceSlug",
+              "organizationName",
+              "organizationType",
+              "description",
+              "strategy",
+              "targetAssets",
+              "riskTolerance",
+              "teamSize"
+            ]
+          },
+          {
+            "name": "review",
+            "description": "Form-based review with editable fields"
+          },
+          {
+            "name": "generating",
+            "description": "Calls org-genesis to generate full organization hierarchy"
+          },
+          {
+            "name": "preview",
+            "description": "Preview generated org structure with accept/regenerate options"
+          }
+        ]
+      }
+    ],
+    "hooks": [
+      {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-workspaces.ts",
+        "name": "useUserWorkspaces",
+        "description": "Fetches workspaces for authenticated user",
+        "returns": {
+          "workspaces": "Array of workspace objects",
+          "isLoading": "Loading state",
+          "error": "Error object if fetch fails",
+          "refetch": "Function to manually refetch"
+        },
+        "apiEndpoint": "/api/user/workspaces"
+      }
+    ]
+  },
+  "workspaceApi": {
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/workspaces",
+        "description": "List workspaces by organization",
+        "authentication": "Required",
+        "authorization": "Organization membership",
+        "queryParameters": {
+          "organizationId": "Filter by organization ID (optional)",
+          "search": "Search workspace name or slug",
+          "page": "Page number (default 1)",
+          "limit": "Items per page (default 20)",
+          "sortBy": "Sort field (name, createdAt, updatedAt)",
+          "sortOrder": "Sort direction (asc, desc)"
+        },
+        "response": {
+          "data": "Array of workspaces with organization details and counts",
+          "pagination": "Pagination metadata"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces",
+        "description": "Create new workspace",
+        "authentication": "Required",
+        "authorization": "Organization ADMIN or OWNER role",
+        "requestBody": {
+          "name": "Workspace name (required)",
+          "slug": "URL-friendly slug (required, unique within organization)",
+          "organizationId": "Parent organization ID (required)",
+          "description": "Workspace description (optional)",
+          "iconUrl": "Avatar/icon URL (optional)",
+          "settings": "JSON settings object (optional)"
+        },
+        "behavior": [
+          "Creates workspace with creator as ADMIN",
+          "Adds creator to workspace members",
+          "Creates default #general channel (PUBLIC)",
+          "Adds creator to #general as ADMIN",
+          "All within database transaction"
+        ],
+        "response": {
+          "data": "Created workspace with organization and counts",
+          "message": "Success message"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]",
+        "description": "Get workspace details",
+        "authentication": "Required",
+        "authorization": "Organization membership",
+        "slugSupport": "Accepts both workspace slug and ID",
+        "response": {
+          "data": "Workspace with organization details and counts",
+          "membership": "User's workspace membership info (role, joinedAt)"
+        }
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/workspaces/[workspaceSlug]",
+        "description": "Update workspace",
+        "authentication": "Required",
+        "authorization": "Organization ADMIN/OWNER OR Workspace ADMIN",
+        "requestBody": {
+          "name": "Updated name (optional)",
+          "description": "Updated description (optional)",
+          "iconUrl": "Updated icon URL (optional)",
+          "settings": "Updated settings JSON (optional)"
+        },
+        "response": {
+          "data": "Updated workspace",
+          "message": "Success message"
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/workspaces/[workspaceSlug]",
+        "description": "Delete workspace",
+        "authentication": "Required",
+        "authorization": "Organization ADMIN or OWNER only",
+        "behavior": "Cascades deletion to channels, members, files, tasks, workflows",
+        "response": {
+          "message": "Success message"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/user/workspaces",
+        "description": "Get authenticated user's workspaces",
+        "authentication": "Required",
+        "behavior": "Fetches workspaces through organization memberships",
+        "response": "Array of workspaces user can access"
+      }
+    ],
+    "adminEndpoints": [
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]/admin/members",
+        "description": "List workspace members with admin filters",
+        "authorization": "Workspace ADMIN or OWNER",
+        "queryParameters": {
+          "status": "ACTIVE, SUSPENDED, PENDING",
+          "roleId": "Filter by role ID",
+          "search": "Search name, email, displayName",
+          "limit": "Items per page (default 20)",
+          "offset": "Pagination offset"
+        },
+        "response": {
+          "members": "Array of member details with user info",
+          "total": "Total count",
+          "limit": "Items per page",
+          "offset": "Current offset"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]/admin/invites",
+        "description": "List workspace invites",
+        "authorization": "Workspace ADMIN or OWNER",
+        "queryParameters": {
+          "status": "PENDING, ACCEPTED, EXPIRED, REVOKED"
+        },
+        "response": {
+          "invites": "Array of invites from workspace.settings.invites"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces/[workspaceSlug]/admin/invites",
+        "description": "Create workspace invites (batch)",
+        "authorization": "Workspace ADMIN or OWNER",
+        "requestBody": {
+          "invites": [
+            {
+              "email": "User email",
+              "role": "OWNER | ADMIN | MEMBER | GUEST",
+              "roleId": "Custom role ID (optional)",
+              "message": "Personal message (optional)",
+              "expiresInDays": "Expiration days (default 7)"
+            }
+          ]
+        },
+        "behavior": [
+          "Validates emails not already members",
+          "Generates secure invite tokens",
+          "Stores invites in workspace.settings.invites (JSON)",
+          "Sends invitation emails via sendInvitationEmail",
+          "Logs admin action"
+        ],
+        "response": {
+          "invites": "Created invites with tokens",
+          "emailResults": "Email delivery status per invite"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]/admin/settings",
+        "description": "Get workspace settings",
+        "authorization": "Workspace member",
+        "response": {
+          "settings": {
+            "general": "Display name, timezone, locale, guest access",
+            "security": "Session timeout, MFA, SSO",
+            "messaging": "Editing, deleting, threads, reactions"
+          }
+        }
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/workspaces/[workspaceSlug]/admin/settings",
+        "description": "Update workspace settings",
+        "authorization": "Workspace ADMIN",
+        "requestBody": "Settings fields to update",
+        "behavior": [
+          "Updates workspace table direct fields (name, description)",
+          "Updates workspace.settings JSON for configuration fields"
+        ]
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/workspaces/[workspaceSlug]/admin/members/[userId]",
+        "description": "Update member role or custom fields"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/workspaces/[workspaceSlug]/admin/members/[userId]",
+        "description": "Remove member from workspace"
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces/[workspaceSlug]/admin/members/[userId]/suspend",
+        "description": "Suspend workspace member"
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces/[workspaceSlug]/admin/members/[userId]/unsuspend",
+        "description": "Unsuspend workspace member"
+      }
+    ]
+  },
+  "memberManagement": {
+    "hierarchy": [
+      {
+        "level": "Organization",
+        "model": "organizationMember",
+        "roles": ["OWNER", "ADMIN", "MEMBER"],
+        "permissions": {
+          "OWNER": "Full organization control, create/delete workspaces",
+          "ADMIN": "Create/manage workspaces, invite members",
+          "MEMBER": "Access workspaces, limited admin"
+        },
+        "accessControl": "Organization membership grants workspace visibility"
+      },
+      {
+        "level": "Workspace",
+        "model": "workspaceMember",
+        "roles": ["OWNER", "ADMIN", "MEMBER", "GUEST"],
+        "permissions": {
+          "OWNER": "Full workspace control",
+          "ADMIN": "Manage channels, members, settings",
+          "MEMBER": "Standard access to channels and features",
+          "GUEST": "Limited access, restricted features"
+        },
+        "accessControl": "Workspace membership required for admin operations"
+      },
+      {
+        "level": "Channel",
+        "model": "channelMember",
+        "roles": ["OWNER", "ADMIN", "MEMBER"],
+        "permissions": {
+          "OWNER": "Full channel control",
+          "ADMIN": "Manage members, settings",
+          "MEMBER": "Read/write messages"
+        }
+      }
+    ],
+    "accessFlow": [
+      "User must be in organization (organizationMember) to see workspaces",
+      "Organization membership checked first for all workspace access",
+      "Workspace membership (workspaceMember) required for admin operations",
+      "Channel membership (channelMember) controls message access"
+    ],
+    "invitationFlow": [
+      "Admin creates invite via /api/workspaces/[slug]/admin/invites",
+      "Invite stored in workspace.settings.invites (JSON array)",
+      "Email sent with unique token and expiration (default 7 days)",
+      "User clicks invitation link with token",
+      "Token validated and user added to workspace",
+      "Invite status updated to ACCEPTED"
+    ],
+    "suspensionFlow": [
+      "Admin suspends member via /admin/members/[userId]/suspend",
+      "User.status set to SUSPENDED",
+      "Member retains workspace membership but access blocked",
+      "Can be unsuspended via /unsuspend endpoint"
+    ]
+  },
+  "channelManagement": {
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]/channels",
+        "description": "List workspace channels",
+        "queryParameters": {
+          "type": "PUBLIC | PRIVATE | DM | HUDDLE",
+          "limit": "Items per page (default 50, max 100)",
+          "offset": "Pagination offset",
+          "includeArchived": "Include archived channels (default false)"
+        },
+        "accessControl": [
+          "PUBLIC channels: visible to all workspace members",
+          "PRIVATE/DM/HUDDLE: only visible to channel members",
+          "Filtered by channelMember.leftAt = null (active memberships)"
+        ],
+        "response": {
+          "data": [
+            {
+              "id": "Channel ID",
+              "name": "Channel name",
+              "slug": "URL slug",
+              "type": "Channel type",
+              "description": "Channel description",
+              "topic": "Channel topic",
+              "isArchived": "Archive status",
+              "creator": "Creator user object",
+              "memberCount": "Active member count",
+              "messageCount": "Total message count",
+              "unreadCount": "Unread messages for user",
+              "isStarred": "User starred status",
+              "lastMessage": "Last message preview",
+              "userMembership": {
+                "role": "User's role in channel",
+                "joinedAt": "Join timestamp",
+                "lastReadAt": "Last read timestamp",
+                "hasUnread": "Unread indicator"
+              }
+            }
+          ],
+          "pagination": "Pagination metadata"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces/[workspaceSlug]/channels",
+        "description": "Create new channel",
+        "authorization": "Workspace member",
+        "requestBody": {
+          "name": "Channel name (required, max 80 chars)",
+          "description": "Channel description (optional, max 500 chars)",
+          "type": "PUBLIC | PRIVATE | DM | HUDDLE (default PUBLIC)",
+          "topic": "Channel topic (optional, max 250 chars)",
+          "memberIds": "Array of user IDs (required for PRIVATE/DM)"
+        },
+        "channelTypes": {
+          "PUBLIC": {
+            "visibility": "All workspace members",
+            "creatorRole": "ADMIN",
+            "memberIds": "Optional"
+          },
+          "PRIVATE": {
+            "visibility": "Only specified members",
+            "creatorRole": "ADMIN",
+            "memberIds": "Required (minimum 1)"
+          },
+          "DM": {
+            "visibility": "Two users only",
+            "creatorRole": "MEMBER",
+            "memberIds": "Required (exactly 1 other user)",
+            "duplicateCheck": "Prevents duplicate DM channels"
+          },
+          "HUDDLE": {
+            "visibility": "Temporary group channel",
+            "creatorRole": "ADMIN",
+            "memberIds": "Optional"
+          }
+        },
+        "behavior": [
+          "Generates URL slug from channel name",
+          "Validates slug uniqueness within workspace",
+          "Creates channel and adds creator as member (transaction)",
+          "Adds additional members if specified",
+          "Returns channel with member/message counts"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]/channels/[channelId]",
+        "description": "Get channel details"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/workspaces/[workspaceSlug]/channels/[channelId]",
+        "description": "Update channel (name, description, topic)"
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces/[workspaceSlug]/channels/[channelId]/archive",
+        "description": "Archive/unarchive channel"
+      },
+      {
+        "method": "GET",
+        "path": "/api/workspaces/[workspaceSlug]/channels/[channelId]/members",
+        "description": "List channel members"
+      },
+      {
+        "method": "POST",
+        "path": "/api/workspaces/[workspaceSlug]/channels/[channelId]/invites",
+        "description": "Invite users to channel"
+      }
+    ],
+    "features": [
+      "Slug-based URLs for channels",
+      "Unread message tracking per user (lastReadAt)",
+      "Starred channels for favorites",
+      "Archive functionality (soft delete)",
+      "Notification preferences per channel",
+      "Thread support within channels",
+      "Reaction support for messages"
+    ]
+  },
+  "workspaceSettings": {
+    "storage": "JSON field in workspace.settings column",
+    "categories": {
+      "general": {
+        "displayName": "Workspace display name",
+        "timezone": "Default timezone (default: UTC)",
+        "locale": "Default locale (default: en-US)",
+        "allowGuestAccess": "Enable guest users",
+        "requireApprovalToJoin": "Require admin approval for new members"
+      },
+      "security": {
+        "sessionTimeout": "Session timeout in minutes (default: 480)",
+        "mfaRequired": "Require MFA for all users",
+        "ssoEnabled": "Enable SSO authentication",
+        "allowedDomains": "Email domain whitelist"
+      },
+      "messaging": {
+        "allowEditing": "Allow message editing",
+        "editWindowMinutes": "Edit time window (default: 15)",
+        "allowDeleting": "Allow message deletion",
+        "maxMessageLength": "Max message chars (default: 10000)",
+        "enableThreads": "Enable threaded conversations",
+        "enableReactions": "Enable message reactions"
+      },
+      "retention": {
+        "messageRetention": "Message retention policy",
+        "fileRetention": "File retention policy",
+        "dataRetentionDays": "Data retention period"
+      },
+      "integrations": {
+        "apiRateLimit": "API rate limit settings",
+        "webhookUrls": "Webhook endpoints",
+        "exportEnabled": "Enable data export"
+      },
+      "notifications": {
+        "notificationDefaults": {
+          "email": "Email notifications enabled",
+          "push": "Push notifications enabled",
+          "desktop": "Desktop notifications enabled"
+        },
+        "notifyOnNewMember": "Notify on new member joins",
+        "notifyOnSecurityEvent": "Notify on security events",
+        "weeklyDigest": "Send weekly digest"
+      }
+    },
+    "directFields": [
+      "name (string)",
+      "slug (string, unique within organization)",
+      "description (string, nullable)",
+      "avatarUrl (string, nullable)",
+      "visibility (enum: PUBLIC, PRIVATE, INTERNAL)"
+    ]
+  },
+  "orchestratorWorkspaces": {
+    "currentImplementation": {
+      "model": "orchestrator",
+      "fields": {
+        "organizationId": "Required - orchestrator belongs to organization",
+        "workspaceId": "Optional - nullable field for workspace assignment",
+        "userId": "Required - associated user account (isOrchestrator: true)"
+      },
+      "config": {
+        "model": "orchestratorConfig",
+        "field": "assignedWorkspaces",
+        "type": "String[] - array of workspace IDs",
+        "description": "List of workspace IDs orchestrator can access"
+      },
+      "creation": {
+        "endpoint": "POST /api/workspaces/[workspaceSlug]/orchestrators",
+        "authorization": "Organization ADMIN or OWNER",
+        "behavior": [
+          "Creates orchestrator user (isOrchestrator: true)",
+          "Associates with workspace's organization",
+          "Sets workspaceId field to current workspace",
+          "Generates email: orchestrator-{timestamp}@neolith.local if not provided",
+          "Returns orchestrator with user profile and statistics"
+        ]
+      },
+      "listing": {
+        "endpoint": "GET /api/workspaces/[workspaceSlug]/orchestrators",
+        "filtering": "Filters by workspace's organizationId (not workspaceId)",
+        "result": "Returns ALL orchestrators in organization, not workspace-specific"
+      }
+    },
+    "gaps": [
+      {
+        "issue": "Workspace-level access control not enforced",
+        "current": "GET /orchestrators filters by organizationId only",
+        "expected": "Should filter by workspaceId or assignedWorkspaces config",
+        "impact": "All org orchestrators visible in every workspace"
+      },
+      {
+        "issue": "assignedWorkspaces config not utilized",
+        "current": "orchestratorConfig.assignedWorkspaces exists but unused",
+        "expected": "Should restrict orchestrator visibility per workspace",
+        "impact": "Cannot have workspace-specific orchestrators"
+      },
+      {
+        "issue": "workspaceId field inconsistently used",
+        "current": "Set during creation but not used for filtering",
+        "expected": "Should be primary workspace assignment field",
+        "impact": "No clear workspace ownership"
+      },
+      {
+        "issue": "Orchestrator workspace membership unclear",
+        "current": "No orchestratorMember or workspaceMember for orchestrators",
+        "expected": "Clear membership model (like human users)",
+        "impact": "Cannot manage orchestrator access per workspace"
+      },
+      {
+        "issue": "No workspace switching for orchestrators",
+        "current": "Orchestrators assigned to single workspace on creation",
+        "expected": "Multi-workspace assignment via assignedWorkspaces",
+        "impact": "Orchestrators limited to one workspace"
+      }
+    ],
+    "recommendedArchitecture": {
+      "option1_simplest": {
+        "name": "Single Workspace Assignment",
+        "changes": [
+          "Make orchestrator.workspaceId required (not nullable)",
+          "Filter GET /orchestrators by workspaceId",
+          "Add workspace validation on orchestrator creation",
+          "Show only workspace's orchestrators in UI"
+        ],
+        "pros": [
+          "Minimal code changes",
+          "Clear ownership model",
+          "Simple to understand"
+        ],
+        "cons": [
+          "Orchestrators limited to one workspace",
+          "Cannot share orchestrators across workspaces",
+          "Duplicate orchestrators needed for multi-workspace"
+        ]
+      },
+      "option2_multiWorkspace": {
+        "name": "Multi-Workspace Assignment via Config",
+        "changes": [
+          "Keep orchestrator.workspaceId as primary workspace",
+          "Utilize orchestratorConfig.assignedWorkspaces for additional access",
+          "Filter GET /orchestrators by: workspaceId OR workspace in assignedWorkspaces",
+          "Add endpoint: PATCH /orchestrators/[id]/workspaces for managing assignments",
+          "Update UI to show assigned workspaces"
+        ],
+        "pros": [
+          "Orchestrators can work across workspaces",
+          "Efficient resource utilization",
+          "Flexible assignment"
+        ],
+        "cons": [
+          "More complex access control logic",
+          "Potential permission conflicts",
+          "Harder to audit"
+        ]
+      },
+      "option3_membership": {
+        "name": "Workspace Membership Model",
+        "changes": [
+          "Create orchestratorMember table or use workspaceMember",
+          "Add orchestrators as workspaceMember with role: ORCHESTRATOR",
+          "Filter by workspaceMember.workspaceId and user.isOrchestrator",
+          "Reuse existing member management endpoints",
+          "Add orchestrator-specific permissions"
+        ],
+        "pros": [
+          "Consistent with human user model",
+          "Reuses member management infrastructure",
+          "Clear permission model",
+          "Easy workspace switching"
+        ],
+        "cons": [
+          "Larger schema change",
+          "More migration complexity",
+          "Need to distinguish orchestrators from humans in UI"
+        ]
+      }
+    },
+    "recommendedImplementation": "Option 2 (Multi-Workspace Assignment)",
+    "rationale": [
+      "Balances flexibility with implementation complexity",
+      "Leverages existing assignedWorkspaces field",
+      "Allows orchestrator sharing without major schema changes",
+      "Maintains backward compatibility with workspaceId"
+    ]
+  },
+  "gaps": [
+    {
+      "category": "Workspace Discovery",
+      "issue": "No public workspace discovery",
+      "recommendation": "Add GET /api/workspaces/discover for PUBLIC workspaces"
+    },
+    {
+      "category": "Workspace Templates",
+      "issue": "No template system for workspace creation",
+      "recommendation": "Pre-built templates (engineering, sales, hedge fund) with channels and settings"
+    },
+    {
+      "category": "Workspace Analytics",
+      "issue": "Limited workspace-level analytics",
+      "recommendation": "Add /api/workspaces/[slug]/analytics for usage, member activity, channel health"
+    },
+    {
+      "category": "Workspace Export",
+      "issue": "No bulk export functionality",
+      "recommendation": "Add /api/workspaces/[slug]/export for complete workspace data export"
+    },
+    {
+      "category": "Workspace Duplication",
+      "issue": "Cannot clone workspace structure",
+      "recommendation": "Add POST /api/workspaces/[slug]/duplicate to clone channels and settings"
+    },
+    {
+      "category": "Workspace Archives",
+      "issue": "Deletion is permanent, no soft archive",
+      "recommendation": "Add isArchived field and /archive endpoint for workspace soft deletion"
+    },
+    {
+      "category": "Cross-Workspace Search",
+      "issue": "Search limited to single workspace",
+      "recommendation": "Add GET /api/search/global for cross-workspace content search"
+    },
+    {
+      "category": "Workspace Billing",
+      "issue": "No workspace-level billing",
+      "recommendation": "Add billing endpoints for workspace subscription management"
+    },
+    {
+      "category": "Workspace API Keys",
+      "issue": "No programmatic workspace access",
+      "recommendation": "Add workspace API key generation for external integrations"
+    },
+    {
+      "category": "Workspace Activity Feed",
+      "issue": "No unified activity stream",
+      "recommendation": "Add /api/workspaces/[slug]/activity for recent events across channels"
+    },
+    {
+      "category": "Orchestrator Workspace Management",
+      "issue": "Orchestrators not properly scoped to workspaces",
+      "recommendation": "Implement Option 2 (Multi-Workspace Assignment) detailed above"
+    },
+    {
+      "category": "Workspace Roles",
+      "issue": "No custom role creation",
+      "recommendation": "Add custom role system with granular permissions (like admin/roles endpoints)"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "P0_Critical",
+      "title": "Fix Orchestrator Workspace Scoping",
+      "description": "Implement workspace filtering for orchestrators using assignedWorkspaces",
+      "tasks": [
+        "Update GET /api/workspaces/[slug]/orchestrators to filter by workspaceId OR assignedWorkspaces",
+        "Add PATCH /api/workspaces/[slug]/orchestrators/[id]/assign-workspace endpoint",
+        "Add PATCH /api/workspaces/[slug]/orchestrators/[id]/unassign-workspace endpoint",
+        "Update OrchestratorCard component to show assigned workspaces",
+        "Add workspace assignment UI in orchestrator settings"
+      ],
+      "files": [
+        "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceSlug]/orchestrators/route.ts",
+        "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/page.tsx"
+      ]
+    },
+    {
+      "priority": "P1_High",
+      "title": "Add Workspace Templates",
+      "description": "Pre-built templates for common workspace types",
+      "tasks": [
+        "Create template definitions (engineering, sales, hedge-fund, general)",
+        "Add POST /api/workspaces/from-template endpoint",
+        "Update workspace creation UI to show template options",
+        "Include default channels, settings, and orchestrators per template"
+      ]
+    },
+    {
+      "priority": "P1_High",
+      "title": "Workspace Activity Feed",
+      "description": "Unified activity stream for workspace events",
+      "tasks": [
+        "Create workspaceActivity model or use existing audit log",
+        "Add GET /api/workspaces/[slug]/activity endpoint",
+        "Track events: member joins, channel creation, orchestrator assignments, settings changes",
+        "Add ActivityFeed component for workspace dashboard"
+      ]
+    },
+    {
+      "priority": "P2_Medium",
+      "title": "Workspace Analytics Dashboard",
+      "description": "Comprehensive workspace health and usage metrics",
+      "tasks": [
+        "Add GET /api/workspaces/[slug]/analytics/overview",
+        "Track: active members, message volume, channel activity, orchestrator utilization",
+        "Add time-series data for trend analysis",
+        "Create WorkspaceAnalytics component"
+      ]
+    },
+    {
+      "priority": "P2_Medium",
+      "title": "Workspace Custom Roles",
+      "description": "Granular permission system beyond default roles",
+      "tasks": [
+        "Create workspaceRole model with permission sets",
+        "Add CRUD endpoints for custom roles",
+        "Update workspaceMember to support custom roleId",
+        "Add role assignment UI in member management"
+      ]
+    },
+    {
+      "priority": "P3_Low",
+      "title": "Workspace Export/Import",
+      "description": "Backup and migration capabilities",
+      "tasks": [
+        "Add POST /api/workspaces/[slug]/export (creates async job)",
+        "Add POST /api/workspaces/import (from exported JSON)",
+        "Include channels, members, settings, orchestrator configs",
+        "Add export/import UI in workspace settings"
+      ]
+    }
+  ],
+  "databaseSchema": {
+    "workspace": {
+      "tableName": "workspaces",
+      "fields": {
+        "id": "String @id @default(cuid())",
+        "name": "String - workspace display name",
+        "slug": "String - URL-friendly identifier",
+        "description": "String? - optional description",
+        "avatarUrl": "String? - workspace icon/logo",
+        "visibility": "WorkspaceVisibility - PUBLIC | PRIVATE | INTERNAL",
+        "settings": "Json @default({}) - workspace configuration",
+        "organizationId": "String - parent organization",
+        "createdAt": "DateTime @default(now())",
+        "updatedAt": "DateTime @updatedAt"
+      },
+      "relations": [
+        "organization (belongs to)",
+        "workspaceMembers (has many)",
+        "channels (has many)",
+        "backlogs (has many)",
+        "tasks (has many)",
+        "workflows (has many)",
+        "files (has many)",
+        "daemonCredentials (has many)",
+        "integrations (has many)",
+        "deployments (has many)",
+        "agents (has many)",
+        "webhooks (has many)",
+        "savedItems (has many)"
+      ],
+      "indexes": [
+        "@@unique([organizationId, slug])",
+        "@@index([organizationId])",
+        "@@index([slug])"
+      ]
+    },
+    "workspaceMember": {
+      "tableName": "workspace_members",
+      "fields": {
+        "id": "String @id @default(cuid())",
+        "role": "WorkspaceRole @default(MEMBER) - OWNER | ADMIN | MEMBER | GUEST",
+        "workspaceId": "String",
+        "userId": "String",
+        "joinedAt": "DateTime @default(now())"
+      },
+      "relations": [
+        "workspace (belongs to)",
+        "user (belongs to)"
+      ],
+      "indexes": [
+        "@@unique([workspaceId, userId])",
+        "@@index([userId])",
+        "@@index([workspaceId])"
+      ]
+    },
+    "organization": {
+      "tableName": "organizations",
+      "fields": {
+        "id": "String @id @default(cuid())",
+        "name": "String",
+        "slug": "String @unique",
+        "avatarUrl": "String?",
+        "description": "String?",
+        "settings": "Json @default({})",
+        "createdAt": "DateTime @default(now())",
+        "updatedAt": "DateTime @updatedAt"
+      },
+      "relations": [
+        "workspaces (has many)",
+        "orchestrators (has many)",
+        "organizationMembers (has many)",
+        "disciplines (has many)"
+      ]
+    },
+    "organizationMember": {
+      "tableName": "organization_members",
+      "fields": {
+        "id": "String @id @default(cuid())",
+        "role": "OrganizationRole @default(MEMBER) - OWNER | ADMIN | MEMBER",
+        "organizationId": "String",
+        "userId": "String",
+        "joinedAt": "DateTime @default(now())"
+      }
+    },
+    "orchestrator": {
+      "tableName": "vps",
+      "fields": {
+        "id": "String @id @default(cuid())",
+        "discipline": "String - area of expertise",
+        "role": "String - specific role",
+        "capabilities": "Json @default([]) - skills array",
+        "daemonEndpoint": "String? - daemon process endpoint",
+        "status": "OrchestratorStatus @default(OFFLINE) - ONLINE | OFFLINE | BUSY | AWAY",
+        "userId": "String @unique - associated user account",
+        "organizationId": "String - required",
+        "workspaceId": "String? - optional workspace assignment",
+        "disciplineId": "String?",
+        "createdAt": "DateTime @default(now())",
+        "updatedAt": "DateTime @updatedAt"
+      },
+      "relations": [
+        "organization (belongs to)",
+        "user (belongs to, one-to-one)",
+        "disciplineRef (belongs to, optional)",
+        "config (has one orchestratorConfig)",
+        "tasks (has many)",
+        "backlogs (has many)",
+        "daemonCredentials (has many)",
+        "orchestratorMemories (has many)"
+      ]
+    },
+    "orchestratorConfig": {
+      "tableName": "vp_configs",
+      "fields": {
+        "id": "String @id @default(cuid())",
+        "orchestratorId": "String @unique",
+        "assignedWorkspaces": "String[] @default([]) - array of workspace IDs",
+        "watchedChannels": "String[] @default([]) - channels to monitor",
+        "autoReply": "Boolean @default(true)",
+        "replyDelay": "Int @default(0)",
+        "maxDailyActions": "Int?",
+        "maxHourlyActions": "Int?",
+        "triggers": "Json @default([])",
+        "mentionOnly": "Boolean @default(false)",
+        "keywordTriggers": "String[] @default([])",
+        "enabledCapabilities": "Json @default({})",
+        "capabilityLimits": "Json @default({})",
+        "llmProvider": "String @default('anthropic')",
+        "llmModel": "String @default('claude-3-5-sonnet-20241022')",
+        "temperature": "Float @default(0.7)",
+        "maxTokens": "Int @default(4096)",
+        "integrationConfig": "Json @default({})",
+        "webhookUrls": "String[] @default([])",
+        "adminOverrides": "Json @default({})",
+        "isLocked": "Boolean @default(false)"
+      }
+    }
+  },
+  "utilityFunctions": {
+    "lib/workspace.ts": [
+      {
+        "name": "getWorkspaceBySlug",
+        "description": "Resolve workspace slug to workspace data (cached)",
+        "parameters": {
+          "slug": "Workspace slug or ID",
+          "organizationId": "Optional organization ID for scoped lookup"
+        },
+        "returns": "Workspace with organization details or null",
+        "behavior": [
+          "First tries findFirst by slug",
+          "Falls back to findUnique by id for backward compatibility",
+          "Uses React cache() for per-request caching"
+        ]
+      },
+      {
+        "name": "getWorkspaceWithAccess",
+        "description": "Resolve workspace and check user access (cached)",
+        "parameters": {
+          "slug": "Workspace slug or ID",
+          "userId": "User ID to check access"
+        },
+        "returns": "Object with workspace, memberships, and admin flags",
+        "checks": [
+          "Workspace exists",
+          "User has organization membership",
+          "User has workspace membership (optional)",
+          "Calculates isOrgAdmin and isWorkspaceAdmin"
+        ]
+      },
+      {
+        "name": "getWorkspaceId",
+        "description": "Simple slug to ID resolver (cached)",
+        "parameters": {
+          "slug": "Workspace slug or ID"
+        },
+        "returns": "Workspace ID or null"
+      }
+    ]
+  },
+  "integrationPoints": {
+    "orgGenesis": {
+      "endpoint": "POST /api/workspaces/generate-org",
+      "description": "Generates full organization hierarchy from conversational input",
+      "usedBy": "/workspaces/new page (generation phase)",
+      "creates": [
+        "Organization",
+        "Workspace",
+        "Disciplines",
+        "Orchestrators (with user accounts)",
+        "Channels",
+        "Workspace members"
+      ]
+    },
+    "search": {
+      "endpoint": "GET /api/workspaces/[slug]/search",
+      "description": "Workspace-scoped search across channels, messages, files",
+      "features": [
+        "Filters by workspace",
+        "Searches messages, file names, channel names",
+        "Returns unified results with type indicators"
+      ]
+    },
+    "commandPalette": {
+      "endpoint": "GET /api/workspaces/[slug]/command-palette",
+      "description": "Quick actions and navigation for workspace",
+      "returns": [
+        "Available commands",
+        "Recent channels",
+        "Workspace members",
+        "Quick actions"
+      ]
+    }
+  },
+  "validationSchemas": {
+    "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/organization.ts",
+    "schemas": [
+      {
+        "name": "createWorkspaceSchema",
+        "fields": {
+          "name": "z.string().min(1).max(100)",
+          "slug": "z.string().min(1).max(100).regex(/^[a-z0-9-]+$/)",
+          "organizationId": "z.string().cuid()",
+          "description": "z.string().max(500).optional()",
+          "iconUrl": "z.string().url().optional()",
+          "settings": "z.record(z.unknown()).optional()"
+        }
+      },
+      {
+        "name": "updateWorkspaceSchema",
+        "fields": "Partial of createWorkspaceSchema"
+      },
+      {
+        "name": "workspaceFiltersSchema",
+        "fields": {
+          "organizationId": "z.string().cuid().optional()",
+          "search": "z.string().optional()",
+          "page": "z.coerce.number().int().positive().default(1)",
+          "limit": "z.coerce.number().int().positive().max(100).default(20)",
+          "sortBy": "z.enum(['name', 'createdAt', 'updatedAt']).default('createdAt')",
+          "sortOrder": "z.enum(['asc', 'desc']).default('desc')"
+        }
+      }
+    ]
+  }
+}

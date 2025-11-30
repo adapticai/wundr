@@ -1,0 +1,1314 @@
+{
+  "metadata": {
+    "analysisDate": "2025-11-30",
+    "platform": "Neolith",
+    "apiVersion": "1.0",
+    "totalEndpointsAnalyzed": 100,
+    "baseUrl": "/api"
+  },
+  "endpoints": [
+    {
+      "path": "/api/auth/register",
+      "method": "POST",
+      "description": "Register new user with email/password",
+      "category": "authentication",
+      "requestSchema": {
+        "email": "string",
+        "password": "string (PBKDF2 hashed)",
+        "name": "string"
+      },
+      "responseSchema": {
+        "data": {
+          "id": "string",
+          "email": "string",
+          "name": "string",
+          "avatarUrl": "string",
+          "status": "ACTIVE"
+        },
+        "requiresVerification": "boolean"
+      },
+      "auth": "none",
+      "rateLimit": null
+    },
+    {
+      "path": "/api/auth/verify-email",
+      "method": "GET",
+      "description": "Verify email with token",
+      "category": "authentication",
+      "requestSchema": {
+        "token": "string (query param)"
+      },
+      "responseSchema": "redirect to /login?verified=true",
+      "auth": "none"
+    },
+    {
+      "path": "/api/auth/verify-email",
+      "method": "POST",
+      "description": "Resend verification email",
+      "category": "authentication",
+      "requestSchema": {},
+      "responseSchema": {
+        "message": "string",
+        "expiresAt": "ISO8601"
+      },
+      "auth": "session",
+      "rateLimit": "3 requests per hour"
+    },
+    {
+      "path": "/api/auth/forgot-password",
+      "method": "POST",
+      "description": "Request password reset",
+      "category": "authentication",
+      "requestSchema": {
+        "email": "string"
+      },
+      "responseSchema": {
+        "message": "If an account exists with that email, we've sent password reset instructions."
+      },
+      "auth": "none"
+    },
+    {
+      "path": "/api/auth/reset-password",
+      "method": "POST",
+      "description": "Reset password with token",
+      "category": "authentication",
+      "requestSchema": {
+        "token": "string",
+        "password": "string",
+        "confirmPassword": "string"
+      },
+      "responseSchema": {
+        "message": "Password reset successfully"
+      },
+      "auth": "none"
+    },
+    {
+      "path": "/api/auth/[...nextauth]",
+      "method": "GET, POST",
+      "description": "NextAuth.js handlers for OAuth and session management",
+      "category": "authentication",
+      "requestSchema": "varies by provider",
+      "responseSchema": "varies by handler",
+      "auth": "varies"
+    },
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "description": "Health check endpoint for deployment platforms",
+      "category": "system",
+      "requestSchema": {},
+      "responseSchema": {
+        "status": "healthy|degraded|unhealthy",
+        "version": "string",
+        "timestamp": "ISO8601",
+        "uptime": "number (seconds)",
+        "checks": {
+          "memory": "ok|warning|error"
+        }
+      },
+      "auth": "none"
+    },
+    {
+      "path": "/api/graphql",
+      "method": "GET, POST, OPTIONS",
+      "description": "GraphQL API endpoint with Apollo Server",
+      "category": "graphql",
+      "requestSchema": {
+        "query": "string",
+        "variables": "object"
+      },
+      "responseSchema": "GraphQL response",
+      "auth": "context-based"
+    },
+    {
+      "path": "/api/orchestrators/:orchestratorId/handoff",
+      "method": "POST",
+      "description": "Handoff task to another orchestrator with context transfer",
+      "category": "orchestrator-coordination",
+      "requestSchema": {
+        "toOrchestratorId": "string",
+        "taskId": "string",
+        "context": "object",
+        "notes": "string"
+      },
+      "responseSchema": {
+        "data": "handoff result",
+        "message": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "high - orchestrator task management"
+    },
+    {
+      "path": "/api/orchestrators/:orchestratorId/delegate",
+      "method": "POST",
+      "description": "Delegate task to another orchestrator",
+      "category": "orchestrator-coordination",
+      "requestSchema": {
+        "toOrchestratorId": "string",
+        "taskId": "string",
+        "note": "string",
+        "priority": "HIGH|MEDIUM|LOW",
+        "dueDate": "ISO8601"
+      },
+      "responseSchema": {
+        "data": "delegation result",
+        "message": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "high - orchestrator task management"
+    },
+    {
+      "path": "/api/orchestrators/:orchestratorId/collaborate",
+      "method": "POST",
+      "description": "Request collaboration from multiple orchestrators",
+      "category": "orchestrator-coordination",
+      "requestSchema": {
+        "taskId": "string",
+        "requiredOrchestratorIds": "string[]",
+        "roles": "object (orchestratorId -> role)",
+        "note": "string"
+      },
+      "responseSchema": {
+        "data": "collaboration result",
+        "message": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "high - multi-agent collaboration"
+    },
+    {
+      "path": "/api/orchestrators/:orchestratorId/analytics",
+      "method": "GET",
+      "description": "Get orchestrator performance metrics and analytics",
+      "category": "orchestrator-analytics",
+      "requestSchema": {
+        "timeRange": "24h|7d|30d|90d|all (query param)",
+        "includeDaily": "boolean",
+        "includeWeekly": "boolean",
+        "includeMonthly": "boolean"
+      },
+      "responseSchema": {
+        "data": "analytics with trends",
+        "metrics": "performance metrics"
+      },
+      "auth": "session",
+      "mcpPotential": "high - agent performance tracking"
+    },
+    {
+      "path": "/api/orchestrators/conflicts",
+      "method": "POST",
+      "description": "Resolve conflicts between orchestrators",
+      "category": "orchestrator-coordination",
+      "requestSchema": {
+        "orchestratorIds": "string[]",
+        "conflictType": "string",
+        "resolution": "object",
+        "taskId": "string",
+        "workspaceId": "string",
+        "note": "string"
+      },
+      "responseSchema": {
+        "data": "resolution result",
+        "message": "string"
+      },
+      "auth": "session (admin)",
+      "mcpPotential": "medium - conflict resolution"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/agents",
+      "method": "GET",
+      "description": "List AI agents in workspace with filtering",
+      "category": "agents",
+      "requestSchema": {
+        "type": "task|research|coding|data|qa|support|custom",
+        "status": "active|paused|inactive",
+        "search": "string",
+        "page": "number",
+        "limit": "number"
+      },
+      "responseSchema": {
+        "data": "Agent[]"
+      },
+      "auth": "session",
+      "mcpPotential": "high - agent discovery and management"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/agents",
+      "method": "POST",
+      "description": "Create new AI agent",
+      "category": "agents",
+      "requestSchema": {
+        "name": "string",
+        "type": "task|research|coding|data|qa|support|custom",
+        "description": "string",
+        "config": {
+          "model": "string",
+          "temperature": "number",
+          "maxTokens": "number",
+          "topP": "number",
+          "frequencyPenalty": "number",
+          "presencePenalty": "number"
+        },
+        "systemPrompt": "string",
+        "tools": "AvailableTool[]"
+      },
+      "responseSchema": {
+        "data": "Agent",
+        "message": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "high - agent creation and configuration"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/agents/:agentId",
+      "method": "GET",
+      "description": "Get agent details",
+      "category": "agents",
+      "requestSchema": {},
+      "responseSchema": {
+        "data": "Agent"
+      },
+      "auth": "session",
+      "mcpPotential": "high"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/agents/:agentId",
+      "method": "PATCH",
+      "description": "Update agent configuration",
+      "category": "agents",
+      "requestSchema": {
+        "name": "string",
+        "type": "string",
+        "description": "string",
+        "status": "active|paused|inactive",
+        "config": "object",
+        "systemPrompt": "string",
+        "tools": "string[]"
+      },
+      "responseSchema": {
+        "data": "Agent",
+        "message": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "high - agent configuration"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/agents/:agentId",
+      "method": "DELETE",
+      "description": "Delete agent",
+      "category": "agents",
+      "requestSchema": {},
+      "responseSchema": {
+        "message": "string",
+        "deletedId": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "medium"
+    },
+    {
+      "path": "/api/messages",
+      "method": "POST",
+      "description": "Send message with optional file attachments (FormData)",
+      "category": "messages",
+      "requestSchema": {
+        "content": "string",
+        "channelId": "string",
+        "parentId": "string (optional)",
+        "mentions": "JSON string array",
+        "attachmentIds": "JSON string array",
+        "attachments": "File[]"
+      },
+      "responseSchema": "Message with attachments",
+      "auth": "session",
+      "mcpPotential": "high - message sending"
+    },
+    {
+      "path": "/api/channels/:channelId/messages",
+      "method": "GET",
+      "description": "List messages with cursor pagination",
+      "category": "messages",
+      "requestSchema": {
+        "limit": "number (max 100)",
+        "cursor": "string",
+        "direction": "before|after",
+        "includeReplies": "boolean"
+      },
+      "responseSchema": {
+        "data": "Message[]",
+        "pagination": {
+          "hasMore": "boolean",
+          "nextCursor": "string",
+          "prevCursor": "string"
+        }
+      },
+      "auth": "session (channel member)",
+      "mcpPotential": "high - message retrieval"
+    },
+    {
+      "path": "/api/channels/:channelId/messages",
+      "method": "POST",
+      "description": "Send message to channel",
+      "category": "messages",
+      "requestSchema": {
+        "content": "string",
+        "type": "TEXT|SYSTEM|FILE",
+        "parentId": "string (optional)",
+        "metadata": "object",
+        "attachmentIds": "string[]"
+      },
+      "responseSchema": {
+        "data": "Message",
+        "message": "string"
+      },
+      "auth": "session (channel member)",
+      "mcpPotential": "high - message sending"
+    },
+    {
+      "path": "/api/channels/:channelId",
+      "method": "GET",
+      "description": "Get channel details with members",
+      "category": "channels",
+      "requestSchema": {},
+      "responseSchema": {
+        "data": "Channel with members",
+        "membership": "ChannelMembership"
+      },
+      "auth": "session",
+      "mcpPotential": "medium - channel discovery"
+    },
+    {
+      "path": "/api/channels/:channelId",
+      "method": "PATCH",
+      "description": "Update channel (requires ADMIN)",
+      "category": "channels",
+      "requestSchema": {
+        "name": "string",
+        "description": "string",
+        "topic": "string",
+        "isArchived": "boolean"
+      },
+      "responseSchema": {
+        "data": "Channel",
+        "message": "string"
+      },
+      "auth": "session (channel admin)",
+      "mcpPotential": "low"
+    },
+    {
+      "path": "/api/channels/:channelId",
+      "method": "DELETE",
+      "description": "Delete channel (requires org ADMIN/OWNER)",
+      "category": "channels",
+      "requestSchema": {},
+      "responseSchema": {
+        "message": "string"
+      },
+      "auth": "session (org admin)",
+      "mcpPotential": "low"
+    },
+    {
+      "path": "/api/channels",
+      "method": "GET",
+      "description": "List channels with filters and pagination",
+      "category": "channels",
+      "requestSchema": {
+        "workspaceId": "string (required)",
+        "type": "PUBLIC|PRIVATE|DM",
+        "includeArchived": "boolean",
+        "search": "string",
+        "page": "number",
+        "limit": "number",
+        "sortBy": "name|createdAt|updatedAt",
+        "sortOrder": "asc|desc"
+      },
+      "responseSchema": {
+        "data": "Channel[]",
+        "pagination": "PaginationMeta"
+      },
+      "auth": "session",
+      "mcpPotential": "high - channel discovery"
+    },
+    {
+      "path": "/api/channels",
+      "method": "POST",
+      "description": "Create new channel",
+      "category": "channels",
+      "requestSchema": {
+        "name": "string",
+        "type": "PUBLIC|PRIVATE|DM",
+        "workspaceId": "string",
+        "description": "string",
+        "topic": "string",
+        "memberIds": "string[]"
+      },
+      "responseSchema": {
+        "data": "Channel",
+        "message": "string"
+      },
+      "auth": "session (workspace member)",
+      "mcpPotential": "medium - channel creation"
+    },
+    {
+      "path": "/api/daemon/register",
+      "method": "POST",
+      "description": "Register orchestrator daemon",
+      "category": "daemon",
+      "requestSchema": {
+        "orchestratorId": "string",
+        "organizationId": "string",
+        "apiKey": "string (gns_*)",
+        "daemonInfo": {
+          "instanceId": "string",
+          "version": "string",
+          "host": "string",
+          "port": "number",
+          "protocol": "http|https|ws|wss",
+          "startedAt": "ISO8601",
+          "capabilities": "string[]",
+          "metadata": "object"
+        }
+      },
+      "responseSchema": {
+        "success": "boolean",
+        "data": {
+          "orchestratorId": "string",
+          "registeredAt": "ISO8601",
+          "heartbeatInterval": "number",
+          "healthCheckEndpoint": "string"
+        }
+      },
+      "auth": "apiKey",
+      "mcpPotential": "high - daemon registration and management"
+    },
+    {
+      "path": "/api/daemon/auth",
+      "method": "POST",
+      "description": "Authenticate daemon with API credentials",
+      "category": "daemon",
+      "requestSchema": {
+        "apiKey": "string (vp_*)",
+        "apiSecret": "string",
+        "scopes": "string[]"
+      },
+      "responseSchema": {
+        "accessToken": "string (JWT)",
+        "refreshToken": "string (JWT)",
+        "expiresAt": "ISO8601",
+        "sessionId": "string",
+        "orchestrator": "OrchestratorInfo"
+      },
+      "auth": "apiKey",
+      "mcpPotential": "high - daemon authentication"
+    },
+    {
+      "path": "/api/daemon/ws",
+      "method": "GET (WebSocket upgrade)",
+      "description": "WebSocket endpoint for daemon connections",
+      "category": "daemon",
+      "requestSchema": "WebSocket upgrade headers",
+      "responseSchema": "WebSocket connection",
+      "auth": "JWT token after connection",
+      "mcpPotential": "high - real-time daemon communication"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/deployments",
+      "method": "GET",
+      "description": "List deployments with filtering",
+      "category": "deployments",
+      "requestSchema": {
+        "status": "deploying|running|stopped|failed|updating",
+        "environment": "production|staging|development",
+        "type": "service|agent|workflow|integration",
+        "search": "string"
+      },
+      "responseSchema": {
+        "deployments": "Deployment[]",
+        "total": "number"
+      },
+      "auth": "session",
+      "mcpPotential": "high - deployment monitoring"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/deployments",
+      "method": "POST",
+      "description": "Create new deployment",
+      "category": "deployments",
+      "requestSchema": {
+        "name": "string",
+        "type": "service|agent|workflow|integration",
+        "environment": "production|staging|development",
+        "description": "string",
+        "config": {
+          "region": "string",
+          "replicas": "number",
+          "resources": {
+            "cpu": "string",
+            "memory": "string"
+          },
+          "env": "object"
+        }
+      },
+      "responseSchema": {
+        "deployment": "Deployment",
+        "message": "string"
+      },
+      "auth": "session",
+      "mcpPotential": "high - deployment management"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/search",
+      "method": "GET",
+      "description": "Comprehensive workspace search with highlighting",
+      "category": "search",
+      "requestSchema": {
+        "q": "string (required)",
+        "type": "channels|messages|files|users|orchestrators|dms|all",
+        "types": "comma-separated list",
+        "channelId": "string",
+        "limit": "number (max 100)",
+        "offset": "number",
+        "highlight": "boolean",
+        "facets": "boolean"
+      },
+      "responseSchema": {
+        "data": "SearchResult[]",
+        "pagination": {
+          "offset": "number",
+          "limit": "number",
+          "totalCount": "number",
+          "hasMore": "boolean"
+        },
+        "facets": {
+          "types": "TypeCount[]",
+          "channels": "ChannelCount[]"
+        }
+      },
+      "auth": "session",
+      "mcpPotential": "high - semantic search across workspace"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/command-palette",
+      "method": "GET",
+      "description": "Get personalized command palette suggestions",
+      "category": "search",
+      "requestSchema": {
+        "channelLimit": "number",
+        "dmLimit": "number",
+        "personLimit": "number",
+        "fileLimit": "number"
+      },
+      "responseSchema": {
+        "recentChannels": "ChannelSuggestion[]",
+        "recentDMs": "DMSuggestion[]",
+        "recentPeople": "PersonSuggestion[]",
+        "recentFiles": "FileSuggestion[]",
+        "quickActions": "QuickAction[]"
+      },
+      "auth": "session",
+      "mcpPotential": "medium - contextual suggestions"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/workflows",
+      "method": "GET",
+      "description": "List workflows with filtering",
+      "category": "workflows",
+      "requestSchema": {
+        "status": "ACTIVE|INACTIVE|DRAFT|ARCHIVED",
+        "trigger": "string",
+        "search": "string",
+        "tags": "string[]",
+        "page": "number",
+        "limit": "number",
+        "sortBy": "name|createdAt|updatedAt",
+        "sortOrder": "asc|desc"
+      },
+      "responseSchema": {
+        "workflows": "Workflow[]",
+        "total": "number",
+        "page": "number",
+        "limit": "number",
+        "totalPages": "number"
+      },
+      "auth": "session",
+      "mcpPotential": "high - workflow automation"
+    },
+    {
+      "path": "/api/workspaces/:workspaceSlug/workflows",
+      "method": "POST",
+      "description": "Create new workflow",
+      "category": "workflows",
+      "requestSchema": {
+        "name": "string",
+        "description": "string",
+        "trigger": {
+          "type": "string",
+          "config": "object"
+        },
+        "actions": "WorkflowAction[]",
+        "status": "ACTIVE|INACTIVE|DRAFT",
+        "tags": "string[]",
+        "metadata": "object"
+      },
+      "responseSchema": {
+        "workflow": "Workflow",
+        "message": "string"
+      },
+      "auth": "session (workspace member)",
+      "mcpPotential": "high - workflow creation and automation"
+    },
+    {
+      "path": "/api/workspaces",
+      "method": "GET",
+      "description": "List workspaces user has access to",
+      "category": "workspaces",
+      "requestSchema": {
+        "organizationId": "string",
+        "search": "string",
+        "page": "number",
+        "limit": "number",
+        "sortBy": "name|createdAt|updatedAt",
+        "sortOrder": "asc|desc"
+      },
+      "responseSchema": {
+        "data": "Workspace[]",
+        "pagination": "PaginationMeta"
+      },
+      "auth": "session",
+      "mcpPotential": "medium - workspace discovery"
+    },
+    {
+      "path": "/api/workspaces",
+      "method": "POST",
+      "description": "Create new workspace (requires org ADMIN/OWNER)",
+      "category": "workspaces",
+      "requestSchema": {
+        "name": "string",
+        "slug": "string",
+        "organizationId": "string",
+        "description": "string",
+        "iconUrl": "string",
+        "settings": "object"
+      },
+      "responseSchema": {
+        "data": "Workspace",
+        "message": "string"
+      },
+      "auth": "session (org admin)",
+      "mcpPotential": "low"
+    }
+  ],
+  "categories": {
+    "authentication": {
+      "description": "User authentication and session management",
+      "endpoints": [
+        "POST /api/auth/register",
+        "GET /api/auth/verify-email",
+        "POST /api/auth/verify-email",
+        "POST /api/auth/forgot-password",
+        "POST /api/auth/reset-password",
+        "GET,POST /api/auth/[...nextauth]"
+      ],
+      "mcpPotential": "low - typically handled by UI"
+    },
+    "orchestrator-coordination": {
+      "description": "Multi-agent coordination and task management",
+      "endpoints": [
+        "POST /api/orchestrators/:id/handoff",
+        "POST /api/orchestrators/:id/delegate",
+        "POST /api/orchestrators/:id/collaborate",
+        "POST /api/orchestrators/conflicts"
+      ],
+      "mcpPotential": "high - core agent coordination features"
+    },
+    "orchestrator-analytics": {
+      "description": "Agent performance tracking and metrics",
+      "endpoints": [
+        "GET /api/orchestrators/:id/analytics"
+      ],
+      "mcpPotential": "high - performance monitoring and optimization"
+    },
+    "agents": {
+      "description": "AI agent lifecycle management",
+      "endpoints": [
+        "GET /api/workspaces/:workspaceSlug/agents",
+        "POST /api/workspaces/:workspaceSlug/agents",
+        "GET /api/workspaces/:workspaceSlug/agents/:agentId",
+        "PATCH /api/workspaces/:workspaceSlug/agents/:agentId",
+        "DELETE /api/workspaces/:workspaceSlug/agents/:agentId"
+      ],
+      "mcpPotential": "high - agent creation, configuration, and management"
+    },
+    "messages": {
+      "description": "Message sending and retrieval",
+      "endpoints": [
+        "POST /api/messages",
+        "GET /api/channels/:channelId/messages",
+        "POST /api/channels/:channelId/messages"
+      ],
+      "mcpPotential": "high - core communication functionality"
+    },
+    "channels": {
+      "description": "Channel management and discovery",
+      "endpoints": [
+        "GET /api/channels",
+        "POST /api/channels",
+        "GET /api/channels/:channelId",
+        "PATCH /api/channels/:channelId",
+        "DELETE /api/channels/:channelId"
+      ],
+      "mcpPotential": "medium - channel discovery and organization"
+    },
+    "daemon": {
+      "description": "Orchestrator daemon registration and communication",
+      "endpoints": [
+        "POST /api/daemon/register",
+        "POST /api/daemon/auth",
+        "GET /api/daemon/ws"
+      ],
+      "mcpPotential": "high - daemon lifecycle and real-time communication"
+    },
+    "deployments": {
+      "description": "Service and agent deployment management",
+      "endpoints": [
+        "GET /api/workspaces/:workspaceSlug/deployments",
+        "POST /api/workspaces/:workspaceSlug/deployments"
+      ],
+      "mcpPotential": "high - deployment monitoring and orchestration"
+    },
+    "search": {
+      "description": "Comprehensive workspace search",
+      "endpoints": [
+        "GET /api/workspaces/:workspaceSlug/search",
+        "GET /api/workspaces/:workspaceSlug/command-palette"
+      ],
+      "mcpPotential": "high - semantic search and contextual discovery"
+    },
+    "workflows": {
+      "description": "Workflow automation and orchestration",
+      "endpoints": [
+        "GET /api/workspaces/:workspaceSlug/workflows",
+        "POST /api/workspaces/:workspaceSlug/workflows"
+      ],
+      "mcpPotential": "high - workflow automation and triggers"
+    },
+    "workspaces": {
+      "description": "Workspace management",
+      "endpoints": [
+        "GET /api/workspaces",
+        "POST /api/workspaces"
+      ],
+      "mcpPotential": "medium - workspace discovery"
+    },
+    "system": {
+      "description": "System health and monitoring",
+      "endpoints": [
+        "GET /api/health"
+      ],
+      "mcpPotential": "medium - health monitoring"
+    },
+    "graphql": {
+      "description": "GraphQL API access",
+      "endpoints": [
+        "GET,POST,OPTIONS /api/graphql"
+      ],
+      "mcpPotential": "high - flexible data access"
+    }
+  },
+  "orchestratorEndpoints": {
+    "description": "Endpoints specifically designed for orchestrator/agent management",
+    "endpoints": [
+      {
+        "path": "/api/orchestrators/:orchestratorId/handoff",
+        "purpose": "Transfer task ownership between agents with full context",
+        "mcpUseCase": "Agent handoff coordination"
+      },
+      {
+        "path": "/api/orchestrators/:orchestratorId/delegate",
+        "purpose": "Delegate specific tasks to other agents with priority and deadlines",
+        "mcpUseCase": "Task delegation and workload distribution"
+      },
+      {
+        "path": "/api/orchestrators/:orchestratorId/collaborate",
+        "purpose": "Request multi-agent collaboration with defined roles",
+        "mcpUseCase": "Multi-agent task collaboration"
+      },
+      {
+        "path": "/api/orchestrators/:orchestratorId/analytics",
+        "purpose": "Track agent performance, success rates, and resource usage",
+        "mcpUseCase": "Agent performance monitoring and optimization"
+      },
+      {
+        "path": "/api/orchestrators/conflicts",
+        "purpose": "Resolve conflicts when multiple agents claim the same task",
+        "mcpUseCase": "Conflict resolution in multi-agent systems"
+      },
+      {
+        "path": "/api/workspaces/:workspaceSlug/agents",
+        "purpose": "CRUD operations for AI agents",
+        "mcpUseCase": "Agent lifecycle management"
+      },
+      {
+        "path": "/api/daemon/register",
+        "purpose": "Register daemon instances for orchestrators",
+        "mcpUseCase": "Daemon registration and heartbeat management"
+      },
+      {
+        "path": "/api/daemon/auth",
+        "purpose": "Authenticate daemon with JWT tokens",
+        "mcpUseCase": "Secure daemon authentication"
+      },
+      {
+        "path": "/api/daemon/ws",
+        "purpose": "Real-time WebSocket communication for daemons",
+        "mcpUseCase": "Real-time agent-to-system communication"
+      }
+    ]
+  },
+  "authPatterns": {
+    "sessionBased": {
+      "description": "NextAuth.js session-based authentication",
+      "endpoints": "Most workspace and user endpoints",
+      "implementation": "auth() from @/lib/auth",
+      "checks": "session?.user?.id"
+    },
+    "apiKey": {
+      "description": "API key authentication for daemons",
+      "endpoints": "Daemon registration and authentication",
+      "implementation": "API key validation with hash comparison",
+      "format": "vp_* or gns_*"
+    },
+    "jwt": {
+      "description": "JWT token authentication for daemon sessions",
+      "endpoints": "Daemon WebSocket and authenticated operations",
+      "implementation": "JWT sign/verify with access and refresh tokens",
+      "expiry": "Access: 1h, Refresh: 7d"
+    },
+    "roleBasedAccess": {
+      "description": "Role-based authorization checks",
+      "roles": [
+        "OWNER - Full organization control",
+        "ADMIN - Administrative permissions",
+        "MEMBER - Standard member access"
+      ],
+      "channelRoles": [
+        "ADMIN - Channel administration",
+        "MEMBER - Channel participation"
+      ]
+    }
+  },
+  "missingEndpoints": {
+    "orchestratorManagement": [
+      {
+        "path": "/api/orchestrators",
+        "method": "GET",
+        "purpose": "List all orchestrators in organization/workspace",
+        "priority": "high",
+        "mcpUseCase": "Orchestrator discovery and selection"
+      },
+      {
+        "path": "/api/orchestrators",
+        "method": "POST",
+        "purpose": "Create new orchestrator instance",
+        "priority": "high",
+        "mcpUseCase": "Dynamic orchestrator provisioning"
+      },
+      {
+        "path": "/api/orchestrators/:id",
+        "method": "GET",
+        "purpose": "Get orchestrator details and status",
+        "priority": "high",
+        "mcpUseCase": "Orchestrator status monitoring"
+      },
+      {
+        "path": "/api/orchestrators/:id",
+        "method": "PATCH",
+        "purpose": "Update orchestrator configuration",
+        "priority": "medium",
+        "mcpUseCase": "Orchestrator reconfiguration"
+      },
+      {
+        "path": "/api/orchestrators/:id/tasks",
+        "method": "GET",
+        "purpose": "List tasks assigned to orchestrator",
+        "priority": "high",
+        "mcpUseCase": "Task queue management"
+      },
+      {
+        "path": "/api/orchestrators/:id/tasks",
+        "method": "POST",
+        "purpose": "Assign new task to orchestrator",
+        "priority": "high",
+        "mcpUseCase": "Task creation and assignment"
+      },
+      {
+        "path": "/api/orchestrators/:id/tasks/:taskId",
+        "method": "PATCH",
+        "purpose": "Update task status or details",
+        "priority": "high",
+        "mcpUseCase": "Task status updates"
+      },
+      {
+        "path": "/api/orchestrators/:id/memory",
+        "method": "GET",
+        "purpose": "Retrieve orchestrator memory/context",
+        "priority": "medium",
+        "mcpUseCase": "Context retrieval for agent decisions"
+      },
+      {
+        "path": "/api/orchestrators/:id/memory",
+        "method": "POST",
+        "purpose": "Store memory/context for orchestrator",
+        "priority": "medium",
+        "mcpUseCase": "Context persistence"
+      }
+    ],
+    "agentExecution": [
+      {
+        "path": "/api/agents/:agentId/execute",
+        "method": "POST",
+        "purpose": "Execute agent with specific input",
+        "priority": "high",
+        "mcpUseCase": "Direct agent invocation"
+      },
+      {
+        "path": "/api/agents/:agentId/stream",
+        "method": "POST",
+        "purpose": "Execute agent with streaming response",
+        "priority": "high",
+        "mcpUseCase": "Real-time agent output"
+      },
+      {
+        "path": "/api/agents/:agentId/history",
+        "method": "GET",
+        "purpose": "Get agent execution history",
+        "priority": "medium",
+        "mcpUseCase": "Execution audit and debugging"
+      }
+    ],
+    "workflowExecution": [
+      {
+        "path": "/api/workflows/:workflowId/execute",
+        "method": "POST",
+        "purpose": "Manually trigger workflow execution",
+        "priority": "high",
+        "mcpUseCase": "On-demand workflow execution"
+      },
+      {
+        "path": "/api/workflows/:workflowId/pause",
+        "method": "POST",
+        "purpose": "Pause running workflow",
+        "priority": "medium",
+        "mcpUseCase": "Workflow control"
+      },
+      {
+        "path": "/api/workflows/:workflowId/resume",
+        "method": "POST",
+        "purpose": "Resume paused workflow",
+        "priority": "medium",
+        "mcpUseCase": "Workflow control"
+      }
+    ],
+    "bulk Operations": [
+      {
+        "path": "/api/messages/bulk",
+        "method": "POST",
+        "purpose": "Send multiple messages at once",
+        "priority": "medium",
+        "mcpUseCase": "Batch messaging"
+      },
+      {
+        "path": "/api/channels/bulk-join",
+        "method": "POST",
+        "purpose": "Join multiple channels at once",
+        "priority": "low",
+        "mcpUseCase": "Bulk channel subscription"
+      }
+    ],
+    "advancedSearch": [
+      {
+        "path": "/api/workspaces/:workspaceSlug/search/semantic",
+        "method": "POST",
+        "purpose": "Semantic/vector search with embeddings",
+        "priority": "medium",
+        "mcpUseCase": "AI-powered contextual search"
+      }
+    ]
+  },
+  "mcpPotential": {
+    "highPriority": [
+      {
+        "category": "Agent Management",
+        "endpoints": [
+          "GET /api/workspaces/:workspaceSlug/agents",
+          "POST /api/workspaces/:workspaceSlug/agents",
+          "PATCH /api/workspaces/:workspaceSlug/agents/:agentId"
+        ],
+        "mcpTools": [
+          "list_agents - Discover available AI agents",
+          "create_agent - Provision new agent with config",
+          "update_agent_config - Modify agent parameters"
+        ]
+      },
+      {
+        "category": "Orchestrator Coordination",
+        "endpoints": [
+          "POST /api/orchestrators/:id/handoff",
+          "POST /api/orchestrators/:id/delegate",
+          "POST /api/orchestrators/:id/collaborate"
+        ],
+        "mcpTools": [
+          "handoff_task - Transfer task to another agent",
+          "delegate_task - Assign task with priority",
+          "request_collaboration - Initiate multi-agent collaboration"
+        ]
+      },
+      {
+        "category": "Message Operations",
+        "endpoints": [
+          "POST /api/channels/:channelId/messages",
+          "GET /api/channels/:channelId/messages"
+        ],
+        "mcpTools": [
+          "send_message - Send message to channel",
+          "get_messages - Retrieve channel messages",
+          "search_messages - Search across messages"
+        ]
+      },
+      {
+        "category": "Search & Discovery",
+        "endpoints": [
+          "GET /api/workspaces/:workspaceSlug/search",
+          "GET /api/workspaces/:workspaceSlug/command-palette"
+        ],
+        "mcpTools": [
+          "workspace_search - Semantic search across workspace",
+          "get_suggestions - Context-aware suggestions"
+        ]
+      },
+      {
+        "category": "Workflow Automation",
+        "endpoints": [
+          "GET /api/workspaces/:workspaceSlug/workflows",
+          "POST /api/workspaces/:workspaceSlug/workflows"
+        ],
+        "mcpTools": [
+          "list_workflows - Discover automation workflows",
+          "create_workflow - Build new workflow",
+          "trigger_workflow - Execute workflow on-demand"
+        ]
+      },
+      {
+        "category": "Daemon Management",
+        "endpoints": [
+          "POST /api/daemon/register",
+          "POST /api/daemon/auth",
+          "GET /api/daemon/ws"
+        ],
+        "mcpTools": [
+          "register_daemon - Register orchestrator daemon",
+          "authenticate_daemon - Get daemon JWT tokens",
+          "connect_daemon_ws - Establish WebSocket connection"
+        ]
+      },
+      {
+        "category": "Deployment Monitoring",
+        "endpoints": [
+          "GET /api/workspaces/:workspaceSlug/deployments",
+          "POST /api/workspaces/:workspaceSlug/deployments"
+        ],
+        "mcpTools": [
+          "list_deployments - Monitor deployment status",
+          "create_deployment - Deploy service/agent",
+          "get_deployment_logs - Retrieve deployment logs"
+        ]
+      },
+      {
+        "category": "Analytics & Metrics",
+        "endpoints": [
+          "GET /api/orchestrators/:id/analytics"
+        ],
+        "mcpTools": [
+          "get_orchestrator_analytics - Retrieve performance metrics",
+          "track_agent_performance - Monitor agent success rates"
+        ]
+      }
+    ],
+    "mediumPriority": [
+      {
+        "category": "Channel Management",
+        "endpoints": [
+          "GET /api/channels",
+          "POST /api/channels"
+        ],
+        "mcpTools": [
+          "list_channels - Browse available channels",
+          "create_channel - Create new channel"
+        ]
+      },
+      {
+        "category": "Workspace Discovery",
+        "endpoints": [
+          "GET /api/workspaces"
+        ],
+        "mcpTools": [
+          "list_workspaces - Discover available workspaces"
+        ]
+      }
+    ],
+    "lowPriority": [
+      {
+        "category": "Authentication",
+        "endpoints": [
+          "POST /api/auth/register",
+          "POST /api/auth/reset-password"
+        ],
+        "mcpTools": "Typically handled by UI, not programmatic"
+      }
+    ]
+  },
+  "recommendations": {
+    "mcpToolDevelopment": [
+      {
+        "priority": 1,
+        "tool": "Agent Management Suite",
+        "description": "Core tools for agent lifecycle management",
+        "endpoints": [
+          "GET/POST/PATCH /api/workspaces/:workspaceSlug/agents/*"
+        ],
+        "features": [
+          "Agent discovery and filtering",
+          "Agent creation with config templates",
+          "Dynamic agent configuration",
+          "Agent status monitoring"
+        ]
+      },
+      {
+        "priority": 2,
+        "tool": "Orchestrator Coordination Suite",
+        "description": "Multi-agent coordination and task management",
+        "endpoints": [
+          "POST /api/orchestrators/:id/handoff",
+          "POST /api/orchestrators/:id/delegate",
+          "POST /api/orchestrators/:id/collaborate"
+        ],
+        "features": [
+          "Task handoff with context preservation",
+          "Priority-based task delegation",
+          "Multi-agent collaboration requests",
+          "Conflict resolution"
+        ]
+      },
+      {
+        "priority": 3,
+        "tool": "Message Operations Suite",
+        "description": "Programmatic message sending and retrieval",
+        "endpoints": [
+          "POST /api/channels/:channelId/messages",
+          "GET /api/channels/:channelId/messages"
+        ],
+        "features": [
+          "Send messages with attachments",
+          "Retrieve message history",
+          "Message search and filtering",
+          "Thread management"
+        ]
+      },
+      {
+        "priority": 4,
+        "tool": "Workflow Automation Suite",
+        "description": "Create and manage automation workflows",
+        "endpoints": [
+          "GET/POST /api/workspaces/:workspaceSlug/workflows/*"
+        ],
+        "features": [
+          "Workflow template library",
+          "Dynamic workflow creation",
+          "Trigger configuration",
+          "Execution monitoring"
+        ]
+      },
+      {
+        "priority": 5,
+        "tool": "Search & Discovery Suite",
+        "description": "Semantic search across workspace content",
+        "endpoints": [
+          "GET /api/workspaces/:workspaceSlug/search",
+          "GET /api/workspaces/:workspaceSlug/command-palette"
+        ],
+        "features": [
+          "Multi-type search (channels, messages, files, users)",
+          "Result highlighting",
+          "Faceted search",
+          "Contextual suggestions"
+        ]
+      }
+    ],
+    "apiImprovements": [
+      {
+        "area": "Orchestrator CRUD",
+        "description": "Missing basic CRUD endpoints for orchestrators",
+        "suggestedEndpoints": [
+          "GET /api/orchestrators - List orchestrators",
+          "POST /api/orchestrators - Create orchestrator",
+          "GET /api/orchestrators/:id - Get orchestrator details",
+          "PATCH /api/orchestrators/:id - Update orchestrator"
+        ]
+      },
+      {
+        "area": "Task Management",
+        "description": "Need dedicated task endpoints for orchestrators",
+        "suggestedEndpoints": [
+          "GET /api/orchestrators/:id/tasks - List tasks",
+          "POST /api/orchestrators/:id/tasks - Create task",
+          "PATCH /api/orchestrators/:id/tasks/:taskId - Update task status"
+        ]
+      },
+      {
+        "area": "Agent Execution",
+        "description": "Direct agent invocation endpoints needed",
+        "suggestedEndpoints": [
+          "POST /api/agents/:id/execute - Execute agent",
+          "POST /api/agents/:id/stream - Streaming execution",
+          "GET /api/agents/:id/history - Execution history"
+        ]
+      },
+      {
+        "area": "Bulk Operations",
+        "description": "Batch operations for efficiency",
+        "suggestedEndpoints": [
+          "POST /api/messages/bulk - Bulk message sending",
+          "POST /api/channels/bulk-join - Bulk channel joining"
+        ]
+      },
+      {
+        "area": "Webhook Support",
+        "description": "Already exists but needs documentation for programmatic access",
+        "existingEndpoints": [
+          "GET/POST /api/workspaces/:workspaceSlug/webhooks",
+          "POST /api/workspaces/:workspaceSlug/webhooks/:id/test"
+        ]
+      }
+    ],
+    "securityConsiderations": [
+      {
+        "area": "API Key Rotation",
+        "description": "Implement API key rotation for daemon authentication",
+        "endpoints": ["/api/daemon/auth/rotate"]
+      },
+      {
+        "area": "Rate Limiting",
+        "description": "Add rate limiting to high-volume endpoints",
+        "endpoints": [
+          "/api/messages",
+          "/api/channels/:channelId/messages",
+          "/api/workspaces/:workspaceSlug/search"
+        ],
+        "suggestion": "Implement per-user and per-workspace rate limits"
+      },
+      {
+        "area": "Audit Logging",
+        "description": "Track API usage for orchestrator and agent operations",
+        "endpoints": "All orchestrator/* and agent/* endpoints"
+      }
+    ]
+  }
+}

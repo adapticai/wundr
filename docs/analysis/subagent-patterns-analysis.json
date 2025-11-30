@@ -1,0 +1,703 @@
+{
+  "analysisMetadata": {
+    "timestamp": "2025-11-30",
+    "scope": "Wundr monorepo subagent patterns",
+    "packages": [
+      "@wundr/org-genesis",
+      "@wundr/ai-integration",
+      "@wundr/agent-delegation",
+      "@wundr/neolith"
+    ]
+  },
+
+  "subagentDefinitions": {
+    "primaryLocation": "@wundr/org-genesis/src/types/agent.ts",
+    "registryLocation": "@wundr/org-genesis/src/registry/agent-registry.ts",
+    "generatorLocation": "@wundr/org-genesis/src/generator/agent-generator.ts",
+
+    "definitionStructure": {
+      "type": "AgentDefinition",
+      "tier": 3,
+      "requiredFields": [
+        "id (string, format: agent-{slug}-{numeric})",
+        "name (human-readable)",
+        "slug (URL-safe identifier)",
+        "tier (always 3 for subagents)",
+        "scope (universal | discipline-specific)",
+        "description (1-2 sentence purpose)",
+        "charter (comprehensive system prompt)",
+        "model (opus | sonnet | haiku)",
+        "tools (AgentTool[])",
+        "capabilities (AgentCapabilities)",
+        "usedByDisciplines (string[])",
+        "tags (string[])",
+        "createdAt (Date)",
+        "updatedAt (Date)"
+      ],
+      "optionalFields": [
+        "usedByVps (string[])"
+      ]
+    },
+
+    "scopeTypes": {
+      "universal": {
+        "description": "Available to all disciplines and VPs",
+        "examples": ["researcher", "scribe", "project-manager", "reviewer", "tester"],
+        "count": 5
+      },
+      "disciplineSpecific": {
+        "description": "Only available within assigned disciplines",
+        "examples": [
+          "code-developer (engineering)",
+          "code-reviewer (engineering)",
+          "contract-analyst (legal)",
+          "financial-analyst (finance)",
+          "content-creator (marketing)"
+        ],
+        "categoryTemplates": [
+          "engineering",
+          "legal",
+          "finance",
+          "marketing",
+          "hr",
+          "operations",
+          "research",
+          "design",
+          "sales",
+          "support"
+        ]
+      }
+    },
+
+    "toolTypes": {
+      "mcp": "Model Context Protocol external server integration",
+      "builtin": "Native Claude Code tools (Read, Write, Bash, etc)",
+      "custom": "Organization-specific custom tools"
+    },
+
+    "capabilities": {
+      "structure": "AgentCapabilities interface",
+      "permissions": [
+        "canReadFiles (boolean)",
+        "canWriteFiles (boolean)",
+        "canExecuteCommands (boolean)",
+        "canAccessNetwork (boolean)",
+        "canSpawnSubAgents (boolean - typically false for Tier 3)",
+        "customCapabilities (string[] - optional)"
+      ],
+      "principle": "Least privilege - only grant necessary permissions"
+    },
+
+    "modelAssignment": {
+      "opus": "Most capable, highest cost, complex reasoning",
+      "sonnet": "Balanced, moderate cost, general tasks",
+      "haiku": "Fastest, lowest cost, simple/high-volume tasks",
+      "default": "sonnet"
+    }
+  },
+
+  "lifecycle": {
+    "creation": {
+      "method1_registry": {
+        "function": "AgentRegistry.register(agent: AgentDefinition)",
+        "description": "Direct registration of fully-formed agent",
+        "location": "@wundr/org-genesis/src/registry/agent-registry.ts:229",
+        "autoUpdates": ["updatedAt timestamp"]
+      },
+      "method2_generator": {
+        "function": "AgentGenerator.generate(context: AgentGenerationContext)",
+        "description": "AI-powered generation for discipline-specific agents",
+        "location": "@wundr/org-genesis/src/generator/agent-generator.ts:572",
+        "features": [
+          "LLM-based generation",
+          "Template fallback",
+          "Validation",
+          "Universal agent inclusion",
+          "Capability filtering"
+        ]
+      },
+      "method3_templates": {
+        "description": "Universal agents from predefined templates",
+        "function": "AgentGenerator.generateUniversalAgents()",
+        "location": "@wundr/org-genesis/src/generator/agent-generator.ts:843",
+        "templates": "UNIVERSAL_AGENT_TEMPLATES array (lines 241-483)"
+      }
+    },
+
+    "storage": {
+      "fileBackend": {
+        "type": "FileStorage<AgentDefinition>",
+        "path": "./.wundr/registry/agents",
+        "format": "JSON files",
+        "persistence": "Survives process restarts"
+      },
+      "memoryBackend": {
+        "type": "MemoryStorage<AgentDefinition>",
+        "persistence": "Lost on process exit",
+        "useCase": "Testing and temporary operations"
+      }
+    },
+
+    "retrieval": {
+      "byId": "AgentRegistry.get(id: string)",
+      "bySlug": "AgentRegistry.getBySlug(slug: string)",
+      "byScope": "AgentRegistry.listByScope(scope: AgentScope)",
+      "byDiscipline": "AgentRegistry.listByDiscipline(disciplineId: string)",
+      "universal": "AgentRegistry.listUniversal()",
+      "all": "AgentRegistry.list()"
+    },
+
+    "update": {
+      "method": "AgentRegistry.update(id: string, updates: Partial<AgentDefinition>)",
+      "protectedFields": ["id", "tier", "createdAt"],
+      "autoUpdates": ["updatedAt"],
+      "location": "@wundr/org-genesis/src/registry/agent-registry.ts:481"
+    },
+
+    "deletion": {
+      "method": "AgentRegistry.remove(id: string)",
+      "irreversible": true,
+      "noAutomaticCleanup": "Caller must handle discipline references and session assignments"
+    },
+
+    "validation": {
+      "method": "AgentGenerator.validateDefinition(agent: AgentDefinition)",
+      "checks": [
+        "Required fields present",
+        "Charter length (warning if < 100 chars)",
+        "Tools assignment (warning if empty)",
+        "Tags assignment (warning if empty)",
+        "Capability-tool consistency"
+      ]
+    }
+  },
+
+  "communication": {
+    "coordinatorPattern": "@wundr/agent-delegation",
+    "hubAndSpoke": {
+      "coordinator": "HubCoordinator class",
+      "registration": "coordinator.registerAgent(input: AgentDefinitionInput)",
+      "delegation": "coordinator.delegateTask(task: DelegationTaskInput)",
+      "parallel": "coordinator.delegateParallel(request: ParallelDelegationRequest)",
+      "location": "@wundr/agent-delegation/src/coordinator.ts"
+    },
+
+    "agentSelection": {
+      "preferredAgent": "Task can specify preferredAgentId",
+      "capabilityMatching": "Filters agents by requiredCapabilities array",
+      "scoring": {
+        "capabilityMatch": "50 points for matching all required capabilities",
+        "extraCapabilities": "2 points per extra capability (max 10)",
+        "expertiseLevel": "10 points for expert, 5 for proficient",
+        "loadPenalty": "-10 points per active task"
+      },
+      "selection": "Highest score wins"
+    },
+
+    "taskExecution": {
+      "assignment": "Task assigned to selected agent via HubCoordinator",
+      "timeout": "Configurable per task, agent, or global default (60000ms)",
+      "retry": {
+        "enabled": "config.retryFailedDelegations",
+        "maxRetries": "agent.retryPolicy?.maxRetries ?? config.maxRetries (default: 3)",
+        "backoff": "Exponential with configurable multiplier"
+      },
+      "monitoring": "ActiveDelegation tracking with startedAt, timeout handle"
+    },
+
+    "resultSynthesis": {
+      "strategies": ["merge", "consensus", "vote", "aggregate"],
+      "parallelResults": "Automatic synthesis for multiple successful delegations",
+      "component": "ResultSynthesizer class"
+    }
+  },
+
+  "parentRelation": {
+    "tier2_sessionManagers": {
+      "name": "Session Managers (Discipline coordinators)",
+      "tier": 2,
+      "location": "@wundr/org-genesis/src/templates/charters/session-manager-template.ts",
+      "relationship": "Session Managers coordinate Tier 3 subagents within a discipline",
+
+      "mcpTools": [
+        "agent_spawn - Create and manage subordinate agents",
+        "task_orchestrate - Distribute tasks to agents",
+        "code_review - Initiate code review workflows",
+        "memory_store - Store discipline context",
+        "memory_retrieve - Query historical context",
+        "agent_metrics - Monitor agent performance",
+        "filesystem - Read access for context",
+        "task_status",
+        "task_results"
+      ],
+
+      "resourceLimits": {
+        "maxConcurrentSessions": 5,
+        "tokenBudgetPerHour": 200000,
+        "maxMemoryMB": 512,
+        "maxCpuPercent": 25
+      },
+
+      "agentManagement": {
+        "agentIds": "Array of managed Tier 3 agent IDs",
+        "spawning": "Via agent_spawn MCP tool",
+        "taskDistribution": "Via task_orchestrate MCP tool",
+        "monitoring": "Via agent_metrics MCP tool"
+      }
+    },
+
+    "tier1_orchestrators": {
+      "name": "Orchestrators (VPs - Virtual Personas)",
+      "tier": 1,
+      "relationship": "Orchestrators own Session Managers and provide strategic direction",
+      "sessionOwnership": "Sessions are owned by Orchestrators who provide resources",
+      "escalation": "Session Managers escalate cross-discipline concerns to parent Orchestrator"
+    },
+
+    "sessionContext": {
+      "type": "SessionContext interface",
+      "location": "@wundr/org-genesis/src/types/session.ts:159",
+
+      "structure": {
+        "id": "Unique session identifier",
+        "disciplineId": "Discipline this session operates under",
+        "parentVpId": "Orchestrator that owns this session",
+        "sessionManagerId": "Optional Session Manager for coordinated workflows",
+        "worktreePath": "Git worktree path for isolated operations",
+        "status": "pending|compiling|ready|active|paused|completed|failed",
+        "compiledConfig": "CLAUDE.md, claude.config.json, settings.json, agent definitions",
+        "memoryBank": "Paths for active context, progress, product context, decision log",
+        "activeAgentIds": "Currently active Tier 3 agent IDs",
+        "startedAt": "Activation timestamp",
+        "completedAt": "Completion timestamp",
+        "metadata": "Extensible session properties"
+      }
+    },
+
+    "agentAssignment": {
+      "type": "AgentAssignment interface",
+      "location": "@wundr/org-genesis/src/types/agent.ts:438",
+
+      "fields": {
+        "agentId": "Unique identifier of assigned agent",
+        "sessionId": "Session this agent is bound to",
+        "role": "Custom role per assignment (e.g., 'lead-developer', 'qa-reviewer')",
+        "priority": "primary | secondary | support",
+        "worktreeMode": "shared | isolated"
+      }
+    }
+  },
+
+  "globalSubagents": {
+    "description": "Universal agents available across all disciplines",
+    "count": 5,
+    "constant": "UNIVERSAL_AGENTS array",
+    "location": "@wundr/org-genesis/src/types/agent.ts:500",
+
+    "agents": {
+      "researcher": {
+        "description": "Gathers information, analyzes data, synthesizes findings",
+        "model": "sonnet",
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": false,
+          "canExecuteCommands": false,
+          "canAccessNetwork": true,
+          "canSpawnSubAgents": false
+        },
+        "tools": ["read", "glob", "grep"]
+      },
+      "scribe": {
+        "description": "Documents decisions, meetings, and processes",
+        "model": "haiku",
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": true,
+          "canExecuteCommands": false,
+          "canAccessNetwork": false,
+          "canSpawnSubAgents": false
+        },
+        "tools": ["read", "write", "edit"]
+      },
+      "project-manager": {
+        "description": "Tracks tasks, timelines, and dependencies",
+        "model": "sonnet",
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": true,
+          "canExecuteCommands": false,
+          "canAccessNetwork": false,
+          "canSpawnSubAgents": false
+        },
+        "tools": ["read", "write", "glob"]
+      },
+      "reviewer": {
+        "description": "Reviews work output for quality, correctness, and standards",
+        "model": "sonnet",
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": false,
+          "canExecuteCommands": false,
+          "canAccessNetwork": false,
+          "canSpawnSubAgents": false
+        },
+        "tools": ["read", "grep", "glob"]
+      },
+      "tester": {
+        "description": "Creates and executes tests to validate functionality",
+        "model": "sonnet",
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": true,
+          "canExecuteCommands": true,
+          "canAccessNetwork": false,
+          "canSpawnSubAgents": false
+        },
+        "tools": ["read", "write", "bash", "glob"]
+      }
+    },
+
+    "autoInclusion": "Universal agents automatically added to disciplines during generation",
+    "disciplineAssociation": "usedByDisciplines array updated when added to discipline"
+  },
+
+  "scopedSubagents": {
+    "description": "Discipline-specific agents only available within assigned disciplines",
+    "scope": "discipline-specific",
+
+    "categories": {
+      "engineering": {
+        "examples": [
+          "code-developer",
+          "code-reviewer",
+          "devops-engineer"
+        ],
+        "tools": ["read", "write", "edit", "bash", "glob", "grep"],
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": true,
+          "canExecuteCommands": true,
+          "canAccessNetwork": true,
+          "canSpawnSubAgents": false
+        }
+      },
+      "legal": {
+        "examples": [
+          "contract-analyst",
+          "compliance-monitor"
+        ],
+        "model": "opus (for contract analysis)",
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": false,
+          "canExecuteCommands": false,
+          "canAccessNetwork": false,
+          "canSpawnSubAgents": false
+        }
+      },
+      "finance": {
+        "examples": ["financial-analyst"],
+        "capabilities": {
+          "canReadFiles": true,
+          "canWriteFiles": true,
+          "canExecuteCommands": false,
+          "canAccessNetwork": false,
+          "canSpawnSubAgents": false
+        }
+      }
+    },
+
+    "generation": {
+      "llmBased": "Uses LLM provider to generate discipline-specific agents",
+      "templateFallback": "Falls back to CATEGORY_AGENT_TEMPLATES if LLM unavailable",
+      "validation": "All generated agents validated before inclusion"
+    }
+  },
+
+  "orchestratorSubagents": {
+    "tier1Control": {
+      "description": "Orchestrators don't directly manage Tier 3 subagents",
+      "pattern": "Orchestrator -> Session Manager -> Tier 3 Subagents",
+      "reasoning": "Separation of strategic (Tier 1) and operational (Tier 2) concerns"
+    },
+
+    "sessionSlots": {
+      "type": "SessionSlot interface",
+      "location": "@wundr/org-genesis/src/types/session.ts:373",
+      "purpose": "Orchestrators have limited concurrent session slots",
+      "states": ["available", "reserved", "active"],
+      "ownership": "Slots permanently assigned to Orchestrators",
+      "resourceManagement": "Fair distribution and capacity planning"
+    },
+
+    "indirectControl": {
+      "via": "Session Manager coordination",
+      "usedByVps": "Optional field in AgentDefinition for direct Orchestrator access",
+      "useCase": "Universal agents or special-purpose agents"
+    }
+  },
+
+  "gaps": {
+    "subagentLifecycle": {
+      "gap": "No explicit spawn/terminate lifecycle hooks in AgentDefinition",
+      "current": "Registration/removal through AgentRegistry",
+      "missing": [
+        "onSpawn event handler",
+        "onTerminate cleanup handler",
+        "Agent state transitions",
+        "Graceful shutdown coordination"
+      ]
+    },
+
+    "runtimeState": {
+      "gap": "AgentDefinition is static, no runtime state tracking",
+      "partial": "AgentWithStatus extends AgentDefinition (status, lastActiveAt, assignmentCount)",
+      "missing": [
+        "Current task queue",
+        "Active session bindings",
+        "Resource utilization metrics",
+        "Health status",
+        "Error states"
+      ]
+    },
+
+    "interAgentCommunication": {
+      "gap": "No built-in peer-to-peer communication between Tier 3 agents",
+      "current": "Hub-and-spoke via HubCoordinator only",
+      "missing": [
+        "Direct agent-to-agent messaging",
+        "Agent discovery protocol",
+        "Capability negotiation",
+        "Result sharing without coordinator"
+      ]
+    },
+
+    "sessionManagement": {
+      "gap": "Session Manager -> Tier 3 agent binding not fully explicit",
+      "partial": "SessionContext.activeAgentIds tracks active agents",
+      "missing": [
+        "Agent assignment history",
+        "Reassignment policies",
+        "Load balancing across agents",
+        "Agent affinity/anti-affinity rules"
+      ]
+    },
+
+    "warmStart": {
+      "gap": "Limited warm-start context sharing",
+      "current": "CompileSessionRequest.warmStartContext (string only)",
+      "missing": [
+        "Structured context transfer",
+        "Agent memory persistence across sessions",
+        "Learned preferences/patterns",
+        "Historical performance data"
+      ]
+    },
+
+    "observability": {
+      "gap": "Limited agent observability and debugging",
+      "partial": "AuditLogManager, SessionMetrics, SessionEvent",
+      "missing": [
+        "Real-time agent tracing",
+        "Step-by-step execution logs",
+        "Tool invocation history",
+        "Decision reasoning capture",
+        "Performance profiling"
+      ]
+    },
+
+    "errorHandling": {
+      "gap": "Basic error handling, limited recovery",
+      "current": "Retry with exponential backoff",
+      "missing": [
+        "Error classification",
+        "Fallback strategies",
+        "Partial result recovery",
+        "Self-healing mechanisms",
+        "Circuit breaker patterns"
+      ]
+    },
+
+    "dynamicCapabilities": {
+      "gap": "Static capability definition",
+      "current": "AgentCapabilities defined at registration",
+      "missing": [
+        "Runtime capability discovery",
+        "Dynamic tool addition",
+        "Capability elevation/restriction",
+        "Context-aware permissions"
+      ]
+    }
+  },
+
+  "recommendations": {
+    "immediateImprovements": [
+      {
+        "priority": "High",
+        "area": "Runtime state tracking",
+        "recommendation": "Extend AgentDefinition with runtime state or create AgentRuntime interface",
+        "benefits": ["Better monitoring", "Resource management", "Debugging"],
+        "implementation": "Add AgentRuntime class wrapping AgentDefinition with state"
+      },
+      {
+        "priority": "High",
+        "area": "Session-agent binding",
+        "recommendation": "Create explicit AgentSessionBinding type",
+        "benefits": ["Clear ownership", "History tracking", "Easier debugging"],
+        "implementation": "New type with sessionId, agentId, assignedAt, releasedAt, metrics"
+      },
+      {
+        "priority": "Medium",
+        "area": "Lifecycle hooks",
+        "recommendation": "Add onSpawn, onTerminate, onError hooks to AgentDefinition",
+        "benefits": ["Cleanup automation", "Resource management", "Event-driven coordination"],
+        "implementation": "Optional callback fields in AgentDefinition or separate LifecycleHooks interface"
+      },
+      {
+        "priority": "Medium",
+        "area": "Observability",
+        "recommendation": "Enhance SessionEvent with agent-specific events",
+        "benefits": ["Better debugging", "Performance analysis", "Audit trails"],
+        "implementation": "Add agent.task_started, agent.tool_invoked, agent.decision_made events"
+      },
+      {
+        "priority": "Low",
+        "area": "Warm-start context",
+        "recommendation": "Structure warmStartContext as typed object",
+        "benefits": ["Better context transfer", "Faster onboarding", "Learning retention"],
+        "implementation": "Define WarmStartContext interface with categorized memory"
+      }
+    ],
+
+    "architecturalEnhancements": [
+      {
+        "area": "Agent discovery",
+        "recommendation": "Implement capability-based agent discovery service",
+        "benefits": ["Dynamic agent selection", "Better resource utilization"],
+        "approach": "Central registry with query API for capability matching"
+      },
+      {
+        "area": "Inter-agent collaboration",
+        "recommendation": "Add optional peer-to-peer communication layer",
+        "benefits": ["Reduced coordinator load", "Faster collaboration"],
+        "approach": "Message bus pattern with topic subscriptions"
+      },
+      {
+        "area": "Dynamic capabilities",
+        "recommendation": "Runtime capability elevation/restriction system",
+        "benefits": ["Security", "Flexibility", "Resource optimization"],
+        "approach": "Capability tokens with expiry and revocation"
+      },
+      {
+        "area": "Error recovery",
+        "recommendation": "Implement circuit breaker and fallback patterns",
+        "benefits": ["Resilience", "Graceful degradation"],
+        "approach": "State machine for error states with recovery strategies"
+      },
+      {
+        "area": "Memory persistence",
+        "recommendation": "Cross-session agent memory with garbage collection",
+        "benefits": ["Learning retention", "Performance improvement"],
+        "approach": "MemoryBank per agent with TTL and importance scoring"
+      }
+    ],
+
+    "bestPractices": [
+      {
+        "practice": "Principle of least privilege",
+        "description": "Only grant necessary capabilities to agents",
+        "current": "Well implemented with DEFAULT_AGENT_CAPABILITIES",
+        "enforcement": "Validation in AgentGenerator"
+      },
+      {
+        "practice": "Separation of concerns",
+        "description": "Clear tier boundaries (Orchestrator -> Session Manager -> Tier 3)",
+        "current": "Well defined with tier field and parentVpId",
+        "recommendation": "Enforce tier-appropriate tool access"
+      },
+      {
+        "practice": "Idempotency",
+        "description": "Agent operations should be repeatable",
+        "current": "Not enforced",
+        "recommendation": "Add idempotency key support to task execution"
+      },
+      {
+        "practice": "Audit logging",
+        "description": "Track all agent actions for compliance",
+        "current": "Partially implemented with AuditLogManager",
+        "recommendation": "Mandatory audit logging for sensitive operations"
+      },
+      {
+        "practice": "Resource limits",
+        "description": "Prevent agent resource exhaustion",
+        "current": "Defined in Session Manager charter",
+        "recommendation": "Enforce at Tier 3 agent level with quotas"
+      }
+    ]
+  },
+
+  "codebaseLocations": {
+    "coreTypes": {
+      "agent": "@wundr/org-genesis/src/types/agent.ts",
+      "session": "@wundr/org-genesis/src/types/session.ts",
+      "discipline": "@wundr/org-genesis/src/types/discipline.ts"
+    },
+
+    "registry": {
+      "agentRegistry": "@wundr/org-genesis/src/registry/agent-registry.ts",
+      "registryManager": "@wundr/org-genesis/src/registry/registry-manager.ts",
+      "storage": {
+        "interface": "@wundr/org-genesis/src/registry/storage/storage-interface.ts",
+        "file": "@wundr/org-genesis/src/registry/storage/file-storage.ts",
+        "memory": "@wundr/org-genesis/src/registry/storage/memory-storage.ts"
+      }
+    },
+
+    "generation": {
+      "generator": "@wundr/org-genesis/src/generator/agent-generator.ts",
+      "prompts": "@wundr/org-genesis/src/generator/prompts/agent-prompts.ts"
+    },
+
+    "coordination": {
+      "hubCoordinator": "@wundr/agent-delegation/src/coordinator.ts",
+      "resultSynthesizer": "@wundr/agent-delegation/src/result-synthesizer.ts",
+      "auditLog": "@wundr/agent-delegation/src/audit-log.ts"
+    },
+
+    "templates": {
+      "sessionManager": "@wundr/org-genesis/src/templates/charters/session-manager-template.ts",
+      "universalAgents": "@wundr/org-genesis/src/generator/agent-generator.ts (lines 241-483)"
+    },
+
+    "integration": {
+      "aiIntegration": "@wundr/ai-integration/src/agents/AgentRegistry.ts",
+      "neolithAgents": "@wundr/neolith/apps/web/types/agent.ts"
+    }
+  },
+
+  "summary": {
+    "architecture": "3-tier hierarchical: Orchestrator (Tier 1) -> Session Manager (Tier 2) -> Subagents (Tier 3)",
+    "subagentCount": "5 universal + unlimited discipline-specific",
+    "scopeModel": "Universal (global) vs Discipline-specific (scoped)",
+    "storageModel": "Registry-based with file/memory backends",
+    "coordinationPattern": "Hub-and-spoke delegation via HubCoordinator",
+    "generationModel": "LLM-powered + template fallback",
+    "capabilityModel": "Least privilege with fine-grained permissions",
+    "sessionModel": "Session-scoped with isolated worktrees and memory banks",
+    "strengths": [
+      "Clear tier separation",
+      "Flexible scope model",
+      "Comprehensive capability system",
+      "Pluggable storage backends",
+      "AI-powered generation",
+      "Template fallback safety"
+    ],
+    "weaknesses": [
+      "Limited runtime state tracking",
+      "No agent lifecycle hooks",
+      "Basic warm-start context",
+      "Limited inter-agent communication",
+      "Static capability model"
+    ]
+  }
+}
