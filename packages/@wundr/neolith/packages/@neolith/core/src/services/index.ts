@@ -22,6 +22,43 @@ export {
 } from './orchestrator-service';
 
 // =============================================================================
+// Session Manager Service
+// =============================================================================
+
+export {
+  // Service implementation
+  SessionManagerServiceImpl,
+  createSessionManagerService,
+
+  // Interfaces
+  type SessionManagerService,
+
+  // Errors
+  SessionManagerNotFoundError,
+  SessionManagerValidationError,
+  OrchestratorNotFoundError as SessionManagerOrchestratorNotFoundError,
+} from './session-manager-service';
+
+// =============================================================================
+// Subagent Service
+// =============================================================================
+
+export {
+  // Service implementation
+  SubagentServiceImpl,
+  createSubagentService,
+  subagentService,
+
+  // Interfaces
+  type SubagentService,
+
+  // Errors
+  SubagentNotFoundError,
+  SubagentValidationError,
+  SessionManagerNotFoundError as SubagentSessionManagerNotFoundError,
+} from './subagent-service';
+
+// =============================================================================
 // Message Service
 // =============================================================================
 

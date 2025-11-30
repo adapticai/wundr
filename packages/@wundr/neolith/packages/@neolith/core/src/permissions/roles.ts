@@ -405,6 +405,9 @@ export function getOrganizationRolePermissions(
   role: OrganizationRole,
 ): Permission[] {
   const roleDefinition = ORGANIZATION_ROLES[role];
+  if (!roleDefinition) {
+    throw new Error(`Invalid organization role: ${role}`);
+  }
   return resolveRolePermissions(
     roleDefinition,
     ORGANIZATION_ROLES as Record<string, RoleDefinition>,
@@ -419,6 +422,9 @@ export function getOrganizationRolePermissions(
  */
 export function getWorkspaceRolePermissions(role: WorkspaceRole): Permission[] {
   const roleDefinition = WORKSPACE_ROLES[role];
+  if (!roleDefinition) {
+    throw new Error(`Invalid workspace role: ${role}`);
+  }
   return resolveRolePermissions(
     roleDefinition,
     WORKSPACE_ROLES as Record<string, RoleDefinition>,
@@ -433,6 +439,9 @@ export function getWorkspaceRolePermissions(role: WorkspaceRole): Permission[] {
  */
 export function getChannelRolePermissions(role: ChannelRole): Permission[] {
   const roleDefinition = CHANNEL_ROLES[role];
+  if (!roleDefinition) {
+    throw new Error(`Invalid channel role: ${role}`);
+  }
   return resolveRolePermissions(
     roleDefinition,
     CHANNEL_ROLES as Record<string, RoleDefinition>,

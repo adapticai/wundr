@@ -530,7 +530,7 @@ export const presenceQueries = {
 
     // Check if user is a member of the channel
     const isMember = channel.channelMembers.some(
-      (m) => m.userId === context.user.id
+      (m: typeof channel.channelMembers[number]) => m.userId === context.user.id
     );
 
     // For private channels, only members can see presence
@@ -542,8 +542,8 @@ export const presenceQueries = {
 
     // Get online users
     const onlineUsers = channel.channelMembers
-      .map((m) => buildUserPresence(m.user))
-      .filter((p) => p.isOnline);
+      .map((m: typeof channel.channelMembers[number]) => buildUserPresence(m.user))
+      .filter((p: UserPresence) => p.isOnline);
 
     return {
       channelId: args.channelId,
@@ -685,7 +685,7 @@ export const presenceQueries = {
     });
 
     // Get message counts for all VPs
-    const vpUserIds = orchestrators.map((vp) => vp.userId);
+    const vpUserIds = orchestrators.map((vp: typeof orchestrators[number]) => vp.userId);
     const messageCounts = await context.prisma.message.groupBy({
       by: ['authorId'],
       where: { authorId: { in: vpUserIds } },
@@ -693,10 +693,10 @@ export const presenceQueries = {
     });
 
     const messageCountMap = new Map(
-      messageCounts.map((mc) => [mc.authorId, mc._count?.id ?? 0])
+      messageCounts.map((mc: typeof messageCounts[number]) => [mc.authorId, mc._count?.id ?? 0])
     );
 
-    return orchestrators.map((vp) => ({
+    return orchestrators.map((vp: typeof orchestrators[number]) => ({
       orchestratorId: vp.id,
       userId: vp.userId,
       status: vp.status as OrchestratorPresenceStatusType,
@@ -957,8 +957,8 @@ export const presenceMutations = {
     }
 
     const onlineUsers = channel.channelMembers
-      .map((m) => buildUserPresence(m.user))
-      .filter((p) => p.isOnline);
+      .map((m: typeof channel.channelMembers[number]) => buildUserPresence(m.user))
+      .filter((p: UserPresence) => p.isOnline);
 
     const presence: ChannelPresence = {
       channelId: args.channelId,
@@ -1043,8 +1043,8 @@ export const presenceMutations = {
 
     // Filter out the current user from online users
     const onlineUsers = channel.channelMembers
-      .map((m) => buildUserPresence(m.user))
-      .filter((p) => p.isOnline && p.userId !== context.user.id);
+      .map((m: typeof channel.channelMembers[number]) => buildUserPresence(m.user))
+      .filter((p: UserPresence) => p.isOnline && p.userId !== context.user.id);
 
     const presence: ChannelPresence = {
       channelId: args.channelId,

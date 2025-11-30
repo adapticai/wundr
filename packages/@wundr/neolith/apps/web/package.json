@@ -91,6 +91,7 @@
     "@neolith/eslint-config": "workspace:*",
     "@neolith/tailwind-config": "workspace:*",
     "@neolith/typescript-config": "workspace:*",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^20.10.6",

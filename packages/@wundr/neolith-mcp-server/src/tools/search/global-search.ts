@@ -172,8 +172,13 @@ export async function globalSearchHandler(
       params,
     );
 
-    // Extract results and pagination
-    const { data: results, pagination, facets: responseFacets } = response;
+    // Check for API errors
+    if (response.error || !response.data) {
+      throw new Error(response.error || 'No data returned from API');
+    }
+
+    // Extract results and pagination from response.data
+    const { data: results, pagination, facets: responseFacets } = response.data;
 
     return {
       success: true,

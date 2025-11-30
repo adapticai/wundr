@@ -38,6 +38,10 @@ import { Separator } from '@/components/ui/separator';
 import { useOrchestrator, useOrchestratorMutations } from '@/hooks/use-orchestrator';
 import { cn } from '@/lib/utils';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
+import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
+import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
+import { SubagentList } from '@/components/orchestrator/subagent-list';
+import { SubagentCreate } from '@/components/orchestrator/subagent-create';
 
 import type { UpdateOrchestratorInput } from '@/types/orchestrator';
 
@@ -313,10 +317,18 @@ export default function OrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">
             <Activity className="h-4 w-4 mr-2" />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value="session-managers">
+            <Users className="h-4 w-4 mr-2" />
+            Session Managers
+          </TabsTrigger>
+          <TabsTrigger value="subagents">
+            <Brain className="h-4 w-4 mr-2" />
+            Subagents
           </TabsTrigger>
           <TabsTrigger value="configuration">
             <Settings className="h-4 w-4 mr-2" />
@@ -331,6 +343,14 @@ export default function OrchestratorDetailPage() {
             Capabilities
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="session-managers" className="space-y-4 mt-6">
+          <SessionManagersTab orchestratorId={orchestrator.id} />
+        </TabsContent>
+
+        <TabsContent value="subagents" className="space-y-4 mt-6">
+          <SubagentsTab />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4 mt-6">
           <Card>
@@ -656,6 +676,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
    */
   useEffect(() => {
     fetchActivities(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orchestratorId, workspaceSlug]); // Re-fetch when IDs change
 
   // Loading state
@@ -799,6 +820,140 @@ function OrchestratorDetailSkeleton() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/**
+ * Session Managers Tab Component
+ *
+ * Manages Session Managers for the Orchestrator with create/edit capabilities
+ */
+function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  // TODO: Use selectedSessionManager for detail view
+  const [_selectedSessionManager, _setSelectedSessionManager] = useState<unknown | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleCreateNew = () => {
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreated = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
+  const handleSelect = (sessionManager: unknown) => {
+    _setSelectedSessionManager(sessionManager);
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Session Manager Overview</CardTitle>
+          <CardDescription>
+            Session Managers orchestrate Claude Code/Flow sessions with up to 20 subagents.
+            They manage task distribution, token budgets, and coordination between subagents.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <MetricCard label="Total Session Managers" value="0" />
+            <MetricCard label="Active Sessions" value="0" />
+            <MetricCard label="Total Subagents" value="0" />
+            <MetricCard label="Token Budget/hr" value="0" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <SessionManagerList
+        key={refreshKey}
+        orchestratorId={orchestratorId}
+        onSelect={handleSelect}
+        onCreateNew={handleCreateNew}
+      />
+
+      <SessionManagerCreate
+        orchestratorId={orchestratorId}
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onCreated={handleCreated}
+      />
+    </>
+  );
+}
+
+/**
+ * Subagents Tab Component
+ *
+ * Displays universal subagents and session-specific subagents
+ */
+function SubagentsTab() {
+  const [selectedSessionManager, setSelectedSessionManager] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleCreateNew = () => {
+    if (!selectedSessionManager) {
+      alert('Please select a Session Manager first');
+      return;
+    }
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreated = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Subagent Management</CardTitle>
+          <CardDescription>
+            Subagents are specialized workers that perform tasks under Session Manager coordination.
+            Universal subagents are available to all orchestrators.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      {/* Universal Subagents */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Universal Subagents</h3>
+        <SubagentList
+          key={`universal-${refreshKey}`}
+          showUniversal={true}
+        />
+      </div>
+
+      <Separator className="my-6" />
+
+      {/* Session Manager Specific Subagents */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Session Manager Subagents</h3>
+        {selectedSessionManager ? (
+          <>
+            <SubagentList
+              key={`sm-${selectedSessionManager}-${refreshKey}`}
+              sessionManagerId={selectedSessionManager}
+              onCreateNew={handleCreateNew}
+            />
+            <SubagentCreate
+              sessionManagerId={selectedSessionManager}
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+              onCreated={handleCreated}
+            />
+          </>
+        ) : (
+          <Card>
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              Select a Session Manager from the Session Managers tab to view and manage its subagents.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </>
   );
 }
 

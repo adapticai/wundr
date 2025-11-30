@@ -677,7 +677,7 @@ export const workspaceQueries = {
     const hasNextPage = workspaces.length > first;
     const nodes = hasNextPage ? workspaces.slice(0, -1) : workspaces;
 
-    const edges = nodes.map((ws) => {
+    const edges = nodes.map((ws: PrismaWorkspace) => {
       const wsData = toWorkspace(ws);
       return {
         node: wsData,
@@ -778,7 +778,7 @@ export const workspaceQueries = {
     const hasNextPage = members.length > first;
     const nodes = hasNextPage ? members.slice(0, -1) : members;
 
-    const edges = nodes.map((member) => ({
+    const edges = nodes.map((member: typeof nodes[number]) => ({
       node: {
         id: member.id,
         role: member.role,

@@ -18,6 +18,10 @@ import type { User, Orchestrator, OrchestratorStatus } from '@neolith/database';
  * Represents the complete Orchestrator profile including the linked User record.
  */
 export interface OrchestratorWithUser extends Orchestrator {
+  /** Unique identifier */
+  id: string;
+  /** Orchestrator's specific role within the discipline */
+  role: string;
   /** The associated user record */
   user: User;
   /** The user ID (foreign key) */

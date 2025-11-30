@@ -880,7 +880,7 @@ export const messageQueries = {
     const hasNextPage = messages.length > limit;
     const nodes = hasNextPage ? messages.slice(0, -1) : messages;
 
-    const edges = nodes.map((msg) => {
+    const edges = nodes.map((msg: PrismaMessage) => {
       const messageData = toMessage(msg);
       return {
         node: messageData,
@@ -990,7 +990,7 @@ export const messageQueries = {
     const hasNextPage = messages.length > limit;
     const nodes = hasNextPage ? messages.slice(0, -1) : messages;
 
-    const edges = nodes.map((msg) => {
+    const edges = nodes.map((msg: PrismaMessage) => {
       const messageData = toMessage(msg);
       return {
         node: messageData,
@@ -1055,7 +1055,7 @@ export const messageQueries = {
       select: { channelId: true },
     });
 
-    const accessibleChannelIds = accessibleChannels.map((cm) => cm.channelId);
+    const accessibleChannelIds = accessibleChannels.map((cm: { channelId: string }) => cm.channelId);
 
     // Build search query
     const where: Prisma.messageWhereInput = {
@@ -2340,7 +2340,7 @@ export const MessageFieldResolvers = {
       orderBy: { createdAt: 'asc' },
     });
 
-    const edges = replies.map((msg) => {
+    const edges = replies.map((msg: PrismaMessage) => {
       const messageData = toMessage(msg);
       return {
         node: messageData,
@@ -2383,7 +2383,7 @@ export const MessageFieldResolvers = {
       include: { file: true },
     });
 
-    return attachments.map((a) => a.file);
+    return attachments.map((a: typeof attachments[number]) => a.file);
   },
 
   /**

@@ -709,7 +709,7 @@ export const channelQueries = {
     const hasNextPage = channels.length > first;
     const nodes = hasNextPage ? channels.slice(0, -1) : channels;
 
-    const edges = nodes.map((ch) => {
+    const edges = nodes.map((ch: PrismaChannel) => {
       const chData = toChannel(ch);
       return {
         node: chData,
@@ -821,7 +821,7 @@ export const channelQueries = {
     const hasNextPage = members.length > first;
     const nodes = hasNextPage ? members.slice(0, -1) : members;
 
-    const edges = nodes.map((member) => ({
+    const edges = nodes.map((member: typeof members[number]) => ({
       node: {
         id: member.id,
         role: member.role,
@@ -911,9 +911,9 @@ export const channelQueries = {
       select: { workspaceId: true },
     });
 
-    const firstUserWsIds = new Set(firstUserWorkspaces.map((m) => m.workspaceId));
+    const firstUserWsIds = new Set(firstUserWorkspaces.map((m: { workspaceId: string }) => m.workspaceId));
     const commonWorkspaceId = secondUserWorkspaces.find(
-      (m) => firstUserWsIds.has(m.workspaceId)
+      (m: { workspaceId: string }) => firstUserWsIds.has(m.workspaceId)
     )?.workspaceId;
 
     if (!commonWorkspaceId) {

@@ -87,7 +87,7 @@ export async function searchUsers(
       };
     }
 
-    const params = {
+    const params: Record<string, string | number> = {
       q: query,
       types: 'users',
       limit,
@@ -104,12 +104,23 @@ export async function searchUsers(
       };
     }>(`/api/workspaces/${workspaceSlug}/search`, params);
 
+    // Check for API errors
+    if (response.error || !response.data) {
+      return {
+        success: false,
+        error: response.error || 'No data returned from API',
+        message: 'Failed to search users',
+      };
+    }
+
+    const { data: results, pagination } = response.data;
+
     return {
       success: true,
-      message: `Found ${response.data.length} users matching "${query}"`,
+      message: `Found ${results.length} users matching "${query}"`,
       data: {
-        results: response.data,
-        pagination: response.pagination,
+        results,
+        pagination,
       },
     };
   } catch (error) {

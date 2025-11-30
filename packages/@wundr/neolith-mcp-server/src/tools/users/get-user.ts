@@ -67,12 +67,21 @@ export async function getUser(
       };
     }
 
-    const user = await apiClient.get<UserProfile>(`/api/users/${userId}`);
+    const response = await apiClient.get<UserProfile>(`/api/users/${userId}`);
+
+    // Check for API errors
+    if (response.error || !response.data) {
+      return {
+        success: false,
+        error: response.error || 'No user data returned',
+        message: 'Failed to retrieve user profile',
+      };
+    }
 
     return {
       success: true,
       message: `Successfully retrieved user profile for ${userId}`,
-      data: user,
+      data: response.data,
     };
   } catch (error) {
     return {

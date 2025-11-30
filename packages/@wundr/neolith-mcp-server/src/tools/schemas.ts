@@ -461,6 +461,162 @@ export const OrchestratorConflictsSchema = z.object({
 export type OrchestratorConflictsInput = z.infer<typeof OrchestratorConflictsSchema>;
 
 // ============================================================================
+// Session Manager Tool Schemas
+// ============================================================================
+
+/**
+ * Schema for session-manager-list tool
+ */
+export const SessionManagerListSchema = z.object({
+  workspaceSlug: z.string().describe('The workspace slug to list session managers from'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'PAUSED']).optional().describe('Filter by session manager status'),
+  search: z.string().optional().describe('Search by name or description'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'name', 'status']).optional().describe('Field to sort by'),
+  sortOrder: z.enum(['asc', 'desc']).optional().describe('Sort direction'),
+  page: z.number().int().min(1).optional().describe('Page number (default: 1)'),
+  limit: z.number().int().min(1).max(100).optional().describe('Items per page (default: 20, max: 100)'),
+  cursor: z.string().optional().describe('Cursor for pagination'),
+});
+
+export type SessionManagerListInput = z.infer<typeof SessionManagerListSchema>;
+
+/**
+ * Schema for session-manager-get tool
+ */
+export const SessionManagerGetSchema = z.object({
+  sessionManagerId: z.string().describe('The session manager ID to fetch'),
+});
+
+export type SessionManagerGetInput = z.infer<typeof SessionManagerGetSchema>;
+
+/**
+ * Schema for session-manager-create tool
+ */
+export const SessionManagerCreateSchema = z.object({
+  workspaceSlug: z.string().describe('The workspace slug to create session manager in'),
+  name: z.string().min(1).describe('Session manager name'),
+  description: z.string().optional().describe('Session manager description'),
+  configuration: z.record(z.unknown()).optional().describe('Session manager configuration'),
+  orchestratorId: z.string().optional().describe('Associated orchestrator ID'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'PAUSED']).optional().default('ACTIVE').describe('Initial status'),
+});
+
+export type SessionManagerCreateInput = z.infer<typeof SessionManagerCreateSchema>;
+
+/**
+ * Schema for session-manager-update tool
+ */
+export const SessionManagerUpdateSchema = z.object({
+  sessionManagerId: z.string().describe('The session manager ID to update'),
+  name: z.string().min(1).optional().describe('Updated session manager name'),
+  description: z.string().optional().describe('Updated session manager description'),
+  configuration: z.record(z.unknown()).optional().describe('Updated session manager configuration'),
+  orchestratorId: z.string().optional().describe('Updated orchestrator ID'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'PAUSED']).optional().describe('Updated status'),
+});
+
+export type SessionManagerUpdateInput = z.infer<typeof SessionManagerUpdateSchema>;
+
+/**
+ * Schema for session-manager-activate tool
+ */
+export const SessionManagerActivateSchema = z.object({
+  sessionManagerId: z.string().describe('The session manager ID to activate'),
+  configuration: z.record(z.unknown()).optional().describe('Optional activation configuration'),
+});
+
+export type SessionManagerActivateInput = z.infer<typeof SessionManagerActivateSchema>;
+
+/**
+ * Schema for session-manager-deactivate tool
+ */
+export const SessionManagerDeactivateSchema = z.object({
+  sessionManagerId: z.string().describe('The session manager ID to deactivate'),
+  reason: z.string().optional().describe('Optional reason for deactivation'),
+});
+
+export type SessionManagerDeactivateInput = z.infer<typeof SessionManagerDeactivateSchema>;
+
+// ============================================================================
+// Subagent Tool Schemas
+// ============================================================================
+
+/**
+ * Schema for subagent-list tool
+ */
+export const SubagentListSchema = z.object({
+  sessionManagerId: z.string().describe('The session manager ID to list subagents from'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'BUSY', 'ERROR']).optional().describe('Filter by subagent status'),
+  type: z.string().optional().describe('Filter by subagent type'),
+  search: z.string().optional().describe('Search by name or description'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'name', 'status', 'type']).optional().describe('Field to sort by'),
+  sortOrder: z.enum(['asc', 'desc']).optional().describe('Sort direction'),
+  page: z.number().int().min(1).optional().describe('Page number (default: 1)'),
+  limit: z.number().int().min(1).max(100).optional().describe('Items per page (default: 20, max: 100)'),
+  cursor: z.string().optional().describe('Cursor for pagination'),
+});
+
+export type SubagentListInput = z.infer<typeof SubagentListSchema>;
+
+/**
+ * Schema for subagent-get tool
+ */
+export const SubagentGetSchema = z.object({
+  subagentId: z.string().describe('The subagent ID to fetch'),
+  includeStatistics: z.boolean().optional().default(true).describe('Include statistics'),
+  includeTasks: z.boolean().optional().default(false).describe('Include recent tasks'),
+});
+
+export type SubagentGetInput = z.infer<typeof SubagentGetSchema>;
+
+/**
+ * Schema for subagent-create tool
+ */
+export const SubagentCreateSchema = z.object({
+  sessionManagerId: z.string().describe('The session manager ID to create subagent for'),
+  name: z.string().min(1).describe('Subagent name'),
+  description: z.string().optional().describe('Subagent description'),
+  type: z.string().describe('Subagent type (e.g., "task-executor", "data-processor", "analyzer")'),
+  configuration: z.record(z.unknown()).optional().describe('Subagent configuration'),
+  capabilities: z.array(z.string()).optional().describe('List of subagent capabilities'),
+  orchestratorId: z.string().optional().describe('Associated orchestrator ID'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'BUSY', 'ERROR']).optional().default('ACTIVE').describe('Initial status'),
+});
+
+export type SubagentCreateInput = z.infer<typeof SubagentCreateSchema>;
+
+/**
+ * Schema for subagent-update tool
+ */
+export const SubagentUpdateSchema = z.object({
+  subagentId: z.string().describe('The subagent ID to update'),
+  name: z.string().min(1).optional().describe('Updated subagent name'),
+  description: z.string().optional().describe('Updated subagent description'),
+  type: z.string().optional().describe('Updated subagent type'),
+  configuration: z.record(z.unknown()).optional().describe('Updated subagent configuration'),
+  capabilities: z.array(z.string()).optional().describe('Updated list of capabilities'),
+  orchestratorId: z.string().optional().describe('Updated orchestrator ID'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'BUSY', 'ERROR']).optional().describe('Updated status'),
+});
+
+export type SubagentUpdateInput = z.infer<typeof SubagentUpdateSchema>;
+
+/**
+ * Schema for universal-subagents-list tool
+ */
+export const UniversalSubagentListSchema = z.object({
+  category: z.string().optional().describe('Filter by category'),
+  type: z.string().optional().describe('Filter by subagent type'),
+  search: z.string().optional().describe('Search by name or description'),
+  sortBy: z.enum(['name', 'category', 'type', 'popularity']).optional().describe('Field to sort by'),
+  sortOrder: z.enum(['asc', 'desc']).optional().describe('Sort direction'),
+  page: z.number().int().min(1).optional().describe('Page number (default: 1)'),
+  limit: z.number().int().min(1).max(100).optional().describe('Items per page (default: 20, max: 100)'),
+});
+
+export type UniversalSubagentListInput = z.infer<typeof UniversalSubagentListSchema>;
+
+// ============================================================================
 // Schema Registry
 // ============================================================================
 
@@ -539,6 +695,29 @@ export const OrchestratorToolSchemas = {
   'orchestrator-collaborate': OrchestratorCollaborateSchema,
   'orchestrator-analytics': OrchestratorAnalyticsSchema,
   'orchestrator-conflicts': OrchestratorConflictsSchema,
+} as const;
+
+/**
+ * Session Manager tool schemas
+ */
+export const SessionManagerToolSchemas = {
+  'session-manager-list': SessionManagerListSchema,
+  'session-manager-get': SessionManagerGetSchema,
+  'session-manager-create': SessionManagerCreateSchema,
+  'session-manager-update': SessionManagerUpdateSchema,
+  'session-manager-activate': SessionManagerActivateSchema,
+  'session-manager-deactivate': SessionManagerDeactivateSchema,
+} as const;
+
+/**
+ * Subagent tool schemas
+ */
+export const SubagentToolSchemas = {
+  'subagent-list': SubagentListSchema,
+  'subagent-get': SubagentGetSchema,
+  'subagent-create': SubagentCreateSchema,
+  'subagent-update': SubagentUpdateSchema,
+  'universal-subagents-list': UniversalSubagentListSchema,
 } as const;
 
 /**
@@ -733,6 +912,65 @@ export const NeolithToolSchemas = {
     description: 'List and manage orchestrator conflicts',
     category: 'orchestrators',
   },
+
+  // Session Manager tools
+  'session-manager-list': {
+    schema: SessionManagerListSchema,
+    description: 'List all session managers in a workspace',
+    category: 'session-managers',
+  },
+  'session-manager-get': {
+    schema: SessionManagerGetSchema,
+    description: 'Get details for a specific session manager',
+    category: 'session-managers',
+  },
+  'session-manager-create': {
+    schema: SessionManagerCreateSchema,
+    description: 'Create a new session manager',
+    category: 'session-managers',
+  },
+  'session-manager-update': {
+    schema: SessionManagerUpdateSchema,
+    description: 'Update an existing session manager',
+    category: 'session-managers',
+  },
+  'session-manager-activate': {
+    schema: SessionManagerActivateSchema,
+    description: 'Activate a session manager',
+    category: 'session-managers',
+  },
+  'session-manager-deactivate': {
+    schema: SessionManagerDeactivateSchema,
+    description: 'Deactivate a session manager',
+    category: 'session-managers',
+  },
+
+  // Subagent tools
+  'subagent-list': {
+    schema: SubagentListSchema,
+    description: 'List all subagents for a session manager',
+    category: 'subagents',
+  },
+  'subagent-get': {
+    schema: SubagentGetSchema,
+    description: 'Get details for a specific subagent',
+    category: 'subagents',
+  },
+  'subagent-create': {
+    schema: SubagentCreateSchema,
+    description: 'Create a new subagent',
+    category: 'subagents',
+  },
+  'subagent-update': {
+    schema: SubagentUpdateSchema,
+    description: 'Update an existing subagent',
+    category: 'subagents',
+  },
+  'universal-subagents-list': {
+    schema: UniversalSubagentListSchema,
+    description: 'List all universal subagent templates',
+    category: 'subagents',
+  },
 } as const;
 
 export type NeolithToolName = keyof typeof NeolithToolSchemas;
@@ -789,7 +1027,7 @@ export function zodToJsonSchema(zodSchema: z.ZodType<any>): Record<string, unkno
       case 'ZodEnum':
         propertySchema = { type: 'string', enum: innerDef.values };
         break;
-      case 'ZodArray':
+      case 'ZodArray': {
         const itemType = innerDef.type._def;
         propertySchema = {
           type: 'array',
@@ -799,13 +1037,15 @@ export function zodToJsonSchema(zodSchema: z.ZodType<any>): Record<string, unkno
           propertySchema['minItems'] = innerDef.minLength.value;
         }
         break;
+      }
       case 'ZodRecord':
         propertySchema = { type: 'object', additionalProperties: true };
         break;
-      case 'ZodDefault':
+      case 'ZodDefault': {
         const innerSchema = zodToJsonSchema(innerDef.innerType);
         propertySchema = { ...innerSchema, default: innerDef.defaultValue() };
         break;
+      }
       default:
         propertySchema = { type: 'string' };
     }

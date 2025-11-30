@@ -46,19 +46,19 @@ model backlogItem {
 }
 
 model backlog {
-  id           String        @id @default(cuid())
-  name         String
-  description  String?
-  status       String        @default("active")
-  priority     Int           @default(0)
-  metadata     Json          @default("{}")
-  orchestratorId String      @map("vp_id")
-  workspaceId  String        @map("workspace_id")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  backlogItems backlogItem[]
-  orchestrator orchestrator  @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator that owns this backlog
-  workspace    workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id             String        @id @default(cuid())
+  name           String
+  description    String?
+  status         String        @default("active")
+  priority       Int           @default(0)
+  metadata       Json          @default("{}")
+  orchestratorId String        @map("vp_id")
+  workspaceId    String        @map("workspace_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  backlogItems   backlogItem[]
+  orchestrator   orchestrator  @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator that owns this backlog
+  workspace      workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([orchestratorId, name])
   @@index([priority])
@@ -69,17 +69,17 @@ model backlog {
 }
 
 model channelMember {
-  id                    String      @id @default(cuid())
-  role                  ChannelRole @default(MEMBER)
-  channelId             String      @map("channel_id")
-  userId                String      @map("user_id")
-  joinedAt              DateTime    @default(now()) @map("joined_at")
-  lastReadAt            DateTime?   @map("last_read_at")
-  leftAt                DateTime?   @map("left_at")
-  isStarred             Boolean     @default(false) @map("is_starred")
-  notificationPreference String     @default("all") @map("notification_preference")
-  channel               channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user                  user        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                     String      @id @default(cuid())
+  role                   ChannelRole @default(MEMBER)
+  channelId              String      @map("channel_id")
+  userId                 String      @map("user_id")
+  joinedAt               DateTime    @default(now()) @map("joined_at")
+  lastReadAt             DateTime?   @map("last_read_at")
+  leftAt                 DateTime?   @map("left_at")
+  isStarred              Boolean     @default(false) @map("is_starred")
+  notificationPreference String      @default("all") @map("notification_preference")
+  channel                channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user                   user        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([channelId, userId])
   @@index([channelId])
@@ -116,22 +116,22 @@ model channel {
 }
 
 model daemonCredential {
-  id            String    @id @default(cuid())
-  apiKey        String    @unique @map("api_key")
-  apiSecretHash String    @map("api_secret_hash")
-  hostname      String?
-  version       String?
-  capabilities  String[]
-  metadata      Json?
-  isActive      Boolean   @default(true) @map("is_active")
-  orchestratorId String   @map("vp_id")
-  workspaceId   String    @map("workspace_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  expiresAt     DateTime? @map("expires_at")
-  lastUsedAt    DateTime?    @map("last_used_at")
-  orchestrator  orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator these credentials authenticate
-  workspace     workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  apiKey         String       @unique @map("api_key")
+  apiSecretHash  String       @map("api_secret_hash")
+  hostname       String?
+  version        String?
+  capabilities   String[]
+  metadata       Json?
+  isActive       Boolean      @default(true) @map("is_active")
+  orchestratorId String       @map("vp_id")
+  workspaceId    String       @map("workspace_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  expiresAt      DateTime?    @map("expires_at")
+  lastUsedAt     DateTime?    @map("last_used_at")
+  orchestrator   orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator these credentials authenticate
+  workspace      workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([apiKey])
   @@index([isActive])
@@ -141,14 +141,14 @@ model daemonCredential {
 }
 
 model discipline {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   name           String
   description    String?
   color          String?
   icon           String?
-  organizationId String       @map("organization_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  organizationId String         @map("organization_id")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
   organization   organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   orchestrators  orchestrator[] // Orchestrators associated with this discipline
 
@@ -398,22 +398,22 @@ model user {
   updatedAt            DateTime             @updatedAt @map("updated_at")
   lastActiveAt         DateTime?            @map("last_active_at")
   emailVerified        DateTime?            @map("email_verified")
-  accounts            account[]
-  channelMembers      channelMember[]
-  channels            channel[]
-  files               file[]
-  messages            message[]
-  notifications       notification[]
-  organizationMembers organizationMember[]
-  pushSubscriptions   pushSubscription[]
-  reactions           reaction[]
-  sessions            session[]
-  tasksAssignedTo     task[]               @relation("taskAssignedTo")
-  tasksCreatedBy      task[]               @relation("taskCreatedBy")
-  orchestrator        orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
-  workspaceMembers    workspaceMember[]
-  webhooks            webhook[]
-  savedItems          savedItem[]
+  accounts             account[]
+  channelMembers       channelMember[]
+  channels             channel[]
+  files                file[]
+  messages             message[]
+  notifications        notification[]
+  organizationMembers  organizationMember[]
+  pushSubscriptions    pushSubscription[]
+  reactions            reaction[]
+  sessions             session[]
+  tasksAssignedTo      task[]               @relation("taskAssignedTo")
+  tasksCreatedBy       task[]               @relation("taskCreatedBy")
+  orchestrator         orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
+  workspaceMembers     workspaceMember[]
+  webhooks             webhook[]
+  savedItems           savedItem[]
 
   @@index([email])
   @@index([status])
@@ -431,26 +431,27 @@ model verificationToken {
 
 /// Orchestrator - AI-powered autonomous agent for task execution and workflow automation
 model orchestrator {
-  id                String               @id @default(cuid())
-  discipline        String // Orchestrator's area of expertise (e.g., engineering, product, design)
-  role              String // Specific role within the discipline
-  capabilities      Json                 @default("[]") // List of capabilities and skills the Orchestrator possesses
-  daemonEndpoint    String?              @map("daemon_endpoint") // Endpoint for the daemon process running this Orchestrator
-  status            OrchestratorStatus   @default(OFFLINE) // Current operational status of the Orchestrator
-  userId            String               @unique @map("user_id") // Associated user account for this Orchestrator
-  organizationId    String               @map("organization_id")
-  workspaceId       String?              @map("workspace_id")
-  disciplineId      String?              @map("discipline_id")
-  createdAt         DateTime             @default(now()) @map("created_at")
-  updatedAt         DateTime             @updatedAt @map("updated_at")
-  backlogs          backlog[]
-  daemonCredentials daemonCredential[]
-  tasks             task[]
-  config            orchestratorConfig?
-  disciplineRef     discipline?          @relation(fields: [disciplineId], references: [id])
-  organization      organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user              user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String               @id @default(cuid())
+  discipline           String // Orchestrator's area of expertise (e.g., engineering, product, design)
+  role                 String // Specific role within the discipline
+  capabilities         Json                 @default("[]") // List of capabilities and skills the Orchestrator possesses
+  daemonEndpoint       String?              @map("daemon_endpoint") // Endpoint for the daemon process running this Orchestrator
+  status               OrchestratorStatus   @default(OFFLINE) // Current operational status of the Orchestrator
+  userId               String               @unique @map("user_id") // Associated user account for this Orchestrator
+  organizationId       String               @map("organization_id")
+  workspaceId          String?              @map("workspace_id")
+  disciplineId         String?              @map("discipline_id")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  backlogs             backlog[]
+  daemonCredentials    daemonCredential[]
+  tasks                task[]
+  config               orchestratorConfig?
+  disciplineRef        discipline?          @relation(fields: [disciplineId], references: [id])
+  organization         organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                 user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   orchestratorMemories orchestratorMemory[]
+  sessionManagers      sessionManager[]
 
   @@index([disciplineId])
   @@index([discipline])
@@ -462,32 +463,32 @@ model orchestrator {
 
 /// OrchestratorConfig - Configuration settings for an Orchestrator
 model orchestratorConfig {
-  id                   String   @id @default(cuid())
-  orchestratorId       String   @unique @map("vp_id")
-  autoReply            Boolean  @default(true) @map("auto_reply")
-  replyDelay           Int      @default(0) @map("reply_delay")
-  maxDailyActions      Int?     @map("max_daily_actions")
-  maxHourlyActions     Int?     @map("max_hourly_actions")
-  triggers             Json     @default("[]")
-  watchedChannels      String[] @default([]) @map("watched_channels")
-  mentionOnly          Boolean  @default(false) @map("mention_only")
-  keywordTriggers      String[] @default([]) @map("keyword_triggers")
-  enabledCapabilities  Json     @default("{}") @map("enabled_capabilities")
-  capabilityLimits     Json     @default("{}") @map("capability_limits")
-  responseTemplates    Json     @default("{}") @map("response_templates")
-  customPrompts        Json     @default("{}") @map("custom_prompts")
-  llmProvider          String   @default("anthropic") @map("llm_provider")
-  llmModel             String   @default("claude-3-5-sonnet-20241022") @map("llm_model")
-  temperature          Float    @default(0.7)
-  maxTokens            Int      @default(4096) @map("max_tokens")
-  integrationConfig    Json     @default("{}") @map("integration_config")
-  webhookUrls          String[] @default([]) @map("webhook_urls")
-  assignedWorkspaces   String[] @default([]) @map("assigned_workspaces")
-  adminOverrides       Json     @default("{}") @map("admin_overrides")
-  isLocked             Boolean  @default(false) @map("is_locked")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
-  orchestrator         orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
+  id                  String       @id @default(cuid())
+  orchestratorId      String       @unique @map("vp_id")
+  autoReply           Boolean      @default(true) @map("auto_reply")
+  replyDelay          Int          @default(0) @map("reply_delay")
+  maxDailyActions     Int?         @map("max_daily_actions")
+  maxHourlyActions    Int?         @map("max_hourly_actions")
+  triggers            Json         @default("[]")
+  watchedChannels     String[]     @default([]) @map("watched_channels")
+  mentionOnly         Boolean      @default(false) @map("mention_only")
+  keywordTriggers     String[]     @default([]) @map("keyword_triggers")
+  enabledCapabilities Json         @default("{}") @map("enabled_capabilities")
+  capabilityLimits    Json         @default("{}") @map("capability_limits")
+  responseTemplates   Json         @default("{}") @map("response_templates")
+  customPrompts       Json         @default("{}") @map("custom_prompts")
+  llmProvider         String       @default("anthropic") @map("llm_provider")
+  llmModel            String       @default("claude-3-5-sonnet-20241022") @map("llm_model")
+  temperature         Float        @default(0.7)
+  maxTokens           Int          @default(4096) @map("max_tokens")
+  integrationConfig   Json         @default("{}") @map("integration_config")
+  webhookUrls         String[]     @default([]) @map("webhook_urls")
+  assignedWorkspaces  String[]     @default([]) @map("assigned_workspaces")
+  adminOverrides      Json         @default("{}") @map("admin_overrides")
+  isLocked            Boolean      @default(false) @map("is_locked")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  orchestrator        orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
 
   @@index([orchestratorId])
   @@map("vp_configs")
@@ -1010,11 +1011,12 @@ enum AgentType {
   CUSTOM
 }
 
-/// Agent status enumeration
+/// Agent status enumeration (shared by agents, session managers, and subagents)
 enum AgentStatus {
   ACTIVE
-  PAUSED
   INACTIVE
+  PAUSED
+  ERROR
 }
 
 /// Agent - AI agent for task automation and assistance
@@ -1091,10 +1093,10 @@ model savedItem {
   archivedAt  DateTime?       @map("archived_at")
 
   // Relations
-  message     message?        @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  file        file?           @relation(fields: [fileId], references: [id], onDelete: SetNull)
-  user        user            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace   workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  message   message?  @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  file      file?     @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  user      user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, messageId])
   @@unique([userId, fileId])
@@ -1106,4 +1108,92 @@ model savedItem {
   @@index([fileId])
   @@index([createdAt])
   @@map("saved_items")
+}
+
+// =============================================================================
+// Session Manager & Subagent Models (Multi-tier Agent Architecture)
+// =============================================================================
+
+/// SessionManager - Session manager for orchestrating agent sessions (Claude Code/Flow sessions)
+/// Maps to the concept of dynamically compiled Claude Code sessions with CLAUDE.md and workflows
+model sessionManager {
+  id             String  @id @default(cuid())
+  name           String
+  description    String?
+  charterId      String  @map("charter_id")
+  charterData    Json    @map("charter_data") // Full charter JSON for this SM
+  disciplineId   String? @map("discipline_id") // Discipline this SM manages
+  orchestratorId String  @map("orchestrator_id")
+
+  isGlobal     Boolean     @default(false) // Can be invoked by any orchestrator
+  globalConfig Json?       @map("global_config") // { invokeableBy: ['all'] | string[] }
+  status       AgentStatus @default(INACTIVE)
+
+  // Resource limits (per THREE-TIER-ARCHITECTURE: 10 sessions per orchestrator)
+  maxConcurrentSubagents Int @default(20) @map("max_concurrent_subagents")
+  tokenBudgetPerHour     Int @default(100000) @map("token_budget_per_hour")
+
+  // Worktree configuration for Claude Code sessions
+  worktreeConfig Json? @map("worktree_config") // Git worktree settings
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  orchestrator orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
+  subagents    subagent[]
+
+  @@index([orchestratorId])
+  @@index([disciplineId])
+  @@index([status])
+  @@index([isGlobal])
+  @@map("session_managers")
+}
+
+/// Subagent - Specialized agent that performs specific tasks under session manager coordination
+model subagent {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  charterId   String  @map("charter_id") // Reference to charter document
+  charterData Json    @map("charter_data") // Full charter JSON
+
+  sessionManagerId String? @map("session_manager_id") // Parent session manager (null for global)
+
+  isGlobal Boolean    @default(false) @map("is_global") // Available to any session manager
+  scope    AgentScope @default(DISCIPLINE) // Visibility scope
+  tier     Int        @default(3) // Agent tier (1=orchestrator, 2=SM, 3=subagent)
+
+  // Capabilities
+  capabilities Json     @default("[]") // List of capability strings
+  mcpTools     String[] @default([]) @map("mcp_tools") // MCP tools this agent can use
+
+  // Resource limits
+  maxTokensPerTask Int @default(50000) @map("max_tokens_per_task")
+
+  // Worktree requirements (fractional pattern: read-only vs write-access)
+  worktreeRequirement String @default("none") @map("worktree_requirement") // none, read, write
+
+  status AgentStatus @default(INACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  sessionManager sessionManager? @relation(fields: [sessionManagerId], references: [id], onDelete: SetNull)
+
+  @@index([sessionManagerId])
+  @@index([scope])
+  @@index([isGlobal])
+  @@index([tier])
+  @@index([status])
+  @@map("subagents")
+}
+
+/// AgentScope - Scope enumeration for subagent visibility
+enum AgentScope {
+  UNIVERSAL // Available to all orchestrators/session managers
+  DISCIPLINE // Available within a discipline
+  WORKSPACE // Available within a workspace
+  PRIVATE // Only available to parent session manager
 }

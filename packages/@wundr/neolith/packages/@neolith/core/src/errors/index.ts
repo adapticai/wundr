@@ -180,6 +180,84 @@ export class APIKeyGenerationError extends GenesisError {
 }
 
 // =============================================================================
+// Session Manager Errors
+// =============================================================================
+
+/**
+ * Error thrown when a Session Manager is not found.
+ */
+export class SessionManagerNotFoundError extends GenesisError {
+  constructor(identifier: string, identifierType: 'id' | 'name' = 'id') {
+    super(
+      `Session Manager not found with ${identifierType}: ${identifier}`,
+      'SESSION_MANAGER_NOT_FOUND',
+      404,
+      { identifier, identifierType },
+    );
+    this.name = 'SessionManagerNotFoundError';
+  }
+}
+
+/**
+ * Error thrown when a Session Manager with the given identifier already exists.
+ */
+export class SessionManagerAlreadyExistsError extends GenesisError {
+  constructor(identifier: string, identifierType: 'name' = 'name') {
+    super(
+      `Session Manager already exists with ${identifierType}: ${identifier}`,
+      'SESSION_MANAGER_ALREADY_EXISTS',
+      409,
+      { identifier, identifierType },
+    );
+    this.name = 'SessionManagerAlreadyExistsError';
+  }
+}
+
+/**
+ * Error thrown when Session Manager validation fails.
+ */
+export class SessionManagerValidationError extends GenesisError {
+  /** Validation errors by field */
+  public readonly errors: Record<string, string[]>;
+
+  constructor(message: string, errors: Record<string, string[]>) {
+    super(message, 'SESSION_MANAGER_VALIDATION_ERROR', 400, { errors });
+    this.name = 'SessionManagerValidationError';
+    this.errors = errors;
+  }
+}
+
+/**
+ * Error thrown when Session Manager operation is not permitted.
+ */
+export class SessionManagerOperationNotPermittedError extends GenesisError {
+  constructor(operation: string, reason: string) {
+    super(
+      `Session Manager operation '${operation}' not permitted: ${reason}`,
+      'SESSION_MANAGER_OPERATION_NOT_PERMITTED',
+      403,
+      { operation, reason },
+    );
+    this.name = 'SessionManagerOperationNotPermittedError';
+  }
+}
+
+/**
+ * Error thrown when Session Manager is in an invalid state for the requested operation.
+ */
+export class SessionManagerInvalidStateError extends GenesisError {
+  constructor(smId: string, currentState: string, requiredState: string) {
+    super(
+      `Session Manager ${smId} is in state '${currentState}', but '${requiredState}' is required`,
+      'SESSION_MANAGER_INVALID_STATE',
+      409,
+      { smId, currentState, requiredState },
+    );
+    this.name = 'SessionManagerInvalidStateError';
+  }
+}
+
+// =============================================================================
 // Organization Errors
 // =============================================================================
 

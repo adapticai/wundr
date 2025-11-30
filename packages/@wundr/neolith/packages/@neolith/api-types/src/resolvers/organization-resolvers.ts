@@ -558,7 +558,7 @@ export const organizationQueries = {
       orderBy: { joinedAt: 'desc' },
     });
 
-    return memberships.map((m) => toOrganization(m.organization));
+    return memberships.map((m: typeof memberships[number]) => toOrganization(m.organization));
   },
 
   /**
@@ -646,7 +646,7 @@ export const organizationQueries = {
     const hasNextPage = members.length > first;
     const nodes = hasNextPage ? members.slice(0, -1) : members;
 
-    const edges = nodes.map((member) => ({
+    const edges = nodes.map((member: typeof nodes[number]) => ({
       node: {
         id: member.id,
         role: member.role,

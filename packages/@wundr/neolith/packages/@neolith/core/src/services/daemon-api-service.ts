@@ -305,12 +305,13 @@ export class DaemonApiService {
     // Note: Using type assertion since Prisma generates different types for mapped columns
     type MessageWithAuthor = typeof messages[0] & { authorId: string };
     const messagesTyped = messages as unknown as MessageWithAuthor[];
-    const authorIds = [...new Set(messagesTyped.map(m => m.authorId))];
+    const authorIdsSet = new Set(messagesTyped.map(m => m.authorId));
+    const authorIds = Array.from(authorIdsSet);
     const authors = await this.prisma.user.findMany({
       where: { id: { in: authorIds } },
       select: { id: true, name: true },
     });
-    const authorMap = new Map(authors.map(a => [a.id, a.name ?? 'Unknown']));
+    const authorMap = new Map(authors.map((a: typeof authors[number]) => [a.id, a.name ?? 'Unknown']));
 
     return messagesTyped.map(msg => ({
       id: msg.id,
@@ -350,7 +351,7 @@ export class DaemonApiService {
       },
     });
 
-    return memberships.map(m => ({
+    return memberships.map((m: typeof memberships[number]) => ({
       id: m.channel.id,
       name: m.channel.name,
       description: m.channel.description ?? undefined,
@@ -464,10 +465,10 @@ export class DaemonApiService {
     });
 
     // Get online status from Redis
-    const userIds = members.map(m => m.user.id);
+    const userIds = members.map((m: typeof members[number]) => m.user.id);
     const onlineStatus = await this.getOnlineStatus(userIds);
 
-    return members.map(m => ({
+    return members.map((m: typeof members[number]) => ({
       id: m.user.id,
       name: m.user.name ?? '',
       email: m.user.email,

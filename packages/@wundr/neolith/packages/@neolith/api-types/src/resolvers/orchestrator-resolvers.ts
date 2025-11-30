@@ -636,7 +636,7 @@ export const orchestratorQueries = {
     const hasNextPage = orchestrators.length > first;
     const nodes = hasNextPage ? orchestrators.slice(0, -1) : orchestrators;
 
-    const edges = nodes.map((orchestrator) => {
+    const edges = nodes.map((orchestrator: PrismaOrchestrator) => {
       const vpData = toOrchestrator(orchestrator);
       return {
         node: vpData,
@@ -695,7 +695,7 @@ export const orchestratorQueries = {
       orderBy: { createdAt: 'desc' },
     });
 
-    const edges = orchestrators.map((orchestrator) => {
+    const edges = orchestrators.map((orchestrator: PrismaOrchestrator) => {
       const vpData = toOrchestrator(orchestrator);
       return {
         node: vpData,

@@ -69,7 +69,7 @@ export async function setPresence(
       };
     }
 
-    const presence = await apiClient.put<UserPresenceResponse>(
+    const response = await apiClient.put<UserPresenceResponse>(
       '/api/presence',
       { status, customStatus },
     );
@@ -77,7 +77,7 @@ export async function setPresence(
     return {
       success: true,
       message: `Presence status updated to ${status}`,
-      data: presence,
+      data: response.data,
     };
   } catch (error) {
     return {

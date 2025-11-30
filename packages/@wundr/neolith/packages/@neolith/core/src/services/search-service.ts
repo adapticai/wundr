@@ -346,7 +346,19 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row) => ({
+    return results.map((row: {
+      id: string;
+      content: string;
+      channelId: string;
+      channelName: string;
+      senderId: string;
+      senderName: string;
+      sentAt: Date;
+      threadId: string | null;
+      hasAttachments: boolean;
+      rank: number;
+      headline: string | null;
+    }) => ({
       id: row.id,
       type: 'message' as const,
       score: row.rank,
@@ -456,7 +468,20 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row) => ({
+    return results.map((row: {
+      id: string;
+      fileName: string;
+      fileType: string;
+      fileSize: number;
+      channelId: string;
+      channelName: string;
+      uploaderId: string;
+      uploaderName: string;
+      uploadedAt: Date;
+      extractedText: string | null;
+      rank: number;
+      headline: string | null;
+    }) => ({
       id: row.id,
       type: 'file' as const,
       score: row.rank,
@@ -544,7 +569,16 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row) => ({
+    return results.map((row: {
+      id: string;
+      name: string;
+      description: string | null;
+      memberCount: bigint;
+      isPrivate: boolean;
+      createdAt: Date;
+      rank: number;
+      headline: string | null;
+    }) => ({
       id: row.id,
       type: 'channel' as const,
       score: row.rank,
@@ -635,7 +669,16 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row) => ({
+    return results.map((row: {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+      discipline: string | null;
+      avatarUrl: string | null;
+      rank: number;
+      headline: string | null;
+    }) => ({
       id: row.id,
       type: 'user' as const,
       score: row.rank,
@@ -729,7 +772,15 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row) => ({
+    return results.map((row: {
+      id: string;
+      name: string;
+      discipline: string;
+      status: string;
+      capabilities: string[];
+      rank: number;
+      headline: string | null;
+    }) => ({
       id: row.id,
       type: 'vp' as const,
       score: row.rank,

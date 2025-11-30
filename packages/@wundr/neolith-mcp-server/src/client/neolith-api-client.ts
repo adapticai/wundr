@@ -179,7 +179,16 @@ export class NeolithApiClient {
   /**
    * Make a GET request
    */
-  async get<T = unknown>(path: string, options?: Omit<ApiRequestOptions, 'method' | 'body'>): Promise<ApiResponse<T>> {
+  async get<T = unknown>(
+    path: string,
+    queryOrOptions?: Record<string, string | number | boolean | undefined> | Omit<ApiRequestOptions, 'method' | 'body'>
+  ): Promise<ApiResponse<T>> {
+    // If queryOrOptions has a 'query' property, treat it as ApiRequestOptions
+    // Otherwise, treat it as query parameters directly
+    const options = queryOrOptions && 'query' in queryOrOptions
+      ? queryOrOptions as Omit<ApiRequestOptions, 'method' | 'body'>
+      : { query: queryOrOptions as Record<string, string | number | boolean | undefined> };
+
     return this.request<T>(path, { ...options, method: 'GET' });
   }
 

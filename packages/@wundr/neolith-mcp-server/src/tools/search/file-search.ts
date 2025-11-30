@@ -188,11 +188,17 @@ export async function fileSearchHandler(
       params,
     );
 
-    // Extract results and pagination
-    const { data: files, pagination } = response;
+    // Extract results and pagination from response.data
+    const files = response.data?.data || [];
+    const pagination = response.data?.pagination || {
+      offset: 0,
+      limit: 20,
+      totalCount: 0,
+      hasMore: false,
+    };
 
     // Format file sizes for display
-    const formattedFiles = files.map(file => ({
+    const formattedFiles = files.map((file: FileResultItem) => ({
       ...file,
       sizeFormatted: formatFileSize(file.size),
     }));

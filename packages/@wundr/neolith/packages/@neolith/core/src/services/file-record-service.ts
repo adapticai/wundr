@@ -373,7 +373,7 @@ export class FileRecordServiceImpl implements FileRecordService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return attachments.map((a) => this.mapToFileRecord(a.file));
+    return attachments.map((a: typeof attachments[number]) => this.mapToFileRecord(a.file));
   }
 
   /**
@@ -419,7 +419,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     ]);
 
     return {
-      files: files.map((f) => this.mapToFileRecord(f)),
+      files: files.map((f: typeof files[number]) => this.mapToFileRecord(f)),
       total,
       hasMore: skip + files.length < total,
     };
@@ -461,7 +461,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     ]);
 
     return {
-      files: files.map((f) => this.mapToFileRecord(f)),
+      files: files.map((f: typeof files[number]) => this.mapToFileRecord(f)),
       total,
       hasMore: skip + files.length < total,
     };
@@ -503,7 +503,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     ]);
 
     return {
-      files: files.map((f) => this.mapToFileRecord(f)),
+      files: files.map((f: typeof files[number]) => this.mapToFileRecord(f)),
       total,
       hasMore: skip + files.length < total,
     };
@@ -590,7 +590,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Delete message attachments first
         await tx.messageAttachment.deleteMany({
           where: { fileId: id },
@@ -615,7 +615,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Delete message attachments first
         await tx.messageAttachment.deleteMany({
           where: { fileId: { in: ids } },

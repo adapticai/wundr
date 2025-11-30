@@ -32,6 +32,7 @@
   "devDependencies": {
     "@neolith/eslint-config": "workspace:*",
     "@neolith/typescript-config": "workspace:*",
+    "@prisma/client": "^5.22.0",
     "@types/node": "^20.14.0",
     "@types/web-push": "^3.6.4",
     "@vitest/coverage-v8": "^2.1.6",
@@ -70,8 +71,6 @@
       "types": "./dist/redis/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "license": "UNLICENSED"
 }

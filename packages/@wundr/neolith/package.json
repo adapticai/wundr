@@ -42,6 +42,7 @@
     "package:linux": "pnpm --filter @neolith/desktop run package:linux"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^20.14.0",
@@ -56,11 +57,5 @@
     "turbo": "^2.0.0",
     "typescript": "^5.4.5",
     "vitest": "^2.1.6"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "18.2.79",
-      "@types/react-dom": "18.2.25"
-    }
   }
 }

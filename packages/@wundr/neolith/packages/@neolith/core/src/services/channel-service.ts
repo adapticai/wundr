@@ -306,7 +306,7 @@ export class ChannelServiceImpl implements ChannelService {
 
     try {
       // Create channel and add creator as owner in a transaction
-      const channel = await this.db.$transaction(async (tx) => {
+      const channel = await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         const newChannel = await tx.channel.create({
           data: {
             name: data.name,
@@ -475,7 +475,7 @@ export class ChannelServiceImpl implements ChannelService {
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Delete all channel members
         await tx.channelMember.deleteMany({
           where: { channelId: id },

@@ -170,8 +170,17 @@ export async function messageSearchHandler(
       params,
     );
 
+    // Check if response has data
+    if (!response.data) {
+      return {
+        success: false,
+        message: 'Message search failed',
+        error: response.error || 'No data returned from API',
+      };
+    }
+
     // Extract results and pagination
-    const { data: messages, pagination } = response;
+    const { data: messages, pagination } = response.data;
 
     return {
       success: true,

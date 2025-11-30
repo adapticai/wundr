@@ -726,7 +726,7 @@ export const fileQueries = {
     const hasNextPage = files.length > limit;
     const nodes = hasNextPage ? files.slice(0, -1) : files;
 
-    const edges = nodes.map((f) => {
+    const edges = nodes.map((f: PrismaFile) => {
       const fileData = toFile(f);
       return {
         node: fileData,

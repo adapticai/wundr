@@ -1061,7 +1061,7 @@ export const adminQueries = {
       orderBy: { joinedAt: 'desc' },
     });
 
-    return members.map((m) => ({
+    return members.map((m: Prisma.workspaceMemberGetPayload<{ include: { user: true } }>) => ({
       id: m.id,
       userId: m.userId,
       workspaceId: m.workspaceId,

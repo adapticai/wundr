@@ -64,12 +64,21 @@ export async function getCurrentUser(
   _input: GetCurrentUserInput,
 ): Promise<McpToolResult<CurrentUserProfile>> {
   try {
-    const user = await apiClient.get<CurrentUserProfile>('/api/users/me');
+    const response = await apiClient.get<CurrentUserProfile>('/api/users/me');
+
+    // Check for API errors
+    if (response.error || !response.data) {
+      return {
+        success: false,
+        error: response.error || 'No user data returned from API',
+        message: 'Failed to retrieve current user profile',
+      };
+    }
 
     return {
       success: true,
       message: 'Successfully retrieved current user profile',
-      data: user,
+      data: response.data,
     };
   } catch (error) {
     return {

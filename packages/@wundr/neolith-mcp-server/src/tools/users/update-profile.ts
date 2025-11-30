@@ -55,7 +55,7 @@ export async function updateProfile(
       };
     }
 
-    const updatedUser = await apiClient.patch<CurrentUserProfile>(
+    const response = await apiClient.patch<CurrentUserProfile>(
       '/api/users/me',
       input,
     );
@@ -63,7 +63,7 @@ export async function updateProfile(
     return {
       success: true,
       message: 'Profile updated successfully',
-      data: updatedUser,
+      data: response.data,
     };
   } catch (error) {
     return {

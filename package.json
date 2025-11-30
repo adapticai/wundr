@@ -29,15 +29,7 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src",
-    "templates",
-    "docs",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "bin", "src", "templates", "docs", "README.md", "LICENSE"],
   "scripts": {
     "build": "turbo build",
     "build:parallel": "turbo build --parallel",
@@ -129,15 +121,45 @@
   "packageManager": "pnpm@10.23.0",
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@apollo/protobufjs",
+      "@prisma/client",
+      "@prisma/engines",
+      "@scarf/scarf",
+      "@tree-sitter-grammars/tree-sitter-yaml",
+      "bcrypt",
+      "canvas",
+      "core-js",
+      "core-js-pure",
+      "electron",
+      "esbuild",
+      "keytar",
+      "msgpackr-extract",
+      "node-pty",
+      "prisma",
+      "protobufjs",
       "sharp",
-      "esbuild"
+      "sqlite3",
+      "tesseract.js",
+      "tree-sitter",
+      "tree-sitter-json",
+      "unrs-resolver",
+      "yarn"
     ],
     "overrides": {
       "sharp": "0.33.5",
-      "@types/react": "18.2.79",
-      "@types/react-dom": "18.2.25",
-      "react": "18.3.1",
-      "react-dom": "18.3.1"
+      "@types/react": "^18.2.79",
+      "@types/react-dom": "^18.2.25",
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0",
+      "@testing-library/dom": "^10.0.0"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": ["@testing-library/dom"],
+      "allowedVersions": {
+        "react": ">=18.2.0",
+        "react-dom": ">=18.2.0",
+        "next": ">=14.0.0"
+      }
     }
   },
   "engines": {
@@ -145,16 +167,8 @@
     "npm": ">=8.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{js,jsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,yaml,yml,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{js,jsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{json,yaml,yml,md}": ["prettier --write"]
   }
 }

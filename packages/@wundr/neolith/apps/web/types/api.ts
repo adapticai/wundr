@@ -7,7 +7,7 @@
  * @module types/api
  */
 
-import type { TaskPriority, TaskStatus } from '@prisma/client';
+import type { TaskPriority, TaskStatus } from '@neolith/database';
 
 /**
  * Activity type discriminator for dashboard activities

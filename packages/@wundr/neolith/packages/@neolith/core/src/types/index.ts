@@ -1362,3 +1362,71 @@ export {
   DEFAULT_COVERAGE_THRESHOLDS,
   DEFAULT_PERFORMANCE_THRESHOLDS,
 } from './testing';
+
+// =============================================================================
+// Agent Enums
+// =============================================================================
+
+export type {
+  AgentStatus,
+  AgentScope,
+} from './agent-enums';
+
+export {
+  isAgentStatus,
+  isAgentScope,
+} from './agent-enums';
+
+// =============================================================================
+// Session Manager Types
+// =============================================================================
+
+export type {
+  // Core Session Manager types
+  SessionManager,
+  SessionManagerWithRelations,
+  SessionManagerLimits,
+  SessionManagerGlobalConfig,
+  SessionManagerWorktreeConfig,
+
+  // Input types
+  CreateSessionManagerInput,
+  UpdateSessionManagerInput,
+
+  // Query types
+  ListSessionManagersOptions,
+  PaginatedSessionManagerResult,
+
+  // Re-export enums from session-manager (for backward compatibility)
+  AgentStatus as SessionManagerAgentStatus,
+  AgentScope as SessionManagerAgentScope,
+} from './session-manager';
+
+export {
+  // Type guards
+  isSessionManager,
+} from './session-manager';
+
+// =============================================================================
+// Subagent Types
+// =============================================================================
+
+export type {
+  // Core Subagent types
+  Subagent,
+  SubagentWithRelations,
+
+  // CRUD Input types
+  CreateSubagentInput,
+  UpdateSubagentInput,
+  ListSubagentsOptions,
+  PaginatedSubagentResult,
+} from './subagent';
+
+export {
+  // Type guards
+  isSubagent,
+
+  // Constants
+  UNIVERSAL_SUBAGENTS,
+} from './subagent';

@@ -2,23 +2,47 @@
 
 ## Wundr Monorepo: OrchestratorDaemon + Neolith Integration
 
-**Version:** 1.0.0
-**Created:** 2025-11-30
-**Status:** Living Document - Updated Each Session
+**Version:** 1.0.0 **Created:** 2025-11-30 **Status:** Living Document - Updated Each Session
 **Purpose:** Phased roadmap for institutional-grade deployment of autonomous AI orchestrators
 
 ---
 
 ## Executive Summary
 
-This document outlines the comprehensive integration of the **OrchestratorDaemon** package with the **Neolith** collaborative workspace platform, enabling autonomous AI agents (Orchestrators) to operate as first-class participants in the Neolith ecosystem. The end goal is a production-ready, mission-critical system where:
+This document outlines the comprehensive integration of the **OrchestratorDaemon** package with the
+**Neolith** collaborative workspace platform, enabling autonomous AI agents (Orchestrators) to
+operate as first-class participants in the Neolith ecosystem. The end goal is a production-ready,
+mission-critical system where:
 
 1. **Orchestrators are mapped 1:1 with Neolith Users** (flagged as `isOrchestrator=true`)
 2. **Messages to Orchestrator users route to OrchestratorDaemon sessions**
 3. **A dedicated `neolith-mcp-server` package** exposes all Neolith capabilities as MCP tools
-4. **gpt-5-mini sessions** (or Claude) can perform ANY action a human user could do
+4. **gpt-5-mini/Claude sessions** (Claude Code / Claude Flow) can perform ANY action a human user
+   could do
 5. **Charter management** is fully integrated with Neolith UI for CRUD operations
 6. **Global and scoped Session Managers/Subagents** are manageable through the platform
+
+### Alignment with Architecture Documents
+
+This roadmap integrates key concepts from:
+
+- **THREE-TIER-ARCHITECTURE-IMPLEMENTATION-PLAN.md**: Four-tier hierarchy (Human Cortex → VP
+  Orchestrator → Session Manager → Subagent), node-pty "Yes-Claude" pattern, IPRE governance,
+  Guardian dashboards
+- **Dynamic_Context_Compilation_and_Hierarchical_Organization_Generation_for_AI_Agents.md**: JIT
+  tool loading, Agentic RAG, MemGPT-inspired tiered memory, MCP as universal connectivity layer
+- **FURTHER-ENHANCEMENTS-TO-THE-THREE-TIER-HIERARCHY-IMPLEMENTATION-PLAN.md**: CrewAI/LangGraph
+  patterns, structured output enforcement, Hydra configuration, dynamic system prompting
+
+**Key Architecture Principles:**
+
+- **Session Managers = Claude Code/Claude Flow sessions** dynamically compiled with CLAUDE.md,
+  workflow files, and subagent configurations
+- **10 concurrent sessions per Orchestrator** running on dedicated Mac Mini/Studio machines
+- **20 subagents per session** running in parallel at any given time
+- **JIT Context Compilation**: Tools and context loaded dynamically based on task requirements
+- **MCP as Universal Connectivity**: Model Context Protocol standardizes all tool/data source
+  integration
 
 ---
 
@@ -26,30 +50,33 @@ This document outlines the comprehensive integration of the **OrchestratorDaemon
 
 ### Packages Analyzed (20 Agents Deployed)
 
-| Package | Lines of Code | Status | Key Findings |
-|---------|---------------|--------|--------------|
-| `@wundr/orchestrator-daemon` | 1,264 | Foundation Ready | Well-architected but LLM integration simulated |
-| `@wundr/neolith/apps/web` | ~50,000+ | Production | Full workspace platform, 100+ API endpoints |
-| `@wundr/org-genesis` | ~5,000 | Ready | Charter generation for Orchestrators/Session Managers |
-| `@wundr/mcp-server` | ~8,000 | Production | 15 MCP tools, excellent patterns for extension |
-| `@wundr/mcp-registry` | ~4,400 | Framework Ready | No transport layer - registration only |
-| `@wundr/agent-delegation` | ~3,400 | Ready | Hub-and-spoke task delegation |
-| `@wundr/agent-memory` | ~5,300 | Ready | MemGPT-inspired 3-tier memory |
-| `@wundr/ai-integration` | ~15,000 | Orchestration Only | NO direct LLM integration! |
-| `@wundr/governance` | ~3,500 | Ready | IPRE framework, no RBAC |
-| `@wundr/slack-agent` | ~20,600 | Production | Excellent integration patterns |
-| `@wundr/prompt-templates` | ~2,000 | Ready | Handlebars-based templating |
-| `@wundr/prompt-security` | ~3,000 | Ready | Multi-layer injection defense |
-| `@wundr/core` | ~6,000 | Production | Logging, events, utilities |
-| `@neolith/desktop` | ~1,300 | Production | Electron wrapper, IPC ready |
+| Package                      | Lines of Code | Status             | Key Findings                                          |
+| ---------------------------- | ------------- | ------------------ | ----------------------------------------------------- |
+| `@wundr/orchestrator-daemon` | 1,264         | Foundation Ready   | Well-architected but LLM integration simulated        |
+| `@wundr/neolith/apps/web`    | ~50,000+      | Production         | Full workspace platform, 100+ API endpoints           |
+| `@wundr/org-genesis`         | ~5,000        | Ready              | Charter generation for Orchestrators/Session Managers |
+| `@wundr/mcp-server`          | ~8,000        | Production         | 15 MCP tools, excellent patterns for extension        |
+| `@wundr/mcp-registry`        | ~4,400        | Framework Ready    | No transport layer - registration only                |
+| `@wundr/agent-delegation`    | ~3,400        | Ready              | Hub-and-spoke task delegation                         |
+| `@wundr/agent-memory`        | ~5,300        | Ready              | MemGPT-inspired 3-tier memory                         |
+| `@wundr/ai-integration`      | ~15,000       | Orchestration Only | NO direct LLM integration!                            |
+| `@wundr/governance`          | ~3,500        | Ready              | IPRE framework, no RBAC                               |
+| `@wundr/slack-agent`         | ~20,600       | Production         | Excellent integration patterns                        |
+| `@wundr/prompt-templates`    | ~2,000        | Ready              | Handlebars-based templating                           |
+| `@wundr/prompt-security`     | ~3,000        | Ready              | Multi-layer injection defense                         |
+| `@wundr/core`                | ~6,000        | Production         | Logging, events, utilities                            |
+| `@neolith/desktop`           | ~1,300        | Production         | Electron wrapper, IPC ready                           |
 
 ### Critical Discoveries
 
-1. **No Direct LLM Integration**: `@wundr/ai-integration` is orchestration-only - delegates to MCP servers, doesn't call LLMs directly
-2. **Orchestrator-User Mapping Exists**: Database has `user.isOrchestrator` flag and `orchestrator` table with 1:1 relation
+1. **No Direct LLM Integration**: `@wundr/ai-integration` is orchestration-only - delegates to MCP
+   servers, doesn't call LLMs directly
+2. **Orchestrator-User Mapping Exists**: Database has `user.isOrchestrator` flag and `orchestrator`
+   table with 1:1 relation
 3. **MCP Transport Missing**: `@wundr/mcp-registry` has no actual transport implementation
 4. **Real-time Gaps**: Neolith uses SSE polling (2s), not WebSockets - TODO in code for broadcast
-5. **Electron Ready**: Desktop app perfectly suited for hosting OrchestratorDaemon as background process
+5. **Electron Ready**: Desktop app perfectly suited for hosting OrchestratorDaemon as background
+   process
 
 ---
 
@@ -95,9 +122,7 @@ PHASE 5: Enterprise Features (Week 11-12)
 
 ### Deliverable 0.1: Create `neolith-mcp-server` Package
 
-**Priority:** CRITICAL
-**Effort:** 5-7 days
-**Dependencies:** None
+**Priority:** CRITICAL **Effort:** 5-7 days **Dependencies:** None
 
 #### Task 0.1.1: Package Scaffolding
 
@@ -139,6 +164,7 @@ packages/@wundr/neolith-mcp-server/
 Based on analysis of 100+ Neolith API endpoints, create MCP tools for:
 
 **Workspace Tools (8 tools):**
+
 - `list_workspaces` - List all accessible workspaces
 - `get_workspace` - Get workspace details by slug
 - `get_workspace_members` - List workspace members
@@ -148,6 +174,7 @@ Based on analysis of 100+ Neolith API endpoints, create MCP tools for:
 - `search_workspace` - Full-text search across workspace
 
 **Channel Tools (12 tools):**
+
 - `list_channels` - List channels in workspace
 - `get_channel` - Get channel details
 - `create_channel` - Create new channel (PUBLIC/PRIVATE)
@@ -159,6 +186,7 @@ Based on analysis of 100+ Neolith API endpoints, create MCP tools for:
 - `invite_to_channel` - Invite user to channel
 
 **Messaging Tools (10 tools):**
+
 - `send_message` - Send message to channel
 - `get_messages` - Get messages from channel
 - `get_thread` - Get thread replies
@@ -171,6 +199,7 @@ Based on analysis of 100+ Neolith API endpoints, create MCP tools for:
 - `create_dm` - Create/get DM channel
 
 **File Tools (6 tools):**
+
 - `list_files` - List files in workspace
 - `upload_file` - Upload file
 - `download_file` - Download file
@@ -179,6 +208,7 @@ Based on analysis of 100+ Neolith API endpoints, create MCP tools for:
 - `get_file_info` - Get file metadata
 
 **User Tools (5 tools):**
+
 - `get_current_user` - Get authenticated user
 - `get_user` - Get user by ID
 - `search_users` - Search users
@@ -186,11 +216,13 @@ Based on analysis of 100+ Neolith API endpoints, create MCP tools for:
 - `set_presence` - Set presence status
 
 **Search Tools (3 tools):**
+
 - `global_search` - Search across all content types
 - `message_search` - Search messages specifically
 - `file_search` - Search files specifically
 
 **Orchestrator Tools (8 tools):**
+
 - `list_orchestrators` - List workspace orchestrators
 - `get_orchestrator` - Get orchestrator details
 - `get_orchestrator_config` - Get configuration
@@ -232,9 +264,7 @@ export class StdioTransport {
 
 ### Deliverable 0.2: LLM Provider Abstraction
 
-**Priority:** CRITICAL
-**Effort:** 3-5 days
-**Dependencies:** None (can run parallel with 0.1)
+**Priority:** CRITICAL **Effort:** 3-5 days **Dependencies:** None (can run parallel with 0.1)
 
 #### Task 0.2.1: Create LLM Client Interface
 
@@ -290,7 +320,7 @@ export class OpenAIClient implements LLMClient {
 export class SessionExecutor {
   constructor(
     private llmClient: LLMClient,
-    private mcpTools: McpToolRegistry,
+    private mcpTools: McpToolRegistry
   ) {}
 
   async executeSession(session: Session, task: Task): Promise<SessionResult> {
@@ -314,9 +344,7 @@ export class SessionExecutor {
 
 ### Deliverable 0.3: MCP Registry Transport
 
-**Priority:** HIGH
-**Effort:** 2-3 days
-**Dependencies:** 0.1
+**Priority:** HIGH **Effort:** 2-3 days **Dependencies:** 0.1
 
 #### Task 0.3.1: Implement Transport Adapters
 
@@ -354,9 +382,7 @@ export class StdioTransportAdapter implements TransportAdapter {
 
 ### Deliverable 1.1: Orchestrator-User 1:1 Binding
 
-**Priority:** CRITICAL
-**Effort:** 3-4 days
-**Dependencies:** Phase 0 complete
+**Priority:** CRITICAL **Effort:** 3-4 days **Dependencies:** Phase 0 complete
 
 #### Task 1.1.1: Schema Enhancement
 
@@ -454,7 +480,7 @@ enum AgentScope {
 export async function createOrchestratorWithUser(
   params: CreateOrchestratorParams
 ): Promise<{ user: User; orchestrator: Orchestrator }> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async tx => {
     // 1. Create user account for orchestrator
     const user = await tx.user.create({
       data: {
@@ -505,9 +531,7 @@ export async function createOrchestratorWithUser(
 
 ### Deliverable 1.2: Message Routing to Daemon
 
-**Priority:** CRITICAL
-**Effort:** 4-5 days
-**Dependencies:** 1.1
+**Priority:** CRITICAL **Effort:** 4-5 days **Dependencies:** 1.1
 
 #### Task 1.2.1: Message Interception Hook
 
@@ -531,10 +555,7 @@ export async function onMessageCreated(message: Message): Promise<void> {
   }
 }
 
-async function routeMessageToDaemon(
-  orchestrator: Orchestrator,
-  message: Message
-): Promise<void> {
+async function routeMessageToDaemon(orchestrator: Orchestrator, message: Message): Promise<void> {
   // Store event in Redis queue for daemon to pick up
   await redis.zadd(
     `daemon:events:${orchestrator.id}`,
@@ -569,7 +590,7 @@ export class NeolithEventConsumer {
   constructor(
     private orchestratorId: string,
     private sessionManager: SessionManager,
-    private mcpClient: McpClient,
+    private mcpClient: McpClient
   ) {}
 
   async start(): Promise<void> {
@@ -617,9 +638,7 @@ export class NeolithEventConsumer {
 
 ### Deliverable 1.3: Daemon Authentication
 
-**Priority:** HIGH
-**Effort:** 2-3 days
-**Dependencies:** 1.1
+**Priority:** HIGH **Effort:** 2-3 days **Dependencies:** 1.1
 
 #### Task 1.3.1: Daemon JWT Enhancement
 
@@ -627,7 +646,7 @@ export class NeolithEventConsumer {
 // packages/@wundr/neolith/apps/web/lib/auth/daemon-auth.ts
 
 export interface DaemonTokenPayload {
-  sub: string;              // orchestratorId
+  sub: string; // orchestratorId
   type: 'daemon';
   scopes: DaemonScope[];
   organizationId: string;
@@ -669,19 +688,14 @@ export function generateDaemonToken(orchestrator: Orchestrator): string {
 ```typescript
 // packages/@wundr/neolith/apps/web/middleware/daemon-auth.ts
 
-export async function validateDaemonToken(
-  req: NextRequest
-): Promise<DaemonContext | null> {
+export async function validateDaemonToken(req: NextRequest): Promise<DaemonContext | null> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
 
   const token = authHeader.slice(7);
 
   try {
-    const payload = jwt.verify(
-      token,
-      process.env.DAEMON_JWT_SECRET!
-    ) as DaemonTokenPayload;
+    const payload = jwt.verify(token, process.env.DAEMON_JWT_SECRET!) as DaemonTokenPayload;
 
     if (payload.type !== 'daemon') return null;
 
@@ -714,9 +728,7 @@ export async function validateDaemonToken(
 
 ### Deliverable 2.1: Session Manager CRUD
 
-**Priority:** HIGH
-**Effort:** 4-5 days
-**Dependencies:** Phase 1 complete
+**Priority:** HIGH **Effort:** 4-5 days **Dependencies:** Phase 1 complete
 
 #### Task 2.1.1: API Endpoints
 
@@ -744,9 +756,7 @@ components/orchestrator/
 
 ### Deliverable 2.2: Subagent Management
 
-**Priority:** HIGH
-**Effort:** 3-4 days
-**Dependencies:** 2.1
+**Priority:** HIGH **Effort:** 3-4 days **Dependencies:** 2.1
 
 #### Task 2.2.1: API Endpoints
 
@@ -774,9 +784,7 @@ components/orchestrator/
 
 ### Deliverable 2.3: Global vs Scoped Management
 
-**Priority:** MEDIUM
-**Effort:** 2-3 days
-**Dependencies:** 2.1, 2.2
+**Priority:** MEDIUM **Effort:** 2-3 days **Dependencies:** 2.1, 2.2
 
 #### Task 2.3.1: Global Session Managers
 
@@ -817,9 +825,7 @@ model Subagent {
 
 ### Deliverable 3.1: Charter Editor UI
 
-**Priority:** HIGH
-**Effort:** 5-6 days
-**Dependencies:** Phase 2 complete
+**Priority:** HIGH **Effort:** 5-6 days **Dependencies:** Phase 2 complete
 
 #### Task 3.1.1: Charter Schema Definition
 
@@ -878,9 +884,7 @@ components/charter/
 
 ### Deliverable 3.2: Charter Versioning
 
-**Priority:** MEDIUM
-**Effort:** 3-4 days
-**Dependencies:** 3.1
+**Priority:** MEDIUM **Effort:** 3-4 days **Dependencies:** 3.1
 
 #### Task 3.2.1: Version Tracking
 
@@ -912,9 +916,7 @@ GET    /api/charters/[id]/diff/[v1]/[v2]    # Compare versions
 
 ### Deliverable 3.3: Permission Enforcement
 
-**Priority:** HIGH
-**Effort:** 4-5 days
-**Dependencies:** 3.1
+**Priority:** HIGH **Effort:** 4-5 days **Dependencies:** 3.1
 
 #### Task 3.3.1: Charter Constraint Enforcement
 
@@ -966,9 +968,7 @@ export class CharterConstraintEnforcer {
 
 ### Deliverable 4.1: Real-Time Messaging
 
-**Priority:** CRITICAL
-**Effort:** 5-7 days
-**Dependencies:** Phase 1-3 complete
+**Priority:** CRITICAL **Effort:** 5-7 days **Dependencies:** Phase 1-3 complete
 
 #### Task 4.1.1: WebSocket Server
 
@@ -991,10 +991,7 @@ export class NeolithWebSocketServer {
     }
   }
 
-  async notifyOrchestrator(
-    orchestratorId: string,
-    event: OrchestratorEvent
-  ): Promise<void> {
+  async notifyOrchestrator(orchestratorId: string, event: OrchestratorEvent): Promise<void> {
     // Direct push to orchestrator daemon
     const daemonWs = this.daemonConnections.get(orchestratorId);
     if (daemonWs?.readyState === WebSocket.OPEN) {
@@ -1006,9 +1003,7 @@ export class NeolithWebSocketServer {
 
 ### Deliverable 4.2: Token Budget Enforcement
 
-**Priority:** HIGH
-**Effort:** 3-4 days
-**Dependencies:** 0.2
+**Priority:** HIGH **Effort:** 3-4 days **Dependencies:** 0.2
 
 #### Task 4.2.1: Token Tracking
 
@@ -1018,7 +1013,7 @@ export class NeolithWebSocketServer {
 export class TokenBudgetTracker {
   constructor(
     private orchestratorId: string,
-    private budget: TokenBudget,
+    private budget: TokenBudget
   ) {}
 
   async trackUsage(usage: TokenUsage): Promise<void> {
@@ -1048,9 +1043,7 @@ export class TokenBudgetTracker {
 
 ### Deliverable 4.3: Rate Limiting & Security
 
-**Priority:** HIGH
-**Effort:** 4-5 days
-**Dependencies:** 1.3
+**Priority:** HIGH **Effort:** 4-5 days **Dependencies:** 1.3
 
 #### Task 4.3.1: API Rate Limiting
 
@@ -1059,19 +1052,19 @@ export class TokenBudgetTracker {
 
 export const rateLimitConfig = {
   daemon: {
-    windowMs: 60 * 1000,      // 1 minute
-    maxRequests: 100,          // 100 requests per minute
-    keyGenerator: (req) => req.daemonContext?.orchestrator.id,
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 100, // 100 requests per minute
+    keyGenerator: req => req.daemonContext?.orchestrator.id,
   },
   user: {
     windowMs: 60 * 1000,
     maxRequests: 60,
-    keyGenerator: (req) => req.session?.user?.id,
+    keyGenerator: req => req.session?.user?.id,
   },
   public: {
     windowMs: 60 * 1000,
     maxRequests: 20,
-    keyGenerator: (req) => req.ip,
+    keyGenerator: req => req.ip,
   },
 };
 ```
@@ -1108,9 +1101,7 @@ export class AuditLogger {
 
 ### Deliverable 5.1: Multi-Orchestrator Coordination
 
-**Priority:** MEDIUM
-**Effort:** 5-7 days
-**Dependencies:** Phase 4 complete
+**Priority:** MEDIUM **Effort:** 5-7 days **Dependencies:** Phase 4 complete
 
 #### Task 5.1.1: Orchestrator Federation
 
@@ -1148,9 +1139,7 @@ export class OrchestratorFederation {
 
 ### Deliverable 5.2: Distributed Session Management
 
-**Priority:** MEDIUM
-**Effort:** 5-7 days
-**Dependencies:** 5.1
+**Priority:** MEDIUM **Effort:** 5-7 days **Dependencies:** 5.1
 
 #### Task 5.2.1: Session Distribution
 
@@ -1160,7 +1149,7 @@ export class OrchestratorFederation {
 export class DistributedSessionManager {
   constructor(
     private nodes: DaemonNode[],
-    private loadBalancer: LoadBalancer,
+    private loadBalancer: LoadBalancer
   ) {}
 
   async spawnSession(request: SpawnSessionRequest): Promise<Session> {
@@ -1172,11 +1161,7 @@ export class DistributedSessionManager {
     });
 
     // Store session-to-node mapping in Redis
-    await redis.hset(
-      'session:nodes',
-      request.sessionId,
-      node.id
-    );
+    await redis.hset('session:nodes', request.sessionId, node.id);
 
     // Spawn on selected node
     return node.spawnSession(request);
@@ -1203,9 +1188,7 @@ export class DistributedSessionManager {
 
 ### Deliverable 5.3: Observability & Monitoring
 
-**Priority:** HIGH
-**Effort:** 4-5 days
-**Dependencies:** Phase 4
+**Priority:** HIGH **Effort:** 4-5 days **Dependencies:** Phase 4
 
 #### Task 5.3.1: Prometheus Metrics
 
@@ -1318,26 +1301,88 @@ Each Claude Code session should:
 
 ### Phase Status Tracker
 
-| Phase | Deliverable | Status | Notes |
-|-------|-------------|--------|-------|
-| 0.1 | neolith-mcp-server package | 🟡 IN PROGRESS | 71 TypeScript files created, 47 MCP tools. Minor TS fixes needed for build. |
-| 0.2 | LLM Provider abstraction | ✅ COMPLETED | OpenAI & Anthropic providers created in @wundr/ai-integration/src/llm/ |
-| 0.3 | MCP Registry transport | ✅ COMPLETED | Stdio transport in neolith-mcp-server/src/protocol/ |
-| 1.1 | Orchestrator-User binding | ⬜ NOT STARTED | |
-| 1.2 | Message routing | ⬜ NOT STARTED | |
-| 1.3 | Daemon authentication | ⬜ NOT STARTED | |
-| 2.1 | Session Manager CRUD | ⬜ NOT STARTED | |
-| 2.2 | Subagent management | ⬜ NOT STARTED | |
-| 2.3 | Global vs scoped | ⬜ NOT STARTED | |
-| 3.1 | Charter editor | ⬜ NOT STARTED | |
-| 3.2 | Charter versioning | ⬜ NOT STARTED | |
-| 3.3 | Permission enforcement | ⬜ NOT STARTED | |
-| 4.1 | Real-time messaging | ⬜ NOT STARTED | |
-| 4.2 | Token budget | ⬜ NOT STARTED | |
-| 4.3 | Rate limiting | ⬜ NOT STARTED | |
-| 5.1 | Multi-orchestrator | ⬜ NOT STARTED | |
-| 5.2 | Distributed sessions | ⬜ NOT STARTED | |
-| 5.3 | Observability | ⬜ NOT STARTED | |
+| Phase | Deliverable                | Status         | Notes                                                                                                                               |
+| ----- | -------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1   | neolith-mcp-server package | ✅ COMPLETED   | 71 TypeScript files created, 47 MCP tools. Type errors fixed, typecheck passes.                                                     |
+| 0.2   | LLM Provider abstraction   | ✅ COMPLETED   | OpenAI & Anthropic providers created in @wundr/ai-integration/src/llm/                                                              |
+| 0.3   | MCP Registry transport     | ✅ COMPLETED   | Stdio transport in neolith-mcp-server/src/protocol/                                                                                 |
+| 1.1   | Orchestrator-User binding  | ✅ COMPLETED   | OrchestratorService with full CRUD exists in @neolith/core. Schema has orchestrator, orchestratorConfig, orchestratorMemory models. |
+| 1.2   | Message routing            | ✅ COMPLETED   | OrchestratorRouter exists with session management, offline queuing, and delivery tracking.                                          |
+| 1.3   | Daemon authentication      | ✅ COMPLETED   | DaemonAuthService with JWT tokens, scopes, sessions implemented. Types defined in daemon.ts.                                        |
+| 2.1   | Session Manager CRUD       | ✅ COMPLETED   | Prisma schema, TypeScript types, services, API routes, UI components created.                                                       |
+| 2.2   | Subagent management        | ✅ COMPLETED   | Prisma schema, services, API routes, UI components, MCP tools created.                                                              |
+| 2.3   | Global vs scoped           | ✅ COMPLETED   | Global session managers and universal subagents APIs, seed data, scope management.                                                  |
+| 3.1   | Charter editor             | ⬜ NOT STARTED |                                                                                                                                     |
+| 3.2   | Charter versioning         | ⬜ NOT STARTED |                                                                                                                                     |
+| 3.3   | Permission enforcement     | ⬜ NOT STARTED |                                                                                                                                     |
+| 4.1   | Real-time messaging        | ⬜ NOT STARTED |                                                                                                                                     |
+| 4.2   | Token budget               | ⬜ NOT STARTED |                                                                                                                                     |
+| 4.3   | Rate limiting              | ⬜ NOT STARTED |                                                                                                                                     |
+| 5.1   | Multi-orchestrator         | ⬜ NOT STARTED |                                                                                                                                     |
+| 5.2   | Distributed sessions       | ⬜ NOT STARTED |                                                                                                                                     |
+| 5.3   | Observability              | ⬜ NOT STARTED |                                                                                                                                     |
+
+### Session 3 Progress (2025-11-30)
+
+**Phase 2 COMPLETED - Session Management**
+
+Session 3 completed Phase 2 with 20 parallel agents:
+
+1. **Phase 2.1 Session Manager CRUD**:
+   - Prisma schema: Added `sessionManager` model with worktree config, global config, token budgets
+   - TypeScript types: `SessionManager`, `SessionManagerWithRelations`, CRUD inputs at
+     `@neolith/core/src/types/session-manager.ts`
+   - Service: `SessionManagerService` with full CRUD, activate/deactivate at
+     `@neolith/core/src/services/session-manager-service.ts`
+   - API routes: `GET/POST /api/orchestrators/[id]/session-managers`,
+     `GET/PATCH/DELETE /api/session-managers/[id]`, activate/deactivate endpoints
+   - UI: `SessionManagerList`, `SessionManagerCreate` components at
+     `apps/web/components/orchestrator/`
+
+2. **Phase 2.2 Subagent Management**:
+   - Prisma schema: Added `subagent` model with scope, tier, capabilities, mcpTools,
+     worktreeRequirement
+   - TypeScript types: `Subagent`, `SubagentWithRelations`, `UNIVERSAL_SUBAGENTS` at
+     `@neolith/core/src/types/subagent.ts`
+   - Service: `SubagentService` with CRUD, assign/unassign at
+     `@neolith/core/src/services/subagent-service.ts`
+   - API routes: `GET/POST /api/session-managers/[id]/subagents`,
+     `GET/PATCH/DELETE /api/subagents/[id]`, universal subagents
+   - UI: `SubagentList`, `SubagentCreate` components at `apps/web/components/orchestrator/`
+
+3. **Phase 2.3 Global vs Scoped**:
+   - Global session managers API: `GET /api/session-managers/global`
+   - Universal subagents API: `GET/POST /api/subagents/universal`
+   - Seed script for 10 predefined universal subagents at
+     `@neolith/database/prisma/seeds/universal-subagents.ts`
+   - MCP tools: 11 new tools for session-managers and subagents in neolith-mcp-server
+
+4. **Orchestrator Page Enhancement**:
+   - Added Session Managers and Subagents tabs to orchestrator detail page
+   - Metrics display for sessions, subagents, token budgets
+
+**All builds pass: typecheck ✅, build ✅, Prisma schema formatted ✅**
+
+---
+
+### Session 2 Progress (2025-11-30)
+
+**Phase 0 & Phase 1 COMPLETED**
+
+Session 2 verified and completed the following:
+
+1. **Phase 0.1 neolith-mcp-server**: Fixed all type errors in search and user tools (ApiResponse
+   wrapper pattern). Build passes.
+2. **Phase 1.1-1.3**: Verified that this work was already complete:
+   - `OrchestratorService` with full CRUD and API key management
+   - `OrchestratorRouter` with message routing, offline queuing, session management
+   - `DaemonAuthService` with JWT tokens, scopes, and session handling
+   - Comprehensive daemon types in `@neolith/core/src/types/daemon.ts`
+   - Prisma schema has `orchestrator`, `orchestratorConfig`, `orchestratorMemory` models
+
+**Ready to start Phase 2: Session Management**
+
+---
 
 ### Session 1 Progress (2025-11-30)
 
@@ -1370,11 +1415,13 @@ Created new packages and modules:
    - `tool-executor.ts` - MCP tool invocation from LLM tool calls
 
 **Remaining for Phase 0:**
+
 - Fix minor TypeScript compilation errors (import paths, unused variables)
 - Run full build verification
 - Add unit tests for critical paths
 
 **Legend:**
+
 - ⬜ NOT STARTED
 - 🟡 IN PROGRESS
 - ✅ COMPLETED
@@ -1384,14 +1431,14 @@ Created new packages and modules:
 
 ## Estimated Total Effort
 
-| Phase | Effort | Cumulative |
-|-------|--------|------------|
-| Phase 0: Foundation | 10-15 days | 10-15 days |
-| Phase 1: Core Integration | 9-12 days | 19-27 days |
-| Phase 2: Session Management | 9-12 days | 28-39 days |
-| Phase 3: Charter Governance | 12-15 days | 40-54 days |
+| Phase                         | Effort     | Cumulative |
+| ----------------------------- | ---------- | ---------- |
+| Phase 0: Foundation           | 10-15 days | 10-15 days |
+| Phase 1: Core Integration     | 9-12 days  | 19-27 days |
+| Phase 2: Session Management   | 9-12 days  | 28-39 days |
+| Phase 3: Charter Governance   | 12-15 days | 40-54 days |
 | Phase 4: Production Hardening | 12-16 days | 52-70 days |
-| Phase 5: Enterprise Features | 14-19 days | 66-89 days |
+| Phase 5: Enterprise Features  | 14-19 days | 66-89 days |
 
 **Total: 66-89 developer days (approximately 3-4 months with 20-agent parallel execution)**
 
@@ -1446,4 +1493,4 @@ packages/@wundr/
 
 ---
 
-*This is a living document. Update the Phase Status Tracker after each session.*
+_This is a living document. Update the Phase Status Tracker after each session._

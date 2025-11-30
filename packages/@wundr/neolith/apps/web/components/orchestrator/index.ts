@@ -15,3 +15,6 @@ export { OrchestratorEscalationCard } from './OrchestratorEscalationCard';
 export { OrchestratorPresenceTooltip } from './OrchestratorPresenceTooltip';
 export { OrchestratorMessageIndicator } from './OrchestratorMessageIndicator';
 export { OrchestratorThinkingIndicator } from './OrchestratorThinkingIndicator';
+export { SessionManagerList } from './session-manager-list';
+export { SubagentCreate } from './subagent-create';
+export { SubagentList } from './subagent-list';
