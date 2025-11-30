@@ -30,7 +30,7 @@ interface RouteContext {
  * Helper to get workspace by slug and verify user membership
  */
 async function getWorkspaceWithAccess(workspaceSlug: string, userId: string) {
-  const workspace = await prisma.workspaces.findFirst({
+  const workspace = await prisma.workspace.findFirst({
     where: {
       OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
     },
@@ -40,11 +40,11 @@ async function getWorkspaceWithAccess(workspaceSlug: string, userId: string) {
     return null;
   }
 
-  const membership = await prisma.workspace_members.findUnique({
+  const membership = await prisma.workspaceMember.findUnique({
     where: {
-      workspace_id_user_id: {
-        workspace_id: workspace.id,
-        user_id: userId,
+      workspaceId_userId: {
+        workspaceId: workspace.id,
+        userId: userId,
       },
     },
   });
@@ -97,32 +97,32 @@ export async function GET(
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: Prisma.saved_itemsWhereInput = {
-      user_id: session.user.id,
-      workspace_id: access.workspace.id,
+    const where: Prisma.savedItemWhereInput = {
+      userId: session.user.id,
+      workspaceId: access.workspace.id,
       ...(status && { status }),
-      ...(itemType && { item_type: itemType }),
+      ...(itemType && { itemType }),
     };
 
     const [items, totalCount] = await Promise.all([
-      prisma.saved_items.findMany({
+      prisma.savedItem.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         include: {
-          messages: {
+          message: {
             include: {
-              users: {
+              author: {
                 select: {
                   id: true,
                   name: true,
-                  display_name: true,
-                  avatar_url: true,
-                  is_vp: true,
+                  displayName: true,
+                  avatarUrl: true,
+                  isOrchestrator: true,
                 },
               },
-              channels: {
+              channel: {
                 select: {
                   id: true,
                   name: true,
@@ -132,21 +132,21 @@ export async function GET(
               },
             },
           },
-          files: {
+          file: {
             include: {
-              users: {
+              uploadedBy: {
                 select: {
                   id: true,
                   name: true,
-                  display_name: true,
-                  avatar_url: true,
+                  displayName: true,
+                  avatarUrl: true,
                 },
               },
             },
           },
         },
       }),
-      prisma.saved_items.count({ where }),
+      prisma.savedItem.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -248,20 +248,20 @@ export async function POST(
 
     // Verify the message/file exists and user has access
     if (type === 'MESSAGE' && messageId) {
-      const message = await prisma.messages.findFirst({
+      const message = await prisma.message.findFirst({
         where: { id: messageId },
         include: {
-          channels: {
+          channel: {
             include: {
-              channel_members: {
-                where: { user_id: session.user.id, left_at: null },
+              channelMembers: {
+                where: { userId: session.user.id, leftAt: null },
               },
             },
           },
         },
       });
 
-      if (!message || message.channels.channel_members.length === 0) {
+      if (!message || message.channel.channelMembers.length === 0) {
         return NextResponse.json(
           { error: 'Message not found or access denied', code: 'NOT_FOUND' },
           { status: 404 },
@@ -269,11 +269,11 @@ export async function POST(
       }
 
       // Check if already saved
-      const existing = await prisma.saved_items.findUnique({
+      const existing = await prisma.savedItem.findUnique({
         where: {
-          user_id_message_id: {
-            user_id: session.user.id,
-            message_id: messageId,
+          userId_messageId: {
+            userId: session.user.id,
+            messageId: messageId,
           },
         },
       });
@@ -287,10 +287,10 @@ export async function POST(
     }
 
     if (type === 'FILE' && fileId) {
-      const file = await prisma.files.findFirst({
+      const file = await prisma.file.findFirst({
         where: {
           id: fileId,
-          workspace_id: access.workspace.id,
+          workspaceId: access.workspace.id,
         },
       });
 
@@ -302,11 +302,11 @@ export async function POST(
       }
 
       // Check if already saved
-      const existing = await prisma.saved_items.findUnique({
+      const existing = await prisma.savedItem.findUnique({
         where: {
-          user_id_file_id: {
-            user_id: session.user.id,
-            file_id: fileId,
+          userId_fileId: {
+            userId: session.user.id,
+            fileId: fileId,
           },
         },
       });
@@ -319,31 +319,31 @@ export async function POST(
       }
     }
 
-    const savedItem = await prisma.saved_items.create({
+    const savedItem = await prisma.savedItem.create({
       data: {
         id: nanoid(),
-        item_type: type,
+        itemType: type,
         status: 'IN_PROGRESS',
         note: note || null,
-        due_date: dueDate ? new Date(dueDate) : null,
-        message_id: type === 'MESSAGE' ? messageId : null,
-        file_id: type === 'FILE' ? fileId : null,
-        user_id: session.user.id,
-        workspace_id: access.workspace.id,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        messageId: type === 'MESSAGE' ? messageId : null,
+        fileId: type === 'FILE' ? fileId : null,
+        userId: session.user.id,
+        workspaceId: access.workspace.id,
       },
       include: {
-        messages: {
+        message: {
           include: {
-            users: {
+            author: {
               select: {
                 id: true,
                 name: true,
-                display_name: true,
-                avatar_url: true,
-                is_vp: true,
+                displayName: true,
+                avatarUrl: true,
+                isOrchestrator: true,
               },
             },
-            channels: {
+            channel: {
               select: {
                 id: true,
                 name: true,
@@ -353,14 +353,14 @@ export async function POST(
             },
           },
         },
-        files: {
+        file: {
           include: {
-            users: {
+            uploadedBy: {
               select: {
                 id: true,
                 name: true,
-                display_name: true,
-                avatar_url: true,
+                displayName: true,
+                avatarUrl: true,
               },
             },
           },

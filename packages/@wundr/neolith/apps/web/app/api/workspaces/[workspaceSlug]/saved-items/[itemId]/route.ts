@@ -30,7 +30,7 @@ interface RouteContext {
  * Helper to get workspace by slug and verify user membership
  */
 async function getWorkspaceWithAccess(workspaceSlug: string, userId: string) {
-  const workspace = await prisma.workspaces.findFirst({
+  const workspace = await prisma.workspace.findFirst({
     where: {
       OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
     },
@@ -40,11 +40,11 @@ async function getWorkspaceWithAccess(workspaceSlug: string, userId: string) {
     return null;
   }
 
-  const membership = await prisma.workspace_members.findUnique({
+  const membership = await prisma.workspaceMember.findUnique({
     where: {
-      workspace_id_user_id: {
-        workspace_id: workspace.id,
-        user_id: userId,
+      workspaceId_userId: {
+        workspaceId: workspace.id,
+        userId: userId,
       },
     },
   });
@@ -84,25 +84,25 @@ export async function GET(
       );
     }
 
-    const savedItem = await prisma.saved_items.findFirst({
+    const savedItem = await prisma.savedItem.findFirst({
       where: {
         id: itemId,
-        user_id: session.user.id,
-        workspace_id: access.workspace.id,
+        userId: session.user.id,
+        workspaceId: access.workspace.id,
       },
       include: {
-        messages: {
+        message: {
           include: {
-            users: {
+            author: {
               select: {
                 id: true,
                 name: true,
-                display_name: true,
-                avatar_url: true,
-                is_vp: true,
+                displayName: true,
+                avatarUrl: true,
+                isOrchestrator: true,
               },
             },
-            channels: {
+            channel: {
               select: {
                 id: true,
                 name: true,
@@ -112,14 +112,14 @@ export async function GET(
             },
           },
         },
-        files: {
+        file: {
           include: {
-            users: {
+            uploadedBy: {
               select: {
                 id: true,
                 name: true,
-                display_name: true,
-                avatar_url: true,
+                displayName: true,
+                avatarUrl: true,
               },
             },
           },
@@ -178,11 +178,11 @@ export async function PATCH(
     }
 
     // Verify ownership
-    const existing = await prisma.saved_items.findFirst({
+    const existing = await prisma.savedItem.findFirst({
       where: {
         id: itemId,
-        user_id: session.user.id,
-        workspace_id: access.workspace.id,
+        userId: session.user.id,
+        workspaceId: access.workspace.id,
       },
     });
 
@@ -222,9 +222,9 @@ export async function PATCH(
     const updateData: {
       status?: SavedItemStatus;
       note?: string | null;
-      due_date?: Date | null;
-      completed_at?: Date | null;
-      archived_at?: Date | null;
+      dueDate?: Date | null;
+      completedAt?: Date | null;
+      archivedAt?: Date | null;
     } = {};
 
     if (status !== undefined) {
@@ -232,15 +232,15 @@ export async function PATCH(
 
       // Set completedAt/archivedAt timestamps based on status change
       if (status === 'COMPLETED' && existing.status !== 'COMPLETED') {
-        updateData.completed_at = new Date();
+        updateData.completedAt = new Date();
       } else if (status !== 'COMPLETED') {
-        updateData.completed_at = null;
+        updateData.completedAt = null;
       }
 
       if (status === 'ARCHIVED' && existing.status !== 'ARCHIVED') {
-        updateData.archived_at = new Date();
+        updateData.archivedAt = new Date();
       } else if (status !== 'ARCHIVED') {
-        updateData.archived_at = null;
+        updateData.archivedAt = null;
       }
     }
 
@@ -249,25 +249,25 @@ export async function PATCH(
     }
 
     if (dueDate !== undefined) {
-      updateData.due_date = dueDate ? new Date(dueDate) : null;
+      updateData.dueDate = dueDate ? new Date(dueDate) : null;
     }
 
-    const savedItem = await prisma.saved_items.update({
+    const savedItem = await prisma.savedItem.update({
       where: { id: itemId },
       data: updateData,
       include: {
-        messages: {
+        message: {
           include: {
-            users: {
+            author: {
               select: {
                 id: true,
                 name: true,
-                display_name: true,
-                avatar_url: true,
-                is_vp: true,
+                displayName: true,
+                avatarUrl: true,
+                isOrchestrator: true,
               },
             },
-            channels: {
+            channel: {
               select: {
                 id: true,
                 name: true,
@@ -277,14 +277,14 @@ export async function PATCH(
             },
           },
         },
-        files: {
+        file: {
           include: {
-            users: {
+            uploadedBy: {
               select: {
                 id: true,
                 name: true,
-                display_name: true,
-                avatar_url: true,
+                displayName: true,
+                avatarUrl: true,
               },
             },
           },
@@ -334,11 +334,11 @@ export async function DELETE(
     }
 
     // Verify ownership and delete
-    const existing = await prisma.saved_items.findFirst({
+    const existing = await prisma.savedItem.findFirst({
       where: {
         id: itemId,
-        user_id: session.user.id,
-        workspace_id: access.workspace.id,
+        userId: session.user.id,
+        workspaceId: access.workspace.id,
       },
     });
 
@@ -349,7 +349,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.saved_items.delete({
+    await prisma.savedItem.delete({
       where: { id: itemId },
     });
 
