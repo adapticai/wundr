@@ -115,9 +115,9 @@ export function DeleteFileDialog({
 
   // Shared content for both Dialog and Drawer
   const sharedContent = (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full overflow-hidden">
       {/* Warning banner */}
-      <div className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+      <div className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 overflow-hidden">
         <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
         <div className="text-sm">
           <p className="font-medium text-destructive">This action cannot be undone</p>
@@ -192,7 +192,7 @@ export function DeleteFileDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle>Delete file</DialogTitle>
           </DialogHeader>
