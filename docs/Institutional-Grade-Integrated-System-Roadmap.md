@@ -1312,12 +1312,12 @@ Each Claude Code session should:
 | 2.1   | Session Manager CRUD       | ✅ COMPLETED   | Prisma schema, TypeScript types, services, API routes, UI components created.                                                       |
 | 2.2   | Subagent management        | ✅ COMPLETED   | Prisma schema, services, API routes, UI components, MCP tools created.                                                              |
 | 2.3   | Global vs scoped           | ✅ COMPLETED   | Global session managers and universal subagents APIs, seed data, scope management.                                                  |
-| 3.1   | Charter editor             | 🟡 IN PROGRESS | Session 4: Wave 2 with 20 agents implementing charter editor UI components                                                          |
-| 3.2   | Charter versioning         | 🟡 IN PROGRESS | Session 4: Wave 2 with 20 agents implementing version tracking system                                                               |
-| 3.3   | Permission enforcement     | 🟡 IN PROGRESS | Session 4: Wave 2 with 20 agents implementing constraint enforcement                                                                |
-| 4.1   | Real-time messaging        | ⬜ NOT STARTED |                                                                                                                                     |
-| 4.2   | Token budget               | ⬜ NOT STARTED |                                                                                                                                     |
-| 4.3   | Rate limiting              | ⬜ NOT STARTED |                                                                                                                                     |
+| 3.1   | Charter editor             | ✅ COMPLETED   | Charter editor UI, types, services, API routes, MCP tools, React hooks                                                              |
+| 3.2   | Charter versioning         | ✅ COMPLETED   | CharterVersion model, version management service, diff and rollback APIs                                                            |
+| 3.3   | Permission enforcement     | ✅ COMPLETED   | CharterConstraintEnforcer, action validation, forbidden path/command checking                                                       |
+| 4.1   | Real-time messaging        | ✅ COMPLETED   | WebSocket server, connection manager, message handler, event emitter, React hooks, client                                           |
+| 4.2   | Token budget               | ✅ COMPLETED   | TokenBudgetTracker, usage reporter, cost calculator, alert system, API routes, UI, MCP tools                                        |
+| 4.3   | Rate limiting              | ✅ COMPLETED   | Rate limiter with sliding window, middleware, audit logger, security events, security monitor                                       |
 | 5.1   | Multi-orchestrator         | ⬜ NOT STARTED |                                                                                                                                     |
 | 5.2   | Distributed sessions       | ⬜ NOT STARTED |                                                                                                                                     |
 | 5.3   | Observability              | ⬜ NOT STARTED |                                                                                                                                     |
@@ -1326,7 +1326,8 @@ Each Claude Code session should:
 
 **Phase 3 STARTED - Charter Governance (Wave 2)**
 
-Session 4 initiated Phase 3 with 20 parallel agents implementing all three deliverables concurrently:
+Session 4 initiated Phase 3 with 20 parallel agents implementing all three deliverables
+concurrently:
 
 1. **Phase 3.1 Charter Editor UI**:
    - Charter schema types at `@neolith/core/src/types/charter.ts`
@@ -1366,6 +1367,7 @@ Session 4 initiated Phase 3 with 20 parallel agents implementing all three deliv
    - Integration with session executor for runtime enforcement
 
 **Files Created (Wave 2 - 20 Agents):**
+
 - Charter types and schemas (5 files)
 - Charter UI components (9 files)
 - Charter API routes (8 files)

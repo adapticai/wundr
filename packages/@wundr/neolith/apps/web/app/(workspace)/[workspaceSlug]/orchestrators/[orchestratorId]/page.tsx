@@ -47,7 +47,7 @@ import { SubagentCreate } from '@/components/orchestrator/subagent-create';
 import { CharterEditor, CharterDiff } from '@/components/charter';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import type { UpdateOrchestratorInput, OrchestratorCharter } from '@/types/orchestrator';
+import type { UpdateOrchestratorInput, OrchestratorCharter, Orchestrator } from '@/types/orchestrator';
 
 export default function OrchestratorDetailPage() {
   const params = useParams();
@@ -982,7 +982,7 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
  * Displays universal subagents and session-specific subagents
  */
 function SubagentsTab() {
-  const [selectedSessionManager, setSelectedSessionManager] = useState<string | null>(null);
+  const [selectedSessionManager, _setSelectedSessionManager] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -1150,7 +1150,7 @@ function CharterTab({
                       Core Values
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {charter.values.map((value, index) => (
+                      {charter.values.map((value: string, index: number) => (
                         <Badge key={index} variant="secondary">
                           {value}
                         </Badge>
@@ -1166,7 +1166,7 @@ function CharterTab({
                       Expertise
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {charter.expertise.map((item, index) => (
+                      {charter.expertise.map((item: string, index: number) => (
                         <Badge key={index} variant="outline">
                           {item}
                         </Badge>
