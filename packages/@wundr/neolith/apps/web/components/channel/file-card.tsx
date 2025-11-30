@@ -130,7 +130,8 @@ export function FileCard({
   const [savedItemId, setSavedItemId] = useState<string | null>(initialSavedItemId);
   const [isSaving, setIsSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Update state when props change
   useEffect(() => {
@@ -141,7 +142,10 @@ export function FileCard({
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isOutsideDesktop = !desktopMenuRef.current?.contains(target);
+      const isOutsideMobile = !mobileMenuRef.current?.contains(target);
+      if (isOutsideDesktop && isOutsideMobile) {
         setShowMenu(false);
       }
     }
@@ -330,7 +334,7 @@ export function FileCard({
                   <Bookmark className="h-4 w-4" />
                 )}
               </Button>
-              <div className="relative" ref={menuRef}>
+              <div className="relative" ref={desktopMenuRef}>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -354,13 +358,14 @@ export function FileCard({
                     isSaving={isSaving}
                     copySuccess={copySuccess}
                     canDelete={canDelete}
+                    onClose={() => setShowMenu(false)}
                   />
                 )}
               </div>
             </div>
 
             {/* Mobile: Always visible more button */}
-            <div className="sm:hidden relative" ref={menuRef}>
+            <div className="sm:hidden relative" ref={mobileMenuRef}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -384,6 +389,7 @@ export function FileCard({
                   isSaving={isSaving}
                   copySuccess={copySuccess}
                   canDelete={canDelete}
+                  onClose={() => setShowMenu(false)}
                 />
               )}
             </div>
@@ -404,6 +410,7 @@ interface DropdownMenuProps {
   onShare: () => void;
   onSaveForLater: () => void;
   onDelete: () => void;
+  onClose: () => void;
   isSaved: boolean;
   isSaving: boolean;
   copySuccess: boolean;
@@ -417,6 +424,7 @@ function DropdownMenu({
   onShare,
   onSaveForLater,
   onDelete,
+  onClose,
   isSaved,
   isSaving,
   copySuccess,
@@ -424,10 +432,10 @@ function DropdownMenu({
 }: DropdownMenuProps) {
   return (
     <>
-      {/* Backdrop for mobile */}
+      {/* Backdrop for mobile - clicking closes the menu */}
       <div
         className="fixed inset-0 z-40 sm:hidden"
-        onClick={(e) => e.stopPropagation()}
+        onClick={onClose}
       />
       <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border bg-popover p-1 shadow-lg">
         <button
