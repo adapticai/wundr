@@ -383,8 +383,13 @@ export async function PATCH(
 /**
  * DELETE /api/messages/:id
  *
- * Soft delete a message.
+ * Soft delete a message and delete any attached files.
  * Only the message author or channel admins can delete messages.
+ *
+ * When a message is deleted:
+ * - All files attached to the message are permanently deleted
+ * - All saved items referencing those files are deleted
+ * - The message is soft-deleted (content replaced with "[Message deleted]")
  *
  * @param request - Next.js request object
  * @param context - Route context containing message ID
@@ -447,18 +452,44 @@ export async function DELETE(
       );
     }
 
-    // Soft delete the message
-    await prisma.message.update({
-      where: { id: params.id },
-      data: {
-        isDeleted: true,
-        content: '[Message deleted]',
-      },
+    // Get file IDs attached to this message
+    const attachedFileIds = result.messageAttachments.map(
+      (attachment) => attachment.file.id
+    );
+
+    // Use a transaction to ensure atomic operation
+    await prisma.$transaction(async (tx) => {
+      // If there are attached files, delete them and their saved items
+      if (attachedFileIds.length > 0) {
+        // Delete saved items that reference these files
+        await tx.savedItem.deleteMany({
+          where: {
+            fileId: { in: attachedFileIds },
+          },
+        });
+
+        // Delete the files (this will cascade delete messageAttachments)
+        await tx.file.deleteMany({
+          where: {
+            id: { in: attachedFileIds },
+          },
+        });
+      }
+
+      // Soft delete the message
+      await tx.message.update({
+        where: { id: params.id },
+        data: {
+          isDeleted: true,
+          content: '[Message deleted]',
+        },
+      });
     });
 
     return NextResponse.json({
       message: 'Message deleted successfully',
       deletedId: params.id,
+      deletedFileCount: attachedFileIds.length,
     });
   } catch (error) {
     console.error('[DELETE /api/messages/:id] Error:', error);
