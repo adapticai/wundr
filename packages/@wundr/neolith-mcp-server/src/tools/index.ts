@@ -356,6 +356,87 @@ export type {
 } from './orchestrators';
 
 // =============================================================================
+// Federation Tools
+// =============================================================================
+
+export {
+  listFederatedOrchestrators,
+  listFederatedOrchestratorsInputSchema,
+  delegateTask,
+  delegateTaskInputSchema,
+  getDelegationStatus,
+  getDelegationStatusInputSchema,
+  getClusterStatus,
+  getClusterStatusInputSchema,
+  migrateSession,
+  migrateSessionInputSchema,
+  federationHandlers,
+  federationSchemas,
+  FEDERATION_TOOL_NAMES,
+  FEDERATION_TOOL_DESCRIPTIONS,
+} from './federation';
+
+export type {
+  ListFederatedOrchestratorsInput,
+  FederatedOrchestrator,
+  FederatedOrchestratorCapabilities,
+  FederatedOrchestratorMetrics,
+  ListFederatedOrchestratorsResponse,
+  DelegateTaskInput,
+  DelegateTaskResponse,
+  DelegationStatus,
+  GetDelegationStatusInput,
+  GetDelegationStatusResponse,
+  DelegationStatusDetails,
+  TaskResult,
+  TaskExecutionLog,
+  GetClusterStatusInput,
+  GetClusterStatusResponse,
+  ClusterNodeStatus,
+  SessionInfo,
+  ClusterMetrics,
+  MigrateSessionInput,
+  MigrateSessionResponse,
+  MigrationDetails,
+  MigrationPhase,
+  SessionState,
+} from './federation';
+
+// =============================================================================
+// Observability Tools
+// =============================================================================
+
+export {
+  getSystemHealthTool,
+  getOrchestratorMetricsTool,
+  getActiveAlertsTool,
+  acknowledgeAlertTool,
+  getNodeStatusTool,
+  observabilityTools,
+  OBSERVABILITY_TOOL_NAMES,
+  OBSERVABILITY_TOOL_DESCRIPTIONS,
+} from './observability';
+
+export type {
+  GetSystemHealthInput,
+  SystemHealthData,
+  GetSystemHealthResponse,
+  GetOrchestratorMetricsInput,
+  OrchestratorMetricsData,
+  MetricDataPoint,
+  GetOrchestratorMetricsResponse,
+  GetActiveAlertsInput,
+  Alert,
+  GetActiveAlertsResponse,
+  AcknowledgeAlertInput,
+  AcknowledgeAlertData,
+  AcknowledgeAlertResponse,
+  GetNodeStatusInput,
+  NodeStatus as ObservabilityNodeStatus,
+  GetNodeStatusResponse,
+} from './observability';
+
+// =============================================================================
 // Combined Tool Collections
 // =============================================================================
 
@@ -364,6 +445,7 @@ import { channelTools } from './channels';
 import { fileTools } from './files';
 import { USER_TOOLS } from './users';
 import { searchTools } from './search';
+import { observabilityTools } from './observability';
 
 /**
  * All Neolith MCP tools combined into a single array
@@ -375,6 +457,7 @@ export const allTools = [
   ...fileTools,
   ...USER_TOOLS,
   ...searchTools,
+  ...observabilityTools,
 ] as const;
 
 /**
@@ -386,6 +469,7 @@ export const toolsByCategory = {
   files: fileTools,
   users: USER_TOOLS,
   search: searchTools,
+  observability: observabilityTools,
 } as const;
 
 /**
@@ -411,5 +495,6 @@ export const TOOL_STATS = {
   files: fileTools.length,
   users: USER_TOOLS.length,
   search: searchTools.length,
+  observability: observabilityTools.length,
   total: allTools.length,
 } as const;

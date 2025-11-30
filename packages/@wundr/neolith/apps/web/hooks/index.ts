@@ -359,6 +359,32 @@ export type {
 } from './use-desktop-notifications';
 
 // =============================================================================
+// Health Dashboard Hooks
+// =============================================================================
+export {
+  useHealthDashboard,
+  useOrchestratorHealth,
+  useMetricsChart,
+  useHealthAlerts,
+} from './use-health-dashboard';
+export type {
+  HealthStatus,
+  AlertSeverity,
+  TimeRange,
+  SystemHealthOverview,
+  OrchestratorHealth,
+  PaginationMetadata,
+  OrchestratorHealthFilters,
+  MetricDataPoint,
+  ChartDataPoint,
+  HealthAlert,
+  UseHealthDashboardReturn,
+  UseOrchestratorHealthReturn,
+  UseMetricsChartReturn,
+  UseHealthAlertsReturn,
+} from './use-health-dashboard';
+
+// =============================================================================
 // Re-exports from next-auth/react for convenience
 // =============================================================================
 export { signIn, signOut, useSession } from 'next-auth/react';

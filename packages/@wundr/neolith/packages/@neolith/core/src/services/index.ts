@@ -818,3 +818,41 @@ export {
 //   type OpenAIModel,
 //   type OpenAIResponseFormat,
 // } from './llm-service';
+
+// =============================================================================
+// Alert Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AlertServiceImpl,
+  createAlertService,
+  getAlertService,
+  resetAlertService,
+  alertService,
+
+  // Interfaces and types
+  type AlertService,
+  type Alert,
+  type CreateAlertInput,
+  type AlertFilters,
+  type PaginationOptions,
+  type PaginatedAlerts,
+  type AlertThresholds,
+  type NodeHealthStatus,
+  type BudgetUsage,
+  type ErrorRateStats,
+  type SessionFailureStats,
+  type AlertLevel,
+  type AlertStatus,
+  type AlertType,
+
+  // Constants
+  DEFAULT_THRESHOLDS,
+
+  // Errors
+  AlertServiceError,
+  AlertNotFoundError,
+  AlertValidationError,
+  OrchestratorNotFoundError as AlertOrchestratorNotFoundError,
+} from './alert-service';

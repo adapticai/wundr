@@ -457,6 +457,7 @@ model orchestrator {
   tokenUsage           TokenUsage[]
   budgetConfig         BudgetConfig?
   budgetAlerts         BudgetAlert[]
+  federationRegistry   FederationRegistry?
 
   @@index([disciplineId])
   @@index([discipline])
@@ -1301,4 +1302,84 @@ model BudgetAlert {
 
   @@index([orchestratorId, createdAt])
   @@map("budget_alerts")
+}
+
+// =============================================================================
+// Federation & Distributed Systems Models (Phase 5 - Enterprise Features)
+// =============================================================================
+
+/// FederationStatus - Status of a federated orchestrator node
+enum FederationStatus {
+  ONLINE
+  OFFLINE
+  BUSY
+  DRAINING
+}
+
+/// DelegationStatus - Status of a delegated task
+enum DelegationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+/// NodeStatus - Status of a daemon node in the cluster
+enum NodeStatus {
+  ONLINE
+  OFFLINE
+  DEGRADED
+  MAINTENANCE
+}
+
+/// FederationRegistry - Registry of federated orchestrator nodes for distributed task execution
+model FederationRegistry {
+  id              String           @id @default(uuid())
+  orchestratorId  String           @unique @map("orchestrator_id")
+  orchestrator    orchestrator     @relation(fields: [orchestratorId], references: [id])
+  capabilities    String[]
+  region          String
+  maxSessions     Int              @default(100) @map("max_sessions")
+  currentSessions Int              @default(0) @map("current_sessions")
+  status          FederationStatus @default(OFFLINE)
+  lastHeartbeat   DateTime?        @map("last_heartbeat")
+  registeredAt    DateTime         @default(now()) @map("registered_at")
+
+  @@map("federation_registry")
+}
+
+/// TaskDelegation - Task delegation between orchestrator nodes
+model TaskDelegation {
+  id                 String           @id @default(uuid())
+  fromOrchestratorId String           @map("from_orchestrator_id")
+  toOrchestratorId   String           @map("to_orchestrator_id")
+  taskType           String           @map("task_type")
+  taskPayload        Json             @map("task_payload")
+  context            Json?
+  status             DelegationStatus @default(PENDING)
+  result             Json?
+  error              String?
+  createdAt          DateTime         @default(now()) @map("created_at")
+  completedAt        DateTime?        @map("completed_at")
+
+  @@map("task_delegations")
+}
+
+/// DaemonNode - Daemon node for distributed orchestrator infrastructure
+model DaemonNode {
+  id             String     @id @default(uuid())
+  name           String
+  host           String
+  port           Int
+  capabilities   String[]
+  region         String
+  status         NodeStatus @default(OFFLINE)
+  cpuUsage       Float      @default(0) @map("cpu_usage")
+  memoryUsage    Float      @default(0) @map("memory_usage")
+  activeSessions Int        @default(0) @map("active_sessions")
+  lastHeartbeat  DateTime?  @map("last_heartbeat")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  @@map("daemon_nodes")
 }

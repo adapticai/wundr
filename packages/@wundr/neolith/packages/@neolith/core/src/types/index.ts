@@ -1456,3 +1456,37 @@ export {
   DEFAULT_OBJECTIVES,
   DEFAULT_CONSTRAINTS,
 } from './charter';
+
+// =============================================================================
+// Health Dashboard Types
+// =============================================================================
+
+export type {
+  // System overview types
+  SystemOverview,
+  TokenUsageOverview,
+
+  // Orchestrator status types
+  OrchestratorHealthStatus,
+
+  // Metrics types
+  TimeSeriesMetric,
+  LatencyMetrics,
+  MetricsChartData,
+
+  // Alert types
+  HealthAlertType,
+  AlertSeverity,
+  HealthAlert,
+
+  // Dashboard state types
+  DashboardConfig,
+  HealthDashboardState,
+
+  // Health check types
+  HealthCheckResult,
+
+  // Query types
+  MetricsPeriod,
+  MetricsQuery,
+} from './health-dashboard';

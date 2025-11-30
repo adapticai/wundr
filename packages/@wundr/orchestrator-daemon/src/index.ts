@@ -25,3 +25,6 @@ export type {
   ToolExecutionResult,
   McpToolRegistry,
 } from './session/tool-executor';
+
+// Export federation module
+export * from './federation';
