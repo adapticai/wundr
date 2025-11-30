@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   FileIcon,
   FileText,
@@ -17,9 +17,11 @@ import {
   Link2,
   Trash2,
   Loader2,
+  Eye,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { useFilePreview } from '@/components/file-preview';
 import { cn } from '@/lib/utils';
 
 /**
@@ -132,6 +134,7 @@ export function FileCard({
   const [copySuccess, setCopySuccess] = useState(false);
   const desktopMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const { openPreview } = useFilePreview();
 
   // Update state when props change
   useEffect(() => {
@@ -158,6 +161,22 @@ export function FileCard({
   const Icon = getFileIcon(file.mimeType);
   const isImage = file.mimeType.startsWith('image/');
   const imagePreviewUrl = file.thumbnailUrl || (isImage ? file.url : null);
+
+  // Open file preview modal
+  const handlePreview = useCallback(() => {
+    if (file.url) {
+      openPreview({
+        id: file.id,
+        url: file.url,
+        originalName: file.originalName,
+        mimeType: file.mimeType,
+        size: file.size,
+        thumbnailUrl: file.thumbnailUrl,
+        uploadedBy: file.uploadedBy,
+        createdAt: file.createdAt,
+      });
+    }
+  }, [file, openPreview]);
 
   const handleOpenInNewTab = () => {
     if (file.url) {
@@ -250,9 +269,18 @@ export function FileCard({
   return (
     <div
       className={cn(
-        'group relative rounded-lg border bg-card p-3 sm:p-4 transition-shadow hover:shadow-md',
+        'group relative rounded-lg border bg-card p-3 sm:p-4 transition-shadow hover:shadow-md cursor-pointer',
         className
       )}
+      onClick={handlePreview}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handlePreview();
+        }
+      }}
     >
       <div className="flex gap-3">
         {/* Thumbnail or Icon */}
@@ -290,7 +318,16 @@ export function FileCard({
             </div>
 
             {/* Desktop: Action buttons on hover */}
-            <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handlePreview}
+                title="Preview"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -365,7 +402,7 @@ export function FileCard({
             </div>
 
             {/* Mobile: Always visible more button */}
-            <div className="sm:hidden relative" ref={mobileMenuRef}>
+            <div className="sm:hidden relative" ref={mobileMenuRef} onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -379,6 +416,7 @@ export function FileCard({
               {/* Dropdown menu */}
               {showMenu && (
                 <DropdownMenu
+                  onPreview={handlePreview}
                   onOpenInNewTab={handleOpenInNewTab}
                   onDownload={handleDownload}
                   onCopyLink={handleCopyLink}
@@ -404,6 +442,7 @@ export function FileCard({
  * Dropdown menu for file actions
  */
 interface DropdownMenuProps {
+  onPreview?: () => void;
   onOpenInNewTab: () => void;
   onDownload: () => void;
   onCopyLink: () => void;
@@ -418,6 +457,7 @@ interface DropdownMenuProps {
 }
 
 function DropdownMenu({
+  onPreview,
   onOpenInNewTab,
   onDownload,
   onCopyLink,
@@ -438,6 +478,16 @@ function DropdownMenu({
         onClick={onClose}
       />
       <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border bg-popover p-1 shadow-lg">
+        {onPreview && (
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            onClick={onPreview}
+          >
+            <Eye className="h-4 w-4" />
+            Preview
+          </button>
+        )}
         <button
           type="button"
           className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"

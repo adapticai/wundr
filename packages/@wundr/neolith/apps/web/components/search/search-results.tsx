@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useFilePreview } from '@/components/file-preview';
 import { cn } from '@/lib/utils';
 
 /**
@@ -29,6 +30,8 @@ export interface FileResultData {
   channelName: string;
   uploaderName: string;
   uploadedAt: string;
+  url?: string;
+  thumbnailUrl?: string | null;
 }
 
 /**
@@ -184,8 +187,11 @@ function MessageResult({ result, workspaceId }: ResultRendererProps) {
   );
 }
 
-function FileResult({ result, workspaceId }: ResultRendererProps) {
+function FileResult({ result }: ResultRendererProps) {
   const data = result.data as FileResultData;
+  const isImage = data.fileType?.startsWith('image/');
+  const previewUrl = data.thumbnailUrl || (isImage ? data.url : null);
+  const { openPreview } = useFilePreview();
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) {
@@ -197,36 +203,61 @@ return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const handleClick = () => {
+    if (data.url) {
+      openPreview({
+        id: data.fileId,
+        url: data.url,
+        originalName: data.fileName,
+        mimeType: data.fileType,
+        size: data.fileSize,
+        thumbnailUrl: data.thumbnailUrl,
+        uploadedBy: {
+          name: data.uploaderName,
+        },
+        createdAt: data.uploadedAt,
+      });
+    }
+  };
+
   return (
-    <a
-      href={`/api/workspaces/${workspaceId}/files/${data.fileId}`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
+      type="button"
+      onClick={handleClick}
       className={cn(
-        'flex items-center gap-4 p-4 rounded-lg',
+        'flex items-center gap-4 p-4 rounded-lg w-full text-left',
         'hover:bg-accent transition-colors',
       )}
     >
-      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="w-5 h-5 text-primary"
-        >
-          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
+      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
+        {isImage && previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewUrl}
+            alt={data.fileName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="w-5 h-5 text-primary"
+          >
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-foreground truncate font-sans">{data.fileName}</p>
         <p className="text-xs text-muted-foreground font-sans">
-          {formatSize(data.fileSize)} - Uploaded by {data.uploaderName} in #{data.channelName}
+          {formatSize(data.fileSize)} - Uploaded by {data.uploaderName}{data.channelName ? ` in #${data.channelName}` : ''}
         </p>
       </div>
-    </a>
+    </button>
   );
 }
 
@@ -399,8 +430,102 @@ export function SearchResults({
       }
 
       const data = await response.json();
-      setResults(data.results || []);
-      setTotal(data.total || 0);
+      // API returns data in { data: [...], pagination: { totalCount } } format
+      // Map the API response to the expected SearchResult format
+      const apiResults = data.data || [];
+      const mappedResults: SearchResult[] = apiResults.map((item: Record<string, unknown>) => {
+        // Map file results
+        if (item.type === 'file') {
+          return {
+            id: item.id as string,
+            type: 'file' as const,
+            score: 1,
+            highlight: item.highlighted as SearchHighlight | undefined,
+            data: {
+              fileId: item.id as string,
+              fileName: item.originalName as string,
+              fileType: item.mimeType as string,
+              fileSize: Number(item.size),
+              channelName: (item.channelName as string) || '',
+              uploaderName: (item.uploaderName as string) || 'Unknown',
+              uploadedAt: String(item.createdAt),
+              url: item.url as string | undefined,
+              thumbnailUrl: item.thumbnailUrl as string | null | undefined,
+            } as FileResultData,
+          };
+        }
+        // Map message results
+        if (item.type === 'message') {
+          return {
+            id: item.id as string,
+            type: 'message' as const,
+            score: 1,
+            highlight: item.highlighted ? { content: [(item.highlighted as { content?: string }).content || ''] } : undefined,
+            data: {
+              messageId: item.id as string,
+              content: item.content as string,
+              channelId: item.channelId as string,
+              channelName: item.channelName as string,
+              senderName: (item.authorName as string) || 'Unknown',
+              sentAt: String(item.createdAt),
+            } as MessageResultData,
+          };
+        }
+        // Map channel results
+        if (item.type === 'channel') {
+          return {
+            id: item.id as string,
+            type: 'channel' as const,
+            score: 1,
+            highlight: item.highlighted as SearchHighlight | undefined,
+            data: {
+              channelId: item.id as string,
+              name: item.name as string,
+              description: item.description as string | undefined,
+              memberCount: (item.memberCount as number) || 0,
+              isPrivate: item.type_value === 'PRIVATE',
+            } as ChannelResultData,
+          };
+        }
+        // Map user results
+        if (item.type === 'user') {
+          return {
+            id: item.id as string,
+            type: 'user' as const,
+            score: 1,
+            highlight: item.highlighted as SearchHighlight | undefined,
+            data: {
+              userId: item.id as string,
+              name: (item.name as string) || (item.displayName as string) || 'Unknown',
+              email: item.email as string,
+              role: 'Member',
+              discipline: undefined,
+              avatarUrl: item.avatarUrl as string | undefined,
+            } as UserResultData,
+          };
+        }
+        // Map orchestrator results as 'vp' type
+        if (item.type === 'orchestrator') {
+          return {
+            id: item.id as string,
+            type: 'vp' as const,
+            score: 1,
+            highlight: item.highlighted as SearchHighlight | undefined,
+            data: {
+              orchestratorId: item.id as string,
+              name: (item.name as string) || (item.displayName as string) || 'Unknown',
+              discipline: (item.discipline as string) || '',
+              status: (item.status as string) || 'offline',
+              capabilities: [],
+            } as VPResultData,
+          };
+        }
+        // Default fallback - skip unknown types
+        return null;
+      }).filter(Boolean) as SearchResult[];
+
+      setResults(mappedResults);
+      setTotal(data.pagination?.totalCount || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
     } finally {

@@ -29,8 +29,10 @@ import {
 
 import type { Message, User } from '@/types/chat';
 import type { Channel, ChannelPermissions } from '@/types/channel';
+import type { ConversationTab } from '@/components/channel/shared';
 
-type ChannelTab = 'messages' | 'canvas' | 'files';
+// For channels, we currently support a subset of tabs
+type ChannelTab = Extract<ConversationTab, 'messages' | 'canvas' | 'files'>;
 
 export default function ChannelPage() {
   const params = useParams();
@@ -585,9 +587,12 @@ export default function ChannelPage() {
     }
   }, [channelId, toast]);
 
-  // Tab change handler
-  const handleTabChange = useCallback((tab: ChannelTab) => {
-    setActiveTab(tab);
+  // Tab change handler - filter to only supported tabs for channels
+  const handleTabChange = useCallback((tab: ConversationTab) => {
+    // Channels only support messages, canvas, and files tabs for now
+    if (tab === 'messages' || tab === 'canvas' || tab === 'files') {
+      setActiveTab(tab);
+    }
   }, []);
 
   const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;

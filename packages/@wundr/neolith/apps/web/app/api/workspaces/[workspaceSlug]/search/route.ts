@@ -93,7 +93,7 @@ interface FileResult {
   filename: string;
   originalName: string;
   mimeType: string;
-  size: bigint;
+  size: number; // Converted from BigInt for JSON serialization
   url: string;
   thumbnailUrl: string | null;
   uploadedById: string;
@@ -479,7 +479,7 @@ async function searchFiles(
       filename: file.filename,
       originalName: file.originalName,
       mimeType: file.mimeType,
-      size: file.size, // BigInt will be stringified by JSON.stringify
+      size: Number(file.size), // Convert BigInt to Number for JSON serialization
       url: generateFileUrl(file.s3Key, file.s3Bucket),
       thumbnailUrl: file.thumbnailUrl,
       uploadedById: file.uploadedById,

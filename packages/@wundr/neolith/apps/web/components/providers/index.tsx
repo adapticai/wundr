@@ -3,6 +3,7 @@
 import { SessionProvider, useSession } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
+import { FilePreviewProvider } from '@/components/file-preview';
 import { PresenceProvider } from './presence-provider';
 
 import type { ReactNode } from 'react';
@@ -19,7 +20,9 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <PresenceWrapper>{children}</PresenceWrapper>
+        <FilePreviewProvider>
+          <PresenceWrapper>{children}</PresenceWrapper>
+        </FilePreviewProvider>
       </ThemeProvider>
     </SessionProvider>
   );

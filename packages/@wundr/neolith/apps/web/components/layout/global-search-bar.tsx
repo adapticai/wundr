@@ -33,6 +33,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
+import { useFilePreview } from '@/components/file-preview';
 import { cn, getInitials } from '@/lib/utils';
 
 /**
@@ -154,6 +155,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
   const router = useRouter();
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { openPreview } = useFilePreview();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -391,12 +393,38 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
           }
           break;
         case 'file':
-          // Open file in new tab
-          window.open(`/api/files/${result.id}`, '_blank');
+          // Open file preview modal
+          if (result.metadata?.url) {
+            openPreview({
+              id: result.id,
+              url: result.metadata.url,
+              originalName: result.name,
+              mimeType: result.metadata.mimeType || 'application/octet-stream',
+              size: result.metadata.size || 0,
+              thumbnailUrl: result.metadata.thumbnailUrl,
+            });
+          } else {
+            // Fetch the file URL if not available in metadata
+            fetch(`/api/files/${result.id}/download?inline=true`)
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.data?.url) {
+                  openPreview({
+                    id: result.id,
+                    url: data.data.url,
+                    originalName: result.name,
+                    mimeType: result.metadata?.mimeType || 'application/octet-stream',
+                    size: result.metadata?.size || 0,
+                    thumbnailUrl: result.metadata?.thumbnailUrl,
+                  });
+                }
+              })
+              .catch((err) => console.error('Error opening file preview:', err));
+          }
           break;
       }
     },
-    [router, saveRecentItem, workspaceSlug],
+    [router, saveRecentItem, workspaceSlug, openPreview],
   );
 
   // Handle recent item selection
@@ -481,13 +509,28 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
 
   // Handle file suggestion selection
   const handleFileSuggestion = useCallback(
-    (file: FileSuggestion) => {
+    async (file: FileSuggestion) => {
       setOpen(false);
       setQuery('');
-      // Open file in a new tab or navigate to file view
-      window.open(`/api/files/${file.id}`, '_blank');
+      // Open file preview modal
+      try {
+        const response = await fetch(`/api/files/${file.id}/download?inline=true`);
+        const data = await response.json();
+        if (data.data?.url) {
+          openPreview({
+            id: file.id,
+            url: data.data.url,
+            originalName: file.originalName,
+            mimeType: file.mimeType,
+            size: file.size,
+            thumbnailUrl: file.thumbnailUrl,
+          });
+        }
+      } catch (err) {
+        console.error('Error opening file preview:', err);
+      }
     },
-    [],
+    [openPreview],
   );
 
   // Helper to get icon for quick actions

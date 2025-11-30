@@ -8,22 +8,16 @@ import {
   BellOff,
   Search,
   MoreHorizontal,
-  Star,
   Copy,
   ExternalLink,
   Info,
   Sparkles,
-  FileText,
-  FolderOpen,
-  Plus,
   ChevronDown,
-  Settings,
   Bot,
-  MessageSquare,
-  LayoutList,
-  Workflow,
   BookOpen,
   Users,
+  Settings,
+  Star,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -42,6 +36,8 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { cn, getInitials } from '@/lib/utils';
+import { HeaderTabs, StarButton, DEFAULT_TABS } from './shared';
+import type { ConversationTab } from './shared';
 
 // Types
 interface DMParticipant {
@@ -75,7 +71,7 @@ interface DMHeaderProps {
   /** Whether star toggle is in progress */
   isStarring?: boolean;
   /** Active tab */
-  activeTab?: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks';
+  activeTab?: ConversationTab;
   /** Callback when huddle is started */
   onStartHuddle?: () => void;
   /** Callback to copy huddle link */
@@ -97,7 +93,7 @@ interface DMHeaderProps {
   /** Callback when AI summarize is clicked */
   onSummarize?: () => void;
   /** Callback when tab changes */
-  onTabChange?: (tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks') => void;
+  onTabChange?: (tab: ConversationTab) => void;
   /** Callback when add tab is clicked */
   onAddTab?: (tabType: string) => void;
   /** Callback when call is initiated */
@@ -232,88 +228,6 @@ function ConversationName({ participants }: { participants: DMParticipant[] }) {
 }
 
 /**
- * Header Tabs Component
- * Shows Messages/Canvas/Files tabs with add button
- */
-function HeaderTabs({
-  activeTab,
-  onTabChange,
-  onAddTab,
-}: {
-  activeTab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks';
-  onTabChange?: (tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks') => void;
-  onAddTab?: (tabType: string) => void;
-}) {
-  const tabs = [
-    { id: 'messages' as const, label: 'Messages', icon: MessageSquare },
-    { id: 'canvas' as const, label: 'Canvas', icon: FileText },
-  ];
-
-  return (
-    <div className="flex items-center gap-1 border-b">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange?.(tab.id)}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors relative',
-            activeTab === tab.id
-              ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          <tab.icon className="h-4 w-4" />
-          {tab.label}
-          {activeTab === tab.id && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-          )}
-        </button>
-      ))}
-
-      {/* Add tab dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-1">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
-          <DropdownMenuLabel className="text-xs text-muted-foreground">
-            Add a tab
-          </DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => onAddTab?.('link')}>
-            <Link2 className="mr-2 h-4 w-4" />
-            Link
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onAddTab?.('folder')}>
-            <FolderOpen className="mr-2 h-4 w-4" />
-            Folder
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onAddTab?.('canvas')}>
-            <FileText className="mr-2 h-4 w-4" />
-            Canvas
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onAddTab?.('list')}>
-            <LayoutList className="mr-2 h-4 w-4" />
-            List
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onAddTab?.('workflow')}>
-            <Workflow className="mr-2 h-4 w-4" />
-            Workflow
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onAddTab?.('customize')}>
-            <Settings className="mr-2 h-4 w-4" />
-            Customise tabs
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
-/**
  * DM Header Component
  *
  * A comprehensive header for direct message conversations with Slack-style features:
@@ -364,26 +278,17 @@ export function DMHeader({
   const isGroupDM = participants.length > 1;
 
   return (
-    <div className={cn('flex flex-col border-b bg-card/30', className)}>
+    <div className={cn('flex flex-col border-b', className)}>
       {/* Main header row */}
       <div className="flex h-12 items-center justify-between px-4">
         {/* Left section - Star button, Avatars and names */}
         <div className="flex items-center gap-2">
           {/* Star button */}
-          <button
-            type="button"
-            onClick={onToggleStar}
-            disabled={isStarring}
-            className="rounded-md p-1.5 hover:bg-accent transition-colors"
-            title={isStarred ? 'Unstar conversation' : 'Star conversation'}
-          >
-            <Star
-              className={cn(
-                'h-4 w-4',
-                isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
-              )}
-            />
-          </button>
+          <StarButton
+            isStarred={isStarred}
+            isLoading={isStarring}
+            onToggle={onToggleStar}
+          />
           <button
             onClick={onViewDetails}
             className="flex items-center gap-3 hover:bg-accent rounded-md px-2 py-1 transition-colors"
@@ -592,6 +497,7 @@ export function DMHeader({
         activeTab={activeTab}
         onTabChange={onTabChange}
         onAddTab={onAddTab}
+        tabs={DEFAULT_TABS}
       />
     </div>
   );

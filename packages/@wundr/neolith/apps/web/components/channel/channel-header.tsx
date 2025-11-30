@@ -20,10 +20,8 @@ import {
   Headphones,
   Info,
   LogOut,
-  MessageSquare,
   MoreHorizontal,
   Phone,
-  Plus,
   Search,
   Settings,
   Sparkles,
@@ -34,12 +32,13 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCallback, useState, useMemo } from 'react';
-
+import { HeaderTabs, StarButton, DEFAULT_TABS } from './shared';
+import type { ConversationTab } from './shared';
 
 /**
- * Channel header tabs
+ * Channel header tabs - using shared type
  */
-type ChannelTab = 'messages' | 'canvas' | 'files';
+type ChannelTab = ConversationTab;
 
 /**
  * Props for the ChannelHeader component
@@ -175,27 +174,18 @@ return;
   }, [onLeave]);
 
   return (
-    <div className={cn('border-b bg-card/30', className)}>
+    <div className={cn('border-b', className)}>
       {/* Top row: Channel name, star, members */}
       <div className="flex h-12 items-center justify-between px-4">
         
         {/* Left side: Channel name with dropdown */}
         <div className="flex items-center gap-2">
           {/* Star button */}
-          <button
-            type="button"
-            onClick={handleToggleStar}
-            disabled={isStarring}
-            className="rounded-md p-1.5 hover:bg-accent transition-colors"
-            title={channel.isStarred ? 'Unstar channel' : 'Star channel'}
-          >
-            <Star
-              className={cn(
-                'h-4 w-4',
-                channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
-              )}
-            />
-          </button>
+          <StarButton
+            isStarred={channel.isStarred || false}
+            isLoading={isStarring}
+            onToggle={handleToggleStar}
+          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -408,62 +398,13 @@ return;
       </div>
 
       {/* Bottom row: Tabs */}
-      <div className="flex items-center gap-1 px-4 pb-3">
-        <TabButton
-          active={activeTab === 'messages'}
-          onClick={() => onTabChange?.('messages')}
-          icon={<MessageSquare className="h-4 w-4" />}
-          label="Messages"
-        />
-        <TabButton
-          active={activeTab === 'canvas'}
-          onClick={() => onTabChange?.('canvas')}
-          icon={<FileText className="h-4 w-4" />}
-          label="Canvas"
-        />
-        <TabButton
-          active={activeTab === 'files'}
-          onClick={() => onTabChange?.('files')}
-          icon={<FileText className="h-4 w-4" />}
-          label="Files"
-        />
-        <button
-          type="button"
-          className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors"
-          title="Add a tab"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
+      <HeaderTabs
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        tabs={DEFAULT_TABS}
+        className="px-2 pb-1"
+      />
     </div>
-  );
-}
-
-/**
- * Tab button component
- */
-interface TabButtonProps {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}
-
-function TabButton({ active, onClick, icon, label }: TabButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-        active
-          ? 'bg-accent text-foreground'
-          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-      )}
-    >
-      {icon}
-      {label}
-    </button>
   );
 }
 

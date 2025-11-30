@@ -3,6 +3,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { GroupAvatar } from '@/components/ui/user-avatar';
 import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
+import { useFilePreview } from '@/components/file-preview';
 import { cn } from '@/lib/utils';
 import type { Message, User } from '@/types/chat';
 import { ReactionDisplay } from './reaction-display';
@@ -496,6 +497,19 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
   const [isSaved, setIsSaved] = useState(false);
   const [savedItemId, setSavedItemId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { openPreview } = useFilePreview();
+
+  const handlePreview = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openPreview({
+      id: attachment.id,
+      url: attachment.url,
+      originalName: attachment.name,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+    });
+  }, [attachment, openPreview]);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) {
@@ -682,11 +696,10 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
             </svg>
           </div>
           <div className="relative overflow-hidden rounded-md border">
-            <a
-              href={attachment.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
+            <button
+              type="button"
+              onClick={handlePreview}
+              className="block cursor-pointer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -694,7 +707,7 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
                 alt={attachment.name}
                 className="max-h-64 w-full object-cover"
               />
-            </a>
+            </button>
             <ActionButtons />
           </div>
           {/* Click outside to close menu */}
@@ -732,18 +745,17 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
           if (!showMenu) setShowMenu(false);
         }}
       >
-        <a
-          href={attachment.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 hover:bg-muted"
+        <button
+          type="button"
+          onClick={handlePreview}
+          className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 hover:bg-muted cursor-pointer w-full text-left"
         >
           <FileIcon />
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium">{attachment.name}</div>
             <div className="text-xs text-muted-foreground">{formatSize(attachment.size)}</div>
           </div>
-        </a>
+        </button>
         <ActionButtons />
         {/* Click outside to close menu */}
         {showMenu && (

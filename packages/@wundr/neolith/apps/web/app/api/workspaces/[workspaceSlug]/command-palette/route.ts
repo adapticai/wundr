@@ -76,7 +76,7 @@ interface FileSuggestion {
   filename: string;
   originalName: string;
   mimeType: string;
-  size: bigint;
+  size: number; // Converted from BigInt for JSON serialization
   thumbnailUrl: string | null;
   channelName?: string;
   uploadedAt: Date;
@@ -399,7 +399,7 @@ export async function GET(
       filename: file.filename,
       originalName: file.originalName,
       mimeType: file.mimeType,
-      size: file.size,
+      size: Number(file.size), // Convert BigInt to Number for JSON serialization
       thumbnailUrl: file.thumbnailUrl,
       channelName: file.messageAttachments[0]?.message?.channel?.name,
       uploadedAt: file.createdAt,

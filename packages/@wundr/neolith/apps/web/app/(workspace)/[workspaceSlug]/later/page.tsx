@@ -27,6 +27,7 @@ import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { ShareFileDialog, type ShareFileData } from '@/components/channel/share-file-dialog';
+import { useFilePreview } from '@/components/file-preview';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserAvatar } from '@/components/ui/user-avatar';
@@ -785,9 +786,34 @@ function SavedFileCard({
 }: SavedItemCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const { openPreview } = useFilePreview();
   const file = item.file;
 
   if (!file) return null;
+
+  const handlePreview = async () => {
+    try {
+      const response = await fetch(`/api/files/${file.id}/download?inline=true`);
+      const data = await response.json();
+      if (data.data?.url) {
+        openPreview({
+          id: file.id,
+          url: data.data.url,
+          originalName: file.originalName,
+          mimeType: file.mimeType,
+          size: file.size,
+          thumbnailUrl: file.thumbnailUrl,
+          uploadedBy: {
+            name: file.uploadedBy.name,
+            displayName: file.uploadedBy.displayName,
+          },
+          createdAt: file.createdAt,
+        });
+      }
+    } catch (err) {
+      console.error('Error opening file preview:', err);
+    }
+  };
 
   const formatFileSize = (bytes: number) => {
     const size = Number(bytes);
@@ -874,7 +900,13 @@ function SavedFileCard({
   void workspaceSlug;
 
   return (
-    <div className="group relative rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
+    <div
+      className="group relative rounded-lg border bg-card p-4 transition-shadow hover:shadow-md cursor-pointer"
+      onClick={handlePreview}
+      onKeyDown={(e) => e.key === 'Enter' && handlePreview()}
+      role="button"
+      tabIndex={0}
+    >
       <div className="flex gap-3">
         {/* File Thumbnail or Icon */}
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted overflow-hidden">
@@ -911,7 +943,7 @@ function SavedFileCard({
               {/* Open in new tab */}
               <button
                 type="button"
-                onClick={handleOpenInNewTab}
+                onClick={(e) => { e.stopPropagation(); handleOpenInNewTab(); }}
                 className="rounded p-1.5 hover:bg-muted"
                 title="Open in new tab"
               >
@@ -921,7 +953,7 @@ function SavedFileCard({
               {/* Download */}
               <button
                 type="button"
-                onClick={handleDownload}
+                onClick={(e) => { e.stopPropagation(); handleDownload(); }}
                 className="rounded p-1.5 hover:bg-muted"
                 title="Download"
               >
@@ -931,7 +963,7 @@ function SavedFileCard({
               {/* Share/Forward */}
               <button
                 type="button"
-                onClick={handleShare}
+                onClick={(e) => { e.stopPropagation(); handleShare(); }}
                 className="rounded p-1.5 hover:bg-muted"
                 title={copySuccess ? 'Link copied!' : 'Share file'}
               >
@@ -941,7 +973,7 @@ function SavedFileCard({
               {/* Bookmark (filled since it's in Later) - click to remove */}
               <button
                 type="button"
-                onClick={handleRemoveFromLater}
+                onClick={(e) => { e.stopPropagation(); handleRemoveFromLater(); }}
                 className="rounded p-1.5 hover:bg-muted text-primary"
                 title="Remove from Later"
               >
@@ -952,7 +984,7 @@ function SavedFileCard({
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setShowMenu(!showMenu)}
+                  onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
                   className="rounded p-1.5 hover:bg-muted"
                   title="More options"
                 >
@@ -963,9 +995,9 @@ function SavedFileCard({
                   <>
                     <div
                       className="fixed inset-0 z-10"
-                      onClick={() => setShowMenu(false)}
+                      onClick={(e) => { e.stopPropagation(); setShowMenu(false); }}
                     />
-                    <div className="absolute right-0 top-full z-20 mt-1 w-52 rounded-md border bg-popover p-1 shadow-lg">
+                    <div className="absolute right-0 top-full z-20 mt-1 w-52 rounded-md border bg-popover p-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
                       {/* File Actions */}
                       <button
                         type="button"
