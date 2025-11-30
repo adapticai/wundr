@@ -151,8 +151,19 @@ export async function GET(
 
     const totalPages = Math.ceil(totalCount / limit);
 
+    // Convert BigInt fields to numbers for JSON serialization
+    const serializedItems = items.map((item) => ({
+      ...item,
+      file: item.file
+        ? {
+            ...item.file,
+            size: Number(item.file.size),
+          }
+        : null,
+    }));
+
     return NextResponse.json({
-      data: items,
+      data: serializedItems,
       pagination: {
         page,
         limit,
@@ -164,8 +175,9 @@ export async function GET(
     });
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceSlug/saved-items] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An internal error occurred';
     return NextResponse.json(
-      { error: 'An internal error occurred', code: 'INTERNAL_ERROR' },
+      { error: errorMessage, code: 'INTERNAL_ERROR', details: String(error) },
       { status: 500 },
     );
   }

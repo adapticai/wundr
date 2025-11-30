@@ -9,6 +9,7 @@ import {
   Bot,
   Workflow,
   Rocket,
+  Bookmark,
   Settings,
   HelpCircle,
   LogOut,
@@ -87,6 +88,11 @@ const navItems = [
     title: 'Deployments',
     icon: Rocket,
     url: '/deployments',
+  },
+  {
+    title: 'Later',
+    icon: Bookmark,
+    url: '/later',
   },
 ];
 

@@ -2,7 +2,7 @@ import { Outfit, Inter } from 'next/font/google';
 
 import { Providers } from '@/components/providers';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 const outfit = Outfit({
@@ -16,6 +16,14 @@ const inter = Inter({
   variable: '--font-inter',
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: {
@@ -34,13 +42,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Neolith' }],
   creator: 'Neolith',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
   icons: {
     icon: '/favicon.ico',
   },

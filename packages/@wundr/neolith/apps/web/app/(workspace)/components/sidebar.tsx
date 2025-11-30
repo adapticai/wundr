@@ -298,17 +298,17 @@ interface LaterNavItemProps {
 
 interface SavedItemPreview {
   id: string;
-  item_type: 'MESSAGE' | 'FILE';
-  created_at: string;
-  messages: {
+  itemType: 'MESSAGE' | 'FILE';
+  createdAt: string;
+  message: {
     content: string;
-    users: {
+    author: {
       name: string | null;
-      display_name: string | null;
+      displayName: string | null;
     };
   } | null;
-  files: {
-    original_name: string;
+  file: {
+    originalName: string;
   } | null;
 }
 
@@ -379,20 +379,20 @@ function LaterNavItem({ href, icon, workspaceId, isActive }: LaterNavItemProps) 
             <div className="divide-y divide-stone-800">
               {items.map((item) => (
                 <div key={item.id} className="p-3 hover:bg-stone-800/50">
-                  {item.item_type === 'MESSAGE' && item.messages ? (
+                  {item.itemType === 'MESSAGE' && item.message ? (
                     <div>
                       <p className="text-xs text-stone-400 mb-1">
-                        {item.messages.users.display_name || item.messages.users.name || 'Unknown'}
+                        {item.message.author.displayName || item.message.author.name || 'Unknown'}
                       </p>
                       <p className="text-sm text-stone-300 line-clamp-2">
-                        {item.messages.content}
+                        {item.message.content}
                       </p>
                     </div>
-                  ) : item.item_type === 'FILE' && item.files ? (
+                  ) : item.itemType === 'FILE' && item.file ? (
                     <div className="flex items-center gap-2">
                       <FileIcon className="h-4 w-4 text-stone-400 shrink-0" />
                       <p className="text-sm text-stone-300 truncate">
-                        {item.files.original_name}
+                        {item.file.originalName}
                       </p>
                     </div>
                   ) : null}

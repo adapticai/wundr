@@ -134,7 +134,18 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ data: savedItem });
+    // Convert BigInt fields to numbers for JSON serialization
+    const serializedItem = {
+      ...savedItem,
+      file: savedItem.file
+        ? {
+            ...savedItem.file,
+            size: Number(savedItem.file.size),
+          }
+        : null,
+    };
+
+    return NextResponse.json({ data: serializedItem });
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceSlug/saved-items/:itemId] Error:', error);
     return NextResponse.json(
@@ -292,8 +303,19 @@ export async function PATCH(
       },
     });
 
+    // Convert BigInt fields to numbers for JSON serialization
+    const serializedItem = {
+      ...savedItem,
+      file: savedItem.file
+        ? {
+            ...savedItem.file,
+            size: Number(savedItem.file.size),
+          }
+        : null,
+    };
+
     return NextResponse.json({
-      data: savedItem,
+      data: serializedItem,
       message: 'Saved item updated successfully',
     });
   } catch (error) {

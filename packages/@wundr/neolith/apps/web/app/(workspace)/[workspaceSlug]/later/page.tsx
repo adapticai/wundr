@@ -23,48 +23,48 @@ import { UserAvatar } from '@/components/ui/user-avatar';
 import type { SavedItemStatus, SavedItemType } from '@prisma/client';
 
 /**
- * Saved item with included relations
+ * Saved item with included relations (matches Prisma API response)
  */
 interface SavedItem {
   id: string;
-  item_type: SavedItemType;
+  itemType: SavedItemType;
   status: SavedItemStatus;
   note: string | null;
-  due_date: string | null;
-  created_at: string;
-  updated_at: string;
-  completed_at: string | null;
-  archived_at: string | null;
-  messages: {
+  dueDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  archivedAt: string | null;
+  message: {
     id: string;
     content: string;
-    created_at: string;
-    users: {
+    createdAt: string;
+    author: {
       id: string;
       name: string | null;
-      display_name: string | null;
-      avatar_url: string | null;
-      is_vp: boolean;
+      displayName: string | null;
+      avatarUrl: string | null;
+      isOrchestrator: boolean;
     };
-    channels: {
+    channel: {
       id: string;
       name: string;
       slug: string;
       type: string;
     };
   } | null;
-  files: {
+  file: {
     id: string;
     filename: string;
-    original_name: string;
-    mime_type: string;
-    size: bigint;
-    created_at: string;
-    users: {
+    originalName: string;
+    mimeType: string;
+    size: number;
+    createdAt: string;
+    uploadedBy: {
       id: string;
       name: string | null;
-      display_name: string | null;
-      avatar_url: string | null;
+      displayName: string | null;
+      avatarUrl: string | null;
     };
   } | null;
 }
@@ -98,7 +98,9 @@ export default function LaterPage() {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch saved items');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Saved items API error:', response.status, errorData);
+        throw new Error(errorData.error || `Failed to fetch saved items (${response.status})`);
       }
 
       const data = await response.json();
@@ -373,8 +375,8 @@ function SavedItemsList({
   }
 
   // Group items by type
-  const messages = items.filter((item) => item.item_type === 'MESSAGE' && item.messages);
-  const files = items.filter((item) => item.item_type === 'FILE' && item.files);
+  const messages = items.filter((item) => item.itemType === 'MESSAGE' && item.message);
+  const files = items.filter((item) => item.itemType === 'FILE' && item.file);
 
   return (
     <div className="space-y-6">
@@ -456,13 +458,13 @@ function SavedMessageCard({
   isCompleted,
 }: SavedItemCardProps) {
   const [showMenu, setShowMenu] = useState(false);
-  const message = item.messages;
+  const message = item.message;
 
   if (!message) return null;
 
-  const channelUrl = message.channels.type === 'DM'
-    ? `/${workspaceSlug}/dm/${message.channels.id}`
-    : `/${workspaceSlug}/channels/${message.channels.id}`;
+  const channelUrl = message.channel.type === 'DM'
+    ? `/${workspaceSlug}/dm/${message.channel.id}`
+    : `/${workspaceSlug}/channels/${message.channel.id}`;
 
   return (
     <div className="group relative rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
@@ -470,8 +472,8 @@ function SavedMessageCard({
         {/* Author Avatar */}
         <UserAvatar
           user={{
-            name: message.users.name,
-            avatarUrl: message.users.avatar_url,
+            name: message.author.name,
+            avatarUrl: message.author.avatarUrl,
           }}
           size="sm"
         />
@@ -482,15 +484,15 @@ function SavedMessageCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium">
-                  {message.users.display_name || message.users.name || 'Unknown'}
+                  {message.author.displayName || message.author.name || 'Unknown'}
                 </span>
-                {message.users.is_vp && (
+                {message.author.isOrchestrator && (
                   <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">
                     AI
                   </span>
                 )}
                 <span className="text-xs text-muted-foreground">
-                  {formatRelativeTime(message.created_at)}
+                  {formatRelativeTime(message.createdAt)}
                 </span>
               </div>
               <Link
@@ -498,7 +500,7 @@ function SavedMessageCard({
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 <Hash className="h-3 w-3" />
-                {message.channels.name}
+                {message.channel.name}
               </Link>
             </div>
 
@@ -605,11 +607,11 @@ function SavedFileCard({
   isCompleted,
 }: SavedItemCardProps) {
   const [showMenu, setShowMenu] = useState(false);
-  const file = item.files;
+  const file = item.file;
 
   if (!file) return null;
 
-  const formatFileSize = (bytes: number | bigint) => {
+  const formatFileSize = (bytes: number) => {
     const size = Number(bytes);
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
@@ -628,15 +630,15 @@ function SavedFileCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="truncate font-medium">{file.original_name}</p>
+              <p className="truncate font-medium">{file.originalName}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{formatFileSize(file.size)}</span>
                 <span>•</span>
                 <span>
-                  Shared by {file.users.display_name || file.users.name || 'Unknown'}
+                  Shared by {file.uploadedBy.displayName || file.uploadedBy.name || 'Unknown'}
                 </span>
                 <span>•</span>
-                <span>{formatRelativeTime(file.created_at)}</span>
+                <span>{formatRelativeTime(file.createdAt)}</span>
               </div>
             </div>
 

@@ -2,7 +2,7 @@
  * Heartbeat API Route
  *
  * Endpoint for clients to send periodic heartbeats to update presence.
- * Implements rate limiting (10 heartbeats per minute).
+ * Implements rate limiting (30 heartbeats per minute).
  *
  * Routes:
  * - POST /api/presence/heartbeat - Send heartbeat
@@ -29,8 +29,8 @@ import type { NextRequest } from 'next/server';
  */
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
-/** Rate limit: 10 heartbeats per minute */
-const RATE_LIMIT_MAX = 10;
+/** Rate limit: 30 heartbeats per minute (allows for multiple components + Fast Refresh) */
+const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 
 /**
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const rateLimitInfo = getRateLimitInfo(session.user.id);
       return NextResponse.json(
         createPresenceErrorResponse(
-          'Rate limit exceeded. Maximum 10 heartbeats per minute.',
+          'Rate limit exceeded. Maximum 30 heartbeats per minute.',
           PRESENCE_ERROR_CODES.RATE_LIMITED,
           {
             retryAfter: Math.ceil((rateLimitInfo.resetAt - Date.now()) / 1000),

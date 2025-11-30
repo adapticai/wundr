@@ -67,7 +67,7 @@ export const DEFAULT_REDIS_CONFIG: Required<Omit<RedisConfig, 'password' | 'tls'
   db: 0,
   keyPrefix: '',
   connectTimeout: 10000,
-  lazyConnect: false,
+  lazyConnect: true, // Lazy connect to avoid errors during SSG/build
   maxRetriesPerRequest: 3,
   enableOfflineQueue: true,
 };
@@ -404,8 +404,13 @@ function logDebug(message: string): void {
 
 /**
  * Error logging helper.
+ * Suppresses logs during build/SSG to avoid noisy output.
  */
 function logError(message: string, error: Error): void {
+  // Skip logging during Next.js build phase (SSG/SSR)
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
   // eslint-disable-next-line no-console
   console.error(`[Redis] ${message}`, error.message);
 }
