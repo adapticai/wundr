@@ -808,6 +808,8 @@ function SavedFileCard({
 
   const isImage = file.mimeType.startsWith('image/');
   const FileTypeIcon = getFileIcon(file.mimeType);
+  // Use thumbnailUrl if available, otherwise use the file URL for images
+  const imagePreviewUrl = file.thumbnailUrl || (isImage ? file.url : null);
 
   // File action handlers
   const handleOpenInNewTab = async () => {
@@ -876,10 +878,10 @@ function SavedFileCard({
       <div className="flex gap-3">
         {/* File Thumbnail or Icon */}
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted overflow-hidden">
-          {isImage && file.thumbnailUrl ? (
+          {isImage && imagePreviewUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={file.thumbnailUrl}
+              src={imagePreviewUrl}
               alt={file.originalName}
               className="h-full w-full object-cover"
             />

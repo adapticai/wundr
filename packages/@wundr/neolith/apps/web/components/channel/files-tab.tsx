@@ -187,24 +187,11 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
     );
   }
 
-  if (!isLoading && files.length === 0) {
-    const contextText = mode === 'conversation' ? 'conversation' : 'channel';
-    return (
-      <div className={cn('flex flex-1 flex-col items-center justify-center p-8', className)}>
-        <div className="mb-8 rounded-full bg-muted p-6">
-          <FileText className="h-12 w-12 text-muted-foreground" />
-        </div>
-        <h2 className="mb-2 text-xl font-semibold">No files yet</h2>
-        <p className="max-w-md text-center text-muted-foreground">
-          Files shared in this {contextText} will appear here. Share files by attaching them to messages.
-        </p>
-      </div>
-    );
-  }
+  const contextText = mode === 'conversation' ? 'conversation' : 'channel';
 
   return (
     <div className={cn('flex flex-1 flex-col', className)}>
-      {/* Filters */}
+      {/* Filters - Always show filters */}
       <div className="flex items-center gap-2 border-b px-4 py-3 overflow-x-auto">
         {filters.map(({ key, label }) => (
           <button
@@ -229,12 +216,29 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
+        ) : files.length === 0 ? (
+          /* Empty state - show within the list area, not replacing the whole component */
+          <div className="flex flex-1 flex-col items-center justify-center py-16">
+            <div className="mb-8 rounded-full bg-muted p-6">
+              <FileText className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h2 className="mb-2 text-xl font-semibold">
+              {filter === 'all' ? 'No files yet' : `No ${filter} files`}
+            </h2>
+            <p className="max-w-md text-center text-muted-foreground">
+              {filter === 'all'
+                ? `Files shared in this ${contextText} will appear here. Share files by attaching them to messages.`
+                : `No ${filter} files have been shared in this ${contextText} yet.`}
+            </p>
+          </div>
         ) : (
           <>
             <div className="grid gap-2">
               {files.map((file) => {
                 const Icon = getFileIcon(file.mimeType);
                 const isImage = file.mimeType.startsWith('image/');
+                // Use thumbnailUrl if available, otherwise use the file URL for images
+                const imagePreviewUrl = file.thumbnailUrl || (isImage ? file.url : null);
 
                 return (
                   <div
@@ -242,13 +246,13 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
                     className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50"
                   >
                     {/* Thumbnail or Icon */}
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted">
-                      {isImage && file.thumbnailUrl ? (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden">
+                      {isImage && imagePreviewUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={file.thumbnailUrl}
+                          src={imagePreviewUrl}
                           alt={file.originalName}
-                          className="h-full w-full rounded-md object-cover"
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <Icon className="h-6 w-6 text-muted-foreground" />

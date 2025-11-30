@@ -26,6 +26,7 @@ import {
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
+import { generateFileUrl } from '@/lib/validations/upload';
 
 import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
@@ -93,6 +94,7 @@ interface FileResult {
   originalName: string;
   mimeType: string;
   size: bigint;
+  url: string;
   thumbnailUrl: string | null;
   uploadedById: string;
   uploaderName: string | null;
@@ -478,6 +480,7 @@ async function searchFiles(
       originalName: file.originalName,
       mimeType: file.mimeType,
       size: file.size, // BigInt will be stringified by JSON.stringify
+      url: generateFileUrl(file.s3Key, file.s3Bucket),
       thumbnailUrl: file.thumbnailUrl,
       uploadedById: file.uploadedById,
       uploaderName: file.uploadedBy.name,

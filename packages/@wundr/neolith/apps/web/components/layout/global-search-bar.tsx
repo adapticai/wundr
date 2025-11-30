@@ -62,6 +62,7 @@ interface SearchResult {
     isGroup?: boolean;
     mimeType?: string;
     size?: number;
+    url?: string;
     thumbnailUrl?: string | null;
   };
 }
@@ -304,10 +305,11 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                     type: 'file',
                     name: item.originalName || item.filename,
                     description: item.channelName ? `in #${item.channelName}` : undefined,
-                    image: item.thumbnailUrl,
+                    image: item.thumbnailUrl || item.url,
                     metadata: {
                       mimeType: item.mimeType,
                       size: item.size,
+                      url: item.url,
                       thumbnailUrl: item.thumbnailUrl,
                       channelName: item.channelName,
                     },
@@ -723,6 +725,8 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                     {fileResults.map((result) => {
                       const FileIcon = getFileIcon(result.metadata?.mimeType);
                       const isImage = result.metadata?.mimeType?.startsWith('image/');
+                      // Use thumbnailUrl first, then file URL for images
+                      const imagePreviewUrl = result.metadata?.thumbnailUrl || (isImage ? result.metadata?.url : null);
                       return (
                         <CommandItem
                           key={result.id}
@@ -730,11 +734,11 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                           onSelect={() => handleSelect(result)}
                           className="cursor-pointer"
                         >
-                          {isImage && result.metadata?.thumbnailUrl ? (
+                          {isImage && imagePreviewUrl ? (
                             <div className="mr-2 h-8 w-8 shrink-0 overflow-hidden rounded">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={result.metadata.thumbnailUrl}
+                                src={imagePreviewUrl}
                                 alt={result.name}
                                 className="h-full w-full object-cover"
                               />

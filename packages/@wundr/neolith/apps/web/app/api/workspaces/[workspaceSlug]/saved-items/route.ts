@@ -16,6 +16,7 @@ import { NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
 import { auth } from '@/lib/auth';
+import { generateFileUrl } from '@/lib/validations/upload';
 
 import type { NextRequest } from 'next/server';
 
@@ -151,13 +152,14 @@ export async function GET(
 
     const totalPages = Math.ceil(totalCount / limit);
 
-    // Convert BigInt fields to numbers for JSON serialization
+    // Convert BigInt fields to numbers for JSON serialization and add file URLs
     const serializedItems = items.map((item) => ({
       ...item,
       file: item.file
         ? {
             ...item.file,
             size: Number(item.file.size),
+            url: generateFileUrl(item.file.s3Key, item.file.s3Bucket),
           }
         : null,
     }));
