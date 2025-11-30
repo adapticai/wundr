@@ -4,9 +4,9 @@
  * Get status for a specific user.
  *
  * Routes:
- * - GET /api/users/:userId/status - Get user status
+ * - GET /api/users/:id/status - Get user status
  *
- * @module app/api/users/[userId]/status/route
+ * @module app/api/users/[id]/status/route
  */
 
 import { prisma } from '@neolith/database';
@@ -14,28 +14,32 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  userIdParamSchema,
   createPresenceErrorResponse,
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
+import { z } from 'zod';
 
 import type { NextRequest } from 'next/server';
 
 /**
- * Route context with userId parameter
+ * Route context with id parameter
  */
 interface RouteContext {
-  params: Promise<{ userId: string }>;
+  params: Promise<{ id: string }>;
 }
 
+const idParamSchema = z.object({
+  id: z.string().min(1),
+});
+
 /**
- * GET /api/users/:userId/status
+ * GET /api/users/:id/status
  *
  * Get status for a specific user.
  * Requires authentication.
  *
  * @param request - Next.js request object
- * @param context - Route context with userId parameter
+ * @param context - Route context with id parameter
  * @returns User status
  *
  * @example
@@ -68,9 +72,9 @@ export async function GET(
       );
     }
 
-    // Validate userId parameter
+    // Validate id parameter
     const params = await context.params;
-    const paramResult = userIdParamSchema.safeParse(params);
+    const paramResult = idParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
         createPresenceErrorResponse('Invalid user ID format', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
@@ -80,7 +84,7 @@ export async function GET(
 
     // Get user with status info
     const user = await prisma.user.findUnique({
-      where: { id: params.userId },
+      where: { id: params.id },
       select: {
         id: true,
         status: true,
@@ -118,7 +122,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/users/:userId/status] Error:', error);
+    console.error('[GET /api/users/:id/status] Error:', error);
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
