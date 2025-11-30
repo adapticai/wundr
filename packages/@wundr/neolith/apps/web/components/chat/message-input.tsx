@@ -258,6 +258,25 @@ export function MessageInput({
     }, 0);
   }, [content]);
 
+  // Handle send - defined before handleKeyDown to avoid circular dependency
+  const handleSend = useCallback(() => {
+    const trimmedContent = content.trim();
+    console.log('[MessageInput.handleSend] attachments:', attachments.length, attachments.map(f => f.name));
+    if (!trimmedContent && attachments.length === 0) return;
+    if (disabled) return;
+
+    console.log('[MessageInput.handleSend] calling onSend with attachments:', attachments.length);
+    onSend(trimmedContent, mentions, attachments);
+    setContent('');
+    setMentions([]);
+    setAttachments([]);
+    onStopTyping?.();
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, [content, mentions, attachments, disabled, onSend, onStopTyping]);
+
   // Handle key down
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -292,26 +311,8 @@ export function MessageInput({
         handleSend();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [showMentions, mentionUsers, selectedMentionIndex, insertMention],
+    [showMentions, mentionUsers, selectedMentionIndex, insertMention, handleSend],
   );
-
-  // Handle send
-  const handleSend = useCallback(() => {
-    const trimmedContent = content.trim();
-    if (!trimmedContent && attachments.length === 0) return;
-    if (disabled) return;
-
-    onSend(trimmedContent, mentions, attachments);
-    setContent('');
-    setMentions([]);
-    setAttachments([]);
-    onStopTyping?.();
-
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
-  }, [content, mentions, attachments, disabled, onSend, onStopTyping]);
 
   // Handle scheduled send
   const handleScheduledSend = useCallback((scheduledTime: Date) => {
@@ -921,20 +922,23 @@ interface AttachmentPreviewProps {
 }
 
 function AttachmentPreview({ file, onRemove }: AttachmentPreviewProps) {
-  const preview = useMemo(() => {
-    if (file.type.startsWith('image/')) {
-      return URL.createObjectURL(file);
-    }
-    return null;
-  }, [file]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
+  // Create object URL on mount and revoke on unmount
   useEffect(() => {
-    return () => {
-      if (preview) {
-        URL.revokeObjectURL(preview);
-      }
-    };
-  }, [preview]);
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setImageError(false);
+
+      // Revoke URL when component unmounts or file changes
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+    return undefined;
+  }, [file]);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -942,15 +946,25 @@ function AttachmentPreview({ file, onRemove }: AttachmentPreviewProps) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const isImage = file.type.startsWith('image/');
+  const showImage = isImage && previewUrl && !imageError;
+
   return (
     <div className="group relative flex items-center gap-2 rounded-md border bg-background px-3 py-2">
-      {preview ? (
+      {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={preview}
+          src={previewUrl}
           alt={file.name}
           className="h-10 w-10 rounded object-cover"
+          onError={handleImageError}
         />
+      ) : isImage && !imageError ? (
+        <div className="h-10 w-10 rounded bg-muted animate-pulse" />
       ) : (
         <FileIcon className="h-10 w-10 text-muted-foreground" />
       )}

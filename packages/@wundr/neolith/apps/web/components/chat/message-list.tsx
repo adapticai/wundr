@@ -19,6 +19,8 @@ interface MessageListProps {
   messages: readonly Message[];
   /** The current authenticated user */
   currentUser: User;
+  /** The workspace slug for sharing files */
+  workspaceSlug?: string;
   /** Whether the initial load is in progress */
   isLoading?: boolean;
   /** Whether more messages are being loaded */
@@ -50,6 +52,7 @@ interface MessageListProps {
 export function MessageList({
   messages,
   currentUser,
+  workspaceSlug,
   isLoading = false,
   isLoadingMore = false,
   hasMore = false,
@@ -264,6 +267,7 @@ return;
             key={message.id}
             message={message}
             currentUser={currentUser}
+            workspaceSlug={workspaceSlug}
             showDateSeparator={showDateSeparator}
             isUnreadSeparator={isUnreadSeparator || false}
             onReply={onReply}

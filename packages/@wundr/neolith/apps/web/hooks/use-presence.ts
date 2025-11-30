@@ -106,19 +106,33 @@ export function useUserPresence(userId: string): UseUserPresenceReturn {
       try {
         timeoutId = setTimeout(() => abortController.abort(), FETCH_TIMEOUT);
 
-        const response = await fetch(`/api/presence/${userId}`, {
+        const response = await fetch(`/api/presence/users/${userId}`, {
           signal: abortController.signal,
         });
 
         clearTimeout(timeoutId);
 
         if (response.ok) {
-          const data = await response.json();
-          setPresence({
-            ...data,
-            lastSeen: data.lastSeen ? new Date(data.lastSeen) : null,
-            updatedAt: new Date(data.updatedAt),
-          });
+          const json = await response.json();
+          // API returns { data: { userId, status, customStatus, lastSeen, isOnline } }
+          const data = json.data;
+          if (data) {
+            // Map API response status (uppercase) to PresenceStatus (lowercase)
+            const statusMap: Record<string, PresenceStatus> = {
+              'ONLINE': 'online',
+              'OFFLINE': 'offline',
+              'AWAY': 'away',
+              'BUSY': 'busy',
+              'DND': 'busy', // Map DND to busy since PresenceStatus doesn't have 'dnd'
+            };
+            setPresence({
+              userId: data.userId,
+              status: statusMap[data.status] || 'offline',
+              customStatus: data.customStatus ?? undefined,
+              lastSeen: data.lastSeen ? new Date(data.lastSeen) : null,
+              updatedAt: new Date(),
+            });
+          }
         }
       } catch (error) {
         clearTimeout(timeoutId);

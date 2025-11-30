@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { FileText, Image, Video, Music, Archive, File, Download, ExternalLink, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { FileText, Image, Video, Music, Archive, File, Download, ExternalLink, Loader2, Forward, Bookmark, MoreHorizontal, Link2, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ShareFileDialog, type ShareFileData } from './share-file-dialog';
 
 /**
  * File item type
@@ -37,6 +38,10 @@ type FileTypeFilter = 'all' | 'image' | 'document' | 'video' | 'audio' | 'archiv
  */
 interface FilesTabProps {
   channelId: string;
+  /** The workspace slug for API calls (required for sharing) */
+  workspaceSlug: string;
+  /** Current user ID */
+  currentUserId?: string;
   className?: string;
   /**
    * Mode determines which API endpoint to use:
@@ -52,13 +57,37 @@ interface FilesTabProps {
  * Displays all files shared in the channel or conversation with filtering and download options.
  * Supports both regular channels and DM conversations.
  */
-export function FilesTab({ channelId, className, mode = 'channel' }: FilesTabProps) {
+export function FilesTab({ channelId, workspaceSlug, currentUserId, className, mode = 'channel' }: FilesTabProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FileTypeFilter>('all');
   const [hasMore, setHasMore] = useState(false);
   const [cursor, setCursor] = useState<string | null>(null);
+
+  // Share dialog state
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [fileToShare, setFileToShare] = useState<ShareFileData | null>(null);
+
+  // Handler to open share dialog
+  const handleOpenShareDialog = useCallback((file: FileItem) => {
+    setFileToShare({
+      id: file.id,
+      name: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+      url: file.url,
+      thumbnailUrl: file.thumbnailUrl,
+      uploadedBy: {
+        id: file.uploadedBy.id,
+        name: file.uploadedBy.name,
+        displayName: file.uploadedBy.displayName,
+        avatarUrl: file.uploadedBy.avatarUrl,
+      },
+      uploadedAt: file.createdAt,
+    });
+    setShareDialogOpen(true);
+  }, []);
 
   const fetchFiles = useCallback(async (loadMore = false) => {
     if (!channelId) return;
@@ -239,31 +268,7 @@ export function FilesTab({ channelId, className, mode = 'channel' }: FilesTabPro
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => window.open(file.url, '_blank')}
-                        title="Open in new tab"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = file.url;
-                          link.download = file.originalName;
-                          link.click();
-                        }}
-                        title="Download"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <FileActions file={file} onShare={() => handleOpenShareDialog(file)} />
                   </div>
                 );
               })}
@@ -287,6 +292,184 @@ export function FilesTab({ channelId, className, mode = 'channel' }: FilesTabPro
           </>
         )}
       </div>
+
+      {/* Share File Dialog */}
+      <ShareFileDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        file={fileToShare}
+        workspaceSlug={workspaceSlug}
+        currentUserId={currentUserId}
+        onShareSuccess={(destination) => {
+          console.log('File shared to:', destination);
+          // Could add toast notification here
+        }}
+      />
+    </div>
+  );
+}
+
+/**
+ * File Actions Component
+ *
+ * Action buttons with dropdown menu for file operations.
+ */
+function FileActions({ file, onShare }: { file: FileItem; onShare?: () => void }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMenu]);
+
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = file.url;
+    link.download = file.originalName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(file.url);
+      setShowMenu(false);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+  };
+
+  const handleShare = () => {
+    onShare?.();
+    setShowMenu(false);
+  };
+
+  const handleSaveForLater = () => {
+    // TODO: Implement save for later / bookmark
+    setIsSaved(!isSaved);
+    setShowMenu(false);
+  };
+
+  return (
+    <div className="relative flex items-center gap-1" ref={menuRef}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => window.open(file.url, '_blank')}
+        title="Open in new tab"
+      >
+        <ExternalLink className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={handleDownload}
+        title="Download"
+      >
+        <Download className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={handleShare}
+        title="Share file..."
+      >
+        <Forward className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn('h-8 w-8', isSaved && 'text-yellow-500')}
+        onClick={handleSaveForLater}
+        title={isSaved ? 'Remove from saved' : 'Save for later'}
+      >
+        <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current')} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => setShowMenu(!showMenu)}
+        title="More actions"
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+
+      {/* Dropdown menu */}
+      {showMenu && (
+        <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border bg-popover p-1 shadow-lg">
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            onClick={() => {
+              window.open(file.url, '_blank');
+              setShowMenu(false);
+            }}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Open in new tab
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            onClick={handleCopyLink}
+          >
+            <Link2 className="h-4 w-4" />
+            Copy link
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            onClick={handleDownload}
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            onClick={handleShare}
+          >
+            <Forward className="h-4 w-4" />
+            Share file...
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            onClick={handleSaveForLater}
+          >
+            <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current text-yellow-500')} />
+            {isSaved ? 'Remove from saved' : 'Save for later'}
+          </button>
+          <div className="my-1 h-px bg-border" />
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-accent"
+            onClick={() => {
+              // TODO: Implement delete with confirmation
+              console.log('Delete file:', file.id);
+              setShowMenu(false);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete file
+          </button>
+        </div>
+      )}
     </div>
   );
 }

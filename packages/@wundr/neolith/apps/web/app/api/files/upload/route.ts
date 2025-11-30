@@ -67,19 +67,77 @@ function generateS3Key(workspaceId: string, filename: string): string {
  * @param s3Bucket - S3 bucket name
  * @returns Success status
  */
+/**
+ * Upload file to local storage (development fallback)
+ *
+ * @param file - File to upload
+ * @param s3Key - File key/path
+ * @returns Success status
+ */
+async function uploadToLocalStorage(
+  file: File,
+  s3Key: string,
+): Promise<{ success: boolean; localPath?: string; error?: string }> {
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    // Create uploads directory in public folder
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    // Create subdirectories based on s3Key path
+    const keyParts = s3Key.split('/');
+    keyParts.pop(); // Remove filename from path parts
+    const subDir = keyParts.join('/');
+
+    if (subDir) {
+      await fs.mkdir(path.join(uploadsDir, subDir), { recursive: true });
+    }
+
+    // Write file to disk
+    const filePath = path.join(uploadsDir, s3Key);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.writeFile(filePath, buffer);
+
+    console.log('[uploadToLocalStorage] File saved to:', filePath);
+    // Return the local path - s3Key already includes 'uploads/' prefix, so use it directly
+    return { success: true, localPath: `/${s3Key}` };
+  } catch (error) {
+    console.error('[uploadToLocalStorage] Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
 async function uploadToS3(
   file: File,
   s3Key: string,
   s3Bucket: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; localPath?: string; error?: string }> {
+  // Check if S3 credentials are configured
+  const hasS3Credentials =
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY &&
+    process.env.STORAGE_BUCKET;
+
+  if (!hasS3Credentials) {
+    // Fallback to local storage in development
+    console.warn('[uploadToS3] S3 credentials not configured, using local storage fallback');
+    return uploadToLocalStorage(file, s3Key);
+  }
+
   try {
     // Dynamic import - AWS SDK may not be installed in all environments
     const s3Module = await import('@aws-sdk/client-s3').catch(() => null);
 
     if (!s3Module) {
-      // In development without AWS SDK, skip actual upload
-      console.warn('[uploadToS3] AWS SDK not available, skipping actual upload');
-      return { success: true };
+      // In development without AWS SDK, use local storage
+      console.warn('[uploadToS3] AWS SDK not available, using local storage fallback');
+      return uploadToLocalStorage(file, s3Key);
     }
 
     const { S3Client, PutObjectCommand } = s3Module;
@@ -114,11 +172,43 @@ async function uploadToS3(
     return { success: true };
   } catch (error) {
     console.error('[uploadToS3] Error:', error);
+    // Fallback to local storage on S3 error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[uploadToS3] S3 upload failed, falling back to local storage');
+      return uploadToLocalStorage(file, s3Key);
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
+}
+
+/**
+ * Helper function to resolve workspace ID from slug or ID
+ *
+ * @param workspaceIdOrSlug - Workspace ID or slug to resolve
+ * @returns Workspace ID or null if not found
+ */
+async function resolveWorkspaceId(workspaceIdOrSlug: string): Promise<string | null> {
+  // First try to find by ID
+  const workspaceById = await prisma.workspace.findUnique({
+    where: { id: workspaceIdOrSlug },
+    select: { id: true },
+  });
+
+  if (workspaceById) {
+    return workspaceById.id;
+  }
+
+  // Try to find by slug - workspace slug is unique within an organization
+  // but we need to find it across all workspaces
+  const workspaceBySlug = await prisma.workspace.findFirst({
+    where: { slug: workspaceIdOrSlug },
+    select: { id: true },
+  });
+
+  return workspaceBySlug?.id ?? null;
 }
 
 /**
@@ -439,8 +529,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Resolve workspace ID from slug or ID
+    const resolvedWorkspaceId = await resolveWorkspaceId(workspaceId);
+    if (!resolvedWorkspaceId) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Workspace not found',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+        ),
+        { status: 404 },
+      );
+    }
+
     // Check workspace membership
-    const membership = await checkWorkspaceMembership(workspaceId, session.user.id);
+    const membership = await checkWorkspaceMembership(resolvedWorkspaceId, session.user.id);
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
@@ -452,13 +554,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Generate S3 key and bucket
-    const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
-    const s3Key = generateS3Key(workspaceId, file.name);
+    // Use STORAGE_BUCKET (consistent with hasS3Credentials check) or AWS_S3_BUCKET_NAME as fallback
+    const s3Bucket = process.env.STORAGE_BUCKET || process.env.AWS_S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || 'genesis-uploads';
+    const s3Key = generateS3Key(resolvedWorkspaceId, file.name);
 
-    // Upload to S3
+    // Upload to S3 or local storage
     const uploadResult = await uploadToS3(file, s3Key, s3Bucket);
     if (!uploadResult.success) {
-      console.error('[POST /api/files/upload] S3 upload failed:', uploadResult.error);
+      console.error('[POST /api/files/upload] Upload failed:', uploadResult.error);
       return NextResponse.json(
         createErrorResponse(
           'Failed to upload file to storage',
@@ -471,16 +574,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Determine file category and generate thumbnail URL for images
     const category = getFileCategory(file.type);
+    const isLocalStorage = !!uploadResult.localPath;
     const thumbnailUrl =
-      category === 'image' && process.env.CDN_DOMAIN
+      category === 'image' && process.env.CDN_DOMAIN && !isLocalStorage
         ? `https://${process.env.CDN_DOMAIN}/thumbnails/${s3Key}`
         : null;
 
     // Prepare metadata
     const metadata = {
       category,
-      uploadType: 'direct',
+      uploadType: isLocalStorage ? 'local' : 'direct',
       uploadedAt: new Date().toISOString(),
+      ...(isLocalStorage && { localPath: uploadResult.localPath }),
       ...(channelId && typeof channelId === 'string' && { channelId: channelId as string }),
       ...(messageId && typeof messageId === 'string' && { messageId: messageId as string }),
     };
@@ -492,12 +597,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         originalName: file.name,
         mimeType: file.type,
         size: BigInt(file.size),
-        s3Key,
-        s3Bucket,
+        s3Key: isLocalStorage ? uploadResult.localPath! : s3Key,
+        s3Bucket: isLocalStorage ? 'local' : s3Bucket,
         thumbnailUrl,
         status: 'READY',
         uploadedById: session.user.id,
-        workspaceId,
+        workspaceId: resolvedWorkspaceId,
         metadata,
       },
       select: {
@@ -526,11 +631,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Transform response data
+    // Transform response data - use local path directly if available
+    const fileUrl = isLocalStorage
+      ? uploadResult.localPath!
+      : generateFileUrl(fileRecord.s3Key, fileRecord.s3Bucket);
+
     const responseData = {
       ...fileRecord,
       size: Number(fileRecord.size),
-      url: generateFileUrl(fileRecord.s3Key, fileRecord.s3Bucket),
+      url: fileUrl,
       category,
     };
 

@@ -71,6 +71,22 @@ async function getParentMessageWithAccess(messageId: string, userId: string) {
           },
         },
       },
+      messageAttachments: {
+        include: {
+          file: {
+            select: {
+              id: true,
+              filename: true,
+              originalName: true,
+              mimeType: true,
+              size: true,
+              thumbnailUrl: true,
+              s3Key: true,
+              s3Bucket: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -239,6 +255,8 @@ export async function GET(
                 mimeType: true,
                 size: true,
                 thumbnailUrl: true,
+                s3Key: true,
+                s3Bucket: true,
               },
             },
           },
@@ -258,6 +276,23 @@ export async function GET(
       },
     });
 
+    // Helper to transform messageAttachments (convert BigInt size to Number)
+    const transformAttachments = (attachments: typeof parentMessage.messageAttachments) => {
+      return attachments.map((ma) => ({
+        ...ma,
+        file: ma.file ? {
+          ...ma.file,
+          size: Number(ma.file.size), // Convert BigInt to Number
+        } : null,
+      }));
+    };
+
+    // Transform replies to handle BigInt serialization
+    const transformedReplies = resultReplies.map((reply) => ({
+      ...reply,
+      messageAttachments: transformAttachments(reply.messageAttachments),
+    }));
+
     return NextResponse.json({
       data: {
         parentMessage: {
@@ -272,8 +307,9 @@ export async function GET(
           author: parentMessage.author,
           reactions: parentMessage.reactions,
           replyCount: totalCount,
+          messageAttachments: transformAttachments(parentMessage.messageAttachments),
         },
-        replies: resultReplies,
+        replies: transformedReplies,
         participants: [], // Can be expanded to track thread participants
       },
       pagination: {
@@ -287,6 +323,11 @@ export async function GET(
     });
   } catch (error) {
     console.error('[GET /api/messages/:id/thread] Error:', error);
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('[GET /api/messages/:id/thread] Error message:', error.message);
+      console.error('[GET /api/messages/:id/thread] Error stack:', error.stack);
+    }
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -443,6 +484,8 @@ export async function POST(
                 mimeType: true,
                 size: true,
                 thumbnailUrl: true,
+                s3Key: true,
+                s3Bucket: true,
               },
             },
           },

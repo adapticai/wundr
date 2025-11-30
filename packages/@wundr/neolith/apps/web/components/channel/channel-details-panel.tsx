@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   X,
   Settings,
@@ -23,7 +23,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn, getInitials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { useMultiplePresence } from '@/hooks/use-presence';
 
 import type { Channel, ChannelMember, ChannelPermissions } from '@/types/channel';
 
@@ -63,6 +65,14 @@ export function ChannelDetailsPanel({
   const [activeTab, setActiveTab] = useState<'about' | 'members'>('about');
   const [members, setMembers] = useState<ChannelMember[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
+  // Get member user IDs for presence fetching
+  const memberUserIds = useMemo(() => {
+    return members.map((member) => member.userId);
+  }, [members]);
+
+  // Fetch real-time presence for all members
+  const presenceMap = useMultiplePresence(memberUserIds);
 
   // Fetch members when switching to members tab
   useEffect(() => {
@@ -204,44 +214,40 @@ export function ChannelDetailsPanel({
               </div>
             ) : (
               <div className="space-y-1">
-                {members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between rounded-lg p-2 hover:bg-accent"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-sm font-medium">
-                          {member.user.image ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={member.user.image}
-                              alt={member.user.name}
-                              className="h-full w-full rounded-lg object-cover"
-                            />
-                          ) : (
-                            getInitials(member.user.name)
+                {members.map((member) => {
+                  const presence = presenceMap.get(member.userId);
+                  const status = presence?.status || 'offline';
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between rounded-lg p-2 hover:bg-accent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <UserAvatar
+                          user={{
+                            name: member.user.name,
+                            image: member.user.image,
+                          }}
+                          size="md"
+                          shape="rounded"
+                          showStatus
+                          status={status}
+                        />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{member.user.name}</span>
+                            {member.role === 'admin' && (
+                              <Crown className="h-3.5 w-3.5 text-yellow-500" />
+                            )}
+                            {member.userId === currentUserId && (
+                              <span className="text-xs text-muted-foreground">(you)</span>
+                            )}
+                          </div>
+                          {member.user.email && (
+                            <span className="text-xs text-muted-foreground">{member.user.email}</span>
                           )}
                         </div>
-                        {member.user.status === 'online' && (
-                          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-emerald-500" />
-                        )}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{member.user.name}</span>
-                          {member.role === 'admin' && (
-                            <Crown className="h-3.5 w-3.5 text-yellow-500" />
-                          )}
-                          {member.userId === currentUserId && (
-                            <span className="text-xs text-muted-foreground">(you)</span>
-                          )}
-                        </div>
-                        {member.user.email && (
-                          <span className="text-xs text-muted-foreground">{member.user.email}</span>
-                        )}
-                      </div>
-                    </div>
 
                     {/* Member actions */}
                     {permissions.canRemoveMembers && member.userId !== currentUserId && (
@@ -278,8 +284,9 @@ export function ChannelDetailsPanel({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

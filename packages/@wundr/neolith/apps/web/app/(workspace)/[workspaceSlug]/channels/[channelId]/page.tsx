@@ -108,6 +108,11 @@ export default function ChannelPage() {
     addOptimisticReply,
   } = useThread(activeThreadId || '');
 
+  // Debug: log thread state changes
+  useEffect(() => {
+    console.log('[Channel] Thread state:', { activeThreadId, thread: thread ? { parentId: thread.parentMessage?.id, messagesCount: thread.messages?.length } : null, isThreadLoading });
+  }, [activeThreadId, thread, isThreadLoading]);
+
   // Mark channel as read when opened
   useEffect(() => {
     if (channelId && currentUser && !isMessagesLoading) {
@@ -126,6 +131,37 @@ export default function ChannelPage() {
         return;
       }
 
+      // Generate optimistic ID upfront
+      const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Create optimistic attachments for immediate display
+      const optimisticAttachments = attachments.map((file, index) => ({
+        id: `optimistic-attachment-${index}`,
+        name: file.name,
+        url: URL.createObjectURL(file), // Temporary URL for preview
+        type: file.type.startsWith('image/') ? 'image' as const :
+              file.type.startsWith('video/') ? 'video' as const :
+              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        size: file.size,
+        mimeType: file.type,
+      }));
+
+      // Add optimistic message FIRST for immediate feedback
+      addOptimisticMessage({
+        id: optimisticId,
+        content,
+        authorId: currentUser.id,
+        author: currentUser,
+        channelId,
+        parentId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        reactions: [],
+        replyCount: 0,
+        mentions: [],
+        attachments: optimisticAttachments,
+      });
+
       try {
         // Upload files if any
         let uploadedFileIds: string[] = [];
@@ -141,11 +177,14 @@ export default function ChannelPage() {
               body: formData,
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-              throw new Error(`Failed to upload ${file.name}`);
+              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
+              console.error('[File Upload Error]', { file: file.name, status: response.status, result });
+              throw new Error(errorMessage);
             }
 
-            const result = await response.json();
             return result.data.file.id;
           });
 
@@ -153,26 +192,10 @@ export default function ChannelPage() {
         }
 
         // Send message with file IDs
-        const { optimisticId, message } = await sendMessage(
+        const { message } = await sendMessage(
           { content, channelId, mentions, attachmentIds: uploadedFileIds },
           currentUser,
         );
-
-        // Add optimistic message
-        addOptimisticMessage({
-          id: optimisticId,
-          content,
-          authorId: currentUser.id,
-          author: currentUser,
-          channelId,
-          parentId: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          reactions: [],
-          replyCount: 0,
-          mentions: [],
-          attachments: [],
-        });
 
         // Replace optimistic message with real one
         if (message) {
@@ -181,8 +204,17 @@ export default function ChannelPage() {
           // Remove on failure
           removeOptimisticMessage(optimisticId);
         }
+
+        // Cleanup temporary blob URLs
+        optimisticAttachments.forEach(att => {
+          if (att.url.startsWith('blob:')) {
+            URL.revokeObjectURL(att.url);
+          }
+        });
       } catch (error) {
         console.error('Failed to send message:', error);
+        // Remove optimistic message on error
+        removeOptimisticMessage(optimisticId);
         toast({
           title: 'Error',
           description: error instanceof Error ? error.message : 'Failed to send message',
@@ -200,6 +232,42 @@ export default function ChannelPage() {
         return;
       }
 
+      // Generate optimistic ID upfront
+      const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Create optimistic attachments for immediate display
+      const optimisticAttachments = attachments.map((file, index) => ({
+        id: `optimistic-attachment-${index}`,
+        name: file.name,
+        url: URL.createObjectURL(file),
+        type: file.type.startsWith('image/') ? 'image' as const :
+              file.type.startsWith('video/') ? 'video' as const :
+              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        size: file.size,
+        mimeType: file.type,
+      }));
+
+      // Add optimistic reply FIRST for immediate feedback
+      addOptimisticReply({
+        id: optimisticId,
+        content,
+        authorId: currentUser.id,
+        author: currentUser,
+        channelId,
+        parentId: activeThreadId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        reactions: [],
+        replyCount: 0,
+        mentions: [],
+        attachments: optimisticAttachments,
+      });
+
+      // Update reply count on parent optimistically
+      updateOptimisticMessage(activeThreadId, {
+        replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
+      });
+
       try {
         // Upload files if any
         let uploadedFileIds: string[] = [];
@@ -215,11 +283,14 @@ export default function ChannelPage() {
               body: formData,
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-              throw new Error(`Failed to upload ${file.name}`);
+              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
+              console.error('[Thread File Upload Error]', { file: file.name, status: response.status, result });
+              throw new Error(errorMessage);
             }
 
-            const result = await response.json();
             return result.data.file.id;
           });
 
@@ -227,33 +298,23 @@ export default function ChannelPage() {
         }
 
         // Send message with file IDs
-        const { optimisticId } = await sendMessage(
+        await sendMessage(
           { content, channelId, parentId: activeThreadId, mentions, attachmentIds: uploadedFileIds },
           currentUser,
         );
 
-        // Add optimistic reply
-        addOptimisticReply({
-          id: optimisticId,
-          content,
-          authorId: currentUser.id,
-          author: currentUser,
-          channelId,
-          parentId: activeThreadId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          reactions: [],
-          replyCount: 0,
-          mentions: [],
-          attachments: [],
-        });
-
-        // Update reply count on parent
-        updateOptimisticMessage(activeThreadId, {
-          replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
+        // Cleanup temporary blob URLs
+        optimisticAttachments.forEach(att => {
+          if (att.url.startsWith('blob:')) {
+            URL.revokeObjectURL(att.url);
+          }
         });
       } catch (error) {
         console.error('Failed to send thread reply:', error);
+        // Revert reply count on error
+        updateOptimisticMessage(activeThreadId, {
+          replyCount: Math.max(0, (messages.find((m) => m.id === activeThreadId)?.replyCount || 1) - 1),
+        });
         toast({
           title: 'Error',
           description: error instanceof Error ? error.message : 'Failed to send reply',
@@ -379,6 +440,7 @@ export default function ChannelPage() {
 
   // Handle open thread
   const handleOpenThread = useCallback((message: Message) => {
+    console.log('[Channel] handleOpenThread called with message:', message.id, 'replyCount:', message.replyCount, 'content:', message.content?.slice(0, 50));
     setActiveThreadId(message.id);
   }, []);
 
@@ -627,6 +689,14 @@ export default function ChannelPage() {
           onAddWorkflow={() => console.log('Add workflow - feature coming soon')}
           onSearchInChannel={() => console.log('Search in channel - feature coming soon')}
           onInvite={() => setShowDetailsPanel(true)}
+          onStartHuddle={() => toast({
+            title: 'Coming Soon',
+            description: 'Huddle feature is under development. Stay tuned!',
+          })}
+          onStartCall={(type) => toast({
+            title: 'Coming Soon',
+            description: `${type === 'video' ? 'Video' : 'Audio'} calls are under development. Stay tuned!`,
+          })}
         />
       )}
 
@@ -638,6 +708,7 @@ export default function ChannelPage() {
             <MessageList
               messages={messages}
               currentUser={currentUser}
+              workspaceSlug={workspaceSlug}
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
               onLoadMore={loadMore}
@@ -668,7 +739,12 @@ export default function ChannelPage() {
         )}
 
         {activeTab === 'files' && (
-          <FilesTab channelId={channelId} className="flex-1" />
+          <FilesTab
+            channelId={channelId}
+            workspaceSlug={workspaceSlug}
+            currentUserId={currentUser?.id}
+            className="flex-1"
+          />
         )}
 
         {/* Thread panel */}
@@ -677,6 +753,7 @@ export default function ChannelPage() {
             thread={thread}
             currentUser={currentUser}
             channelId={channelId}
+            workspaceSlug={workspaceSlug}
             isLoading={isThreadLoading}
             isOpen={!!activeThreadId}
             onClose={handleCloseThread}

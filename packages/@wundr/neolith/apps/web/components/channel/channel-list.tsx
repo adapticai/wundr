@@ -17,6 +17,7 @@ import {
 
 import { ChannelListSkeleton } from '@/components/skeletons';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
 import { cn } from '@/lib/utils';
 import { useWorkspaceUsers } from '@/hooks/use-channel';
 import {
@@ -114,6 +115,8 @@ export function ChannelList({
 
   // Get workspace users for people search
   const { users: workspaceUsers, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
+
+  // Note: Individual DM avatars now use ConnectedUserAvatar which fetches presence internally
 
   // Search users when query changes
   useEffect(() => {
@@ -524,7 +527,7 @@ export function ChannelList({
                       isActive={pathname?.includes(`/dm/${selfDM.id}`) || pathname?.includes(`/channels/${selfDM.id}`)}
                       isSelf={true}
                       onToggleStar={onDMStarChange}
-                    />
+                      />
                   )}
 
                   {/* Other DM conversations sorted by most recent */}
@@ -536,7 +539,7 @@ export function ChannelList({
                       currentUserId={currentUserId}
                       isActive={pathname?.includes(`/dm/${dm.id}`) || pathname?.includes(`/channels/${dm.id}`)}
                       onToggleStar={onDMStarChange}
-                    />
+                      />
                   ))}
 
                   {/* Empty state when no DMs exist */}
@@ -969,16 +972,13 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
                 )}
               </>
             ) : firstParticipant ? (
-              // 1:1 DM: Single avatar
+              // 1:1 DM: Single avatar with status using ConnectedUserAvatar for real-time presence
               <>
-                <UserAvatar
-                  user={{ name: firstParticipant.name, avatarUrl: firstParticipant.avatarUrl }}
+                <ConnectedUserAvatar
+                  user={{ id: firstParticipant.id, name: firstParticipant.name, image: firstParticipant.avatarUrl }}
                   size="sm"
+                  showPresence
                 />
-                {/* Online status indicator */}
-                {firstParticipant.status === 'online' && (
-                  <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500" />
-                )}
                 {/* AI/Orchestrator badge */}
                 {firstParticipant.isOrchestrator && (
                   <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">

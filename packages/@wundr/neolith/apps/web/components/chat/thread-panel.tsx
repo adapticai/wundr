@@ -22,6 +22,8 @@ interface ThreadPanelProps {
   currentUser: User;
   /** The channel ID for the message input */
   channelId: string;
+  /** The workspace slug for sharing files */
+  workspaceSlug?: string;
   /** Whether the thread is loading */
   isLoading?: boolean;
   /** Whether the thread panel is open */
@@ -44,6 +46,7 @@ export function ThreadPanel({
   thread,
   currentUser,
   channelId,
+  workspaceSlug,
   isLoading = false,
   isOpen,
   onClose,
@@ -93,34 +96,37 @@ return null;
         </div>
       ) : thread ? (
         <>
-          {/* Parent message */}
-          <div className="border-b">
-            <MessageItem
-              message={thread.parentMessage}
-              currentUser={currentUser}
-              onEdit={onEditMessage}
-              onDelete={onDeleteMessage}
-              onReaction={onReaction}
-              isThreadView
-            />
-          </div>
-
-          {/* Participants */}
-          {thread.participants.length > 0 && (
-            <div className="flex items-center gap-2 border-b px-4 py-2">
-              <GroupAvatar users={thread.participants} max={5} size="sm" />
-              <span className="text-xs text-muted-foreground">
-                {thread.participants.length}{' '}
-                {thread.participants.length === 1 ? 'participant' : 'participants'}
-              </span>
+          {/* Scrollable container for parent message + participants + replies */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Parent message */}
+            <div className="border-b">
+              <MessageItem
+                message={thread.parentMessage}
+                currentUser={currentUser}
+                workspaceSlug={workspaceSlug}
+                onEdit={onEditMessage}
+                onDelete={onDeleteMessage}
+                onReaction={onReaction}
+                isThreadView
+              />
             </div>
-          )}
 
-          {/* Thread messages */}
-          <div className="flex-1 overflow-hidden">
+            {/* Participants */}
+            {thread.participants.length > 0 && (
+              <div className="flex items-center gap-2 border-b px-4 py-2">
+                <GroupAvatar users={thread.participants} max={5} size="sm" />
+                <span className="text-xs text-muted-foreground">
+                  {thread.participants.length}{' '}
+                  {thread.participants.length === 1 ? 'participant' : 'participants'}
+                </span>
+              </div>
+            )}
+
+            {/* Thread messages */}
             <MessageList
               messages={thread.messages}
               currentUser={currentUser}
+              workspaceSlug={workspaceSlug}
               onEdit={onEditMessage}
               onDelete={onDeleteMessage}
               onReaction={onReaction}
@@ -128,7 +134,7 @@ return null;
             />
           </div>
 
-          {/* Reply input */}
+          {/* Reply input - fixed at bottom */}
           <MessageInput
             channelId={channelId}
             parentId={thread.parentMessage.id}

@@ -1,11 +1,13 @@
 'use client';
 
 import { memo, useCallback, useMemo, useState } from 'react';
-import { UserAvatar, GroupAvatar } from '@/components/ui/user-avatar';
+import { GroupAvatar } from '@/components/ui/user-avatar';
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
 import { cn } from '@/lib/utils';
 import type { Message, User } from '@/types/chat';
 import { ReactionDisplay } from './reaction-display';
 import { ReactionPickerTrigger } from './reaction-picker';
+import { ShareFileDialog, type ShareFileData } from '@/components/channel/share-file-dialog';
 
 /**
  * Props for the MessageItem component
@@ -15,6 +17,8 @@ interface MessageItemProps {
   message: Message;
   /** The current authenticated user */
   currentUser: User;
+  /** The workspace slug for sharing files */
+  workspaceSlug?: string;
   /** Callback fired when replying to the message */
   onReply?: (message: Message) => void;
   /** Callback fired when editing the message */
@@ -38,6 +42,7 @@ interface MessageItemProps {
 export const MessageItem = memo(function MessageItem({
   message,
   currentUser,
+  workspaceSlug,
   onReply,
   onEdit,
   onDelete,
@@ -154,9 +159,13 @@ export const MessageItem = memo(function MessageItem({
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="flex gap-3">
-          {/* Avatar */}
+          {/* Avatar with presence status */}
           <div className="shrink-0">
-            <UserAvatar user={author} size="md" shape="rounded" />
+            <ConnectedUserAvatar
+              user={{ id: author.id, name: author.name ?? 'Unknown', image: author.image }}
+              size="md"
+              showPresence
+            />
           </div>
 
           {/* Content */}
@@ -204,7 +213,12 @@ export const MessageItem = memo(function MessageItem({
             {message.attachments?.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {message.attachments.map((attachment) => (
-                  <AttachmentPreview key={attachment.id} attachment={attachment} />
+                  <AttachmentPreview
+                    key={attachment.id}
+                    attachment={attachment}
+                    workspaceSlug={workspaceSlug}
+                    currentUserId={currentUser.id}
+                  />
                 ))}
               </div>
             )}
@@ -400,50 +414,247 @@ interface AttachmentPreviewProps {
     size: number;
     mimeType: string;
   };
+  /** Workspace slug for sharing files */
+  workspaceSlug?: string;
+  /** Current user ID for filtering search results */
+  currentUserId?: string;
 }
 
-function AttachmentPreview({ attachment }: AttachmentPreviewProps) {
+function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: AttachmentPreviewProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [fileToShare, setFileToShare] = useState<ShareFileData | null>(null);
+
   const formatSize = (bytes: number) => {
     if (bytes < 1024) {
-return `${bytes} B`;
-}
+      return `${bytes} B`;
+    }
     if (bytes < 1024 * 1024) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Create a download link
+    const link = document.createElement('a');
+    link.href = attachment.url;
+    link.download = attachment.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!workspaceSlug) {
+      console.warn('Cannot share file: workspaceSlug not provided');
+      return;
+    }
+    setFileToShare({
+      id: attachment.id,
+      name: attachment.name,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+      url: attachment.url,
+      thumbnailUrl: attachment.type === 'image' ? attachment.url : undefined,
+    });
+    setShareDialogOpen(true);
+  };
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(attachment.url);
+    setShowMenu(false);
+  };
+
+  const handleOpenInNew = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(attachment.url, '_blank', 'noopener,noreferrer');
+    setShowMenu(false);
+  };
+
+  const ActionButtons = () => (
+    <div
+      className={cn(
+        'absolute top-2 right-2 flex items-center gap-0.5 rounded-md border bg-popover p-0.5 shadow-md transition-opacity',
+        isHovered || showMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={handleDownload}
+        title="Download"
+        className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+      >
+        <DownloadIcon />
+      </button>
+      <button
+        type="button"
+        onClick={handleShare}
+        title="Share file..."
+        className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+      >
+        <ForwardIcon />
+      </button>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowMenu(!showMenu);
+          }}
+          title="More actions"
+          className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <MoreIcon />
+        </button>
+        {showMenu && (
+          <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-md border bg-popover py-1 shadow-lg">
+            <button
+              type="button"
+              onClick={handleOpenInNew}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+            >
+              Open in new tab
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+            >
+              Copy link to file
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowMenu(false);
+                // TODO: Implement save for later
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+            >
+              Save for later
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   if (attachment.type === 'image') {
     return (
-      <a
-        href={attachment.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block max-w-xs overflow-hidden rounded-md border"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={attachment.url}
-          alt={attachment.name}
-          className="max-h-64 w-full object-cover"
-        />
-      </a>
+      <>
+        <div
+          className="relative inline-block max-w-xs"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            if (!showMenu) setShowMenu(false);
+          }}
+        >
+          {/* Filename label */}
+          <div className="mb-1 flex items-center gap-1 text-sm text-muted-foreground">
+            <span className="truncate max-w-[200px]">{attachment.name}</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div className="relative overflow-hidden rounded-md border">
+            <a
+              href={attachment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={attachment.url}
+                alt={attachment.name}
+                className="max-h-64 w-full object-cover"
+              />
+            </a>
+            <ActionButtons />
+          </div>
+          {/* Click outside to close menu */}
+          {showMenu && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setShowMenu(false)}
+            />
+          )}
+        </div>
+        {/* Share File Dialog */}
+        {workspaceSlug && (
+          <ShareFileDialog
+            open={shareDialogOpen}
+            onOpenChange={setShareDialogOpen}
+            file={fileToShare}
+            workspaceSlug={workspaceSlug}
+            currentUserId={currentUserId}
+            onShareSuccess={(destination) => {
+              console.log('File shared to:', destination);
+            }}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    <a
-      href={attachment.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 hover:bg-muted"
-    >
-      <FileIcon />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium">{attachment.name}</div>
-        <div className="text-xs text-muted-foreground">{formatSize(attachment.size)}</div>
+    <>
+      <div
+        className="relative"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          if (!showMenu) setShowMenu(false);
+        }}
+      >
+        <a
+          href={attachment.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 hover:bg-muted"
+        >
+          <FileIcon />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium">{attachment.name}</div>
+            <div className="text-xs text-muted-foreground">{formatSize(attachment.size)}</div>
+          </div>
+        </a>
+        <ActionButtons />
+        {/* Click outside to close menu */}
+        {showMenu && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowMenu(false)}
+          />
+        )}
       </div>
-    </a>
+      {/* Share File Dialog */}
+      {workspaceSlug && (
+        <ShareFileDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          file={fileToShare}
+          workspaceSlug={workspaceSlug}
+          currentUserId={currentUserId}
+          onShareSuccess={(destination) => {
+            console.log('File shared to:', destination);
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -524,6 +735,35 @@ function FileIcon() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <polyline points="14 2 14 8 20 8" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  );
+}
+
+function ForwardIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 17 20 12 15 7" />
+      <path d="M4 18v-2a4 4 0 0 1 4-4h12" />
+    </svg>
+  );
+}
+
+function MoreIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="19" r="1" />
     </svg>
   );
 }

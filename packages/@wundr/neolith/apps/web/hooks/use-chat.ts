@@ -12,6 +12,7 @@ import type {
   MessageFilters,
   Reaction,
   User,
+  Attachment,
 } from '@/types/chat';
 
 // =============================================================================
@@ -181,6 +182,20 @@ params.set('search', filters.search);
 
         const result = await response.json();
 
+        interface ApiMessageAttachment {
+          id: string;
+          file: {
+            id: string;
+            filename: string;
+            originalName: string;
+            mimeType: string;
+            size: number;
+            thumbnailUrl?: string | null;
+            s3Key?: string;
+            s3Bucket?: string;
+          } | null;
+        }
+
         interface ApiMessage {
           id: string;
           content: string;
@@ -200,8 +215,44 @@ params.set('search', filters.search);
           replyCount?: number;
           mentions?: string[];
           attachments?: unknown[];
+          messageAttachments?: ApiMessageAttachment[];
           parentId?: string | null;
+          _count?: { replies: number };
         }
+
+        // Helper to determine attachment type from mimeType
+        const getAttachmentType = (mimeType: string): 'image' | 'video' | 'audio' | 'file' => {
+          if (mimeType.startsWith('image/')) return 'image';
+          if (mimeType.startsWith('video/')) return 'video';
+          if (mimeType.startsWith('audio/')) return 'audio';
+          return 'file';
+        };
+
+        // Helper to generate file URL
+        const getFileUrl = (file: ApiMessageAttachment['file']): string => {
+          if (!file) return '';
+          // Use s3Key for local storage (direct path access)
+          if (file.s3Bucket === 'local' && file.s3Key) {
+            return file.s3Key; // Local path like /uploads/...
+          }
+          // For S3/cloud storage, use download API with redirect for direct access
+          return `/api/files/${file.id}/download?redirect=true&inline=true`;
+        };
+
+        // Transform messageAttachments to UI-expected format
+        const transformAttachments = (messageAttachments?: ApiMessageAttachment[]): Attachment[] => {
+          if (!messageAttachments || messageAttachments.length === 0) return [];
+          return messageAttachments
+            .filter((ma) => ma.file !== null)
+            .map((ma) => ({
+              id: ma.file!.id,
+              name: ma.file!.originalName || ma.file!.filename,
+              url: getFileUrl(ma.file),
+              type: getAttachmentType(ma.file!.mimeType),
+              size: ma.file!.size,
+              mimeType: ma.file!.mimeType,
+            }));
+        };
 
         const newMessages: Message[] = result.data.map((m: ApiMessage) => ({
           ...m,
@@ -215,9 +266,10 @@ params.set('search', filters.search);
             image: m.author.avatarUrl || m.author.image,
           },
           reactions: m.reactions || [],
-          replyCount: m.replyCount || 0,
+          replyCount: m._count?.replies ?? m.replyCount ?? 0,
           mentions: m.mentions || [],
-          attachments: m.attachments || [],
+          // Transform messageAttachments from API to flat attachments format for UI
+          attachments: transformAttachments(m.messageAttachments),
         }));
 
         if (loadMore) {
@@ -408,24 +460,32 @@ params.set('search', filters.search);
  */
 export function useThread(parentId: string): UseThreadReturn {
   const [thread, setThread] = useState<Thread | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchThread = useCallback(async () => {
     if (!parentId) {
-return;
-}
+      console.log('[useThread] No parentId, skipping fetch');
+      setThread(null);
+      setIsLoading(false);
+      return;
+    }
 
+    console.log('[useThread] Fetching thread for parentId:', parentId);
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`/api/messages/${parentId}/thread`);
+      console.log('[useThread] Response status:', response.status);
       if (!response.ok) {
-        throw new Error('Failed to fetch thread');
+        const errorText = await response.text();
+        console.error('[useThread] API error:', response.status, errorText);
+        throw new Error(`Failed to fetch thread: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('[useThread] API result:', result);
 
       interface ApiAuthor {
         id: string;
@@ -442,6 +502,21 @@ return;
         image: author.avatarUrl || author.image,
       }) : author;
 
+      // API attachment type from thread endpoint
+      interface ApiThreadMessageAttachment {
+        id: string;
+        file: {
+          id: string;
+          filename: string;
+          originalName: string;
+          mimeType: string;
+          size: number;
+          thumbnailUrl?: string | null;
+          s3Key?: string;
+          s3Bucket?: string;
+        } | null;
+      }
+
       interface ApiThreadMessage {
         id: string;
         content: string;
@@ -455,6 +530,7 @@ return;
         replyCount?: number;
         mentions?: string[];
         attachments?: unknown[];
+        messageAttachments?: ApiThreadMessageAttachment[];
         parentId?: string | null;
       }
 
@@ -464,6 +540,40 @@ return;
         avatarUrl?: string;
         image?: string;
       }
+
+      // Helper to determine attachment type from mimeType
+      const getAttachmentType = (mimeType: string): 'image' | 'video' | 'audio' | 'file' => {
+        if (mimeType.startsWith('image/')) return 'image';
+        if (mimeType.startsWith('video/')) return 'video';
+        if (mimeType.startsWith('audio/')) return 'audio';
+        return 'file';
+      };
+
+      // Helper to generate file URL
+      const getFileUrl = (file: ApiThreadMessageAttachment['file']): string => {
+        if (!file) return '';
+        // Use s3Key for local storage (direct path access)
+        if (file.s3Bucket === 'local' && file.s3Key) {
+          return file.s3Key; // Local path like /uploads/...
+        }
+        // For S3/cloud storage, use download API with redirect for direct access
+        return `/api/files/${file.id}/download?redirect=true&inline=true`;
+      };
+
+      // Transform messageAttachments to UI-expected format
+      const transformAttachments = (messageAttachments?: ApiThreadMessageAttachment[]): Attachment[] => {
+        if (!messageAttachments || messageAttachments.length === 0) return [];
+        return messageAttachments
+          .filter((ma) => ma.file !== null)
+          .map((ma) => ({
+            id: ma.file!.id,
+            name: ma.file!.originalName || ma.file!.filename,
+            url: getFileUrl(ma.file),
+            type: getAttachmentType(ma.file!.mimeType),
+            size: ma.file!.size,
+            mimeType: ma.file!.mimeType,
+          }));
+      };
 
       setThread({
         parentMessage: {
@@ -475,7 +585,8 @@ return;
           reactions: result.data.parentMessage.reactions || [],
           replyCount: result.data.parentMessage.replyCount || 0,
           mentions: result.data.parentMessage.mentions || [],
-          attachments: result.data.parentMessage.attachments || [],
+          // Transform messageAttachments from API to flat attachments format for UI
+          attachments: transformAttachments(result.data.parentMessage.messageAttachments),
         } as Message,
         messages: result.data.replies.map((m: ApiThreadMessage) => ({
           ...m,
@@ -486,7 +597,8 @@ return;
           reactions: m.reactions || [],
           replyCount: m.replyCount || 0,
           mentions: m.mentions || [],
-          attachments: m.attachments || [],
+          // Transform messageAttachments from API to flat attachments format for UI
+          attachments: transformAttachments(m.messageAttachments),
         })),
         participants: (result.data.participants || []).map((p: ApiParticipant) => ({
           ...p,
@@ -495,7 +607,9 @@ return;
         })),
       });
     } catch (err) {
+      console.error('[useThread] Error fetching thread:', err);
       setError(err instanceof Error ? err : new Error('Unknown error'));
+      setThread(null);
     } finally {
       setIsLoading(false);
     }
@@ -566,6 +680,55 @@ export function useSendMessage(): UseSendMessageReturn {
         }
 
         const result = await response.json();
+
+        // Helper to determine attachment type from mimeType
+        const getAttachmentType = (mimeType: string): 'image' | 'video' | 'audio' | 'file' => {
+          if (mimeType.startsWith('image/')) return 'image';
+          if (mimeType.startsWith('video/')) return 'video';
+          if (mimeType.startsWith('audio/')) return 'audio';
+          return 'file';
+        };
+
+        // Helper to generate file URL
+        const getFileUrl = (file: { id: string; s3Key?: string; s3Bucket?: string } | null): string => {
+          if (!file) return '';
+          // Use s3Key for local storage (direct path access)
+          if (file.s3Bucket === 'local' && file.s3Key) {
+            return file.s3Key; // Local path like /uploads/...
+          }
+          // For S3/cloud storage, use download API with redirect for direct access
+          return `/api/files/${file.id}/download?redirect=true&inline=true`;
+        };
+
+        // Transform messageAttachments to UI-expected format
+        interface ApiSendMessageAttachment {
+          id: string;
+          file: {
+            id: string;
+            filename: string;
+            originalName: string;
+            mimeType: string;
+            size: number;
+            thumbnailUrl?: string | null;
+            s3Key?: string;
+            s3Bucket?: string;
+          } | null;
+        }
+
+        const transformAttachments = (messageAttachments?: ApiSendMessageAttachment[]): Attachment[] => {
+          if (!messageAttachments || messageAttachments.length === 0) return [];
+          return messageAttachments
+            .filter((ma) => ma.file !== null)
+            .map((ma) => ({
+              id: ma.file!.id,
+              name: ma.file!.originalName || ma.file!.filename,
+              url: getFileUrl(ma.file),
+              type: getAttachmentType(ma.file!.mimeType),
+              size: ma.file!.size,
+              mimeType: ma.file!.mimeType,
+            }));
+        };
+
         const message: Message = {
           ...result.data,
           createdAt: new Date(result.data.createdAt),
@@ -576,6 +739,11 @@ export function useSendMessage(): UseSendMessageReturn {
             name: result.data.author.displayName || result.data.author.name,
             image: result.data.author.avatarUrl || result.data.author.image,
           } : result.data.author,
+          // Transform messageAttachments to attachments format for UI
+          attachments: transformAttachments(result.data.messageAttachments),
+          reactions: result.data.reactions || [],
+          replyCount: result.data._count?.replies ?? 0,
+          mentions: [],
         };
 
         return { optimisticId, message };

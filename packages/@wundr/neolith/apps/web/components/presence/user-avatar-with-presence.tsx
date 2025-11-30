@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, getInitials } from '@/lib/utils';
+import { useUserPresence } from '@/hooks/use-presence';
 
 import { PresenceIndicator } from './presence-indicator';
 
@@ -112,19 +113,17 @@ export function ConnectedUserAvatar({
   showPresence = true,
   className,
 }: ConnectedUserAvatarProps) {
-  // This component can be connected to the presence context
-  // For now, it defaults to showing as offline
-  // Integration with usePresenceContext would look like:
-  // const { getPresence } = usePresenceContext();
-  // const presence = getPresence(user.id);
-  // const status = presence?.status ?? 'offline';
+  // Fetch real-time presence for this user
+  const presence = useUserPresence(user.id);
+  const status = presence?.status ?? 'offline';
 
   return (
     <UserAvatarWithPresence
       user={user}
-      status="offline"
+      status={status}
       size={size}
       showPresence={showPresence}
+      showPulse={status === 'online'}
       className={className}
     />
   );

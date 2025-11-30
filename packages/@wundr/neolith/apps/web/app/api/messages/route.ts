@@ -73,7 +73,7 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
       filename,
       originalName: file.name,
       mimeType: file.type,
-      size: file.size,
+      size: BigInt(file.size),
       uploadedById: userId,
       workspaceId,
       s3Key,
@@ -81,6 +81,10 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
       // Generate thumbnail URL for images
       thumbnailUrl: file.type.startsWith('image/') ? `/api/files/${s3Key}/thumbnail` : null,
       status: 'READY',
+      metadata: {
+        category: file.type.split('/')[0] || 'file',
+        uploadedAt: new Date().toISOString(),
+      },
     },
   });
 
@@ -140,9 +144,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const attachmentFiles = formData.getAll('attachments') as File[];
 
     // Validate required fields
-    if (!content || content.trim().length === 0) {
+    // Note: content can be empty if there are file attachments or attachment IDs
+    const hasAttachments = attachmentFiles.length > 0;
+    const attachmentIdsArray = attachmentIdsStr ? (function() {
+      try {
+        const parsed = JSON.parse(attachmentIdsStr);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })() : [];
+    const hasAttachmentIds = attachmentIdsArray.length > 0;
+
+    if ((!content || content.trim().length === 0) && !hasAttachments && !hasAttachmentIds) {
       return NextResponse.json(
-        createErrorResponse('Message content is required', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse('Message must have content or attachments', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
         { status: 400 },
       );
     }
@@ -154,8 +170,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Validate content length
-    if (content.length > 4000) {
+    // Validate content length (only if content is provided)
+    if (content && content.length > 4000) {
       return NextResponse.json(
         createErrorResponse('Message content exceeds maximum length of 4000 characters', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
         { status: 400 },
@@ -277,7 +293,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create the message with attachments
     const message = await prisma.message.create({
       data: {
-        content: content.trim(),
+        content: content?.trim() || '',
         type: 'TEXT',
         channelId,
         authorId: session.user.id,
@@ -287,6 +303,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         } as Prisma.InputJsonValue,
         messageAttachments: allFileIds.length > 0 ? {
           create: allFileIds.map((fileId) => ({
+            id: crypto.randomUUID(),
             fileId,
           })),
         } : undefined,
@@ -362,8 +379,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // TODO: Broadcast message via WebSocket to channel members
     // This would be implemented with a real-time service like Pusher, Socket.io, etc.
 
+    // Transform message to convert BigInt file sizes to numbers for JSON serialization
+    const transformedMessage = {
+      ...message,
+      messageAttachments: message.messageAttachments.map((attachment) => ({
+        ...attachment,
+        file: attachment.file ? {
+          ...attachment.file,
+          size: Number(attachment.file.size),
+        } : null,
+      })),
+    };
+
     return NextResponse.json(
-      message,
+      transformedMessage,
       { status: 201 },
     );
   } catch (error) {

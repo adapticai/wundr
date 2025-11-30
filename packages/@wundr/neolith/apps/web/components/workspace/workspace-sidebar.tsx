@@ -25,6 +25,7 @@ import { ChannelList, CollapsedChannelIcons } from '@/components/channel';
 import { CreateChannelDialog } from '@/components/channel/create-channel-dialog';
 import { useChannels, useDirectMessages, useChannelMutations } from '@/hooks/use-channel';
 import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
+import { useUserPresence, usePresenceHeartbeat } from '@/hooks/use-presence';
 import {
   Sidebar,
   SidebarContent,
@@ -48,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
 
 interface WorkspaceSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user?: {
@@ -105,6 +107,13 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
   const pathname = usePathname();
   const params = useParams();
   const workspaceId = params.workspaceSlug as string;
+
+  // Fetch real-time presence status for current user
+  const currentUserPresence = useUserPresence(user?.id ?? '');
+  const currentUserStatus = currentUserPresence?.status ?? 'online';
+
+  // Enable heartbeat to keep current user's presence active
+  usePresenceHeartbeat(!!user?.id);
 
   // Fetch channels and DMs
   const {
@@ -286,11 +295,19 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   >
-                    <UserAvatar
-                      user={{ name: user?.name, image: user?.image }}
-                      size="md"
-                      shape="rounded"
-                    />
+                    {user?.id ? (
+                      <ConnectedUserAvatar
+                        user={{ id: user.id, name: user?.name ?? 'User', image: user?.image }}
+                        size="md"
+                        showPresence
+                      />
+                    ) : (
+                      <UserAvatar
+                        user={{ name: user?.name, image: user?.image }}
+                        size="md"
+                        shape="rounded"
+                      />
+                    )}
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{user?.name || 'User'}</span>
                       <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
@@ -306,11 +323,19 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <UserAvatar
-                      user={{ name: user?.name, image: user?.image }}
-                      size="md"
-                      shape="rounded"
-                    />
+                    {user?.id ? (
+                      <ConnectedUserAvatar
+                        user={{ id: user.id, name: user?.name ?? 'User', image: user?.image }}
+                        size="md"
+                        showPresence
+                      />
+                    ) : (
+                      <UserAvatar
+                        user={{ name: user?.name, image: user?.image }}
+                        size="md"
+                        shape="rounded"
+                      />
+                    )}
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{user?.name || 'User'}</span>
                       <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
@@ -368,6 +393,8 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
                   user={{ name: user?.name, image: user?.image }}
                   size="md"
                   shape="rounded"
+                  showStatus
+                  status={currentUserStatus}
                 />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user?.name || 'User'}</span>

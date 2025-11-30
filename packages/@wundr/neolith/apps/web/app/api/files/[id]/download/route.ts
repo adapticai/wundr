@@ -140,7 +140,28 @@ export async function GET(
       );
     }
 
-    // Get storage service
+    // Handle local files (development fallback)
+    if (file.s3Bucket === 'local') {
+      // For local files, the s3Key is the local path (e.g., /uploads/...)
+      const localUrl = file.s3Key;
+
+      if (redirect) {
+        return NextResponse.redirect(new URL(localUrl, request.url));
+      }
+
+      return NextResponse.json({
+        data: {
+          url: localUrl,
+          expiresAt: null, // Local files don't expire
+          filename: file.originalName,
+          mimeType: file.mimeType,
+          size: Number(file.size),
+        },
+        message: 'Local file URL generated successfully',
+      });
+    }
+
+    // Get storage service for S3 files
     const storage = getStorageService();
 
     // Determine content disposition
@@ -151,12 +172,20 @@ export async function GET(
       responseContentDisposition = `inline; filename="${encodeURIComponent(file.originalName)}"`;
     }
 
-    // Generate presigned download URL
-    const downloadUrl = await storage.getFileUrl(file.s3Key, {
-      expiresIn,
-      responseContentType: file.mimeType,
-      responseContentDisposition,
-    });
+    // Generate presigned download URL or use public URL
+    let downloadUrl: string;
+
+    // If STORAGE_PUBLIC_URL is set and we want inline viewing, use public URL directly
+    if (process.env.STORAGE_PUBLIC_URL && inline) {
+      downloadUrl = `${process.env.STORAGE_PUBLIC_URL.replace(/\/$/, '')}/${file.s3Key}`;
+    } else {
+      // Generate presigned URL for secure/download access
+      downloadUrl = await storage.getFileUrl(file.s3Key, {
+        expiresIn,
+        responseContentType: file.mimeType,
+        responseContentDisposition,
+      });
+    }
 
     // Redirect if requested (for backward compatibility)
     if (redirect) {

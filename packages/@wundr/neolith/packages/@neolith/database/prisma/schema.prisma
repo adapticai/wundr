@@ -459,6 +459,34 @@ model sessions {
   @@index([user_id])
 }
 
+model saved_items {
+  id           String          @id
+  item_type    SavedItemType
+  status       SavedItemStatus @default(IN_PROGRESS)
+  note         String?
+  due_date     DateTime?
+  message_id   String?
+  file_id      String?
+  user_id      String
+  workspace_id String
+  created_at   DateTime        @default(now())
+  updated_at   DateTime
+  completed_at DateTime?
+  archived_at  DateTime?
+  messages     messages?       @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  files        files?          @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  users        users           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspaces   workspaces      @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, message_id])
+  @@unique([user_id, file_id])
+  @@index([item_type])
+  @@index([status])
+  @@index([user_id])
+  @@index([workspace_id])
+  @@index([created_at])
+}
+
 model tasks {
   id                                String          @id
   title                             String

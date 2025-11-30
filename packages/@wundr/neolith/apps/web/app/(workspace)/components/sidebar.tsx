@@ -110,7 +110,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-stone-800 bg-stone-950 lg:block">
       <div className="flex h-full flex-col">
         {/* Spacer for macOS Electron window controls (traffic lights) */}
-        <div className="h-7 shrink-0 [-webkit-app-region:drag]" />
+        <div className="h-8 shrink-0 [-webkit-app-region:drag]" />
         {/* Workspace Switcher */}
         <div className="relative border-b border-stone-800">
           <button

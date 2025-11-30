@@ -165,18 +165,27 @@ export default function DMPage() {
 
   // Handle send message
   const handleSendMessage = useCallback(
-    async (content: string, mentions: string[], _attachments: File[]) => {
+    async (content: string, mentions: string[], attachments: File[]) => {
       if (!currentUser) {
         return;
       }
 
-      // TODO: Implement file upload to get attachmentIds before sending
-      const { optimisticId, message } = await sendMessage(
-        { content, channelId: dmId, mentions },
-        currentUser,
-      );
+      // Generate optimistic ID upfront
+      const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      // Add optimistic message
+      // Create optimistic attachments for immediate display
+      const optimisticAttachments = attachments.map((file, index) => ({
+        id: `optimistic-attachment-${index}`,
+        name: file.name,
+        url: URL.createObjectURL(file), // Temporary URL for preview
+        type: file.type.startsWith('image/') ? 'image' as const :
+              file.type.startsWith('video/') ? 'video' as const :
+              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        size: file.size,
+        mimeType: file.type,
+      }));
+
+      // Add optimistic message FIRST for immediate feedback
       const now = new Date().toISOString();
       addOptimisticMessage({
         id: optimisticId,
@@ -190,34 +199,91 @@ export default function DMPage() {
         reactions: [],
         replyCount: 0,
         mentions: [],
-        attachments: [],
+        attachments: optimisticAttachments,
       });
 
-      // Replace optimistic message with real one
-      if (message) {
-        updateOptimisticMessage(optimisticId, { ...message, id: message.id });
-      } else {
-        // Remove on failure
+      try {
+        // Upload files if any
+        let uploadedFileIds: string[] = [];
+        if (attachments.length > 0) {
+          const uploadPromises = attachments.map(async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('workspaceId', workspaceSlug);
+            formData.append('channelId', dmId);
+
+            const response = await fetch('/api/files/upload', {
+              method: 'POST',
+              body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
+              console.error('[DM File Upload Error]', { file: file.name, status: response.status, result });
+              throw new Error(errorMessage);
+            }
+
+            return result.data.file.id;
+          });
+
+          uploadedFileIds = await Promise.all(uploadPromises);
+        }
+
+        // Send message with file IDs
+        const { message } = await sendMessage(
+          { content, channelId: dmId, mentions, attachmentIds: uploadedFileIds },
+          currentUser,
+        );
+
+        // Replace optimistic message with real one
+        if (message) {
+          updateOptimisticMessage(optimisticId, { ...message, id: message.id });
+        } else {
+          // Remove on failure
+          removeOptimisticMessage(optimisticId);
+        }
+
+        // Cleanup temporary blob URLs
+        optimisticAttachments.forEach(att => {
+          if (att.url.startsWith('blob:')) {
+            URL.revokeObjectURL(att.url);
+          }
+        });
+      } catch (error) {
+        console.error('Failed to send DM:', error);
+        // Remove optimistic message on error
         removeOptimisticMessage(optimisticId);
+        toast.error(error instanceof Error ? error.message : 'Failed to send message');
       }
     },
-    [dmId, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
+    [dmId, workspaceSlug, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
   );
 
   // Handle send thread reply
   const handleSendThreadReply = useCallback(
-    async (content: string, mentions: string[], _attachments: File[]) => {
+    async (content: string, mentions: string[], attachments: File[]) => {
       if (!activeThreadId || !currentUser) {
         return;
       }
 
-      // TODO: Implement file upload to get attachmentIds before sending
-      const { optimisticId } = await sendMessage(
-        { content, channelId: dmId, parentId: activeThreadId, mentions },
-        currentUser,
-      );
+      // Generate optimistic ID upfront
+      const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      // Add optimistic reply
+      // Create optimistic attachments for immediate display
+      const optimisticAttachments = attachments.map((file, index) => ({
+        id: `optimistic-attachment-${index}`,
+        name: file.name,
+        url: URL.createObjectURL(file),
+        type: file.type.startsWith('image/') ? 'image' as const :
+              file.type.startsWith('video/') ? 'video' as const :
+              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        size: file.size,
+        mimeType: file.type,
+      }));
+
+      // Add optimistic reply FIRST for immediate feedback
       const now = new Date().toISOString();
       addOptimisticReply({
         id: optimisticId,
@@ -231,15 +297,65 @@ export default function DMPage() {
         reactions: [],
         replyCount: 0,
         mentions: [],
-        attachments: [],
+        attachments: optimisticAttachments,
       });
 
-      // Update reply count on parent
+      // Update reply count on parent optimistically
       updateOptimisticMessage(activeThreadId, {
         replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
       });
+
+      try {
+        // Upload files if any
+        let uploadedFileIds: string[] = [];
+        if (attachments.length > 0) {
+          const uploadPromises = attachments.map(async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('workspaceId', workspaceSlug);
+            formData.append('channelId', dmId);
+
+            const response = await fetch('/api/files/upload', {
+              method: 'POST',
+              body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
+              console.error('[DM Thread File Upload Error]', { file: file.name, status: response.status, result });
+              throw new Error(errorMessage);
+            }
+
+            return result.data.file.id;
+          });
+
+          uploadedFileIds = await Promise.all(uploadPromises);
+        }
+
+        // Send message with file IDs
+        await sendMessage(
+          { content, channelId: dmId, parentId: activeThreadId, mentions, attachmentIds: uploadedFileIds },
+          currentUser,
+        );
+
+        // Cleanup temporary blob URLs
+        optimisticAttachments.forEach(att => {
+          if (att.url.startsWith('blob:')) {
+            URL.revokeObjectURL(att.url);
+          }
+        });
+      } catch (error) {
+        console.error('Failed to send DM thread reply:', error);
+        // Revert reply count on error
+        updateOptimisticMessage(activeThreadId, {
+          replyCount: Math.max(0, (messages.find((m) => m.id === activeThreadId)?.replyCount || 1) - 1),
+        });
+        toast.error(error instanceof Error ? error.message : 'Failed to send reply');
+      }
     },
-    [activeThreadId, dmId, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
+    [activeThreadId, dmId, workspaceSlug, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
   );
 
   // Handle edit message
@@ -357,6 +473,7 @@ export default function DMPage() {
 
   // Handle open thread
   const handleOpenThread = useCallback((message: Message) => {
+    console.log('[DM] handleOpenThread called with message:', message.id, 'replyCount:', message.replyCount);
     setActiveThreadId(message.id);
   }, []);
 
@@ -540,6 +657,11 @@ export default function DMPage() {
     toast.info(`Adding ${tabType} tab coming soon`);
   }, []);
 
+  // Debug: log thread state changes
+  useEffect(() => {
+    console.log('[DM] Thread state:', { activeThreadId, thread, isThreadLoading });
+  }, [activeThreadId, thread, isThreadLoading]);
+
   const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
 
   if (isLoading) {
@@ -600,6 +722,7 @@ export default function DMPage() {
             <MessageList
               messages={messages}
               currentUser={currentUser}
+              workspaceSlug={workspaceSlug}
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
               onLoadMore={loadMore}
@@ -626,7 +749,13 @@ export default function DMPage() {
         )}
 
         {activeTab === 'files' && (
-          <FilesTab channelId={dmId} mode="conversation" className="flex-1" />
+          <FilesTab
+            channelId={dmId}
+            workspaceSlug={workspaceSlug}
+            currentUserId={currentUser?.id}
+            mode="conversation"
+            className="flex-1"
+          />
         )}
 
         {activeTab === 'canvas' && (
@@ -647,6 +776,7 @@ export default function DMPage() {
             thread={thread}
             currentUser={currentUser}
             channelId={dmId}
+            workspaceSlug={workspaceSlug}
             isLoading={isThreadLoading}
             isOpen={!!activeThreadId}
             onClose={handleCloseThread}

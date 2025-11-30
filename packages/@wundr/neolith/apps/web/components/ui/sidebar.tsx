@@ -367,7 +367,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <>
       {/* Spacer for macOS Electron window controls (traffic lights) */}
-      <div className="h-8 shrink-0 [-webkit-app-region:drag]" suppressHydrationWarning />
+      <div className="h-9 shrink-0 [-webkit-app-region:drag]" suppressHydrationWarning />
       <div
         ref={ref}
         data-sidebar="header"

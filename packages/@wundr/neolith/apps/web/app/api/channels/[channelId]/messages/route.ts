@@ -242,6 +242,8 @@ export async function GET(
                 mimeType: true,
                 size: true,
                 thumbnailUrl: true,
+                s3Key: true,
+                s3Bucket: true,
               },
             },
           },
@@ -283,9 +285,17 @@ export async function GET(
     });
 
     // Transform messages to include grouped reactions with hasReacted flag
+    // Also convert BigInt file sizes to numbers for JSON serialization
     const transformedMessages = resultMessages.map((message) => ({
       ...message,
       reactions: groupReactions(message.reactions, session.user.id),
+      messageAttachments: message.messageAttachments.map((attachment) => ({
+        ...attachment,
+        file: attachment.file ? {
+          ...attachment.file,
+          size: Number(attachment.file.size),
+        } : null,
+      })),
     }));
 
     return NextResponse.json({
@@ -442,6 +452,7 @@ export async function POST(
         parentId: input.parentId,
         messageAttachments: input.attachmentIds && input.attachmentIds.length > 0 ? {
           create: input.attachmentIds.map((fileId) => ({
+            id: crypto.randomUUID(),
             fileId,
           })),
         } : undefined,
@@ -544,12 +555,49 @@ export async function POST(
       }
     }
 
+    // Transform message to convert BigInt file sizes to numbers for JSON serialization
+    const transformedMessage = {
+      ...message,
+      messageAttachments: message.messageAttachments.map((attachment) => ({
+        ...attachment,
+        file: attachment.file ? {
+          ...attachment.file,
+          size: Number(attachment.file.size),
+        } : null,
+      })),
+    };
+
     return NextResponse.json(
-      { data: message, message: 'Message sent successfully' },
+      { data: transformedMessage, message: 'Message sent successfully' },
       { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/messages] Error:', error);
+
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('[POST /api/channels/:channelId/messages] Error message:', error.message);
+      console.error('[POST /api/channels/:channelId/messages] Error stack:', error.stack);
+    }
+
+    // Handle Prisma errors
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as { code: string; meta?: Record<string, unknown> };
+      console.error('[POST /api/channels/:channelId/messages] Prisma error code:', prismaError.code);
+      console.error('[POST /api/channels/:channelId/messages] Prisma error meta:', prismaError.meta);
+
+      if (prismaError.code === 'P2003') {
+        return NextResponse.json(
+          createErrorResponse(
+            'Invalid file attachment ID - file may not exist',
+            MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+            { prismaCode: prismaError.code, meta: prismaError.meta },
+          ),
+          { status: 400 },
+        );
+      }
+    }
+
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

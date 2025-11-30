@@ -7,27 +7,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn, getInitials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import type { Channel, ChannelPermissions } from '@/types/channel';
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
+import { useMultiplePresence } from '@/hooks/use-presence';
 import {
   Bell,
   ChevronDown,
   Copy,
   ExternalLink,
   FileText,
+  Headphones,
   Info,
   LogOut,
   MessageSquare,
   MoreHorizontal,
+  Phone,
   Plus,
   Search,
   Settings,
   Sparkles,
   Star,
   UserPlus,
+  Video,
   Workflow,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useCallback, useState, useMemo } from 'react';
 
 
 /**
@@ -71,6 +77,14 @@ interface ChannelHeaderProps {
   onSearchInChannel?: () => void;
   /** Callback for invite people */
   onInvite?: () => void;
+  /** Callback for starting a huddle */
+  onStartHuddle?: () => void;
+  /** Callback for starting a call */
+  onStartCall?: (type: 'audio' | 'video') => void;
+  /** Whether there's an active huddle */
+  hasActiveHuddle?: boolean;
+  /** Number of participants in active huddle */
+  huddleParticipantCount?: number;
   /** Additional CSS class names */
   className?: string;
 }
@@ -102,9 +116,37 @@ export function ChannelHeader({
   onAddWorkflow,
   onSearchInChannel,
   onInvite,
+  onStartHuddle,
+  onStartCall,
+  hasActiveHuddle = false,
+  huddleParticipantCount = 0,
   className,
 }: ChannelHeaderProps) {
   const [isStarring, setIsStarring] = useState(false);
+
+  // Get all member user IDs for presence fetching
+  const memberUserIds = useMemo(() => {
+    return channel.members.map((member) => member.userId);
+  }, [channel.members]);
+
+  // Fetch real-time presence for all members
+  const presenceMap = useMultiplePresence(memberUserIds);
+
+  // Sort members by online status (online first) and take first 3
+  const sortedMembers = useMemo(() => {
+    const statusPriority: Record<string, number> = {
+      'online': 0,
+      'busy': 1,
+      'away': 2,
+      'offline': 3,
+    };
+
+    return [...channel.members].sort((a, b) => {
+      const statusA = presenceMap.get(a.userId)?.status || 'offline';
+      const statusB = presenceMap.get(b.userId)?.status || 'offline';
+      return (statusPriority[statusA] ?? 3) - (statusPriority[statusB] ?? 3);
+    }).slice(0, 3);
+  }, [channel.members, presenceMap]);
 
   const handleToggleStar = useCallback(async () => {
     if (isStarring) {
@@ -238,30 +280,74 @@ return;
         </div>
 
         {/* Right side: Members and actions */}
-        <div className="flex items-center gap-3">
-          {/* Member avatars */}
+        <div className="flex items-center gap-2">
+          {/* Call buttons */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+                <Phone className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => onStartCall?.('audio')}>
+                <Phone className="mr-2 h-4 w-4" />
+                Start audio call
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onStartCall?.('video')}>
+                <Video className="mr-2 h-4 w-4" />
+                Start video call
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Huddle button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={hasActiveHuddle ? 'default' : 'ghost'}
+                size="sm"
+                className={cn(
+                  'h-8 gap-1.5',
+                  hasActiveHuddle && 'bg-green-600 hover:bg-green-700 text-white'
+                )}
+              >
+                <Headphones className="h-4 w-4" />
+                {hasActiveHuddle && huddleParticipantCount > 0 && (
+                  <span className="text-xs">{huddleParticipantCount}</span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={onStartHuddle}>
+                <Headphones className="mr-2 h-4 w-4" />
+                {hasActiveHuddle ? 'Join huddle' : 'Start a huddle'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Member avatars - sorted by online status */}
           <button
             type="button"
             onClick={onOpenMembers || onOpenDetails}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors"
           >
             <div className="flex -space-x-2">
-              {channel.members.slice(0, 3).map((member, index) => (
+              {sortedMembers.map((member, index) => (
                 <div
                   key={member.userId}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium"
+                  className="relative"
                   style={{ zIndex: 3 - index }}
                 >
-                  {member.user.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={member.user.image}
-                      alt={member.user.name}
-                      className="h-full w-full rounded-md object-cover"
-                    />
-                  ) : (
-                    getInitials(member.user.name)
-                  )}
+                  <ConnectedUserAvatar
+                    user={{
+                      id: member.userId,
+                      name: member.user.name,
+                      image: member.user.image,
+                    }}
+                    size="sm"
+                    showPresence
+                    className="border-2 border-card"
+                  />
                 </div>
               ))}
               {channel.memberCount > 3 && (
