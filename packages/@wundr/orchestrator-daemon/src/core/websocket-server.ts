@@ -185,6 +185,10 @@ export class OrchestratorWebSocketServer extends EventEmitter {
         this.send(ws, { type: 'health_check_response', healthy: true });
         break;
 
+      case 'list_sessions':
+        this.emit('list_sessions', { ws });
+        break;
+
       default:
         this.logger.warn('Unknown message type:', (message as WSMessage).type);
         this.sendError(ws, 'Unknown message type');

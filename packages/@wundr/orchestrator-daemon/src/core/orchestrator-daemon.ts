@@ -7,6 +7,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { EventEmitter } from 'eventemitter3';
+import type { WebSocket } from 'ws';
 import YAML from 'yaml';
 
 import {
@@ -114,7 +115,7 @@ export class OrchestratorDaemon extends EventEmitter {
 
     // Initialize LLM client with OpenAI and environment variables
     const openaiApiKey = process.env['OPENAI_API_KEY'];
-    const openaiModel = process.env['OPENAI_MODEL'] || 'gpt-4o-mini';
+    const openaiModel = process.env['OPENAI_MODEL'] || 'gpt-5-mini';
 
     if (!openaiApiKey) {
       this.logger.warn('OPENAI_API_KEY not set. LLM features will be unavailable.');
@@ -174,7 +175,7 @@ export class OrchestratorDaemon extends EventEmitter {
         port: this.config.port,
         host: this.config.host,
         maxSessions: this.config.maxSessions,
-        llmModel: process.env['OPENAI_MODEL'] || 'gpt-4o-mini',
+        llmModel: process.env['OPENAI_MODEL'] || 'gpt-5-mini',
       });
       this.emit('started');
     } catch (error) {
@@ -332,19 +333,28 @@ export class OrchestratorDaemon extends EventEmitter {
    */
   private setupEventHandlers(): void {
     // WebSocket server events
-    this.wsServer.on('spawn_session', async ({ ws, payload }: { ws: unknown; payload: SpawnSessionPayload }) => {
+    this.wsServer.on('spawn_session', async ({ ws, payload }: { ws: unknown; payload: SpawnSessionPayload | { task: string; model?: string } }) => {
       try {
+        // Handle both object-based and simple string-based task payloads
+        const taskPayload = typeof payload.task === 'string'
+          ? { description: payload.task, type: 'general' as const, priority: 'medium' as const }
+          : payload.task;
+
         const task: Task = {
           id: `task_${Date.now()}`,
-          ...payload.task,
+          description: taskPayload.description,
+          type: taskPayload.type || 'general',
+          priority: taskPayload.priority || 'medium',
+          metadata: 'metadata' in taskPayload ? taskPayload.metadata : undefined,
           status: 'pending',
           createdAt: new Date(),
           updatedAt: new Date(),
         };
 
-        const session = await this.spawnSession(payload.orchestratorId, task);
+        const orchestratorId = 'orchestratorId' in payload ? payload.orchestratorId : 'default';
+        const session = await this.spawnSession(orchestratorId, task);
 
-        this.wsServer.send(ws as import('ws').WebSocket, {
+        this.wsServer.send(ws as WebSocket, {
           type: 'session_spawned',
           session,
         });
@@ -356,15 +366,15 @@ export class OrchestratorDaemon extends EventEmitter {
           this.logger.error(`Failed to execute task on newly spawned session ${session.id}:`, error);
         }
       } catch (error) {
-        this.wsServer.sendError(ws as import('ws').WebSocket, error instanceof Error ? error.message : 'Unknown error');
+        this.wsServer.sendError(ws as WebSocket, error instanceof Error ? error.message : 'Unknown error');
       }
     });
 
     this.wsServer.on('execute_task', async ({ ws, payload }: { ws: unknown; payload: ExecuteTaskPayload }) => {
       try {
-        const { sessionId, task, context, streamResponse } = payload;
+        const { sessionId, task, context } = payload;
 
-        this.wsServer.send(ws as import('ws').WebSocket, {
+        this.wsServer.send(ws as WebSocket, {
           type: 'task_executing',
           sessionId,
           taskId: task,
@@ -373,13 +383,13 @@ export class OrchestratorDaemon extends EventEmitter {
         try {
           await this.executeTask(sessionId, task, context);
 
-          this.wsServer.send(ws as import('ws').WebSocket, {
+          this.wsServer.send(ws as WebSocket, {
             type: 'task_completed',
             sessionId,
             taskId: task,
           });
         } catch (error) {
-          this.wsServer.send(ws as import('ws').WebSocket, {
+          this.wsServer.send(ws as WebSocket, {
             type: 'task_failed',
             sessionId,
             taskId: task,
@@ -387,24 +397,24 @@ export class OrchestratorDaemon extends EventEmitter {
           });
         }
       } catch (error) {
-        this.wsServer.sendError(ws as import('ws').WebSocket, error instanceof Error ? error.message : 'Unknown error');
+        this.wsServer.sendError(ws as WebSocket, error instanceof Error ? error.message : 'Unknown error');
       }
     });
 
     this.wsServer.on('session_status', ({ ws, sessionId }: { ws: unknown; sessionId: string }) => {
       const session = this.sessionManager.getSession(sessionId);
       if (session) {
-        this.wsServer.send(ws as import('ws').WebSocket, {
+        this.wsServer.send(ws as WebSocket, {
           type: 'session_status_update',
           session,
         });
       } else {
-        this.wsServer.sendError(ws as import('ws').WebSocket, `Session not found: ${sessionId}`);
+        this.wsServer.sendError(ws as WebSocket, `Session not found: ${sessionId}`);
       }
     });
 
     this.wsServer.on('daemon_status', ({ ws }: { ws: unknown }) => {
-      this.wsServer.send(ws as import('ws').WebSocket, {
+      this.wsServer.send(ws as WebSocket, {
         type: 'daemon_status_update',
         status: this.getStatus(),
       });
@@ -415,14 +425,22 @@ export class OrchestratorDaemon extends EventEmitter {
         await this.sessionManager.stopSession(sessionId);
         const session = this.sessionManager.getSession(sessionId);
         if (session) {
-          this.wsServer.send(ws as import('ws').WebSocket, {
+          this.wsServer.send(ws as WebSocket, {
             type: 'session_status_update',
             session,
           });
         }
       } catch (error) {
-        this.wsServer.sendError(ws as import('ws').WebSocket, error instanceof Error ? error.message : 'Unknown error');
+        this.wsServer.sendError(ws as WebSocket, error instanceof Error ? error.message : 'Unknown error');
       }
+    });
+
+    this.wsServer.on('list_sessions', ({ ws }: { ws: unknown }) => {
+      const sessions = this.sessionManager.getAllSessions();
+      this.wsServer.send(ws as WebSocket, {
+        type: 'sessions_list',
+        sessions,
+      });
     });
 
     // Session manager events

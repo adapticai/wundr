@@ -61,7 +61,7 @@ export type OrchestratorCharter = z.infer<typeof OrchestratorCharterSchema>;
  */
 export interface Task {
   id: string;
-  type: 'code' | 'research' | 'analysis' | 'custom';
+  type: 'code' | 'research' | 'analysis' | 'custom' | 'general';
   description: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
   assignedTo?: string;
@@ -161,7 +161,8 @@ export type WSMessage =
   | { type: 'daemon_status' }
   | { type: 'stop_session'; payload: { sessionId: string } }
   | { type: 'health_check' }
-  | { type: 'execute_task'; payload: ExecuteTaskPayload };
+  | { type: 'execute_task'; payload: ExecuteTaskPayload }
+  | { type: 'list_sessions' };
 
 export interface SpawnSessionPayload {
   orchestratorId: string;
@@ -214,7 +215,8 @@ export type WSResponse =
   | { type: 'tool_call_result'; data: ToolCallInfo }
   | { type: 'task_executing'; sessionId: string; taskId: string }
   | { type: 'task_completed'; sessionId: string; taskId: string; result?: unknown }
-  | { type: 'task_failed'; sessionId: string; taskId: string; error: string };
+  | { type: 'task_failed'; sessionId: string; taskId: string; error: string }
+  | { type: 'sessions_list'; sessions: Session[] };
 
 /**
  * Memory tier types

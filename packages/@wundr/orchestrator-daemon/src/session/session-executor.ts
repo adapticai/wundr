@@ -19,7 +19,6 @@ import type {
   ChatParams,
   Message,
   ToolDefinition,
-  ChatResponse,
 } from '@wundr.io/ai-integration';
 import type { McpToolRegistry } from './tool-executor';
 
@@ -70,7 +69,7 @@ export class SessionExecutor extends EventEmitter {
   // Default execution options
   private readonly DEFAULT_OPTIONS: Required<SessionExecutionOptions> = {
     maxIterations: 10,
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'gpt-5-mini',
     temperature: 0.7,
     maxTokens: 4096,
     systemPrompt: this.buildDefaultSystemPrompt(),
