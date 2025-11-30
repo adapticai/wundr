@@ -3,16 +3,21 @@
 import {
   Clock,
   File,
+  FileText,
   Hash,
+  Image,
   Loader2,
   MessageSquarePlus,
+  Music,
   Search,
   Settings,
   User,
   Users,
+  Video,
   Bot,
   PlusCircle,
   UserPlus,
+  Archive,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -41,7 +46,7 @@ export interface GlobalSearchBarProps {
 /**
  * Search result types
  */
-type SearchResultType = 'channel' | 'dm' | 'user' | 'orchestrator' | 'message';
+type SearchResultType = 'channel' | 'dm' | 'user' | 'orchestrator' | 'message' | 'file';
 
 interface SearchResult {
   id: string;
@@ -55,6 +60,9 @@ interface SearchResult {
     participants?: string[];
     email?: string;
     isGroup?: boolean;
+    mimeType?: string;
+    size?: number;
+    thumbnailUrl?: string | null;
   };
 }
 
@@ -234,7 +242,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,users,orchestrators,dms&limit=20`,
+          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,users,orchestrators,dms,files&limit=20`,
         );
 
         if (response.ok) {
@@ -290,6 +298,21 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                     },
                   });
                   break;
+                case 'file':
+                  transformedResults.push({
+                    id: item.id,
+                    type: 'file',
+                    name: item.originalName || item.filename,
+                    description: item.channelName ? `in #${item.channelName}` : undefined,
+                    image: item.thumbnailUrl,
+                    metadata: {
+                      mimeType: item.mimeType,
+                      size: item.size,
+                      thumbnailUrl: item.thumbnailUrl,
+                      channelName: item.channelName,
+                    },
+                  });
+                  break;
               }
             }
           }
@@ -331,13 +354,15 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
   // Handle result selection
   const handleSelect = useCallback(
     (result: SearchResult) => {
-      // Save to recent items
-      saveRecentItem({
-        id: result.id,
-        type: result.type === 'orchestrator' ? 'user' : result.type === 'message' ? 'channel' : result.type,
-        name: result.name,
-        image: result.image,
-      });
+      // Save to recent items (skip files for now)
+      if (result.type !== 'file') {
+        saveRecentItem({
+          id: result.id,
+          type: result.type === 'orchestrator' ? 'user' : result.type === 'message' ? 'channel' : result.type,
+          name: result.name,
+          image: result.image,
+        });
+      }
 
       setOpen(false);
       setQuery('');
@@ -362,6 +387,10 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
           if (result.metadata?.channelName) {
             router.push(`/${workspaceSlug}/channels/${result.id}`);
           }
+          break;
+        case 'file':
+          // Open file in new tab
+          window.open(`/api/files/${result.id}`, '_blank');
           break;
       }
     },
@@ -522,10 +551,22 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
     };
   }, []);
 
+  // Helper function to get file icon based on mime type
+  const getFileIcon = useCallback((mimeType?: string) => {
+    if (!mimeType) return File;
+    if (mimeType.startsWith('image/')) return Image;
+    if (mimeType.startsWith('video/')) return Video;
+    if (mimeType.startsWith('audio/')) return Music;
+    if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return FileText;
+    if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('rar')) return Archive;
+    return File;
+  }, []);
+
   // Group results by type
   const channelResults = results.filter((r) => r.type === 'channel');
   const dmResults = results.filter((r) => r.type === 'dm');
   const userResults = results.filter((r) => r.type === 'user' || r.type === 'orchestrator');
+  const fileResults = results.filter((r) => r.type === 'file');
 
   return (
     <>
@@ -671,6 +712,47 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                         )}
                       </CommandItem>
                     ))}
+                  </CommandGroup>
+                </>
+              )}
+
+              {fileResults.length > 0 && (
+                <>
+                  {(channelResults.length > 0 || dmResults.length > 0 || userResults.length > 0) && <CommandSeparator />}
+                  <CommandGroup heading="Files">
+                    {fileResults.map((result) => {
+                      const FileIcon = getFileIcon(result.metadata?.mimeType);
+                      const isImage = result.metadata?.mimeType?.startsWith('image/');
+                      return (
+                        <CommandItem
+                          key={result.id}
+                          value={`file-${result.id}`}
+                          onSelect={() => handleSelect(result)}
+                          className="cursor-pointer"
+                        >
+                          {isImage && result.metadata?.thumbnailUrl ? (
+                            <div className="mr-2 h-8 w-8 shrink-0 overflow-hidden rounded">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={result.metadata.thumbnailUrl}
+                                alt={result.name}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <FileIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                          )}
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="truncate">{result.name}</span>
+                            {result.description && (
+                              <span className="text-xs text-muted-foreground">
+                                {result.description}
+                              </span>
+                            )}
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
                   </CommandGroup>
                 </>
               )}
