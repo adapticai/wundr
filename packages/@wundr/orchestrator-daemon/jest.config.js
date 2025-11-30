@@ -11,6 +11,9 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@adaptic/lumic-utils|marked)/)',
+  ],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: {

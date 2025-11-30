@@ -2,47 +2,33 @@
 
 /**
  * Orchestrator Daemon CLI entry point
+ *
+ * This is a lightweight wrapper that loads the compiled TypeScript CLI.
  */
 
-const { OrchestratorDaemon } = require('../dist/index');
+// Check if running from development or production
+const path = require('path');
+const fs = require('fs');
 
-async function main() {
-  const daemon = new OrchestratorDaemon({
-    name: 'orchestrator-daemon',
-    port: parseInt(process.env.ORCHESTRATOR_DAEMON_PORT || '8787', 10),
-    host: process.env.ORCHESTRATOR_DAEMON_HOST || '127.0.0.1',
-    maxSessions: parseInt(process.env.ORCHESTRATOR_MAX_SESSIONS || '100', 10),
-    heartbeatInterval: 30000,
-    shutdownTimeout: 10000,
-    verbose: process.env.ORCHESTRATOR_VERBOSE === 'true',
-  });
+// Try to load from dist first (production)
+const distPath = path.join(__dirname, '../dist/bin/cli.js');
+const srcPath = path.join(__dirname, '../src/bin/cli.ts');
 
-  // Handle shutdown signals
-  const shutdown = async (signal) => {
-    console.log(`\nReceived ${signal}, shutting down gracefully...`);
-    try {
-      await daemon.stop();
-      process.exit(0);
-    } catch (error) {
-      console.error('Error during shutdown:', error);
-      process.exit(1);
-    }
-  };
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
-
-  // Start daemon
+if (fs.existsSync(distPath)) {
+  // Production mode - use compiled version
+  require(distPath);
+} else if (fs.existsSync(srcPath)) {
+  // Development mode - use ts-node if available
   try {
-    await daemon.start();
-    console.log('Orchestrator Daemon is running. Press Ctrl+C to stop.');
+    require('ts-node/register');
+    require(srcPath);
   } catch (error) {
-    console.error('Failed to start Orchestrator Daemon:', error);
+    console.error('Error: CLI not built. Run "npm run build" first.');
+    console.error('\nOr install ts-node for development mode:');
+    console.error('  npm install --save-dev ts-node\n');
     process.exit(1);
   }
-}
-
-main().catch((error) => {
-  console.error('Fatal error:', error);
+} else {
+  console.error('Error: CLI files not found. Please reinstall the package.');
   process.exit(1);
-});
+}

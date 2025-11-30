@@ -17,6 +17,10 @@ import { OrchestratorWebSocketServer } from './websocket-server';
 import { MemoryManager } from '../memory/memory-manager';
 import { SessionManager } from '../session/session-manager';
 import { Logger, LogLevel } from '../utils/logger';
+import { createOpenAIClient } from '../llm';
+import { McpToolRegistryImpl } from '../mcp/tool-registry';
+import type { LLMClient } from '@wundr.io/ai-integration/dist/llm/client';
+import type { McpToolRegistry } from '../session/tool-executor';
 
 import type {
   DaemonConfig,
@@ -26,7 +30,8 @@ import type {
   Task,
   Session,
   MemoryConfig,
-  SpawnSessionPayload} from '../types';
+  SpawnSessionPayload,
+  ExecuteTaskPayload} from '../types';
 
 export class OrchestratorDaemon extends EventEmitter {
   private logger: Logger;
@@ -35,6 +40,8 @@ export class OrchestratorDaemon extends EventEmitter {
   private wsServer: OrchestratorWebSocketServer;
   private sessionManager: SessionManager;
   private memoryManager: MemoryManager;
+  private llmClient: LLMClient;
+  private mcpRegistry: McpToolRegistry;
   private status: DaemonStatus['status'] = 'stopped';
   private startTime: number = 0;
   private metrics: DaemonMetrics;
@@ -44,8 +51,14 @@ export class OrchestratorDaemon extends EventEmitter {
   constructor(config: DaemonConfig) {
     super();
 
-    // Validate and parse config
-    this.config = DaemonConfigSchema.parse(config);
+    // Validate and parse config with environment variable overrides
+    const runtimeConfig = {
+      ...config,
+      port: Number(process.env['DAEMON_PORT']) || config.port,
+      host: process.env['DAEMON_HOST'] || config.host,
+    };
+
+    this.config = DaemonConfigSchema.parse(runtimeConfig);
 
     this.logger = new Logger('OrchestratorDaemon', this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO);
 
@@ -98,7 +111,38 @@ export class OrchestratorDaemon extends EventEmitter {
     };
 
     this.memoryManager = new MemoryManager(defaultMemoryConfig);
-    this.sessionManager = new SessionManager(this.memoryManager, this.config.maxSessions);
+
+    // Initialize LLM client with OpenAI and environment variables
+    const openaiApiKey = process.env['OPENAI_API_KEY'];
+    const openaiModel = process.env['OPENAI_MODEL'] || 'gpt-4o-mini';
+
+    if (!openaiApiKey) {
+      this.logger.warn('OPENAI_API_KEY not set. LLM features will be unavailable.');
+    }
+
+    this.llmClient = createOpenAIClient({
+      apiKey: openaiApiKey,
+      defaultModel: openaiModel,
+      temperature: 0.7,
+      maxTokens: 4096,
+      debug: this.config.verbose,
+    });
+
+    // Initialize MCP tools registry with safety checks enabled
+    this.mcpRegistry = new McpToolRegistryImpl({ safetyChecks: true });
+
+    // Initialize session manager with LLM client and MCP registry
+    this.sessionManager = new SessionManager(
+      this.memoryManager,
+      this.config.maxSessions,
+      this.llmClient,
+      this.mcpRegistry,
+    );
+
+    // Listen for token usage updates from session manager
+    this.sessionManager.on('session:token_usage', ({ tokensUsed }: { tokensUsed: number }) => {
+      this.metrics.totalTokensUsed += tokensUsed;
+    });
 
     this.setupEventHandlers();
   }
@@ -126,7 +170,12 @@ export class OrchestratorDaemon extends EventEmitter {
       this.status = 'running';
       this.startTime = Date.now();
 
-      this.logger.info('Orchestrator Daemon started successfully');
+      this.logger.info('Orchestrator Daemon started successfully', {
+        port: this.config.port,
+        host: this.config.host,
+        maxSessions: this.config.maxSessions,
+        llmModel: process.env['OPENAI_MODEL'] || 'gpt-4o-mini',
+      });
       this.emit('started');
     } catch (error) {
       this.status = 'stopped';
@@ -188,6 +237,43 @@ export class OrchestratorDaemon extends EventEmitter {
   }
 
   /**
+   * Execute a task on an existing session
+   */
+  async executeTask(sessionId: string, task: string, context?: Record<string, unknown>): Promise<void> {
+    this.logger.info(`Executing task on session: ${sessionId}`);
+
+    try {
+      const session = this.sessionManager.getSession(sessionId);
+      if (!session) {
+        throw new Error(`Session not found: ${sessionId}`);
+      }
+
+      if (session.status !== 'running') {
+        throw new Error(`Session ${sessionId} is not running (status: ${session.status})`);
+      }
+
+      // Update the session's task description
+      session.task.description = task;
+      session.task.status = 'in_progress';
+      session.task.updatedAt = new Date();
+
+      // Add context to task metadata if provided
+      if (context) {
+        session.task.metadata = {
+          ...session.task.metadata,
+          executionContext: context,
+        };
+      }
+
+      // Delegate to session manager's executor
+      await this.sessionManager.executeTask(sessionId);
+    } catch (error) {
+      this.logger.error(`Failed to execute task on session ${sessionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Get daemon status
    */
   getStatus(): DaemonStatus {
@@ -207,6 +293,14 @@ export class OrchestratorDaemon extends EventEmitter {
           lastCheck: new Date(),
         },
         memoryManager: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        llmClient: {
+          status: process.env['OPENAI_API_KEY'] ? 'running' : 'degraded',
+          lastCheck: new Date(),
+        },
+        mcpRegistry: {
           status: 'running',
           lastCheck: new Date(),
         },
@@ -249,10 +343,49 @@ export class OrchestratorDaemon extends EventEmitter {
         };
 
         const session = await this.spawnSession(payload.orchestratorId, task);
+
         this.wsServer.send(ws as import('ws').WebSocket, {
           type: 'session_spawned',
           session,
         });
+
+        // Auto-execute the task after spawning
+        try {
+          await this.executeTask(session.id, task.description);
+        } catch (error) {
+          this.logger.error(`Failed to execute task on newly spawned session ${session.id}:`, error);
+        }
+      } catch (error) {
+        this.wsServer.sendError(ws as import('ws').WebSocket, error instanceof Error ? error.message : 'Unknown error');
+      }
+    });
+
+    this.wsServer.on('execute_task', async ({ ws, payload }: { ws: unknown; payload: ExecuteTaskPayload }) => {
+      try {
+        const { sessionId, task, context, streamResponse } = payload;
+
+        this.wsServer.send(ws as import('ws').WebSocket, {
+          type: 'task_executing',
+          sessionId,
+          taskId: task,
+        });
+
+        try {
+          await this.executeTask(sessionId, task, context);
+
+          this.wsServer.send(ws as import('ws').WebSocket, {
+            type: 'task_completed',
+            sessionId,
+            taskId: task,
+          });
+        } catch (error) {
+          this.wsServer.send(ws as import('ws').WebSocket, {
+            type: 'task_failed',
+            sessionId,
+            taskId: task,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
       } catch (error) {
         this.wsServer.sendError(ws as import('ws').WebSocket, error instanceof Error ? error.message : 'Unknown error');
       }

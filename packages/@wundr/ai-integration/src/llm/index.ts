@@ -13,6 +13,7 @@ export type {
   Message,
   ToolDefinition,
   TokenUsage,
+  Usage, // Backward compatibility alias
   FinishReason,
   ChatResponse,
   ChatChunk,

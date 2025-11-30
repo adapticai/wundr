@@ -1,0 +1,9 @@
+{
+  "name": "orchestrator-daemon",
+  "port": 8787,
+  "host": "127.0.0.1",
+  "maxSessions": 100,
+  "heartbeatInterval": 30000,
+  "shutdownTimeout": 10000,
+  "verbose": false
+}

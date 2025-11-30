@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # Redis for development - same as production
+  redis:
+    image: redis:7-alpine
+    container_name: orchestrator-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - orchestrator-dev-net
+
+  # PostgreSQL for development
+  postgres:
+    image: postgres:16-alpine
+    container_name: orchestrator-postgres-dev
+    environment:
+      POSTGRES_DB: orchestrator_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - orchestrator-dev-net
+
+  # Orchestrator Daemon - Development mode with hot reload
+  daemon:
+    build:
+      context: ../../..
+      dockerfile: packages/@wundr/orchestrator-daemon/Dockerfile.dev
+      args:
+        - NODE_ENV=development
+    container_name: orchestrator-daemon-dev
+    ports:
+      - "8787:8787"
+      - "9090:9090"
+      - "9229:9229"  # Node.js debugger port
+    environment:
+      # Development environment
+      NODE_ENV: development
+      LOG_LEVEL: debug
+
+      # Server configuration
+      PORT: 8787
+      METRICS_PORT: 9090
+
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # PostgreSQL configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: orchestrator_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_pass
+
+      # Session configuration
+      SESSION_TIMEOUT: 7200000
+      MAX_SESSIONS: 10
+
+      # Federation configuration
+      ENABLE_FEDERATION: true
+      FEDERATION_PORT: 8788
+
+      # Monitoring configuration
+      ENABLE_METRICS: true
+      METRICS_INTERVAL: 30000
+
+      # Development features
+      ENABLE_DEBUG: true
+      ENABLE_HOT_RELOAD: true
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/packages/@wundr/orchestrator-daemon/src:ro
+      - ./dist:/app/packages/@wundr/orchestrator-daemon/dist
+      - ../ai-integration/src:/app/packages/@wundr/ai-integration/src:ro
+
+      # Mount node_modules as named volume for performance
+      - node_modules_cache:/app/node_modules
+
+      # Development logs
+      - ./logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8787/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - orchestrator-dev-net
+    stdin_open: true
+    tty: true
+
+  # Redis Commander - Web UI for Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: orchestrator-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - orchestrator-dev-net
+
+  # PgAdmin - Web UI for PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: orchestrator-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@orchestrator.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - orchestrator-dev-net
+
+volumes:
+  postgres_dev_data:
+    driver: local
+    name: orchestrator_postgres_dev_data
+  redis_dev_data:
+    driver: local
+    name: orchestrator_redis_dev_data
+  pgadmin_dev_data:
+    driver: local
+    name: orchestrator_pgadmin_dev_data
+  node_modules_cache:
+    driver: local
+    name: orchestrator_node_modules_cache
+
+networks:
+  orchestrator-dev-net:
+    driver: bridge
+    name: orchestrator-dev-network

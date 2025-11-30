@@ -9,13 +9,14 @@ import { Server as WebSocketServer, WebSocket } from 'ws';
 
 import { Logger } from '../utils/logger';
 
-import type { WSMessage, WSResponse } from '../types';
+import type { WSMessage, WSResponse, StreamChunk, ToolCallInfo } from '../types';
 
 export class OrchestratorWebSocketServer extends EventEmitter {
   private logger: Logger;
   private wss: WebSocketServer | null = null;
   private httpServer: http.Server | null = null;
   private clients: Set<WebSocket>;
+  private sessionClients: Map<string, Set<WebSocket>>; // Track which clients are subscribed to which sessions
   private port: number;
   private host: string;
 
@@ -23,6 +24,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
     super();
     this.logger = new Logger('WebSocketServer');
     this.clients = new Set();
+    this.sessionClients = new Map();
     this.port = port;
     this.host = host;
   }
@@ -85,6 +87,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
         client.close(1000, 'Server shutting down');
       });
       this.clients.clear();
+      this.sessionClients.clear();
 
       // Close WebSocket server
       if (this.wss) {
@@ -125,11 +128,19 @@ export class OrchestratorWebSocketServer extends EventEmitter {
     ws.on('close', () => {
       this.logger.debug('WebSocket connection closed');
       this.clients.delete(ws);
+      // Remove from all session subscriptions
+      this.sessionClients.forEach((clients) => {
+        clients.delete(ws);
+      });
     });
 
     ws.on('error', (error: Error) => {
       this.logger.error('WebSocket connection error:', error);
       this.clients.delete(ws);
+      // Remove from all session subscriptions
+      this.sessionClients.forEach((clients) => {
+        clients.delete(ws);
+      });
     });
 
     // Send initial connection acknowledgment
@@ -151,6 +162,12 @@ export class OrchestratorWebSocketServer extends EventEmitter {
         this.emit('spawn_session', { ws, payload: message.payload });
         break;
 
+      case 'execute_task':
+        // Subscribe client to session updates
+        this.subscribeToSession(ws, message.payload.sessionId);
+        this.emit('execute_task', { ws, payload: message.payload });
+        break;
+
       case 'session_status':
         this.emit('session_status', { ws, sessionId: message.payload.sessionId });
         break;
@@ -161,6 +178,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
 
       case 'stop_session':
         this.emit('stop_session', { ws, sessionId: message.payload.sessionId });
+        this.unsubscribeFromSession(ws, message.payload.sessionId);
         break;
 
       case 'health_check':
@@ -185,8 +203,8 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   /**
    * Send error to client
    */
-  sendError(ws: WebSocket, error: string): void {
-    this.send(ws, { type: 'error', error });
+  sendError(ws: WebSocket, error: string, sessionId?: string): void {
+    this.send(ws, { type: 'error', error, sessionId });
   }
 
   /**
@@ -202,9 +220,169 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   }
 
   /**
+   * Subscribe a client to session updates
+   */
+  private subscribeToSession(ws: WebSocket, sessionId: string): void {
+    if (!this.sessionClients.has(sessionId)) {
+      this.sessionClients.set(sessionId, new Set());
+    }
+    this.sessionClients.get(sessionId)!.add(ws);
+    this.logger.debug(`Client subscribed to session ${sessionId}`);
+  }
+
+  /**
+   * Unsubscribe a client from session updates
+   */
+  private unsubscribeFromSession(ws: WebSocket, sessionId: string): void {
+    const clients = this.sessionClients.get(sessionId);
+    if (clients) {
+      clients.delete(ws);
+      if (clients.size === 0) {
+        this.sessionClients.delete(sessionId);
+      }
+      this.logger.debug(`Client unsubscribed from session ${sessionId}`);
+    }
+  }
+
+  /**
+   * Send message to all clients subscribed to a session
+   */
+  private broadcastToSession(sessionId: string, message: WSResponse): void {
+    const clients = this.sessionClients.get(sessionId);
+    if (!clients || clients.size === 0) {
+      this.logger.warn(`No clients subscribed to session ${sessionId}`);
+      return;
+    }
+
+    const payload = JSON.stringify(message);
+    clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(payload);
+      }
+    });
+  }
+
+  /**
+   * Stream a chunk of data to clients subscribed to a session
+   */
+  streamToClient(sessionId: string, chunk: string, metadata?: StreamChunk['metadata']): void {
+    const streamChunk: StreamChunk = {
+      sessionId,
+      chunk,
+      metadata,
+    };
+
+    this.broadcastToSession(sessionId, {
+      type: 'stream_chunk',
+      data: streamChunk,
+    });
+  }
+
+  /**
+   * Notify clients that streaming is starting
+   */
+  notifyStreamStart(sessionId: string, metadata?: Record<string, unknown>): void {
+    this.broadcastToSession(sessionId, {
+      type: 'stream_start',
+      sessionId,
+      metadata,
+    });
+  }
+
+  /**
+   * Notify clients that streaming has ended
+   */
+  notifyStreamEnd(sessionId: string, metadata?: Record<string, unknown>): void {
+    this.broadcastToSession(sessionId, {
+      type: 'stream_end',
+      sessionId,
+      metadata,
+    });
+  }
+
+  /**
+   * Notify clients about tool execution status
+   */
+  notifyToolExecution(
+    sessionId: string,
+    toolName: string,
+    status: 'started' | 'completed' | 'failed',
+    options?: {
+      toolInput?: Record<string, unknown>;
+      result?: unknown;
+      error?: string;
+    }
+  ): void {
+    const toolCallInfo: ToolCallInfo = {
+      sessionId,
+      toolName,
+      toolInput: options?.toolInput,
+      status,
+      result: options?.result,
+      error: options?.error,
+      timestamp: new Date(),
+    };
+
+    const messageType = status === 'started' ? 'tool_call_start' : 'tool_call_result';
+    this.broadcastToSession(sessionId, {
+      type: messageType,
+      data: toolCallInfo,
+    });
+  }
+
+  /**
+   * Notify clients that a task is executing
+   */
+  notifyTaskExecuting(sessionId: string, taskId: string): void {
+    this.broadcastToSession(sessionId, {
+      type: 'task_executing',
+      sessionId,
+      taskId,
+    });
+  }
+
+  /**
+   * Notify clients that a task has completed
+   */
+  notifyTaskCompleted(sessionId: string, taskId: string, result?: unknown): void {
+    this.broadcastToSession(sessionId, {
+      type: 'task_completed',
+      sessionId,
+      taskId,
+      result,
+    });
+  }
+
+  /**
+   * Notify clients that a task has failed
+   */
+  notifyTaskFailed(sessionId: string, taskId: string, error: string): void {
+    this.broadcastToSession(sessionId, {
+      type: 'task_failed',
+      sessionId,
+      taskId,
+      error,
+    });
+  }
+
+  /**
    * Get number of connected clients
    */
   getClientCount(): number {
     return this.clients.size;
+  }
+
+  /**
+   * Get number of clients subscribed to a session
+   */
+  getSessionClientCount(sessionId: string): number {
+    return this.sessionClients.get(sessionId)?.size ?? 0;
+  }
+
+  /**
+   * Get all active session IDs
+   */
+  getActiveSessionIds(): string[] {
+    return Array.from(this.sessionClients.keys());
   }
 }

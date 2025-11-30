@@ -6,22 +6,36 @@ import { EventEmitter } from 'eventemitter3';
 
 import { MemoryContext } from '../types';
 import { Logger } from '../utils/logger';
+import { SessionExecutor, SessionExecutionOptions } from './session-executor';
 
 import type { MemoryManager } from '../memory/memory-manager';
 import type { Session, Task, SessionMetrics} from '../types';
+import type { LLMClient } from '@wundr.io/ai-integration/dist/llm/client';
+import type { McpToolRegistry } from './tool-executor';
 
 export class SessionManager extends EventEmitter {
   private logger: Logger;
   private sessions: Map<string, Session>;
   private memoryManager: MemoryManager;
   private maxSessions: number;
+  private llmClient: LLMClient;
+  private mcpRegistry: McpToolRegistry;
+  private sessionExecutor: SessionExecutor;
 
-  constructor(memoryManager: MemoryManager, maxSessions: number = 100) {
+  constructor(
+    memoryManager: MemoryManager,
+    maxSessions: number,
+    llmClient: LLMClient,
+    mcpRegistry: McpToolRegistry,
+  ) {
     super();
     this.logger = new Logger('SessionManager');
     this.sessions = new Map();
     this.memoryManager = memoryManager;
     this.maxSessions = maxSessions;
+    this.llmClient = llmClient;
+    this.mcpRegistry = mcpRegistry;
+    this.sessionExecutor = new SessionExecutor(llmClient, mcpRegistry);
   }
 
   /**
@@ -72,17 +86,63 @@ export class SessionManager extends EventEmitter {
   }
 
   /**
-   * Initialize session (placeholder for actual implementation)
+   * Initialize session and execute the task
    */
   private async initializeSession(session: Session): Promise<void> {
     this.logger.debug(`Initializing session: ${session.id}`);
 
-    // Simulate async initialization
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
     session.status = 'running';
     this.logger.info(`Session running: ${session.id}`);
     this.emit('session:running', session);
+
+    // Execute the task using SessionExecutor
+    await this.executeTask(session.id);
+  }
+
+  /**
+   * Execute a task in the given session
+   */
+  async executeTask(
+    sessionId: string,
+    options?: SessionExecutionOptions,
+  ): Promise<void> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    this.logger.info(`Executing task in session: ${sessionId}`);
+
+    try {
+      // Execute the session task using SessionExecutor
+      const result = await this.sessionExecutor.executeSession(
+        session,
+        session.task,
+        options,
+      );
+
+      // Update session metrics based on execution results
+      this.sessionExecutor.updateSessionMetrics(session, result);
+
+      // Add execution to session memory
+      this.sessionExecutor.addToSessionMemory(session, session.task, result);
+
+      // Determine final session status based on result
+      if (result.success) {
+        await this.completeSession(sessionId);
+      } else {
+        await this.failSession(
+          sessionId,
+          new Error(result.error || 'Task execution failed'),
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Task execution error in session ${sessionId}`, error);
+      await this.failSession(
+        sessionId,
+        error instanceof Error ? error : new Error('Unknown execution error'),
+      );
+    }
   }
 
   /**

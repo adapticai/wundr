@@ -15,6 +15,7 @@ export const DaemonConfigSchema = z.object({
   heartbeatInterval: z.number().int().positive().default(30000),
   shutdownTimeout: z.number().int().positive().default(10000),
   verbose: z.boolean().default(false),
+  logLevel: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });
 
 export type DaemonConfig = z.infer<typeof DaemonConfigSchema>;
@@ -159,7 +160,8 @@ export type WSMessage =
   | { type: 'session_status'; payload: { sessionId: string } }
   | { type: 'daemon_status' }
   | { type: 'stop_session'; payload: { sessionId: string } }
-  | { type: 'health_check' };
+  | { type: 'health_check' }
+  | { type: 'execute_task'; payload: ExecuteTaskPayload };
 
 export interface SpawnSessionPayload {
   orchestratorId: string;
@@ -168,16 +170,51 @@ export interface SpawnSessionPayload {
   memoryProfile?: string;
 }
 
+export interface ExecuteTaskPayload {
+  sessionId: string;
+  task: string;
+  context?: Record<string, unknown>;
+  streamResponse?: boolean;
+}
+
+export interface StreamChunk {
+  sessionId: string;
+  chunk: string;
+  metadata?: {
+    type?: 'text' | 'thinking' | 'tool_use';
+    index?: number;
+    total?: number;
+  };
+}
+
+export interface ToolCallInfo {
+  sessionId: string;
+  toolName: string;
+  toolInput?: Record<string, unknown>;
+  status: 'started' | 'completed' | 'failed';
+  result?: unknown;
+  error?: string;
+  timestamp: Date;
+}
+
 /**
  * WebSocket response types
  */
 export type WSResponse =
-  | { type: 'error'; error: string }
+  | { type: 'error'; error: string; sessionId?: string }
   | { type: 'pong' }
   | { type: 'session_spawned'; session: Session }
   | { type: 'session_status_update'; session: Session }
   | { type: 'daemon_status_update'; status: DaemonStatus }
-  | { type: 'health_check_response'; healthy: boolean };
+  | { type: 'health_check_response'; healthy: boolean }
+  | { type: 'stream_start'; sessionId: string; metadata?: Record<string, unknown> }
+  | { type: 'stream_chunk'; data: StreamChunk }
+  | { type: 'stream_end'; sessionId: string; metadata?: Record<string, unknown> }
+  | { type: 'tool_call_start'; data: ToolCallInfo }
+  | { type: 'tool_call_result'; data: ToolCallInfo }
+  | { type: 'task_executing'; sessionId: string; taskId: string }
+  | { type: 'task_completed'; sessionId: string; taskId: string; result?: unknown }
+  | { type: 'task_failed'; sessionId: string; taskId: string; error: string };
 
 /**
  * Memory tier types

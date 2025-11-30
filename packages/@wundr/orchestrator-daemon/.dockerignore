@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+.next/
+out/
+
+# Development files
+.env
+.env.local
+.env.*.local
+*.log
+logs/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Examples
+**/examples/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

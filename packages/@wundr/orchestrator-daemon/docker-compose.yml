@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # Redis for distributed features and caching
+  redis:
+    image: redis:7-alpine
+    container_name: orchestrator-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orchestrator-net
+    restart: unless-stopped
+
+  # PostgreSQL for persistent storage
+  postgres:
+    image: postgres:16-alpine
+    container_name: orchestrator-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-orchestrator}
+      POSTGRES_USER: ${POSTGRES_USER:-orchestrator}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-orchestrator_pass}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-orchestrator}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orchestrator-net
+    restart: unless-stopped
+
+  # Orchestrator Daemon
+  daemon:
+    build:
+      context: ../../..
+      dockerfile: packages/@wundr/orchestrator-daemon/Dockerfile
+    container_name: orchestrator-daemon
+    ports:
+      - "${DAEMON_PORT:-8787}:8787"
+      - "${METRICS_PORT:-9090}:9090"
+    environment:
+      # Service configuration
+      NODE_ENV: ${NODE_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+
+      # Server configuration
+      PORT: 8787
+      METRICS_PORT: 9090
+
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+
+      # PostgreSQL configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-orchestrator}
+      POSTGRES_USER: ${POSTGRES_USER:-orchestrator}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-orchestrator_pass}
+
+      # Session configuration
+      SESSION_TIMEOUT: ${SESSION_TIMEOUT:-3600000}
+      MAX_SESSIONS: ${MAX_SESSIONS:-100}
+
+      # Federation configuration
+      ENABLE_FEDERATION: ${ENABLE_FEDERATION:-true}
+      FEDERATION_PORT: ${FEDERATION_PORT:-8788}
+
+      # Monitoring configuration
+      ENABLE_METRICS: ${ENABLE_METRICS:-true}
+      METRICS_INTERVAL: ${METRICS_INTERVAL:-60000}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8787/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - orchestrator-net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+    name: orchestrator_postgres_data
+  redis_data:
+    driver: local
+    name: orchestrator_redis_data
+
+networks:
+  orchestrator-net:
+    driver: bridge
+    name: orchestrator-network

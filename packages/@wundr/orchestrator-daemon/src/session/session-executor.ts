@@ -39,6 +39,10 @@ export interface SessionExecutionOptions {
   systemPrompt?: string;
   /** Enable streaming responses */
   streaming?: boolean;
+  /** User message to send */
+  userMessage?: string;
+  /** Additional context */
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -71,6 +75,8 @@ export class SessionExecutor extends EventEmitter {
     maxTokens: 4096,
     systemPrompt: this.buildDefaultSystemPrompt(),
     streaming: false,
+    userMessage: '',
+    context: {},
   };
 
   constructor(llmClient: LLMClient, mcpRegistry: McpToolRegistry) {

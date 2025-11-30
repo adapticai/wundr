@@ -66,6 +66,12 @@ export interface TokenUsage {
 }
 
 /**
+ * @deprecated Use TokenUsage instead
+ * Alias for backward compatibility
+ */
+export type Usage = TokenUsage;
+
+/**
  * Finish reason for chat completion
  */
 export type FinishReason = 'stop' | 'length' | 'tool_calls' | 'content_filter' | 'error';

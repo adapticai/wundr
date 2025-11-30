@@ -1,0 +1,46 @@
+# Development Dockerfile with hot reload support
+FROM node:20-alpine
+
+# Install development tools
+RUN apk add --no-cache \
+    git \
+    curl \
+    bash \
+    dumb-init
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Set working directory
+WORKDIR /app
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+
+# Copy package.json files
+COPY packages/@wundr/orchestrator-daemon/package.json ./packages/@wundr/orchestrator-daemon/
+COPY packages/@wundr/ai-integration/package.json ./packages/@wundr/ai-integration/
+
+# Install dependencies (including dev dependencies)
+RUN pnpm install --filter @wundr.io/orchestrator-daemon...
+
+# Copy source code (will be overridden by volume mounts in dev)
+COPY packages/@wundr/orchestrator-daemon ./packages/@wundr/orchestrator-daemon
+COPY packages/@wundr/ai-integration ./packages/@wundr/ai-integration
+
+# Build TypeScript initially
+WORKDIR /app/packages/@wundr/orchestrator-daemon
+RUN pnpm run build
+
+# Create logs directory
+RUN mkdir -p /app/logs && chmod 777 /app/logs
+
+# Expose ports
+EXPOSE 8787 9090 9229
+
+# Use dumb-init
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start in watch mode with debugging enabled
+CMD ["sh", "-c", "pnpm run build:watch & node --inspect=0.0.0.0:9229 dist/index.js"]

@@ -92,6 +92,18 @@ export type {
 } from './use-orchestrator-tasks';
 
 // =============================================================================
+// Daemon Hooks
+// =============================================================================
+export { useDaemon, useSessionMonitor } from './use-daemon';
+export type {
+  UseDaemonState,
+  UseDaemonActions,
+  UseDaemonStreamHandlers,
+  UseDaemonOptions,
+  UseDaemonReturn,
+} from './use-daemon';
+
+// =============================================================================
 // Budget Hooks
 // =============================================================================
 export {
