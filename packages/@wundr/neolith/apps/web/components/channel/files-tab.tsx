@@ -268,7 +268,7 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
                     </div>
 
                     {/* Actions */}
-                    <FileActions file={file} onShare={() => handleOpenShareDialog(file)} />
+                    <FileActions file={file} workspaceSlug={workspaceSlug} onShare={() => handleOpenShareDialog(file)} />
                   </div>
                 );
               })}
@@ -314,9 +314,17 @@ export function FilesTab({ channelId, workspaceSlug, currentUserId, className, m
  *
  * Action buttons with dropdown menu for file operations.
  */
-function FileActions({ file, onShare }: { file: FileItem; onShare?: () => void }) {
+interface FileActionsProps {
+  file: FileItem;
+  workspaceSlug: string;
+  onShare?: () => void;
+}
+
+function FileActions({ file, workspaceSlug, onShare }: FileActionsProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [savedItemId, setSavedItemId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -355,10 +363,48 @@ function FileActions({ file, onShare }: { file: FileItem; onShare?: () => void }
     setShowMenu(false);
   };
 
-  const handleSaveForLater = () => {
-    // TODO: Implement save for later / bookmark
-    setIsSaved(!isSaved);
-    setShowMenu(false);
+  const handleSaveForLater = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    try {
+      if (isSaved && savedItemId) {
+        // Remove from saved
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/saved-items/${savedItemId}`,
+          { method: 'DELETE' }
+        );
+        if (response.ok) {
+          setIsSaved(false);
+          setSavedItemId(null);
+        }
+      } else {
+        // Save for later
+        const response = await fetch(`/api/workspaces/${workspaceSlug}/saved-items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'FILE',
+            fileId: file.id,
+          }),
+        });
+        if (response.ok) {
+          const result = await response.json();
+          setIsSaved(true);
+          setSavedItemId(result.data?.id);
+        } else if (response.status === 409) {
+          // Already saved - get the existing item
+          const result = await response.json();
+          setIsSaved(true);
+          setSavedItemId(result.data?.id);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save/unsave item:', err);
+    } finally {
+      setIsSaving(false);
+      setShowMenu(false);
+    }
   };
 
   return (
@@ -395,9 +441,14 @@ function FileActions({ file, onShare }: { file: FileItem; onShare?: () => void }
         size="icon"
         className={cn('h-8 w-8', isSaved && 'text-yellow-500')}
         onClick={handleSaveForLater}
+        disabled={isSaving}
         title={isSaved ? 'Remove from saved' : 'Save for later'}
       >
-        <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current')} />
+        {isSaving ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current')} />
+        )}
       </Button>
       <Button
         variant="ghost"
@@ -449,11 +500,16 @@ function FileActions({ file, onShare }: { file: FileItem; onShare?: () => void }
           </button>
           <button
             type="button"
-            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent disabled:opacity-50"
             onClick={handleSaveForLater}
+            disabled={isSaving}
           >
-            <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current text-yellow-500')} />
-            {isSaved ? 'Remove from saved' : 'Save for later'}
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current text-yellow-500')} />
+            )}
+            {isSaving ? 'Saving...' : isSaved ? 'Remove from saved' : 'Save for later'}
           </button>
           <div className="my-1 h-px bg-border" />
           <button

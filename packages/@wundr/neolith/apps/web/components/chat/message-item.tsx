@@ -8,6 +8,7 @@ import type { Message, User } from '@/types/chat';
 import { ReactionDisplay } from './reaction-display';
 import { ReactionPickerTrigger } from './reaction-picker';
 import { ShareFileDialog, type ShareFileData } from '@/components/channel/share-file-dialog';
+import { DeleteMessageDialog } from './delete-message-dialog';
 
 /**
  * Props for the MessageItem component
@@ -56,6 +57,10 @@ export const MessageItem = memo(function MessageItem({
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedItemId, setSavedItemId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const isOwn = message.authorId === currentUser.id;
 
@@ -118,6 +123,53 @@ export const MessageItem = memo(function MessageItem({
     setEditContent(message.content);
     setIsEditing(false);
   }, [message.content]);
+
+  const handleSaveForLater = useCallback(async () => {
+    if (isSaving || !workspaceSlug) return;
+    setIsSaving(true);
+
+    try {
+      if (isSaved && savedItemId) {
+        // Remove from saved
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/saved-items/${savedItemId}`,
+          { method: 'DELETE' }
+        );
+        if (response.ok) {
+          setIsSaved(false);
+          setSavedItemId(null);
+        }
+      } else {
+        // Save for later
+        const response = await fetch(`/api/workspaces/${workspaceSlug}/saved-items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'MESSAGE',
+            messageId: message.id,
+          }),
+        });
+        if (response.ok) {
+          const result = await response.json();
+          setIsSaved(true);
+          setSavedItemId(result.data?.id);
+        } else if (response.status === 409) {
+          // Already saved - get the existing item
+          const result = await response.json();
+          setIsSaved(true);
+          setSavedItemId(result.data?.id);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save/unsave message:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [isSaving, isSaved, savedItemId, workspaceSlug, message.id]);
+
+  const handleDeleteConfirm = useCallback(async (messageId: string) => {
+    await onDelete?.(messageId);
+  }, [onDelete]);
 
   if (message.isDeleted) {
     return (
@@ -274,6 +326,14 @@ export const MessageItem = memo(function MessageItem({
                 onClick={() => onReply?.(message)}
               />
             )}
+            {workspaceSlug && (
+              <ActionButton
+                icon={<BookmarkIcon filled={isSaved} loading={isSaving} />}
+                title={isSaved ? 'Remove from saved' : 'Save for later'}
+                onClick={handleSaveForLater}
+                className={cn(isSaved && 'text-yellow-500 hover:text-yellow-600')}
+              />
+            )}
             {isOwn && (
               <>
                 <ActionButton
@@ -284,7 +344,7 @@ export const MessageItem = memo(function MessageItem({
                 <ActionButton
                   icon={<DeleteIcon />}
                   title="Delete"
-                  onClick={() => onDelete?.(message.id)}
+                  onClick={() => setShowDeleteDialog(true)}
                   className="text-destructive hover:text-destructive"
                 />
               </>
@@ -292,6 +352,14 @@ export const MessageItem = memo(function MessageItem({
           </div>
         )}
       </div>
+
+      {/* Delete confirmation dialog */}
+      <DeleteMessageDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        message={message}
+        onConfirm={handleDeleteConfirm}
+      />
     </>
   );
 });
@@ -425,6 +493,9 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
   const [showMenu, setShowMenu] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [fileToShare, setFileToShare] = useState<ShareFileData | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedItemId, setSavedItemId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) {
@@ -480,6 +551,49 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
     setShowMenu(false);
   };
 
+  const handleSaveForLater = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSaving || !workspaceSlug) return;
+    setIsSaving(true);
+
+    try {
+      if (isSaved && savedItemId) {
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/saved-items/${savedItemId}`,
+          { method: 'DELETE' }
+        );
+        if (response.ok) {
+          setIsSaved(false);
+          setSavedItemId(null);
+        }
+      } else {
+        const response = await fetch(`/api/workspaces/${workspaceSlug}/saved-items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'FILE',
+            fileId: attachment.id,
+          }),
+        });
+        if (response.ok) {
+          const result = await response.json();
+          setIsSaved(true);
+          setSavedItemId(result.data?.id);
+        } else if (response.status === 409) {
+          const result = await response.json();
+          setIsSaved(true);
+          setSavedItemId(result.data?.id);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save/unsave attachment:', err);
+    } finally {
+      setIsSaving(false);
+      setShowMenu(false);
+    }
+  };
+
   const ActionButtons = () => (
     <div
       className={cn(
@@ -533,18 +647,16 @@ function AttachmentPreview({ attachment, workspaceSlug, currentUserId }: Attachm
             >
               Copy link to file
             </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowMenu(false);
-                // TODO: Implement save for later
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-            >
-              Save for later
-            </button>
+            {workspaceSlug && (
+              <button
+                type="button"
+                onClick={handleSaveForLater}
+                disabled={isSaving}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : isSaved ? 'Remove from saved' : 'Save for later'}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -764,6 +876,21 @@ function MoreIcon() {
       <circle cx="12" cy="12" r="1" />
       <circle cx="12" cy="5" r="1" />
       <circle cx="12" cy="19" r="1" />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ filled, loading }: { filled?: boolean; loading?: boolean }) {
+  if (loading) {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
     </svg>
   );
 }

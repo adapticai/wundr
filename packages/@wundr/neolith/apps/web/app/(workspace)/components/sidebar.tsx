@@ -2,9 +2,14 @@
 
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ChannelList } from '@/components/channel';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { Logo } from '@/components/ui/Logo';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useChannelMutations, useChannels, useDirectMessages } from '@/hooks/use-channel';
@@ -99,6 +104,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
 
   const navItems = [
     { href: `/${workspaceId}/dashboard`, icon: <DashboardIcon />, label: 'Dashboard' },
+    { href: `/${workspaceId}/later`, icon: <LaterIcon />, label: 'Later' },
     { href: `/${workspaceId}/orchestrators`, icon: <OrchestratorsIcon />, label: 'Orchestrators' },
     { href: `/${workspaceId}/agents`, icon: <AgentsIcon />, label: 'Agents' },
     { href: `/${workspaceId}/workflows`, icon: <WorkflowsIcon />, label: 'Workflows' },
@@ -187,15 +193,25 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
 
         {/* Main Navigation */}
         <nav className="space-y-1 p-3">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.href}
-              href={item.href}
-              icon={item.icon}
-              label={item.label}
-              isActive={pathname === item.href || pathname?.startsWith(`${item.href}/`)}
-            />
-          ))}
+          {navItems.map((item) =>
+            item.label === 'Later' ? (
+              <LaterNavItem
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                workspaceId={workspaceId}
+                isActive={pathname === item.href || pathname?.startsWith(`${item.href}/`)}
+              />
+            ) : (
+              <NavItem
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+                isActive={pathname === item.href || pathname?.startsWith(`${item.href}/`)}
+              />
+            ),
+          )}
         </nav>
 
         <div className="h-px bg-stone-800" />
@@ -271,6 +287,150 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
       <span className="flex h-5 w-5 items-center justify-center">{icon}</span>
       {label}
     </Link>
+  );
+}
+
+interface LaterNavItemProps {
+  href: string;
+  icon: React.ReactNode;
+  workspaceId: string;
+  isActive?: boolean;
+}
+
+interface SavedItemPreview {
+  id: string;
+  item_type: 'MESSAGE' | 'FILE';
+  created_at: string;
+  messages: {
+    content: string;
+    users: {
+      name: string | null;
+      display_name: string | null;
+    };
+  } | null;
+  files: {
+    original_name: string;
+  } | null;
+}
+
+function LaterNavItem({ href, icon, workspaceId, isActive }: LaterNavItemProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [items, setItems] = useState<SavedItemPreview[]>([]);
+  const [count, setCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && workspaceId) {
+      setIsLoading(true);
+      fetch(`/api/workspaces/${workspaceId}/saved-items?status=IN_PROGRESS&limit=5`)
+        .then((res) => res.json())
+        .then((data) => {
+          setItems(data.data || []);
+          setCount(data.pagination?.totalCount || 0);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch saved items:', err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [isOpen, workspaceId]);
+
+  return (
+    <HoverCard openDelay={300} closeDelay={100} onOpenChange={setIsOpen}>
+      <HoverCardTrigger asChild>
+        <Link
+          href={href}
+          className={cn(
+            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+            isActive
+              ? 'bg-stone-900 text-stone-100'
+              : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100',
+          )}
+        >
+          <span className="flex h-5 w-5 items-center justify-center">{icon}</span>
+          Later
+          {count > 0 && (
+            <span className="ml-auto rounded-full bg-stone-800 px-1.5 py-0.5 text-xs">
+              {count}
+            </span>
+          )}
+        </Link>
+      </HoverCardTrigger>
+      <HoverCardContent side="right" align="start" className="w-72 bg-stone-900 border-stone-800 p-0">
+        <div className="p-3 border-b border-stone-800">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-stone-100">Saved for later</h4>
+            {count > 0 && (
+              <span className="text-xs text-stone-400">{count} item{count !== 1 ? 's' : ''}</span>
+            )}
+          </div>
+        </div>
+        <div className="max-h-64 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-stone-600 border-t-stone-300" />
+            </div>
+          ) : items.length === 0 ? (
+            <div className="p-4 text-center text-sm text-stone-500">
+              No saved items yet
+            </div>
+          ) : (
+            <div className="divide-y divide-stone-800">
+              {items.map((item) => (
+                <div key={item.id} className="p-3 hover:bg-stone-800/50">
+                  {item.item_type === 'MESSAGE' && item.messages ? (
+                    <div>
+                      <p className="text-xs text-stone-400 mb-1">
+                        {item.messages.users.display_name || item.messages.users.name || 'Unknown'}
+                      </p>
+                      <p className="text-sm text-stone-300 line-clamp-2">
+                        {item.messages.content}
+                      </p>
+                    </div>
+                  ) : item.item_type === 'FILE' && item.files ? (
+                    <div className="flex items-center gap-2">
+                      <FileIcon className="h-4 w-4 text-stone-400 shrink-0" />
+                      <p className="text-sm text-stone-300 truncate">
+                        {item.files.original_name}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {items.length > 0 && (
+          <div className="p-2 border-t border-stone-800">
+            <Link
+              href={href}
+              className="block w-full rounded px-3 py-1.5 text-center text-xs text-stone-400 hover:bg-stone-800 hover:text-stone-100"
+            >
+              View all saved items
+            </Link>
+          </div>
+        )}
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+function FileIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    </svg>
   );
 }
 
@@ -446,6 +606,24 @@ function PlusIcon({ className }: { className?: string }) {
     >
       <path d="M5 12h14" />
       <path d="M12 5v14" />
+    </svg>
+  );
+}
+
+function LaterIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
     </svg>
   );
 }

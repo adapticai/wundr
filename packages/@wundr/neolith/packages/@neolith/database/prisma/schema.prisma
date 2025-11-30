@@ -275,6 +275,7 @@ model files {
   users               users                 @relation(fields: [uploaded_by_id], references: [id], onDelete: Cascade)
   workspaces          workspaces            @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
   message_attachments message_attachments[]
+  saved_items         saved_items[]
 
   @@index([mime_type])
   @@index([status])
@@ -342,6 +343,7 @@ model messages {
   messages            messages?             @relation("messagesTomessages", fields: [parent_id], references: [id])
   other_messages      messages[]            @relation("messagesTomessages")
   reactions           reactions[]
+  saved_items         saved_items[]
 
   @@index([author_id])
   @@index([channel_id])
@@ -470,7 +472,7 @@ model saved_items {
   user_id      String
   workspace_id String
   created_at   DateTime        @default(now())
-  updated_at   DateTime
+  updated_at   DateTime        @updatedAt
   completed_at DateTime?
   archived_at  DateTime?
   messages     messages?       @relation(fields: [message_id], references: [id], onDelete: Cascade)
@@ -555,6 +557,7 @@ model users {
   vps                               vps?
   webhooks                          webhooks[]
   workspace_members                 workspace_members[]
+  saved_items                       saved_items[]
 
   @@index([email])
   @@index([status])
@@ -777,6 +780,7 @@ model workspaces {
   webhooks           webhooks[]
   workflows          workflows[]
   workspace_members  workspace_members[]
+  saved_items        saved_items[]
   organizations      organizations        @relation(fields: [organization_id], references: [id], onDelete: Cascade)
 
   @@unique([organization_id, slug])
@@ -987,4 +991,15 @@ enum WorkspaceVisibility {
   PUBLIC
   PRIVATE
   INTERNAL
+}
+
+enum SavedItemType {
+  MESSAGE
+  FILE
+}
+
+enum SavedItemStatus {
+  IN_PROGRESS
+  ARCHIVED
+  COMPLETED
 }
