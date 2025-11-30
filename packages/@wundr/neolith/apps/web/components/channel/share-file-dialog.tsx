@@ -539,40 +539,47 @@ export function ShareFileDialog({
       </div>
 
       {/* File preview */}
-      <div className="rounded-md border bg-muted/50 p-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-background">
-            {file.mimeType.startsWith('image/') && file.thumbnailUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={file.thumbnailUrl}
-                alt={file.name}
-                className="h-full w-full rounded-md object-cover"
-              />
-            ) : (
-              <FileIcon className="h-5 w-5 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="truncate font-medium text-sm">{file.name}</div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {file.uploadedBy && (
-                <>
-                  <span>{file.uploadedBy.displayName || file.uploadedBy.name}</span>
-                  <span>•</span>
-                </>
-              )}
-              {file.uploadedAt && (
-                <>
-                  <span>{new Date(file.uploadedAt).toLocaleDateString()}</span>
-                  <span>•</span>
-                </>
-              )}
-              <span>{formatFileSize(file.size)}</span>
+      {(() => {
+        const isImage = file.mimeType.startsWith('image/');
+        const imagePreviewUrl = file.thumbnailUrl || (isImage ? file.url : null);
+
+        return (
+          <div className="rounded-md border bg-muted/50 p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-background overflow-hidden">
+                {isImage && imagePreviewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imagePreviewUrl}
+                    alt={file.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <FileIcon className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="truncate font-medium text-sm">{file.name}</div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {file.uploadedBy && (
+                    <>
+                      <span>{file.uploadedBy.displayName || file.uploadedBy.name}</span>
+                      <span>•</span>
+                    </>
+                  )}
+                  {file.uploadedAt && (
+                    <>
+                      <span>{new Date(file.uploadedAt).toLocaleDateString()}</span>
+                      <span>•</span>
+                    </>
+                  )}
+                  <span>{formatFileSize(file.size)}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Access info */}
       {selectedDestinations.length > 0 && (
