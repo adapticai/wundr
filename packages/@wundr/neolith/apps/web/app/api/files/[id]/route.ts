@@ -157,6 +157,11 @@ export async function GET(
  * Delete a file. Only the uploader or workspace admins can delete files.
  * Requires authentication and appropriate permissions.
  *
+ * When a file is deleted:
+ * - All saved items referencing the file are deleted
+ * - The messages that contained only this file are soft-deleted
+ * - The file is permanently deleted from storage and database
+ *
  * @param _request - Next.js request object
  * @param context - Route context with file ID
  * @returns Success confirmation
@@ -190,7 +195,7 @@ export async function DELETE(
       );
     }
 
-    // Fetch file
+    // Fetch file with message attachments
     const file = await prisma.file.findUnique({
       where: { id: params.id },
       include: {
@@ -198,6 +203,11 @@ export async function DELETE(
           select: {
             id: true,
             organizationId: true,
+          },
+        },
+        messageAttachments: {
+          select: {
+            messageId: true,
           },
         },
       },
@@ -241,13 +251,37 @@ export async function DELETE(
     // Delete file from S3
     await deleteFileFromStorage(file.s3Key, file.s3Bucket);
 
-    // Delete file record from database
-    await prisma.file.delete({
-      where: { id: params.id },
+    // Get message IDs that contain this file
+    const messageIds = file.messageAttachments.map((a) => a.messageId);
+
+    // Use transaction to ensure atomic operation
+    await prisma.$transaction(async (tx) => {
+      // Delete saved items that reference this file
+      await tx.savedItem.deleteMany({
+        where: { fileId: params.id },
+      });
+
+      // Soft-delete messages that contained this file
+      // (the messageAttachment will be cascade-deleted when the file is deleted)
+      if (messageIds.length > 0) {
+        await tx.message.updateMany({
+          where: { id: { in: messageIds } },
+          data: {
+            isDeleted: true,
+            content: '[Message deleted]',
+          },
+        });
+      }
+
+      // Delete file record from database (cascades to messageAttachments)
+      await tx.file.delete({
+        where: { id: params.id },
+      });
     });
 
     return NextResponse.json({
       message: 'File deleted successfully',
+      deletedMessageCount: messageIds.length,
     });
   } catch (error) {
     console.error('[DELETE /api/files/:id] Error:', error);
