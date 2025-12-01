@@ -107,6 +107,40 @@ try {
     removeNodeFiles(standaloneDir);
   }
 
+  // Clean up middleware.js.nft.json to remove native module references
+  // The Netlify plugin scans this file for dependencies, so we need to filter out .node files
+  const middlewareNftPath = path.join(
+    __dirname,
+    '..',
+    '.next',
+    'server',
+    'middleware.js.nft.json'
+  );
+  if (fs.existsSync(middlewareNftPath)) {
+    const nftData = JSON.parse(fs.readFileSync(middlewareNftPath, 'utf-8'));
+    if (nftData.files && Array.isArray(nftData.files)) {
+      const originalCount = nftData.files.length;
+      nftData.files = nftData.files.filter(file => {
+        const isNativeModule =
+          file.endsWith('.node') ||
+          file.endsWith('.dylib.node') ||
+          file.endsWith('.dylib') ||
+          file.includes('sharp-darwin') ||
+          file.includes('sharp-linux') ||
+          file.includes('sharp-win') ||
+          file.includes('libquery_engine');
+        return !isNativeModule;
+      });
+      fs.writeFileSync(middlewareNftPath, JSON.stringify(nftData, null, 2));
+      const removedCount = originalCount - nftData.files.length;
+      if (removedCount > 0) {
+        console.log(
+          `✓ Removed ${removedCount} native module references from middleware.js.nft.json`
+        );
+      }
+    }
+  }
+
   // Check if out directory exists (optional for Netlify deployment)
   if (!fs.existsSync(outDir)) {
     console.log(
