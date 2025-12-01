@@ -1,101 +1,141 @@
-version: "3.8"
-
-# Development-specific overrides for docker-compose
-# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+# =============================================================================
+# Wundr Monorepo - Local Development Infrastructure
+# =============================================================================
+# Spins up required infrastructure services for local development.
+# Does NOT build/run application containers - use `pnpm dev` for that.
+#
+# Usage:
+#   pnpm docker:dev       - Start infrastructure services
+#   pnpm docker:dev:down  - Stop infrastructure services
+#   pnpm docker:dev:reset - Reset all data and restart
+#   pnpm docker:dev:logs  - View logs
+# =============================================================================
 
 services:
-  # Development version with hot reload
-  wundr:
-    build:
-      target: builder # Use builder stage for development
-    volumes:
-      - .:/app # Mount source code for hot reload
-      - /app/node_modules # Exclude node_modules from mount
-      - wundr_dev_data:/app/data
-      - wundr_dev_logs:/app/logs
-    environment:
-      - NODE_ENV=development
-      - DEBUG=wundr:*
-      - WUNDR_LOG_LEVEL=debug
-    command: ["pnpm", "dev"]
-    ports:
-      - "3000:3000"
-      - "9229:9229" # Node.js debugging port
-
-  # Development web client with hot reload
-  wundr-web:
-    volumes:
-      - ./tools/web-client:/app/tools/web-client
-      - /app/tools/web-client/node_modules
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:3000
-      - FAST_REFRESH=true
-    command: ["pnpm", "dev"]
-
-  # Development database with exposed port
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
   postgres:
-    environment:
-      - POSTGRES_DB=wundr_dev
-      - POSTGRES_USER=wundr_dev
-      - POSTGRES_PASSWORD=dev_password
+    image: postgres:16-alpine
+    container_name: wundr-dev-postgres
+    restart: unless-stopped
     ports:
-      - "5433:5432" # Different port to avoid conflicts
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-neolith}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-neolith}
+      POSTGRES_DB: ${POSTGRES_DB:-neolith}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
-      - ./scripts/database/dev-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./scripts/docker/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-neolith} -d ${POSTGRES_DB:-neolith}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wundr-dev-network
 
-  # Development Redis
+  # ---------------------------------------------------------------------------
+  # Redis Cache & Message Broker
+  # ---------------------------------------------------------------------------
   redis:
-    command: redis-server --appendonly yes # No password in dev
+    image: redis:7-alpine
+    container_name: wundr-dev-redis
+    restart: unless-stopped
     ports:
-      - "6380:6379" # Different port for development
-
-  # File watcher for automatic rebuilds
-  watcher:
-    image: node:20-alpine
-    container_name: wundr-watcher
-    working_dir: /app
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
-      - .:/app
-      - /app/node_modules
-    command: ["sh", "-c", "corepack enable && pnpm install && pnpm watch"]
-    depends_on:
-      - wundr
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
-      - wundr_network
+      - wundr-dev-network
 
-  # Development tools container
-  devtools:
-    image: node:20-alpine
-    container_name: wundr-devtools
-    working_dir: /app
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: ["sh", "-c", "corepack enable && tail -f /dev/null"]
-    networks:
-      - wundr_network
-    profiles:
-      - tools
-
-  # Mock external services for testing
-  mockserver:
-    image: mockserver/mockserver:latest
-    container_name: wundr-mockserver
+  # ---------------------------------------------------------------------------
+  # MailHog - Email Testing
+  # ---------------------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: wundr-dev-mailhog
+    restart: unless-stopped
     ports:
-      - "1080:1080"
+      - "${MAILHOG_SMTP_PORT:-1025}:1025" # SMTP
+      - "${MAILHOG_UI_PORT:-8025}:8025" # Web UI
+    networks:
+      - wundr-dev-network
+
+  # ---------------------------------------------------------------------------
+  # MinIO - S3-Compatible Object Storage
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: wundr-dev-minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_PORT:-9000}:9000" # API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001" # Console
     environment:
-      - MOCKSERVER_LOG_LEVEL=INFO
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_dev_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     networks:
-      - wundr_network
-    profiles:
-      - testing
+      - wundr-dev-network
 
+  # ---------------------------------------------------------------------------
+  # MinIO Setup - Create default buckets on startup
+  # ---------------------------------------------------------------------------
+  minio-setup:
+    image: minio/mc:latest
+    container_name: wundr-dev-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 2;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/wundr-uploads --ignore-existing;
+      mc mb myminio/wundr-avatars --ignore-existing;
+      mc mb myminio/wundr-files --ignore-existing;
+      mc anonymous set download myminio/wundr-avatars;
+      echo 'MinIO buckets created: wundr-uploads, wundr-avatars, wundr-files';
+      exit 0;
+      "
+    networks:
+      - wundr-dev-network
+
+# =============================================================================
+# Volumes (named with _dev_ to avoid conflicts with production)
+# =============================================================================
 volumes:
-  wundr_dev_data:
-    driver: local
-  wundr_dev_logs:
-    driver: local
   postgres_dev_data:
     driver: local
+  redis_dev_data:
+    driver: local
+  minio_dev_data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  wundr-dev-network:
+    driver: bridge

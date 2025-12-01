@@ -29,15 +29,7 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src",
-    "templates",
-    "docs",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "bin", "src", "templates", "docs", "README.md", "LICENSE"],
   "scripts": {
     "build": "turbo build",
     "build:parallel": "turbo build --parallel",
@@ -72,7 +64,20 @@
     "typecheck": "turbo typecheck",
     "ci": "./scripts/turbo-ci.sh ci",
     "turbo:stats": "./scripts/turbo-ci.sh stats",
-    "turbo:clean": "./scripts/turbo-ci.sh clean"
+    "turbo:clean": "./scripts/turbo-ci.sh clean",
+    "docker:dev": "./scripts/docker-dev.sh up",
+    "docker:dev:down": "./scripts/docker-dev.sh down",
+    "docker:dev:reset": "./scripts/docker-dev.sh reset",
+    "docker:dev:logs": "./scripts/docker-dev.sh logs",
+    "docker:dev:status": "./scripts/docker-dev.sh status",
+    "docker:dev:shell": "./scripts/docker-dev.sh shell",
+    "docker:dev:redis": "./scripts/docker-dev.sh redis",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "pnpm build && docker compose build",
+    "db:migrate": "pnpm --filter @neolith/database db:migrate",
+    "db:push": "pnpm --filter @neolith/database db:push",
+    "db:studio": "pnpm --filter @neolith/database db:studio"
   },
   "dependencies": {
     "@octokit/rest": "^20.0.2",
@@ -166,9 +171,7 @@
       "@testing-library/dom": "^10.0.0"
     },
     "peerDependencyRules": {
-      "ignoreMissing": [
-        "@testing-library/dom"
-      ],
+      "ignoreMissing": ["@testing-library/dom"],
       "allowedVersions": {
         "react": ">=18.2.0",
         "react-dom": ">=18.2.0",
@@ -181,16 +184,8 @@
     "npm": ">=8.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{js,jsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,yaml,yml,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{js,jsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{json,yaml,yml,md}": ["prettier --write"]
   }
 }
