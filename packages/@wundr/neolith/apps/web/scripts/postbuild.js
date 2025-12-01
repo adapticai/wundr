@@ -107,30 +107,17 @@ try {
     removeNodeFiles(standaloneDir);
   }
 
-  // IMPORTANT: Remove ALL middleware files to prevent Netlify edge function bundling errors
+  // IMPORTANT: Disable middleware for Netlify edge function bundling
   // The NextAuth config with Prisma adapter causes middleware to bundle @prisma/client
-  // which cannot run in Deno edge runtime. Since we don't use Next.js middleware features,
-  // we remove all middleware-related files to skip edge function generation entirely.
+  // which cannot run in Deno edge runtime.
+  //
+  // Strategy: Instead of deleting files (which breaks the Netlify plugin that expects them),
+  // we clear the middleware-manifest.json to indicate no middleware routes, and create
+  // stub nft.json files with empty dependencies.
   const serverDir = path.join(__dirname, '..', '.next', 'server');
 
-  // List of all middleware-related files to remove
-  const middlewareFiles = [
-    'middleware.js',
-    'middleware.js.map',
-    'middleware.js.nft.json',
-    'middleware-build-manifest.js',
-    'middleware-react-loadable-manifest.js',
-  ];
-
-  for (const file of middlewareFiles) {
-    const filePath = path.join(serverDir, file);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`✓ Removed middleware file: ${file}`);
-    }
-  }
-
   // Clear the middleware manifest to indicate no middleware routes
+  // This is the KEY file the Netlify plugin checks to decide what to bundle
   const manifestPath = path.join(serverDir, 'middleware-manifest.json');
   if (fs.existsSync(manifestPath)) {
     const emptyManifest = {
@@ -140,7 +127,27 @@ try {
       functions: {},
     };
     fs.writeFileSync(manifestPath, JSON.stringify(emptyManifest, null, 2));
-    console.log('✓ Cleared middleware-manifest.json');
+    console.log('✓ Cleared middleware-manifest.json (no middleware routes)');
+  }
+
+  // Create stub nft.json with no files - this tells Netlify there are no dependencies to bundle
+  const nftPath = path.join(serverDir, 'middleware.js.nft.json');
+  const emptyNft = { version: 1, files: [] };
+  fs.writeFileSync(nftPath, JSON.stringify(emptyNft, null, 2));
+  console.log('✓ Created empty middleware.js.nft.json (no dependencies)');
+
+  // Remove the middleware.js file itself - the empty nft.json means nothing to bundle
+  const middlewareJsPath = path.join(serverDir, 'middleware.js');
+  if (fs.existsSync(middlewareJsPath)) {
+    fs.unlinkSync(middlewareJsPath);
+    console.log('✓ Removed middleware.js');
+  }
+
+  // Remove the map file
+  const middlewareMapPath = path.join(serverDir, 'middleware.js.map');
+  if (fs.existsSync(middlewareMapPath)) {
+    fs.unlinkSync(middlewareMapPath);
+    console.log('✓ Removed middleware.js.map');
   }
 
   // Remove the middleware directory if it exists
