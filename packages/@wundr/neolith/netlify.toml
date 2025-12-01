@@ -18,8 +18,8 @@
   # Note: We run prisma generate explicitly after install to ensure @prisma/client is available
   # Note: NODE_ENV should NOT be set in .env files to avoid Next.js 16 static generation issues
   # Note: We use --ignore-scripts to skip postinstall hooks, then run prisma generate explicitly
-  # Note: pnpm --filter '@neolith/*' run build includes apps/web build, no need for separate cd
-  command = "pnpm install --no-frozen-lockfile --ignore-scripts && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build"
+  # Note: With node-linker=hoisted, prisma must be run from root with --schema flag
+  command = "pnpm install --no-frozen-lockfile --ignore-scripts && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
   # Output directory for Next.js
   publish = "apps/web/.next"
   # Base directory for monorepo
@@ -28,6 +28,9 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+  # CRITICAL: This flag makes pnpm hoist all dependencies to root node_modules
+  # Required for Netlify Lambda to resolve Next.js modules from symlinked packages
+  PNPM_FLAGS = "--shamefully-hoist"
   # Do NOT set NODE_ENV here - it prevents devDependencies from being installed
   # which breaks the build. NODE_ENV=production is set automatically by Next.js during build
   PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
@@ -71,10 +74,10 @@
 
 # Development context
 [context.deploy-preview]
-  command = "pnpm install --no-frozen-lockfile && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build && cd apps/web && NODE_ENV=production pnpm run build"
+  command = "pnpm install --no-frozen-lockfile --ignore-scripts && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
 
 [context.branch-deploy]
-  command = "pnpm install --no-frozen-lockfile && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build && cd apps/web && NODE_ENV=production pnpm run build"
+  command = "pnpm install --no-frozen-lockfile --ignore-scripts && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
 
 # Plugins configuration
 # Note: Plugins run in order - our custom plugin MUST run after @netlify/plugin-nextjs
