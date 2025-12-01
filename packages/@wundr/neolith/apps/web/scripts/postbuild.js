@@ -107,38 +107,44 @@ try {
     removeNodeFiles(standaloneDir);
   }
 
-  // Clean up middleware.js.nft.json to remove native module references
-  // The Netlify plugin scans this file for dependencies, so we need to filter out .node files
-  const middlewareNftPath = path.join(
-    __dirname,
-    '..',
-    '.next',
-    'server',
-    'middleware.js.nft.json'
-  );
-  if (fs.existsSync(middlewareNftPath)) {
-    const nftData = JSON.parse(fs.readFileSync(middlewareNftPath, 'utf-8'));
-    if (nftData.files && Array.isArray(nftData.files)) {
-      const originalCount = nftData.files.length;
-      nftData.files = nftData.files.filter(file => {
-        const isNativeModule =
-          file.endsWith('.node') ||
-          file.endsWith('.dylib.node') ||
-          file.endsWith('.dylib') ||
-          file.includes('sharp-darwin') ||
-          file.includes('sharp-linux') ||
-          file.includes('sharp-win') ||
-          file.includes('libquery_engine');
-        return !isNativeModule;
-      });
-      fs.writeFileSync(middlewareNftPath, JSON.stringify(nftData, null, 2));
-      const removedCount = originalCount - nftData.files.length;
-      if (removedCount > 0) {
-        console.log(
-          `✓ Removed ${removedCount} native module references from middleware.js.nft.json`
-        );
-      }
+  // IMPORTANT: Remove middleware files entirely to prevent Netlify edge function bundling
+  // The NextAuth config with Prisma adapter causes middleware to bundle @prisma/client
+  // which cannot run in Deno edge runtime. Since we don't use Next.js middleware features,
+  // we remove these files to skip edge function generation entirely.
+  const serverDir = path.join(__dirname, '..', '.next', 'server');
+  const middlewareFiles = [
+    'middleware.js',
+    'middleware.js.map',
+    'middleware.js.nft.json',
+    'middleware-build-manifest.js',
+  ];
+
+  for (const file of middlewareFiles) {
+    const filePath = path.join(serverDir, file);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`✓ Removed middleware file: ${file}`);
     }
+  }
+
+  // Also clear the middleware manifest to indicate no middleware
+  const manifestPath = path.join(serverDir, 'middleware-manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    const emptyManifest = {
+      version: 3,
+      middleware: {},
+      sortedMiddleware: [],
+      functions: {}
+    };
+    fs.writeFileSync(manifestPath, JSON.stringify(emptyManifest, null, 2));
+    console.log('✓ Cleared middleware-manifest.json');
+  }
+
+  // Remove the middleware directory if it exists
+  const middlewareDir = path.join(serverDir, 'middleware');
+  if (fs.existsSync(middlewareDir)) {
+    fs.rmSync(middlewareDir, { recursive: true, force: true });
+    console.log('✓ Removed middleware directory');
   }
 
   // Check if out directory exists (optional for Netlify deployment)
