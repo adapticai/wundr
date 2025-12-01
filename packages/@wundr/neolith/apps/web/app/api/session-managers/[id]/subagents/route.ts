@@ -4,10 +4,10 @@
  * Handles listing and creating subagents for a specific session manager.
  *
  * Routes:
- * - GET /api/session-managers/:sessionManagerId/subagents - List subagents
- * - POST /api/session-managers/:sessionManagerId/subagents - Create subagent
+ * - GET /api/session-managers/:id/subagents - List subagents
+ * - POST /api/session-managers/:id/subagents - Create subagent
  *
- * @module app/api/session-managers/[sessionManagerId]/subagents/route
+ * @module app/api/session-managers/[id]/subagents/route
  */
 
 import { prisma } from '@neolith/database';
@@ -20,7 +20,7 @@ import { auth } from '@/lib/auth';
  * Route context with session manager ID parameter
  */
 interface RouteContext {
-  params: Promise<{ sessionManagerId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -54,7 +54,7 @@ function createErrorResponse(
 }
 
 /**
- * GET /api/session-managers/:sessionManagerId/subagents
+ * GET /api/session-managers/:id/subagents
  *
  * List subagents for a specific session manager with optional filtering and pagination.
  *
@@ -85,7 +85,7 @@ export async function GET(
     }
 
     const params = await context.params;
-    const { sessionManagerId } = params;
+    const sessionManagerId = params.id;
     const { searchParams } = new URL(request.url);
 
     // Parse query parameters
@@ -171,7 +171,7 @@ export async function GET(
     });
   } catch (error) {
     console.error(
-      '[GET /api/session-managers/:sessionManagerId/subagents] Error:',
+      '[GET /api/session-managers/:id/subagents] Error:',
       error
     );
     return NextResponse.json(
@@ -185,7 +185,7 @@ export async function GET(
 }
 
 /**
- * POST /api/session-managers/:sessionManagerId/subagents
+ * POST /api/session-managers/:id/subagents
  *
  * Create a new subagent for a specific session manager.
  *
@@ -231,7 +231,7 @@ export async function POST(
     }
 
     const params = await context.params;
-    const { sessionManagerId } = params;
+    const sessionManagerId = params.id;
 
     // Parse request body
     let body: unknown;
@@ -363,7 +363,7 @@ export async function POST(
     );
   } catch (error) {
     console.error(
-      '[POST /api/session-managers/:sessionManagerId/subagents] Error:',
+      '[POST /api/session-managers/:id/subagents] Error:',
       error
     );
     return NextResponse.json(
