@@ -183,10 +183,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     /**
      * GitHub OAuth Provider
      * Used for developer authentication and linking GitHub accounts
+     *
+     * allowDangerousEmailAccountLinking: Allows linking OAuth accounts to existing
+     * users with the same email. This is safe because GitHub verifies email addresses.
      */
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID ?? '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
+      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           id: profile.id.toString(),
@@ -201,10 +205,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     /**
      * Google OAuth Provider
      * Used for general user authentication
+     *
+     * allowDangerousEmailAccountLinking: Allows linking OAuth accounts to existing
+     * users with the same email. This is safe because Google verifies email addresses.
      */
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           id: profile.sub,
