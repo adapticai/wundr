@@ -10,9 +10,9 @@
  * @module lib/auth
  */
 
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { avatarService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
+import { CustomPrismaAdapter } from './prisma-adapter';
 import crypto from 'crypto';
 import type { DefaultSession } from 'next-auth';
 import NextAuth from 'next-auth';
@@ -155,8 +155,9 @@ async function verifyApiKey(
  * - signOut: Server action for sign out
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // Use Prisma adapter for database user/account storage
-  adapter: PrismaAdapter(prisma),
+  // Use custom Prisma adapter for database user/account storage
+  // Custom adapter handles snake_case to camelCase field mapping for OAuth accounts
+  adapter: CustomPrismaAdapter(prisma),
 
   // Use JWT strategy for session management (required for Credentials provider)
   session: {
