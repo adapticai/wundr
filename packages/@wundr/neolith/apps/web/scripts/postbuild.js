@@ -107,22 +107,27 @@ try {
     removeNodeFiles(standaloneDir);
   }
 
-  // IMPORTANT: Strip Prisma dependencies from middleware to prevent Netlify edge function bundling errors
+  // IMPORTANT: Remove ALL middleware files to prevent Netlify edge function bundling errors
   // The NextAuth config with Prisma adapter causes middleware to bundle @prisma/client
-  // which cannot run in Deno edge runtime. We keep the middleware files but empty the nft.json
-  // to prevent the Netlify plugin from trying to bundle Prisma.
+  // which cannot run in Deno edge runtime. Since we don't use Next.js middleware features,
+  // we remove all middleware-related files to skip edge function generation entirely.
   const serverDir = path.join(__dirname, '..', '.next', 'server');
 
-  // Create an empty nft.json that won't cause bundling of Prisma
-  const nftPath = path.join(serverDir, 'middleware.js.nft.json');
-  if (fs.existsSync(nftPath)) {
-    // Create minimal nft.json with no external dependencies
-    const emptyNft = {
-      version: 1,
-      files: [],
-    };
-    fs.writeFileSync(nftPath, JSON.stringify(emptyNft, null, 2));
-    console.log('✓ Cleared middleware.js.nft.json dependencies');
+  // List of all middleware-related files to remove
+  const middlewareFiles = [
+    'middleware.js',
+    'middleware.js.map',
+    'middleware.js.nft.json',
+    'middleware-build-manifest.js',
+    'middleware-react-loadable-manifest.js',
+  ];
+
+  for (const file of middlewareFiles) {
+    const filePath = path.join(serverDir, file);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`✓ Removed middleware file: ${file}`);
+    }
   }
 
   // Clear the middleware manifest to indicate no middleware routes
@@ -143,6 +148,26 @@ try {
   if (fs.existsSync(middlewareDir)) {
     fs.rmSync(middlewareDir, { recursive: true, force: true });
     console.log('✓ Removed middleware directory');
+  }
+
+  // Also remove Turbopack chunk files that middleware depends on
+  const chunksDir = path.join(serverDir, 'chunks');
+  if (fs.existsSync(chunksDir)) {
+    const entries = fs.readdirSync(chunksDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (
+        entry.name.includes('[turbopack]') ||
+        entry.name.includes('middleware')
+      ) {
+        const chunkPath = path.join(chunksDir, entry.name);
+        if (entry.isDirectory()) {
+          fs.rmSync(chunkPath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(chunkPath);
+        }
+        console.log(`✓ Removed chunk: ${entry.name}`);
+      }
+    }
   }
 
   // Check if out directory exists (optional for Netlify deployment)

@@ -76,15 +76,6 @@
 [context.branch-deploy]
   command = "pnpm install --no-frozen-lockfile && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build && cd apps/web && NODE_ENV=production pnpm run build"
 
-# Use v4 plugin to respect NEXT_DISABLE_NETLIFY_EDGE=true
-# The v5 plugin (opennextjs-netlify) always creates edge functions for middleware
-# which fails because our NextAuth config imports Prisma (not edge-compatible)
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    # Force use of server functions for middleware instead of edge
-    disableEdgeMiddleware = true
-
 # Functions configuration
 [functions]
   directory = "apps/web/netlify/functions"
