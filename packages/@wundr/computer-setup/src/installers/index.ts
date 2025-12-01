@@ -10,6 +10,7 @@ import { MacInstaller } from './mac-installer';
 import { NodeInstaller } from './node-installer';
 import { PythonInstaller } from './python-installer';
 import { OrchestratorDaemonInstaller } from './orchestrator-daemon-installer';
+import { ResourceManagerInstaller } from './resource-manager-installer';
 import { WindowsInstaller } from './windows-installer';
 
 import type {
@@ -66,6 +67,11 @@ export class InstallerRegistry {
     // Orchestrator Daemon (global supervisor)
     if (['darwin', 'linux'].includes(this.platform.os)) {
       this.register('orchestrator-daemon', new OrchestratorDaemonInstaller());
+    }
+
+    // Resource Manager (session pooling, worktree isolation, daemon services)
+    if (['darwin', 'linux'].includes(this.platform.os)) {
+      this.register('resource-manager', new ResourceManagerInstaller());
     }
   }
 
@@ -405,4 +411,5 @@ export * from './mac-installer';
 export * from './linux-installer';
 export * from './windows-installer';
 export * from './orchestrator-daemon-installer';
+export * from './resource-manager-installer';
 export { default as RealSetupOrchestrator } from './real-setup-orchestrator';
