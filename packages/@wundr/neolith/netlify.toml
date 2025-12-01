@@ -19,7 +19,7 @@
   # Note: NODE_ENV should NOT be set in .env files to avoid Next.js 16 static generation issues
   # Note: We use --ignore-scripts to skip postinstall hooks, then run prisma generate explicitly
   # Note: pnpm --filter '@neolith/*' run build includes apps/web build, no need for separate cd
-  command = "pnpm install --no-frozen-lockfile --ignore-scripts && cd packages/@neolith/database && pnpm exec prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build"
+  command = "pnpm install --no-frozen-lockfile --ignore-scripts && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build"
   # Output directory for Next.js
   publish = "apps/web/.next"
   # Base directory for monorepo
