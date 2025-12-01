@@ -1,6 +1,6 @@
 {
   "name": "@neolith/file-processor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "File processing service for Genesis-App with support for PDF, DOCX, XLSX, and image OCR",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,14 @@
     "test": "jest",
     "lint": "eslint src --ext .ts"
   },
-  "keywords": ["file-processor", "pdf", "docx", "xlsx", "ocr", "genesis"],
+  "keywords": [
+    "file-processor",
+    "pdf",
+    "docx",
+    "xlsx",
+    "ocr",
+    "genesis"
+  ],
   "author": "Adaptic.ai",
   "license": "MIT",
   "dependencies": {

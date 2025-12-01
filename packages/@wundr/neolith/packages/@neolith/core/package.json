@@ -1,6 +1,6 @@
 {
   "name": "@neolith/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Core service layer for Genesis App - Orchestrator management, authentication, and business logic",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -71,6 +71,8 @@
       "types": "./dist/redis/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "UNLICENSED"
 }

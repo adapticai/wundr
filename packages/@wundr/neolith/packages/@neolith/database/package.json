@@ -1,6 +1,6 @@
 {
   "name": "@neolith/database",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Prisma database client and schema for Genesis App",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -54,6 +54,9 @@
       "types": "./dist/migration.d.ts"
     }
   },
-  "files": ["dist", "prisma"],
+  "files": [
+    "dist",
+    "prisma"
+  ],
   "license": "MIT"
 }
