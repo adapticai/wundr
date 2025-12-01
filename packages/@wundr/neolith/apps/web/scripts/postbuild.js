@@ -107,34 +107,32 @@ try {
     removeNodeFiles(standaloneDir);
   }
 
-  // IMPORTANT: Remove middleware files entirely to prevent Netlify edge function bundling
+  // IMPORTANT: Strip Prisma dependencies from middleware to prevent Netlify edge function bundling errors
   // The NextAuth config with Prisma adapter causes middleware to bundle @prisma/client
-  // which cannot run in Deno edge runtime. Since we don't use Next.js middleware features,
-  // we remove these files to skip edge function generation entirely.
+  // which cannot run in Deno edge runtime. We keep the middleware files but empty the nft.json
+  // to prevent the Netlify plugin from trying to bundle Prisma.
   const serverDir = path.join(__dirname, '..', '.next', 'server');
-  const middlewareFiles = [
-    'middleware.js',
-    'middleware.js.map',
-    'middleware.js.nft.json',
-    'middleware-build-manifest.js',
-  ];
 
-  for (const file of middlewareFiles) {
-    const filePath = path.join(serverDir, file);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`✓ Removed middleware file: ${file}`);
-    }
+  // Create an empty nft.json that won't cause bundling of Prisma
+  const nftPath = path.join(serverDir, 'middleware.js.nft.json');
+  if (fs.existsSync(nftPath)) {
+    // Create minimal nft.json with no external dependencies
+    const emptyNft = {
+      version: 1,
+      files: [],
+    };
+    fs.writeFileSync(nftPath, JSON.stringify(emptyNft, null, 2));
+    console.log('✓ Cleared middleware.js.nft.json dependencies');
   }
 
-  // Also clear the middleware manifest to indicate no middleware
+  // Clear the middleware manifest to indicate no middleware routes
   const manifestPath = path.join(serverDir, 'middleware-manifest.json');
   if (fs.existsSync(manifestPath)) {
     const emptyManifest = {
       version: 3,
       middleware: {},
       sortedMiddleware: [],
-      functions: {}
+      functions: {},
     };
     fs.writeFileSync(manifestPath, JSON.stringify(emptyManifest, null, 2));
     console.log('✓ Cleared middleware-manifest.json');
