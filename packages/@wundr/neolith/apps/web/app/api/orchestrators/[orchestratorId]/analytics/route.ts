@@ -55,15 +55,18 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -74,27 +77,37 @@ export async function GET(
     // Validate OrchestratorID format
     if (!orchestratorId || orchestratorId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
-    const timeRange = (searchParams.get('timeRange') || '7d') as MetricTimeRange;
+    const timeRange = (searchParams.get('timeRange') ||
+      '7d') as MetricTimeRange;
     const includeDaily = searchParams.get('includeDaily') !== 'false';
     const includeWeekly = searchParams.get('includeWeekly') !== 'false';
     const includeMonthly = searchParams.get('includeMonthly') === 'true';
 
     // Validate time range
-    const validTimeRanges: MetricTimeRange[] = ['24h', '7d', '30d', '90d', 'all'];
+    const validTimeRanges: MetricTimeRange[] = [
+      '24h',
+      '7d',
+      '30d',
+      '90d',
+      'all',
+    ];
     if (!validTimeRanges.includes(timeRange)) {
       return NextResponse.json(
         createErrorResponse(
           `Invalid time range. Must be one of: ${validTimeRanges.join(', ')}`,
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -123,14 +136,20 @@ export async function GET(
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
         return NextResponse.json(
-          createErrorResponse('Orchestrator not found', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Orchestrator not found',
+            ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
       if (error.message.includes('access denied')) {
         return NextResponse.json(
-          createErrorResponse('Access denied', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
-          { status: 403 },
+          createErrorResponse(
+            'Access denied',
+            ORCHESTRATOR_ERROR_CODES.FORBIDDEN
+          ),
+          { status: 403 }
         );
       }
     }
@@ -138,9 +157,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred while fetching analytics',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

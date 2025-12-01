@@ -10,11 +10,14 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
-import type { OrchestratorBulkActionInput, OrchestratorStatusType } from '@/lib/validations/orchestrator';
+import type {
+  OrchestratorBulkActionInput,
+  OrchestratorStatusType,
+} from '@/lib/validations/orchestrator';
 import {
   createErrorResponse,
   ORCHESTRATOR_ERROR_CODES,
@@ -24,7 +27,10 @@ import {
 /**
  * Maps action to Orchestrator status
  */
-const ACTION_TO_STATUS: Record<OrchestratorBulkActionInput['action'], OrchestratorStatusType> = {
+const ACTION_TO_STATUS: Record<
+  OrchestratorBulkActionInput['action'],
+  OrchestratorStatusType
+> = {
   activate: 'ONLINE',
   deactivate: 'OFFLINE',
 };
@@ -32,7 +38,10 @@ const ACTION_TO_STATUS: Record<OrchestratorBulkActionInput['action'], Orchestrat
 /**
  * Maps action to User status
  */
-const ACTION_TO_USER_STATUS: Record<OrchestratorBulkActionInput['action'], 'ACTIVE' | 'INACTIVE'> = {
+const ACTION_TO_USER_STATUS: Record<
+  OrchestratorBulkActionInput['action'],
+  'ACTIVE' | 'INACTIVE'
+> = {
   activate: 'ACTIVE',
   deactivate: 'INACTIVE',
 };
@@ -76,8 +85,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -87,8 +99,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -99,9 +114,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -116,7 +131,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       select: { organizationId: true, role: true },
     });
 
-    const adminOrgIds = new Set(userOrganizations.map((m) => m.organizationId));
+    const adminOrgIds = new Set(userOrganizations.map(m => m.organizationId));
 
     // Fetch all requested VPs
     const orchestrators = await prisma.orchestrator.findMany({
@@ -132,7 +147,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Create a map for quick lookup
-    const vpMap = new Map(orchestrators.map((orchestrator) => [orchestrator.id, orchestrator]));
+    const vpMap = new Map(
+      orchestrators.map(orchestrator => [orchestrator.id, orchestrator])
+    );
 
     // Process each Orchestrator
     const results: BulkOperationResult[] = [];
@@ -140,7 +157,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const newUserStatus = ACTION_TO_USER_STATUS[input.action];
 
     // Track VPs to update (those we have permission for)
-    const orchestratorsToUpdate: { orchestratorId: string; userId: string; previousStatus: string }[] = [];
+    const orchestratorsToUpdate: {
+      orchestratorId: string;
+      userId: string;
+      previousStatus: string;
+    }[] = [];
 
     for (const orchestratorId of input.ids) {
       const orchestrator = vpMap.get(orchestratorId);
@@ -186,16 +207,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Perform batch update in a transaction
     if (orchestratorsToUpdate.length > 0) {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async tx => {
         // Update all Orchestrator statuses
         await tx.orchestrator.updateMany({
-          where: { id: { in: orchestratorsToUpdate.map((v) => v.orchestratorId) } },
+          where: {
+            id: { in: orchestratorsToUpdate.map(v => v.orchestratorId) },
+          },
           data: { status: newStatus },
         });
 
         // Update all associated user statuses
         await tx.user.updateMany({
-          where: { id: { in: orchestratorsToUpdate.map((v) => v.userId) } },
+          where: { id: { in: orchestratorsToUpdate.map(v => v.userId) } },
           data: { status: newUserStatus },
         });
       });
@@ -212,10 +235,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Calculate summary statistics
-    const successCount = results.filter((r) => r.success).length;
-    const failureCount = results.filter((r) => !r.success).length;
+    const successCount = results.filter(r => r.success).length;
+    const failureCount = results.filter(r => !r.success).length;
     const skippedCount = results.filter(
-      (r) => r.success && r.previousStatus === r.newStatus,
+      r => r.success && r.previousStatus === r.newStatus
     ).length;
 
     // Determine response status
@@ -239,8 +262,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       message: allFailed
         ? 'All operations failed'
         : hasFailures
-        ? 'Some operations failed'
-        : 'All operations completed successfully',
+          ? 'Some operations failed'
+          : 'All operations completed successfully',
     };
 
     // Return appropriate status code
@@ -255,7 +278,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ...response,
           code: ORCHESTRATOR_ERROR_CODES.BULK_OPERATION_PARTIAL,
         },
-        { status: 207 }, // Multi-Status
+        { status: 207 } // Multi-Status
       );
     }
 
@@ -265,9 +288,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -34,15 +34,19 @@
         "createdAt (Date)",
         "updatedAt (Date)"
       ],
-      "optionalFields": [
-        "usedByVps (string[])"
-      ]
+      "optionalFields": ["usedByVps (string[])"]
     },
 
     "scopeTypes": {
       "universal": {
         "description": "Available to all disciplines and VPs",
-        "examples": ["researcher", "scribe", "project-manager", "reviewer", "tester"],
+        "examples": [
+          "researcher",
+          "scribe",
+          "project-manager",
+          "reviewer",
+          "tester"
+        ],
         "count": 5
       },
       "disciplineSpecific": {
@@ -367,11 +371,7 @@
 
     "categories": {
       "engineering": {
-        "examples": [
-          "code-developer",
-          "code-reviewer",
-          "devops-engineer"
-        ],
+        "examples": ["code-developer", "code-reviewer", "devops-engineer"],
         "tools": ["read", "write", "edit", "bash", "glob", "grep"],
         "capabilities": {
           "canReadFiles": true,
@@ -382,10 +382,7 @@
         }
       },
       "legal": {
-        "examples": [
-          "contract-analyst",
-          "compliance-monitor"
-        ],
+        "examples": ["contract-analyst", "compliance-monitor"],
         "model": "opus (for contract analysis)",
         "capabilities": {
           "canReadFiles": true,
@@ -550,21 +547,33 @@
         "priority": "Medium",
         "area": "Lifecycle hooks",
         "recommendation": "Add onSpawn, onTerminate, onError hooks to AgentDefinition",
-        "benefits": ["Cleanup automation", "Resource management", "Event-driven coordination"],
+        "benefits": [
+          "Cleanup automation",
+          "Resource management",
+          "Event-driven coordination"
+        ],
         "implementation": "Optional callback fields in AgentDefinition or separate LifecycleHooks interface"
       },
       {
         "priority": "Medium",
         "area": "Observability",
         "recommendation": "Enhance SessionEvent with agent-specific events",
-        "benefits": ["Better debugging", "Performance analysis", "Audit trails"],
+        "benefits": [
+          "Better debugging",
+          "Performance analysis",
+          "Audit trails"
+        ],
         "implementation": "Add agent.task_started, agent.tool_invoked, agent.decision_made events"
       },
       {
         "priority": "Low",
         "area": "Warm-start context",
         "recommendation": "Structure warmStartContext as typed object",
-        "benefits": ["Better context transfer", "Faster onboarding", "Learning retention"],
+        "benefits": [
+          "Better context transfer",
+          "Faster onboarding",
+          "Learning retention"
+        ],
         "implementation": "Define WarmStartContext interface with categorized memory"
       }
     ],

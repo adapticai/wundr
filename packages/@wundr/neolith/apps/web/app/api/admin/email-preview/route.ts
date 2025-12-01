@@ -96,14 +96,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       case 'password-reset':
         emailElement = PasswordResetEmail({
           username: searchParams.get('username') || email,
-          resetUrl: searchParams.get('resetUrl') || `${baseUrl}/reset-password?token=preview-token`,
+          resetUrl:
+            searchParams.get('resetUrl') ||
+            `${baseUrl}/reset-password?token=preview-token`,
         });
         break;
 
       case 'verification':
         emailElement = VerificationEmail({
           username: searchParams.get('username') || email,
-          verificationUrl: searchParams.get('verificationUrl') || `${baseUrl}/verify-email?token=preview-token`,
+          verificationUrl:
+            searchParams.get('verificationUrl') ||
+            `${baseUrl}/verify-email?token=preview-token`,
         });
         break;
 
@@ -112,16 +116,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           inviterName: searchParams.get('inviterName') || 'John Doe',
           inviterEmail: searchParams.get('inviterEmail') || 'john@example.com',
           workspaceName: searchParams.get('workspaceName') || 'Test Workspace',
-          inviteUrl: searchParams.get('inviteUrl') || `${baseUrl}/invite/preview-token`,
+          inviteUrl:
+            searchParams.get('inviteUrl') || `${baseUrl}/invite/preview-token`,
         });
         break;
 
       case 'notification':
-        const notificationType = (searchParams.get('type') || 'message') as 'mention' | 'message' | 'channel' | 'task' | 'system';
+        const notificationType = (searchParams.get('type') || 'message') as
+          | 'mention'
+          | 'message'
+          | 'channel'
+          | 'task'
+          | 'system';
         emailElement = NotificationEmail({
           type: notificationType,
           title: searchParams.get('title') || 'Test Notification',
-          message: searchParams.get('message') || 'This is a test notification message.',
+          message:
+            searchParams.get('message') ||
+            'This is a test notification message.',
           actionUrl: searchParams.get('actionUrl') || `${baseUrl}/dashboard`,
           actionText: searchParams.get('actionText') || 'View Notification',
           timestamp: new Date(),

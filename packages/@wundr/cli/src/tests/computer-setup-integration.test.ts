@@ -2,7 +2,14 @@
  * Integration tests for computer-setup with Claude Code configuration
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { existsSync } from 'fs';
@@ -79,7 +86,10 @@ describe('Computer Setup Integration Tests', () => {
       await fs.writeFile(testFile, 'original content');
 
       // Create backup
-      const metadata = await backupManager.createBackup([testFile], 'Test backup');
+      const metadata = await backupManager.createBackup(
+        [testFile],
+        'Test backup'
+      );
 
       // Modify file
       await fs.writeFile(testFile, 'modified content');
@@ -102,7 +112,10 @@ describe('Computer Setup Integration Tests', () => {
       const testFile = path.join(testDir, 'test.txt');
       await fs.writeFile(testFile, 'content');
 
-      const metadata = await backupManager.createBackup([testFile], 'Test backup');
+      const metadata = await backupManager.createBackup(
+        [testFile],
+        'Test backup'
+      );
 
       const isValid = await backupManager.verifyBackup(metadata.backupId);
       expect(isValid).toBe(true);
@@ -206,7 +219,9 @@ describe('Computer Setup Integration Tests', () => {
       const conventionsPath = path.join(claudeDir, 'conventions.json');
       expect(existsSync(conventionsPath)).toBe(true);
 
-      const conventions = JSON.parse(await fs.readFile(conventionsPath, 'utf-8'));
+      const conventions = JSON.parse(
+        await fs.readFile(conventionsPath, 'utf-8')
+      );
       expect(conventions).toHaveProperty('fileNaming');
       expect(conventions).toHaveProperty('codeStyle');
     });
@@ -220,9 +235,15 @@ describe('Computer Setup Integration Tests', () => {
       expect(result.success).toBe(true);
 
       const agentsDir = path.join(claudeDir, 'agents');
-      expect(existsSync(path.join(agentsDir, 'backend-developer.json'))).toBe(true);
-      expect(existsSync(path.join(agentsDir, 'frontend-developer.json'))).toBe(true);
-      expect(existsSync(path.join(agentsDir, 'fullstack-developer.json'))).toBe(true);
+      expect(existsSync(path.join(agentsDir, 'backend-developer.json'))).toBe(
+        true
+      );
+      expect(existsSync(path.join(agentsDir, 'frontend-developer.json'))).toBe(
+        true
+      );
+      expect(existsSync(path.join(agentsDir, 'fullstack-developer.json'))).toBe(
+        true
+      );
     });
 
     it('should install git-worktree workflows', async () => {
@@ -279,7 +300,10 @@ describe('Computer Setup Integration Tests', () => {
       expect(result.skipped).toContain('CLAUDE.md');
 
       // Content should remain unchanged
-      const content = await fs.readFile(path.join(claudeDir, 'CLAUDE.md'), 'utf-8');
+      const content = await fs.readFile(
+        path.join(claudeDir, 'CLAUDE.md'),
+        'utf-8'
+      );
       expect(content).toBe('existing content');
     });
 
@@ -296,7 +320,10 @@ describe('Computer Setup Integration Tests', () => {
       expect(result.installed).toContain('CLAUDE.md');
 
       // Content should be updated
-      const content = await fs.readFile(path.join(claudeDir, 'CLAUDE.md'), 'utf-8');
+      const content = await fs.readFile(
+        path.join(claudeDir, 'CLAUDE.md'),
+        'utf-8'
+      );
       expect(content).toContain('Test content');
     });
 
@@ -347,16 +374,20 @@ describe('Computer Setup Integration Tests', () => {
       // Verify all components installed
       expect(existsSync(path.join(claudeDir, 'CLAUDE.md'))).toBe(true);
       expect(existsSync(path.join(claudeDir, 'conventions.json'))).toBe(true);
-      expect(existsSync(path.join(claudeDir, 'hooks', 'pre-commit'))).toBe(true);
-      expect(existsSync(path.join(claudeDir, 'agents', 'backend-developer.json'))).toBe(
+      expect(existsSync(path.join(claudeDir, 'hooks', 'pre-commit'))).toBe(
         true
       );
       expect(
-        existsSync(path.join(claudeDir, 'workflows', 'feature-development.json'))
+        existsSync(path.join(claudeDir, 'agents', 'backend-developer.json'))
       ).toBe(true);
-      expect(existsSync(path.join(claudeDir, 'scripts', 'validate-setup.sh'))).toBe(
-        true
-      );
+      expect(
+        existsSync(
+          path.join(claudeDir, 'workflows', 'feature-development.json')
+        )
+      ).toBe(true);
+      expect(
+        existsSync(path.join(claudeDir, 'scripts', 'validate-setup.sh'))
+      ).toBe(true);
     });
 
     it('should support complete backup and rollback cycle', async () => {

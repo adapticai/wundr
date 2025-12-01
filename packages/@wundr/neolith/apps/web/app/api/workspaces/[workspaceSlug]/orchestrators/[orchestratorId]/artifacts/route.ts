@@ -42,7 +42,7 @@ interface RouteContext {
 async function uploadToS3(
   content: string,
   s3Key: string,
-  contentType: string,
+  contentType: string
 ): Promise<string> {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
   const region = process.env.AWS_REGION ?? 'us-east-1';
@@ -74,7 +74,7 @@ async function uploadToS3(
       Key: s3Key,
       Body: buffer,
       ContentType: contentType,
-    }),
+    })
   );
 
   // Return S3 URL
@@ -93,15 +93,18 @@ async function uploadToS3(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (or Orchestrator daemon)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORK_SESSION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORK_SESSION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -114,14 +117,19 @@ export async function POST(
 
     if (!validationResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation error', WORK_SESSION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: validationResult.error.errors,
-        }),
-        { status: 400 },
+        createErrorResponse(
+          'Validation error',
+          WORK_SESSION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: validationResult.error.errors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
-    const { filename, contentType, content, taskId, metadata } = validationResult.data;
+    const { filename, contentType, content, taskId, metadata } =
+      validationResult.data;
 
     // Verify workspace exists
     const workspace = await prisma.workspace.findUnique({
@@ -132,9 +140,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORK_SESSION_ERROR_CODES.FORBIDDEN,
+          WORK_SESSION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -148,8 +156,11 @@ export async function POST(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -168,8 +179,11 @@ export async function POST(
 
     if (!task) {
       return NextResponse.json(
-        createErrorResponse('Task not found', WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Task not found',
+          WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -189,9 +203,9 @@ export async function POST(
           WORK_SESSION_ERROR_CODES.S3_UPLOAD_FAILED,
           {
             error: error instanceof Error ? error.message : 'Unknown error',
-          },
+          }
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -235,9 +249,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR,
+        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

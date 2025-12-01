@@ -1,14 +1,13 @@
 # Claude Code Standalone Optimization Setup
 
-**Version:** 1.0.0
-**Created:** 2025-11-21
-**Status:** Production-Ready
+**Version:** 1.0.0 **Created:** 2025-11-21 **Status:** Production-Ready
 
 ---
 
 ## 🎯 Overview
 
-This guide explains how to set up Claude Code hardware-adaptive optimizations on any machine **without running the full computer-setup process**. This is perfect for:
+This guide explains how to set up Claude Code hardware-adaptive optimizations on any machine
+**without running the full computer-setup process**. This is perfect for:
 
 - Machines that already have Claude Code installed
 - Systems where you only want the optimization features
@@ -24,22 +23,26 @@ This guide explains how to set up Claude Code hardware-adaptive optimizations on
 First, ensure the `wundr` CLI is available. You have three options:
 
 **Option 1: Install Globally via npm** (recommended for end users)
+
 ```bash
 npm install -g @wundr.io/cli
 ```
 
 **Option 2: Link for Development** (for contributors)
+
 ```bash
 cd /path/to/wundr/packages/@wundr/cli
 pnpm link --global
 ```
 
 **Option 3: Run via npx** (no installation needed)
+
 ```bash
 npx @wundr.io/cli claude-setup optimize
 ```
 
 **Option 4: Run from source** (for development)
+
 ```bash
 cd /path/to/wundr
 npx tsx packages/@wundr/cli/src/index.ts claude-setup optimize
@@ -53,7 +56,8 @@ Once `wundr` is available, run:
 wundr claude-setup optimize
 ```
 
-That's it! The optimization scripts will be installed and your shell will be configured automatically.
+That's it! The optimization scripts will be installed and your shell will be configured
+automatically.
 
 ### With Force Reinstall
 
@@ -83,12 +87,12 @@ wundr claude-setup optimize --force
 
 The following aliases are automatically added to your `.zshrc` and `.bashrc`:
 
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `claude` | `~/.claude/scripts/claude-optimized` | Hardware-optimized Claude wrapper |
-| `claude-stats` | `node ~/.claude/scripts/detect-hardware-limits.js` | Show hardware statistics |
-| `claude-cleanup` | `~/.claude/scripts/cleanup-zombies.sh` | Clean up zombie processes |
-| `claude-orchestrate` | `node ~/.claude/scripts/orchestrator.js` | Run multi-task orchestrator |
+| Alias                | Command                                            | Description                       |
+| -------------------- | -------------------------------------------------- | --------------------------------- |
+| `claude`             | `~/.claude/scripts/claude-optimized`               | Hardware-optimized Claude wrapper |
+| `claude-stats`       | `node ~/.claude/scripts/detect-hardware-limits.js` | Show hardware statistics          |
+| `claude-cleanup`     | `~/.claude/scripts/cleanup-zombies.sh`             | Clean up zombie processes         |
+| `claude-orchestrate` | `node ~/.claude/scripts/orchestrator.js`           | Run multi-task orchestrator       |
 
 ---
 
@@ -104,6 +108,7 @@ claude-stats
 ```
 
 **Sample Output:**
+
 ```
 🖥️  Hardware Configuration:
    Total RAM: 24 GB
@@ -144,14 +149,14 @@ When you run `claude`, it:
 
 ## 📊 Performance Improvements
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Heap Size | 4 GB | 14 GB | 3.5x |
-| Context Window | ~50k tokens | ~350k tokens | 7x |
-| Concurrent Tasks | 2-3 | 7 | 2.3x |
-| OOM Crashes | Common | Rare | ~90% reduction |
+| Metric           | Before      | After        | Improvement    |
+| ---------------- | ----------- | ------------ | -------------- |
+| Heap Size        | 4 GB        | 14 GB        | 3.5x           |
+| Context Window   | ~50k tokens | ~350k tokens | 7x             |
+| Concurrent Tasks | 2-3         | 7            | 2.3x           |
+| OOM Crashes      | Common      | Rare         | ~90% reduction |
 
-*Based on 24GB RAM system. Your results will vary based on available hardware.*
+_Based on 24GB RAM system. Your results will vary based on available hardware._
 
 ---
 
@@ -220,6 +225,7 @@ ls -la ~/.claude/scripts/
 ```
 
 Expected output:
+
 ```
 -rw-r--r--  detect-hardware-limits.js
 -rwxr-xr-x  claude-optimized
@@ -264,6 +270,7 @@ claude --version
 **Problem:** `claude-stats` returns "command not found"
 
 **Solution:**
+
 1. Verify installation: `ls ~/.claude/scripts/`
 2. Reinstall: `wundr claude-setup optimize --force`
 3. Restart terminal: `exec $SHELL`
@@ -273,6 +280,7 @@ claude --version
 **Problem:** `echo $NODE_OPTIONS` shows nothing
 
 **Solution:**
+
 1. Check shell config: `grep "detect-hardware-limits" ~/.zshrc`
 2. Manually source: `source ~/.zshrc`
 3. Verify script works: `node ~/.claude/scripts/detect-hardware-limits.js export`
@@ -282,6 +290,7 @@ claude --version
 **Problem:** `claude-optimized` returns "Permission denied"
 
 **Solution:**
+
 ```bash
 chmod +x ~/.claude/scripts/claude-optimized
 chmod +x ~/.claude/scripts/cleanup-zombies.sh
@@ -292,6 +301,7 @@ chmod +x ~/.claude/scripts/cleanup-zombies.sh
 **Problem:** Claude still running with low memory
 
 **Solution:**
+
 1. Check environment: `echo $NODE_OPTIONS`
 2. Verify wrapper: `type claude`
 3. Run manually: `node ~/.claude/scripts/detect-hardware-limits.js export`
@@ -321,9 +331,12 @@ exec $SHELL
 
 ## 📚 Related Documentation
 
-- [CLAUDE-OPTIMIZATION-INTEGRATION.md](../packages/@wundr/computer-setup/CLAUDE-OPTIMIZATION-INTEGRATION.md) - Full integration guide
-- [QUICK-START.md](../packages/@wundr/computer-setup/resources/scripts/QUICK-START.md) - Quick start for optimization scripts
-- [README-ORCHESTRATION.md](../packages/@wundr/computer-setup/resources/scripts/README-ORCHESTRATION.md) - Orchestrator documentation
+- [CLAUDE-OPTIMIZATION-INTEGRATION.md](../packages/@wundr/computer-setup/CLAUDE-OPTIMIZATION-INTEGRATION.md) -
+  Full integration guide
+- [QUICK-START.md](../packages/@wundr/computer-setup/resources/scripts/QUICK-START.md) - Quick start
+  for optimization scripts
+- [README-ORCHESTRATION.md](../packages/@wundr/computer-setup/resources/scripts/README-ORCHESTRATION.md) -
+  Orchestrator documentation
 
 ---
 
@@ -341,6 +354,7 @@ For issues or questions:
 ## 📝 Changelog
 
 ### v1.0.0 (2025-11-21)
+
 - Initial release of standalone optimization setup
 - Added `wundr claude-setup optimize` command
 - Automatic shell configuration

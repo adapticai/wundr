@@ -171,7 +171,7 @@ export function createOCRPipeline(config?: Partial<OCRServiceConfig>): {
  */
 export async function quickOCR(
   image: Buffer,
-  language = 'eng',
+  language = 'eng'
 ): Promise<{
   text: string;
   confidence: number;

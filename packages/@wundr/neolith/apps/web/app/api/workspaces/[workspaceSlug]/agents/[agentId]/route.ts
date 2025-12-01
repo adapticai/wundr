@@ -16,7 +16,13 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
-import type { Agent, UpdateAgentInput, AgentType, AgentStatus, AvailableTool } from '@/types/agent';
+import type {
+  Agent,
+  UpdateAgentInput,
+  AgentType,
+  AgentStatus,
+  AvailableTool,
+} from '@/types/agent';
 import { isAvailableTool } from '@/types/agent';
 import type { Prisma } from '@neolith/database';
 
@@ -34,7 +40,9 @@ interface RouteContext {
  */
 const updateAgentSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  type: z.enum(['task', 'research', 'coding', 'data', 'qa', 'support', 'custom']).optional(),
+  type: z
+    .enum(['task', 'research', 'coding', 'data', 'qa', 'support', 'custom'])
+    .optional(),
   description: z.string().optional(),
   status: z.enum(['active', 'paused', 'inactive']).optional(),
   config: z
@@ -48,18 +56,22 @@ const updateAgentSchema = z.object({
     })
     .optional(),
   systemPrompt: z.string().optional(),
-  tools: z.array(z.enum([
-    'web_search',
-    'code_execution',
-    'file_operations',
-    'data_analysis',
-    'api_calls',
-    'database_query',
-    'image_generation',
-    'text_analysis',
-    'translation',
-    'summarization',
-  ])).optional(),
+  tools: z
+    .array(
+      z.enum([
+        'web_search',
+        'code_execution',
+        'file_operations',
+        'data_analysis',
+        'api_calls',
+        'database_query',
+        'image_generation',
+        'text_analysis',
+        'translation',
+        'summarization',
+      ])
+    )
+    .optional(),
 });
 
 /**
@@ -73,7 +85,7 @@ const updateAgentSchema = z.object({
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -81,7 +93,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -99,7 +111,7 @@ export async function GET(
     if (!dbAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -135,10 +147,13 @@ export async function GET(
 
     return NextResponse.json({ data: agent });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/agents/:agentId] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/agents/:agentId] Error:',
+      error
+    );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -154,7 +169,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -162,7 +177,7 @@ export async function PATCH(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -176,7 +191,7 @@ export async function PATCH(
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -190,7 +205,7 @@ export async function PATCH(
             errors: parseResult.error.flatten().fieldErrors,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -207,7 +222,7 @@ export async function PATCH(
     if (!existingAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -218,13 +233,23 @@ export async function PATCH(
       updateData.name = input.name;
     }
     if (input.type !== undefined) {
-      updateData.type = input.type.toUpperCase() as 'TASK' | 'RESEARCH' | 'CODING' | 'DATA' | 'QA' | 'SUPPORT' | 'CUSTOM';
+      updateData.type = input.type.toUpperCase() as
+        | 'TASK'
+        | 'RESEARCH'
+        | 'CODING'
+        | 'DATA'
+        | 'QA'
+        | 'SUPPORT'
+        | 'CUSTOM';
     }
     if (input.description !== undefined) {
       updateData.description = input.description || null;
     }
     if (input.status !== undefined) {
-      updateData.status = input.status.toUpperCase() as 'ACTIVE' | 'PAUSED' | 'INACTIVE';
+      updateData.status = input.status.toUpperCase() as
+        | 'ACTIVE'
+        | 'PAUSED'
+        | 'INACTIVE';
     }
     if (input.systemPrompt !== undefined) {
       updateData.systemPrompt = input.systemPrompt || null;
@@ -233,10 +258,12 @@ export async function PATCH(
       updateData.tools = input.tools;
     }
     if (input.config) {
-      if (input.config.model !== undefined) updateData.model = input.config.model;
+      if (input.config.model !== undefined)
+        updateData.model = input.config.model;
       if (input.config.temperature !== undefined)
         updateData.temperature = input.config.temperature;
-      if (input.config.maxTokens !== undefined) updateData.maxTokens = input.config.maxTokens;
+      if (input.config.maxTokens !== undefined)
+        updateData.maxTokens = input.config.maxTokens;
       if (input.config.topP !== undefined) updateData.topP = input.config.topP;
       if (input.config.frequencyPenalty !== undefined)
         updateData.frequencyPenalty = input.config.frequencyPenalty;
@@ -285,10 +312,13 @@ export async function PATCH(
       message: 'Agent updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/agents/:agentId] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/agents/:agentId] Error:',
+      error
+    );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -304,7 +334,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -312,7 +342,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -330,7 +360,7 @@ export async function DELETE(
     if (!existingAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -344,10 +374,13 @@ export async function DELETE(
       deletedId: agentId,
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/agents/:agentId] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/agents/:agentId] Error:',
+      error
+    );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

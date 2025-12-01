@@ -210,7 +210,10 @@ async function fetcher<T>(url: string): Promise<T> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error?.message || `Request failed: ${response.status} ${response.statusText}`);
+    throw new Error(
+      errorData.error?.message ||
+        `Request failed: ${response.status} ${response.statusText}`
+    );
   }
 
   const result: ApiResponse<T> = await response.json();
@@ -317,20 +320,17 @@ export interface UseHealthDashboardReturn {
 export function useHealthDashboard(): UseHealthDashboardReturn {
   const url = '/api/admin/health';
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<SystemHealthOverview>(
-    url,
-    fetcher,
-    {
+  const { data, error, isLoading, isValidating, mutate } =
+    useSWR<SystemHealthOverview>(url, fetcher, {
       ...DEFAULT_HEALTH_CONFIG,
-      onError: (err) => {
+      onError: err => {
         toast({
           variant: 'destructive',
           title: 'Failed to load health overview',
           description: err.message || 'Unable to fetch system health data',
         });
       },
-    }
-  );
+    });
 
   const refetch = useCallback(() => {
     void mutate();
@@ -411,25 +411,31 @@ export function useOrchestratorHealth(
     ? `/api/admin/health/orchestrators?${queryString}`
     : '/api/admin/health/orchestrators';
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<PaginatedApiResponse<OrchestratorHealth>>(
+  const { data, error, isLoading, isValidating, mutate } = useSWR<
+    PaginatedApiResponse<OrchestratorHealth>
+  >(
     url,
     async (url: string) => {
       const response = await fetch(url);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Request failed: ${response.status} ${response.statusText}`);
+        throw new Error(
+          errorData.error?.message ||
+            `Request failed: ${response.status} ${response.statusText}`
+        );
       }
 
       return response.json();
     },
     {
       ...DEFAULT_HEALTH_CONFIG,
-      onError: (err) => {
+      onError: err => {
         toast({
           variant: 'destructive',
           title: 'Failed to load orchestrator health',
-          description: err.message || 'Unable to fetch orchestrator health data',
+          description:
+            err.message || 'Unable to fetch orchestrator health data',
         });
       },
     }
@@ -508,7 +514,9 @@ export interface UseMetricsChartReturn {
  * }
  * ```
  */
-export function useMetricsChart(initialTimeRange: TimeRange = '24h'): UseMetricsChartReturn {
+export function useMetricsChart(
+  initialTimeRange: TimeRange = '24h'
+): UseMetricsChartReturn {
   const [timeRange, setTimeRange] = useState<TimeRange>(initialTimeRange);
   const url = `/api/admin/health/metrics?timeRange=${timeRange}`;
 
@@ -517,7 +525,7 @@ export function useMetricsChart(initialTimeRange: TimeRange = '24h'): UseMetrics
     fetcher,
     {
       ...METRICS_CONFIG,
-      onError: (err) => {
+      onError: err => {
         toast({
           variant: 'destructive',
           title: 'Failed to load metrics',
@@ -531,7 +539,7 @@ export function useMetricsChart(initialTimeRange: TimeRange = '24h'): UseMetrics
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (!data) return [];
 
-    return data.map((point) => ({
+    return data.map(point => ({
       time: formatTimestamp(point.timestamp, timeRange),
       responseTime: point.responseTime,
       cpu: point.cpuUsage,
@@ -659,7 +667,7 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
     fetcher,
     {
       ...DEFAULT_HEALTH_CONFIG,
-      onError: (err) => {
+      onError: err => {
         toast({
           variant: 'destructive',
           title: 'Failed to load alerts',
@@ -673,14 +681,19 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
   const { trigger: triggerAcknowledge, isMutating } = useSWRMutation(
     url,
     async (url: string, { arg }: { arg: { alertId: string } }) => {
-      const response = await fetch(`/api/admin/health/alerts/${arg.alertId}/acknowledge`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const response = await fetch(
+        `/api/admin/health/alerts/${arg.alertId}/acknowledge`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to acknowledge alert');
+        throw new Error(
+          errorData.error?.message || 'Failed to acknowledge alert'
+        );
       }
 
       return response.json();
@@ -694,8 +707,8 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
 
         // Optimistically update the local data
         void mutate(
-          (currentData) =>
-            currentData?.map((alert) =>
+          currentData =>
+            currentData?.map(alert =>
               alert.id === alertId
                 ? { ...alert, acknowledged: true, acknowledgedAt: new Date() }
                 : alert
@@ -723,7 +736,7 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
     (severity?: AlertSeverity): HealthAlert[] => {
       if (!data) return [];
       if (!severity) return data;
-      return data.filter((alert) => alert.severity === severity);
+      return data.filter(alert => alert.severity === severity);
     },
     [data]
   );

@@ -2,7 +2,8 @@
 
 ## 🚨 UPDATED: Correct Commands for Claude Flow v2.0.0-alpha.88
 
-After testing, the previous commands were aspirational. Here are the **actual working commands** based on Claude Flow's real capabilities:
+After testing, the previous commands were aspirational. Here are the **actual working commands**
+based on Claude Flow's real capabilities:
 
 ## 🎯 **RECOMMENDED: Interactive Hive Mind Wizard**
 
@@ -11,7 +12,8 @@ After testing, the previous commands were aspirational. Here are the **actual wo
 npx claude-flow@alpha hive-mind wizard
 ```
 
-This will guide you through setting up the optimal hive configuration for the massive Wundr platform project.
+This will guide you through setting up the optimal hive configuration for the massive Wundr platform
+project.
 
 ## 🧠 **Direct Hive Mind Spawn (Maximum Power)**
 
@@ -44,12 +46,14 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 ## 🎛️ **Step-by-Step Approach (Conservative)**
 
 ### Step 1: Initialize System
+
 ```bash
 npx claude-flow@alpha init --monitoring
 npx claude-flow@alpha hive-mind init
 ```
 
 ### Step 2: Foundation Phase
+
 ```bash
 npx claude-flow@alpha hive-mind spawn "Phase 1: Foundation - Execute architecture planning and security framework from docs/REFINED_WUNDR_EXPANSION_PROMPT.md focusing on unified system design, API specifications, technology stack decisions, and enterprise security requirements" \
   --queen-type "strategic" \
@@ -61,6 +65,7 @@ npx claude-flow@alpha hive-mind spawn "Phase 1: Foundation - Execute architectur
 ```
 
 ### Step 3: Core Development Phase
+
 ```bash
 npx claude-flow@alpha hive-mind spawn "Phase 2: Core Development - Build analysis engine, environment setup tools, and CLI framework from existing wundr and new-starter codebases with backward compatibility and enhanced features" \
   --queen-type "tactical" \
@@ -72,6 +77,7 @@ npx claude-flow@alpha hive-mind spawn "Phase 2: Core Development - Build analysi
 ```
 
 ### Step 4: Platform Development Phase
+
 ```bash
 npx claude-flow@alpha hive-mind spawn "Phase 3: Platform Development - Create Next.js dashboard, AI integration layer, and comprehensive documentation with real-time features and MCP tools integration" \
   --queen-type "adaptive" \
@@ -83,6 +89,7 @@ npx claude-flow@alpha hive-mind spawn "Phase 3: Platform Development - Create Ne
 ```
 
 ### Step 5: Integration & Testing Phase
+
 ```bash
 npx claude-flow@alpha hive-mind spawn "Phase 4: Integration & Testing - Comprehensive testing, deployment setup, and launch preparation with quality gates and enterprise compliance" \
   --queen-type "strategic" \
@@ -147,7 +154,8 @@ When you run the hive mind spawn command:
 
 1. **Hive Mind System Initializes**: Creates SQLite-based collective memory
 2. **Queen Agent Spawns**: Strategic coordinator to manage the entire project
-3. **Worker Agents Deploy**: Specialized agents for each domain (architecture, coding, testing, etc.)
+3. **Worker Agents Deploy**: Specialized agents for each domain (architecture, coding, testing,
+   etc.)
 4. **Consensus Mechanisms Activate**: Byzantine consensus for critical decisions
 5. **Memory Sharing Begins**: Cross-agent knowledge and context sharing
 6. **Claude Code Integration**: Automatic spawning of coordinated Claude Code instances
@@ -173,6 +181,7 @@ npx claude-flow@alpha status
 ## 🎊 **Success Indicators**
 
 You'll know it's working when:
+
 - ✅ Hive mind sessions show "ACTIVE" status
 - ✅ Multiple Claude Code instances spawn automatically
 - ✅ Worker agents begin coordinated development
@@ -197,6 +206,7 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 ## 🚀 What Happens After Execution
 
 ### **Immediate Actions (First 10 minutes)**
+
 1. Master hive initializes with strategic orchestrator
 2. All 11 specialized hives are created and configured
 3. Cross-hive communication channels established
@@ -206,6 +216,7 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 7. Quality gates and security scanning initiated
 
 ### **First Hour Progress**
+
 1. Architecture hive completes system design
 2. Security hive establishes compliance framework
 3. Analysis engine hive begins code analysis
@@ -213,6 +224,7 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 5. All hives begin parallel work on their objectives
 
 ### **Expected Timeline**
+
 - **Day 1**: All hives operational, master plan finalized
 - **Week 1**: Foundation components completed
 - **Week 2-3**: Core development in parallel
@@ -224,6 +236,7 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 ## 📞 Emergency Commands
 
 ### **If Something Goes Wrong**
+
 ```bash
 # Emergency stop all hives
 npx claude-flow@alpha emergency stop --all-hives
@@ -239,6 +252,7 @@ npx claude-flow@alpha hive restart <hive-name> --force --preserve-state
 ```
 
 ### **Debug and Troubleshooting**
+
 ```bash
 # Detailed status of all hives
 npx claude-flow@alpha status --detailed --all-hives
@@ -253,6 +267,7 @@ npx claude-flow@alpha analyze performance --bottlenecks --optimization-suggestio
 ## 🎊 Success Indicators
 
 You'll know it's working when you see:
+
 1. ✅ All 11 hives show "ACTIVE" status
 2. ✅ Cross-hive message latency < 100ms
 3. ✅ Progress dashboard shows coordinated activity
@@ -264,4 +279,5 @@ You'll know it's working when you see:
 9. ✅ All dependencies are resolved automatically
 10. ✅ Code is being generated and committed
 
-**The mega-orchestration will handle everything autonomously while providing full visibility and control!**
+**The mega-orchestration will handle everything autonomously while providing full visibility and
+control!**

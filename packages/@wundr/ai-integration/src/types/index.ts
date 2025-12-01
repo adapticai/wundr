@@ -559,11 +559,13 @@ export interface ModelParameters {
   readonly optimizer: OptimizerConfiguration;
   readonly hyperparameters: Record<string, number>;
   readonly regularization: RegularizationConfiguration;
-  readonly architecture?: {
-    readonly layers: LayerConfiguration[];
-    readonly inputShape?: number[];
-    readonly outputShape?: number[];
-  } | Record<string, unknown>;
+  readonly architecture?:
+    | {
+        readonly layers: LayerConfiguration[];
+        readonly inputShape?: number[];
+        readonly outputShape?: number[];
+      }
+    | Record<string, unknown>;
   readonly features?: string[];
   readonly outputs?: string[] | string;
   readonly compilationOptions?: {

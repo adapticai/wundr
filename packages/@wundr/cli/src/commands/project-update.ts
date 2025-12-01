@@ -14,18 +14,14 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import ora from 'ora';
 
-import {
-  createConflictResolver,
-} from '../lib/conflict-resolution';
+import { createConflictResolver } from '../lib/conflict-resolution';
 import {
   MergeStrategyManager,
   MergeResult,
   threeWayMerge,
   detectFileType,
 } from '../lib/merge-strategy';
-import {
-  createSafetyManager,
-} from '../lib/safety-mechanisms';
+import { createSafetyManager } from '../lib/safety-mechanisms';
 import {
   detectProjectState,
   CustomizationInfo,
@@ -38,16 +34,16 @@ import { logger } from '../utils/logger';
 import type {
   ConflictResolver,
   UpdateConflict,
-  ConflictResolutionResult} from '../lib/conflict-resolution';
+  ConflictResolutionResult,
+} from '../lib/conflict-resolution';
 import type {
   SafetyManager,
   UpdateBackup,
-  UpdateTransaction} from '../lib/safety-mechanisms';
-import type {
-  ProjectState} from '../lib/state-detection';
+  UpdateTransaction,
+} from '../lib/safety-mechanisms';
+import type { ProjectState } from '../lib/state-detection';
 import type { PluginManager } from '../plugins/plugin-manager';
 import type { ConfigManager } from '../utils/config-manager';
-
 
 /**
  * Update options from CLI flags
@@ -163,7 +159,10 @@ export class ProjectUpdateManager {
   private updateLog: UpdateLogEntry[] = [];
   private spinner: ReturnType<typeof ora> | null = null;
 
-  constructor(projectRoot: string, options: Partial<ProjectUpdateOptions> = {}) {
+  constructor(
+    projectRoot: string,
+    options: Partial<ProjectUpdateOptions> = {}
+  ) {
     this.projectRoot = projectRoot;
     this.options = { ...DEFAULT_UPDATE_OPTIONS, ...options };
 
@@ -210,13 +209,23 @@ export class ProjectUpdateManager {
       this.log('detect', 'state', 'success', `Version: ${currentVersion}`);
 
       // Step 2: Check if update is needed
-      const needsUpdate = currentState.isWundrOutdated ||
-                          currentState.isPartialInstallation ||
-                          this.options.force;
+      const needsUpdate =
+        currentState.isWundrOutdated ||
+        currentState.isPartialInstallation ||
+        this.options.force;
 
       if (!needsUpdate && !this.options.force) {
         console.log(chalk.green('\nProject is up to date!'));
-        return this.createResult(true, currentVersion, currentVersion, [], [], null, [], startTime);
+        return this.createResult(
+          true,
+          currentVersion,
+          currentVersion,
+          [],
+          [],
+          null,
+          [],
+          startTime
+        );
       }
 
       // Step 3: Show update plan
@@ -227,7 +236,16 @@ export class ProjectUpdateManager {
         const confirmed = await this.confirmUpdate(currentState);
         if (!confirmed) {
           console.log(chalk.yellow('\nUpdate cancelled by user.'));
-          return this.createResult(false, currentVersion, currentVersion, [], [], null, ['Cancelled by user'], startTime);
+          return this.createResult(
+            false,
+            currentVersion,
+            currentVersion,
+            [],
+            [],
+            null,
+            ['Cancelled by user'],
+            startTime
+          );
         }
       }
 
@@ -240,11 +258,16 @@ export class ProjectUpdateManager {
           filesToBackup,
           'Pre-update backup',
           currentVersion,
-          this.options.version || 'latest',
+          this.options.version || 'latest'
         );
         this.stopSpinner();
         console.log(chalk.green(`Backup created: ${backup.id}`));
-        this.log('backup', backup.path, 'success', `${backup.files.length} files backed up`);
+        this.log(
+          'backup',
+          backup.path,
+          'success',
+          `${backup.files.length} files backed up`
+        );
       }
 
       // Step 6: Start transaction
@@ -256,7 +279,7 @@ export class ProjectUpdateManager {
         const { filesUpdated, conflicts, errors } = await this.performUpdates(
           components,
           currentState,
-          transaction,
+          transaction
         );
 
         // Step 8: Resolve conflicts
@@ -280,7 +303,9 @@ export class ProjectUpdateManager {
 
         // Success
         const toVersion = this.options.version || 'latest';
-        console.log(chalk.green(`\nProject updated successfully to ${toVersion}!`));
+        console.log(
+          chalk.green(`\nProject updated successfully to ${toVersion}!`)
+        );
 
         return this.createResult(
           true,
@@ -290,9 +315,8 @@ export class ProjectUpdateManager {
           conflicts,
           backup,
           errors,
-          startTime,
+          startTime
         );
-
       } catch (error) {
         // Rollback on failure
         if (this.options.rollbackOnFailure && backup) {
@@ -303,7 +327,6 @@ export class ProjectUpdateManager {
         }
         throw error;
       }
-
     } catch (error: any) {
       logger.error('Project update failed', error);
       this.log('update', 'project', 'failure', error.message);
@@ -317,7 +340,7 @@ export class ProjectUpdateManager {
         [],
         null,
         [error.message],
-        startTime,
+        startTime
       );
     }
   }
@@ -382,9 +405,18 @@ export class ProjectUpdateManager {
   private async showUpdatePlan(state: ProjectState): Promise<void> {
     console.log(chalk.cyan('\n========== Update Plan ==========\n'));
 
-    console.log(chalk.white('Current Version:'), chalk.yellow(state.wundrVersion || 'Not installed'));
-    console.log(chalk.white('Target Version:'), chalk.green(this.options.version || state.latestWundrVersion || 'latest'));
-    console.log(chalk.white('Health Score:'), chalk.yellow(`${state.healthScore}/100`));
+    console.log(
+      chalk.white('Current Version:'),
+      chalk.yellow(state.wundrVersion || 'Not installed')
+    );
+    console.log(
+      chalk.white('Target Version:'),
+      chalk.green(this.options.version || state.latestWundrVersion || 'latest')
+    );
+    console.log(
+      chalk.white('Health Score:'),
+      chalk.yellow(`${state.healthScore}/100`)
+    );
 
     if (state.recommendations.length > 0) {
       console.log(chalk.white('\nRecommendations:'));
@@ -399,17 +431,26 @@ export class ProjectUpdateManager {
         console.log(`  - ${file}`);
       }
       if (state.customizations.customizedFiles.length > 5) {
-        console.log(chalk.gray(`  ... and ${state.customizations.customizedFiles.length - 5} more`));
+        console.log(
+          chalk.gray(
+            `  ... and ${state.customizations.customizedFiles.length - 5} more`
+          )
+        );
       }
     }
 
     if (state.conflicts.hasConflicts) {
       console.log(chalk.yellow('\nDetected Conflicts:'));
       for (const conflict of state.conflicts.conflicts) {
-        const severityColor = conflict.severity === 'error' ? chalk.red :
-                             conflict.severity === 'warning' ? chalk.yellow :
-                             chalk.gray;
-        console.log(severityColor(`  [${conflict.severity}] ${conflict.description}`));
+        const severityColor =
+          conflict.severity === 'error'
+            ? chalk.red
+            : conflict.severity === 'warning'
+              ? chalk.yellow
+              : chalk.gray;
+        console.log(
+          severityColor(`  [${conflict.severity}] ${conflict.description}`)
+        );
       }
     }
 
@@ -482,7 +523,7 @@ export class ProjectUpdateManager {
   private async performUpdates(
     components: UpdateComponent[],
     state: ProjectState,
-    transaction: UpdateTransaction,
+    transaction: UpdateTransaction
   ): Promise<{
     filesUpdated: string[];
     conflicts: UpdateConflict[];
@@ -496,7 +537,7 @@ export class ProjectUpdateManager {
     let componentsToUpdate = components;
     if (this.options.components.length > 0) {
       componentsToUpdate = components.filter(c =>
-        this.options.components.includes(c.name),
+        this.options.components.includes(c.name)
       );
     }
 
@@ -508,7 +549,11 @@ export class ProjectUpdateManager {
       }
 
       try {
-        const result = await this.updateComponent(component, state, transaction);
+        const result = await this.updateComponent(
+          component,
+          state,
+          transaction
+        );
 
         filesUpdated.push(...result.updated);
         conflicts.push(...result.conflicts);
@@ -517,7 +562,12 @@ export class ProjectUpdateManager {
           errors.push(...result.errors);
         }
 
-        this.log('update', component.name, 'success', `${result.updated.length} files updated`);
+        this.log(
+          'update',
+          component.name,
+          'success',
+          `${result.updated.length} files updated`
+        );
       } catch (error: any) {
         errors.push(`Component ${component.name}: ${error.message}`);
         this.log('update', component.name, 'failure', error.message);
@@ -535,7 +585,7 @@ export class ProjectUpdateManager {
   private async updateComponent(
     component: UpdateComponent,
     state: ProjectState,
-    transaction: UpdateTransaction,
+    transaction: UpdateTransaction
   ): Promise<{
     updated: string[];
     conflicts: UpdateConflict[];
@@ -597,11 +647,10 @@ export class ProjectUpdateManager {
           // Create update conflicts
           for (const conflict of mergeResult.conflicts) {
             conflicts.push(
-              this.conflictResolver.createUpdateConflict(conflict, filePath),
+              this.conflictResolver.createUpdateConflict(conflict, filePath)
             );
           }
         }
-
       } catch (error: any) {
         errors.push(`File ${filePath}: ${error.message}`);
         transaction.failOperation(filePath, error.message);
@@ -616,7 +665,7 @@ export class ProjectUpdateManager {
    */
   private async getTargetContent(
     filePath: string,
-    component: UpdateComponent,
+    component: UpdateComponent
   ): Promise<string | null> {
     // In real implementation, would fetch from wundr registry
     // For now, return null (no update available)
@@ -634,7 +683,7 @@ export class ProjectUpdateManager {
     conflicts: UpdateConflict[],
     backup: UpdateBackup | null,
     errors: string[],
-    startTime: number,
+    startTime: number
   ): UpdateResult {
     return {
       success,
@@ -658,7 +707,12 @@ export class ProjectUpdateManager {
   /**
    * Log an update action
    */
-  private log(action: string, target: string, status: 'success' | 'failure' | 'skipped', details?: string): void {
+  private log(
+    action: string,
+    target: string,
+    status: 'success' | 'failure' | 'skipped',
+    details?: string
+  ): void {
     this.updateLog.push({
       timestamp: new Date().toISOString(),
       action,
@@ -675,9 +729,12 @@ export class ProjectUpdateManager {
     const logPath = path.join(this.projectRoot, '.wundr-update.log');
 
     try {
-      const content = this.updateLog.map(entry =>
-        `[${entry.timestamp}] ${entry.action.toUpperCase()} ${entry.target} - ${entry.status}${entry.details ? `: ${entry.details}` : ''}`,
-      ).join('\n');
+      const content = this.updateLog
+        .map(
+          entry =>
+            `[${entry.timestamp}] ${entry.action.toUpperCase()} ${entry.target} - ${entry.status}${entry.details ? `: ${entry.details}` : ''}`
+        )
+        .join('\n');
 
       await fs.writeFile(logPath, content);
     } catch (error) {
@@ -718,7 +775,7 @@ export class ProjectUpdateCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager,
+    private pluginManager: PluginManager
   ) {
     this.registerCommands();
   }
@@ -733,17 +790,25 @@ export class ProjectUpdateCommands {
     updateCmd
       .command('project')
       .description('Update the entire project')
-      .option('--dry-run', 'Show what would be done without making changes', false)
+      .option(
+        '--dry-run',
+        'Show what would be done without making changes',
+        false
+      )
       .option('-f, --force', 'Force update without prompts', false)
       .option('--skip-backup', 'Skip creating backup before update', false)
-      .option('-c, --components <names>', 'Specific components to update (comma-separated)', '')
+      .option(
+        '-c, --components <names>',
+        'Specific components to update (comma-separated)',
+        ''
+      )
       .option('-v, --version <version>', 'Target version to update to')
       .option('--no-interactive', 'Disable interactive mode')
       .option('--verbose', 'Enable verbose output', false)
       .option('--show-diff', 'Show differences during update', true)
       .option('--auto-resolve', 'Automatically resolve conflicts', false)
       .option('--no-rollback', 'Disable rollback on failure')
-      .action(async (options) => {
+      .action(async options => {
         await this.updateProject(options);
       });
 
@@ -752,7 +817,7 @@ export class ProjectUpdateCommands {
       .command('check')
       .description('Check if updates are available')
       .option('--verbose', 'Show detailed information')
-      .action(async (options) => {
+      .action(async options => {
         await this.checkUpdates(options);
       });
 
@@ -761,7 +826,7 @@ export class ProjectUpdateCommands {
       .command('history')
       .description('Show update history')
       .option('-n, --limit <number>', 'Number of entries to show', '10')
-      .action(async (options) => {
+      .action(async options => {
         await this.showHistory(options);
       });
 
@@ -779,7 +844,7 @@ export class ProjectUpdateCommands {
       .command('cleanup')
       .description('Clean up old backups')
       .option('-k, --keep <number>', 'Number of backups to keep', '5')
-      .action(async (options) => {
+      .action(async options => {
         await this.cleanup(options);
       });
   }
@@ -793,7 +858,9 @@ export class ProjectUpdateCommands {
         dryRun: options.dryRun,
         force: options.force,
         skipBackup: options.skipBackup,
-        components: options.components ? options.components.split(',').map((c: string) => c.trim()) : [],
+        components: options.components
+          ? options.components.split(',').map((c: string) => c.trim())
+          : [],
         version: options.version || null,
         interactive: options.interactive !== false,
         verbose: options.verbose,
@@ -813,7 +880,7 @@ export class ProjectUpdateCommands {
         'WUNDR_UPDATE_FAILED',
         'Project update failed',
         { options },
-        true,
+        true
       );
     }
   }
@@ -830,9 +897,18 @@ export class ProjectUpdateCommands {
       spinner.succeed('Update check complete');
 
       console.log(chalk.cyan('\n========== Update Status ==========\n'));
-      console.log(chalk.white('Current Version:'), chalk.yellow(state.wundrVersion || 'Not installed'));
-      console.log(chalk.white('Health Score:'), chalk.yellow(`${state.healthScore}/100`));
-      console.log(chalk.white('Needs Update:'), state.isWundrOutdated ? chalk.red('Yes') : chalk.green('No'));
+      console.log(
+        chalk.white('Current Version:'),
+        chalk.yellow(state.wundrVersion || 'Not installed')
+      );
+      console.log(
+        chalk.white('Health Score:'),
+        chalk.yellow(`${state.healthScore}/100`)
+      );
+      console.log(
+        chalk.white('Needs Update:'),
+        state.isWundrOutdated ? chalk.red('Yes') : chalk.green('No')
+      );
 
       if (state.recommendations.length > 0) {
         console.log(chalk.white('\nRecommendations:'));
@@ -840,7 +916,9 @@ export class ProjectUpdateCommands {
           console.log(chalk.gray(`  - ${rec}`));
         }
 
-        console.log(chalk.cyan('\nRun `wundr update project` to apply updates.'));
+        console.log(
+          chalk.cyan('\nRun `wundr update project` to apply updates.')
+        );
       }
 
       console.log(chalk.cyan('\n====================================\n'));
@@ -880,7 +958,10 @@ export class ProjectUpdateCommands {
   /**
    * Rollback to previous state
    */
-  private async rollback(backupId: string | undefined, options: any): Promise<void> {
+  private async rollback(
+    backupId: string | undefined,
+    options: any
+  ): Promise<void> {
     const safetyManager = createSafetyManager({ projectRoot: process.cwd() });
 
     if (options.list) {
@@ -895,7 +976,7 @@ export class ProjectUpdateCommands {
       for (const backup of backups) {
         console.log(
           `  ${chalk.white(backup.id)} - ${chalk.gray(new Date(backup.timestamp).toLocaleString())} ` +
-          `(${backup.files.length} files)`,
+            `(${backup.files.length} files)`
         );
       }
       console.log(chalk.cyan('\n=======================================\n'));
@@ -905,9 +986,9 @@ export class ProjectUpdateCommands {
     let backup: UpdateBackup | null;
 
     if (backupId) {
-      backup = await safetyManager.listBackups().then(
-        backups => backups.find(b => b.id === backupId) || null,
-      );
+      backup = await safetyManager
+        .listBackups()
+        .then(backups => backups.find(b => b.id === backupId) || null);
     } else {
       backup = await safetyManager.getLatestBackup();
     }
@@ -950,7 +1031,11 @@ export class ProjectUpdateCommands {
     const keepCount = parseInt(options.keep, 10);
 
     if (backups.length <= keepCount) {
-      console.log(chalk.green(`Only ${backups.length} backup(s) found. Nothing to clean up.`));
+      console.log(
+        chalk.green(
+          `Only ${backups.length} backup(s) found. Nothing to clean up.`
+        )
+      );
       return;
     }
 
@@ -994,20 +1079,29 @@ export function createProjectUpdateCommand(): Command {
   cmd
     .command('project')
     .description('Update the entire project')
-    .option('--dry-run', 'Show what would be done without making changes', false)
+    .option(
+      '--dry-run',
+      'Show what would be done without making changes',
+      false
+    )
     .option('-f, --force', 'Force update without prompts', false)
     .option('--skip-backup', 'Skip creating backup before update', false)
-    .option('-c, --components <names>', 'Specific components to update (comma-separated)')
+    .option(
+      '-c, --components <names>',
+      'Specific components to update (comma-separated)'
+    )
     .option('-v, --version <version>', 'Target version to update to')
     .option('--no-interactive', 'Disable interactive mode')
     .option('--verbose', 'Enable verbose output', false)
     .option('--auto-resolve', 'Automatically resolve conflicts', false)
-    .action(async (options) => {
+    .action(async options => {
       const updateOptions: Partial<ProjectUpdateOptions> = {
         dryRun: options.dryRun,
         force: options.force,
         skipBackup: options.skipBackup,
-        components: options.components ? options.components.split(',').map((c: string) => c.trim()) : [],
+        components: options.components
+          ? options.components.split(',').map((c: string) => c.trim())
+          : [],
         version: options.version || null,
         interactive: options.interactive !== false,
         verbose: options.verbose,
@@ -1031,9 +1125,18 @@ export function createProjectUpdateCommand(): Command {
         const state = await detectProjectState();
         spinner.succeed();
 
-        console.log(chalk.white('\nCurrent Version:'), chalk.yellow(state.wundrVersion || 'Not installed'));
-        console.log(chalk.white('Health Score:'), chalk.yellow(`${state.healthScore}/100`));
-        console.log(chalk.white('Needs Update:'), state.isWundrOutdated ? chalk.red('Yes') : chalk.green('No'));
+        console.log(
+          chalk.white('\nCurrent Version:'),
+          chalk.yellow(state.wundrVersion || 'Not installed')
+        );
+        console.log(
+          chalk.white('Health Score:'),
+          chalk.yellow(`${state.healthScore}/100`)
+        );
+        console.log(
+          chalk.white('Needs Update:'),
+          state.isWundrOutdated ? chalk.red('Yes') : chalk.green('No')
+        );
 
         if (state.recommendations.length > 0) {
           console.log(chalk.white('\nRecommendations:'));

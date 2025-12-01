@@ -16,16 +16,20 @@ phases:
 # Deployment Monitor Workflow
 
 ## Overview
-This workflow provides end-to-end monitoring of deployments to Railway and Netlify, with automatic issue detection and resolution.
+
+This workflow provides end-to-end monitoring of deployments to Railway and Netlify, with automatic
+issue detection and resolution.
 
 ## Trigger Conditions
 
 ### Automatic Triggers
+
 1. Git push to `main` branch detected
 2. Git push to `master` branch detected
 3. Deployment webhook received (if configured)
 
 ### Manual Triggers
+
 ```bash
 # Via slash command
 /deploy-monitor
@@ -53,6 +57,7 @@ graph LR
 ```
 
 **Actions:**
+
 1. Check for platform configuration files
 2. Verify environment variables
 3. Test API connectivity
@@ -61,12 +66,13 @@ graph LR
 ### Phase 2: Monitor Deployment
 
 **For Railway:**
+
 ```javascript
 // Poll deployment status
 let status = 'building';
 while (['building', 'deploying'].includes(status)) {
   const deployment = await mcp__railway__deploy_status({
-    projectId: process.env.RAILWAY_PROJECT_ID
+    projectId: process.env.RAILWAY_PROJECT_ID,
   });
   status = deployment.status;
   console.log(`Deployment status: ${status}`);
@@ -74,7 +80,7 @@ while (['building', 'deploying'].includes(status)) {
   if (status === 'failed') {
     const logs = await mcp__railway__get_logs({
       deploymentId: deployment.id,
-      type: 'build'
+      type: 'build',
     });
     return { status: 'failed', logs };
   }
@@ -83,18 +89,19 @@ while (['building', 'deploying'].includes(status)) {
 ```
 
 **For Netlify:**
+
 ```javascript
 // Poll build status
 let deploy = await mcp__netlify__get_deploys({ limit: 1 })[0];
 while (['building', 'processing'].includes(deploy.state)) {
   deploy = await mcp__netlify__deploy_status({
-    deployId: deploy.id
+    deployId: deploy.id,
   });
   console.log(`Build status: ${deploy.state}`);
 
   if (deploy.state === 'error') {
     const logs = await mcp__netlify__get_build_logs({
-      deployId: deploy.id
+      deployId: deploy.id,
     });
     return { status: 'failed', logs };
   }
@@ -164,6 +171,7 @@ After applying fixes:
 ## Cycle Continuation
 
 The workflow continues in a loop until:
+
 - All identified errors are resolved
 - Maximum iteration count reached (default: 5)
 - User intervention requested

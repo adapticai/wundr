@@ -82,8 +82,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -145,9 +148,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -543,7 +543,7 @@ export function isChartDataPoint(value: unknown): value is ChartDataPoint {
     typeof value === 'object' &&
     value !== null &&
     Object.values(value).every(
-      (v) =>
+      v =>
         typeof v === 'string' ||
         typeof v === 'number' ||
         typeof v === 'boolean' ||

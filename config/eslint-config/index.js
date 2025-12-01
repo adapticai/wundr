@@ -1,11 +1,7 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: [
-    '@typescript-eslint',
-    'import',
-    'jest',
-  ],
+  plugins: ['@typescript-eslint', 'import', 'jest'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -25,39 +21,48 @@ module.exports = {
   },
   rules: {
     // TypeScript rules - optimized for v8
-    '@typescript-eslint/no-unused-vars': ['error', {
-      argsIgnorePattern: '^_',
-      varsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-    }],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/consistent-type-imports': ['error', {
-      prefer: 'type-imports',
-      fixStyle: 'separate-type-imports',
-    }],
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        prefer: 'type-imports',
+        fixStyle: 'separate-type-imports',
+      },
+    ],
     '@typescript-eslint/no-import-type-side-effects': 'error',
     // Type-aware rules (require project config)
     // These will be overridden in individual packages with project config
 
     // Import rules
-    'import/order': ['error', {
-      'groups': [
-        'builtin',
-        'external',
-        'internal',
-        ['parent', 'sibling'],
-        'index',
-        'object',
-        'type',
-      ],
-      'newlines-between': 'always',
-      'alphabetize': {
-        order: 'asc',
-        caseInsensitive: true,
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          ['parent', 'sibling'],
+          'index',
+          'object',
+          'type',
+        ],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
       },
-    }],
+    ],
     'import/no-duplicates': 'error',
     'import/no-cycle': 'error',
     'import/no-useless-path-segments': 'error',
@@ -69,12 +74,12 @@ module.exports = {
     'no-debugger': 'error',
     'prefer-const': 'error',
     'no-var': 'error',
-    'eqeqeq': ['error', 'always'],
-    'curly': ['error', 'all'],
+    eqeqeq: ['error', 'always'],
+    curly: ['error', 'all'],
     'brace-style': ['error', '1tbs'],
     'comma-dangle': ['error', 'always-multiline'],
-    'quotes': ['error', 'single', { avoidEscape: true }],
-    'semi': ['error', 'always'],
+    quotes: ['error', 'single', { avoidEscape: true }],
+    semi: ['error', 'always'],
 
     // Jest rules
     'jest/expect-expect': 'error',

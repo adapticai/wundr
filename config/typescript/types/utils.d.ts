@@ -131,7 +131,12 @@ declare namespace RefactoringToolkit {
 
     interface Issue {
       type: 'error' | 'warning' | 'info';
-      category: 'complexity' | 'duplication' | 'maintainability' | 'security' | 'performance';
+      category:
+        | 'complexity'
+        | 'duplication'
+        | 'maintainability'
+        | 'security'
+        | 'performance';
       message: string;
       location: {
         file: string;
@@ -227,7 +232,11 @@ declare namespace RefactoringToolkit {
       id: string;
       name: string;
       description: string;
-      type: 'file-move' | 'code-transform' | 'dependency-update' | 'config-change';
+      type:
+        | 'file-move'
+        | 'code-transform'
+        | 'dependency-update'
+        | 'config-change';
       automated: boolean;
       commands?: string[];
       files?: string[];
@@ -291,7 +300,12 @@ declare namespace RefactoringToolkit {
       priority: 'low' | 'medium' | 'high' | 'critical';
       effort: 'low' | 'medium' | 'high';
       impact: 'low' | 'medium' | 'high';
-      category: 'structure' | 'quality' | 'performance' | 'security' | 'maintainability';
+      category:
+        | 'structure'
+        | 'quality'
+        | 'performance'
+        | 'security'
+        | 'maintainability';
       actionItems: string[];
     }
   }
@@ -359,23 +373,33 @@ declare namespace RefactoringToolkit {
   }
 
   // Utility Types for the toolkit
-  type FileExtension = '.ts' | '.tsx' | '.js' | '.jsx' | '.json' | '.md' | '.yml' | '.yaml';
+  type FileExtension =
+    | '.ts'
+    | '.tsx'
+    | '.js'
+    | '.jsx'
+    | '.json'
+    | '.md'
+    | '.yml'
+    | '.yaml';
   type PathPattern = string; // glob pattern
   type Severity = 'low' | 'medium' | 'high' | 'critical';
   type Priority = 'low' | 'medium' | 'high' | 'urgent';
   type Status = 'pending' | 'in-progress' | 'completed' | 'failed' | 'skipped';
 
   // Common result types
-  type OperationResult<T = any> = {
-    success: true;
-    data: T;
-    duration: number;
-  } | {
-    success: false;
-    error: string;
-    details?: any;
-    duration: number;
-  };
+  type OperationResult<T = any> =
+    | {
+        success: true;
+        data: T;
+        duration: number;
+      }
+    | {
+        success: false;
+        error: string;
+        details?: any;
+        duration: number;
+      };
 
   type AsyncOperationResult<T = any> = Promise<OperationResult<T>>;
 

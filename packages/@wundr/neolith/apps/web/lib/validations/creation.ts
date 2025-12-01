@@ -23,8 +23,17 @@ export const conversationMessageSchema = z.object({
  * Conversation request schema
  */
 export const conversationRequestSchema = z.object({
-  entityType: z.enum(['workspace', 'orchestrator', 'session-manager', 'subagent', 'workflow', 'channel']),
-  messages: z.array(conversationMessageSchema).min(1, 'At least one message is required'),
+  entityType: z.enum([
+    'workspace',
+    'orchestrator',
+    'session-manager',
+    'subagent',
+    'workflow',
+    'channel',
+  ]),
+  messages: z
+    .array(conversationMessageSchema)
+    .min(1, 'At least one message is required'),
   workspaceId: z.string().optional(),
   workspaceContext: z
     .object({
@@ -68,7 +77,9 @@ export const sessionManagerSpecSchema = z.object({
  */
 export const subagentSpecSchema = z.object({
   name: z.string().min(1, 'Subagent name is required'),
-  capability: z.string().min(10, 'Capability description must be at least 10 characters'),
+  capability: z
+    .string()
+    .min(10, 'Capability description must be at least 10 characters'),
   taskType: z.string().optional(),
   inputFormat: z.string().optional(),
   outputFormat: z.string().optional(),
@@ -78,10 +89,21 @@ export const subagentSpecSchema = z.object({
  * Full orchestrator specification schema
  */
 export const orchestratorSpecSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-  role: z.string().min(1, 'Role is required').max(100, 'Role must be less than 100 characters'),
-  charter: z.string().min(10, 'Charter must be at least 10 characters').max(2000, 'Charter must be less than 2000 characters'),
-  communicationStyle: z.enum(['formal', 'friendly', 'technical']).default('friendly'),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be less than 100 characters'),
+  role: z
+    .string()
+    .min(1, 'Role is required')
+    .max(100, 'Role must be less than 100 characters'),
+  charter: z
+    .string()
+    .min(10, 'Charter must be at least 10 characters')
+    .max(2000, 'Charter must be less than 2000 characters'),
+  communicationStyle: z
+    .enum(['formal', 'friendly', 'technical'])
+    .default('friendly'),
   discipline: z.string().optional(),
   channels: z.array(z.string()).default([]),
   escalationRules: escalationRulesSchema.optional(),
@@ -130,7 +152,10 @@ export const workflowStepSchema = z.object({
  */
 export const workflowSpecSchema = z.object({
   name: z.string().min(1, 'Workflow name is required').max(100),
-  description: z.string().min(10, 'Description must be at least 10 characters').max(1000),
+  description: z
+    .string()
+    .min(10, 'Description must be at least 10 characters')
+    .max(1000),
   trigger: workflowTriggerSchema,
   steps: z.array(workflowStepSchema).min(1, 'At least one step is required'),
   successOutcome: z.string().optional(),
@@ -151,11 +176,20 @@ export const channelSpecSchema = z.object({
     .string()
     .min(1, 'Channel name is required')
     .max(80, 'Channel name must be less than 80 characters')
-    .regex(/^[a-z0-9-_]+$/, 'Channel name must contain only lowercase letters, numbers, hyphens, and underscores'),
+    .regex(
+      /^[a-z0-9-_]+$/,
+      'Channel name must contain only lowercase letters, numbers, hyphens, and underscores'
+    ),
   displayName: z.string().optional(),
   type: z.enum(['PUBLIC', 'PRIVATE']).default('PUBLIC'),
-  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
-  purpose: z.string().max(200, 'Purpose must be less than 200 characters').optional(),
+  description: z
+    .string()
+    .max(500, 'Description must be less than 500 characters')
+    .optional(),
+  purpose: z
+    .string()
+    .max(200, 'Purpose must be less than 200 characters')
+    .optional(),
   initialMembers: z.array(z.string()).default([]),
   orchestratorIds: z.array(z.string()).default([]),
   rules: z.array(z.string()).optional(),
@@ -190,7 +224,10 @@ export const workspaceSpecSchema = z.object({
 export const sessionManagerFullSpecSchema = z.object({
   name: z.string().min(1, 'Session manager name is required').max(100),
   orchestratorId: z.string().min(1, 'Parent orchestrator is required'),
-  purpose: z.string().min(10, 'Purpose must be at least 10 characters').max(1000),
+  purpose: z
+    .string()
+    .min(10, 'Purpose must be at least 10 characters')
+    .max(1000),
   channelId: z.string().optional(),
   context: z.string().optional(),
   responsibilities: z.array(z.string()).default([]),
@@ -207,9 +244,14 @@ export const sessionManagerFullSpecSchema = z.object({
  */
 export const subagentFullSpecSchema = z.object({
   name: z.string().min(1, 'Subagent name is required').max(100),
-  parentId: z.string().min(1, 'Parent (Session Manager or Orchestrator) is required'),
+  parentId: z
+    .string()
+    .min(1, 'Parent (Session Manager or Orchestrator) is required'),
   parentType: z.enum(['orchestrator', 'session-manager']),
-  capability: z.string().min(10, 'Capability description must be at least 10 characters').max(1000),
+  capability: z
+    .string()
+    .min(10, 'Capability description must be at least 10 characters')
+    .max(1000),
   taskType: z.string(),
   inputFormat: z.string().optional(),
   outputFormat: z.string().optional(),
@@ -225,7 +267,14 @@ export const subagentFullSpecSchema = z.object({
  * Parse spec request schema
  */
 export const parseSpecRequestSchema = z.object({
-  entityType: z.enum(['workspace', 'orchestrator', 'session-manager', 'subagent', 'workflow', 'channel']),
+  entityType: z.enum([
+    'workspace',
+    'orchestrator',
+    'session-manager',
+    'subagent',
+    'workflow',
+    'channel',
+  ]),
   spec: z.any(), // Will be validated against specific schema based on entityType
 });
 
@@ -237,7 +286,14 @@ export const parseSpecRequestSchema = z.object({
  * Generate entity request schema
  */
 export const generateRequestSchema = z.object({
-  entityType: z.enum(['workspace', 'orchestrator', 'session-manager', 'subagent', 'workflow', 'channel']),
+  entityType: z.enum([
+    'workspace',
+    'orchestrator',
+    'session-manager',
+    'subagent',
+    'workflow',
+    'channel',
+  ]),
   spec: z.any(), // Pre-validated spec
   workspaceId: z.string().optional(),
   organizationId: z.string().optional(),
@@ -264,7 +320,7 @@ export const CREATION_ERROR_CODES = {
 export function createCreationErrorResponse(
   message: string,
   code: (typeof CREATION_ERROR_CODES)[keyof typeof CREATION_ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {

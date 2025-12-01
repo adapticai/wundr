@@ -10,7 +10,11 @@ import * as fs from 'fs-extra';
 
 import { getLogger } from '../utils/logger';
 
-import type { DeveloperProfile, ProfilePreferences, RequiredTools } from '../types';
+import type {
+  DeveloperProfile,
+  ProfilePreferences,
+  RequiredTools,
+} from '../types';
 import type { ConfigManager } from '@wundr.io/config';
 
 const logger = getLogger('computer-setup:profiles');
@@ -54,12 +58,12 @@ export class ProfileManager {
   async getProfile(name: string): Promise<DeveloperProfile | null> {
     // Normalize the profile name
     const normalizedName = name.toLowerCase().replace(/\s+/g, '');
-    
+
     // Check loaded profiles
     if (this.profiles.has(normalizedName)) {
       return this.profiles.get(normalizedName) || null;
     }
-    
+
     // Check by original name too
     if (this.profiles.has(name)) {
       return this.profiles.get(name) || null;
@@ -104,18 +108,25 @@ export class ProfileManager {
    */
   async listProfiles(): Promise<DeveloperProfile[]> {
     await this.loadProfiles();
-    
+
     // If no profiles found, return predefined ones
     if (this.profiles.size === 0) {
       const predefinedProfiles = [
-        'frontend', 'backend', 'fullstack', 'devops', 'ml', 'mobile',
-      ].map(role => this.getPredefinedProfile(role)).filter(Boolean) as DeveloperProfile[];
-      
+        'frontend',
+        'backend',
+        'fullstack',
+        'devops',
+        'ml',
+        'mobile',
+      ]
+        .map(role => this.getPredefinedProfile(role))
+        .filter(Boolean) as DeveloperProfile[];
+
       predefinedProfiles.forEach(profile => {
         this.profiles.set(profile.name, profile);
       });
     }
-    
+
     return Array.from(this.profiles.values());
   }
 
@@ -147,7 +158,7 @@ export class ProfileManager {
   private getPredefinedProfile(role: string): DeveloperProfile | null {
     // Normalize the role name
     const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
-    
+
     const profiles: Record<string, DeveloperProfile> = {
       frontend: {
         name: 'Frontend Developer',
@@ -220,7 +231,8 @@ export class ProfileManager {
           st: 'status',
           unstage: 'reset HEAD --',
           last: 'log -1 HEAD',
-          visual: 'log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"',
+          visual:
+            'log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"',
         },
       },
       aiTools: {
@@ -276,7 +288,13 @@ export class ProfileManager {
 
   private getFrontendTools(): RequiredTools {
     const tools = this.getDefaultTools();
-    tools.languages.node!.globalPackages.push('vite', 'webpack', 'parcel', 'create-react-app', 'create-next-app');
+    tools.languages.node!.globalPackages.push(
+      'vite',
+      'webpack',
+      'parcel',
+      'create-react-app',
+      'create-next-app'
+    );
     return tools;
   }
 
@@ -286,7 +304,12 @@ export class ProfileManager {
 
   private getBackendTools(): RequiredTools {
     const tools = this.getDefaultTools();
-    tools.languages.node!.globalPackages.push('express', 'fastify', 'nest', 'pm2');
+    tools.languages.node!.globalPackages.push(
+      'express',
+      'fastify',
+      'nest',
+      'pm2'
+    );
     tools.databases = {
       postgresql: true,
       redis: true,
@@ -302,7 +325,12 @@ export class ProfileManager {
   private getFullstackTools(): RequiredTools {
     const tools = this.getDefaultTools();
     tools.languages.node!.globalPackages.push(
-      'vite', 'next', 'express', 'fastify', 'prisma', 'pm2',
+      'vite',
+      'next',
+      'express',
+      'fastify',
+      'prisma',
+      'pm2'
     );
     tools.databases = {
       postgresql: true,
@@ -366,11 +394,18 @@ export class ProfileManager {
 
   private getMobileTools(): RequiredTools {
     const tools = this.getDefaultTools();
-    tools.languages.node!.globalPackages.push('react-native', 'expo', 'eas-cli');
+    tools.languages.node!.globalPackages.push(
+      'react-native',
+      'expo',
+      'eas-cli'
+    );
     return tools;
   }
 
-  private mergeProfiles(existing: DeveloperProfile, update: DeveloperProfile): DeveloperProfile {
+  private mergeProfiles(
+    existing: DeveloperProfile,
+    update: DeveloperProfile
+  ): DeveloperProfile {
     return {
       ...existing,
       ...update,

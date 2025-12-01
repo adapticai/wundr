@@ -246,7 +246,7 @@ export class LayoutAnalyzer {
    */
   async analyzeLayout(
     blocks: OCRBlock[],
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): Promise<LayoutResult> {
     const startTime = Date.now();
 
@@ -283,8 +283,8 @@ export class LayoutAnalyzer {
       documentType,
       dimensions,
       columnCount,
-      hasHeader: regions.some((r) => r.type === RegionType.HEADER),
-      hasFooter: regions.some((r) => r.type === RegionType.FOOTER),
+      hasHeader: regions.some(r => r.type === RegionType.HEADER),
+      hasFooter: regions.some(r => r.type === RegionType.FOOTER),
       confidence: this.calculateLayoutConfidence(regions),
       metadata: {
         processingTime: Date.now() - startTime,
@@ -304,7 +304,7 @@ export class LayoutAnalyzer {
    */
   async detectTextRegions(blocks: OCRBlock[]): Promise<TextRegion[]> {
     return blocks
-      .filter((block) => block.blockType === BlockType.TEXT)
+      .filter(block => block.blockType === BlockType.TEXT)
       .map((block, index) => ({
         id: `text-${index}`,
         type: RegionType.TEXT as const,
@@ -351,9 +351,9 @@ export class LayoutAnalyzer {
    */
   async detectImages(
     blocks: OCRBlock[],
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): Promise<ImageRegion[]> {
-    const textRegions = blocks.map((b) => b.bbox);
+    const textRegions = blocks.map(b => b.bbox);
     const gaps = this.findLargeGaps(textRegions, dimensions);
 
     return gaps.map((gap, index) => ({
@@ -419,21 +419,21 @@ export class LayoutAnalyzer {
 
     for (let i = 0; i < regions.length; i++) {
       if (used.has(i)) {
-continue;
-}
+        continue;
+      }
 
       const region = { ...regions[i] };
       let bbox = { ...region.bbox };
 
       for (let j = i + 1; j < regions.length; j++) {
         if (used.has(j)) {
-continue;
-}
+          continue;
+        }
 
         const other = regions[j];
         if (region.type !== other.type) {
-continue;
-}
+          continue;
+        }
 
         if (this.areRegionsNearby(bbox, other.bbox, threshold)) {
           bbox = this.mergeBboxes(bbox, other.bbox);
@@ -452,9 +452,19 @@ continue;
   /**
    * Check if two regions are nearby
    */
-  private areRegionsNearby(a: BoundingBox, b: BoundingBox, threshold: number): boolean {
-    const horizontalGap = Math.max(0, Math.max(a.x0, b.x0) - Math.min(a.x1, b.x1));
-    const verticalGap = Math.max(0, Math.max(a.y0, b.y0) - Math.min(a.y1, b.y1));
+  private areRegionsNearby(
+    a: BoundingBox,
+    b: BoundingBox,
+    threshold: number
+  ): boolean {
+    const horizontalGap = Math.max(
+      0,
+      Math.max(a.x0, b.x0) - Math.min(a.x1, b.x1)
+    );
+    const verticalGap = Math.max(
+      0,
+      Math.max(a.y0, b.y0) - Math.min(a.y1, b.y1)
+    );
 
     return horizontalGap <= threshold && verticalGap <= threshold;
   }
@@ -476,12 +486,12 @@ continue;
    */
   private detectHeadersFooters(
     regions: Region[],
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): Region[] {
     const headerThreshold = dimensions.height * 0.1;
     const footerThreshold = dimensions.height * 0.9;
 
-    return regions.map((region) => {
+    return regions.map(region => {
       if (region.bbox.y1 < headerThreshold) {
         return { ...region, type: RegionType.HEADER };
       }
@@ -545,17 +555,21 @@ continue;
    */
   private createTableRegion(regions: Region[]): TableRegion | null {
     if (regions.length < 4) {
-return null;
-}
+      return null;
+    }
 
     const bbox = regions.reduce(
       (acc, r) => this.mergeBboxes(acc, r.bbox),
-      regions[0].bbox,
+      regions[0].bbox
     );
 
     // Estimate rows and columns
-    const yPositions = [...new Set(regions.map((r) => Math.round(r.bbox.y0 / 20) * 20))];
-    const xPositions = [...new Set(regions.map((r) => Math.round(r.bbox.x0 / 20) * 20))];
+    const yPositions = [
+      ...new Set(regions.map(r => Math.round(r.bbox.y0 / 20) * 20)),
+    ];
+    const xPositions = [
+      ...new Set(regions.map(r => Math.round(r.bbox.x0 / 20) * 20)),
+    ];
 
     return {
       id: `table-${Date.now()}`,
@@ -574,7 +588,7 @@ return null;
    */
   private determineReadingOrder(
     regions: Region[],
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): number[] {
     // Detect if multi-column
     const columnCount = this.detectColumnCount(regions, dimensions);
@@ -596,11 +610,11 @@ return null;
     indexed.sort((a, b) => {
       const yDiff = a.region.bbox.y0 - b.region.bbox.y0;
       if (Math.abs(yDiff) > 10) {
-return yDiff;
-}
+        return yDiff;
+      }
       return a.region.bbox.x0 - b.region.bbox.x0;
     });
-    return indexed.map((item) => item.index);
+    return indexed.map(item => item.index);
   }
 
   /**
@@ -609,7 +623,7 @@ return yDiff;
   private multiColumnOrder(
     regions: Region[],
     columnCount: number,
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): number[] {
     const columnWidth = dimensions.width / columnCount;
     const indexed = regions.map((r, i) => ({ region: r, index: i }));
@@ -619,12 +633,12 @@ return yDiff;
       const colB = Math.floor(b.region.bbox.x0 / columnWidth);
 
       if (colA !== colB) {
-return colA - colB;
-}
+        return colA - colB;
+      }
       return a.region.bbox.y0 - b.region.bbox.y0;
     });
 
-    return indexed.map((item) => item.index);
+    return indexed.map(item => item.index);
   }
 
   /**
@@ -632,24 +646,24 @@ return colA - colB;
    */
   private detectColumnCount(
     regions: Region[],
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): number {
     if (regions.length === 0) {
-return 1;
-}
+      return 1;
+    }
 
     // Find gaps in the middle of the page
     const middleX = dimensions.width / 2;
     const tolerance = dimensions.width * 0.1;
 
-    const hasMiddleGap = !regions.some((r) => {
+    const hasMiddleGap = !regions.some(r => {
       const midpoint = (r.bbox.x0 + r.bbox.x1) / 2;
       return Math.abs(midpoint - middleX) < tolerance;
     });
 
     // Check for consistent vertical alignment suggesting columns
-    const xPositions = regions.map((r) => r.bbox.x0);
-    const uniqueXs = [...new Set(xPositions.map((x) => Math.round(x / 50) * 50))];
+    const xPositions = regions.map(r => r.bbox.x0);
+    const uniqueXs = [...new Set(xPositions.map(x => Math.round(x / 50) * 50))];
 
     if (hasMiddleGap && uniqueXs.length >= 2) {
       return 2;
@@ -663,21 +677,28 @@ return 1;
    */
   private classifyDocumentType(
     regions: Region[],
-    _dimensions: { width: number; height: number },
+    _dimensions: { width: number; height: number }
   ): DocumentType {
     const text = regions
-      .filter((r) => r.text)
-      .map((r) => r.text!.toLowerCase())
+      .filter(r => r.text)
+      .map(r => r.text!.toLowerCase())
       .join(' ');
 
     // Check for document type indicators
-    if (text.includes('invoice') || text.includes('bill to') || text.includes('amount due')) {
+    if (
+      text.includes('invoice') ||
+      text.includes('bill to') ||
+      text.includes('amount due')
+    ) {
       return DocumentType.INVOICE;
     }
-    if (text.includes('receipt') || (text.includes('total') && text.includes('thank'))) {
+    if (
+      text.includes('receipt') ||
+      (text.includes('total') && text.includes('thank'))
+    ) {
       return DocumentType.RECEIPT;
     }
-    if (regions.some((r) => r.type === RegionType.TABLE)) {
+    if (regions.some(r => r.type === RegionType.TABLE)) {
       return DocumentType.TABLE;
     }
     if (text.includes('dear') && text.includes('sincerely')) {
@@ -703,8 +724,8 @@ return 1;
     }
 
     if (lineHeights.length === 0) {
-return 0;
-}
+      return 0;
+    }
     return lineHeights.reduce((a, b) => a + b, 0) / lineHeights.length;
   }
 
@@ -712,38 +733,38 @@ return 0;
    * Detect text alignment
    */
   private detectTextAlignment(
-    block: OCRBlock,
+    block: OCRBlock
   ): 'left' | 'center' | 'right' | 'justified' | undefined {
     if (block.paragraphs.length === 0) {
-return undefined;
-}
+      return undefined;
+    }
 
-    const lines = block.paragraphs.flatMap((p) => p.lines);
+    const lines = block.paragraphs.flatMap(p => p.lines);
     if (lines.length < 2) {
-return undefined;
-}
+      return undefined;
+    }
 
-    const leftMargins = lines.map((l) => l.bbox.x0);
-    const rightMargins = lines.map((l) => l.bbox.x1);
+    const leftMargins = lines.map(l => l.bbox.x0);
+    const rightMargins = lines.map(l => l.bbox.x1);
 
     const leftVariance = this.variance(leftMargins);
     const rightVariance = this.variance(rightMargins);
 
     if (leftVariance < 10 && rightVariance < 10) {
-return 'justified';
-}
+      return 'justified';
+    }
     if (leftVariance < 10) {
-return 'left';
-}
+      return 'left';
+    }
     if (rightVariance < 10) {
-return 'right';
-}
+      return 'right';
+    }
 
     // Check for center alignment
-    const centers = lines.map((l) => (l.bbox.x0 + l.bbox.x1) / 2);
+    const centers = lines.map(l => (l.bbox.x0 + l.bbox.x1) / 2);
     if (this.variance(centers) < 20) {
-return 'center';
-}
+      return 'center';
+    }
 
     return 'left';
   }
@@ -753,10 +774,13 @@ return 'center';
    */
   private variance(values: number[]): number {
     if (values.length === 0) {
-return 0;
-}
+      return 0;
+    }
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    return values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    return (
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      values.length
+    );
   }
 
   /**
@@ -764,7 +788,7 @@ return 0;
    */
   private findPotentialTableBlocks(blocks: OCRBlock[]): OCRBlock[][] {
     // Group blocks that might form tables based on alignment
-    return [blocks.filter((b) => b.blockType === BlockType.TABLE)];
+    return [blocks.filter(b => b.blockType === BlockType.TABLE)];
   }
 
   /**
@@ -772,12 +796,12 @@ return 0;
    */
   private analyzeTableStructure(blocks: OCRBlock[]): TableRegion | null {
     if (blocks.length === 0) {
-return null;
-}
+      return null;
+    }
 
     const bbox = blocks.reduce(
       (acc, b) => this.mergeBboxes(acc, b.bbox),
-      blocks[0].bbox,
+      blocks[0].bbox
     );
 
     return {
@@ -797,7 +821,7 @@ return null;
    */
   private findLargeGaps(
     textRegions: BoundingBox[],
-    dimensions: { width: number; height: number },
+    dimensions: { width: number; height: number }
   ): BoundingBox[] {
     const gaps: BoundingBox[] = [];
     const minGapSize = Math.min(dimensions.width, dimensions.height) * 0.1;
@@ -829,7 +853,7 @@ return null;
   private hasNearbyCaption(bbox: BoundingBox, blocks: OCRBlock[]): boolean {
     const captionDistance = 50;
 
-    return blocks.some((block) => {
+    return blocks.some(block => {
       const distance = Math.abs(block.bbox.y0 - bbox.y1);
       return distance < captionDistance && block.text.length < 200;
     });
@@ -840,8 +864,8 @@ return null;
    */
   private calculateLayoutConfidence(regions: Region[]): number {
     if (regions.length === 0) {
-return 0;
-}
+      return 0;
+    }
     const avgConfidence =
       regions.reduce((sum, r) => sum + r.confidence, 0) / regions.length;
     return Math.round(avgConfidence);
@@ -855,7 +879,7 @@ return 0;
  * @returns New LayoutAnalyzer instance
  */
 export function createLayoutAnalyzer(
-  options?: Partial<LayoutAnalyzerOptions>,
+  options?: Partial<LayoutAnalyzerOptions>
 ): LayoutAnalyzer {
   return new LayoutAnalyzer(options);
 }

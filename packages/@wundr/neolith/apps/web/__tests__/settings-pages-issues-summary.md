@@ -1,14 +1,14 @@
 # Settings Pages - Critical Issues & Recommendations
 
-**Generated:** 2025-11-27
-**Agent:** QA Engineer (Agent 8)
-**Scope:** Settings Pages Analysis & Testing
+**Generated:** 2025-11-27 **Agent:** QA Engineer (Agent 8) **Scope:** Settings Pages Analysis &
+Testing
 
 ---
 
 ## Executive Summary
 
-Analysis of the Settings section revealed **2 critical missing pages** and **several high-priority issues** that will cause user-facing errors. The core functionality is implemented but incomplete.
+Analysis of the Settings section revealed **2 critical missing pages** and **several high-priority
+issues** that will cause user-facing errors. The core functionality is implemented but incomplete.
 
 **Overall Status:** 🟡 PARTIALLY FUNCTIONAL (66% complete)
 
@@ -25,9 +25,11 @@ Analysis of the Settings section revealed **2 critical missing pages** and **sev
 **Impact:** Users clicking "Notifications" or "Security" in settings will get 404 errors
 
 **Files Affected:**
+
 - `/app/(workspace)/[workspaceId]/settings/layout.tsx` (lines 77-78)
 
 **Missing Files:**
+
 - `/app/(workspace)/[workspaceId]/settings/notifications/page.tsx` ❌
 - `/app/(workspace)/[workspaceId]/settings/security/page.tsx` ❌
 
@@ -59,9 +61,7 @@ export default function SecurityPage() {
 }
 ```
 
-**Priority:** 🔴 CRITICAL
-**Effort:** 1 hour
-**Assignee:** Frontend Engineer
+**Priority:** 🔴 CRITICAL **Effort:** 1 hour **Assignee:** Frontend Engineer
 
 ---
 
@@ -76,6 +76,7 @@ export default function SecurityPage() {
 **Lines:** 385-394
 
 **Current Code:**
+
 ```typescript
 <a href="./settings/profile">Advanced Profile Settings</a>
 <a href="./settings/integrations">Integration Settings</a>
@@ -83,6 +84,7 @@ export default function SecurityPage() {
 ```
 
 **Fixed Code:**
+
 ```typescript
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -95,9 +97,7 @@ const workspaceId = params?.workspaceId;
 <Link href={`/${workspaceId}/settings/notifications`}>Detailed Notification Settings</Link>
 ```
 
-**Priority:** 🔴 HIGH
-**Effort:** 30 minutes
-**Assignee:** Frontend Engineer
+**Priority:** 🔴 HIGH **Effort:** 30 minutes **Assignee:** Frontend Engineer
 
 ---
 
@@ -112,20 +112,20 @@ const workspaceId = params?.workspaceId;
 **Lines:** 23-50
 
 **Current State:**
+
 - No useState hooks for inputs
 - Save button does nothing
 - No API integration
 
 **Required Changes:**
+
 1. Add state management for form fields
 2. Implement save handler with API call
 3. Add loading states
 4. Add success/error notifications
 5. Add form validation
 
-**Priority:** 🟡 MEDIUM-HIGH
-**Effort:** 3-4 hours
-**Assignee:** Frontend Engineer
+**Priority:** 🟡 MEDIUM-HIGH **Effort:** 3-4 hours **Assignee:** Frontend Engineer
 
 ---
 
@@ -138,6 +138,7 @@ const workspaceId = params?.workspaceId;
 **Impact:** Users could accidentally delete data
 
 **Affected Actions:**
+
 1. Delete Account button (settings/page.tsx:365)
 2. Disconnect Integration (settings/integrations/page.tsx:726)
 3. Delete Webhook (settings/integrations/page.tsx:835)
@@ -169,9 +170,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 </AlertDialog>
 ```
 
-**Priority:** 🟡 MEDIUM
-**Effort:** 2 hours
-**Assignee:** Frontend Engineer
+**Priority:** 🟡 MEDIUM **Effort:** 2 hours **Assignee:** Frontend Engineer
 
 ---
 
@@ -182,6 +181,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 **Impact:** Inconsistent user experience, accessibility issues
 
 **Files:**
+
 - `/app/(workspace)/[workspaceId]/settings/profile/page.tsx` (lines 101-114)
 - `/app/(workspace)/[workspaceId]/settings/page.tsx` (uses Switch correctly)
 
@@ -202,9 +202,7 @@ import { Switch } from '@/components/ui/switch';
 </div>
 ```
 
-**Priority:** 🟢 LOW-MEDIUM
-**Effort:** 1 hour
-**Assignee:** Frontend Engineer
+**Priority:** 🟢 LOW-MEDIUM **Effort:** 1 hour **Assignee:** Frontend Engineer
 
 ---
 
@@ -217,6 +215,7 @@ import { Switch } from '@/components/ui/switch';
 **File:** `/app/(workspace)/[workspaceId]/settings/layout.tsx` (lines 30-70)
 
 **Risk Scenario:**
+
 - User has no workspace membership
 - Redirect to first workspace fails
 - Redirect to onboarding fails
@@ -244,9 +243,7 @@ export function SettingsLayoutGuard({ children }) {
 }
 ```
 
-**Priority:** 🟡 MEDIUM
-**Effort:** 2 hours
-**Assignee:** Backend Engineer
+**Priority:** 🟡 MEDIUM **Effort:** 2 hours **Assignee:** Backend Engineer
 
 ---
 
@@ -257,16 +254,16 @@ export function SettingsLayoutGuard({ children }) {
 **Impact:** User confusion about which setting takes precedence
 
 **Files:**
+
 - `/app/(workspace)/[workspaceId]/settings/page.tsx` (line 188)
 - `/app/(workspace)/[workspaceId]/settings/profile/page.tsx` (line 63)
 
 **Solution:**
 
-Move theme toggle exclusively to Appearance settings page. Remove from other pages and add navigation link instead.
+Move theme toggle exclusively to Appearance settings page. Remove from other pages and add
+navigation link instead.
 
-**Priority:** 🟢 LOW
-**Effort:** 1 hour
-**Assignee:** Frontend Engineer
+**Priority:** 🟢 LOW **Effort:** 1 hour **Assignee:** Frontend Engineer
 
 ---
 
@@ -279,24 +276,25 @@ Move theme toggle exclusively to Appearance settings page. Remove from other pag
 **File:** `/app/(workspace)/[workspaceId]/settings/page.tsx` (lines 45-50)
 
 **Current Code:**
+
 ```typescript
 const handleProfileSave = async () => {
   setIsSaving(true);
   // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 1000));
   setIsSaving(false);
 };
 ```
 
 **Required:**
+
 - Create API route: `/api/workspaces/[workspaceId]/settings/profile`
 - Implement PATCH handler
 - Add error handling
 - Add optimistic updates
 
-**Priority:** 🟢 LOW (functional but not persistent)
-**Effort:** 4-6 hours
-**Assignee:** Backend Engineer + Frontend Engineer
+**Priority:** 🟢 LOW (functional but not persistent) **Effort:** 4-6 hours **Assignee:** Backend
+Engineer + Frontend Engineer
 
 ---
 
@@ -331,6 +329,7 @@ const handleProfileSave = async () => {
 ## Implementation Plan
 
 ### Phase 1: Critical Fixes (Week 1)
+
 **Goal:** Eliminate 404 errors and broken navigation
 
 - [ ] Create notifications page stub
@@ -339,12 +338,12 @@ const handleProfileSave = async () => {
 - [ ] Deploy to staging
 - [ ] Verify all navigation works
 
-**Estimated Time:** 4 hours
-**Assignee:** Frontend Engineer
+**Estimated Time:** 4 hours **Assignee:** Frontend Engineer
 
 ---
 
 ### Phase 2: High Priority Fixes (Week 2)
+
 **Goal:** Add essential functionality
 
 - [ ] Implement profile form state management
@@ -354,12 +353,12 @@ const handleProfileSave = async () => {
 - [ ] Deploy to staging
 - [ ] QA testing
 
-**Estimated Time:** 12 hours
-**Assignee:** Frontend Engineer
+**Estimated Time:** 12 hours **Assignee:** Frontend Engineer
 
 ---
 
 ### Phase 3: Polish & Testing (Week 3)
+
 **Goal:** Improve consistency and add tests
 
 - [ ] Standardize component usage (Switch vs checkbox)
@@ -369,14 +368,14 @@ const handleProfileSave = async () => {
 - [ ] Accessibility audit
 - [ ] Deploy to production
 
-**Estimated Time:** 16 hours
-**Assignee:** Frontend Engineer + QA Engineer
+**Estimated Time:** 16 hours **Assignee:** Frontend Engineer + QA Engineer
 
 ---
 
 ## Success Criteria
 
 ### Must Have (MVP)
+
 - ✅ All navigation items work (no 404s)
 - ✅ Forms can be submitted and saved
 - ✅ Confirmation dialogs on destructive actions
@@ -384,6 +383,7 @@ const handleProfileSave = async () => {
 - ✅ Mobile responsive
 
 ### Should Have
+
 - ✅ Consistent component usage
 - ✅ Form validation
 - ✅ Loading states
@@ -391,6 +391,7 @@ const handleProfileSave = async () => {
 - ✅ Automated tests
 
 ### Nice to Have
+
 - ⭕ Real-time validation
 - ⭕ Undo functionality
 - ⭕ Keyboard shortcuts
@@ -402,6 +403,7 @@ const handleProfileSave = async () => {
 ## File Inventory
 
 ### Existing Files
+
 ```
 ✅ app/(workspace)/[workspaceId]/settings/layout.tsx
 ✅ app/(workspace)/[workspaceId]/settings/page.tsx
@@ -413,6 +415,7 @@ const handleProfileSave = async () => {
 ```
 
 ### Missing Files (Need Creation)
+
 ```
 ❌ app/(workspace)/[workspaceId]/settings/notifications/page.tsx
 ❌ app/(workspace)/[workspaceId]/settings/security/page.tsx
@@ -421,6 +424,7 @@ const handleProfileSave = async () => {
 ```
 
 ### Created Test Files
+
 ```
 ✅ __tests__/settings-pages-test-report.md (Detailed findings)
 ✅ __tests__/settings-pages-e2e-test.ts (Playwright test suite)
@@ -458,12 +462,11 @@ const handleProfileSave = async () => {
 
 ## Contact
 
-**Report Generated By:** QA Engineer Agent (Agent 8)
-**Date:** 2025-11-27
-**Method:** Static Code Analysis + Manual Review
-**Test Coverage:** 4 of 6 pages analyzed
+**Report Generated By:** QA Engineer Agent (Agent 8) **Date:** 2025-11-27 **Method:** Static Code
+Analysis + Manual Review **Test Coverage:** 4 of 6 pages analyzed
 
 **For Questions:**
+
 - Technical Issues: Contact Frontend Engineering Lead
 - Requirements: Contact Product Owner
 - Testing: Contact QA Lead
@@ -473,6 +476,7 @@ const handleProfileSave = async () => {
 ## Appendix: Quick Reference
 
 ### Settings Page URLs
+
 ```
 Main Settings:      /{workspaceId}/settings
 Profile:            /{workspaceId}/settings/profile
@@ -483,6 +487,7 @@ Security:           /{workspaceId}/settings/security (404)
 ```
 
 ### Key Selectors for Testing
+
 ```
 Header:             h1
 Name Input:         #name
@@ -495,6 +500,7 @@ Sidebar:            aside
 ```
 
 ### API Endpoints
+
 ```
 Profile Settings:   PATCH /api/workspaces/{id}/settings/profile
 Account Settings:   PATCH /api/workspaces/{id}/settings/account

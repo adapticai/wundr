@@ -38,8 +38,6 @@ import type {
   MessageParam,
 } from '@anthropic-ai/sdk/resources/messages';
 
-
-
 /**
  * Supported Anthropic Claude models
  */
@@ -92,12 +90,17 @@ export class AnthropicClient implements LLMClient {
       const tools = params.tools ? this.convertTools(params.tools) : undefined;
 
       const requestParams: MessageCreateParamsNonStreaming = {
-        model: params.model || this.config.defaultModel || ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
+        model:
+          params.model ||
+          this.config.defaultModel ||
+          ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
         max_tokens: params.maxTokens || 4096,
         messages,
         ...(systemMessage && { system: systemMessage }),
         ...(tools && tools.length > 0 && { tools }),
-        ...(params.temperature !== undefined && { temperature: params.temperature }),
+        ...(params.temperature !== undefined && {
+          temperature: params.temperature,
+        }),
         ...(params.topP !== undefined && { top_p: params.topP }),
         ...(params.stop && { stop_sequences: params.stop }),
       };
@@ -119,13 +122,18 @@ export class AnthropicClient implements LLMClient {
       const tools = params.tools ? this.convertTools(params.tools) : undefined;
 
       const requestParams: MessageCreateParamsStreaming = {
-        model: params.model || this.config.defaultModel || ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
+        model:
+          params.model ||
+          this.config.defaultModel ||
+          ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
         max_tokens: params.maxTokens || 4096,
         messages,
         stream: true,
         ...(systemMessage && { system: systemMessage }),
         ...(tools && tools.length > 0 && { tools }),
-        ...(params.temperature !== undefined && { temperature: params.temperature }),
+        ...(params.temperature !== undefined && {
+          temperature: params.temperature,
+        }),
         ...(params.topP !== undefined && { top_p: params.topP }),
         ...(params.stop && { stop_sequences: params.stop }),
       };
@@ -221,8 +229,9 @@ export class AnthropicClient implements LLMClient {
     systemMessage?: string;
     messages: MessageParam[];
   } {
-    const systemMessages = messages.filter((m) => m.role === 'system');
-    const systemMessage = systemMessages.map((m) => m.content).join('\n') || undefined;
+    const systemMessages = messages.filter(m => m.role === 'system');
+    const systemMessage =
+      systemMessages.map(m => m.content).join('\n') || undefined;
 
     const anthropicMessages: MessageParam[] = [];
 
@@ -243,7 +252,11 @@ export class AnthropicClient implements LLMClient {
             },
           ],
         });
-      } else if (message.role === 'assistant' && message.toolCalls && message.toolCalls.length > 0) {
+      } else if (
+        message.role === 'assistant' &&
+        message.toolCalls &&
+        message.toolCalls.length > 0
+      ) {
         // Assistant message with tool calls
         const content: Array<TextBlock | ToolUseBlock> = [];
 
@@ -283,7 +296,7 @@ export class AnthropicClient implements LLMClient {
    * Convert tools from LLMClient format to Anthropic format
    */
   private convertTools(tools: ToolDefinition[]): AnthropicTool[] {
-    return tools.map((tool) => ({
+    return tools.map(tool => ({
       name: tool.name,
       description: tool.description,
       input_schema: tool.inputSchema,
@@ -353,7 +366,8 @@ export class AnthropicClient implements LLMClient {
         } else if (event.delta.type === 'input_json_delta') {
           const toolCall = currentToolCalls.get(event.index);
           if (toolCall) {
-            toolCall.arguments = (toolCall.arguments || '') + event.delta.partial_json;
+            toolCall.arguments =
+              (toolCall.arguments || '') + event.delta.partial_json;
             return {
               id: '',
               delta: '',
@@ -398,7 +412,10 @@ export class AnthropicClient implements LLMClient {
   /**
    * Convert usage statistics
    */
-  private convertUsage(usage: { input_tokens: number; output_tokens: number }): TokenUsage {
+  private convertUsage(usage: {
+    input_tokens: number;
+    output_tokens: number;
+  }): TokenUsage {
     return {
       promptTokens: usage.input_tokens,
       completionTokens: usage.output_tokens,
@@ -444,9 +461,19 @@ export class AnthropicClient implements LLMClient {
     }
 
     if (error instanceof Error) {
-      return new LLMError(error.message, 'UNKNOWN_ERROR', undefined, this.provider);
+      return new LLMError(
+        error.message,
+        'UNKNOWN_ERROR',
+        undefined,
+        this.provider
+      );
     }
 
-    return new LLMError('Unknown error occurred', 'UNKNOWN_ERROR', undefined, this.provider);
+    return new LLMError(
+      'Unknown error occurred',
+      'UNKNOWN_ERROR',
+      undefined,
+      this.provider
+    );
   }
 }

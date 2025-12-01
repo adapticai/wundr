@@ -160,7 +160,10 @@ async function fetcher<T>(url: string): Promise<T> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error?.message || `Request failed: ${response.status} ${response.statusText}`);
+    throw new Error(
+      errorData.error?.message ||
+        `Request failed: ${response.status} ${response.statusText}`
+    );
   }
 
   const result: ApiResponse<T> = await response.json();
@@ -262,7 +265,9 @@ export interface UseBudgetReturn {
  */
 export function useBudget(orchestratorId: string): UseBudgetReturn {
   const shouldFetch = Boolean(orchestratorId);
-  const url = shouldFetch ? `/api/orchestrators/${orchestratorId}/budget` : null;
+  const url = shouldFetch
+    ? `/api/orchestrators/${orchestratorId}/budget`
+    : null;
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<BudgetStatus>(
     url,
@@ -338,11 +343,9 @@ export function useUsageHistory(
     ? `/api/orchestrators/${orchestratorId}/budget/history?${queryString}`
     : null;
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<UsageHistoryPoint[]>(
-    url,
-    fetcher,
-    HISTORY_SWR_CONFIG
-  );
+  const { data, error, isLoading, isValidating, mutate } = useSWR<
+    UsageHistoryPoint[]
+  >(url, fetcher, HISTORY_SWR_CONFIG);
 
   const refetch = useCallback(() => {
     void mutate();
@@ -412,7 +415,9 @@ export interface UseBudgetAlertsReturn {
  */
 export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
   const shouldFetch = Boolean(orchestratorId);
-  const url = shouldFetch ? `/api/orchestrators/${orchestratorId}/budget/alerts` : null;
+  const url = shouldFetch
+    ? `/api/orchestrators/${orchestratorId}/budget/alerts`
+    : null;
 
   const { data, error, isLoading, mutate } = useSWR<BudgetAlert[]>(
     url,
@@ -421,48 +426,56 @@ export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
   );
 
   // Mutation for acknowledging an alert
-  const { trigger: triggerAcknowledge, isMutating: isAcknowledging } = useSWRMutation(
-    url,
-    async (url: string, { arg }: { arg: { alertId: string } }) => {
-      const response = await fetch(`${url}/${arg.alertId}/acknowledge`, {
-        method: 'POST',
-      });
+  const { trigger: triggerAcknowledge, isMutating: isAcknowledging } =
+    useSWRMutation(
+      url,
+      async (url: string, { arg }: { arg: { alertId: string } }) => {
+        const response = await fetch(`${url}/${arg.alertId}/acknowledge`, {
+          method: 'POST',
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to acknowledge alert');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message || 'Failed to acknowledge alert'
+          );
+        }
+
+        return response.json();
       }
-
-      return response.json();
-    }
-  );
+    );
 
   // Mutation for configuring alerts
-  const { trigger: triggerConfigure, isMutating: isConfiguring } = useSWRMutation(
-    shouldFetch ? `/api/orchestrators/${orchestratorId}/budget/alerts/config` : null,
-    async (url: string, { arg }: { arg: AlertConfig }) => {
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(arg),
-      });
+  const { trigger: triggerConfigure, isMutating: isConfiguring } =
+    useSWRMutation(
+      shouldFetch
+        ? `/api/orchestrators/${orchestratorId}/budget/alerts/config`
+        : null,
+      async (url: string, { arg }: { arg: AlertConfig }) => {
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(arg),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to update alert configuration');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message || 'Failed to update alert configuration'
+          );
+        }
+
+        return response.json();
       }
-
-      return response.json();
-    }
-  );
+    );
 
   const acknowledge = useCallback(
     async (alertId: string): Promise<void> => {
       await triggerAcknowledge({ alertId });
       // Optimistically update the local data
       void mutate(
-        (currentData) =>
-          currentData?.map((alert) =>
+        currentData =>
+          currentData?.map(alert =>
             alert.id === alertId
               ? { ...alert, acknowledged: true, acknowledgedAt: new Date() }
               : alert
@@ -541,14 +554,16 @@ export interface UseBudgetMutationsReturn {
  * }
  * ```
  */
-export function useBudgetMutations(orchestratorId: string): UseBudgetMutationsReturn {
+export function useBudgetMutations(
+  orchestratorId: string
+): UseBudgetMutationsReturn {
   const budgetUrl = `/api/orchestrators/${orchestratorId}/budget`;
 
   // Mutation for updating budget limits
   const {
     trigger: triggerUpdateBudget,
     isMutating: isUpdatingBudget,
-    error: updateBudgetError
+    error: updateBudgetError,
   } = useSWRMutation(
     budgetUrl,
     async (url: string, { arg }: { arg: BudgetLimits }) => {
@@ -560,7 +575,9 @@ export function useBudgetMutations(orchestratorId: string): UseBudgetMutationsRe
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to update budget limits');
+        throw new Error(
+          errorData.error?.message || 'Failed to update budget limits'
+        );
       }
 
       const result: ApiResponse<BudgetStatus> = await response.json();
@@ -568,7 +585,7 @@ export function useBudgetMutations(orchestratorId: string): UseBudgetMutationsRe
     },
     {
       // Optimistically update the budget data
-      optimisticData: (currentData) =>
+      optimisticData: currentData =>
         currentData
           ? {
               ...currentData,
@@ -584,7 +601,7 @@ export function useBudgetMutations(orchestratorId: string): UseBudgetMutationsRe
   const {
     trigger: triggerSetAutoPause,
     isMutating: isSettingAutoPause,
-    error: setAutoPauseError
+    error: setAutoPauseError,
   } = useSWRMutation(
     budgetUrl,
     async (url: string, { arg }: { arg: { enabled: boolean } }) => {
@@ -596,7 +613,9 @@ export function useBudgetMutations(orchestratorId: string): UseBudgetMutationsRe
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to update auto-pause setting');
+        throw new Error(
+          errorData.error?.message || 'Failed to update auto-pause setting'
+        );
       }
 
       const result: ApiResponse<BudgetStatus> = await response.json();
@@ -604,7 +623,7 @@ export function useBudgetMutations(orchestratorId: string): UseBudgetMutationsRe
     },
     {
       // Optimistically update the budget data
-      optimisticData: (currentData) =>
+      optimisticData: currentData =>
         currentData
           ? {
               ...currentData,

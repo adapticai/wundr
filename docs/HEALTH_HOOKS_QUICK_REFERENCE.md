@@ -1,6 +1,7 @@
 # Health Dashboard Hooks - Quick Reference
 
 ## Import
+
 ```typescript
 import {
   useHealthDashboard,
@@ -11,6 +12,7 @@ import {
 ```
 
 ## 1. System Overview
+
 ```typescript
 const { overview, isLoading, error, refetch } = useHealthDashboard();
 
@@ -19,13 +21,14 @@ const { overview, isLoading, error, refetch } = useHealthDashboard();
 ```
 
 ## 2. Orchestrator List
+
 ```typescript
 const { orchestrators, total, pagination } = useOrchestratorHealth({
-  status: 'degraded',     // Filter: 'healthy' | 'degraded' | 'unhealthy'
-  page: 1,                // Pagination
-  limit: 20,              // Items per page
+  status: 'degraded', // Filter: 'healthy' | 'degraded' | 'unhealthy'
+  page: 1, // Pagination
+  limit: 20, // Items per page
   sortBy: 'responseTime', // Sort: 'name' | 'status' | 'responseTime' | 'uptime'
-  sortOrder: 'desc',      // 'asc' | 'desc'
+  sortOrder: 'desc', // 'asc' | 'desc'
 });
 
 // Auto-refreshes every 30s
@@ -33,6 +36,7 @@ const { orchestrators, total, pagination } = useOrchestratorHealth({
 ```
 
 ## 3. Metrics Chart
+
 ```typescript
 const { chartData, timeRange, setTimeRange } = useMetricsChart('24h');
 
@@ -42,6 +46,7 @@ const { chartData, timeRange, setTimeRange } = useMetricsChart('24h');
 ```
 
 ## 4. Alerts
+
 ```typescript
 const { alerts, acknowledgeAlert, filterBySeverity } = useHealthAlerts();
 
@@ -53,6 +58,7 @@ await acknowledgeAlert('alert-id');
 ```
 
 ## API Endpoints Needed
+
 - GET `/api/admin/health`
 - GET `/api/admin/health/orchestrators?status={}&page={}&limit={}`
 - GET `/api/admin/health/metrics?timeRange={}`
@@ -60,6 +66,7 @@ await acknowledgeAlert('alert-id');
 - POST `/api/admin/health/alerts/{id}/acknowledge`
 
 ## Features
+
 - Auto-refresh (30s for health, 60s for metrics)
 - Toast error notifications
 - Optimistic UI updates

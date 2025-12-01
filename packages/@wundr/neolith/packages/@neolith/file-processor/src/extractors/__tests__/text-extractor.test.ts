@@ -15,7 +15,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { FileType } from '../../types';
 
-import type { ProcessorResult, FileMetadata, PageContent, TableData } from '../../types';
+import type {
+  ProcessorResult,
+  FileMetadata,
+  PageContent,
+  TableData,
+} from '../../types';
 
 // =============================================================================
 // MOCK SETUP
@@ -92,7 +97,7 @@ function createTextExtractionService(): TextExtractionService {
     extractFromPDF: vi.fn(
       async (
         filePath: string,
-        options: TextExtractionOptions = {},
+        options: TextExtractionOptions = {}
       ): Promise<ProcessorResult> => {
         const pdfResult = await mockPdfParse(filePath, options);
 
@@ -112,15 +117,17 @@ function createTextExtractionService(): TextExtractionService {
           metadata,
           processingTime: 100,
           pages: pdfResult.pages,
-          structuredData: options.extractTables ? { tables: pdfResult.tables } : undefined,
+          structuredData: options.extractTables
+            ? { tables: pdfResult.tables }
+            : undefined,
         };
-      },
+      }
     ),
 
     extractFromDocx: vi.fn(
       async (
         filePath: string,
-        options: TextExtractionOptions = {},
+        options: TextExtractionOptions = {}
       ): Promise<ProcessorResult> => {
         const [htmlResult, textResult] = await Promise.all([
           mockMammoth.convertToHtml({ path: filePath }),
@@ -145,18 +152,22 @@ function createTextExtractionService(): TextExtractionService {
             images: options.extractImages ? htmlResult.images : undefined,
           },
         };
-      },
+      }
     ),
 
     extractFromXlsx: vi.fn(
       async (
         filePath: string,
-        _options: TextExtractionOptions = {},
+        _options: TextExtractionOptions = {}
       ): Promise<ProcessorResult> => {
         const workbook = new mockExcelJS.Workbook();
         await workbook.xlsx.readFile(filePath);
 
-        const sheets: Array<{ name: string; data: string[][]; headers: string[] }> = [];
+        const sheets: Array<{
+          name: string;
+          data: string[][];
+          headers: string[];
+        }> = [];
         workbook.eachSheet((worksheet: unknown, _sheetId: number) => {
           sheets.push({
             name: (worksheet as { name: string }).name,
@@ -167,8 +178,8 @@ function createTextExtractionService(): TextExtractionService {
 
         const content = sheets
           .map(
-            (s) =>
-              `=== ${s.name} ===\n${s.headers.join('\t')}\n${s.data.map((r) => r.join('\t')).join('\n')}`,
+            s =>
+              `=== ${s.name} ===\n${s.headers.join('\t')}\n${s.data.map(r => r.join('\t')).join('\n')}`
           )
           .join('\n\n');
 
@@ -190,7 +201,7 @@ function createTextExtractionService(): TextExtractionService {
           processingTime: 75,
           structuredData: { sheets },
         };
-      },
+      }
     ),
   };
 }
@@ -229,7 +240,9 @@ describe('TextExtractionService', () => {
       const result = await service.extractFromPDF('/path/to/document.pdf');
 
       expect(result.success).toBe(true);
-      expect(result.content).toBe('This is the extracted text from the PDF document.');
+      expect(result.content).toBe(
+        'This is the extracted text from the PDF document.'
+      );
       expect(result.metadata.pageCount).toBe(5);
       expect(result.metadata.title).toBe('Test Document');
       expect(result.metadata.author).toBe('Test Author');
@@ -260,7 +273,11 @@ describe('TextExtractionService', () => {
 
       expect(result.success).toBe(true);
       expect(result.structuredData?.tables).toHaveLength(1);
-      expect(result.structuredData?.tables[0].headers).toEqual(['Name', 'Age', 'City']);
+      expect(result.structuredData?.tables[0].headers).toEqual([
+        'Name',
+        'Age',
+        'City',
+      ]);
       expect(result.structuredData?.tables[0].rows).toHaveLength(2);
     });
 
@@ -331,9 +348,9 @@ describe('TextExtractionService', () => {
     it('handles PDF parsing errors', async () => {
       mockPdfParse.mockRejectedValue(new Error('Invalid PDF structure'));
 
-      await expect(service.extractFromPDF('/path/to/corrupted.pdf')).rejects.toThrow(
-        'Invalid PDF structure',
-      );
+      await expect(
+        service.extractFromPDF('/path/to/corrupted.pdf')
+      ).rejects.toThrow('Invalid PDF structure');
     });
 
     it('respects maxPages option', async () => {
@@ -350,7 +367,9 @@ describe('TextExtractionService', () => {
 
       await service.extractFromPDF('/path/to/large.pdf', { maxPages: 2 });
 
-      expect(mockPdfParse).toHaveBeenCalledWith('/path/to/large.pdf', { maxPages: 2 });
+      expect(mockPdfParse).toHaveBeenCalledWith('/path/to/large.pdf', {
+        maxPages: 2,
+      });
     });
   });
 
@@ -374,7 +393,7 @@ describe('TextExtractionService', () => {
       expect(result.success).toBe(true);
       expect(result.content).toBe('This is a Word document.');
       expect(result.metadata.mimeType).toBe(
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
     });
 
@@ -401,7 +420,9 @@ describe('TextExtractionService', () => {
 
       expect(result.success).toBe(true);
       expect(result.structuredData?.html).toContain('<h1>Title</h1>');
-      expect(result.structuredData?.html).toContain('<strong>Bold text</strong>');
+      expect(result.structuredData?.html).toContain(
+        '<strong>Bold text</strong>'
+      );
     });
 
     it('extracts images', async () => {
@@ -429,11 +450,13 @@ describe('TextExtractionService', () => {
     });
 
     it('handles DOCX parsing errors', async () => {
-      mockMammoth.convertToHtml.mockRejectedValue(new Error('Invalid DOCX file'));
-
-      await expect(service.extractFromDocx('/path/to/invalid.docx')).rejects.toThrow(
-        'Invalid DOCX file',
+      mockMammoth.convertToHtml.mockRejectedValue(
+        new Error('Invalid DOCX file')
       );
+
+      await expect(
+        service.extractFromDocx('/path/to/invalid.docx')
+      ).rejects.toThrow('Invalid DOCX file');
     });
 
     it('handles empty DOCX', async () => {
@@ -490,7 +513,10 @@ describe('TextExtractionService', () => {
           {
             name: 'Data',
             getRow: vi.fn((row: number) => ({
-              values: row === 1 ? ['Name', 'Value', 'Date'] : ['Test', 123.45, new Date()],
+              values:
+                row === 1
+                  ? ['Name', 'Value', 'Date']
+                  : ['Test', 123.45, new Date()],
             })),
           },
         ],
@@ -556,9 +582,9 @@ describe('TextExtractionService', () => {
 
       mockExcelJS.Workbook.mockImplementation(() => mockWorkbook);
 
-      await expect(service.extractFromXlsx('/path/to/invalid.xlsx')).rejects.toThrow(
-        'Invalid spreadsheet',
-      );
+      await expect(
+        service.extractFromXlsx('/path/to/invalid.xlsx')
+      ).rejects.toThrow('Invalid spreadsheet');
     });
 
     it('extracts with firstRowAsHeaders option', async () => {
@@ -600,17 +626,21 @@ describe('TextExtractionService', () => {
       vi.mocked(await import('fs')).existsSync = vi.fn(() => false);
 
       // Reset mock to simulate file not found
-      mockPdfParse.mockRejectedValue(new Error('ENOENT: no such file or directory'));
+      mockPdfParse.mockRejectedValue(
+        new Error('ENOENT: no such file or directory')
+      );
 
-      await expect(service.extractFromPDF('/path/to/nonexistent.pdf')).rejects.toThrow();
+      await expect(
+        service.extractFromPDF('/path/to/nonexistent.pdf')
+      ).rejects.toThrow();
     });
 
     it('handles corrupted files', async () => {
       mockPdfParse.mockRejectedValue(new Error('PDF structure is corrupted'));
 
-      await expect(service.extractFromPDF('/path/to/corrupted.pdf')).rejects.toThrow(
-        'PDF structure is corrupted',
-      );
+      await expect(
+        service.extractFromPDF('/path/to/corrupted.pdf')
+      ).rejects.toThrow('PDF structure is corrupted');
     });
 
     it('handles timeout', async () => {
@@ -618,19 +648,21 @@ describe('TextExtractionService', () => {
         () =>
           new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Processing timeout')), 100);
-          }),
+          })
       );
 
-      await expect(service.extractFromPDF('/path/to/large.pdf')).rejects.toThrow(
-        'Processing timeout',
-      );
+      await expect(
+        service.extractFromPDF('/path/to/large.pdf')
+      ).rejects.toThrow('Processing timeout');
     });
 
     it('handles memory limits', async () => {
-      mockPdfParse.mockRejectedValue(new Error('JavaScript heap out of memory'));
+      mockPdfParse.mockRejectedValue(
+        new Error('JavaScript heap out of memory')
+      );
 
       await expect(service.extractFromPDF('/path/to/huge.pdf')).rejects.toThrow(
-        'JavaScript heap out of memory',
+        'JavaScript heap out of memory'
       );
     });
   });
@@ -658,7 +690,10 @@ describe('TextExtractionService', () => {
 
     it('tracks metadata correctly', async () => {
       mockMammoth.convertToHtml.mockResolvedValue({ value: '', messages: [] });
-      mockMammoth.extractRawText.mockResolvedValue({ value: 'Content', messages: [] });
+      mockMammoth.extractRawText.mockResolvedValue({
+        value: 'Content',
+        messages: [],
+      });
 
       const result = await service.extractFromDocx('/path/to/document.docx');
 
@@ -728,14 +763,22 @@ describe('TextExtractionService Integration', () => {
     });
 
     // DOCX
-    mockMammoth.convertToHtml.mockResolvedValue({ value: '<p>DOCX content</p>', messages: [] });
-    mockMammoth.extractRawText.mockResolvedValue({ value: 'DOCX content', messages: [] });
+    mockMammoth.convertToHtml.mockResolvedValue({
+      value: '<p>DOCX content</p>',
+      messages: [],
+    });
+    mockMammoth.extractRawText.mockResolvedValue({
+      value: 'DOCX content',
+      messages: [],
+    });
 
     // XLSX
     const mockWorkbook = {
       xlsx: { readFile: vi.fn().mockResolvedValue(undefined) },
       worksheets: [{ name: 'Sheet1' }],
-      eachSheet: vi.fn((cb: (ws: unknown, id: number) => void) => cb({ name: 'Sheet1' }, 1)),
+      eachSheet: vi.fn((cb: (ws: unknown, id: number) => void) =>
+        cb({ name: 'Sheet1' }, 1)
+      ),
     };
     mockExcelJS.Workbook.mockImplementation(() => mockWorkbook);
 

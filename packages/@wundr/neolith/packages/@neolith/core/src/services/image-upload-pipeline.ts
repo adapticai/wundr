@@ -279,10 +279,14 @@ export class ImageUploadPipeline {
     this.imageService = config.imageService ?? createImageService();
     this.config = {
       bucketPrefix: config.bucketPrefix ?? DEFAULT_CONFIG.bucketPrefix!,
-      defaultVariants: config.defaultVariants ?? DEFAULT_CONFIG.defaultVariants!,
-      validationOptions: config.validationOptions ?? DEFAULT_CONFIG.validationOptions!,
-      stripExifByDefault: config.stripExifByDefault ?? DEFAULT_CONFIG.stripExifByDefault!,
-      preferredFormat: config.preferredFormat ?? DEFAULT_CONFIG.preferredFormat!,
+      defaultVariants:
+        config.defaultVariants ?? DEFAULT_CONFIG.defaultVariants!,
+      validationOptions:
+        config.validationOptions ?? DEFAULT_CONFIG.validationOptions!,
+      stripExifByDefault:
+        config.stripExifByDefault ?? DEFAULT_CONFIG.stripExifByDefault!,
+      preferredFormat:
+        config.preferredFormat ?? DEFAULT_CONFIG.preferredFormat!,
     };
   }
 
@@ -305,13 +309,13 @@ export class ImageUploadPipeline {
     // 1. Validate image
     const validationResult = await this.imageService.validateImage(
       input.buffer,
-      this.config.validationOptions,
+      this.config.validationOptions
     );
 
     if (!validationResult.valid) {
       throw new ImageValidationError(
         'Image validation failed',
-        validationResult.errors,
+        validationResult.errors
       );
     }
 
@@ -328,14 +332,14 @@ export class ImageUploadPipeline {
     const variantConfigs = input.variants ?? this.config.defaultVariants;
     const variants = await this.imageService.generateVariants(
       processedBuffer,
-      variantConfigs,
+      variantConfigs
     );
 
     // Also optimize the original
     const originalVariant = await this.createOriginalVariant(
       processedBuffer,
       metadata,
-      validationResult.detectedFormat ?? 'jpeg',
+      validationResult.detectedFormat ?? 'jpeg'
     );
 
     // 5. Generate file ID and paths
@@ -348,7 +352,7 @@ export class ImageUploadPipeline {
       basePath,
       originalVariant,
       variants,
-      input.filename,
+      input.filename
     );
 
     // 7. Create database record
@@ -356,7 +360,7 @@ export class ImageUploadPipeline {
       fileId,
       input,
       uploadedVariants,
-      metadata,
+      metadata
     );
 
     // 8. Build and return result
@@ -379,7 +383,9 @@ export class ImageUploadPipeline {
     }
 
     // Parse variants from metadata
-    const variantKeys = this.extractVariantKeys(file.metadata as FileRecordMetadata);
+    const variantKeys = this.extractVariantKeys(
+      file.metadata as FileRecordMetadata
+    );
 
     // Delete from S3
     const deletePromises: Promise<void>[] = [];
@@ -409,7 +415,7 @@ export class ImageUploadPipeline {
    */
   async getSignedUrls(
     fileId: string,
-    expiresIn = 3600,
+    expiresIn = 3600
   ): Promise<{ original: string; variants: Record<string, string> }> {
     const file = await this.prisma.file.findUnique({
       where: { id: fileId },
@@ -419,15 +425,19 @@ export class ImageUploadPipeline {
       throw new ImageUploadError(`File not found: ${fileId}`, 'FILE_NOT_FOUND');
     }
 
-    const variantKeys = this.extractVariantKeys(file.metadata as FileRecordMetadata);
+    const variantKeys = this.extractVariantKeys(
+      file.metadata as FileRecordMetadata
+    );
 
     const [originalUrl, ...variantUrls] = await Promise.all([
       this.s3Client.getSignedUrl(file.s3Key, expiresIn),
-      ...variantKeys.map((key) => this.s3Client.getSignedUrl(key, expiresIn)),
+      ...variantKeys.map(key => this.s3Client.getSignedUrl(key, expiresIn)),
     ]);
 
     const variants: Record<string, string> = {};
-    const variantNames = this.extractVariantNames(file.metadata as FileRecordMetadata);
+    const variantNames = this.extractVariantNames(
+      file.metadata as FileRecordMetadata
+    );
     variantUrls.forEach((url, index) => {
       const name = variantNames[index];
       if (name) {
@@ -451,7 +461,7 @@ export class ImageUploadPipeline {
   private async createOriginalVariant(
     buffer: Buffer,
     metadata: ImageMetadata,
-    format: ImageFormat,
+    format: ImageFormat
   ): Promise<ImageVariant> {
     const optimizedBuffer = await this.imageService.optimizeImage(buffer, {
       format: this.config.preferredFormat ?? format,
@@ -474,7 +484,7 @@ export class ImageUploadPipeline {
   private generateBasePath(
     input: ImageUploadInput,
     fileId: string,
-    timestamp: number,
+    timestamp: number
   ): string {
     const parts = [this.config.bucketPrefix, input.organizationId];
 
@@ -491,7 +501,7 @@ export class ImageUploadPipeline {
     parts.push(
       date.getUTCFullYear().toString(),
       (date.getUTCMonth() + 1).toString().padStart(2, '0'),
-      date.getUTCDate().toString().padStart(2, '0'),
+      date.getUTCDate().toString().padStart(2, '0')
     );
 
     parts.push(fileId);
@@ -506,7 +516,7 @@ export class ImageUploadPipeline {
     basePath: string,
     original: ImageVariant,
     variants: ImageVariant[],
-    originalFilename: string,
+    originalFilename: string
   ): Promise<UploadedVariants> {
     const extension = this.getExtension(original.format);
     const baseFilename = this.sanitizeFilename(originalFilename);
@@ -516,7 +526,7 @@ export class ImageUploadPipeline {
     const originalUrl = await this.uploadToS3(
       originalKey,
       original.buffer,
-      IMAGE_MIME_TYPES[original.format],
+      IMAGE_MIME_TYPES[original.format]
     );
 
     // Upload variants
@@ -524,12 +534,12 @@ export class ImageUploadPipeline {
     let thumbnailResult: { key: string; url: string } | null = null;
 
     await Promise.all(
-      variants.map(async (variant) => {
+      variants.map(async variant => {
         const variantKey = `${basePath}/${baseFilename}_${variant.name}.${this.getExtension(variant.format)}`;
         const url = await this.uploadToS3(
           variantKey,
           variant.buffer,
-          IMAGE_MIME_TYPES[variant.format],
+          IMAGE_MIME_TYPES[variant.format]
         );
 
         variantResults[variant.name ?? 'unknown'] = { key: variantKey, url };
@@ -538,14 +548,13 @@ export class ImageUploadPipeline {
         if (variant.name === 'thumb_md') {
           thumbnailResult = { key: variantKey, url };
         }
-      }),
+      })
     );
 
     // Fallback if no thumb_md
     if (!thumbnailResult) {
       thumbnailResult = variantResults['thumb_sm'] ??
-                        variantResults['thumb_lg'] ??
-                        { key: originalKey, url: originalUrl };
+        variantResults['thumb_lg'] ?? { key: originalKey, url: originalUrl };
     }
 
     return {
@@ -561,7 +570,7 @@ export class ImageUploadPipeline {
   private async uploadToS3(
     key: string,
     buffer: Buffer,
-    contentType: string,
+    contentType: string
   ): Promise<string> {
     try {
       return await this.s3Client.upload(key, buffer, contentType);
@@ -578,7 +587,7 @@ export class ImageUploadPipeline {
     fileId: string,
     input: ImageUploadInput,
     uploadedVariants: UploadedVariants,
-    metadata: ImageMetadata,
+    metadata: ImageMetadata
   ): Promise<FileRecord> {
     try {
       const sanitizedFilename = this.sanitizeFilename(input.filename);
@@ -617,7 +626,7 @@ export class ImageUploadPipeline {
     } catch (error) {
       throw new DatabaseRecordError(
         'create file record',
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -628,7 +637,7 @@ export class ImageUploadPipeline {
   private buildResult(
     fileRecord: FileRecord,
     uploadedVariants: UploadedVariants,
-    metadata: ImageMetadata,
+    metadata: ImageMetadata
   ): ImageUploadResult {
     const variants: Record<string, string> = {};
     for (const [name, data] of Object.entries(uploadedVariants.variants)) {
@@ -669,12 +678,14 @@ export class ImageUploadPipeline {
     // Remove extension
     const name = filename.replace(/\.[^/.]+$/, '');
     // Replace unsafe characters
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .substring(0, 100) || 'image';
+    return (
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 100) || 'image'
+    );
   }
 
   /**
@@ -688,7 +699,7 @@ export class ImageUploadPipeline {
     if (!variants) {
       return [];
     }
-    return Object.values(variants).map((v) => v.key);
+    return Object.values(variants).map(v => v.key);
   }
 
   /**
@@ -717,7 +728,7 @@ export class ImageUploadPipeline {
  * @returns ImageUploadPipeline instance
  */
 export function createImageUploadPipeline(
-  config: ImageUploadPipelineConfig,
+  config: ImageUploadPipelineConfig
 ): ImageUploadPipeline {
   return new ImageUploadPipeline(config);
 }

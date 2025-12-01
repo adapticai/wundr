@@ -397,7 +397,7 @@ export class FileProcessor {
    */
   async processFile(
     filePath: string,
-    options?: ProcessingOptions,
+    options?: ProcessingOptions
   ): Promise<ProcessorResult> {
     const fileType = this.detectFileType(filePath);
     const mergedOptions = {
@@ -525,7 +525,7 @@ export class FileProcessor {
  * Create file processor instance
  */
 export function createFileProcessor(
-  config?: Partial<FileProcessorConfig>,
+  config?: Partial<FileProcessorConfig>
 ): FileProcessor {
   return new FileProcessor(config);
 }

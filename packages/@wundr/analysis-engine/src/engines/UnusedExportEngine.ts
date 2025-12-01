@@ -93,7 +93,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    analysisConfig: AnalysisConfig
   ): Promise<UnusedExport[]> {
     // Build comprehensive dependency graph
     await this.buildDependencyGraph(entities, analysisConfig);
@@ -122,7 +122,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   private async buildDependencyGraph(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    analysisConfig: AnalysisConfig
   ): Promise<void> {
     // Clear previous analysis
     this.dependencyGraph = {
@@ -144,7 +144,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     // Build exports map
     entitiesByFile.forEach((fileEntities, filePath) => {
       const exportedEntities = fileEntities.filter(
-        e => e.exportType !== 'none',
+        e => e.exportType !== 'none'
       );
       if (exportedEntities.length > 0) {
         this.dependencyGraph.exports.set(filePath, new Set(exportedEntities));
@@ -153,7 +153,11 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
 
     // Analyze imports and usage
     for (const [filePath, fileEntities] of entitiesByFile) {
-      await this.analyzeFileImportsAndUsage(filePath, fileEntities, analysisConfig);
+      await this.analyzeFileImportsAndUsage(
+        filePath,
+        fileEntities,
+        analysisConfig
+      );
     }
 
     // Build usage graph
@@ -166,7 +170,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   private async analyzeFileImportsAndUsage(
     filePath: string,
     fileEntities: EntityInfo[],
-    _analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig
   ): Promise<void> {
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
@@ -184,7 +188,9 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       }
 
       // Analyze usage within the file - analyze exported entities
-      const entitiesToAnalyze = fileEntities.filter(e => e.exportType !== 'none');
+      const entitiesToAnalyze = fileEntities.filter(
+        e => e.exportType !== 'none'
+      );
       this.analyzeInFileUsage(fileContent, filePath, entitiesToAnalyze);
     } catch (error) {
       console.warn(`Failed to analyze file ${filePath}:`, error);
@@ -196,7 +202,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   private extractImportsFromContent(
     content: string,
-    filePath: string,
+    filePath: string
   ): Set<string> {
     const imports = new Set<string>();
 
@@ -221,8 +227,8 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       while ((match = pattern.exec(content)) !== null) {
         const matchResult = match[1];
         if (!matchResult) {
-continue;
-}
+          continue;
+        }
         const importPath = this.resolveImportPath(matchResult, filePath);
         imports.add(importPath);
       }
@@ -247,8 +253,8 @@ continue;
       while ((match = pattern.exec(content)) !== null) {
         const matchResult = match[1];
         if (!matchResult) {
-continue;
-}
+          continue;
+        }
         reExports.add(matchResult);
       }
     });
@@ -262,14 +268,14 @@ continue;
   private analyzeInFileUsage(
     content: string,
     filePath: string,
-    fileEntities: EntityInfo[],
+    fileEntities: EntityInfo[]
   ): void {
     // For each exported entity from other files, check if it's used in this file
     for (const [exportFilePath, exportedEntities] of this.dependencyGraph
       .exports) {
       if (exportFilePath === filePath) {
-continue;
-}
+        continue;
+      }
 
       exportedEntities.forEach(entity => {
         if (this.isEntityUsedInContent(entity, content)) {
@@ -302,12 +308,12 @@ continue;
     // Check for entity name usage
     const namePattern = new RegExp(
       `\\b${this.escapeRegExp(entity.name)}\\b`,
-      'g',
+      'g'
     );
 
     // Don't count the entity's own declaration
     const lines = cleanContent.split('\n');
-    const usageLines = lines.filter((line) => {
+    const usageLines = lines.filter(line => {
       const hasUsage = namePattern.test(line);
 
       // Skip if it's likely the entity's own declaration/definition line
@@ -335,7 +341,7 @@ continue;
     ];
 
     return declarationPatterns.some(pattern =>
-      new RegExp(pattern, 'i').test(line.trim()),
+      new RegExp(pattern, 'i').test(line.trim())
     );
   }
 
@@ -373,13 +379,13 @@ continue;
    */
   private async analyzeEntityUsage(
     entity: EntityInfo,
-    allEntities: EntityInfo[],
+    allEntities: EntityInfo[]
   ): Promise<UnusedExport | null> {
     const usage = this.dependencyGraph.usage.get(entity.id) || new Set();
     const usageAnalysis = await this.buildUsageAnalysis(
       entity,
       usage,
-      allEntities,
+      allEntities
     );
 
     // Determine if entity is unused
@@ -391,21 +397,21 @@ continue;
     const severity = this.calculateUnusedSeverity(
       entity,
       usageAnalysis,
-      unusedReason,
+      unusedReason
     );
     const suggestions = this.generateUnusedSuggestions(
       entity,
       unusedReason,
-      usageAnalysis,
+      usageAnalysis
     );
     const safeToRemove = this.isSafeToRemove(
       entity,
       usageAnalysis,
-      unusedReason,
+      unusedReason
     );
     const potentialImpact = this.calculatePotentialImpact(
       entity,
-      usageAnalysis,
+      usageAnalysis
     );
 
     return {
@@ -426,7 +432,7 @@ continue;
   private async buildUsageAnalysis(
     entity: EntityInfo,
     usage: Set<string>,
-    allEntities: EntityInfo[],
+    allEntities: EntityInfo[]
   ): Promise<UsageAnalysis> {
     const usageFiles = Array.from(usage);
 
@@ -439,7 +445,7 @@ continue;
     // Check for dynamic import usage
     const dynamicImportUsage = await this.checkDynamicImportUsage(
       entity,
-      usageFiles,
+      usageFiles
     );
 
     // Find re-exports
@@ -460,7 +466,7 @@ continue;
    */
   private findImporters(
     entity: EntityInfo,
-    allEntities: EntityInfo[],
+    allEntities: EntityInfo[]
   ): string[] {
     const importers: string[] = [];
 
@@ -490,7 +496,7 @@ continue;
    */
   private async isTypeOnlyUsage(
     entity: EntityInfo,
-    usageFiles: string[],
+    usageFiles: string[]
   ): Promise<boolean> {
     if (entity.type === 'type' || entity.type === 'interface') {
       return true;
@@ -557,7 +563,7 @@ continue;
    */
   private async checkDynamicImportUsage(
     entity: EntityInfo,
-    usageFiles: string[],
+    usageFiles: string[]
   ): Promise<boolean> {
     for (const filePath of usageFiles) {
       try {
@@ -598,7 +604,7 @@ continue;
    */
   private determineUnusedReason(
     entity: EntityInfo,
-    usage: UsageAnalysis,
+    usage: UsageAnalysis
   ): UnusedReason | null {
     if (usage.usedBy.length === 0 && usage.importedBy.length === 0) {
       return 'never-imported';
@@ -656,7 +662,7 @@ continue;
     // Check if it's a test utility in non-test files
     if (entity.name.includes('Mock') || entity.name.includes('Stub')) {
       const isTestFile = this.config.ignorePatterns.some(pattern =>
-        entity.file.includes(pattern),
+        entity.file.includes(pattern)
       );
       return !isTestFile;
     }
@@ -682,7 +688,7 @@ continue;
   private calculateUnusedSeverity(
     entity: EntityInfo,
     usage: UsageAnalysis,
-    reason: UnusedReason,
+    reason: UnusedReason
   ): SeverityLevel {
     // External library exports are critical
     if (usage.externalLibraryUsage) {
@@ -723,7 +729,7 @@ continue;
   private isSafeToRemove(
     entity: EntityInfo,
     usage: UsageAnalysis,
-    reason: UnusedReason,
+    reason: UnusedReason
   ): boolean {
     // Not safe if used externally
     if (usage.externalLibraryUsage || usage.dynamicImportUsage) {
@@ -759,7 +765,7 @@ continue;
    */
   private calculatePotentialImpact(
     entity: EntityInfo,
-    usage: UsageAnalysis,
+    usage: UsageAnalysis
   ): string {
     if (usage.externalLibraryUsage) {
       return 'High - May break external consumers';
@@ -787,7 +793,7 @@ continue;
   private generateUnusedSuggestions(
     entity: EntityInfo,
     reason: UnusedReason,
-    usage: UsageAnalysis,
+    usage: UsageAnalysis
   ): string[] {
     const suggestions: string[] = [];
 
@@ -808,7 +814,9 @@ continue;
         suggestions.push('Consider if the import was intended to be used');
         // Mention specific files that import but don't use
         if (usage.importedBy.length > 0) {
-          suggestions.push(`Check usage in: ${usage.importedBy.slice(0, 3).join(', ')}`);
+          suggestions.push(
+            `Check usage in: ${usage.importedBy.slice(0, 3).join(', ')}`
+          );
         }
         break;
 
@@ -816,7 +824,7 @@ continue;
         suggestions.push('Convert to type-only export if appropriate');
         suggestions.push('Consider moving to types-only file');
         suggestions.push(
-          'Remove runtime implementation if only types are needed',
+          'Remove runtime implementation if only types are needed'
         );
         break;
 

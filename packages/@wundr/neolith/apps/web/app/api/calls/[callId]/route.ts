@@ -46,7 +46,10 @@ async function closeLiveKitRoom(roomName: string): Promise<void> {
   } catch (error) {
     // Log error but don't fail the call end operation
     // The call can still be marked as ended even if LiveKit room deletion fails
-    console.error(`[closeLiveKitRoom] Failed to close room ${roomName}:`, error);
+    console.error(
+      `[closeLiveKitRoom] Failed to close room ${roomName}:`,
+      error
+    );
   }
 }
 
@@ -99,17 +102,19 @@ async function getCallWithAccess(
 ): Promise<CallWithAccess | null> {
   // Try to get call from dedicated table first
   try {
-    const calls = await prisma.$queryRaw<Array<{
-      id: string;
-      channel_id: string;
-      type: string;
-      status: string;
-      room_name: string;
-      started_at: Date | null;
-      ended_at: Date | null;
-      created_at: Date;
-      created_by_id: string;
-    }>>`
+    const calls = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        channel_id: string;
+        type: string;
+        status: string;
+        room_name: string;
+        started_at: Date | null;
+        ended_at: Date | null;
+        created_at: Date;
+        created_by_id: string;
+      }>
+    >`
       SELECT * FROM calls WHERE id = ${callId} LIMIT 1
     `;
 
@@ -123,8 +128,8 @@ async function getCallWithAccess(
       });
 
       if (!channel) {
-return null;
-}
+        return null;
+      }
 
       const orgMembership = await prisma.organizationMember.findUnique({
         where: {
@@ -136,8 +141,8 @@ return null;
       });
 
       if (!orgMembership) {
-return null;
-}
+        return null;
+      }
 
       // For private channels, check membership
       if (channel.type === 'PRIVATE') {
@@ -150,8 +155,8 @@ return null;
           },
         });
         if (!channelMembership) {
-return null;
-}
+          return null;
+        }
       }
 
       return {
@@ -186,14 +191,14 @@ return null;
   });
 
   if (channels.length === 0) {
-return null;
-}
+    return null;
+  }
 
   const channel = channels[0];
   const settings = channel.settings as { activeCall?: CallResponse } | null;
   if (!settings?.activeCall) {
-return null;
-}
+    return null;
+  }
 
   // Check access
   const orgMembership = await prisma.organizationMember.findUnique({
@@ -206,8 +211,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   if (channel.type === 'PRIVATE') {
     const channelMembership = await prisma.channelMember.findUnique({
@@ -219,8 +224,8 @@ return null;
       },
     });
     if (!channelMembership) {
-return null;
-}
+      return null;
+    }
   }
 
   return {
@@ -246,15 +251,18 @@ return null;
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -263,8 +271,11 @@ export async function GET(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -272,8 +283,11 @@ export async function GET(
     const result = await getCallWithAccess(params.callId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Call not found or access denied', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Call not found or access denied',
+          CALL_ERROR_CODES.CALL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -296,17 +310,19 @@ export async function GET(
     }> = [];
 
     try {
-      const participantResults = await prisma.$queryRaw<Array<{
-        id: string;
-        user_id: string;
-        display_name: string | null;
-        joined_at: Date;
-        left_at: Date | null;
-        is_audio_enabled: boolean;
-        is_video_enabled: boolean;
-        user_name: string | null;
-        user_avatar: string | null;
-      }>>`
+      const participantResults = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          user_id: string;
+          display_name: string | null;
+          joined_at: Date;
+          left_at: Date | null;
+          is_audio_enabled: boolean;
+          is_video_enabled: boolean;
+          user_name: string | null;
+          user_avatar: string | null;
+        }>
+      >`
         SELECT
           cp.id,
           cp.user_id,
@@ -323,7 +339,7 @@ export async function GET(
         ORDER BY cp.joined_at ASC
       `;
 
-      participants = participantResults.map((p) => ({
+      participants = participantResults.map(p => ({
         id: p.id,
         userId: p.user_id,
         displayName: p.display_name,
@@ -354,8 +370,8 @@ export async function GET(
         id: creator?.id ?? result.call.createdById,
         name: creator?.displayName ?? creator?.name ?? null,
       },
-      participantCount: participants.filter((p) => !p.leftAt).length,
-      participants: participants.map((p) => ({
+      participantCount: participants.filter(p => !p.leftAt).length,
+      participants: participants.map(p => ({
         ...p,
         callId: result.call.id,
       })),
@@ -365,8 +381,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/calls/:callId] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -382,15 +401,18 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -399,8 +421,11 @@ export async function DELETE(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -408,16 +433,22 @@ export async function DELETE(
     const result = await getCallWithAccess(params.callId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Call not found or access denied', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Call not found or access denied',
+          CALL_ERROR_CODES.CALL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Check if call is already ended
     if (result.call.status === 'ended') {
       return NextResponse.json(
-        createErrorResponse('Call has already ended', CALL_ERROR_CODES.CALL_ALREADY_ENDED),
-        { status: 400 },
+        createErrorResponse(
+          'Call has already ended',
+          CALL_ERROR_CODES.CALL_ALREADY_ENDED
+        ),
+        { status: 400 }
       );
     }
 
@@ -443,9 +474,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only the call creator or an admin can end this call',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -471,7 +502,10 @@ export async function DELETE(
           WHERE id = ${params.callId}
         `;
       } catch (updateError) {
-        console.error('[DELETE /api/calls/:callId] Error updating call status:', updateError);
+        console.error(
+          '[DELETE /api/calls/:callId] Error updating call status:',
+          updateError
+        );
       }
 
       // Update all participants' left_at
@@ -482,7 +516,10 @@ export async function DELETE(
           WHERE call_id = ${params.callId} AND left_at IS NULL
         `;
       } catch (participantError) {
-        console.error('[DELETE /api/calls/:callId] Error updating participants:', participantError);
+        console.error(
+          '[DELETE /api/calls/:callId] Error updating participants:',
+          participantError
+        );
       }
     }
 
@@ -500,8 +537,11 @@ export async function DELETE(
   } catch (error) {
     console.error('[DELETE /api/calls/:callId] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

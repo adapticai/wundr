@@ -43,7 +43,7 @@ class WundrMCPServer {
         capabilities: {
           tools: {},
         },
-      },
+      }
     );
 
     // Initialize handlers
@@ -81,7 +81,8 @@ class WundrMCPServer {
               },
               baselineVersion: {
                 type: 'string',
-                description: 'Baseline version to compare against (optional, defaults to latest)',
+                description:
+                  'Baseline version to compare against (optional, defaults to latest)',
               },
             },
             required: ['action'],
@@ -234,7 +235,8 @@ class WundrMCPServer {
         // RAG Tools
         {
           name: 'rag_file_search',
-          description: 'Search files using semantic, keyword, or hybrid search with relevance scoring',
+          description:
+            'Search files using semantic, keyword, or hybrid search with relevance scoring',
           inputSchema: {
             type: 'object',
             properties: {
@@ -245,15 +247,18 @@ class WundrMCPServer {
               paths: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'Paths to search within (defaults to current directory)',
+                description:
+                  'Paths to search within (defaults to current directory)',
               },
               maxResults: {
                 type: 'number',
-                description: 'Maximum number of results to return (default: 10)',
+                description:
+                  'Maximum number of results to return (default: 10)',
               },
               minScore: {
                 type: 'number',
-                description: 'Minimum relevance score threshold 0-1 (default: 0.3)',
+                description:
+                  'Minimum relevance score threshold 0-1 (default: 0.3)',
               },
               mode: {
                 type: 'string',
@@ -262,7 +267,8 @@ class WundrMCPServer {
               },
               includeContent: {
                 type: 'boolean',
-                description: 'Include file content snippets in results (default: true)',
+                description:
+                  'Include file content snippets in results (default: true)',
               },
             },
             required: ['query'],
@@ -270,13 +276,24 @@ class WundrMCPServer {
         },
         {
           name: 'rag_store_manage',
-          description: 'Create, manage, and maintain vector stores for RAG operations',
+          description:
+            'Create, manage, and maintain vector stores for RAG operations',
           inputSchema: {
             type: 'object',
             properties: {
               action: {
                 type: 'string',
-                enum: ['create', 'delete', 'list', 'status', 'index', 'clear', 'optimize', 'backup', 'restore'],
+                enum: [
+                  'create',
+                  'delete',
+                  'list',
+                  'status',
+                  'index',
+                  'clear',
+                  'optimize',
+                  'backup',
+                  'restore',
+                ],
                 description: 'Store management action to perform',
               },
               storeName: {
@@ -287,8 +304,20 @@ class WundrMCPServer {
                 type: 'object',
                 description: 'Store configuration for create action',
                 properties: {
-                  type: { type: 'string', enum: ['memory', 'chromadb', 'pinecone', 'qdrant', 'weaviate'] },
-                  embeddingModel: { type: 'string', enum: ['openai', 'cohere', 'local', 'custom'] },
+                  type: {
+                    type: 'string',
+                    enum: [
+                      'memory',
+                      'chromadb',
+                      'pinecone',
+                      'qdrant',
+                      'weaviate',
+                    ],
+                  },
+                  embeddingModel: {
+                    type: 'string',
+                    enum: ['openai', 'cohere', 'local', 'custom'],
+                  },
                   dimensions: { type: 'number' },
                 },
               },
@@ -311,7 +340,8 @@ class WundrMCPServer {
         },
         {
           name: 'rag_context_builder',
-          description: 'Build optimal context for LLM queries using multiple sources and strategies',
+          description:
+            'Build optimal context for LLM queries using multiple sources and strategies',
           inputSchema: {
             type: 'object',
             properties: {
@@ -321,13 +351,23 @@ class WundrMCPServer {
               },
               strategy: {
                 type: 'string',
-                enum: ['relevant', 'recent', 'comprehensive', 'focused', 'custom'],
+                enum: [
+                  'relevant',
+                  'recent',
+                  'comprehensive',
+                  'focused',
+                  'custom',
+                ],
                 description: 'Context building strategy (default: relevant)',
               },
               sources: {
                 type: 'array',
-                items: { type: 'string', enum: ['files', 'store', 'memory', 'combined'] },
-                description: 'Sources to include in context (default: combined)',
+                items: {
+                  type: 'string',
+                  enum: ['files', 'store', 'memory', 'combined'],
+                },
+                description:
+                  'Sources to include in context (default: combined)',
               },
               maxTokens: {
                 type: 'number',
@@ -363,35 +403,41 @@ class WundrMCPServer {
     }));
 
     // Handle tool calls
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: { params: { name: string; arguments?: Record<string, unknown> } }) => {
-      const { name, arguments: args } = request.params;
+    this.server.setRequestHandler(
+      CallToolRequestSchema,
+      async (request: {
+        params: { name: string; arguments?: Record<string, unknown> };
+      }) => {
+        const { name, arguments: args } = request.params;
 
-      const handler = this.handlers.get(name);
-      if (!handler) {
-        throw new McpError(
-          ErrorCode.MethodNotFound,
-          `Unknown tool: ${name}`,
-        );
-      }
+        const handler = this.handlers.get(name);
+        if (!handler) {
+          throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
+        }
 
-      try {
-        const result = await handler.execute(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Tool execution failed: ${errorMessage}`,
-        );
+        try {
+          const result = await handler.execute(args);
+          return {
+            content: [
+              {
+                type: 'text',
+                text:
+                  typeof result === 'string'
+                    ? result
+                    : JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          throw new McpError(
+            ErrorCode.InternalError,
+            `Tool execution failed: ${errorMessage}`
+          );
+        }
       }
-    });
+    );
   }
 
   async run(): Promise<void> {
@@ -404,7 +450,7 @@ class WundrMCPServer {
 // Start the server
 if (require.main === module) {
   const server = new WundrMCPServer();
-  server.run().catch((error) => {
+  server.run().catch(error => {
     console.error('Server error:', error);
     process.exit(1);
   });

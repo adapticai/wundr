@@ -13,11 +13,14 @@ interface EmptyOrchestratorsProps {
   onBrowseTemplates?: () => void;
 }
 
-export function EmptyOrchestrators({ onCreateOrchestrator, onBrowseTemplates }: EmptyOrchestratorsProps) {
+export function EmptyOrchestrators({
+  onCreateOrchestrator,
+  onBrowseTemplates,
+}: EmptyOrchestratorsProps) {
   return (
     <EmptyState
       icon={Bot}
-      title="No Orchestrators yet"
+      title='No Orchestrators yet'
       description="Create your first Orchestrator to automate workflows and enhance your team's capabilities."
       action={
         onCreateOrchestrator

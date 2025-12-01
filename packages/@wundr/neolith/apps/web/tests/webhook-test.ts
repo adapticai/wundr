@@ -92,7 +92,9 @@ async function testWebhookOperations() {
     const remainingDeliveries = await prisma.webhookDelivery.findMany({
       where: { webhookId: webhook.id },
     });
-    console.log(`✅ Verified cascade delete (remaining deliveries: ${remainingDeliveries.length})\n`);
+    console.log(
+      `✅ Verified cascade delete (remaining deliveries: ${remainingDeliveries.length})\n`
+    );
 
     console.log('All tests passed! ✅');
   } catch (error) {

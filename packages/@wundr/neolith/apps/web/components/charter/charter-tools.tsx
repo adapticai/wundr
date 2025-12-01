@@ -5,7 +5,13 @@ import { Search, Check, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -16,7 +22,16 @@ import { Label } from '@/components/ui/label';
 export interface MCPTool {
   name: string;
   description: string;
-  category: 'workspace' | 'channels' | 'messaging' | 'files' | 'users' | 'search' | 'orchestrators' | 'session-managers' | 'subagents';
+  category:
+    | 'workspace'
+    | 'channels'
+    | 'messaging'
+    | 'files'
+    | 'users'
+    | 'search'
+    | 'orchestrators'
+    | 'session-managers'
+    | 'subagents';
 }
 
 /**
@@ -40,7 +55,14 @@ export interface CharterToolsProps {
 /**
  * Category metadata for display
  */
-const CATEGORY_METADATA: Record<string, { label: string; description: string; variant: 'default' | 'secondary' | 'outline' }> = {
+const CATEGORY_METADATA: Record<
+  string,
+  {
+    label: string;
+    description: string;
+    variant: 'default' | 'secondary' | 'outline';
+  }
+> = {
   messaging: {
     label: 'Messaging',
     description: 'Send, edit, and manage messages',
@@ -135,7 +157,7 @@ export function CharterTools({
 
     for (const [category, tools] of toolsByCategory.entries()) {
       const matchingTools = tools.filter(
-        (tool) =>
+        tool =>
           tool.name.toLowerCase().includes(query) ||
           tool.description.toLowerCase().includes(query) ||
           category.toLowerCase().includes(query)
@@ -156,7 +178,7 @@ export function CharterTools({
 
       const isSelected = selectedTools.includes(toolName);
       const updated = isSelected
-        ? selectedTools.filter((name) => name !== toolName)
+        ? selectedTools.filter(name => name !== toolName)
         : [...selectedTools, toolName];
 
       onChange(updated);
@@ -170,13 +192,13 @@ export function CharterTools({
       if (disabled || isLoading) return;
 
       const categoryTools = toolsByCategory.get(category) || [];
-      const categoryToolNames = categoryTools.map((t) => t.name);
-      const allSelected = categoryToolNames.every((name) =>
+      const categoryToolNames = categoryTools.map(t => t.name);
+      const allSelected = categoryToolNames.every(name =>
         selectedTools.includes(name)
       );
 
       const updated = allSelected
-        ? selectedTools.filter((name) => !categoryToolNames.includes(name))
+        ? selectedTools.filter(name => !categoryToolNames.includes(name))
         : [...new Set([...selectedTools, ...categoryToolNames])];
 
       onChange(updated);
@@ -188,8 +210,10 @@ export function CharterTools({
   const handleToggleAll = useCallback(() => {
     if (disabled || isLoading) return;
 
-    const allToolNames = availableTools.map((t) => t.name);
-    const allSelected = allToolNames.every((name) => selectedTools.includes(name));
+    const allToolNames = availableTools.map(t => t.name);
+    const allSelected = allToolNames.every(name =>
+      selectedTools.includes(name)
+    );
 
     onChange(allSelected ? [] : allToolNames);
   }, [availableTools, selectedTools, onChange, disabled, isLoading]);
@@ -201,39 +225,39 @@ export function CharterTools({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Header with search and actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className='flex items-center justify-between gap-4'>
+        <div className='flex-1'>
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
             <Input
-              type="text"
-              placeholder="Search tools by name or description..."
+              type='text'
+              placeholder='Search tools by name or description...'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               disabled={disabled || isLoading}
-              className="pl-9"
+              className='pl-9'
             />
             {searchQuery && (
               <button
-                type="button"
+                type='button'
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Clear search"
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+                aria-label='Clear search'
               >
-                <X className="h-4 w-4" />
+                <X className='h-4 w-4' />
               </button>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
+        <div className='flex items-center gap-3'>
+          <span className='text-sm text-muted-foreground'>
             {selectedCount} / {totalCount} selected
           </span>
           <button
-            type="button"
+            type='button'
             onClick={handleToggleAll}
             disabled={disabled || isLoading || totalCount === 0}
-            className="text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+            className='text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline'
           >
             {allSelected ? 'Deselect All' : 'Select All'}
           </button>
@@ -243,14 +267,16 @@ export function CharterTools({
       {/* Tool categories */}
       {filteredCategories.size === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-center text-muted-foreground">
-              {searchQuery ? 'No tools match your search' : 'No tools available'}
+          <CardContent className='flex flex-col items-center justify-center py-12'>
+            <p className='text-center text-muted-foreground'>
+              {searchQuery
+                ? 'No tools match your search'
+                : 'No tools available'}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {Array.from(filteredCategories.entries()).map(([category, tools]) => {
             const metadata = CATEGORY_METADATA[category] || {
               label: category,
@@ -258,8 +284,8 @@ export function CharterTools({
               variant: 'default' as const,
             };
 
-            const categoryToolNames = tools.map((t) => t.name);
-            const categorySelectedCount = categoryToolNames.filter((name) =>
+            const categoryToolNames = tools.map(t => t.name);
+            const categorySelectedCount = categoryToolNames.filter(name =>
               selectedTools.includes(name)
             ).length;
             const categoryAllSelected =
@@ -268,11 +294,11 @@ export function CharterTools({
 
             return (
               <Card key={category}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base">
+                <CardHeader className='pb-3'>
+                  <div className='flex items-start justify-between'>
+                    <div className='flex-1 space-y-1'>
+                      <div className='flex items-center gap-2'>
+                        <CardTitle className='text-base'>
                           {metadata.label}
                         </CardTitle>
                         <Badge variant={metadata.variant}>
@@ -280,24 +306,24 @@ export function CharterTools({
                         </Badge>
                       </div>
                       {metadata.description && (
-                        <CardDescription className="text-xs">
+                        <CardDescription className='text-xs'>
                           {metadata.description}
                         </CardDescription>
                       )}
                     </div>
                     <button
-                      type="button"
+                      type='button'
                       onClick={() => handleCategoryToggle(category)}
                       disabled={disabled || isLoading}
-                      className="ml-4 text-xs font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+                      className='ml-4 text-xs font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline'
                     >
                       {categoryAllSelected ? 'Deselect' : 'Select'} All
                     </button>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {tools.map((tool) => {
+                  <div className='space-y-3'>
+                    {tools.map(tool => {
                       const isSelected = selectedTools.includes(tool.name);
                       const toolId = `tool-${tool.name}`;
 
@@ -320,21 +346,21 @@ export function CharterTools({
                             checked={isSelected}
                             onCheckedChange={() => handleToolToggle(tool.name)}
                             disabled={disabled || isLoading}
-                            className="mt-0.5"
+                            className='mt-0.5'
                           />
-                          <div className="flex-1 space-y-1">
+                          <div className='flex-1 space-y-1'>
                             <Label
                               htmlFor={toolId}
-                              className="cursor-pointer font-mono text-xs font-medium leading-tight"
+                              className='cursor-pointer font-mono text-xs font-medium leading-tight'
                             >
                               {tool.name}
                             </Label>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
+                            <p className='text-xs text-muted-foreground leading-relaxed'>
                               {tool.description}
                             </p>
                           </div>
                           {isSelected && (
-                            <Check className="h-4 w-4 flex-shrink-0 text-primary" />
+                            <Check className='h-4 w-4 flex-shrink-0 text-primary' />
                           )}
                         </div>
                       );

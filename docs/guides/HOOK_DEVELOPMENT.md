@@ -1,6 +1,7 @@
 # Hook Development Guide: Custom Automation with Claude Flow
 
-Complete guide to creating and customizing hooks for automated workflows in Claude Flow integration with Claude Code.
+Complete guide to creating and customizing hooks for automated workflows in Claude Flow integration
+with Claude Code.
 
 ## Table of Contents
 
@@ -16,7 +17,8 @@ Complete guide to creating and customizing hooks for automated workflows in Clau
 
 ## Hook System Overview
 
-Hooks are automated scripts that run at specific points in the Claude Flow workflow, enabling powerful automation and customization.
+Hooks are automated scripts that run at specific points in the Claude Flow workflow, enabling
+powerful automation and customization.
 
 ### Hook Architecture
 
@@ -66,6 +68,7 @@ User Action / Agent Task
 ### Pre-Operation Hooks
 
 #### pre-task
+
 Runs before task execution begins.
 
 ```bash
@@ -75,6 +78,7 @@ npx claude-flow@alpha hooks pre-task \
 ```
 
 **Default Actions**:
+
 - Auto-assign agents by file type
 - Load project context
 - Validate environment
@@ -82,6 +86,7 @@ npx claude-flow@alpha hooks pre-task \
 - Initialize memory scope
 
 #### pre-edit
+
 Runs before file editing.
 
 ```bash
@@ -91,6 +96,7 @@ npx claude-flow@alpha hooks pre-edit \
 ```
 
 **Default Actions**:
+
 - Create backup
 - Validate file syntax
 - Load file history
@@ -98,6 +104,7 @@ npx claude-flow@alpha hooks pre-edit \
 - Acquire file lock
 
 #### pre-commit (Git hook)
+
 Runs before git commit.
 
 ```bash
@@ -106,6 +113,7 @@ npx claude-flow@alpha hooks install
 ```
 
 **Default Actions**:
+
 - Run linter
 - Format code
 - Run tests
@@ -115,6 +123,7 @@ npx claude-flow@alpha hooks install
 ### Post-Operation Hooks
 
 #### post-edit
+
 Runs after file is edited.
 
 ```bash
@@ -124,6 +133,7 @@ npx claude-flow@alpha hooks post-edit \
 ```
 
 **Default Actions**:
+
 - Auto-format code (Prettier)
 - Run linter (ESLint)
 - Train neural patterns
@@ -131,6 +141,7 @@ npx claude-flow@alpha hooks post-edit \
 - Generate documentation
 
 #### post-task
+
 Runs after task completion.
 
 ```bash
@@ -140,6 +151,7 @@ npx claude-flow@alpha hooks post-task \
 ```
 
 **Default Actions**:
+
 - Update metrics
 - Store results
 - Notify coordinator
@@ -147,9 +159,11 @@ npx claude-flow@alpha hooks post-task \
 - Archive artifacts
 
 #### post-commit (Git hook)
+
 Runs after git commit.
 
 **Default Actions**:
+
 - Update changelog
 - Generate documentation
 - Notify team
@@ -159,6 +173,7 @@ Runs after git commit.
 ### Session Hooks
 
 #### session-start
+
 Runs at beginning of session.
 
 ```bash
@@ -167,6 +182,7 @@ npx claude-flow@alpha hooks session-start \
 ```
 
 **Default Actions**:
+
 - Initialize memory context
 - Load previous state
 - Setup monitoring
@@ -174,6 +190,7 @@ npx claude-flow@alpha hooks session-start \
 - Start metrics collection
 
 #### session-restore
+
 Runs to restore previous session.
 
 ```bash
@@ -182,6 +199,7 @@ npx claude-flow@alpha hooks session-restore \
 ```
 
 **Default Actions**:
+
 - Load session state
 - Restore agent context
 - Rebuild memory
@@ -189,6 +207,7 @@ npx claude-flow@alpha hooks session-restore \
 - Reconnect agents
 
 #### session-save
+
 Runs to save session state.
 
 ```bash
@@ -198,6 +217,7 @@ npx claude-flow@alpha hooks session-save \
 ```
 
 **Default Actions**:
+
 - Persist memory
 - Save agent state
 - Export metrics
@@ -205,6 +225,7 @@ npx claude-flow@alpha hooks session-save \
 - Compress data
 
 #### session-end
+
 Runs at end of session.
 
 ```bash
@@ -214,6 +235,7 @@ npx claude-flow@alpha hooks session-end \
 ```
 
 **Default Actions**:
+
 - Generate summary
 - Export all metrics
 - Persist final state
@@ -223,6 +245,7 @@ npx claude-flow@alpha hooks session-end \
 ### Notification Hooks
 
 #### notify
+
 Send notifications to various channels.
 
 ```bash
@@ -250,7 +273,7 @@ module.exports = {
   triggers: {
     events: ['post-edit', 'post-task'],
     files: ['**/*.ts', '**/*.js'],
-    agents: ['coder', 'backend-dev']
+    agents: ['coder', 'backend-dev'],
   },
 
   // Configuration
@@ -258,7 +281,7 @@ module.exports = {
     enabled: true,
     async: true,
     timeout: 30000,
-    retries: 2
+    retries: 2,
   },
 
   // Main execution
@@ -281,13 +304,12 @@ module.exports = {
 
       return {
         success: true,
-        result
+        result,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   },
@@ -316,7 +338,7 @@ module.exports = {
 
     return {
       analyzed: true,
-      updates: updates.length
+      updates: updates.length,
     };
   },
 
@@ -326,7 +348,7 @@ module.exports = {
       hook: this.name,
       file: context.file,
       duration: result.duration,
-      success: true
+      success: true,
     });
   },
 
@@ -341,7 +363,7 @@ module.exports = {
 
   async applyUpdates(file, updates) {
     // Implementation
-  }
+  },
 };
 ```
 
@@ -375,6 +397,7 @@ exit $?
 ```
 
 Make executable:
+
 ```bash
 chmod +x .git/hooks/pre-commit
 ```
@@ -406,7 +429,7 @@ module.exports = {
     return {
       success: true,
       context: taskContext,
-      assignments
+      assignments,
     };
   },
 
@@ -420,7 +443,7 @@ module.exports = {
     // Create directories
     // Initialize files
     // Setup environment
-  }
+  },
 };
 ```
 
@@ -453,7 +476,7 @@ module.exports = {
       success: true,
       formatted: true,
       linted: true,
-      documented: true
+      documented: true,
     };
   },
 
@@ -470,9 +493,9 @@ module.exports = {
       operation,
       result,
       quality: result.quality,
-      duration: result.duration
+      duration: result.duration,
     });
-  }
+  },
 };
 ```
 
@@ -536,7 +559,7 @@ module.exports = {
     await this.cleanup(context.sessionId);
 
     return { summary };
-  }
+  },
 };
 ```
 
@@ -553,7 +576,7 @@ module.exports = {
     // File patterns
     files: {
       include: ['src/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/*.spec.ts']
+      exclude: ['**/*.test.ts', '**/*.spec.ts'],
     },
 
     // Agent types
@@ -562,23 +585,23 @@ module.exports = {
     // Time-based
     time: {
       businessHours: true,
-      timezone: 'America/New_York'
+      timezone: 'America/New_York',
     },
 
     // Environment
     environment: ['development', 'staging'],
 
     // Custom condition function
-    custom: async (context) => {
+    custom: async context => {
       // Only run if branch is feature branch
       const branch = await exec('git branch --show-current');
       return branch.startsWith('feature/');
-    }
+    },
   },
 
   async execute(context) {
     // Hook logic
-  }
+  },
 };
 ```
 
@@ -590,13 +613,7 @@ module.exports = {
   type: 'post-edit',
 
   // Sub-hooks to run in sequence
-  hooks: [
-    'format-code',
-    'lint-code',
-    'run-tests',
-    'update-docs',
-    'train-patterns'
-  ],
+  hooks: ['format-code', 'lint-code', 'run-tests', 'update-docs', 'train-patterns'],
 
   async execute(context) {
     const results = [];
@@ -613,16 +630,16 @@ module.exports = {
         return {
           success: false,
           failed: hookName,
-          results
+          results,
         };
       }
     }
 
     return {
       success: true,
-      results
+      results,
     };
-  }
+  },
 };
 ```
 
@@ -638,7 +655,7 @@ module.exports = {
     const parallelHooks = [
       this.formatCode(context),
       this.generateDocs(context),
-      this.updateMetrics(context)
+      this.updateMetrics(context),
     ];
 
     const parallelResults = await Promise.all(parallelHooks);
@@ -650,9 +667,9 @@ module.exports = {
 
     return {
       success: true,
-      parallel: parallelResults
+      parallel: parallelResults,
     };
-  }
+  },
 };
 ```
 
@@ -682,7 +699,7 @@ module.exports = {
 
     return {
       recovered: false,
-      escalated: true
+      escalated: true,
     };
   },
 
@@ -710,7 +727,7 @@ module.exports = {
       default:
         return { recovered: false };
     }
-  }
+  },
 };
 ```
 
@@ -726,7 +743,7 @@ module.exports = {
     '@claude-flow/plugin-prettier',
     '@claude-flow/plugin-eslint',
     '@claude-flow/plugin-jest',
-    './custom-plugins/my-plugin'
+    './custom-plugins/my-plugin',
   ],
 
   async execute(context) {
@@ -745,12 +762,12 @@ module.exports = {
 
   async loadPlugins() {
     return await Promise.all(
-      this.plugins.map(async (plugin) => {
+      this.plugins.map(async plugin => {
         const mod = await import(plugin);
         return new mod.default();
       })
     );
-  }
+  },
 };
 
 // Plugin interface
@@ -776,42 +793,25 @@ Create `.claude-flow/hooks.config.json`:
   "hooks": {
     "pre-task": {
       "enabled": true,
-      "hooks": [
-        "validate-environment",
-        "load-context",
-        "assign-agents"
-      ],
+      "hooks": ["validate-environment", "load-context", "assign-agents"],
       "timeout": 30000,
       "critical": true
     },
     "post-edit": {
       "enabled": true,
-      "hooks": [
-        "format-code",
-        "lint-code",
-        "update-docs"
-      ],
+      "hooks": ["format-code", "lint-code", "update-docs"],
       "async": true,
       "critical": false
     },
     "post-task": {
       "enabled": true,
-      "hooks": [
-        "run-tests",
-        "update-metrics",
-        "train-patterns",
-        "notify-team"
-      ],
+      "hooks": ["run-tests", "update-metrics", "train-patterns", "notify-team"],
       "timeout": 120000,
       "critical": true
     },
     "session-end": {
       "enabled": true,
-      "hooks": [
-        "generate-summary",
-        "export-metrics",
-        "cleanup"
-      ]
+      "hooks": ["generate-summary", "export-metrics", "cleanup"]
     }
   },
   "global": {
@@ -836,7 +836,7 @@ module.exports = {
     { name: 'lint', priority: 40, critical: false },
     { name: 'test', priority: 30, critical: true },
     { name: 'document', priority: 20, critical: false },
-    { name: 'notify', priority: 10, critical: false }
+    { name: 'notify', priority: 10, critical: false },
   ],
 
   async execute(context) {
@@ -851,7 +851,7 @@ module.exports = {
         throw new Error(`Critical hook failed: ${hook.name}`);
       }
     }
-  }
+  },
 };
 ```
 
@@ -867,7 +867,7 @@ module.exports = {
 
   triggers: {
     files: ['src/**/*.ts', 'src/**/*.js'],
-    exclude: ['**/*.test.*']
+    exclude: ['**/*.test.*'],
   },
 
   async execute(context) {
@@ -887,7 +887,7 @@ module.exports = {
 
     return {
       success: true,
-      documented: exports.length
+      documented: exports.length,
     };
   },
 
@@ -896,14 +896,13 @@ module.exports = {
     const ast = parse(content);
 
     return ast.body
-      .filter(node =>
-        node.type === 'ExportNamedDeclaration' ||
-        node.type === 'ExportDefaultDeclaration'
+      .filter(
+        node => node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration'
       )
       .map(node => ({
         name: this.getExportName(node),
         type: this.getExportType(node),
-        params: this.getParams(node)
+        params: this.getParams(node),
       }));
   },
 
@@ -917,7 +916,7 @@ module.exports = {
  */
 `;
     });
-  }
+  },
 };
 ```
 
@@ -939,7 +938,7 @@ module.exports = {
       filesModified: result.files.length,
       linesChanged: await this.countLines(result.files),
       complexity: await this.calculateComplexity(result.files),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Store in time-series database
@@ -961,20 +960,18 @@ module.exports = {
   async analyzeTrend(taskType) {
     const history = await this.getHistory(taskType, 10);
 
-    const avgDuration = history.reduce((sum, h) =>
-      sum + h.duration, 0) / history.length;
+    const avgDuration = history.reduce((sum, h) => sum + h.duration, 0) / history.length;
 
     const recent = history.slice(-3);
-    const recentAvg = recent.reduce((sum, h) =>
-      sum + h.duration, 0) / recent.length;
+    const recentAvg = recent.reduce((sum, h) => sum + h.duration, 0) / recent.length;
 
     return {
       degrading: recentAvg > avgDuration * 1.5,
       avgDuration,
       recentAvg,
-      change: ((recentAvg - avgDuration) / avgDuration) * 100
+      change: ((recentAvg - avgDuration) / avgDuration) * 100,
     };
-  }
+  },
 };
 ```
 
@@ -988,7 +985,7 @@ module.exports = {
 
   config: {
     minCoverage: 80,
-    critical: true
+    critical: true,
   },
 
   async execute(context) {
@@ -999,9 +996,7 @@ module.exports = {
     const passed = this.checkThresholds(coverage);
 
     if (!passed) {
-      throw new Error(
-        `Coverage below threshold: ${coverage.total}% < ${this.config.minCoverage}%`
-      );
+      throw new Error(`Coverage below threshold: ${coverage.total}% < ${this.config.minCoverage}%`);
     }
 
     // Store coverage baseline
@@ -1017,7 +1012,7 @@ module.exports = {
     return {
       success: true,
       coverage,
-      comparison
+      comparison,
     };
   },
 
@@ -1030,15 +1025,13 @@ module.exports = {
       statements: coverage.total.statements.pct,
       branches: coverage.total.branches.pct,
       functions: coverage.total.functions.pct,
-      lines: coverage.total.lines.pct
+      lines: coverage.total.lines.pct,
     };
   },
 
   checkThresholds(coverage) {
-    return Object.values(coverage).every(
-      pct => pct >= this.config.minCoverage
-    );
-  }
+    return Object.values(coverage).every(pct => pct >= this.config.minCoverage);
+  },
 };
 ```
 
@@ -1073,7 +1066,7 @@ module.exports = {
       success: true,
       vulnerabilities: auditResult,
       licenses,
-      secrets: secrets.found
+      secrets: secrets.found,
     };
   },
 
@@ -1085,7 +1078,7 @@ module.exports = {
       low: audit.metadata.vulnerabilities.low,
       moderate: audit.metadata.vulnerabilities.moderate,
       high: audit.metadata.vulnerabilities.high,
-      critical: audit.metadata.vulnerabilities.critical
+      critical: audit.metadata.vulnerabilities.critical,
     };
   },
 
@@ -1095,9 +1088,9 @@ module.exports = {
 
     return {
       found: result.length > 0,
-      details: result
+      details: result,
     };
-  }
+  },
 };
 ```
 
@@ -1120,7 +1113,7 @@ module.exports = {
     await this.runTests(context.files);
     await this.deploy(context.files);
     await this.notify(context.files);
-  }
+  },
 };
 ```
 
@@ -1132,7 +1125,6 @@ module.exports = {
     try {
       const result = await this.doWork(context);
       return { success: true, result };
-
     } catch (error) {
       // Log error
       await this.logError(error, context);
@@ -1146,10 +1138,10 @@ module.exports = {
       return {
         success: false,
         error: error.message,
-        continue: true
+        continue: true,
       };
     }
-  }
+  },
 };
 ```
 
@@ -1160,15 +1152,12 @@ module.exports = {
   // ✅ Good: Async with timeout
   config: {
     async: true,
-    timeout: 30000
+    timeout: 30000,
   },
 
   async execute(context) {
     // Run with timeout
-    return await Promise.race([
-      this.doWork(context),
-      this.timeout(this.config.timeout)
-    ]);
+    return await Promise.race([this.doWork(context), this.timeout(this.config.timeout)]);
   },
 
   // ✅ Good: Batch operations
@@ -1177,11 +1166,9 @@ module.exports = {
     const batches = this.chunk(files, 10);
 
     for (const batch of batches) {
-      await Promise.all(
-        batch.map(file => this.formatFile(file))
-      );
+      await Promise.all(batch.map(file => this.formatFile(file)));
     }
-  }
+  },
 };
 ```
 
@@ -1200,7 +1187,7 @@ module.exports = {
 
     // Mark as done
     await this.markAsDone(context);
-  }
+  },
 };
 ```
 
@@ -1212,7 +1199,7 @@ module.exports = {
   defaultConfig: {
     enabled: true,
     timeout: 30000,
-    retries: 2
+    retries: 2,
   },
 
   // Load config
@@ -1221,7 +1208,7 @@ module.exports = {
 
     this.config = {
       ...this.defaultConfig,
-      ...userConfig
+      ...userConfig,
     };
   },
 
@@ -1229,11 +1216,11 @@ module.exports = {
   async execute(context) {
     const config = {
       ...this.config,
-      ...context.hookConfig
+      ...context.hookConfig,
     };
 
     // Use merged config
-  }
+  },
 };
 ```
 
@@ -1251,7 +1238,7 @@ describe('my-hook', () => {
       file: 'src/test.ts',
       agent: 'coder',
       memory: mockMemory,
-      metrics: mockMetrics
+      metrics: mockMetrics,
     };
 
     const result = await hook.execute(context);
@@ -1263,7 +1250,7 @@ describe('my-hook', () => {
   it('should skip non-matching files', async () => {
     const context = {
       file: 'src/test.md',
-      agent: 'coder'
+      agent: 'coder',
     };
 
     const result = await hook.execute(context);
@@ -1311,10 +1298,12 @@ Hook development enables:
 - ✅ **Recovery**: Handle errors gracefully
 
 **Next Steps**:
+
 - [Template Customization Guide](./TEMPLATE_CUSTOMIZATION.md)
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
 - [API Reference](../reference/API.md)
 
 ---
 
-**Pro Tip**: Start with built-in hooks, customize behavior, then create custom hooks for unique needs.
+**Pro Tip**: Start with built-in hooks, customize behavior, then create custom hooks for unique
+needs.

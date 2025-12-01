@@ -21,8 +21,22 @@ export interface DocumentPreviewProps {
  * Document preview component for PDFs and other documents
  * Shows document icon with optional embedded preview for PDFs
  */
-export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewProps>(
-  ({ filename, fileUrl, fileSize, mimeType, onDownload, className, showPreview = false }, ref) => {
+export const DocumentPreview = React.forwardRef<
+  HTMLDivElement,
+  DocumentPreviewProps
+>(
+  (
+    {
+      filename,
+      fileUrl,
+      fileSize,
+      mimeType,
+      onDownload,
+      className,
+      showPreview = false,
+    },
+    ref
+  ) => {
     const extension = getFileExtension(filename);
     const isPDF = extension === 'pdf' || mimeType === 'application/pdf';
 
@@ -65,72 +79,77 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
 
     return (
       <Card ref={ref} className={cn('overflow-hidden', className)}>
-        <CardContent className="p-0">
+        <CardContent className='p-0'>
           {/* Document preview for PDF */}
           {showPreview && isPDF && (
-            <div className="border-b">
+            <div className='border-b'>
               <iframe
                 src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                className="h-96 w-full"
+                className='h-96 w-full'
                 title={filename}
               />
             </div>
           )}
 
           {/* Document info */}
-          <div className="p-4">
-            <div className="flex items-center gap-4">
+          <div className='p-4'>
+            <div className='flex items-center gap-4'>
               {/* Document icon with extension badge */}
-              <div className="flex-shrink-0">
-                <div className="relative">
+              <div className='flex-shrink-0'>
+                <div className='relative'>
                   <div
                     className={cn(
                       'flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br',
-                      getDocumentColor(),
+                      getDocumentColor()
                     )}
                   >
-                    <FileTextIcon className="h-8 w-8 text-white" />
+                    <FileTextIcon className='h-8 w-8 text-white' />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 rounded bg-gray-800 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                  <div className='absolute -bottom-1 -right-1 rounded bg-gray-800 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white'>
                     {extension}
                   </div>
                 </div>
               </div>
 
               {/* File info */}
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-foreground" title={filename}>
+              <div className='min-w-0 flex-1'>
+                <p
+                  className='truncate font-medium text-foreground'
+                  title={filename}
+                >
                   {truncateFilename(filename)}
                 </p>
                 {fileSize !== undefined && (
-                  <p className="text-sm text-muted-foreground">{formatFileSize(fileSize)}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {formatFileSize(fileSize)}
+                  </p>
                 )}
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className='mt-1 text-xs text-muted-foreground'>
                   {isPDF ? 'PDF Document' : 'Document'}
                 </p>
               </div>
 
               {/* Actions */}
-              <div className="flex flex-shrink-0 gap-1">
+              <div className='flex flex-shrink-0 gap-1'>
                 {isPDF && (
                   <Button
-                    variant="ghost"
-                    size="icon"
+                    variant='ghost'
+                    size='icon'
                     onClick={handleOpenInNewTab}
-                    title="Open in new tab"
+                    title='Open in new tab'
                     aria-label={`Open ${filename} in new tab`}
                   >
-                    <ExternalLinkIcon className="h-4 w-4" />
+                    <ExternalLinkIcon className='h-4 w-4' />
                   </Button>
                 )}
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   onClick={handleDownload}
-                  title="Download document"
+                  title='Download document'
                   aria-label={`Download ${filename}`}
                 >
-                  <DownloadIcon className="h-4 w-4" />
+                  <DownloadIcon className='h-4 w-4' />
                 </Button>
               </div>
             </div>
@@ -138,7 +157,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
         </CardContent>
       </Card>
     );
-  },
+  }
 );
 
 DocumentPreview.displayName = 'DocumentPreview';

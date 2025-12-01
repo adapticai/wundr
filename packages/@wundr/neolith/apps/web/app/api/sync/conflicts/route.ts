@@ -33,7 +33,7 @@ import type { NextRequest } from 'next/server';
  */
 function deepMerge(
   target: Record<string, unknown>,
-  source: Record<string, unknown>,
+  source: Record<string, unknown>
 ): Record<string, unknown> {
   const result = { ...target };
 
@@ -48,7 +48,7 @@ function deepMerge(
     ) {
       result[key] = deepMerge(
         target[key] as Record<string, unknown>,
-        source[key] as Record<string, unknown>,
+        source[key] as Record<string, unknown>
       );
     } else {
       result[key] = source[key];
@@ -64,7 +64,7 @@ function deepMerge(
 async function resolveConflict(
   conflict: ConflictItem,
   resolution: ResolveConflictInput,
-  userId: string,
+  userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     let dataToApply: Record<string, unknown>;
@@ -79,16 +79,24 @@ async function resolveConflict(
       case 'MERGE':
         // Auto-merge: use deepMerge to combine server data with client data
         // Client data takes precedence for conflicting keys
-        dataToApply = resolution.mergedData ?? deepMerge(conflict.serverData, conflict.clientData);
+        dataToApply =
+          resolution.mergedData ??
+          deepMerge(conflict.serverData, conflict.clientData);
         break;
       case 'MANUAL':
         if (!resolution.mergedData) {
-          return { success: false, error: 'Merged data required for MANUAL resolution' };
+          return {
+            success: false,
+            error: 'Merged data required for MANUAL resolution',
+          };
         }
         dataToApply = resolution.mergedData;
         break;
       default:
-        return { success: false, error: `Unknown resolution: ${resolution.resolution}` };
+        return {
+          success: false,
+          error: `Unknown resolution: ${resolution.resolution}`,
+        };
     }
 
     // Apply the resolution based on entity type
@@ -100,7 +108,10 @@ async function resolveConflict(
         });
 
         if (!message) {
-          return { success: false, error: 'Message not found or not owned by user' };
+          return {
+            success: false,
+            error: 'Message not found or not owned by user',
+          };
         }
 
         await prisma.message.update({
@@ -160,7 +171,10 @@ async function resolveConflict(
       }
 
       default:
-        return { success: false, error: `Unsupported entity: ${conflict.entity}` };
+        return {
+          success: false,
+          error: `Unsupported entity: ${conflict.entity}`,
+        };
     }
 
     return { success: true };
@@ -212,8 +226,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -243,9 +260,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -307,8 +324,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -318,8 +338,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createNotificationErrorResponse('Invalid JSON body', NOTIFICATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createNotificationErrorResponse(
+          'Invalid JSON body',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -330,9 +353,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -351,7 +374,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         ? (user.preferences as Record<string, unknown>)
         : {};
 
-    const existingConflicts = (currentPrefs.syncConflicts as ConflictItem[]) ?? [];
+    const existingConflicts =
+      (currentPrefs.syncConflicts as ConflictItem[]) ?? [];
 
     // Build a map of conflicts for quick lookup
     const conflictMap = new Map<string, ConflictItem>();
@@ -360,7 +384,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Process resolutions
-    const results: { conflictId: string; success: boolean; error?: string }[] = [];
+    const results: { conflictId: string; success: boolean; error?: string }[] =
+      [];
     const resolvedIds: string[] = [];
     let resolved = 0;
     let failed = 0;
@@ -378,7 +403,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         continue;
       }
 
-      const result = await resolveConflict(conflict, resolution, session.user.id);
+      const result = await resolveConflict(
+        conflict,
+        resolution,
+        session.user.id
+      );
 
       results.push({
         conflictId: resolution.conflictId,
@@ -396,22 +425,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Remove resolved conflicts from user preferences
     const remainingConflicts = existingConflicts.filter(
-      (c) => !resolvedIds.includes(c.id),
+      c => !resolvedIds.includes(c.id)
     );
 
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        preferences: JSON.parse(JSON.stringify({
-          ...currentPrefs,
-          syncConflicts: remainingConflicts,
-        })) as Prisma.InputJsonValue,
+        preferences: JSON.parse(
+          JSON.stringify({
+            ...currentPrefs,
+            syncConflicts: remainingConflicts,
+          })
+        ) as Prisma.InputJsonValue,
       },
     });
 
-    const message = resolved === 1
-      ? '1 conflict resolved'
-      : `${resolved} conflicts resolved`;
+    const message =
+      resolved === 1 ? '1 conflict resolved' : `${resolved} conflicts resolved`;
 
     return NextResponse.json({
       data: {
@@ -427,9 +457,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

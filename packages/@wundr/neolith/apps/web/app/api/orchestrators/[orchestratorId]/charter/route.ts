@@ -40,7 +40,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
@@ -52,11 +52,16 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
-  const membership = userOrganizations.find((m) => m.organizationId === orchestrator.organizationId);
+  const membership = userOrganizations.find(
+    m => m.organizationId === orchestrator.organizationId
+  );
 
   return { orchestrator, role: membership?.role ?? null };
 }
@@ -76,14 +81,20 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
  * GET /api/orchestrators/orch_123/charter
  * ```
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CHARTER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CHARTER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -93,20 +104,26 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
 
     if (!orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator ID is required', CHARTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Orchestrator ID is required',
+          CHARTER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Check access
-    const access = await checkOrchestratorAccess(orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -142,18 +159,24 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'No active charter found for this orchestrator',
-          CHARTER_ERROR_CODES.NO_ACTIVE_VERSION,
+          CHARTER_ERROR_CODES.NO_ACTIVE_VERSION
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     return NextResponse.json({ data: activeCharter });
   } catch (error) {
-    console.error('[GET /api/orchestrators/:orchestratorId/charter] Error:', error);
+    console.error(
+      '[GET /api/orchestrators/:orchestratorId/charter] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CHARTER_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CHARTER_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -193,14 +216,20 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
  * }
  * ```
  */
-export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CHARTER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CHARTER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -210,8 +239,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     if (!orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator ID is required', CHARTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Orchestrator ID is required',
+          CHARTER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -221,8 +253,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', CHARTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          CHARTER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -233,27 +268,36 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     };
 
     // Validate input
-    const parseResult = charterVersionCreateSchema.safeParse(inputWithOrchestrator);
+    const parseResult = charterVersionCreateSchema.safeParse(
+      inputWithOrchestrator
+    );
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation failed', CHARTER_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        createErrorResponse(
+          'Validation failed',
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
     const input: CharterVersionCreateInput = parseResult.data;
 
     // Check access and permissions
-    const access = await checkOrchestratorAccess(orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -262,14 +306,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to create/update charter',
-          CHARTER_ERROR_CODES.FORBIDDEN,
+          CHARTER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Create new charter version in transaction
-    const newVersion = await prisma.$transaction(async (tx) => {
+    const newVersion = await prisma.$transaction(async tx => {
       // Deactivate current active versions for this charter
       await tx.charterVersion.updateMany({
         where: {
@@ -290,7 +334,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
         select: { version: true },
       });
 
-      const nextVersion = input.version ?? (maxVersion ? maxVersion.version + 1 : 1);
+      const nextVersion =
+        input.version ?? (maxVersion ? maxVersion.version + 1 : 1);
 
       // Create new version
       return tx.charterVersion.create({
@@ -327,25 +372,34 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     return NextResponse.json(
       { data: newVersion, message: 'Charter created/updated successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/orchestrators/:orchestratorId/charter] Error:', error);
+    console.error(
+      '[POST /api/orchestrators/:orchestratorId/charter] Error:',
+      error
+    );
 
     // Handle unique constraint errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
       return NextResponse.json(
         createErrorResponse(
           'A charter version with this number already exists',
-          CHARTER_ERROR_CODES.DUPLICATE_VERSION,
+          CHARTER_ERROR_CODES.DUPLICATE_VERSION
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CHARTER_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CHARTER_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

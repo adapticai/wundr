@@ -78,70 +78,81 @@ export function useChannelHuddle({
   /**
    * Start a new huddle
    */
-  const startHuddle = useCallback(async (audioOnly = false) => {
-    setIsLoading(true);
-    setError(null);
+  const startHuddle = useCallback(
+    async (audioOnly = false) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/channels/${channelId}/huddle/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      try {
+        const response = await fetch(
+          `/api/channels/${channelId}/huddle/start`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to start huddle');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'Failed to start huddle');
+        }
+
+        const result = await response.json();
+        setHuddle(result.data);
+
+        // Automatically join the huddle after starting it
+        await joinHuddle(audioOnly);
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Failed to start huddle');
+        setError(error);
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
-
-      const result = await response.json();
-      setHuddle(result.data);
-
-      // Automatically join the huddle after starting it
-      await joinHuddle(audioOnly);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to start huddle');
-      setError(error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [channelId]);
+    },
+    [channelId]
+  );
 
   /**
    * Join an existing huddle
    */
-  const joinHuddle = useCallback(async (audioOnly = false) => {
-    setIsLoading(true);
-    setError(null);
+  const joinHuddle = useCallback(
+    async (audioOnly = false) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/channels/${channelId}/huddle/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ audioOnly }),
-      });
+      try {
+        const response = await fetch(`/api/channels/${channelId}/huddle/join`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ audioOnly }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to join huddle');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'Failed to join huddle');
+        }
+
+        const result = await response.json();
+        setJoinData(result.data);
+        setIsInHuddle(true);
+        await refreshStatus();
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Failed to join huddle');
+        setError(error);
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
-
-      const result = await response.json();
-      setJoinData(result.data);
-      setIsInHuddle(true);
-      await refreshStatus();
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to join huddle');
-      setError(error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [channelId, refreshStatus]);
+    },
+    [channelId, refreshStatus]
+  );
 
   /**
    * Leave the current huddle
@@ -164,7 +175,8 @@ export function useChannelHuddle({
       setJoinData(null);
       await refreshStatus();
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to leave huddle');
+      const error =
+        err instanceof Error ? err : new Error('Failed to leave huddle');
       setError(error);
       throw error;
     } finally {

@@ -21,7 +21,10 @@ import {
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
 
-import type { CreateChannelInput, ChannelFiltersInput } from '@/lib/validations/organization';
+import type {
+  CreateChannelInput,
+  ChannelFiltersInput,
+} from '@/lib/validations/organization';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -34,8 +37,8 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -47,8 +50,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
@@ -85,8 +88,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -99,9 +105,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -112,21 +118,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'workspaceId is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check workspace access
-    const access = await checkWorkspaceAccess(filters.workspaceId, session.user.id);
+    const access = await checkWorkspaceAccess(
+      filters.workspaceId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -144,15 +153,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    const memberChannelIds = channelMemberships.map((m) => m.channelId);
-    const membershipMap = new Map(channelMemberships.map((m) => [m.channelId, m]));
+    const memberChannelIds = channelMemberships.map(m => m.channelId);
+    const membershipMap = new Map(
+      channelMemberships.map(m => [m.channelId, m])
+    );
 
     const where: Prisma.channelWhereInput = {
       workspaceId: filters.workspaceId,
-      OR: [
-        { type: 'PUBLIC' },
-        { id: { in: memberChannelIds } },
-      ],
+      OR: [{ type: 'PUBLIC' }, { id: { in: memberChannelIds } }],
       ...(!filters.includeArchived && { isArchived: false }),
       ...(filters.type && { type: filters.type }),
       ...(filters.search && {
@@ -189,7 +197,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ]);
 
     // Add membership status and user preferences to each channel
-    const channelsWithMembership = channels.map((channel) => {
+    const channelsWithMembership = channels.map(channel => {
       const membership = membershipMap.get(channel.id);
       return {
         ...channel,
@@ -220,9 +228,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -255,8 +263,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -266,8 +277,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -278,23 +292,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: CreateChannelInput = parseResult.data;
 
     // Check workspace access
-    const access = await checkWorkspaceAccess(input.workspaceId, session.user.id);
+    const access = await checkWorkspaceAccess(
+      input.workspaceId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -303,9 +320,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to create channels',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -316,7 +333,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .replace(/^-|-$/g, '');
 
     // Create channel with creator as admin and initial members
-    const channel = await prisma.$transaction(async (tx) => {
+    const channel = await prisma.$transaction(async tx => {
       // Create the channel
       const newChannel = await tx.channel.create({
         data: {
@@ -340,7 +357,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       // Add initial members (if provided and not the creator)
-      const memberIdsToAdd = input.memberIds.filter((id) => id !== session.user.id);
+      const memberIdsToAdd = input.memberIds.filter(
+        id => id !== session.user.id
+      );
       if (memberIdsToAdd.length > 0) {
         // Verify all members are workspace members
         const workspaceMembers = await tx.workspaceMember.findMany({
@@ -351,12 +370,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           select: { userId: true },
         });
 
-        const validMemberIds = workspaceMembers.map((m) => m.userId);
+        const validMemberIds = workspaceMembers.map(m => m.userId);
 
         // Add valid members
         if (validMemberIds.length > 0) {
           await tx.channelMember.createMany({
-            data: validMemberIds.map((userId) => ({
+            data: validMemberIds.map(userId => ({
               channelId: newChannel.id,
               userId,
               role: 'MEMBER' as const,
@@ -381,16 +400,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(
       { data: channel, message: 'Channel created successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/channels] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

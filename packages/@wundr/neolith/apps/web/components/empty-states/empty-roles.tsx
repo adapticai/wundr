@@ -16,8 +16,8 @@ export function EmptyRoles({ onCreateRole }: EmptyRolesProps) {
   return (
     <EmptyState
       icon={Shield}
-      title="No custom roles yet"
-      description="Create custom roles to define specific permissions and access levels for your team."
+      title='No custom roles yet'
+      description='Create custom roles to define specific permissions and access levels for your team.'
       action={
         onCreateRole
           ? {

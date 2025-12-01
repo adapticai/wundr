@@ -18,7 +18,7 @@ describe('SwarmIntelligence', () => {
       maxSwarmSize: 10,
       consensusThreshold: 0.7,
       faultTolerance: 'high',
-      adaptiveScaling: true
+      adaptiveScaling: true,
     };
 
     mockAgents = [
@@ -31,7 +31,11 @@ describe('SwarmIntelligence', () => {
         topology: 'mesh',
         sessionId: 'test-session',
         createdAt: new Date(),
-        metrics: { tasksCompleted: 5, successRate: 0.8, averageResponseTime: 1500 }
+        metrics: {
+          tasksCompleted: 5,
+          successRate: 0.8,
+          averageResponseTime: 1500,
+        },
       },
       {
         id: 'agent-2',
@@ -42,8 +46,12 @@ describe('SwarmIntelligence', () => {
         topology: 'mesh',
         sessionId: 'test-session',
         createdAt: new Date(),
-        metrics: { tasksCompleted: 3, successRate: 0.9, averageResponseTime: 2000 }
-      }
+        metrics: {
+          tasksCompleted: 3,
+          successRate: 0.9,
+          averageResponseTime: 2000,
+        },
+      },
     ];
 
     mockTask = {
@@ -57,14 +65,14 @@ describe('SwarmIntelligence', () => {
       requiredCapabilities: ['coding', 'code-review'],
       context: {},
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     mockMemoryContext = {
       sessionMemory: [],
       agentMemory: new Map(),
       taskMemory: new Map(),
-      patterns: []
+      patterns: [],
     };
 
     swarmIntelligence = new SwarmIntelligence(mockConfig);
@@ -79,14 +87,14 @@ describe('SwarmIntelligence', () => {
   describe('Initialization', () => {
     it('should initialize successfully', async () => {
       const result = await swarmIntelligence.initialize();
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toContain('initialized successfully');
     });
 
     it('should initialize topology templates', async () => {
       await swarmIntelligence.initialize();
-      
+
       const metrics = await swarmIntelligence.getMetrics();
       expect(metrics.availableTopologies).toBeGreaterThan(0);
     });
@@ -100,20 +108,28 @@ describe('SwarmIntelligence', () => {
     it('should select optimal topology for simple tasks', async () => {
       const agentTypes = ['coder', 'tester'];
       const simpleTask = 'Fix a small bug';
-      
-      const topology = await swarmIntelligence.selectOptimalTopology(agentTypes, simpleTask);
-      
+
+      const topology = await swarmIntelligence.selectOptimalTopology(
+        agentTypes,
+        simpleTask
+      );
+
       expect(topology).toBeDefined();
       expect(topology.type).toBeDefined();
-      expect(['mesh', 'hierarchical', 'adaptive', 'ring', 'star']).toContain(topology.type);
+      expect(['mesh', 'hierarchical', 'adaptive', 'ring', 'star']).toContain(
+        topology.type
+      );
     });
 
     it('should select mesh topology for consensus-critical tasks', async () => {
       const agentTypes = ['byzantine-coordinator', 'consensus-builder'];
       const consensusTask = 'Reach consensus on critical system decision';
-      
-      const topology = await swarmIntelligence.selectOptimalTopology(agentTypes, consensusTask);
-      
+
+      const topology = await swarmIntelligence.selectOptimalTopology(
+        agentTypes,
+        consensusTask
+      );
+
       expect(topology.type).toBe('mesh');
       expect(topology.faultTolerance).toBe('high');
     });
@@ -121,9 +137,12 @@ describe('SwarmIntelligence', () => {
     it('should select hierarchical topology for large-scale tasks', async () => {
       const agentTypes = Array.from({ length: 15 }, (_, _i) => 'coder');
       const largeTask = 'Refactor large monorepo codebase';
-      
-      const topology = await swarmIntelligence.selectOptimalTopology(agentTypes, largeTask);
-      
+
+      const topology = await swarmIntelligence.selectOptimalTopology(
+        agentTypes,
+        largeTask
+      );
+
       expect(topology.type).toBe('hierarchical');
       expect(topology.maxAgents).toBeGreaterThanOrEqual(15);
     });
@@ -131,9 +150,12 @@ describe('SwarmIntelligence', () => {
     it('should customize topology based on requirements', async () => {
       const agentTypes = ['coder', 'reviewer', 'tester'];
       const task = 'Complex integration task';
-      
-      const topology = await swarmIntelligence.selectOptimalTopology(agentTypes, task);
-      
+
+      const topology = await swarmIntelligence.selectOptimalTopology(
+        agentTypes,
+        task
+      );
+
       expect(topology.metadata).toBeDefined();
       expect(topology.metadata.customizedFor).toBeDefined();
       expect(topology.metadata.createdAt).toBeDefined();
@@ -147,14 +169,14 @@ describe('SwarmIntelligence', () => {
 
     it('should execute task successfully with swarm coordination', async () => {
       const tools: any[] = [];
-      
+
       const result = await swarmIntelligence.executeTask(
         mockTask,
         mockAgents,
         tools,
         mockMemoryContext
       );
-      
+
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.data.swarmId).toBeDefined();
@@ -165,16 +187,16 @@ describe('SwarmIntelligence', () => {
       const complexTask = {
         ...mockTask,
         type: 'coding' as const,
-        description: 'Complex multi-step implementation task'
+        description: 'Complex multi-step implementation task',
       };
-      
+
       const result = await swarmIntelligence.executeTask(
         complexTask,
         mockAgents,
         [],
         mockMemoryContext
       );
-      
+
       expect(result.success).toBe(true);
       expect(result.data.subResults).toBeDefined();
     });
@@ -186,7 +208,7 @@ describe('SwarmIntelligence', () => {
         [],
         mockMemoryContext
       );
-      
+
       expect(result.success).toBe(true);
       expect(result.data.consensus).toBeDefined();
       expect(result.data.consensus.agreement).toBeGreaterThanOrEqual(0);
@@ -200,7 +222,7 @@ describe('SwarmIntelligence', () => {
         [],
         mockMemoryContext
       );
-      
+
       expect(result.success).toBe(true);
       expect(result.data.qualityScore).toBeGreaterThanOrEqual(0);
       expect(result.data.qualityScore).toBeLessThanOrEqual(1);
@@ -219,11 +241,11 @@ describe('SwarmIntelligence', () => {
         taskType: 'coding',
         qualityScore: 0.9,
         executionTime: 2000,
-        success: true
+        success: true,
       };
-      
+
       await swarmIntelligence.updatePatterns(successfulPattern);
-      
+
       const metrics = await swarmIntelligence.getMetrics();
       expect(metrics.patterns.successful).toBeGreaterThan(0);
     });
@@ -236,7 +258,7 @@ describe('SwarmIntelligence', () => {
         [],
         mockMemoryContext
       );
-      
+
       const metrics = await swarmIntelligence.getMetrics();
       expect(metrics.collectiveMemorySize).toBeGreaterThan(0);
     });
@@ -254,16 +276,16 @@ describe('SwarmIntelligence', () => {
         description: 'High memory usage detected',
         affectedComponents: ['agents'],
         suggestedActions: ['Enable compression'],
-        detectedAt: new Date()
+        detectedAt: new Date(),
       };
-      
+
       await swarmIntelligence.optimizeTopology(mockBottleneck);
-      
+
       // Should emit optimization event
-      const optimizationPromise = new Promise((resolve) => {
+      const optimizationPromise = new Promise(resolve => {
         swarmIntelligence.on('topology-optimized', resolve);
       });
-      
+
       await swarmIntelligence.optimizeTopology(mockBottleneck);
       await optimizationPromise;
     });
@@ -279,11 +301,11 @@ describe('SwarmIntelligence', () => {
         type: 'successful',
         topology: 'mesh',
         taskType: 'coding',
-        confidence: 0.85
+        confidence: 0.85,
       };
-      
+
       await swarmIntelligence.updatePatterns(pattern);
-      
+
       const metrics = await swarmIntelligence.getMetrics();
       expect(metrics.collectiveMemorySize).toBeGreaterThan(0);
     });
@@ -296,7 +318,7 @@ describe('SwarmIntelligence', () => {
 
     it('should provide comprehensive metrics', async () => {
       const metrics = await swarmIntelligence.getMetrics();
-      
+
       expect(metrics).toHaveProperty('activeSwarms');
       expect(metrics).toHaveProperty('availableTopologies');
       expect(metrics).toHaveProperty('collectiveMemorySize');
@@ -315,16 +337,16 @@ describe('SwarmIntelligence', () => {
     it('should handle agent failures gracefully', async () => {
       const faultyAgents = mockAgents.map(agent => ({
         ...agent,
-        status: 'error' as const
+        status: 'error' as const,
       }));
-      
+
       const result = await swarmIntelligence.executeTask(
         mockTask,
         faultyAgents,
         [],
         mockMemoryContext
       );
-      
+
       // Should still attempt execution even with faulty agents
       expect(result).toBeDefined();
     });
@@ -334,7 +356,7 @@ describe('SwarmIntelligence', () => {
         ['byzantine-coordinator'],
         'Critical consensus task'
       );
-      
+
       expect(topology.faultTolerance).toBeDefined();
     });
   });
@@ -342,16 +364,16 @@ describe('SwarmIntelligence', () => {
   describe('Shutdown', () => {
     it('should shutdown gracefully', async () => {
       await swarmIntelligence.initialize();
-      
+
       const result = await swarmIntelligence.shutdown();
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toContain('shutdown completed');
     });
 
     it('should cleanup active swarms on shutdown', async () => {
       await swarmIntelligence.initialize();
-      
+
       // Start a task execution
       const taskPromise = swarmIntelligence.executeTask(
         mockTask,
@@ -359,12 +381,12 @@ describe('SwarmIntelligence', () => {
         [],
         mockMemoryContext
       );
-      
+
       // Shutdown while task is running
       const shutdownResult = await swarmIntelligence.shutdown();
-      
+
       expect(shutdownResult.success).toBe(true);
-      
+
       // Wait for task to complete/cancel
       await taskPromise.catch(() => {}); // Ignore errors from cancelled task
     });

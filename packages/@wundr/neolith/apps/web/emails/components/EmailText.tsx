@@ -16,7 +16,7 @@ interface EmailTextProps {
 export const EmailText = ({
   children,
   variant = 'body',
-  style: customStyle = {}
+  style: customStyle = {},
 }: EmailTextProps) => {
   let baseStyle = text;
 

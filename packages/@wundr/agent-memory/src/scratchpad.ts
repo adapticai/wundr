@@ -157,7 +157,7 @@ export class Scratchpad {
    */
   getAll(): Memory[] {
     return Array.from(this.memories.values()).sort(
-      (a, b) => b.metadata.createdAt.getTime() - a.metadata.createdAt.getTime(),
+      (a, b) => b.metadata.createdAt.getTime() - a.metadata.createdAt.getTime()
     );
   }
 
@@ -169,7 +169,7 @@ export class Scratchpad {
    */
   getByTag(tag: string): Memory[] {
     return Array.from(this.memories.values()).filter(m =>
-      m.metadata.tags.includes(tag),
+      m.metadata.tags.includes(tag)
     );
   }
 
@@ -181,7 +181,7 @@ export class Scratchpad {
    */
   getByAgent(agentId: string): Memory[] {
     return Array.from(this.memories.values()).filter(
-      m => m.metadata.agentId === agentId,
+      m => m.metadata.agentId === agentId
     );
   }
 
@@ -193,7 +193,7 @@ export class Scratchpad {
    */
   getByTask(taskId: string): Memory[] {
     return Array.from(this.memories.values()).filter(
-      m => m.metadata.taskId === taskId,
+      m => m.metadata.taskId === taskId
     );
   }
 
@@ -206,7 +206,7 @@ export class Scratchpad {
    */
   update(
     id: string,
-    updates: { content?: unknown; metadata?: Partial<MemoryMetadata> },
+    updates: { content?: unknown; metadata?: Partial<MemoryMetadata> }
   ): Memory | null {
     const memory = this.memories.get(id);
     if (!memory) {
@@ -419,7 +419,7 @@ export class Scratchpad {
         : 0;
 
     const sortedByDate = memories.sort(
-      (a, b) => a.metadata.createdAt.getTime() - b.metadata.createdAt.getTime(),
+      (a, b) => a.metadata.createdAt.getTime() - b.metadata.createdAt.getTime()
     );
 
     return {

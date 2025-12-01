@@ -45,7 +45,13 @@ type SortField = 'name' | 'status' | 'sessions' | 'budget' | 'lastActivity';
 type SortDirection = 'asc' | 'desc';
 
 const StatusBadge: React.FC<{ status: OrchestratorStatus }> = ({ status }) => {
-  const variants: Record<OrchestratorStatus, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+  const variants: Record<
+    OrchestratorStatus,
+    {
+      variant: 'default' | 'secondary' | 'destructive' | 'outline';
+      label: string;
+    }
+  > = {
     active: { variant: 'default', label: 'Active' },
     idle: { variant: 'secondary', label: 'Idle' },
     error: { variant: 'destructive', label: 'Error' },
@@ -55,14 +61,16 @@ const StatusBadge: React.FC<{ status: OrchestratorStatus }> = ({ status }) => {
   const { variant, label } = variants[status];
 
   return (
-    <Badge variant={variant} className="capitalize">
-      <span className={cn(
-        'mr-1.5 h-2 w-2 rounded-full',
-        status === 'active' && 'bg-green-500',
-        status === 'idle' && 'bg-gray-400',
-        status === 'error' && 'bg-red-500',
-        status === 'maintenance' && 'bg-orange-500'
-      )} />
+    <Badge variant={variant} className='capitalize'>
+      <span
+        className={cn(
+          'mr-1.5 h-2 w-2 rounded-full',
+          status === 'active' && 'bg-green-500',
+          status === 'idle' && 'bg-gray-400',
+          status === 'error' && 'bg-red-500',
+          status === 'maintenance' && 'bg-orange-500'
+        )}
+      />
       {label}
     </Badge>
   );
@@ -80,15 +88,12 @@ const TokenBudgetProgress: React.FC<{
   };
 
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs text-muted-foreground">
+    <div className='space-y-1'>
+      <div className='flex justify-between text-xs text-muted-foreground'>
         <span>{used.toLocaleString()} used</span>
         <span>{percentage.toFixed(1)}%</span>
       </div>
-      <Progress
-        value={percentage}
-        className="h-2"
-      />
+      <Progress value={percentage} className='h-2' />
       <style jsx>{`
         :global(.h-2 .bg-primary) {
           background-color: ${getProgressColor().replace('bg-', '')} !important;
@@ -104,7 +109,8 @@ export const OrchestratorList: React.FC<OrchestratorListProps> = ({
 }) => {
   const [expandedRow, setExpandedRow] = React.useState<string | null>(null);
   const [sortField, setSortField] = React.useState<SortField>('name');
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>('asc');
+  const [sortDirection, setSortDirection] =
+    React.useState<SortDirection>('asc');
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -154,9 +160,9 @@ export const OrchestratorList: React.FC<OrchestratorListProps> = ({
   const SortIcon: React.FC<{ field: SortField }> = ({ field }) => {
     if (sortField !== field) return null;
     return sortDirection === 'asc' ? (
-      <ChevronUp className="ml-1 h-4 w-4 inline" />
+      <ChevronUp className='ml-1 h-4 w-4 inline' />
     ) : (
-      <ChevronDown className="ml-1 h-4 w-4 inline" />
+      <ChevronDown className='ml-1 h-4 w-4 inline' />
     );
   };
 
@@ -180,106 +186,130 @@ export const OrchestratorList: React.FC<OrchestratorListProps> = ({
         <CardTitle>Orchestrator Status</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        <div className='rounded-md border'>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className='cursor-pointer hover:bg-muted/50'
                   onClick={() => handleSort('name')}
                 >
-                  Name <SortIcon field="name" />
+                  Name <SortIcon field='name' />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className='cursor-pointer hover:bg-muted/50'
                   onClick={() => handleSort('status')}
                 >
-                  Status <SortIcon field="status" />
+                  Status <SortIcon field='status' />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className='cursor-pointer hover:bg-muted/50'
                   onClick={() => handleSort('sessions')}
                 >
-                  Sessions <SortIcon field="sessions" />
+                  Sessions <SortIcon field='sessions' />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className='cursor-pointer hover:bg-muted/50'
                   onClick={() => handleSort('budget')}
                 >
-                  Token Budget <SortIcon field="budget" />
+                  Token Budget <SortIcon field='budget' />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className='cursor-pointer hover:bg-muted/50'
                   onClick={() => handleSort('lastActivity')}
                 >
-                  Last Activity <SortIcon field="lastActivity" />
+                  Last Activity <SortIcon field='lastActivity' />
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedOrchestrators.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className='text-center text-muted-foreground'
+                  >
                     No orchestrators found
                   </TableCell>
                 </TableRow>
               ) : (
-                sortedOrchestrators.map((orchestrator) => (
+                sortedOrchestrators.map(orchestrator => (
                   <React.Fragment key={orchestrator.id}>
                     <TableRow
-                      className="cursor-pointer"
+                      className='cursor-pointer'
                       onClick={() => toggleRow(orchestrator.id)}
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className='font-medium'>
                         {orchestrator.name}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={orchestrator.status} />
                       </TableCell>
                       <TableCell>{orchestrator.sessions}</TableCell>
-                      <TableCell className="min-w-[200px]">
+                      <TableCell className='min-w-[200px]'>
                         <TokenBudgetProgress
                           used={orchestrator.tokenBudget.used}
                           total={orchestrator.tokenBudget.total}
                           percentage={orchestrator.tokenBudget.percentage}
                         />
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className='text-sm text-muted-foreground'>
                         {formatTimestamp(orchestrator.lastActivity)}
                       </TableCell>
                     </TableRow>
-                    {expandedRow === orchestrator.id && orchestrator.metadata && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="bg-muted/50">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-                            {orchestrator.metadata.version && (
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">Version</div>
-                                <div className="text-sm">{orchestrator.metadata.version}</div>
-                              </div>
-                            )}
-                            {orchestrator.metadata.uptime && (
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">Uptime</div>
-                                <div className="text-sm">{orchestrator.metadata.uptime}</div>
-                              </div>
-                            )}
-                            {orchestrator.metadata.memoryUsage !== undefined && (
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">Memory Usage</div>
-                                <div className="text-sm">{orchestrator.metadata.memoryUsage.toFixed(1)}%</div>
-                              </div>
-                            )}
-                            {orchestrator.metadata.cpuUsage !== undefined && (
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">CPU Usage</div>
-                                <div className="text-sm">{orchestrator.metadata.cpuUsage.toFixed(1)}%</div>
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
+                    {expandedRow === orchestrator.id &&
+                      orchestrator.metadata && (
+                        <TableRow>
+                          <TableCell colSpan={5} className='bg-muted/50'>
+                            <div className='grid grid-cols-2 md:grid-cols-4 gap-4 p-4'>
+                              {orchestrator.metadata.version && (
+                                <div>
+                                  <div className='text-xs font-medium text-muted-foreground'>
+                                    Version
+                                  </div>
+                                  <div className='text-sm'>
+                                    {orchestrator.metadata.version}
+                                  </div>
+                                </div>
+                              )}
+                              {orchestrator.metadata.uptime && (
+                                <div>
+                                  <div className='text-xs font-medium text-muted-foreground'>
+                                    Uptime
+                                  </div>
+                                  <div className='text-sm'>
+                                    {orchestrator.metadata.uptime}
+                                  </div>
+                                </div>
+                              )}
+                              {orchestrator.metadata.memoryUsage !==
+                                undefined && (
+                                <div>
+                                  <div className='text-xs font-medium text-muted-foreground'>
+                                    Memory Usage
+                                  </div>
+                                  <div className='text-sm'>
+                                    {orchestrator.metadata.memoryUsage.toFixed(
+                                      1
+                                    )}
+                                    %
+                                  </div>
+                                </div>
+                              )}
+                              {orchestrator.metadata.cpuUsage !== undefined && (
+                                <div>
+                                  <div className='text-xs font-medium text-muted-foreground'>
+                                    CPU Usage
+                                  </div>
+                                  <div className='text-sm'>
+                                    {orchestrator.metadata.cpuUsage.toFixed(1)}%
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
                   </React.Fragment>
                 ))
               )}

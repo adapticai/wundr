@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -76,12 +76,15 @@ export async function GET(
       workspaceId,
       metric,
       { start: currentStart, end: currentEnd },
-      { start: previousStart, end: previousEnd },
+      { start: previousStart, end: previousEnd }
     );
 
     return NextResponse.json({ metric, period, trend });
   } catch (error) {
     console.error('Analytics trends error:', error);
-    return NextResponse.json({ error: 'Failed to fetch trends' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch trends' },
+      { status: 500 }
+    );
   }
 }

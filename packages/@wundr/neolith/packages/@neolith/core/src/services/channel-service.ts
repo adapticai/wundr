@@ -9,10 +9,7 @@
 
 import { prisma } from '@neolith/database';
 
-import {
-  GenesisError,
-  TransactionError,
-} from '../errors';
+import { GenesisError, TransactionError } from '../errors';
 import {
   DEFAULT_CHANNEL_LIST_OPTIONS,
   MAX_NAME_LENGTH,
@@ -27,7 +24,13 @@ import type {
   ChannelListOptions,
   ChannelMemberRole,
 } from '../types/organization';
-import type { PrismaClient, Prisma, ChannelRole , Channel, ChannelMember } from '@neolith/database';
+import type {
+  PrismaClient,
+  Prisma,
+  ChannelRole,
+  Channel,
+  ChannelMember,
+} from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -42,7 +45,7 @@ export class ChannelNotFoundError extends GenesisError {
       `Channel not found with ${identifierType}: ${identifier}`,
       'CHANNEL_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'ChannelNotFoundError';
   }
@@ -57,7 +60,7 @@ export class ChannelAlreadyExistsError extends GenesisError {
       `Channel with slug '${slug}' already exists in workspace`,
       'CHANNEL_ALREADY_EXISTS',
       409,
-      { slug, workspaceId },
+      { slug, workspaceId }
     );
     this.name = 'ChannelAlreadyExistsError';
   }
@@ -85,7 +88,7 @@ export class WorkspaceNotFoundError extends GenesisError {
       `Workspace not found with ${identifierType}: ${identifier}`,
       'WORKSPACE_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'WorkspaceNotFoundError';
   }
@@ -96,12 +99,7 @@ export class WorkspaceNotFoundError extends GenesisError {
  */
 export class UserNotFoundError extends GenesisError {
   constructor(userId: string) {
-    super(
-      `User not found: ${userId}`,
-      'USER_NOT_FOUND',
-      404,
-      { userId },
-    );
+    super(`User not found: ${userId}`, 'USER_NOT_FOUND', 404, { userId });
     this.name = 'UserNotFoundError';
   }
 }
@@ -115,7 +113,7 @@ export class ChannelMemberNotFoundError extends GenesisError {
       `User ${userId} is not a member of channel ${channelId}`,
       'CHANNEL_MEMBER_NOT_FOUND',
       404,
-      { channelId, userId },
+      { channelId, userId }
     );
     this.name = 'ChannelMemberNotFoundError';
   }
@@ -155,7 +153,10 @@ export interface ChannelService {
    * @param options - Query options
    * @returns Paginated channel results
    */
-  listChannels(workspaceId: string, options?: ChannelListOptions): Promise<Channel[]>;
+  listChannels(
+    workspaceId: string,
+    options?: ChannelListOptions
+  ): Promise<Channel[]>;
 
   /**
    * Updates a channel.
@@ -196,7 +197,11 @@ export interface ChannelService {
    * @throws {ChannelNotFoundError} If the channel doesn't exist
    * @throws {UserNotFoundError} If the user doesn't exist
    */
-  addMember(channelId: string, userId: string, role?: ChannelMemberRole): Promise<ChannelMember>;
+  addMember(
+    channelId: string,
+    userId: string,
+    role?: ChannelMemberRole
+  ): Promise<ChannelMember>;
 
   /**
    * Removes a member from a channel.
@@ -218,7 +223,11 @@ export interface ChannelService {
    * @throws {ChannelNotFoundError} If the channel doesn't exist
    * @throws {ChannelMemberNotFoundError} If the user is not a member
    */
-  updateMemberRole(channelId: string, userId: string, role: ChannelMemberRole): Promise<ChannelMember>;
+  updateMemberRole(
+    channelId: string,
+    userId: string,
+    role: ChannelMemberRole
+  ): Promise<ChannelMember>;
 
   /**
    * Gets all members of a channel.
@@ -306,34 +315,39 @@ export class ChannelServiceImpl implements ChannelService {
 
     try {
       // Create channel and add creator as owner in a transaction
-      const channel = await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
-        const newChannel = await tx.channel.create({
-          data: {
-            name: data.name,
-            slug,
-            description: data.description,
-            type: data.type ?? 'PUBLIC',
-            settings: (data.settings ?? {}) as Prisma.InputJsonValue,
-            workspaceId: data.workspaceId,
-            createdById: data.createdById,
-          },
-        });
+      const channel = await this.db.$transaction(
+        async (tx: Prisma.TransactionClient) => {
+          const newChannel = await tx.channel.create({
+            data: {
+              name: data.name,
+              slug,
+              description: data.description,
+              type: data.type ?? 'PUBLIC',
+              settings: (data.settings ?? {}) as Prisma.InputJsonValue,
+              workspaceId: data.workspaceId,
+              createdById: data.createdById,
+            },
+          });
 
-        // Add creator as owner
-        await tx.channelMember.create({
-          data: {
-            channelId: newChannel.id,
-            userId: data.createdById,
-            role: 'OWNER',
-          },
-        });
+          // Add creator as owner
+          await tx.channelMember.create({
+            data: {
+              channelId: newChannel.id,
+              userId: data.createdById,
+              role: 'OWNER',
+            },
+          });
 
-        return newChannel;
-      });
+          return newChannel;
+        }
+      );
 
       return channel;
     } catch (error) {
-      throw new TransactionError('createChannel', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createChannel',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -360,7 +374,7 @@ export class ChannelServiceImpl implements ChannelService {
    */
   async listChannels(
     workspaceId: string,
-    options: ChannelListOptions = {},
+    options: ChannelListOptions = {}
   ): Promise<Channel[]> {
     const {
       type,
@@ -492,7 +506,10 @@ export class ChannelServiceImpl implements ChannelService {
         });
       });
     } catch (error) {
-      throw new TransactionError('deleteChannel', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteChannel',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -506,7 +523,7 @@ export class ChannelServiceImpl implements ChannelService {
   async addMember(
     channelId: string,
     userId: string,
-    role: ChannelMemberRole = 'MEMBER',
+    role: ChannelMemberRole = 'MEMBER'
   ): Promise<ChannelMember> {
     // Verify channel exists
     const channel = await this.getChannel(channelId);
@@ -590,7 +607,7 @@ export class ChannelServiceImpl implements ChannelService {
   async updateMemberRole(
     channelId: string,
     userId: string,
-    role: ChannelMemberRole,
+    role: ChannelMemberRole
   ): Promise<ChannelMember> {
     // Verify channel exists
     const channel = await this.getChannel(channelId);
@@ -682,7 +699,9 @@ export class ChannelServiceImpl implements ChannelService {
     }
 
     if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH) {
-      errors.description = [`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`];
+      errors.description = [
+        `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      ];
     }
 
     if (!data.workspaceId) {
@@ -693,7 +712,10 @@ export class ChannelServiceImpl implements ChannelService {
       errors.createdById = ['Creator ID is required'];
     }
 
-    if (data.type && !['PUBLIC', 'PRIVATE', 'DM', 'HUDDLE'].includes(data.type)) {
+    if (
+      data.type &&
+      !['PUBLIC', 'PRIVATE', 'DM', 'HUDDLE'].includes(data.type)
+    ) {
       errors.type = ['Invalid channel type'];
     }
 
@@ -717,10 +739,15 @@ export class ChannelServiceImpl implements ChannelService {
     }
 
     if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH) {
-      errors.description = [`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`];
+      errors.description = [
+        `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      ];
     }
 
-    if (data.type && !['PUBLIC', 'PRIVATE', 'DM', 'HUDDLE'].includes(data.type)) {
+    if (
+      data.type &&
+      !['PUBLIC', 'PRIVATE', 'DM', 'HUDDLE'].includes(data.type)
+    ) {
       errors.type = ['Invalid channel type'];
     }
 
@@ -755,7 +782,9 @@ export class ChannelServiceImpl implements ChannelService {
  * await channelService.addMember(channel.id, 'user_789', 'MEMBER');
  * ```
  */
-export function createChannelService(database?: PrismaClient): ChannelServiceImpl {
+export function createChannelService(
+  database?: PrismaClient
+): ChannelServiceImpl {
   return new ChannelServiceImpl(database);
 }
 

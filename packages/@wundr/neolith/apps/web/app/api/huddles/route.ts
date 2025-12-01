@@ -104,8 +104,8 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   // Check organization membership
   const orgMembership = await prisma.organizationMember.findUnique({
@@ -118,8 +118,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   // Check workspace membership (optional for public workspaces)
   const workspaceMembership = await prisma.workspaceMember.findUnique({
@@ -148,8 +148,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -159,8 +162,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -170,9 +176,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -182,8 +188,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const access = await verifyWorkspaceAccess(workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found or access denied', CALL_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found or access denied',
+          CALL_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -213,7 +222,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         select: { settings: true },
       });
 
-      const currentSettings = workspace?.settings as WorkspaceSettingsWithHuddles | null;
+      const currentSettings =
+        workspace?.settings as WorkspaceSettingsWithHuddles | null;
       const existingHuddles = currentSettings?.huddles ?? [];
 
       const newHuddle: StoredHuddleData = {
@@ -273,15 +283,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       participantCount: 1,
     };
 
-    return NextResponse.json({
-      data: response,
-      message: 'Huddle created successfully',
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        data: response,
+        message: 'Huddle created successfully',
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[POST /api/huddles] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -300,8 +316,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -313,13 +332,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { workspaceId, activeOnly, publicOnly, page, limit, sortBy, sortOrder } = parseResult.data;
+    const {
+      workspaceId,
+      activeOnly,
+      publicOnly,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    } = parseResult.data;
     const offset = (page - 1) * limit;
 
     // Get user's accessible workspaces
@@ -338,14 +365,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         select: { organizationId: true },
       });
 
-      const orgIds = orgMemberships.map((m) => m.organizationId);
+      const orgIds = orgMemberships.map(m => m.organizationId);
 
       const workspaces = await prisma.workspace.findMany({
         where: { organizationId: { in: orgIds } },
         select: { id: true },
       });
 
-      workspaceIds = workspaces.map((w) => w.id);
+      workspaceIds = workspaces.map(w => w.id);
     }
 
     if (workspaceIds.length === 0) {
@@ -367,20 +394,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     let totalCount = 0;
 
     try {
-      const huddleResults = await prisma.$queryRaw<Array<{
-        id: string;
-        workspace_id: string;
-        name: string;
-        description: string | null;
-        is_public: boolean;
-        room_name: string;
-        status: string;
-        created_at: Date;
-        ended_at: Date | null;
-        created_by_id: string;
-        creator_name: string | null;
-        participant_count: number;
-      }>>`
+      const huddleResults = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          workspace_id: string;
+          name: string;
+          description: string | null;
+          is_public: boolean;
+          room_name: string;
+          status: string;
+          created_at: Date;
+          ended_at: Date | null;
+          created_by_id: string;
+          creator_name: string | null;
+          participant_count: number;
+        }>
+      >`
         SELECT
           h.id,
           h.workspace_id,
@@ -404,7 +433,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         OFFSET ${offset}
       `;
 
-      huddles = huddleResults.map((row) => ({
+      huddles = huddleResults.map(row => ({
         id: row.id,
         workspaceId: row.workspace_id,
         name: row.name,
@@ -435,20 +464,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       for (const workspace of workspaces) {
-        const settings = workspace.settings as WorkspaceSettingsWithHuddles | null;
+        const settings =
+          workspace.settings as WorkspaceSettingsWithHuddles | null;
         if (settings?.huddles) {
           // Convert stored huddle data to HuddleResponse (string dates to Date objects)
-          let workspaceHuddles: HuddleResponse[] = settings.huddles.map((h) => ({
+          let workspaceHuddles: HuddleResponse[] = settings.huddles.map(h => ({
             ...h,
             createdAt: new Date(h.createdAt),
             endedAt: h.endedAt ? new Date(h.endedAt) : null,
           }));
 
           if (activeOnly) {
-            workspaceHuddles = workspaceHuddles.filter((h) => h.status === 'active');
+            workspaceHuddles = workspaceHuddles.filter(
+              h => h.status === 'active'
+            );
           }
           if (publicOnly) {
-            workspaceHuddles = workspaceHuddles.filter((h) => h.isPublic);
+            workspaceHuddles = workspaceHuddles.filter(h => h.isPublic);
           }
 
           huddles.push(...workspaceHuddles);
@@ -459,7 +491,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       huddles.sort((a, b) => {
         const aVal = a[sortBy as keyof HuddleResponse];
         const bVal = b[sortBy as keyof HuddleResponse];
-        if (aVal === null || aVal === undefined || bVal === null || bVal === undefined) {
+        if (
+          aVal === null ||
+          aVal === undefined ||
+          bVal === null ||
+          bVal === undefined
+        ) {
           return 0;
         }
         if (aVal < bVal) {
@@ -491,8 +528,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/huddles] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

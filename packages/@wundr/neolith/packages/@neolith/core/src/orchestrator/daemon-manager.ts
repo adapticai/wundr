@@ -9,7 +9,11 @@
 
 import { EventEmitter } from 'events';
 
-import { createOrchestratorDaemon, type OrchestratorDaemon, type DaemonConfig } from './daemon';
+import {
+  createOrchestratorDaemon,
+  type OrchestratorDaemon,
+  type DaemonConfig,
+} from './daemon';
 
 import type { OrchestratorWithUser } from '../types/orchestrator';
 
@@ -80,7 +84,9 @@ export class OrchestratorDaemonManager extends EventEmitter {
    */
   static getInstance(config?: DaemonManagerConfig): OrchestratorDaemonManager {
     if (!OrchestratorDaemonManager.instance) {
-      OrchestratorDaemonManager.instance = new OrchestratorDaemonManager(config);
+      OrchestratorDaemonManager.instance = new OrchestratorDaemonManager(
+        config
+      );
     }
     return OrchestratorDaemonManager.instance;
   }
@@ -99,12 +105,16 @@ export class OrchestratorDaemonManager extends EventEmitter {
   /**
    * Start daemon for an orchestrator user
    */
-  async startDaemon(orchestrator: OrchestratorWithUser): Promise<OrchestratorDaemon> {
+  async startDaemon(
+    orchestrator: OrchestratorWithUser
+  ): Promise<OrchestratorDaemon> {
     const orchestratorId = orchestrator.id;
 
     // Check if daemon already running
     if (this.daemons.has(orchestratorId)) {
-      this.log(`Daemon already running for orchestrator: ${orchestrator.user.name}`);
+      this.log(
+        `Daemon already running for orchestrator: ${orchestrator.user.name}`
+      );
       return this.daemons.get(orchestratorId)!.daemon;
     }
 
@@ -159,14 +169,18 @@ export class OrchestratorDaemonManager extends EventEmitter {
       return;
     }
 
-    this.log(`Stopping daemon for orchestrator: ${managed.orchestrator.user.name}`);
+    this.log(
+      `Stopping daemon for orchestrator: ${managed.orchestrator.user.name}`
+    );
 
     try {
       await managed.daemon.stop();
       this.daemons.delete(orchestratorId);
 
       this.emit('daemon:stopped', { orchestratorId });
-      this.log(`Daemon stopped successfully for: ${managed.orchestrator.user.name}`);
+      this.log(
+        `Daemon stopped successfully for: ${managed.orchestrator.user.name}`
+      );
 
       // Stop health check if no more daemons
       if (this.daemons.size === 0 && this.healthCheckTimer) {
@@ -187,13 +201,15 @@ export class OrchestratorDaemonManager extends EventEmitter {
       throw new Error(`No daemon running for orchestrator: ${orchestratorId}`);
     }
 
-    this.log(`Restarting daemon for orchestrator: ${managed.orchestrator.user.name}`);
+    this.log(
+      `Restarting daemon for orchestrator: ${managed.orchestrator.user.name}`
+    );
 
     try {
       // Check restart attempt limit
       if (managed.restartCount >= this.config.maxRestartAttempts) {
         throw new Error(
-          `Max restart attempts (${this.config.maxRestartAttempts}) reached for orchestrator: ${orchestratorId}`,
+          `Max restart attempts (${this.config.maxRestartAttempts}) reached for orchestrator: ${orchestratorId}`
         );
       }
 
@@ -201,10 +217,16 @@ export class OrchestratorDaemonManager extends EventEmitter {
       managed.restartCount++;
       managed.startedAt = new Date();
 
-      this.emit('daemon:restarted', { orchestratorId, restartCount: managed.restartCount });
-      this.log(`Daemon restarted successfully for: ${managed.orchestrator.user.name}`);
+      this.emit('daemon:restarted', {
+        orchestratorId,
+        restartCount: managed.restartCount,
+      });
+      this.log(
+        `Daemon restarted successfully for: ${managed.orchestrator.user.name}`
+      );
     } catch (error) {
-      managed.lastError = error instanceof Error ? error : new Error(String(error));
+      managed.lastError =
+        error instanceof Error ? error : new Error(String(error));
       this.emit('daemon:restart-error', { orchestratorId, error });
       throw error;
     }
@@ -216,10 +238,10 @@ export class OrchestratorDaemonManager extends EventEmitter {
   async stopAllDaemons(): Promise<void> {
     this.log(`Stopping all ${this.daemons.size} daemons...`);
 
-    const stopPromises = Array.from(this.daemons.keys()).map((orchestratorId) =>
-      this.stopDaemon(orchestratorId).catch((error) => {
+    const stopPromises = Array.from(this.daemons.keys()).map(orchestratorId =>
+      this.stopDaemon(orchestratorId).catch(error => {
         this.log(`Error stopping daemon ${orchestratorId}: ${error}`);
-      }),
+      })
     );
 
     await Promise.all(stopPromises);
@@ -308,7 +330,9 @@ export class OrchestratorDaemonManager extends EventEmitter {
 
         // Check if daemon is in error state
         if (health.status === 'error' && this.config.autoRestart) {
-          this.log(`Daemon in error state, attempting restart: ${orchestratorId}`);
+          this.log(
+            `Daemon in error state, attempting restart: ${orchestratorId}`
+          );
           await this.restartDaemon(orchestratorId);
         }
 
@@ -376,7 +400,10 @@ export class OrchestratorDaemonManager extends EventEmitter {
    * Get all daemon statuses
    */
   getAllDaemonStatuses() {
-    const statuses: Record<string, ReturnType<typeof this.getDaemonStatus>> = {};
+    const statuses: Record<
+      string,
+      ReturnType<typeof this.getDaemonStatus>
+    > = {};
     const keys = Array.from(this.daemons.keys());
     for (const orchestratorId of keys) {
       statuses[orchestratorId] = this.getDaemonStatus(orchestratorId);
@@ -391,25 +418,28 @@ export class OrchestratorDaemonManager extends EventEmitter {
   /**
    * Set up event listeners for a daemon
    */
-  private setupDaemonListeners(daemon: OrchestratorDaemon, orchestratorId: string): void {
-    daemon.on('error', (error) => {
+  private setupDaemonListeners(
+    daemon: OrchestratorDaemon,
+    orchestratorId: string
+  ): void {
+    daemon.on('error', error => {
       this.emit('daemon:error', { orchestratorId, error });
       this.log(`Daemon error for ${orchestratorId}: ${error}`);
     });
 
-    daemon.on('message:processed', (message) => {
+    daemon.on('message:processed', message => {
       this.emit('daemon:message-processed', { orchestratorId, message });
     });
 
-    daemon.on('message:send', (message) => {
+    daemon.on('message:send', message => {
       this.emit('daemon:message-send', { orchestratorId, message });
     });
 
-    daemon.on('action:execute', (action) => {
+    daemon.on('action:execute', action => {
       this.emit('daemon:action', { orchestratorId, action });
     });
 
-    daemon.on('status:changed', (status) => {
+    daemon.on('status:changed', status => {
       this.emit('daemon:status-changed', { orchestratorId, status });
     });
   }
@@ -431,13 +461,17 @@ export class OrchestratorDaemonManager extends EventEmitter {
 /**
  * Get the daemon manager singleton instance
  */
-export function getDaemonManager(config?: DaemonManagerConfig): OrchestratorDaemonManager {
+export function getDaemonManager(
+  config?: DaemonManagerConfig
+): OrchestratorDaemonManager {
   return OrchestratorDaemonManager.getInstance(config);
 }
 
 /**
  * Initialize daemon manager with config
  */
-export function initializeDaemonManager(config?: DaemonManagerConfig): OrchestratorDaemonManager {
+export function initializeDaemonManager(
+  config?: DaemonManagerConfig
+): OrchestratorDaemonManager {
   return OrchestratorDaemonManager.getInstance(config);
 }

@@ -1,6 +1,6 @@
 /**
  * GOLDEN PATTERN: Type Definitions and TypeScript Best Practices
- * 
+ *
  * This file demonstrates best practices for defining types in monorepo environments,
  * including proper type organization, utility types, and advanced TypeScript patterns.
  */
@@ -49,14 +49,14 @@ export enum UserRole {
   ADMIN = 'admin',
   MODERATOR = 'moderator',
   USER = 'user',
-  GUEST = 'guest'
+  GUEST = 'guest',
 }
 
 export enum UserStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   SUSPENDED = 'suspended',
-  PENDING_VERIFICATION = 'pending_verification'
+  PENDING_VERIFICATION = 'pending_verification',
 }
 
 export enum OrderStatus {
@@ -67,7 +67,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled',
-  REFUNDED = 'refunded'
+  REFUNDED = 'refunded',
 }
 
 export enum PaymentStatus {
@@ -76,7 +76,7 @@ export enum PaymentStatus {
   CAPTURED = 'captured',
   FAILED = 'failed',
   CANCELLED = 'cancelled',
-  REFUNDED = 'refunded'
+  REFUNDED = 'refunded',
 }
 
 // Well-structured domain entities
@@ -137,7 +137,8 @@ export interface Address {
 }
 
 // Product domain types
-export interface Product extends BaseEntity, SoftDeletableEntity, VersionedEntity {
+export interface Product
+  extends BaseEntity, SoftDeletableEntity, VersionedEntity {
   readonly id: ProductId;
   readonly sku: string;
   readonly name: string;
@@ -251,7 +252,12 @@ export interface PaymentInfo {
 }
 
 export interface PaymentMethod {
-  readonly type: 'credit_card' | 'debit_card' | 'paypal' | 'stripe' | 'bank_transfer';
+  readonly type:
+    | 'credit_card'
+    | 'debit_card'
+    | 'paypal'
+    | 'stripe'
+    | 'bank_transfer';
   readonly last4?: string;
   readonly brand?: string;
   readonly expiryMonth?: number;
@@ -495,7 +501,12 @@ export interface QueryOptions {
 }
 
 // Service layer types
-export interface DomainService<TEntity, TCreateRequest, TUpdateRequest, TId = string> {
+export interface DomainService<
+  TEntity,
+  TCreateRequest,
+  TUpdateRequest,
+  TId = string,
+> {
   create(data: TCreateRequest): Promise<TEntity>;
   findById(id: TId): Promise<TEntity | null>;
   update(id: TId, data: TUpdateRequest): Promise<TEntity>;
@@ -617,9 +628,9 @@ export type NonNullable<T> = T extends null | undefined ? never : T;
 
 export type Flatten<T> = T extends readonly (infer U)[] ? U : T;
 
-export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+export type UnionToIntersection<U> = (
+  U extends any ? (k: U) => void : never
+) extends (k: infer I) => void
   ? I
   : never;
 
@@ -652,32 +663,32 @@ export type ApiResponseType<T> = T extends (...args: any[]) => Promise<infer R>
 
 /**
  * Benefits of these type definition patterns:
- * 
+ *
  * 1. TYPE SAFETY:
  *    - Branded types prevent ID confusion
  *    - Comprehensive domain modeling
  *    - Runtime type checking with guards
- * 
+ *
  * 2. MAINTAINABILITY:
  *    - Single source of truth for types
  *    - Composable type building blocks
  *    - Clear separation of concerns
- * 
+ *
  * 3. DEVELOPER EXPERIENCE:
  *    - Excellent IntelliSense support
  *    - Compile-time error detection
  *    - Self-documenting interfaces
- * 
+ *
  * 4. REUSABILITY:
  *    - Utility types for common patterns
  *    - Generic interfaces for repositories
  *    - Configurable service patterns
- * 
+ *
  * 5. SCALABILITY:
  *    - Easy to extend without breaking changes
  *    - Proper versioning support
  *    - Clean API contracts
- * 
+ *
  * 6. INTEROPERABILITY:
  *    - Consistent types across packages
  *    - Proper serialization support
@@ -690,32 +701,32 @@ export type {
   User,
   Product,
   Order,
-  
+
   // Request/Response types
   CreateUserRequest,
   UpdateUserRequest,
   CreateProductRequest,
   UpdateProductRequest,
   CreateOrderRequest,
-  
+
   // API types
   ApiResponse,
   PaginationRequest,
   PaginationResponse,
-  
+
   // Configuration
   AppConfig,
   DatabaseConfig,
-  
+
   // Events
   DomainEvent,
   UserCreatedEvent,
   OrderCreatedEvent,
-  
+
   // Utilities
   Optional,
   DeepReadonly,
-  Repository
+  Repository,
 };
 
 export {
@@ -724,19 +735,19 @@ export {
   UserStatus,
   OrderStatus,
   PaymentStatus,
-  
+
   // Type guards
   isUser,
   isProduct,
   isOrder,
-  
+
   // Assertions
   assertIsUser,
   assertIsProduct,
   assertIsOrder,
-  
+
   // Constructors
   UserId,
   OrderId,
-  ProductId
+  ProductId,
 };

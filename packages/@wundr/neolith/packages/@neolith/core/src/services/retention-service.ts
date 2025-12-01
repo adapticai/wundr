@@ -39,7 +39,7 @@ export class RetentionPolicyNotFoundError extends GenesisError {
       `Retention policy not found: ${policyId}`,
       'RETENTION_POLICY_NOT_FOUND',
       404,
-      { policyId },
+      { policyId }
     );
     this.name = 'RetentionPolicyNotFoundError';
   }
@@ -50,12 +50,9 @@ export class RetentionPolicyNotFoundError extends GenesisError {
  */
 export class LegalHoldNotFoundError extends GenesisError {
   constructor(holdId: string) {
-    super(
-      `Legal hold not found: ${holdId}`,
-      'LEGAL_HOLD_NOT_FOUND',
-      404,
-      { holdId },
-    );
+    super(`Legal hold not found: ${holdId}`, 'LEGAL_HOLD_NOT_FOUND', 404, {
+      holdId,
+    });
     this.name = 'LegalHoldNotFoundError';
   }
 }
@@ -65,12 +62,7 @@ export class LegalHoldNotFoundError extends GenesisError {
  */
 export class RetentionJobError extends GenesisError {
   constructor(message: string, jobId?: string) {
-    super(
-      message,
-      'RETENTION_JOB_ERROR',
-      500,
-      { jobId },
-    );
+    super(message, 'RETENTION_JOB_ERROR', 500, { jobId });
     this.name = 'RetentionJobError';
   }
 }
@@ -80,12 +72,9 @@ export class RetentionJobError extends GenesisError {
  */
 export class DataExportNotFoundError extends GenesisError {
   constructor(exportId: string) {
-    super(
-      `Data export not found: ${exportId}`,
-      'DATA_EXPORT_NOT_FOUND',
-      404,
-      { exportId },
-    );
+    super(`Data export not found: ${exportId}`, 'DATA_EXPORT_NOT_FOUND', 404, {
+      exportId,
+    });
     this.name = 'DataExportNotFoundError';
   }
 }
@@ -207,7 +196,10 @@ export interface RetentionDatabaseModel<T = RetentionItemRecord> {
   /** Create a new record */
   create(args: { data: Record<string, unknown> }): Promise<T>;
   /** Update an existing record */
-  update(args: { where: { id: string }; data: Record<string, unknown> }): Promise<T>;
+  update(args: {
+    where: { id: string };
+    data: Record<string, unknown>;
+  }): Promise<T>;
   /** Delete a record */
   delete(args: { where: { id: string } }): Promise<T>;
   /** Count records matching criteria */
@@ -242,7 +234,9 @@ export interface RetentionDatabaseClient {
   message: RetentionDatabaseModel<RetentionItemRecord>;
   /** Model for attachment/file records with aggregation support */
   attachment: RetentionDatabaseModel<RetentionItemRecord> & {
-    aggregate: (args: Record<string, unknown>) => Promise<FileSizeAggregateResult>;
+    aggregate: (
+      args: Record<string, unknown>
+    ) => Promise<FileSizeAggregateResult>;
   };
   /** Model for channel records */
   channel: RetentionDatabaseModel<RetentionItemRecord>;
@@ -331,7 +325,7 @@ export class RetentionService {
     name: string,
     rules: Omit<RetentionRule, 'id'>[],
     createdBy: string,
-    description?: string,
+    description?: string
   ): Promise<RetentionPolicy> {
     const rulesWithIds = rules.map((r, i) => ({
       ...r,
@@ -362,22 +356,24 @@ export class RetentionService {
    */
   async updatePolicy(
     policyId: string,
-    updates: Partial<Pick<RetentionPolicy, 'name' | 'description' | 'isEnabled' | 'rules'>>,
+    updates: Partial<
+      Pick<RetentionPolicy, 'name' | 'description' | 'isEnabled' | 'rules'>
+    >
   ): Promise<RetentionPolicy> {
     const data: Record<string, unknown> = {};
 
     if (updates.name !== undefined) {
-data.name = updates.name;
-}
+      data.name = updates.name;
+    }
     if (updates.description !== undefined) {
-data.description = updates.description;
-}
+      data.description = updates.description;
+    }
     if (updates.isEnabled !== undefined) {
-data.isEnabled = updates.isEnabled;
-}
+      data.isEnabled = updates.isEnabled;
+    }
     if (updates.rules !== undefined) {
-data.rules = JSON.stringify(updates.rules);
-}
+      data.rules = JSON.stringify(updates.rules);
+    }
 
     const policy = await this.prisma.retentionPolicy.update({
       where: { id: policyId },
@@ -399,8 +395,8 @@ data.rules = JSON.stringify(updates.rules);
     });
 
     if (!policy) {
-return null;
-}
+      return null;
+    }
     return this.mapPolicy(policy);
   }
 
@@ -416,7 +412,7 @@ return null;
       orderBy: { createdAt: 'desc' },
     });
 
-    return policies.map((p) => this.mapPolicy(p));
+    return policies.map(p => this.mapPolicy(p));
   }
 
   /**
@@ -503,7 +499,7 @@ return null;
           workspaceId,
           rule,
           activeHolds,
-          job.id as string,
+          job.id as string
         );
         totalProcessed += result.processed;
         totalFailed += result.failed;
@@ -540,7 +536,7 @@ return null;
     workspaceId: string,
     rule: RetentionRule,
     legalHolds: LegalHold[],
-    jobId: string,
+    jobId: string
   ): Promise<RuleProcessingResult> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - rule.retentionDays);
@@ -559,7 +555,7 @@ return null;
         rule.resourceType,
         cutoffDate,
         this.batchSize,
-        cursor,
+        cursor
       );
 
       if (items.length === 0) {
@@ -568,8 +564,8 @@ return null;
       }
 
       // Filter out items under legal hold
-      const eligibleItems = items.filter(item =>
-        !this.isUnderLegalHold(item, legalHolds),
+      const eligibleItems = items.filter(
+        item => !this.isUnderLegalHold(item, legalHolds)
       );
 
       // Process each item
@@ -609,7 +605,7 @@ return null;
     resourceType: RetentionResourceType,
     cutoffDate: Date,
     limit: number,
-    cursor?: string,
+    cursor?: string
   ): Promise<Array<{ id: string; createdAt: Date; [key: string]: unknown }>> {
     const cursorCondition = cursor ? { id: { gt: cursor } } : {};
 
@@ -666,7 +662,7 @@ return null;
   private async processItem(
     item: { id: string; [key: string]: unknown },
     action: RetentionAction,
-    resourceType: RetentionResourceType,
+    resourceType: RetentionResourceType
   ): Promise<void> {
     switch (action) {
       case 'delete':
@@ -688,7 +684,7 @@ return null;
    */
   private async deleteItem(
     item: { id: string; [key: string]: unknown },
-    resourceType: RetentionResourceType,
+    resourceType: RetentionResourceType
   ): Promise<void> {
     switch (resourceType) {
       case 'message':
@@ -722,7 +718,7 @@ return null;
    */
   private async archiveItem(
     item: { id: string; [key: string]: unknown },
-    resourceType: RetentionResourceType,
+    resourceType: RetentionResourceType
   ): Promise<void> {
     switch (resourceType) {
       case 'message':
@@ -749,7 +745,7 @@ return null;
    */
   private async anonymizeItem(
     item: { id: string; [key: string]: unknown },
-    resourceType: RetentionResourceType,
+    resourceType: RetentionResourceType
   ): Promise<void> {
     switch (resourceType) {
       case 'message':
@@ -770,17 +766,20 @@ return null;
    */
   private isUnderLegalHold(
     item: { id: string; createdAt: Date; [key: string]: unknown },
-    holds: LegalHold[],
+    holds: LegalHold[]
   ): boolean {
     for (const hold of holds) {
       if (!hold.isActive) {
-continue;
-}
+        continue;
+      }
 
       // Check date range
       if (hold.scope.dateRange) {
         const itemDate = item.createdAt;
-        if (itemDate >= hold.scope.dateRange.start && itemDate <= hold.scope.dateRange.end) {
+        if (
+          itemDate >= hold.scope.dateRange.start &&
+          itemDate <= hold.scope.dateRange.end
+        ) {
           return true;
         }
       }
@@ -922,10 +921,10 @@ continue;
     messages: number;
     files: number;
   }> {
-    const fileStats = await this.prisma.attachment.aggregate({
+    const fileStats = (await this.prisma.attachment.aggregate({
       where: { message: { channel: { workspaceId } } },
       _sum: { fileSize: true },
-    }) as { _sum: { fileSize: number | null } };
+    })) as { _sum: { fileSize: number | null } };
 
     const fileSize = Number(fileStats._sum?.fileSize ?? 0);
 
@@ -987,7 +986,7 @@ continue;
     name: string,
     scope: LegalHold['scope'],
     createdBy: string,
-    description?: string,
+    description?: string
   ): Promise<LegalHold> {
     const hold = await this.prisma.legalHold.create({
       data: {
@@ -1010,7 +1009,10 @@ continue;
    * @param releasedBy - User ID who released the hold
    * @returns The released legal hold
    */
-  async releaseLegalHold(holdId: string, releasedBy: string): Promise<LegalHold> {
+  async releaseLegalHold(
+    holdId: string,
+    releasedBy: string
+  ): Promise<LegalHold> {
     const hold = await this.prisma.legalHold.update({
       where: { id: holdId },
       data: {
@@ -1063,7 +1065,7 @@ continue;
     requestedBy: string,
     type: DataExport['type'],
     scope: DataExportScope,
-    format: 'json' | 'zip',
+    format: 'json' | 'zip'
   ): Promise<DataExport> {
     const exportRecord = await this.prisma.dataExport.create({
       data: {
@@ -1095,8 +1097,8 @@ continue;
     });
 
     if (!record) {
-return null;
-}
+      return null;
+    }
     return this.mapDataExport(record);
   }
 
@@ -1150,6 +1152,8 @@ return null;
  * @param config - Service configuration
  * @returns RetentionService instance
  */
-export function createRetentionService(config: RetentionServiceConfig): RetentionService {
+export function createRetentionService(
+  config: RetentionServiceConfig
+): RetentionService {
   return new RetentionService(config);
 }

@@ -594,8 +594,10 @@ export function isStorageConfig(value: unknown): value is StorageConfig {
     typeof config.region === 'string' &&
     typeof config.credentials === 'object' &&
     config.credentials !== null &&
-    typeof (config.credentials as Record<string, unknown>).accessKeyId === 'string' &&
-    typeof (config.credentials as Record<string, unknown>).secretAccessKey === 'string'
+    typeof (config.credentials as Record<string, unknown>).accessKeyId ===
+      'string' &&
+    typeof (config.credentials as Record<string, unknown>).secretAccessKey ===
+      'string'
   );
 }
 
@@ -639,21 +641,41 @@ function isReadableStream(value: unknown): value is Readable {
  * @returns File category or 'other'
  */
 export function getFileCategory(
-  mimeType: string,
+  mimeType: string
 ): 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other' {
-  if (MIME_TYPE_CATEGORIES.images.includes(mimeType as (typeof MIME_TYPE_CATEGORIES.images)[number])) {
+  if (
+    MIME_TYPE_CATEGORIES.images.includes(
+      mimeType as (typeof MIME_TYPE_CATEGORIES.images)[number]
+    )
+  ) {
     return 'image';
   }
-  if (MIME_TYPE_CATEGORIES.videos.includes(mimeType as (typeof MIME_TYPE_CATEGORIES.videos)[number])) {
+  if (
+    MIME_TYPE_CATEGORIES.videos.includes(
+      mimeType as (typeof MIME_TYPE_CATEGORIES.videos)[number]
+    )
+  ) {
     return 'video';
   }
-  if (MIME_TYPE_CATEGORIES.audio.includes(mimeType as (typeof MIME_TYPE_CATEGORIES.audio)[number])) {
+  if (
+    MIME_TYPE_CATEGORIES.audio.includes(
+      mimeType as (typeof MIME_TYPE_CATEGORIES.audio)[number]
+    )
+  ) {
     return 'audio';
   }
-  if (MIME_TYPE_CATEGORIES.documents.includes(mimeType as (typeof MIME_TYPE_CATEGORIES.documents)[number])) {
+  if (
+    MIME_TYPE_CATEGORIES.documents.includes(
+      mimeType as (typeof MIME_TYPE_CATEGORIES.documents)[number]
+    )
+  ) {
     return 'document';
   }
-  if (MIME_TYPE_CATEGORIES.archives.includes(mimeType as (typeof MIME_TYPE_CATEGORIES.archives)[number])) {
+  if (
+    MIME_TYPE_CATEGORIES.archives.includes(
+      mimeType as (typeof MIME_TYPE_CATEGORIES.archives)[number]
+    )
+  ) {
     return 'archive';
   }
   return 'other';
@@ -707,11 +729,13 @@ export function getExtensionFromMimeType(mimeType: string): string {
     'audio/flac': 'flac',
     'application/pdf': 'pdf',
     'application/msword': 'doc',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      'docx',
     'application/vnd.ms-excel': 'xls',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
     'application/vnd.ms-powerpoint': 'ppt',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+      'pptx',
     'text/plain': 'txt',
     'text/csv': 'csv',
     'text/markdown': 'md',

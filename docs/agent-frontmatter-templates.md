@@ -1,6 +1,7 @@
 # Agent Frontmatter Templates - Complete Reference
 
-This document contains standardized frontmatter templates for all 54 agent types in the Claude Flow ecosystem.
+This document contains standardized frontmatter templates for all 54 agent types in the Claude Flow
+ecosystem.
 
 ## Template Structure
 
@@ -26,7 +27,8 @@ skills: skill1, skill2
 ```yaml
 ---
 name: coder
-description: Implement features, write production code, and translate specifications into working software
+description:
+  Implement features, write production code, and translate specifications into working software
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 permissionMode: acceptEdits
@@ -39,7 +41,8 @@ skills: programming, debugging, code-optimization
 ```yaml
 ---
 name: reviewer
-description: Review code quality, identify bugs, ensure best practices, and provide constructive feedback
+description:
+  Review code quality, identify bugs, ensure best practices, and provide constructive feedback
 tools: Read, Grep, Glob, Bash
 model: sonnet
 permissionMode: default
@@ -65,7 +68,8 @@ skills: testing, test-automation, quality-assurance
 ```yaml
 ---
 name: planner
-description: Break down complex tasks into actionable steps, create roadmaps, and coordinate workflows
+description:
+  Break down complex tasks into actionable steps, create roadmaps, and coordinate workflows
 tools: TodoWrite, Read, Grep
 model: sonnet
 permissionMode: plan
@@ -78,7 +82,8 @@ skills: task-decomposition, project-planning, workflow-design
 ```yaml
 ---
 name: researcher
-description: Investigate requirements, analyze codebases, gather context, and provide technical insights
+description:
+  Investigate requirements, analyze codebases, gather context, and provide technical insights
 tools: Read, Grep, Glob, WebSearch, WebFetch
 model: sonnet
 permissionMode: default
@@ -134,7 +139,8 @@ skills: dynamic-optimization, topology-adaptation, resource-allocation
 ```yaml
 ---
 name: collective-intelligence-coordinator
-description: Aggregate insights from multiple agents to make informed decisions and solve complex problems
+description:
+  Aggregate insights from multiple agents to make informed decisions and solve complex problems
 tools: Task, TodoWrite, mcp__claude-flow__task_results, mcp__claude-flow__neural_patterns
 model: opus
 permissionMode: plan
@@ -164,7 +170,8 @@ skills: memory-management, context-persistence, knowledge-sharing
 ```yaml
 ---
 name: byzantine-coordinator
-description: Ensure fault-tolerant consensus in adversarial environments with Byzantine fault tolerance
+description:
+  Ensure fault-tolerant consensus in adversarial environments with Byzantine fault tolerance
 tools: Task, TodoWrite, mcp__claude-flow__swarm_status, mcp__claude-flow__task_results
 model: opus
 permissionMode: plan
@@ -312,7 +319,8 @@ skills: memory-optimization, resource-management, cache-coordination
 ---
 name: smart-agent
 description: Use neural patterns and machine learning to adapt strategies and improve performance
-tools: mcp__claude-flow__neural_train, mcp__claude-flow__neural_patterns, mcp__claude-flow__neural_status
+tools:
+  mcp__claude-flow__neural_train, mcp__claude-flow__neural_patterns, mcp__claude-flow__neural_status
 model: opus
 permissionMode: plan
 skills: machine-learning, pattern-recognition, adaptive-optimization
@@ -694,18 +702,18 @@ skills: swarm-initialization, topology-setup, team-bootstrap
 
 ## Quick Reference Table
 
-| Category | Agent Count | Primary Use Cases |
-|----------|-------------|-------------------|
-| Core Development | 5 | Code implementation, review, testing, planning, research |
-| Swarm Coordination | 5 | Multi-agent orchestration and collaboration |
-| Consensus & Distributed | 7 | Fault tolerance, distributed systems, security |
-| Performance & Optimization | 5 | Benchmarking, resource management, ML optimization |
-| GitHub & Repository | 9 | Source control, PRs, issues, releases, workflows |
-| SPARC Methodology | 6 | Systematic development from spec to completion |
-| Specialized Development | 8 | Backend, mobile, ML, CI/CD, documentation |
-| Testing & Validation | 2 | TDD workflows, production readiness |
-| Migration & Planning | 2 | Migrations, refactoring, swarm initialization |
-| **TOTAL** | **54** | Complete agent ecosystem |
+| Category                   | Agent Count | Primary Use Cases                                        |
+| -------------------------- | ----------- | -------------------------------------------------------- |
+| Core Development           | 5           | Code implementation, review, testing, planning, research |
+| Swarm Coordination         | 5           | Multi-agent orchestration and collaboration              |
+| Consensus & Distributed    | 7           | Fault tolerance, distributed systems, security           |
+| Performance & Optimization | 5           | Benchmarking, resource management, ML optimization       |
+| GitHub & Repository        | 9           | Source control, PRs, issues, releases, workflows         |
+| SPARC Methodology          | 6           | Systematic development from spec to completion           |
+| Specialized Development    | 8           | Backend, mobile, ML, CI/CD, documentation                |
+| Testing & Validation       | 2           | TDD workflows, production readiness                      |
+| Migration & Planning       | 2           | Migrations, refactoring, swarm initialization            |
+| **TOTAL**                  | **54**      | Complete agent ecosystem                                 |
 
 ---
 
@@ -729,7 +737,7 @@ skills: swarm-initialization, topology-setup, team-bootstrap
 ### Tool Selection Best Practices
 
 1. **File Operations**: Read, Write, Edit, Glob, Grep
-2. **Coordination**: Task, TodoWrite, mcp__claude-flow__*
+2. **Coordination**: Task, TodoWrite, mcp**claude-flow**\*
 3. **System**: Bash (for terminal commands)
 4. **Research**: WebSearch, WebFetch
 5. **Testing**: Bash + Read + Write combination
@@ -747,6 +755,4 @@ These templates are designed to work seamlessly with the SPARC Development Envir
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2025-11-21
-**Total Agents**: 54
+**Version**: 1.0.0 **Last Updated**: 2025-11-21 **Total Agents**: 54

@@ -221,7 +221,8 @@ export class CharterConstraintEnforcer {
       if (
         normalizedPath === normalizedForbidden ||
         normalizedPath.startsWith(`${normalizedForbidden}/`) ||
-        normalizedForbidden.includes('*') && this.matchesGlob(normalizedPath, normalizedForbidden)
+        (normalizedForbidden.includes('*') &&
+          this.matchesGlob(normalizedPath, normalizedForbidden))
       ) {
         return {
           allowed: false,
@@ -256,7 +257,10 @@ export class CharterConstraintEnforcer {
     for (const forbidden of this.constraints.forbiddenActions) {
       const normalizedForbidden = forbidden.toLowerCase();
 
-      if (normalizedAction === normalizedForbidden || normalizedAction.includes(normalizedForbidden)) {
+      if (
+        normalizedAction === normalizedForbidden ||
+        normalizedAction.includes(normalizedForbidden)
+      ) {
         return {
           allowed: false,
           reason: `Action is forbidden: ${forbidden}`,
@@ -269,7 +273,10 @@ export class CharterConstraintEnforcer {
     for (const requiresApproval of this.constraints.requireApprovalFor) {
       const normalizedRequirement = requiresApproval.toLowerCase();
 
-      if (normalizedAction === normalizedRequirement || normalizedAction.includes(normalizedRequirement)) {
+      if (
+        normalizedAction === normalizedRequirement ||
+        normalizedAction.includes(normalizedRequirement)
+      ) {
         return {
           allowed: 'pending_approval',
           reason: `Action requires approval: ${requiresApproval}`,
@@ -297,8 +304,8 @@ export class CharterConstraintEnforcer {
   isApprovalRequired(actionType: string): boolean {
     const normalizedType = actionType.toLowerCase().trim();
 
-    return this.constraints.requireApprovalFor.some((requirement) =>
-      normalizedType.includes(requirement.toLowerCase()),
+    return this.constraints.requireApprovalFor.some(requirement =>
+      normalizedType.includes(requirement.toLowerCase())
     );
   }
 
@@ -405,7 +412,7 @@ export class CharterConstraintEnforcer {
  * ```
  */
 export function createCharterConstraintEnforcer(
-  charter: GovernanceCharter,
+  charter: GovernanceCharter
 ): CharterConstraintEnforcer {
   return new CharterConstraintEnforcer(charter);
 }

@@ -74,7 +74,12 @@ export type Usage = TokenUsage;
 /**
  * Finish reason for chat completion
  */
-export type FinishReason = 'stop' | 'length' | 'tool_calls' | 'content_filter' | 'error';
+export type FinishReason =
+  | 'stop'
+  | 'length'
+  | 'tool_calls'
+  | 'content_filter'
+  | 'error';
 
 /**
  * Chat completion response
@@ -228,7 +233,11 @@ export class LLMAuthenticationError extends LLMError {
 }
 
 export class LLMRateLimitError extends LLMError {
-  constructor(message: string, provider?: string, public readonly retryAfter?: number) {
+  constructor(
+    message: string,
+    provider?: string,
+    public readonly retryAfter?: number
+  ) {
     super(message, 'RATE_LIMIT_ERROR', 429, provider);
     this.name = 'LLMRateLimitError';
   }

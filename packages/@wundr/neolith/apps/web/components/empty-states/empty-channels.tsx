@@ -16,8 +16,8 @@ export function EmptyChannels({ onCreateChannel }: EmptyChannelsProps) {
   return (
     <EmptyState
       icon={Hash}
-      title="No channels yet"
-      description="Create your first channel to start organizing conversations and collaborating with your team."
+      title='No channels yet'
+      description='Create your first channel to start organizing conversations and collaborating with your team.'
       action={
         onCreateChannel
           ? {

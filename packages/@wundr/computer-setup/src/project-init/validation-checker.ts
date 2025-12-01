@@ -9,7 +9,6 @@ import { Logger } from '../utils/logger.js';
 
 const logger = new Logger({ name: 'validation-checker' });
 
-
 export interface ValidationResult {
   passed: boolean;
   category: string;
@@ -47,28 +46,28 @@ export class ValidationChecker {
     const results: ValidationResult[] = [];
 
     // Directory structure checks
-    results.push(...await this.validateDirectoryStructure(projectPath));
+    results.push(...(await this.validateDirectoryStructure(projectPath)));
 
     // File existence checks
-    results.push(...await this.validateRequiredFiles(projectPath));
+    results.push(...(await this.validateRequiredFiles(projectPath)));
 
     // Content validation checks
-    results.push(...await this.validateFileContents(projectPath));
+    results.push(...(await this.validateFileContents(projectPath)));
 
     // Configuration validation
-    results.push(...await this.validateConfigurations(projectPath));
+    results.push(...(await this.validateConfigurations(projectPath)));
 
     // Agent setup validation
-    results.push(...await this.validateAgentSetup(projectPath));
+    results.push(...(await this.validateAgentSetup(projectPath)));
 
     // Hook validation
-    results.push(...await this.validateHooks(projectPath));
+    results.push(...(await this.validateHooks(projectPath)));
 
     // Git setup validation
-    results.push(...await this.validateGitSetup(projectPath));
+    results.push(...(await this.validateGitSetup(projectPath)));
 
     // Dependency validation
-    results.push(...await this.validateDependencies(projectPath));
+    results.push(...(await this.validateDependencies(projectPath)));
 
     // Calculate metrics
     const report = this.generateReport(projectPath, results);
@@ -82,7 +81,9 @@ export class ValidationChecker {
   /**
    * Validate directory structure
    */
-  private async validateDirectoryStructure(projectPath: string): Promise<ValidationResult[]> {
+  private async validateDirectoryStructure(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     const requiredDirs = [
@@ -123,7 +124,9 @@ export class ValidationChecker {
   /**
    * Validate required files
    */
-  private async validateRequiredFiles(projectPath: string): Promise<ValidationResult[]> {
+  private async validateRequiredFiles(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     const requiredFiles = [
@@ -157,7 +160,9 @@ export class ValidationChecker {
   /**
    * Validate file contents
    */
-  private async validateFileContents(projectPath: string): Promise<ValidationResult[]> {
+  private async validateFileContents(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     // Validate CLAUDE.md content
@@ -211,7 +216,9 @@ export class ValidationChecker {
           passed: Boolean(pkg.name),
           category: 'File Content',
           check: 'package.json has name',
-          message: pkg.name ? `Package name: ${pkg.name}` : 'Missing package name',
+          message: pkg.name
+            ? `Package name: ${pkg.name}`
+            : 'Missing package name',
           severity: 'error',
           fixable: false,
         });
@@ -257,12 +264,21 @@ export class ValidationChecker {
   /**
    * Validate configuration files
    */
-  private async validateConfigurations(projectPath: string): Promise<ValidationResult[]> {
+  private async validateConfigurations(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     const configFiles = [
-      { path: '.claude/hooks/hooks.config.json', description: 'Hooks configuration' },
-      { path: '.claude/worktree.config.json', description: 'Worktree configuration', optional: true },
+      {
+        path: '.claude/hooks/hooks.config.json',
+        description: 'Hooks configuration',
+      },
+      {
+        path: '.claude/worktree.config.json',
+        description: 'Worktree configuration',
+        optional: true,
+      },
     ];
 
     for (const config of configFiles) {
@@ -313,7 +329,9 @@ export class ValidationChecker {
   /**
    * Validate agent setup
    */
-  private async validateAgentSetup(projectPath: string): Promise<ValidationResult[]> {
+  private async validateAgentSetup(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     const agentsDir = path.join(projectPath, '.claude/agents');
@@ -343,15 +361,18 @@ export class ValidationChecker {
         // Check for agent files in category
         if (exists) {
           const files = await fs.readdir(categoryPath);
-          const agentFiles = files.filter(f => f.endsWith('.md') || f.endsWith('.json'));
+          const agentFiles = files.filter(
+            f => f.endsWith('.md') || f.endsWith('.json')
+          );
 
           results.push({
             passed: agentFiles.length > 0,
             category: 'Agent Setup',
             check: `${category} has agent templates`,
-            message: agentFiles.length > 0
-              ? `Found ${agentFiles.length} agent templates in ${category}`
-              : `No agent templates in ${category}`,
+            message:
+              agentFiles.length > 0
+                ? `Found ${agentFiles.length} agent templates in ${category}`
+                : `No agent templates in ${category}`,
             severity: 'info',
             fixable: false,
           });
@@ -364,7 +385,7 @@ export class ValidationChecker {
         passed: await fs.pathExists(readmePath),
         category: 'Agent Setup',
         check: 'Agent README exists',
-        message: await fs.pathExists(readmePath)
+        message: (await fs.pathExists(readmePath))
           ? 'Agent documentation found'
           : 'Missing agent documentation',
         severity: 'warning',
@@ -378,7 +399,9 @@ export class ValidationChecker {
   /**
    * Validate hooks
    */
-  private async validateHooks(projectPath: string): Promise<ValidationResult[]> {
+  private async validateHooks(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     const hooksDir = path.join(projectPath, '.claude/hooks');
@@ -399,9 +422,7 @@ export class ValidationChecker {
           passed: exists,
           category: 'Hooks',
           check: `Hook ${hook} exists`,
-          message: exists
-            ? `Hook found: ${hook}`
-            : `Missing hook: ${hook}`,
+          message: exists ? `Hook found: ${hook}` : `Missing hook: ${hook}`,
           severity: 'warning',
           fixable: false,
         });
@@ -438,7 +459,9 @@ export class ValidationChecker {
   /**
    * Validate git setup
    */
-  private async validateGitSetup(projectPath: string): Promise<ValidationResult[]> {
+  private async validateGitSetup(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     // Check if it's a git repository
@@ -449,9 +472,7 @@ export class ValidationChecker {
       passed: isGitRepo,
       category: 'Git Setup',
       check: 'Git repository initialized',
-      message: isGitRepo
-        ? 'Git repository found'
-        : 'Not a git repository',
+      message: isGitRepo ? 'Git repository found' : 'Not a git repository',
       severity: 'warning',
       fixable: true,
       fix: async () => {
@@ -470,7 +491,7 @@ export class ValidationChecker {
         passed: await fs.pathExists(gitignorePath),
         category: 'Git Setup',
         check: '.gitignore exists',
-        message: await fs.pathExists(gitignorePath)
+        message: (await fs.pathExists(gitignorePath))
           ? '.gitignore found'
           : 'Missing .gitignore',
         severity: 'warning',
@@ -484,7 +505,9 @@ export class ValidationChecker {
   /**
    * Validate dependencies (if package.json exists)
    */
-  private async validateDependencies(projectPath: string): Promise<ValidationResult[]> {
+  private async validateDependencies(
+    projectPath: string
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     const packageJsonPath = path.join(projectPath, 'package.json');
@@ -507,7 +530,7 @@ export class ValidationChecker {
       // Check for lock file
       const lockFiles = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'];
       const hasLockFile = await Promise.all(
-        lockFiles.map(f => fs.pathExists(path.join(projectPath, f))),
+        lockFiles.map(f => fs.pathExists(path.join(projectPath, f)))
       ).then(results => results.some(r => r));
 
       results.push({
@@ -530,11 +553,15 @@ export class ValidationChecker {
    */
   private generateReport(
     projectPath: string,
-    results: ValidationResult[],
+    results: ValidationResult[]
   ): ValidationReport {
     const passed = results.filter(r => r.passed).length;
-    const failed = results.filter(r => !r.passed && r.severity === 'error').length;
-    const warnings = results.filter(r => !r.passed && r.severity === 'warning').length;
+    const failed = results.filter(
+      r => !r.passed && r.severity === 'error'
+    ).length;
+    const warnings = results.filter(
+      r => !r.passed && r.severity === 'warning'
+    ).length;
 
     const score = (passed / results.length) * 100;
 
@@ -562,25 +589,37 @@ export class ValidationChecker {
     logger.info(chalk.red(`Failed: ${report.failed}`));
     logger.info(chalk.yellow(`Warnings: ${report.warnings}`));
 
-    const scoreColor = report.score >= 90 ? chalk.green :
-                       report.score >= 70 ? chalk.yellow :
-                       chalk.red;
+    const scoreColor =
+      report.score >= 90
+        ? chalk.green
+        : report.score >= 70
+          ? chalk.yellow
+          : chalk.red;
     logger.info(scoreColor(`Score: ${report.score.toFixed(1)}%\n`));
 
     // Group results by category
     const categories = new Set(report.results.map(r => r.category));
 
     for (const category of categories) {
-      const categoryResults = report.results.filter(r => r.category === category);
+      const categoryResults = report.results.filter(
+        r => r.category === category
+      );
       const categoryPassed = categoryResults.filter(r => r.passed).length;
 
-      logger.info(chalk.cyan(`\n${category} (${categoryPassed}/${categoryResults.length})`));
+      logger.info(
+        chalk.cyan(
+          `\n${category} (${categoryPassed}/${categoryResults.length})`
+        )
+      );
 
       for (const result of categoryResults) {
-        const icon = result.passed ? chalk.green('v') :
-                     result.severity === 'error' ? chalk.red('x') :
-                     result.severity === 'warning' ? chalk.yellow('!') :
-                     chalk.blue('i');
+        const icon = result.passed
+          ? chalk.green('v')
+          : result.severity === 'error'
+            ? chalk.red('x')
+            : result.severity === 'warning'
+              ? chalk.yellow('!')
+              : chalk.blue('i');
 
         logger.info(`  ${icon} ${result.check}: ${result.message}`);
       }
@@ -589,7 +628,9 @@ export class ValidationChecker {
     // Show fixable issues
     const fixable = report.results.filter(r => !r.passed && r.fixable);
     if (fixable.length > 0) {
-      logger.warn(chalk.yellow(`\n ${fixable.length} issues can be automatically fixed`));
+      logger.warn(
+        chalk.yellow(`\n ${fixable.length} issues can be automatically fixed`)
+      );
     }
 
     logger.info('');
@@ -607,7 +648,9 @@ export class ValidationChecker {
       return;
     }
 
-    logger.info(chalk.blue(`\nAttempting to fix ${fixable.length} issues...\n`));
+    logger.info(
+      chalk.blue(`\nAttempting to fix ${fixable.length} issues...\n`)
+    );
 
     for (const issue of fixable) {
       try {

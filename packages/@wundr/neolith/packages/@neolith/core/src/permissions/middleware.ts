@@ -14,12 +14,14 @@ import {
   NotWorkspaceMemberError,
   NotOrganizationMemberError,
 } from './errors';
-import { permissionChecker, validatePermissionContext } from './permission-checker';
+import {
+  permissionChecker,
+  validatePermissionContext,
+} from './permission-checker';
 import { Permission } from './permissions';
 
 import type { PermissionContext, MembershipInfo } from './permission-checker';
 import type { Session } from '@neolith/database';
-
 
 // =============================================================================
 // Types
@@ -29,7 +31,13 @@ import type { Session } from '@neolith/database';
  * Generic request body type for API requests.
  * Can be any JSON-serializable data structure.
  */
-export type RequestBody = Record<string, unknown> | unknown[] | string | number | boolean | null;
+export type RequestBody =
+  | Record<string, unknown>
+  | unknown[]
+  | string
+  | number
+  | boolean
+  | null;
 
 /**
  * Request context containing session information.
@@ -115,7 +123,7 @@ export interface MiddlewareResult<T> {
  * ```
  */
 export function withAuth<T extends RequestContext, R>(
-  handler: ApiHandler<AuthenticatedRequestContext, R>,
+  handler: ApiHandler<AuthenticatedRequestContext, R>
 ): ApiHandler<T, R> {
   return async (req: T): Promise<R> => {
     if (!req.session?.userId) {
@@ -153,9 +161,11 @@ export function withAuth<T extends RequestContext, R>(
  */
 export function withPermission<T extends RequestContext>(
   permission: Permission,
-  extractContext: ContextExtractor<T>,
+  extractContext: ContextExtractor<T>
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       // Require authentication
       if (!req.session?.userId) {
@@ -170,11 +180,15 @@ export function withPermission<T extends RequestContext>(
       const hasPermission = await permissionChecker.hasPermission(
         req.session.userId,
         permission,
-        context,
+        context
       );
 
       if (!hasPermission) {
-        throw new PermissionDeniedError(req.session.userId, permission, context);
+        throw new PermissionDeniedError(
+          req.session.userId,
+          permission,
+          context
+        );
       }
 
       return handler(req as unknown as AuthenticatedRequestContext);
@@ -191,9 +205,11 @@ export function withPermission<T extends RequestContext>(
  */
 export function withPermissions<T extends RequestContext>(
   permissions: Permission[],
-  extractContext: ContextExtractor<T>,
+  extractContext: ContextExtractor<T>
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       if (!req.session?.userId) {
         throw new NotAuthenticatedError();
@@ -207,14 +223,14 @@ export function withPermissions<T extends RequestContext>(
         const hasPermission = await permissionChecker.hasPermission(
           req.session.userId,
           permission,
-          context,
+          context
         );
 
         if (!hasPermission) {
           throw new PermissionDeniedError(
             req.session.userId,
             permission,
-            context,
+            context
           );
         }
       }
@@ -233,9 +249,11 @@ export function withPermissions<T extends RequestContext>(
  */
 export function withAnyPermission<T extends RequestContext>(
   permissions: Permission[],
-  extractContext: ContextExtractor<T>,
+  extractContext: ContextExtractor<T>
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       if (!req.session?.userId) {
         throw new NotAuthenticatedError();
@@ -250,7 +268,7 @@ export function withAnyPermission<T extends RequestContext>(
           const hasPermission = await permissionChecker.hasPermission(
             req.session.userId,
             permission,
-            context,
+            context
           );
           if (hasPermission) {
             return handler(req as unknown as AuthenticatedRequestContext);
@@ -265,7 +283,7 @@ export function withAnyPermission<T extends RequestContext>(
         req.session.userId,
         permissions[0] ?? Permission.ADMIN_FULL,
         context,
-        `User lacks any of the required permissions: ${permissions.join(', ')}`,
+        `User lacks any of the required permissions: ${permissions.join(', ')}`
       );
     };
   };
@@ -293,9 +311,11 @@ export function withAnyPermission<T extends RequestContext>(
  * ```
  */
 export function withChannelAccess<T extends RequestContext>(
-  extractChannelId: (req: T) => string,
+  extractChannelId: (req: T) => string
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       if (!req.session?.userId) {
         throw new NotAuthenticatedError();
@@ -304,7 +324,7 @@ export function withChannelAccess<T extends RequestContext>(
       const channelId = extractChannelId(req);
       const canAccess = await permissionChecker.canAccessChannel(
         req.session.userId,
-        channelId,
+        channelId
       );
 
       if (!canAccess) {
@@ -323,9 +343,11 @@ export function withChannelAccess<T extends RequestContext>(
  * @returns Higher-order function that wraps the handler
  */
 export function withWorkspaceAccess<T extends RequestContext>(
-  extractWorkspaceId: (req: T) => string,
+  extractWorkspaceId: (req: T) => string
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       if (!req.session?.userId) {
         throw new NotAuthenticatedError();
@@ -334,7 +356,7 @@ export function withWorkspaceAccess<T extends RequestContext>(
       const workspaceId = extractWorkspaceId(req);
       const membership = await permissionChecker.getWorkspaceMembership(
         req.session.userId,
-        workspaceId,
+        workspaceId
       );
 
       if (!membership.isMember) {
@@ -357,9 +379,11 @@ export function withWorkspaceAccess<T extends RequestContext>(
  * @returns Higher-order function that wraps the handler
  */
 export function withOrganizationAccess<T extends RequestContext>(
-  extractOrganizationId: (req: T) => string,
+  extractOrganizationId: (req: T) => string
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       if (!req.session?.userId) {
         throw new NotAuthenticatedError();
@@ -368,11 +392,14 @@ export function withOrganizationAccess<T extends RequestContext>(
       const organizationId = extractOrganizationId(req);
       const membership = await permissionChecker.getOrganizationMembership(
         req.session.userId,
-        organizationId,
+        organizationId
       );
 
       if (!membership.isMember) {
-        throw new NotOrganizationMemberError(req.session.userId, organizationId);
+        throw new NotOrganizationMemberError(
+          req.session.userId,
+          organizationId
+        );
       }
 
       // Attach membership info to request
@@ -414,9 +441,11 @@ export function withOrganizationAccess<T extends RequestContext>(
 export function withOwnershipOrPermission<T extends RequestContext>(
   extractOwnerId: (req: T) => string | Promise<string>,
   fallbackPermission: Permission,
-  extractContext: ContextExtractor<T>,
+  extractContext: ContextExtractor<T>
 ) {
-  return function <R>(handler: ApiHandler<AuthenticatedRequestContext, R>): ApiHandler<T, R> {
+  return function <R>(
+    handler: ApiHandler<AuthenticatedRequestContext, R>
+  ): ApiHandler<T, R> {
     return async (req: T): Promise<R> => {
       if (!req.session?.userId) {
         throw new NotAuthenticatedError();
@@ -436,14 +465,14 @@ export function withOwnershipOrPermission<T extends RequestContext>(
       const hasPermission = await permissionChecker.hasPermission(
         req.session.userId,
         fallbackPermission,
-        context,
+        context
       );
 
       if (!hasPermission) {
         throw new PermissionDeniedError(
           req.session.userId,
           fallbackPermission,
-          context,
+          context
         );
       }
 
@@ -477,14 +506,12 @@ export function withOwnershipOrPermission<T extends RequestContext>(
  * ```
  */
 export function compose<T extends RequestContext, R>(
-  ...middlewares: Array<
-    (handler: ApiHandler<T, R>) => ApiHandler<T, R>
-  >
+  ...middlewares: Array<(handler: ApiHandler<T, R>) => ApiHandler<T, R>>
 ): (handler: ApiHandler<T, R>) => ApiHandler<T, R> {
   return (handler: ApiHandler<T, R>) => {
     return middlewares.reduceRight(
       (acc, middleware) => middleware(acc),
-      handler,
+      handler
     );
   };
 }
@@ -503,7 +530,7 @@ export function compose<T extends RequestContext, R>(
  */
 export function withPermissionErrorHandler<T extends RequestContext, R>(
   handler: ApiHandler<T, R>,
-  formatError?: (error: Error) => R,
+  formatError?: (error: Error) => R
 ): ApiHandler<T, R> {
   return async (req: T): Promise<R> => {
     try {

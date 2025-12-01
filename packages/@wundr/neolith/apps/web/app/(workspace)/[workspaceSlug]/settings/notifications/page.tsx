@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -13,12 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -35,7 +36,10 @@ import {
 import type { NotificationType } from '@/types/notification';
 import { Mail, Shield, Loader2 } from 'lucide-react';
 
-const NOTIFICATION_TYPE_LABELS: Record<NotificationType, { label: string; description: string }> = {
+const NOTIFICATION_TYPE_LABELS: Record<
+  NotificationType,
+  { label: string; description: string }
+> = {
   message: {
     label: 'Direct Messages',
     description: 'New messages in direct conversations',
@@ -112,7 +116,13 @@ export default function NotificationsSettingsPage() {
 
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [doNotDisturb, setDoNotDisturb] = useState(false);
-  const [selectedDays, setSelectedDays] = useState<string[]>(['mon', 'tue', 'wed', 'thu', 'fri']);
+  const [selectedDays, setSelectedDays] = useState<string[]>([
+    'mon',
+    'tue',
+    'wed',
+    'thu',
+    'fri',
+  ]);
 
   // Email preferences state
   const [isLoadingEmailPrefs, setIsLoadingEmailPrefs] = useState(true);
@@ -132,7 +142,9 @@ export default function NotificationsSettingsPage() {
   const handleToggleDoNotDisturb = useCallback(() => {
     setDoNotDisturb(!doNotDisturb);
     toast({
-      title: doNotDisturb ? 'Do Not Disturb disabled' : 'Do Not Disturb enabled',
+      title: doNotDisturb
+        ? 'Do Not Disturb disabled'
+        : 'Do Not Disturb enabled',
       description: doNotDisturb
         ? 'You will now receive notifications'
         : 'Notifications are paused',
@@ -160,7 +172,14 @@ export default function NotificationsSettingsPage() {
       await subscribeToPush();
       await updateSettings({ desktop: true });
     }
-  }, [settings, updateSettings, pushEnabled, requestPermission, subscribeToPush, unsubscribeFromPush]);
+  }, [
+    settings,
+    updateSettings,
+    pushEnabled,
+    requestPermission,
+    subscribeToPush,
+    unsubscribeFromPush,
+  ]);
 
   const handleToggleMobile = useCallback(async () => {
     if (!settings) return;
@@ -172,10 +191,15 @@ export default function NotificationsSettingsPage() {
     await updateSettings({ email: !settings.email });
   }, [settings, updateSettings]);
 
-  const handleDigestChange = useCallback(async (value: string) => {
-    if (!settings) return;
-    await updateSettings({ digestFrequency: value as typeof settings.digestFrequency });
-  }, [updateSettings, settings]);
+  const handleDigestChange = useCallback(
+    async (value: string) => {
+      if (!settings) return;
+      await updateSettings({
+        digestFrequency: value as typeof settings.digestFrequency,
+      });
+    },
+    [updateSettings, settings]
+  );
 
   const handleQuietHoursToggle = useCallback(async () => {
     if (!settings) return;
@@ -187,33 +211,39 @@ export default function NotificationsSettingsPage() {
     });
   }, [settings, updateSettings]);
 
-  const handleQuietHoursChange = useCallback(async (field: 'start' | 'end', value: string) => {
-    if (!settings?.quietHours) return;
-    await updateSettings({
-      quietHours: {
-        ...settings.quietHours,
-        [field]: value,
-      },
-    });
-  }, [settings, updateSettings]);
-
-  const handleTypeToggle = useCallback(async (
-    type: NotificationType,
-    channel: 'enabled' | 'sound' | 'desktop'
-  ) => {
-    if (!settings) return;
-
-    const currentPrefs = settings.preferences[type];
-    await updateSettings({
-      preferences: {
-        ...settings.preferences,
-        [type]: {
-          ...currentPrefs,
-          [channel]: !currentPrefs[channel],
+  const handleQuietHoursChange = useCallback(
+    async (field: 'start' | 'end', value: string) => {
+      if (!settings?.quietHours) return;
+      await updateSettings({
+        quietHours: {
+          ...settings.quietHours,
+          [field]: value,
         },
-      },
-    });
-  }, [settings, updateSettings]);
+      });
+    },
+    [settings, updateSettings]
+  );
+
+  const handleTypeToggle = useCallback(
+    async (
+      type: NotificationType,
+      channel: 'enabled' | 'sound' | 'desktop'
+    ) => {
+      if (!settings) return;
+
+      const currentPrefs = settings.preferences[type];
+      await updateSettings({
+        preferences: {
+          ...settings.preferences,
+          [type]: {
+            ...currentPrefs,
+            [channel]: !currentPrefs[channel],
+          },
+        },
+      });
+    },
+    [settings, updateSettings]
+  );
 
   const handleTestNotification = useCallback(async () => {
     setIsSendingTest(true);
@@ -226,7 +256,10 @@ export default function NotificationsSettingsPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to send test notification',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to send test notification',
         variant: 'destructive',
       });
     } finally {
@@ -236,9 +269,7 @@ export default function NotificationsSettingsPage() {
 
   const toggleDay = (day: string) => {
     setSelectedDays(prev =>
-      prev.includes(day)
-        ? prev.filter(d => d !== day)
-        : [...prev, day]
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
   };
 
@@ -258,7 +289,10 @@ export default function NotificationsSettingsPage() {
       } catch (error) {
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to load email preferences',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Failed to load email preferences',
           variant: 'destructive',
         });
       } finally {
@@ -274,20 +308,21 @@ export default function NotificationsSettingsPage() {
     if (key === 'securityEmails') {
       toast({
         title: 'Cannot disable security emails',
-        description: 'Security emails are required for account safety and cannot be turned off.',
+        description:
+          'Security emails are required for account safety and cannot be turned off.',
         variant: 'destructive',
       });
       return;
     }
 
-    setEmailPreferences((prev) => ({
+    setEmailPreferences(prev => ({
       ...prev,
       [key]: !prev[key],
     }));
   };
 
   const handleEmailDigestChange = (value: 'none' | 'daily' | 'weekly') => {
-    setEmailPreferences((prev) => ({
+    setEmailPreferences(prev => ({
       ...prev,
       digestEmails: value,
     }));
@@ -304,7 +339,9 @@ export default function NotificationsSettingsPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to update email preferences');
+        throw new Error(
+          error.error?.message || 'Failed to update email preferences'
+        );
       }
 
       toast({
@@ -314,7 +351,10 @@ export default function NotificationsSettingsPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update email preferences',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update email preferences',
         variant: 'destructive',
       });
     } finally {
@@ -324,25 +364,27 @@ export default function NotificationsSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className='flex min-h-[400px] items-center justify-center'>
+        <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
       </div>
     );
   }
 
   if (!settings) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-muted-foreground">Failed to load notification settings</p>
+      <div className='flex min-h-[400px] items-center justify-center'>
+        <p className='text-muted-foreground'>
+          Failed to load notification settings
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h1 className="text-2xl font-bold">Notification Settings</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className='text-2xl font-bold'>Notification Settings</h1>
+        <p className='mt-1 text-muted-foreground'>
           Configure how and when you receive notifications from Neolith.
         </p>
       </div>
@@ -355,30 +397,30 @@ export default function NotificationsSettingsPage() {
             Master controls for all notifications
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="master-toggle">All notifications</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='master-toggle'>All notifications</Label>
+              <p className='text-sm text-muted-foreground'>
                 Turn all notifications on or off
               </p>
             </div>
             <Switch
-              id="master-toggle"
+              id='master-toggle'
               checked={settings.enabled}
               onCheckedChange={handleToggleEnabled}
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="dnd-toggle">Do Not Disturb</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='dnd-toggle'>Do Not Disturb</Label>
+              <p className='text-sm text-muted-foreground'>
                 Temporarily pause all notifications
               </p>
             </div>
             <Switch
-              id="dnd-toggle"
+              id='dnd-toggle'
               checked={doNotDisturb}
               onCheckedChange={handleToggleDoNotDisturb}
               disabled={!settings.enabled}
@@ -396,38 +438,38 @@ export default function NotificationsSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="in-app" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="in-app">In-App</TabsTrigger>
-              <TabsTrigger value="email">Email</TabsTrigger>
-              <TabsTrigger value="push">Push/Mobile</TabsTrigger>
+          <Tabs defaultValue='in-app' className='w-full'>
+            <TabsList className='grid w-full grid-cols-3'>
+              <TabsTrigger value='in-app'>In-App</TabsTrigger>
+              <TabsTrigger value='email'>Email</TabsTrigger>
+              <TabsTrigger value='push'>Push/Mobile</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="in-app" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="in-app-sound">Notification sounds</Label>
-                  <p className="text-sm text-muted-foreground">
+            <TabsContent value='in-app' className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-0.5'>
+                  <Label htmlFor='in-app-sound'>Notification sounds</Label>
+                  <p className='text-sm text-muted-foreground'>
                     Play sounds for new notifications
                   </p>
                 </div>
                 <Switch
-                  id="in-app-sound"
+                  id='in-app-sound'
                   checked={settings.sound}
                   onCheckedChange={handleToggleSound}
                   disabled={!settings.enabled}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="in-app-desktop">Desktop popups</Label>
-                  <p className="text-sm text-muted-foreground">
+              <div className='flex items-center justify-between'>
+                <div className='space-y-0.5'>
+                  <Label htmlFor='in-app-desktop'>Desktop popups</Label>
+                  <p className='text-sm text-muted-foreground'>
                     Show desktop notification alerts
                   </p>
                 </div>
                 <Switch
-                  id="in-app-desktop"
+                  id='in-app-desktop'
                   checked={settings.desktop}
                   onCheckedChange={handleToggleDesktop}
                   disabled={!settings.enabled || !pushSupported}
@@ -435,17 +477,17 @@ export default function NotificationsSettingsPage() {
               </div>
             </TabsContent>
 
-            <TabsContent value="email" className="space-y-6">
+            <TabsContent value='email' className='space-y-6'>
               {/* Email Notifications Toggle */}
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-enabled">Email notifications</Label>
-                  <p className="text-sm text-muted-foreground">
+              <div className='flex items-center justify-between rounded-lg border p-4'>
+                <div className='space-y-0.5'>
+                  <Label htmlFor='email-enabled'>Email notifications</Label>
+                  <p className='text-sm text-muted-foreground'>
                     Receive notifications via email
                   </p>
                 </div>
                 <Switch
-                  id="email-enabled"
+                  id='email-enabled'
                   checked={settings.email}
                   onCheckedChange={handleToggleEmail}
                   disabled={!settings.enabled}
@@ -453,31 +495,37 @@ export default function NotificationsSettingsPage() {
               </div>
 
               {isLoadingEmailPrefs ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className='flex items-center justify-center py-8'>
+                  <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
                 </div>
               ) : (
                 <>
                   {/* Marketing Communications */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-medium">Marketing Communications</h3>
+                  <div className='space-y-4'>
+                    <div className='flex items-center gap-2'>
+                      <Mail className='h-4 w-4 text-muted-foreground' />
+                      <h3 className='font-medium'>Marketing Communications</h3>
                     </div>
-                    <div className="space-y-3 pl-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="marketing-emails" className="font-normal">
+                    <div className='space-y-3 pl-6'>
+                      <div className='flex items-center justify-between'>
+                        <div className='space-y-0.5'>
+                          <Label
+                            htmlFor='marketing-emails'
+                            className='font-normal'
+                          >
                             Product updates and tips
                           </Label>
-                          <p className="text-sm text-muted-foreground">
-                            Stay informed about new features, improvements, and helpful tips
+                          <p className='text-sm text-muted-foreground'>
+                            Stay informed about new features, improvements, and
+                            helpful tips
                           </p>
                         </div>
                         <Switch
-                          id="marketing-emails"
+                          id='marketing-emails'
                           checked={emailPreferences.marketingEmails}
-                          onCheckedChange={() => handleEmailPrefToggle('marketingEmails')}
+                          onCheckedChange={() =>
+                            handleEmailPrefToggle('marketingEmails')
+                          }
                           disabled={!settings.enabled || !settings.email}
                         />
                       </div>
@@ -485,25 +533,31 @@ export default function NotificationsSettingsPage() {
                   </div>
 
                   {/* Activity Notifications */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-medium">Activity Notifications</h3>
+                  <div className='space-y-4'>
+                    <div className='flex items-center gap-2'>
+                      <Mail className='h-4 w-4 text-muted-foreground' />
+                      <h3 className='font-medium'>Activity Notifications</h3>
                     </div>
-                    <div className="space-y-3 pl-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="notification-emails" className="font-normal">
+                    <div className='space-y-3 pl-6'>
+                      <div className='flex items-center justify-between'>
+                        <div className='space-y-0.5'>
+                          <Label
+                            htmlFor='notification-emails'
+                            className='font-normal'
+                          >
                             Mentions and messages
                           </Label>
-                          <p className="text-sm text-muted-foreground">
-                            Get notified via email when someone mentions you or sends you a message
+                          <p className='text-sm text-muted-foreground'>
+                            Get notified via email when someone mentions you or
+                            sends you a message
                           </p>
                         </div>
                         <Switch
-                          id="notification-emails"
+                          id='notification-emails'
                           checked={emailPreferences.notificationEmails}
-                          onCheckedChange={() => handleEmailPrefToggle('notificationEmails')}
+                          onCheckedChange={() =>
+                            handleEmailPrefToggle('notificationEmails')
+                          }
                           disabled={!settings.enabled || !settings.email}
                         />
                       </div>
@@ -511,52 +565,60 @@ export default function NotificationsSettingsPage() {
                   </div>
 
                   {/* Email Frequency */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-medium">Email Frequency</h3>
+                  <div className='space-y-4'>
+                    <div className='flex items-center gap-2'>
+                      <Mail className='h-4 w-4 text-muted-foreground' />
+                      <h3 className='font-medium'>Email Frequency</h3>
                     </div>
-                    <div className="space-y-3 pl-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="activity-digest">Activity digest</Label>
+                    <div className='space-y-3 pl-6'>
+                      <div className='space-y-2'>
+                        <Label htmlFor='activity-digest'>Activity digest</Label>
                         <Select
                           value={emailPreferences.digestEmails}
                           onValueChange={handleEmailDigestChange}
                           disabled={!settings.enabled || !settings.email}
                         >
-                          <SelectTrigger id="activity-digest">
+                          <SelectTrigger id='activity-digest'>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">Never</SelectItem>
-                            <SelectItem value="daily">Daily summary</SelectItem>
-                            <SelectItem value="weekly">Weekly summary</SelectItem>
+                            <SelectItem value='none'>Never</SelectItem>
+                            <SelectItem value='daily'>Daily summary</SelectItem>
+                            <SelectItem value='weekly'>
+                              Weekly summary
+                            </SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-sm text-muted-foreground">
-                          How often to receive activity summaries in your workspaces
+                        <p className='text-sm text-muted-foreground'>
+                          How often to receive activity summaries in your
+                          workspaces
                         </p>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="notification-batching">Notification emails</Label>
+                      <div className='space-y-2'>
+                        <Label htmlFor='notification-batching'>
+                          Notification emails
+                        </Label>
                         <Select
                           value={settings.digestFrequency}
                           onValueChange={handleDigestChange}
                           disabled={!settings.enabled || !settings.email}
                         >
-                          <SelectTrigger id="notification-batching">
+                          <SelectTrigger id='notification-batching'>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {DIGEST_FREQUENCY_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
+                            {DIGEST_FREQUENCY_OPTIONS.map(option => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
                                 {option.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        <p className="text-sm text-muted-foreground">
+                        <p className='text-sm text-muted-foreground'>
                           Send notification emails instantly or batched
                         </p>
                       </div>
@@ -564,45 +626,53 @@ export default function NotificationsSettingsPage() {
                   </div>
 
                   {/* Security & Transactional Emails */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-medium">Security & Transactional Emails</h3>
+                  <div className='space-y-4'>
+                    <div className='flex items-center gap-2'>
+                      <Shield className='h-4 w-4 text-muted-foreground' />
+                      <h3 className='font-medium'>
+                        Security & Transactional Emails
+                      </h3>
                     </div>
-                    <div className="space-y-3 pl-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="security-emails" className="font-normal">
+                    <div className='space-y-3 pl-6'>
+                      <div className='flex items-center justify-between'>
+                        <div className='space-y-0.5'>
+                          <Label
+                            htmlFor='security-emails'
+                            className='font-normal'
+                          >
                             Security alerts
                           </Label>
-                          <p className="text-sm text-muted-foreground">
-                            Password changes, new logins, and other security-related notifications
+                          <p className='text-sm text-muted-foreground'>
+                            Password changes, new logins, and other
+                            security-related notifications
                           </p>
                         </div>
                         <Switch
-                          id="security-emails"
+                          id='security-emails'
                           checked={emailPreferences.securityEmails}
                           disabled
-                          className="opacity-50 cursor-not-allowed"
+                          className='opacity-50 cursor-not-allowed'
                         />
                       </div>
-                      <div className="rounded-md bg-muted p-3">
-                        <p className="text-sm text-muted-foreground">
-                          Security emails are always enabled to protect your account. This includes password resets, account changes, and security alerts.
+                      <div className='rounded-md bg-muted p-3'>
+                        <p className='text-sm text-muted-foreground'>
+                          Security emails are always enabled to protect your
+                          account. This includes password resets, account
+                          changes, and security alerts.
                         </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Save Button */}
-                  <div className="flex justify-end pt-2">
+                  <div className='flex justify-end pt-2'>
                     <Button
                       onClick={handleSaveEmailPreferences}
                       disabled={isSavingEmailPrefs || !settings.enabled}
                     >
                       {isSavingEmailPrefs ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                           Saving...
                         </>
                       ) : (
@@ -614,16 +684,18 @@ export default function NotificationsSettingsPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="push" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="mobile-enabled">Mobile push notifications</Label>
-                  <p className="text-sm text-muted-foreground">
+            <TabsContent value='push' className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-0.5'>
+                  <Label htmlFor='mobile-enabled'>
+                    Mobile push notifications
+                  </Label>
+                  <p className='text-sm text-muted-foreground'>
                     Receive push notifications on mobile devices
                   </p>
                 </div>
                 <Switch
-                  id="mobile-enabled"
+                  id='mobile-enabled'
                   checked={settings.mobile}
                   onCheckedChange={handleToggleMobile}
                   disabled={!settings.enabled}
@@ -631,7 +703,7 @@ export default function NotificationsSettingsPage() {
               </div>
 
               {!pushSupported && (
-                <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                <div className='rounded-md bg-muted p-3 text-sm text-muted-foreground'>
                   Push notifications are not supported in this browser
                 </div>
               )}
@@ -653,47 +725,56 @@ export default function NotificationsSettingsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Type</TableHead>
-                <TableHead className="text-center">In-App</TableHead>
-                <TableHead className="text-center">Email</TableHead>
-                <TableHead className="text-center">Push</TableHead>
+                <TableHead className='text-center'>In-App</TableHead>
+                <TableHead className='text-center'>Email</TableHead>
+                <TableHead className='text-center'>Push</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(Object.entries(NOTIFICATION_TYPE_LABELS) as [NotificationType, typeof NOTIFICATION_TYPE_LABELS[NotificationType]][]).map(
-                ([type, config]) => (
-                  <TableRow key={type}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{config.label}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {config.description}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={settings.preferences[type].enabled && settings.desktop}
-                        onCheckedChange={() => handleTypeToggle(type, 'enabled')}
-                        disabled={!settings.enabled || !settings.desktop}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={settings.preferences[type].enabled && settings.email}
-                        onCheckedChange={() => handleTypeToggle(type, 'enabled')}
-                        disabled={!settings.enabled || !settings.email}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={settings.preferences[type].desktop && settings.mobile}
-                        onCheckedChange={() => handleTypeToggle(type, 'desktop')}
-                        disabled={!settings.enabled || !settings.mobile}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ),
-              )}
+              {(
+                Object.entries(NOTIFICATION_TYPE_LABELS) as [
+                  NotificationType,
+                  (typeof NOTIFICATION_TYPE_LABELS)[NotificationType],
+                ][]
+              ).map(([type, config]) => (
+                <TableRow key={type}>
+                  <TableCell>
+                    <div>
+                      <p className='font-medium'>{config.label}</p>
+                      <p className='text-sm text-muted-foreground'>
+                        {config.description}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell className='text-center'>
+                    <Switch
+                      checked={
+                        settings.preferences[type].enabled && settings.desktop
+                      }
+                      onCheckedChange={() => handleTypeToggle(type, 'enabled')}
+                      disabled={!settings.enabled || !settings.desktop}
+                    />
+                  </TableCell>
+                  <TableCell className='text-center'>
+                    <Switch
+                      checked={
+                        settings.preferences[type].enabled && settings.email
+                      }
+                      onCheckedChange={() => handleTypeToggle(type, 'enabled')}
+                      disabled={!settings.enabled || !settings.email}
+                    />
+                  </TableCell>
+                  <TableCell className='text-center'>
+                    <Switch
+                      checked={
+                        settings.preferences[type].desktop && settings.mobile
+                      }
+                      onCheckedChange={() => handleTypeToggle(type, 'desktop')}
+                      disabled={!settings.enabled || !settings.mobile}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
@@ -707,16 +788,16 @@ export default function NotificationsSettingsPage() {
             Set times when you don&apos;t want to be disturbed
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="quiet-hours">Enable quiet hours</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='quiet-hours'>Enable quiet hours</Label>
+              <p className='text-sm text-muted-foreground'>
                 Pause notifications during set times
               </p>
             </div>
             <Switch
-              id="quiet-hours"
+              id='quiet-hours'
               checked={settings.quietHours.enabled}
               onCheckedChange={handleQuietHoursToggle}
               disabled={!settings.enabled}
@@ -725,38 +806,44 @@ export default function NotificationsSettingsPage() {
 
           {settings.quietHours.enabled && (
             <>
-              <div className="flex items-center gap-4 pt-2">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="quiet-start">Start time</Label>
+              <div className='flex items-center gap-4 pt-2'>
+                <div className='flex-1 space-y-2'>
+                  <Label htmlFor='quiet-start'>Start time</Label>
                   <Input
-                    type="time"
-                    id="quiet-start"
+                    type='time'
+                    id='quiet-start'
                     value={settings.quietHours.start}
-                    onChange={(e) => handleQuietHoursChange('start', e.target.value)}
+                    onChange={e =>
+                      handleQuietHoursChange('start', e.target.value)
+                    }
                     disabled={!settings.enabled}
                   />
                 </div>
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="quiet-end">End time</Label>
+                <div className='flex-1 space-y-2'>
+                  <Label htmlFor='quiet-end'>End time</Label>
                   <Input
-                    type="time"
-                    id="quiet-end"
+                    type='time'
+                    id='quiet-end'
                     value={settings.quietHours.end}
-                    onChange={(e) => handleQuietHoursChange('end', e.target.value)}
+                    onChange={e =>
+                      handleQuietHoursChange('end', e.target.value)
+                    }
                     disabled={!settings.enabled}
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Active days</Label>
-                <div className="flex gap-2">
-                  {DAYS_OF_WEEK.map((day) => (
+                <div className='flex gap-2'>
+                  {DAYS_OF_WEEK.map(day => (
                     <Button
                       key={day.value}
-                      type="button"
-                      variant={selectedDays.includes(day.value) ? 'default' : 'outline'}
-                      size="sm"
+                      type='button'
+                      variant={
+                        selectedDays.includes(day.value) ? 'default' : 'outline'
+                      }
+                      size='sm'
                       onClick={() => toggleDay(day.value)}
                       disabled={!settings.enabled}
                     >
@@ -764,15 +851,15 @@ export default function NotificationsSettingsPage() {
                     </Button>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className='text-sm text-muted-foreground'>
                   Select which days quiet hours apply
                 </p>
               </div>
 
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div className="space-y-0.5">
+              <div className='flex items-center justify-between rounded-md border p-3'>
+                <div className='space-y-0.5'>
                   <Label>Override for urgent notifications</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className='text-sm text-muted-foreground'>
                     Allow critical notifications during quiet hours
                   </p>
                 </div>
@@ -793,17 +880,19 @@ export default function NotificationsSettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {settings.mutedChannels.map((channelId) => (
+            <div className='space-y-2'>
+              {settings.mutedChannels.map(channelId => (
                 <div
                   key={channelId}
-                  className="flex items-center justify-between rounded-md border p-3"
+                  className='flex items-center justify-between rounded-md border p-3'
                 >
-                  <span className="text-sm font-medium">Channel: {channelId}</span>
+                  <span className='text-sm font-medium'>
+                    Channel: {channelId}
+                  </span>
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
+                    type='button'
+                    variant='ghost'
+                    size='sm'
                     onClick={() => unmuteChannel(channelId)}
                   >
                     Unmute
@@ -825,7 +914,7 @@ export default function NotificationsSettingsPage() {
         </CardHeader>
         <CardContent>
           <Button
-            type="button"
+            type='button'
             onClick={handleTestNotification}
             disabled={!settings.enabled || isSendingTest}
           >

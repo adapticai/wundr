@@ -1,29 +1,37 @@
 # Orchestrator to Orchestrator Migration Summary
 
-This document outlines the renaming of VP-related hooks and types to use Orchestrator naming conventions.
+This document outlines the renaming of VP-related hooks and types to use Orchestrator naming
+conventions.
 
 ## New Files Created
 
 ### 1. `/hooks/use-orchestrator.ts`
+
 **Replaced:** `/hooks/use-vp.ts`
 
 **New Hook Exports:**
+
 - `useOrchestrator(id: string)` - Fetch single orchestrator by ID
-- `useOrchestrators(workspaceId: string, filters?: OrchestratorFilters)` - Fetch list of orchestrators with filtering
+- `useOrchestrators(workspaceId: string, filters?: OrchestratorFilters)` - Fetch list of
+  orchestrators with filtering
 - `useOrchestratorMutations()` - CRUD operations for orchestrators
 
 **API Endpoints Used:**
+
 - `GET /api/orchestrators/{id}` (was `/api/orchestrators/{id}`)
-- `GET /api/workspaces/{workspaceId}/orchestrators` (was `/api/workspaces/{workspaceId}/orchestrators`)
+- `GET /api/workspaces/{workspaceId}/orchestrators` (was
+  `/api/workspaces/{workspaceId}/orchestrators`)
 - `POST /api/orchestrators` (was `/api/orchestrators`)
 - `PATCH /api/orchestrators/{id}` (was `/api/orchestrators/{id}`)
 - `DELETE /api/orchestrators/{id}` (was `/api/orchestrators/{id}`)
 - `POST /api/orchestrators/{id}/api-key` (was `/api/orchestrators/{id}/api-key`)
 
 ### 2. `/types/orchestrator.ts`
+
 **Replaced:** `/types/vp.ts`
 
 **New Type Exports:**
+
 - `Orchestrator` (was `VP`)
 - `OrchestratorStatus` (was `VPStatus`)
 - `OrchestratorCharter` (was `VPCharter`)
@@ -37,9 +45,11 @@ This document outlines the renaming of VP-related hooks and types to use Orchest
 - `ORCHESTRATOR_STATUS_CONFIG` (was `VP_STATUS_CONFIG`)
 
 ### 3. `/types/orchestrator-analytics.ts`
+
 **Replaced:** `/types/orchestrator-analytics.ts`
 
 **New Type Exports:**
+
 - `OrchestratorMetrics` (was `VPMetrics`)
 - `OrchestratorAnalytics` (was `VPAnalytics`)
 - `OrchestratorMetricsSummary` (was `VPMetricsSummary`)
@@ -47,6 +57,7 @@ This document outlines the renaming of VP-related hooks and types to use Orchest
 - `OrchestratorAnalyticsQuery` (was `VPAnalyticsQuery`)
 
 **Field Changes:**
+
 - `orchestratorId` (was `vpId`)
 
 ## Updated Files
@@ -54,6 +65,7 @@ This document outlines the renaming of VP-related hooks and types to use Orchest
 ### `/types/api.ts`
 
 **Changes:**
+
 1. Added deprecation notice to `VPApiResponse`
 2. Added new `OrchestratorApiResponse` interface (identical structure to VPApiResponse)
 3. Updated `PrismaWhereClause`:
@@ -63,40 +75,41 @@ This document outlines the renaming of VP-related hooks and types to use Orchest
 
 ## Type Mapping Reference
 
-| Old Type (VP) | New Type (Orchestrator) |
-|--------------|------------------------|
-| `VP` | `Orchestrator` |
-| `VPStatus` | `OrchestratorStatus` |
-| `VPCharter` | `OrchestratorCharter` |
+| Old Type (VP)   | New Type (Orchestrator)   |
+| --------------- | ------------------------- |
+| `VP`            | `Orchestrator`            |
+| `VPStatus`      | `OrchestratorStatus`      |
+| `VPCharter`     | `OrchestratorCharter`     |
 | `VPPersonality` | `OrchestratorPersonality` |
 | `VPModelConfig` | `OrchestratorModelConfig` |
 | `CreateVPInput` | `CreateOrchestratorInput` |
 | `UpdateVPInput` | `UpdateOrchestratorInput` |
-| `VPFilters` | `OrchestratorFilters` |
-| `VPDiscipline` | `OrchestratorDiscipline` |
-| `VPMetrics` | `OrchestratorMetrics` |
-| `VPAnalytics` | `OrchestratorAnalytics` |
+| `VPFilters`     | `OrchestratorFilters`     |
+| `VPDiscipline`  | `OrchestratorDiscipline`  |
+| `VPMetrics`     | `OrchestratorMetrics`     |
+| `VPAnalytics`   | `OrchestratorAnalytics`   |
 | `VPApiResponse` | `OrchestratorApiResponse` |
 
 ## Hook Mapping Reference
 
-| Old Hook (VP) | New Hook (Orchestrator) |
-|--------------|------------------------|
-| `useVP(id)` | `useOrchestrator(id)` |
+| Old Hook (VP)                  | New Hook (Orchestrator)                  |
+| ------------------------------ | ---------------------------------------- |
+| `useVP(id)`                    | `useOrchestrator(id)`                    |
 | `useVPs(workspaceId, filters)` | `useOrchestrators(workspaceId, filters)` |
-| `useVPMutations()` | `useOrchestratorMutations()` |
+| `useVPMutations()`             | `useOrchestratorMutations()`             |
 
 ## Return Type Mapping
 
-| Old Return Type | New Return Type |
-|----------------|-----------------|
-| `UseVPReturn` | `UseOrchestratorReturn` |
-| `UseVPsReturn` | `UseOrchestratorsReturn` |
+| Old Return Type        | New Return Type                  |
+| ---------------------- | -------------------------------- |
+| `UseVPReturn`          | `UseOrchestratorReturn`          |
+| `UseVPsReturn`         | `UseOrchestratorsReturn`         |
 | `UseVPMutationsReturn` | `UseOrchestratorMutationsReturn` |
 
 ## Migration Checklist
 
 ### Completed
+
 - [x] Created new hook file: `hooks/use-orchestrator.ts`
 - [x] Created new type file: `types/orchestrator.ts`
 - [x] Created new analytics type file: `types/orchestrator-analytics.ts`
@@ -106,6 +119,7 @@ This document outlines the renaming of VP-related hooks and types to use Orchest
 - [x] Renamed all type interfaces and exports
 
 ### Pending (Component Updates)
+
 - [ ] Update components importing `use-vp` to import `use-orchestrator`
 - [ ] Update components using Orchestrator types to use Orchestrator types
 - [ ] Update API routes from `/api/orchestrators` to `/api/orchestrators`
@@ -119,6 +133,7 @@ This document outlines the renaming of VP-related hooks and types to use Orchest
 ## Example Usage Changes
 
 ### Before (VP):
+
 ```typescript
 import { useVP, useVPs, useVPMutations } from '@/hooks/use-orchestrator';
 import type { VP, VPStatus, CreateVPInput } from '@/types/orchestrator';
@@ -131,9 +146,18 @@ function MyComponent() {
 ```
 
 ### After (Orchestrator):
+
 ```typescript
-import { useOrchestrator, useOrchestrators, useOrchestratorMutations } from '@/hooks/use-orchestrator';
-import type { Orchestrator, OrchestratorStatus, CreateOrchestratorInput } from '@/types/orchestrator';
+import {
+  useOrchestrator,
+  useOrchestrators,
+  useOrchestratorMutations,
+} from '@/hooks/use-orchestrator';
+import type {
+  Orchestrator,
+  OrchestratorStatus,
+  CreateOrchestratorInput,
+} from '@/types/orchestrator';
 
 function MyComponent() {
   const { orchestrator, isLoading } = useOrchestrator(orchestratorId);

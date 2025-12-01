@@ -8,7 +8,6 @@
  * @module app/api/daemon/ws/route
  */
 
-
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -39,7 +38,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     connection: {
       upgrade: 'Use WebSocket client to connect',
       url: 'ws://your-domain/api/daemon/ws (or wss:// for secure)',
-      authentication: 'Send auth message after connection with JWT access token',
+      authentication:
+        'Send auth message after connection with JWT access token',
     },
     endpoints: {
       http: {
@@ -67,6 +67,6 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 export async function POST(_request: NextRequest): Promise<NextResponse> {
   return NextResponse.json(
     { error: 'Method not allowed. Use WebSocket connection instead.' },
-    { status: 405 },
+    { status: 405 }
   );
 }

@@ -7,7 +7,7 @@ import { errorHandler } from '../utils/error-handler';
 import { logger } from '../utils/logger';
 
 import type { PluginManager } from '../plugins/plugin-manager';
-import type { InteractiveSession} from '../types';
+import type { InteractiveSession } from '../types';
 import type { ConfigManager } from '../utils/config-manager';
 
 /**
@@ -18,7 +18,7 @@ export class InteractiveMode {
 
   constructor(
     private configManager: ConfigManager,
-    private pluginManager: PluginManager,
+    private pluginManager: PluginManager
   ) {}
 
   /**
@@ -58,7 +58,7 @@ export class InteractiveMode {
         'WUNDR_WIZARD_FAILED',
         'Failed to launch wizard',
         { mode },
-        true,
+        true
       );
     }
   }
@@ -75,11 +75,11 @@ export class InteractiveMode {
       const chatArgs = ['chat', 'start'];
 
       if (options.model) {
-chatArgs.push('--model', options.model);
-}
+        chatArgs.push('--model', options.model);
+      }
       if (options.context) {
-chatArgs.push('--context', options.context);
-}
+        chatArgs.push('--context', options.context);
+      }
 
       const child = spawn('wundr', chatArgs, {
         stdio: 'inherit',
@@ -96,7 +96,7 @@ chatArgs.push('--context', options.context);
         'WUNDR_CHAT_LAUNCH_FAILED',
         'Failed to launch chat interface',
         { options },
-        true,
+        true
       );
     }
   }
@@ -126,7 +126,7 @@ chatArgs.push('--context', options.context);
         'WUNDR_TUI_LAUNCH_FAILED',
         'Failed to launch TUI',
         { layout },
-        true,
+        true
       );
     }
   }
@@ -212,15 +212,15 @@ chatArgs.push('--context', options.context);
     }
 
     console.log(
-      chalk.green('\n🎉 Setup complete! Your Wundr project is ready.'),
+      chalk.green('\n🎉 Setup complete! Your Wundr project is ready.')
     );
     console.log(chalk.gray('\nNext steps:'));
     console.log(chalk.gray('  • Run "wundr analyze" to analyze your code'));
     console.log(
-      chalk.gray('  • Run "wundr dashboard start" to launch the dashboard'),
+      chalk.gray('  • Run "wundr dashboard start" to launch the dashboard')
     );
     console.log(
-      chalk.gray('  • Run "wundr --help" to see all available commands'),
+      chalk.gray('  • Run "wundr --help" to see all available commands')
     );
   }
 
@@ -326,7 +326,7 @@ chatArgs.push('--context', options.context);
     }
 
     console.log(
-      chalk.green(`\n🏗️  Creating ${answers.createType}: ${answers.name}\n`),
+      chalk.green(`\n🏗️  Creating ${answers.createType}: ${answers.name}\n`)
     );
 
     let command = `wundr create ${answers.createType} ${answers.name}`;
@@ -344,7 +344,7 @@ chatArgs.push('--context', options.context);
     await this.simulateCommand(command);
 
     console.log(
-      chalk.green(`\n🎉 ${answers.createType} created successfully!`),
+      chalk.green(`\n🎉 ${answers.createType} created successfully!`)
     );
   }
 
@@ -414,8 +414,8 @@ chatArgs.push('--context', options.context);
     console.log(chalk.green('\n✅ Governance setup complete!'));
     console.log(
       chalk.gray(
-        '\nRun "wundr govern check" to validate your code against the rules.',
-      ),
+        '\nRun "wundr govern check" to validate your code against the rules.'
+      )
     );
   }
 

@@ -11,7 +11,7 @@
 
 import { redis, hashAPIKey } from '@neolith/core';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -25,7 +25,8 @@ const refreshTokenSchema = z.object({
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 const ACCESS_TOKEN_EXPIRY = '1h';
 
 /**
@@ -76,8 +77,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JSON body', code: REFRESH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Invalid JSON body',
+          code: REFRESH_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -85,8 +89,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = refreshTokenSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Refresh token required', code: REFRESH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Refresh token required',
+          code: REFRESH_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -100,20 +107,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (jwtError instanceof jwt.TokenExpiredError) {
         return NextResponse.json(
           { error: 'Token expired', code: REFRESH_ERROR_CODES.TOKEN_EXPIRED },
-          { status: 401 },
+          { status: 401 }
         );
       }
       return NextResponse.json(
-        { error: 'Invalid or revoked token', code: REFRESH_ERROR_CODES.INVALID_TOKEN },
-        { status: 401 },
+        {
+          error: 'Invalid or revoked token',
+          code: REFRESH_ERROR_CODES.INVALID_TOKEN,
+        },
+        { status: 401 }
       );
     }
 
     // Validate token type
     if (decoded.type !== 'refresh') {
       return NextResponse.json(
-        { error: 'Invalid token type', code: REFRESH_ERROR_CODES.INVALID_TOKEN },
-        { status: 401 },
+        {
+          error: 'Invalid token type',
+          code: REFRESH_ERROR_CODES.INVALID_TOKEN,
+        },
+        { status: 401 }
       );
     }
 
@@ -136,8 +149,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const providedHash = await hashAPIKey(refreshToken);
       if (providedHash !== sessionData.refreshToken) {
         return NextResponse.json(
-          { error: 'Token has been revoked', code: REFRESH_ERROR_CODES.TOKEN_REVOKED },
-          { status: 401 },
+          {
+            error: 'Token has been revoked',
+            code: REFRESH_ERROR_CODES.TOKEN_REVOKED,
+          },
+          { status: 401 }
         );
       }
     }
@@ -155,7 +171,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         type: 'access',
       },
       JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRY },
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 
     // Update session last activity
@@ -167,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           JSON.stringify({
             ...sessionData,
             lastRefresh: new Date().toISOString(),
-          }),
+          })
         );
       } catch (redisError) {
         console.error('Redis session update error:', redisError);
@@ -181,8 +197,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/daemon/auth/refresh] Error:', error);
     return NextResponse.json(
-      { error: 'Token refresh failed', code: REFRESH_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Token refresh failed',
+        code: REFRESH_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }

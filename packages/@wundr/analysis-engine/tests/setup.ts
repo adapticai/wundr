@@ -37,27 +37,33 @@ afterEach(() => {
 
 // Global test utilities
 (global as any).testUtils = {
-  createTempFile: async (content: string, extension = '.ts'): Promise<string> => {
+  createTempFile: async (
+    content: string,
+    extension = '.ts'
+  ): Promise<string> => {
     const tempDir = path.join(__dirname, '../test-output/temp');
     await fs.ensureDir(tempDir);
-    
+
     const fileName = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}${extension}`;
     const filePath = path.join(tempDir, fileName);
-    
+
     await fs.writeFile(filePath, content);
     return filePath;
   },
 
   createTestProject: async (files: Record<string, string>): Promise<string> => {
-    const projectDir = path.join(__dirname, `../test-output/project-${Date.now()}`);
+    const projectDir = path.join(
+      __dirname,
+      `../test-output/project-${Date.now()}`
+    );
     await fs.ensureDir(projectDir);
-    
+
     for (const [filePath, content] of Object.entries(files)) {
       const fullPath = path.join(projectDir, filePath);
       await fs.ensureDir(path.dirname(fullPath));
       await fs.writeFile(fullPath, content);
     }
-    
+
     return projectDir;
-  }
+  },
 };

@@ -1,14 +1,13 @@
 # NPM Organization Setup Guide for @wundr.io
 
-**Version:** 1.0.0
-**Organization:** @wundr.io
-**Repository:** https://github.com/adapticai/wundr
+**Version:** 1.0.0 **Organization:** @wundr.io **Repository:** https://github.com/adapticai/wundr
 
 ---
 
 ## 🎯 Overview
 
-This guide walks you through setting up the `@wundr.io` npm organization and configuring automated publishing from GitHub Actions.
+This guide walks you through setting up the `@wundr.io` npm organization and configuring automated
+publishing from GitHub Actions.
 
 ---
 
@@ -75,6 +74,7 @@ This guide walks you through setting up the `@wundr.io` npm organization and con
 5. Copy the token **immediately** (shown only once)
 
 **Token format:**
+
 ```
 npm_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
@@ -127,11 +127,7 @@ All packages should have:
     "directory": "packages/@wundr/package-name"
   },
   "license": "MIT",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ]
+  "files": ["dist", "README.md", "LICENSE"]
 }
 ```
 
@@ -183,11 +179,13 @@ npm publish --access public
 ### 7.1 Available Workflows
 
 **1. Auto-Publish on Master Push** (`.github/workflows/npm-publish-auto.yml`)
+
 - Triggers: Push to `master` branch with package changes
 - Publishes: Development versions with tag `dev`
 - Version format: `1.0.0-dev.20231121123045.abc123`
 
 **2. Release Publishing** (`.github/workflows/npm-publish.yml`)
+
 - Triggers: Creating a git tag (`v1.0.0`) or manual workflow
 - Publishes: Stable releases with tag `latest`
 - Version format: `1.0.0`
@@ -195,12 +193,14 @@ npm publish --access public
 ### 7.2 Workflow Triggers
 
 **Auto-Publish:**
+
 ```bash
 # Any push to master with package changes auto-publishes
 git push origin master
 ```
 
 **Release Publishing:**
+
 ```bash
 # Create and push a tag
 git tag v1.0.0
@@ -217,6 +217,7 @@ git push origin v1.0.0
 ### 8.1 Development Versions
 
 Auto-published on every master commit:
+
 ```bash
 npm install @wundr.io/cli@dev
 ```
@@ -272,12 +273,14 @@ After setup, verify:
 ### NPM Registry
 
 View all published packages:
+
 - Organization: https://www.npmjs.com/org/wundr.io
 - Individual package: https://www.npmjs.com/package/@wundr.io/cli
 
 ### GitHub Actions
 
 Monitor publishing workflows:
+
 - Actions tab: https://github.com/adapticai/wundr/actions
 - Workflow: "📦 Auto Publish to NPM"
 - Workflow: "📦 NPM Publish @wundr.io"
@@ -285,6 +288,7 @@ Monitor publishing workflows:
 ### Download Statistics
 
 Check package downloads:
+
 ```bash
 npm info @wundr.io/cli
 ```
@@ -300,6 +304,7 @@ Or visit: https://www.npmjs.com/package/@wundr.io/cli
 **Cause:** NPM_TOKEN not configured or invalid
 
 **Solution:**
+
 1. Regenerate npm token
 2. Update GitHub secret `NPM_TOKEN`
 3. Retry workflow
@@ -309,6 +314,7 @@ Or visit: https://www.npmjs.com/package/@wundr.io/cli
 **Cause:** Not a member of @wundr.io organization
 
 **Solution:**
+
 1. Log into npm: `npm login`
 2. Run: `npm org ls wundr.io`
 3. Add yourself: `npm org set wundr.io developer [username]`
@@ -318,6 +324,7 @@ Or visit: https://www.npmjs.com/package/@wundr.io/cli
 **Cause:** Trying to publish private package on free plan
 
 **Solution:**
+
 1. Set `"publishConfig": { "access": "public" }` in package.json
 2. OR upgrade to paid npm plan
 3. OR set `"private": true` to skip publishing
@@ -327,6 +334,7 @@ Or visit: https://www.npmjs.com/package/@wundr.io/cli
 **Cause:** NPM detects potential typosquatting
 
 **Solution:**
+
 1. Contact npm support: https://www.npmjs.com/support
 2. Explain it's your organization's package
 3. Provide proof of ownership
@@ -336,6 +344,7 @@ Or visit: https://www.npmjs.com/package/@wundr.io/cli
 **Cause:** Authentication failed
 
 **Solution:**
+
 1. Verify `NODE_AUTH_TOKEN` is set in workflow
 2. Check token hasn't expired
 3. Regenerate token if needed
@@ -388,6 +397,7 @@ If you encounter issues:
 **Generated with Claude Code** 🤖
 
 **Next Steps:**
+
 1. Create npm account at https://www.npmjs.com/signup
 2. Create organization at https://www.npmjs.com/org/create
 3. Generate automation token

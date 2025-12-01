@@ -319,9 +319,7 @@
   },
   "file_tree": {
     "components": {
-      "ui": [
-        "empty-state.tsx (NEW)"
-      ],
+      "ui": ["empty-state.tsx (NEW)"],
       "skeletons": [
         "dashboard-skeleton.tsx (NEW)",
         "channel-list-skeleton.tsx (NEW)",
@@ -331,18 +329,12 @@
         "README.md (NEW)",
         "IMPLEMENTATION_SUMMARY.md (NEW)"
       ],
-      "vp": [
-        "orchestrator-card.tsx (MODIFIED - added VPCardSkeleton)"
-      ],
+      "vp": ["orchestrator-card.tsx (MODIFIED - added VPCardSkeleton)"],
       "channel": [
         "channel-list.tsx (MODIFIED - integrated ChannelListSkeleton)"
       ],
-      "chat": [
-        "message-list.tsx (MODIFIED - integrated MessageListSkeleton)"
-      ],
-      "admin": [
-        "member-list.tsx (MODIFIED - integrated MemberTableSkeleton)"
-      ]
+      "chat": ["message-list.tsx (MODIFIED - integrated MessageListSkeleton)"],
+      "admin": ["member-list.tsx (MODIFIED - integrated MemberTableSkeleton)"]
     },
     "app": {
       "workspace": {

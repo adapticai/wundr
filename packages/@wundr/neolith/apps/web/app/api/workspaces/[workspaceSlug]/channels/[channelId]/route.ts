@@ -42,7 +42,7 @@ interface RouteContext {
 async function checkWorkspaceChannelAccess(
   workspaceId: string,
   channelId: string,
-  userId: string,
+  userId: string
 ) {
   // Get workspace with organization
   const workspace = await prisma.workspace.findUnique({
@@ -108,28 +108,38 @@ async function checkWorkspaceChannelAccess(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Validate parameters
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
-    const workspaceResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    const channelResult = channelIdParamSchema.safeParse({ channelId: params.channelId });
+    const workspaceResult = workspaceIdParamSchema.safeParse({
+      id: workspaceId,
+    });
+    const channelResult = channelIdParamSchema.safeParse({
+      channelId: params.channelId,
+    });
 
     if (!workspaceResult.success || !channelResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace or channel ID', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace or channel ID',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -137,16 +147,16 @@ export async function GET(
     const access = await checkWorkspaceChannelAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace or channel not found, or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -155,9 +165,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to private channel',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -202,7 +212,7 @@ export async function GET(
       data: {
         ...channel,
         // Transform members for cleaner response
-        members: channel?.channelMembers.map((m) => ({
+        members: channel?.channelMembers.map(m => ({
           userId: m.user.id,
           role: m.role,
           joinedAt: m.joinedAt,
@@ -219,10 +229,16 @@ export async function GET(
         : null,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/channels/:channelId] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/channels/:channelId] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -238,28 +254,38 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Validate parameters
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
-    const workspaceResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    const channelResult = channelIdParamSchema.safeParse({ channelId: params.channelId });
+    const workspaceResult = workspaceIdParamSchema.safeParse({
+      id: workspaceId,
+    });
+    const channelResult = channelIdParamSchema.safeParse({
+      channelId: params.channelId,
+    });
 
     if (!workspaceResult.success || !channelResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace or channel ID', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace or channel ID',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -267,16 +293,16 @@ export async function PATCH(
     const access = await checkWorkspaceChannelAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace or channel not found, or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -288,9 +314,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Channel Admin or Organization Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -300,8 +326,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -312,9 +341,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -325,7 +354,9 @@ export async function PATCH(
       where: { id: params.channelId },
       data: {
         ...(input.name && { name: input.name }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.topic !== undefined && { topic: input.topic }),
         ...(input.isArchived !== undefined && { isArchived: input.isArchived }),
       },
@@ -352,10 +383,16 @@ export async function PATCH(
       message: 'Channel updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/channels/:channelId] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/channels/:channelId] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -371,28 +408,38 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Validate parameters
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
-    const workspaceResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    const channelResult = channelIdParamSchema.safeParse({ channelId: params.channelId });
+    const workspaceResult = workspaceIdParamSchema.safeParse({
+      id: workspaceId,
+    });
+    const channelResult = channelIdParamSchema.safeParse({
+      channelId: params.channelId,
+    });
 
     if (!workspaceResult.success || !channelResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace or channel ID', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace or channel ID',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -400,16 +447,16 @@ export async function DELETE(
     const access = await checkWorkspaceChannelAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace or channel not found, or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -418,9 +465,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only organization administrators can delete channels',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -433,10 +480,16 @@ export async function DELETE(
       message: 'Channel deleted successfully',
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/channels/:channelId] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/channels/:channelId] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

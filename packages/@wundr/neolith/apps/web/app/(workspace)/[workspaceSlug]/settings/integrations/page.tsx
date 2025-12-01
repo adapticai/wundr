@@ -33,7 +33,11 @@ import type {
 } from '@/types/integration';
 
 // OAuth providers that are personal accounts
-const OAUTH_PROVIDERS: IntegrationProvider[] = ['google_drive', 'github', 'gitlab'];
+const OAUTH_PROVIDERS: IntegrationProvider[] = [
+  'google_drive',
+  'github',
+  'gitlab',
+];
 
 // App-based integrations
 const APP_PROVIDERS: IntegrationProvider[] = [
@@ -57,8 +61,11 @@ export default function IntegrationsPage() {
   const [showConnectAccountModal, setShowConnectAccountModal] = useState(false);
   const [showInstallAppModal, setShowInstallAppModal] = useState(false);
   const [showWebhookForm, setShowWebhookForm] = useState(false);
-  const [selectedIntegration, setSelectedIntegration] = useState<IntegrationConfig | null>(null);
-  const [selectedWebhook, setSelectedWebhook] = useState<WebhookConfig | null>(null);
+  const [selectedIntegration, setSelectedIntegration] =
+    useState<IntegrationConfig | null>(null);
+  const [selectedWebhook, setSelectedWebhook] = useState<WebhookConfig | null>(
+    null
+  );
   const [apiTokens] = useState<string[]>([]);
 
   const {
@@ -89,7 +96,7 @@ export default function IntegrationsPage() {
         window.location.href = result.authUrl;
       }
     },
-    [workspaceId, initiateOAuth],
+    [workspaceId, initiateOAuth]
   );
 
   const handleCreateWebhook = useCallback(
@@ -100,82 +107,90 @@ export default function IntegrationsPage() {
         refetchWebhooks();
       }
     },
-    [createWebhook, refetchWebhooks],
+    [createWebhook, refetchWebhooks]
   );
 
   // Separate integrations by type
-  const connectedAccounts = integrations.filter((i) => OAUTH_PROVIDERS.includes(i.provider));
-  const installedApps = integrations.filter((i) => APP_PROVIDERS.includes(i.provider));
+  const connectedAccounts = integrations.filter(i =>
+    OAUTH_PROVIDERS.includes(i.provider)
+  );
+  const installedApps = integrations.filter(i =>
+    APP_PROVIDERS.includes(i.provider)
+  );
 
   const isLoading = integrationsLoading || webhooksLoading;
   const error = integrationsError || webhooksError;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* Header with Breadcrumb */}
-      <div className="flex h-14 items-center gap-4 border-b px-6">
+      <div className='flex h-14 items-center gap-4 border-b px-6'>
         <button
-          type="button"
+          type='button'
           onClick={handleBack}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-          aria-label="Go back"
+          className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
+          aria-label='Go back'
         >
-          <BackIcon className="h-5 w-5" />
+          <BackIcon className='h-5 w-5' />
         </button>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Settings</span>
-          <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium text-foreground">Integrations</span>
+        <div className='flex items-center gap-2 text-sm'>
+          <span className='text-muted-foreground'>Settings</span>
+          <ChevronRightIcon className='h-4 w-4 text-muted-foreground' />
+          <span className='font-medium text-foreground'>Integrations</span>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-5xl space-y-8 p-6">
+      <div className='flex-1 overflow-y-auto'>
+        <div className='mx-auto max-w-5xl space-y-8 p-6'>
           {error && (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
-              <p className="text-sm text-destructive">{error.message}</p>
+            <div className='rounded-md border border-destructive/50 bg-destructive/10 p-4'>
+              <p className='text-sm text-destructive'>{error.message}</p>
             </div>
           )}
 
           {isLoading ? (
-            <div className="flex h-64 items-center justify-center">
-              <LoadingSpinner size="lg" />
+            <div className='flex h-64 items-center justify-center'>
+              <LoadingSpinner size='lg' />
             </div>
           ) : (
             <>
               {/* Connected Accounts Section */}
               <section>
-                <div className="mb-4 flex items-end justify-between">
+                <div className='mb-4 flex items-end justify-between'>
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">Connected Accounts</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className='text-lg font-semibold text-foreground'>
+                      Connected Accounts
+                    </h2>
+                    <p className='text-sm text-muted-foreground'>
                       Personal OAuth connections for accessing your data
                     </p>
                   </div>
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowConnectAccountModal(true)}
-                    className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    className='flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
                   >
-                    <PlusIcon className="h-4 w-4" />
+                    <PlusIcon className='h-4 w-4' />
                     Connect Account
                   </button>
                 </div>
 
                 {connectedAccounts.length === 0 ? (
                   <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <UserIcon className="h-12 w-12 text-muted-foreground/50" />
-                      <h3 className="mt-4 font-medium text-foreground">No accounts connected</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                    <CardContent className='flex flex-col items-center justify-center py-12'>
+                      <UserIcon className='h-12 w-12 text-muted-foreground/50' />
+                      <h3 className='mt-4 font-medium text-foreground'>
+                        No accounts connected
+                      </h3>
+                      <p className='mt-1 text-sm text-muted-foreground'>
                         Connect your Google, GitHub, or GitLab account
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-2">
-                    {connectedAccounts.map((integration) => (
+                  <div className='space-y-2'>
+                    {connectedAccounts.map(integration => (
                       <AccountCard
                         key={integration.id}
                         integration={integration}
@@ -190,36 +205,40 @@ export default function IntegrationsPage() {
 
               {/* Installed Apps Section */}
               <section>
-                <div className="mb-4 flex items-end justify-between">
+                <div className='mb-4 flex items-end justify-between'>
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">Installed Apps</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className='text-lg font-semibold text-foreground'>
+                      Installed Apps
+                    </h2>
+                    <p className='text-sm text-muted-foreground'>
                       Third-party applications connected to your workspace
                     </p>
                   </div>
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowInstallAppModal(true)}
-                    className="flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                    className='flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent'
                   >
-                    <GridIcon className="h-4 w-4" />
+                    <GridIcon className='h-4 w-4' />
                     Browse Apps
                   </button>
                 </div>
 
                 {installedApps.length === 0 ? (
                   <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <IntegrationIcon className="h-12 w-12 text-muted-foreground/50" />
-                      <h3 className="mt-4 font-medium text-foreground">No apps installed</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                    <CardContent className='flex flex-col items-center justify-center py-12'>
+                      <IntegrationIcon className='h-12 w-12 text-muted-foreground/50' />
+                      <h3 className='mt-4 font-medium text-foreground'>
+                        No apps installed
+                      </h3>
+                      <p className='mt-1 text-sm text-muted-foreground'>
                         Install apps to extend your workspace functionality
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {installedApps.map((integration) => (
+                  <div className='grid gap-4 sm:grid-cols-2'>
+                    {installedApps.map(integration => (
                       <AppCard
                         key={integration.id}
                         integration={integration}
@@ -234,36 +253,40 @@ export default function IntegrationsPage() {
 
               {/* Webhooks Section */}
               <section>
-                <div className="mb-4 flex items-end justify-between">
+                <div className='mb-4 flex items-end justify-between'>
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">Webhooks</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className='text-lg font-semibold text-foreground'>
+                      Webhooks
+                    </h2>
+                    <p className='text-sm text-muted-foreground'>
                       Send real-time event notifications to external services
                     </p>
                   </div>
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowWebhookForm(true)}
-                    className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    className='flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
                   >
-                    <PlusIcon className="h-4 w-4" />
+                    <PlusIcon className='h-4 w-4' />
                     Create Webhook
                   </button>
                 </div>
 
                 {webhooks.length === 0 ? (
                   <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <WebhookIcon className="h-12 w-12 text-muted-foreground/50" />
-                      <h3 className="mt-4 font-medium text-foreground">No webhooks configured</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                    <CardContent className='flex flex-col items-center justify-center py-12'>
+                      <WebhookIcon className='h-12 w-12 text-muted-foreground/50' />
+                      <h3 className='mt-4 font-medium text-foreground'>
+                        No webhooks configured
+                      </h3>
+                      <p className='mt-1 text-sm text-muted-foreground'>
                         Create webhooks to receive events from your workspace
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-2">
-                    {webhooks.slice(0, 5).map((webhook) => (
+                  <div className='space-y-2'>
+                    {webhooks.slice(0, 5).map(webhook => (
                       <WebhookListItem
                         key={webhook.id}
                         webhook={webhook}
@@ -272,8 +295,8 @@ export default function IntegrationsPage() {
                     ))}
                     {webhooks.length > 5 && (
                       <button
-                        type="button"
-                        className="w-full rounded-md border border-dashed py-2 text-sm text-muted-foreground hover:bg-accent"
+                        type='button'
+                        className='w-full rounded-md border border-dashed py-2 text-sm text-muted-foreground hover:bg-accent'
                       >
                         View all {webhooks.length} webhooks
                       </button>
@@ -286,47 +309,49 @@ export default function IntegrationsPage() {
 
               {/* Developer Settings Section */}
               <section>
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="developer">
-                    <AccordionTrigger className="text-lg font-semibold">
-                      <div className="flex items-center gap-2">
-                        <CodeIcon className="h-5 w-5" />
+                <Accordion type='single' collapsible>
+                  <AccordionItem value='developer'>
+                    <AccordionTrigger className='text-lg font-semibold'>
+                      <div className='flex items-center gap-2'>
+                        <CodeIcon className='h-5 w-5' />
                         Developer Settings
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="space-y-6 pt-2">
+                      <div className='space-y-6 pt-2'>
                         <div>
-                          <h3 className="mb-2 text-sm font-medium text-foreground">
+                          <h3 className='mb-2 text-sm font-medium text-foreground'>
                             Personal Access Tokens
                           </h3>
-                          <p className="mb-4 text-sm text-muted-foreground">
+                          <p className='mb-4 text-sm text-muted-foreground'>
                             Generate tokens to access the API programmatically
                           </p>
                           {apiTokens.length === 0 ? (
                             <Card>
-                              <CardContent className="py-8 text-center">
-                                <p className="text-sm text-muted-foreground">
+                              <CardContent className='py-8 text-center'>
+                                <p className='text-sm text-muted-foreground'>
                                   No tokens created yet
                                 </p>
                               </CardContent>
                             </Card>
                           ) : (
-                            <div className="space-y-2">
+                            <div className='space-y-2'>
                               {apiTokens.map((_, i) => (
                                 <div
                                   key={i}
-                                  className="flex items-center justify-between rounded-md border p-3"
+                                  className='flex items-center justify-between rounded-md border p-3'
                                 >
                                   <div>
-                                    <p className="text-sm font-medium">Token {i + 1}</p>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className='text-sm font-medium'>
+                                      Token {i + 1}
+                                    </p>
+                                    <p className='text-xs text-muted-foreground'>
                                       Created recently
                                     </p>
                                   </div>
                                   <button
-                                    type="button"
-                                    className="text-sm text-destructive hover:underline"
+                                    type='button'
+                                    className='text-sm text-destructive hover:underline'
                                   >
                                     Revoke
                                   </button>
@@ -335,8 +360,8 @@ export default function IntegrationsPage() {
                             </div>
                           )}
                           <button
-                            type="button"
-                            className="mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                            type='button'
+                            className='mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent'
                           >
                             Generate New Token
                           </button>
@@ -345,20 +370,20 @@ export default function IntegrationsPage() {
                         <Separator />
 
                         <div>
-                          <h3 className="mb-2 text-sm font-medium text-foreground">
+                          <h3 className='mb-2 text-sm font-medium text-foreground'>
                             API Documentation
                           </h3>
-                          <p className="mb-3 text-sm text-muted-foreground">
+                          <p className='mb-3 text-sm text-muted-foreground'>
                             Learn how to integrate with our API
                           </p>
                           <a
-                            href="/docs/api"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                            href='/docs/api'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='inline-flex items-center gap-2 text-sm text-primary hover:underline'
                           >
                             View API Documentation
-                            <ExternalLinkIcon className="h-4 w-4" />
+                            <ExternalLinkIcon className='h-4 w-4' />
                           </a>
                         </div>
                       </div>
@@ -379,7 +404,7 @@ export default function IntegrationsPage() {
           onConnect={handleConnectIntegration}
           isLoading={oauthLoading}
           providers={OAUTH_PROVIDERS}
-          title="Connect Account"
+          title='Connect Account'
         />
       )}
 
@@ -391,7 +416,7 @@ export default function IntegrationsPage() {
           onConnect={handleConnectIntegration}
           isLoading={oauthLoading}
           providers={APP_PROVIDERS}
-          title="Browse Apps"
+          title='Browse Apps'
         />
       )}
 
@@ -446,42 +471,45 @@ function AccountCard({ integration, onClick }: AccountCardProps) {
 
   return (
     <button
-      type="button"
+      type='button'
       onClick={onClick}
-      className="flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50"
+      className='flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50'
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-bold">
-        {providerInfo?.icon || integration.provider.substring(0, 2).toUpperCase()}
+      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-bold'>
+        {providerInfo?.icon ||
+          integration.provider.substring(0, 2).toUpperCase()}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-medium text-foreground">
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-center gap-2'>
+          <h3 className='font-medium text-foreground'>
             {providerInfo?.name || integration.provider}
           </h3>
           <span
             className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color,
+              statusConfig.color
             )}
           >
             {statusConfig.label}
           </span>
         </div>
-        <p className="mt-0.5 text-sm text-muted-foreground">{integration.name}</p>
+        <p className='mt-0.5 text-sm text-muted-foreground'>
+          {integration.name}
+        </p>
         {integration.lastSyncAt && (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className='mt-1 text-xs text-muted-foreground'>
             Last synced {new Date(integration.lastSyncAt).toLocaleDateString()}
           </p>
         )}
       </div>
       <button
-        type="button"
-        onClick={(e) => {
+        type='button'
+        onClick={e => {
           e.stopPropagation();
           onClick();
         }}
-        className="rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent"
+        className='rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent'
       >
         Manage
       </button>
@@ -500,36 +528,39 @@ function AppCard({ integration, onClick }: AppCardProps) {
 
   return (
     <button
-      type="button"
+      type='button'
       onClick={onClick}
-      className="flex items-start gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50"
+      className='flex items-start gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50'
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-bold">
-        {providerInfo?.icon || integration.provider.substring(0, 2).toUpperCase()}
+      <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-bold'>
+        {providerInfo?.icon ||
+          integration.provider.substring(0, 2).toUpperCase()}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="truncate font-medium text-foreground">{integration.name}</h3>
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-center gap-2'>
+          <h3 className='truncate font-medium text-foreground'>
+            {integration.name}
+          </h3>
           <span
             className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color,
+              statusConfig.color
             )}
           >
             {statusConfig.label}
           </span>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className='mt-1 text-sm text-muted-foreground'>
           {providerInfo?.name || integration.provider}
         </p>
         {integration.lastSyncAt && (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className='mt-1 text-xs text-muted-foreground'>
             Last synced: {new Date(integration.lastSyncAt).toLocaleDateString()}
           </p>
         )}
       </div>
-      <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
+      <ChevronRightIcon className='h-5 w-5 shrink-0 text-muted-foreground' />
     </button>
   );
 }
@@ -549,40 +580,48 @@ function WebhookListItem({ webhook, onClick }: WebhookListItemProps) {
 
   return (
     <button
-      type="button"
+      type='button'
       onClick={onClick}
-      className="flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50"
+      className='flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50'
     >
       <div className={cn('h-2.5 w-2.5 shrink-0 rounded-full', statusColor)} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="truncate font-medium text-foreground">{webhook.name}</h3>
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-center gap-2'>
+          <h3 className='truncate font-medium text-foreground'>
+            {webhook.name}
+          </h3>
         </div>
-        <p className="mt-1 truncate text-sm text-muted-foreground">{webhook.url}</p>
-        <div className="mt-2 flex flex-wrap gap-1">
-          {webhook.events.slice(0, 2).map((event) => (
+        <p className='mt-1 truncate text-sm text-muted-foreground'>
+          {webhook.url}
+        </p>
+        <div className='mt-2 flex flex-wrap gap-1'>
+          {webhook.events.slice(0, 2).map(event => (
             <span
               key={event}
-              className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+              className='rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground'
             >
               {event}
             </span>
           ))}
           {webhook.events.length > 2 && (
-            <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+            <span className='rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground'>
               +{webhook.events.length - 2} more
             </span>
           )}
         </div>
       </div>
-      <div className="text-right">
+      <div className='text-right'>
         {webhook.failureCount > 0 ? (
-          <p className="text-sm text-destructive">{webhook.failureCount} failures</p>
+          <p className='text-sm text-destructive'>
+            {webhook.failureCount} failures
+          </p>
         ) : (
-          <p className="text-sm text-green-600">{webhook.successCount} delivered</p>
+          <p className='text-sm text-green-600'>
+            {webhook.successCount} delivered
+          </p>
         )}
       </div>
-      <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
+      <ChevronRightIcon className='h-5 w-5 shrink-0 text-muted-foreground' />
     </button>
   );
 }
@@ -612,38 +651,42 @@ function IntegrationConnectModal({
     return null;
   }
 
-  const providerEntries = providers.map((id) => [id, INTEGRATION_PROVIDERS[id]] as const);
+  const providerEntries = providers.map(
+    id => [id, INTEGRATION_PROVIDERS[id]] as const
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+      <div className='fixed inset-0 bg-black/50' onClick={onClose} />
+      <div className='relative z-10 w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl'>
+        <div className='flex items-center justify-between mb-4'>
+          <h2 className='text-lg font-semibold'>{title}</h2>
           <button
-            type="button"
+            type='button'
             onClick={onClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
           >
-            <CloseIcon className="h-5 w-5" />
+            <CloseIcon className='h-5 w-5' />
           </button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 max-h-96 overflow-y-auto">
+        <div className='grid gap-3 sm:grid-cols-2 max-h-96 overflow-y-auto'>
           {providerEntries.map(([id, info]) => (
             <button
               key={id}
-              type="button"
+              type='button'
               onClick={() => onConnect(id)}
               disabled={isLoading}
-              className="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50 disabled:opacity-50"
+              className='flex items-center gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50 disabled:opacity-50'
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-bold">
+              <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-bold'>
                 {info.icon}
               </div>
               <div>
-                <h3 className="font-medium text-foreground">{info.name}</h3>
-                <p className="text-sm text-muted-foreground">{info.description}</p>
+                <h3 className='font-medium text-foreground'>{info.name}</h3>
+                <p className='text-sm text-muted-foreground'>
+                  {info.description}
+                </p>
               </div>
             </button>
           ))}
@@ -659,7 +702,11 @@ interface WebhookFormModalProps {
   onSubmit: (input: CreateWebhookInput) => void;
 }
 
-function WebhookFormModal({ isOpen, onClose, onSubmit }: WebhookFormModalProps) {
+function WebhookFormModal({
+  isOpen,
+  onClose,
+  onSubmit,
+}: WebhookFormModalProps) {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
@@ -669,8 +716,8 @@ function WebhookFormModal({ isOpen, onClose, onSubmit }: WebhookFormModalProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !url || selectedEvents.length === 0) {
-return;
-}
+      return;
+    }
 
     setIsSubmitting(true);
     await onSubmit({
@@ -683,115 +730,137 @@ return;
   };
 
   const toggleEvent = (event: WebhookEventType) => {
-    setSelectedEvents((prev) =>
-      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event],
+    setSelectedEvents(prev =>
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
     );
   };
 
   if (!isOpen) {
-return null;
-}
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-xl rounded-lg bg-background p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Create Webhook</h2>
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+      <div className='fixed inset-0 bg-black/50' onClick={onClose} />
+      <div className='relative z-10 w-full max-w-xl rounded-lg bg-background p-6 shadow-xl'>
+        <div className='flex items-center justify-between mb-4'>
+          <h2 className='text-lg font-semibold'>Create Webhook</h2>
           <button
-            type="button"
+            type='button'
             onClick={onClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
           >
-            <CloseIcon className="h-5 w-5" />
+            <CloseIcon className='h-5 w-5' />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className='space-y-4'>
           <div>
-            <label htmlFor="webhook-name" className="block text-sm font-medium text-foreground mb-1">
+            <label
+              htmlFor='webhook-name'
+              className='block text-sm font-medium text-foreground mb-1'
+            >
               Name
             </label>
             <input
-              id="webhook-name"
-              type="text"
+              id='webhook-name'
+              type='text'
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="My Webhook"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="webhook-url" className="block text-sm font-medium text-foreground mb-1">
-              Endpoint URL
-            </label>
-            <input
-              id="webhook-url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/webhook"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              onChange={e => setName(e.target.value)}
+              placeholder='My Webhook'
+              className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
               required
             />
           </div>
 
           <div>
             <label
-              htmlFor="webhook-description"
-              className="block text-sm font-medium text-foreground mb-1"
+              htmlFor='webhook-url'
+              className='block text-sm font-medium text-foreground mb-1'
             >
-              Description (optional)
+              Endpoint URL
             </label>
-            <textarea
-              id="webhook-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What is this webhook for?"
-              rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            <input
+              id='webhook-url'
+              type='url'
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder='https://example.com/webhook'
+              className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Events</label>
-            <div className="max-h-48 overflow-y-auto space-y-2 rounded-md border p-3">
-              {(Object.entries(WEBHOOK_EVENTS) as [WebhookEventType, { label: string; description: string }][]).map(
-                ([event, info]) => (
-                  <label key={event} className="flex items-start gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedEvents.includes(event)}
-                      onChange={() => toggleEvent(event)}
-                      className="mt-0.5 h-4 w-4 rounded border-gray-300"
-                    />
-                    <div>
-                      <span className="text-sm font-medium text-foreground">{info.label}</span>
-                      <p className="text-xs text-muted-foreground">{info.description}</p>
-                    </div>
-                  </label>
-                ),
-              )}
+            <label
+              htmlFor='webhook-description'
+              className='block text-sm font-medium text-foreground mb-1'
+            >
+              Description (optional)
+            </label>
+            <textarea
+              id='webhook-description'
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder='What is this webhook for?'
+              rows={2}
+              className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-foreground mb-2'>
+              Events
+            </label>
+            <div className='max-h-48 overflow-y-auto space-y-2 rounded-md border p-3'>
+              {(
+                Object.entries(WEBHOOK_EVENTS) as [
+                  WebhookEventType,
+                  { label: string; description: string },
+                ][]
+              ).map(([event, info]) => (
+                <label
+                  key={event}
+                  className='flex items-start gap-2 cursor-pointer'
+                >
+                  <input
+                    type='checkbox'
+                    checked={selectedEvents.includes(event)}
+                    onChange={() => toggleEvent(event)}
+                    className='mt-0.5 h-4 w-4 rounded border-gray-300'
+                  />
+                  <div>
+                    <span className='text-sm font-medium text-foreground'>
+                      {info.label}
+                    </span>
+                    <p className='text-xs text-muted-foreground'>
+                      {info.description}
+                    </p>
+                  </div>
+                </label>
+              ))}
             </div>
             {selectedEvents.length === 0 && (
-              <p className="mt-1 text-xs text-destructive">Select at least one event</p>
+              <p className='mt-1 text-xs text-destructive'>
+                Select at least one event
+              </p>
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className='flex justify-end gap-2 pt-4'>
             <button
-              type="button"
+              type='button'
               onClick={onClose}
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground'
             >
               Cancel
             </button>
             <button
-              type="submit"
-              disabled={!name || !url || selectedEvents.length === 0 || isSubmitting}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              type='submit'
+              disabled={
+                !name || !url || selectedEvents.length === 0 || isSubmitting
+              }
+              className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50'
             >
               {isSubmitting ? 'Creating...' : 'Create Webhook'}
             </button>
@@ -808,26 +877,31 @@ interface IntegrationDetailModalProps {
   onUpdate: () => void;
 }
 
-function IntegrationDetailModal({ integration, onClose, onUpdate }: IntegrationDetailModalProps) {
+function IntegrationDetailModal({
+  integration,
+  onClose,
+  onUpdate,
+}: IntegrationDetailModalProps) {
   const providerInfo = INTEGRATION_PROVIDERS[integration.provider];
   const statusConfig = INTEGRATION_STATUS_CONFIG[integration.status];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-lg bg-background p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-bold">
-              {providerInfo?.icon || integration.provider.substring(0, 2).toUpperCase()}
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+      <div className='fixed inset-0 bg-black/50' onClick={onClose} />
+      <div className='relative z-10 w-full max-w-lg rounded-lg bg-background p-6 shadow-xl'>
+        <div className='flex items-center justify-between mb-4'>
+          <div className='flex items-center gap-3'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-bold'>
+              {providerInfo?.icon ||
+                integration.provider.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold">{integration.name}</h2>
+              <h2 className='text-lg font-semibold'>{integration.name}</h2>
               <span
                 className={cn(
                   'rounded-full px-2 py-0.5 text-xs font-medium',
                   statusConfig.bgColor,
-                  statusConfig.color,
+                  statusConfig.color
                 )}
               >
                 {statusConfig.label}
@@ -835,59 +909,75 @@ function IntegrationDetailModal({ integration, onClose, onUpdate }: IntegrationD
             </div>
           </div>
           <button
-            type="button"
+            type='button'
             onClick={onClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
           >
-            <CloseIcon className="h-5 w-5" />
+            <CloseIcon className='h-5 w-5' />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Provider</h3>
-            <p className="text-foreground">{providerInfo?.name || integration.provider}</p>
+            <h3 className='text-sm font-medium text-muted-foreground'>
+              Provider
+            </h3>
+            <p className='text-foreground'>
+              {providerInfo?.name || integration.provider}
+            </p>
           </div>
 
           {integration.description && (
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-              <p className="text-foreground">{integration.description}</p>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Description
+              </h3>
+              <p className='text-foreground'>{integration.description}</p>
             </div>
           )}
 
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
-            <p className="text-foreground">{new Date(integration.createdAt).toLocaleString()}</p>
+            <h3 className='text-sm font-medium text-muted-foreground'>
+              Created
+            </h3>
+            <p className='text-foreground'>
+              {new Date(integration.createdAt).toLocaleString()}
+            </p>
           </div>
 
           {integration.lastSyncAt && (
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Last Synced</h3>
-              <p className="text-foreground">{new Date(integration.lastSyncAt).toLocaleString()}</p>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Last Synced
+              </h3>
+              <p className='text-foreground'>
+                {new Date(integration.lastSyncAt).toLocaleString()}
+              </p>
             </div>
           )}
 
           {integration.errorMessage && (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
-              <h3 className="text-sm font-medium text-destructive">Error</h3>
-              <p className="text-sm text-destructive">{integration.errorMessage}</p>
+            <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3'>
+              <h3 className='text-sm font-medium text-destructive'>Error</h3>
+              <p className='text-sm text-destructive'>
+                {integration.errorMessage}
+              </p>
             </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-2 mt-6">
+        <div className='flex justify-end gap-2 mt-6'>
           <button
-            type="button"
+            type='button'
             onClick={onClose}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+            className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground'
           >
             Close
           </button>
           <button
-            type="button"
+            type='button'
             onClick={onUpdate}
-            className="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
+            className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
           >
             Disconnect
           </button>
@@ -903,7 +993,11 @@ interface WebhookDetailModalProps {
   onUpdate: () => void;
 }
 
-function WebhookDetailModal({ webhook, onClose, onUpdate }: WebhookDetailModalProps) {
+function WebhookDetailModal({
+  webhook,
+  onClose,
+  onUpdate,
+}: WebhookDetailModalProps) {
   const [showSecret, setShowSecret] = useState(false);
 
   const statusColor =
@@ -914,89 +1008,121 @@ function WebhookDetailModal({ webhook, onClose, onUpdate }: WebhookDetailModalPr
         : 'text-gray-600 bg-gray-500/10';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-lg bg-background p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+      <div className='fixed inset-0 bg-black/50' onClick={onClose} />
+      <div className='relative z-10 w-full max-w-lg rounded-lg bg-background p-6 shadow-xl'>
+        <div className='flex items-center justify-between mb-4'>
           <div>
-            <h2 className="text-lg font-semibold">{webhook.name}</h2>
-            <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', statusColor)}>
+            <h2 className='text-lg font-semibold'>{webhook.name}</h2>
+            <span
+              className={cn(
+                'rounded-full px-2 py-0.5 text-xs font-medium',
+                statusColor
+              )}
+            >
               {webhook.status}
             </span>
           </div>
           <button
-            type="button"
+            type='button'
             onClick={onClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
           >
-            <CloseIcon className="h-5 w-5" />
+            <CloseIcon className='h-5 w-5' />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Endpoint URL</h3>
-            <p className="text-foreground break-all">{webhook.url}</p>
+            <h3 className='text-sm font-medium text-muted-foreground'>
+              Endpoint URL
+            </h3>
+            <p className='text-foreground break-all'>{webhook.url}</p>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-1">Signing Secret</h3>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm font-mono">
+            <h3 className='text-sm font-medium text-muted-foreground mb-1'>
+              Signing Secret
+            </h3>
+            <div className='flex items-center gap-2'>
+              <code className='flex-1 rounded bg-muted px-2 py-1 text-sm font-mono'>
                 {showSecret ? webhook.secret : '*'.repeat(32)}
               </code>
               <button
-                type="button"
+                type='button'
                 onClick={() => setShowSecret(!showSecret)}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
               >
-                {showSecret ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                {showSecret ? (
+                  <EyeOffIcon className='h-4 w-4' />
+                ) : (
+                  <EyeIcon className='h-4 w-4' />
+                )}
               </button>
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Subscribed Events</h3>
-            <div className="flex flex-wrap gap-1">
-              {webhook.events.map((event) => (
-                <span key={event} className="rounded bg-muted px-2 py-1 text-xs text-foreground">
+            <h3 className='text-sm font-medium text-muted-foreground mb-2'>
+              Subscribed Events
+            </h3>
+            <div className='flex flex-wrap gap-1'>
+              {webhook.events.map(event => (
+                <span
+                  key={event}
+                  className='rounded bg-muted px-2 py-1 text-xs text-foreground'
+                >
                   {event}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className='grid grid-cols-2 gap-4'>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Success Count</h3>
-              <p className="text-foreground">{webhook.successCount || 0}</p>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Success Count
+              </h3>
+              <p className='text-foreground'>{webhook.successCount || 0}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Failure Count</h3>
-              <p className={webhook.failureCount > 0 ? 'text-destructive' : 'text-foreground'}>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Failure Count
+              </h3>
+              <p
+                className={
+                  webhook.failureCount > 0
+                    ? 'text-destructive'
+                    : 'text-foreground'
+                }
+              >
                 {webhook.failureCount}
               </p>
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
-            <p className="text-foreground">{new Date(webhook.createdAt).toLocaleString()}</p>
+            <h3 className='text-sm font-medium text-muted-foreground'>
+              Created
+            </h3>
+            <p className='text-foreground'>
+              {new Date(webhook.createdAt).toLocaleString()}
+            </p>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-6">
+        <div className='flex justify-end gap-2 mt-6'>
           <button
-            type="button"
+            type='button'
             onClick={onClose}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+            className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground'
           >
             Close
           </button>
           <button
-            type="button"
+            type='button'
             onClick={onUpdate}
-            className="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
+            className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
           >
             Delete Webhook
           </button>
@@ -1014,14 +1140,14 @@ function BackIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="m15 18-6-6 6-6" />
+      <path d='m15 18-6-6 6-6' />
     </svg>
   );
 }
@@ -1030,14 +1156,14 @@ function ChevronRightIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="m9 18 6-6-6-6" />
+      <path d='m9 18 6-6-6-6' />
     </svg>
   );
 }
@@ -1046,15 +1172,15 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M12 5v14" />
-      <path d="M5 12h14" />
+      <path d='M12 5v14' />
+      <path d='M5 12h14' />
     </svg>
   );
 }
@@ -1063,15 +1189,15 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }
@@ -1080,15 +1206,15 @@ function IntegrationIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="m9 12 2 2 4-4" />
+      <path d='M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z' />
+      <path d='m9 12 2 2 4-4' />
     </svg>
   );
 }
@@ -1097,16 +1223,16 @@ function WebhookIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2" />
-      <path d="m6 17 3.13-5.78c.53-.97.43-2.17-.26-3.03A4 4 0 0 1 8 4a4 4 0 0 1 6.86 2" />
-      <path d="m12 6 3.13 5.73c.53.98 1.58 1.57 2.68 1.54 1.82-.05 3.5 1.23 3.95 3A4 4 0 0 1 18 20" />
+      <path d='M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2' />
+      <path d='m6 17 3.13-5.78c.53-.97.43-2.17-.26-3.03A4 4 0 0 1 8 4a4 4 0 0 1 6.86 2' />
+      <path d='m12 6 3.13 5.73c.53.98 1.58 1.57 2.68 1.54 1.82-.05 3.5 1.23 3.95 3A4 4 0 0 1 18 20' />
     </svg>
   );
 }
@@ -1115,15 +1241,15 @@ function EyeIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
+      <path d='M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z' />
+      <circle cx='12' cy='12' r='3' />
     </svg>
   );
 }
@@ -1132,17 +1258,17 @@ function EyeOffIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-      <line x1="2" x2="22" y1="2" y2="22" />
+      <path d='M9.88 9.88a3 3 0 1 0 4.24 4.24' />
+      <path d='M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68' />
+      <path d='M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61' />
+      <line x1='2' x2='22' y1='2' y2='22' />
     </svg>
   );
 }
@@ -1151,15 +1277,15 @@ function UserIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+      <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
+      <circle cx='12' cy='7' r='4' />
     </svg>
   );
 }
@@ -1168,17 +1294,17 @@ function GridIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="14" y="14" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
+      <rect x='3' y='3' width='7' height='7' />
+      <rect x='14' y='3' width='7' height='7' />
+      <rect x='14' y='14' width='7' height='7' />
+      <rect x='3' y='14' width='7' height='7' />
     </svg>
   );
 }
@@ -1187,15 +1313,15 @@ function CodeIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
+      <polyline points='16 18 22 12 16 6' />
+      <polyline points='8 6 2 12 8 18' />
     </svg>
   );
 }
@@ -1204,16 +1330,16 @@ function ExternalLinkIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
+      <path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' />
+      <polyline points='15 3 21 3 21 9' />
+      <line x1='10' y1='14' x2='21' y2='3' />
     </svg>
   );
 }

@@ -125,7 +125,7 @@ export function ChannelHeader({
 
   // Get all member user IDs for presence fetching
   const memberUserIds = useMemo(() => {
-    return channel.members.map((member) => member.userId);
+    return channel.members.map(member => member.userId);
   }, [channel.members]);
 
   // Fetch real-time presence for all members
@@ -134,23 +134,25 @@ export function ChannelHeader({
   // Sort members by online status (online first) and take first 3
   const sortedMembers = useMemo(() => {
     const statusPriority: Record<string, number> = {
-      'online': 0,
-      'busy': 1,
-      'away': 2,
-      'offline': 3,
+      online: 0,
+      busy: 1,
+      away: 2,
+      offline: 3,
     };
 
-    return [...channel.members].sort((a, b) => {
-      const statusA = presenceMap.get(a.userId)?.status || 'offline';
-      const statusB = presenceMap.get(b.userId)?.status || 'offline';
-      return (statusPriority[statusA] ?? 3) - (statusPriority[statusB] ?? 3);
-    }).slice(0, 3);
+    return [...channel.members]
+      .sort((a, b) => {
+        const statusA = presenceMap.get(a.userId)?.status || 'offline';
+        const statusB = presenceMap.get(b.userId)?.status || 'offline';
+        return (statusPriority[statusA] ?? 3) - (statusPriority[statusB] ?? 3);
+      })
+      .slice(0, 3);
   }, [channel.members, presenceMap]);
 
   const handleToggleStar = useCallback(async () => {
     if (isStarring) {
-return;
-}
+      return;
+    }
     setIsStarring(true);
     try {
       await onToggleStar?.(channel.isStarred || false);
@@ -176,10 +178,9 @@ return;
   return (
     <div className={cn('border-b', className)}>
       {/* Top row: Channel name, star, members */}
-      <div className="flex h-12 items-center justify-between px-4">
-        
+      <div className='flex h-12 items-center justify-between px-4'>
         {/* Left side: Channel name with dropdown */}
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {/* Star button */}
           <StarButton
             isStarred={channel.isStarred || false}
@@ -189,102 +190,111 @@ return;
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                type="button"
-                className="flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors"
+                type='button'
+                className='flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors'
               >
-                <ChannelTypeIcon type={channel.type} className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">{channel.name}</span>
+                <ChannelTypeIcon
+                  type={channel.type}
+                  className='h-4 w-4 text-muted-foreground'
+                />
+                <span className='font-semibold'>{channel.name}</span>
                 {channel.isArchived && (
-                  <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                  <span className='shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground'>
                     Archived
                   </span>
                 )}
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className='h-4 w-4 text-muted-foreground' />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuContent align='start' className='w-64'>
               <DropdownMenuItem onClick={onOpenDetails || onOpenSettings}>
-                <Info className="mr-2 h-4 w-4" />
+                <Info className='mr-2 h-4 w-4' />
                 Open channel details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onSummarize}>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className='mr-2 h-4 w-4' />
                 Summarise channel
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onEditNotifications}>
-                <Bell className="mr-2 h-4 w-4" />
+                <Bell className='mr-2 h-4 w-4' />
                 Edit notifications
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleToggleStar} disabled={isStarring}>
-                <Star className={cn('mr-2 h-4 w-4', channel.isStarred && 'fill-yellow-400 text-yellow-400')} />
+              <DropdownMenuItem
+                onClick={handleToggleStar}
+                disabled={isStarring}
+              >
+                <Star
+                  className={cn(
+                    'mr-2 h-4 w-4',
+                    channel.isStarred && 'fill-yellow-400 text-yellow-400'
+                  )}
+                />
                 {channel.isStarred ? 'Unstar channel' : 'Star channel'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onAddTemplate}>
-                <FileText className="mr-2 h-4 w-4" />
+                <FileText className='mr-2 h-4 w-4' />
                 Add template
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onAddWorkflow}>
-                <Workflow className="mr-2 h-4 w-4" />
+                <Workflow className='mr-2 h-4 w-4' />
                 Add workflow
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {permissions.canEdit && (
                 <DropdownMenuItem onClick={onOpenSettings}>
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings className='mr-2 h-4 w-4' />
                   Edit settings
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={handleCopyLink}>
-                <Copy className="mr-2 h-4 w-4" />
+                <Copy className='mr-2 h-4 w-4' />
                 Copy link
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onSearchInChannel}>
-                <Search className="mr-2 h-4 w-4" />
+                <Search className='mr-2 h-4 w-4' />
                 Search in channel
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleOpenInNewWindow}>
-                <ExternalLink className="mr-2 h-4 w-4" />
+                <ExternalLink className='mr-2 h-4 w-4' />
                 Open in new window
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleLeave}
-                className="text-destructive focus:text-destructive"
+                className='text-destructive focus:text-destructive'
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className='mr-2 h-4 w-4' />
                 Leave channel
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          
-
           {/* Channel description (if exists) */}
           {channel.description && (
-            <span className="hidden lg:inline text-sm text-muted-foreground truncate max-w-xs">
+            <span className='hidden lg:inline text-sm text-muted-foreground truncate max-w-xs'>
               {channel.description}
             </span>
           )}
         </div>
 
         {/* Right side: Members and actions */}
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {/* Call buttons */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5">
-                <Phone className="h-4 w-4" />
+              <Button variant='ghost' size='sm' className='h-8 gap-1.5'>
+                <Phone className='h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align='end' className='w-48'>
               <DropdownMenuItem onClick={() => onStartCall?.('audio')}>
-                <Phone className="mr-2 h-4 w-4" />
+                <Phone className='mr-2 h-4 w-4' />
                 Start audio call
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onStartCall?.('video')}>
-                <Video className="mr-2 h-4 w-4" />
+                <Video className='mr-2 h-4 w-4' />
                 Start video call
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -295,21 +305,22 @@ return;
             <DropdownMenuTrigger asChild>
               <Button
                 variant={hasActiveHuddle ? 'default' : 'ghost'}
-                size="sm"
+                size='sm'
                 className={cn(
                   'h-8 gap-1.5',
-                  hasActiveHuddle && 'bg-green-600 hover:bg-green-700 text-white'
+                  hasActiveHuddle &&
+                    'bg-green-600 hover:bg-green-700 text-white'
                 )}
               >
-                <Headphones className="h-4 w-4" />
+                <Headphones className='h-4 w-4' />
                 {hasActiveHuddle && huddleParticipantCount > 0 && (
-                  <span className="text-xs">{huddleParticipantCount}</span>
+                  <span className='text-xs'>{huddleParticipantCount}</span>
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align='end' className='w-48'>
               <DropdownMenuItem onClick={onStartHuddle}>
-                <Headphones className="mr-2 h-4 w-4" />
+                <Headphones className='mr-2 h-4 w-4' />
                 {hasActiveHuddle ? 'Join huddle' : 'Start a huddle'}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -317,15 +328,15 @@ return;
 
           {/* Member avatars - sorted by online status */}
           <button
-            type="button"
+            type='button'
             onClick={onOpenMembers || onOpenDetails}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors"
+            className='flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors'
           >
-            <div className="flex -space-x-2">
+            <div className='flex -space-x-2'>
               {sortedMembers.map((member, index) => (
                 <div
                   key={member.userId}
-                  className="relative"
+                  className='relative'
                   style={{ zIndex: 3 - index }}
                 >
                   <ConnectedUserAvatar
@@ -334,30 +345,32 @@ return;
                       name: member.user.name,
                       image: member.user.image,
                     }}
-                    size="sm"
+                    size='sm'
                     showPresence
-                    className="border-2 border-card"
+                    className='border-2 border-card'
                   />
                 </div>
               ))}
               {channel.memberCount > 3 && (
-                <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-card bg-muted text-[10px] font-medium">
+                <div className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-card bg-muted text-[10px] font-medium'>
                   +{channel.memberCount - 3}
                 </div>
               )}
             </div>
-            <span className="text-sm text-muted-foreground">{channel.memberCount}</span>
+            <span className='text-sm text-muted-foreground'>
+              {channel.memberCount}
+            </span>
           </button>
 
           {/* Invite button (if can invite) */}
           {permissions.canInvite && (
             <button
-              type="button"
+              type='button'
               onClick={onInvite}
-              className="rounded-md p-1.5 hover:bg-accent transition-colors"
-              title="Invite people"
+              className='rounded-md p-1.5 hover:bg-accent transition-colors'
+              title='Invite people'
             >
-              <UserPlus className="h-5 w-5 text-muted-foreground" />
+              <UserPlus className='h-5 w-5 text-muted-foreground' />
             </button>
           )}
 
@@ -365,30 +378,30 @@ return;
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                type="button"
-                className="rounded-md p-1.5 hover:bg-accent transition-colors"
-                title="More actions"
+                type='button'
+                className='rounded-md p-1.5 hover:bg-accent transition-colors'
+                title='More actions'
               >
-                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                <MoreHorizontal className='h-5 w-5 text-muted-foreground' />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align='end' className='w-56'>
               <DropdownMenuItem onClick={onOpenDetails || onOpenSettings}>
-                <Info className="mr-2 h-4 w-4" />
+                <Info className='mr-2 h-4 w-4' />
                 Channel details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onSearchInChannel}>
-                <Search className="mr-2 h-4 w-4" />
+                <Search className='mr-2 h-4 w-4' />
                 Search in channel
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onEditNotifications}>
-                <Bell className="mr-2 h-4 w-4" />
+                <Bell className='mr-2 h-4 w-4' />
                 Notifications
               </DropdownMenuItem>
               {permissions.canEdit && (
                 <DropdownMenuItem onClick={onOpenSettings}>
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings className='mr-2 h-4 w-4' />
                   Settings
                 </DropdownMenuItem>
               )}
@@ -402,7 +415,7 @@ return;
         activeTab={activeTab}
         onTabChange={onTabChange}
         tabs={DEFAULT_TABS}
-        className="px-2 pb-1"
+        className='px-2 pb-1'
       />
     </div>
   );
@@ -419,15 +432,15 @@ function ChannelTypeIcon({
     return (
       <svg
         className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='round'
+        strokeLinejoin='round'
       >
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        <rect x='3' y='11' width='18' height='11' rx='2' ry='2' />
+        <path d='M7 11V7a5 5 0 0 1 10 0v4' />
       </svg>
     );
   }
@@ -436,17 +449,17 @@ function ChannelTypeIcon({
     return (
       <svg
         className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='round'
+        strokeLinejoin='round'
       >
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+        <circle cx='9' cy='7' r='4' />
+        <path d='M22 21v-2a4 4 0 0 0-3-3.87' />
+        <path d='M16 3.13a4 4 0 0 1 0 7.75' />
       </svg>
     );
   }
@@ -454,17 +467,17 @@ function ChannelTypeIcon({
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M4 9h16" />
-      <path d="M4 15h16" />
-      <path d="M10 3 8 21" />
-      <path d="M16 3 14 21" />
+      <path d='M4 9h16' />
+      <path d='M4 15h16' />
+      <path d='M10 3 8 21' />
+      <path d='M16 3 14 21' />
     </svg>
   );
 }

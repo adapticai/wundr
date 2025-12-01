@@ -85,7 +85,7 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -94,9 +94,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -109,9 +109,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid workspace ID',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -121,24 +121,25 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const parseResult = orchestratorComparisonQuerySchema.safeParse(searchParams);
+    const parseResult =
+      orchestratorComparisonQuerySchema.safeParse(searchParams);
 
     if (!parseResult.success) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -168,14 +169,16 @@ export async function GET(
       query.metric,
       query.limit,
       startDate,
-      endDate,
+      endDate
     );
 
     // Filter by discipline if specified
     let filteredComparison = comparison;
     if (query.discipline) {
       filteredComparison = comparison.filter(
-        (orchestrator) => orchestrator.discipline.toLowerCase() === query.discipline?.toLowerCase(),
+        orchestrator =>
+          orchestrator.discipline.toLowerCase() ===
+          query.discipline?.toLowerCase()
       );
     }
 
@@ -189,10 +192,12 @@ export async function GET(
           },
           select: { id: true },
         })
-        .then((orchestrators) => orchestrators.map((orchestrator) => orchestrator.id));
+        .then(orchestrators =>
+          orchestrators.map(orchestrator => orchestrator.id)
+        );
 
-      filteredComparison = filteredComparison.filter((orchestrator) =>
-        activeOrchestratorIds.includes(orchestrator.orchestratorId),
+      filteredComparison = filteredComparison.filter(orchestrator =>
+        activeOrchestratorIds.includes(orchestrator.orchestratorId)
       );
     }
 
@@ -206,13 +211,17 @@ export async function GET(
     });
 
     // Calculate summary statistics
-    const metricValues = filteredComparison.map((orchestrator) => orchestrator.metricValue);
+    const metricValues = filteredComparison.map(
+      orchestrator => orchestrator.metricValue
+    );
     const avgMetricValue =
       metricValues.length > 0
         ? metricValues.reduce((sum, val) => sum + val, 0) / metricValues.length
         : 0;
-    const maxMetricValue = metricValues.length > 0 ? Math.max(...metricValues) : 0;
-    const minMetricValue = metricValues.length > 0 ? Math.min(...metricValues) : 0;
+    const maxMetricValue =
+      metricValues.length > 0 ? Math.max(...metricValues) : 0;
+    const minMetricValue =
+      metricValues.length > 0 ? Math.min(...metricValues) : 0;
 
     // Build response
     const response = {
@@ -224,7 +233,7 @@ export async function GET(
         end: endDate.toISOString(),
         label: query.timeRange,
       },
-      rankings: filteredComparison.map((orchestrator) => ({
+      rankings: filteredComparison.map(orchestrator => ({
         rank: orchestrator.rank,
         orchestratorId: orchestrator.orchestratorId,
         orchestratorName: orchestrator.orchestratorName,
@@ -247,18 +256,23 @@ export async function GET(
 
     // Add insights
     if (filteredComparison.length === 0) {
-      response.insights.push('No Orchestrator data available for the selected criteria');
+      response.insights.push(
+        'No Orchestrator data available for the selected criteria'
+      );
     } else {
       const topPerformer = filteredComparison[0];
       response.insights.push(
-        `Top performer: ${topPerformer.orchestratorName} (${topPerformer.discipline}) with ${Math.round(topPerformer.metricValue * 100) / 100}`,
+        `Top performer: ${topPerformer.orchestratorName} (${topPerformer.discipline}) with ${Math.round(topPerformer.metricValue * 100) / 100}`
       );
 
       if (filteredComparison.length >= 3) {
         const topThreeAvg =
-          filteredComparison.slice(0, 3).reduce((sum, orchestrator) => sum + orchestrator.metricValue, 0) / 3;
+          filteredComparison
+            .slice(0, 3)
+            .reduce((sum, orchestrator) => sum + orchestrator.metricValue, 0) /
+          3;
         response.insights.push(
-          `Top 3 average: ${Math.round(topThreeAvg * 100) / 100}`,
+          `Top 3 average: ${Math.round(topThreeAvg * 100) / 100}`
         );
       }
     }
@@ -270,14 +284,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/analytics/comparison] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

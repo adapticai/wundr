@@ -16,7 +16,11 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
-import type { CreateFromTemplateInput, TemplateFiltersInput, WorkflowTemplate } from '@/lib/validations/workflow';
+import type {
+  CreateFromTemplateInput,
+  TemplateFiltersInput,
+  WorkflowTemplate,
+} from '@/lib/validations/workflow';
 import {
   createErrorResponse,
   createFromTemplateSchema,
@@ -51,7 +55,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Send Welcome Message',
         config: {
           channel: '{{trigger.channelId}}',
-          message: 'Welcome to the workspace, {{trigger.user.name}}! Feel free to introduce yourself.',
+          message:
+            'Welcome to the workspace, {{trigger.user.name}}! Feel free to introduce yourself.',
         },
         conditions: [],
         onError: 'continue',
@@ -63,7 +68,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'template-notify-channel-created',
     name: 'Notify on Channel Creation',
-    description: 'Send a notification to a designated channel when a new channel is created',
+    description:
+      'Send a notification to a designated channel when a new channel is created',
     category: 'notifications',
     trigger: {
       type: 'channel.created',
@@ -76,7 +82,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Send Channel Creation Notification',
         config: {
           targetChannel: 'general',
-          message: 'A new channel "{{trigger.channel.name}}" was created by {{trigger.createdBy.name}}',
+          message:
+            'A new channel "{{trigger.channel.name}}" was created by {{trigger.createdBy.name}}',
         },
         conditions: [],
         onError: 'continue',
@@ -103,7 +110,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Notify Admins',
         config: {
           targetRole: 'ADMIN',
-          message: 'Orchestrator "{{trigger.orchestrator.name}}" has gone offline',
+          message:
+            'Orchestrator "{{trigger.orchestrator.name}}" has gone offline',
           priority: 'high',
         },
         conditions: [],
@@ -132,7 +140,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Post Daily Summary',
         config: {
           channel: 'general',
-          message: 'Daily Activity Summary:\n- Messages: {{stats.messageCount}}\n- Active Orchestrators: {{stats.activeOrchestratorCount}}\n- New Members: {{stats.newMemberCount}}',
+          message:
+            'Daily Activity Summary:\n- Messages: {{stats.messageCount}}\n- Active Orchestrators: {{stats.activeOrchestratorCount}}\n- New Members: {{stats.newMemberCount}}',
         },
         conditions: [],
         onError: 'continue',
@@ -144,7 +153,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'template-keyword-alert',
     name: 'Keyword Alert',
-    description: 'Send an alert when specific keywords are mentioned in messages',
+    description:
+      'Send an alert when specific keywords are mentioned in messages',
     category: 'moderation',
     trigger: {
       type: 'message.created',
@@ -168,7 +178,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Send Alert',
         config: {
           targetRole: 'ADMIN',
-          message: 'Keyword alert in {{trigger.channel.name}}: "{{trigger.message.content}}"',
+          message:
+            'Keyword alert in {{trigger.channel.name}}: "{{trigger.message.content}}"',
           priority: 'high',
         },
         conditions: [],
@@ -219,7 +230,8 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'template-auto-archive-inactive',
     name: 'Auto-Archive Inactive Channels',
-    description: 'Automatically archive channels with no activity for a specified period',
+    description:
+      'Automatically archive channels with no activity for a specified period',
     category: 'automation',
     trigger: {
       type: 'schedule.interval',
@@ -267,15 +279,18 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -290,8 +305,11 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -306,8 +324,11 @@ export async function GET(
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found or access denied',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -320,9 +341,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -331,7 +352,9 @@ export async function GET(
     // Filter built-in templates by category if specified
     let builtInTemplates = BUILT_IN_TEMPLATES;
     if (filters.category) {
-      builtInTemplates = builtInTemplates.filter((t) => t.category === filters.category);
+      builtInTemplates = builtInTemplates.filter(
+        t => t.category === filters.category
+      );
     }
 
     // Fetch custom templates from database
@@ -355,21 +378,25 @@ export async function GET(
     });
 
     // Convert custom template workflows to WorkflowTemplate format
-    const customTemplates: WorkflowTemplate[] = customTemplateWorkflows.map((workflow) => {
-      const metadata = workflow.metadata as { category?: string } | null;
-      const actions = workflow.actions as unknown as WorkflowTemplate['actions'];
+    const customTemplates: WorkflowTemplate[] = customTemplateWorkflows.map(
+      workflow => {
+        const metadata = workflow.metadata as { category?: string } | null;
+        const actions =
+          workflow.actions as unknown as WorkflowTemplate['actions'];
 
-      return {
-        id: workflow.id,
-        name: workflow.name,
-        description: workflow.description ?? '',
-        category: (metadata?.category as WorkflowTemplate['category']) ?? 'custom',
-        trigger: workflow.trigger as unknown as WorkflowTemplate['trigger'],
-        actions,
-        tags: workflow.tags,
-        isBuiltIn: false,
-      };
-    });
+        return {
+          id: workflow.id,
+          name: workflow.name,
+          description: workflow.description ?? '',
+          category:
+            (metadata?.category as WorkflowTemplate['category']) ?? 'custom',
+          trigger: workflow.trigger as unknown as WorkflowTemplate['trigger'],
+          actions,
+          tags: workflow.tags,
+          isBuiltIn: false,
+        };
+      }
+    );
 
     // Combine built-in and custom templates
     const allTemplates = [...builtInTemplates, ...customTemplates];
@@ -383,10 +410,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/workflows/templates] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/workflows/templates] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -402,7 +435,17 @@ const saveAsTemplateSchema = z.object({
   /** Template description */
   description: z.string().max(500).optional(),
   /** Template category */
-  category: z.enum(['onboarding', 'notifications', 'automation', 'integration', 'moderation', 'scheduling', 'custom']).default('custom'),
+  category: z
+    .enum([
+      'onboarding',
+      'notifications',
+      'automation',
+      'integration',
+      'moderation',
+      'scheduling',
+      'custom',
+    ])
+    .default('custom'),
   /** Tags for organization */
   tags: z.array(z.string().max(50)).max(10).optional().default([]),
 });
@@ -423,15 +466,18 @@ type SaveAsTemplateInput = z.infer<typeof saveAsTemplateSchema>;
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -446,8 +492,11 @@ export async function POST(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -462,8 +511,11 @@ export async function POST(
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found or access denied',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -479,8 +531,11 @@ export async function POST(
 
     if (!workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('You must be a workspace member to create workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You must be a workspace member to create workflows',
+          WORKFLOW_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -490,8 +545,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -506,9 +564,9 @@ export async function POST(
           createErrorResponse(
             'Validation failed',
             WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-            { errors: parseResult.error.flatten().fieldErrors },
+            { errors: parseResult.error.flatten().fieldErrors }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -524,8 +582,11 @@ export async function POST(
 
       if (!sourceWorkflow) {
         return NextResponse.json(
-          createErrorResponse('Source workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Source workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
 
@@ -564,7 +625,7 @@ export async function POST(
           template,
           message: 'Workflow saved as template successfully',
         },
-        { status: 201 },
+        { status: 201 }
       );
     } else {
       // CREATE WORKFLOW FROM TEMPLATE
@@ -574,16 +635,16 @@ export async function POST(
           createErrorResponse(
             'Validation failed',
             WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-            { errors: parseResult.error.flatten().fieldErrors },
+            { errors: parseResult.error.flatten().fieldErrors }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       const input: CreateFromTemplateInput = parseResult.data;
 
       // Check if it's a built-in template
-      let template = BUILT_IN_TEMPLATES.find((t) => t.id === input.templateId);
+      let template = BUILT_IN_TEMPLATES.find(t => t.id === input.templateId);
       let isBuiltIn = true;
 
       // If not built-in, check custom templates
@@ -601,20 +662,28 @@ export async function POST(
 
         if (!customTemplate) {
           return NextResponse.json(
-            createErrorResponse('Template not found', WORKFLOW_ERROR_CODES.TEMPLATE_NOT_FOUND),
-            { status: 404 },
+            createErrorResponse(
+              'Template not found',
+              WORKFLOW_ERROR_CODES.TEMPLATE_NOT_FOUND
+            ),
+            { status: 404 }
           );
         }
 
         // Convert custom template to WorkflowTemplate format
-        const metadata = customTemplate.metadata as { category?: string } | null;
+        const metadata = customTemplate.metadata as {
+          category?: string;
+        } | null;
         template = {
           id: customTemplate.id,
           name: customTemplate.name,
           description: customTemplate.description ?? '',
-          category: (metadata?.category as WorkflowTemplate['category']) ?? 'custom',
-          trigger: customTemplate.trigger as unknown as WorkflowTemplate['trigger'],
-          actions: customTemplate.actions as unknown as WorkflowTemplate['actions'],
+          category:
+            (metadata?.category as WorkflowTemplate['category']) ?? 'custom',
+          trigger:
+            customTemplate.trigger as unknown as WorkflowTemplate['trigger'],
+          actions:
+            customTemplate.actions as unknown as WorkflowTemplate['actions'],
           tags: customTemplate.tags,
           isBuiltIn: false,
         };
@@ -649,14 +718,20 @@ export async function POST(
 
       return NextResponse.json(
         { workflow, message: 'Workflow created from template successfully' },
-        { status: 201 },
+        { status: 201 }
       );
     }
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/workflows/templates] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/workflows/templates] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

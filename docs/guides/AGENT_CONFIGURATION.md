@@ -1,6 +1,7 @@
 # Agent Configuration Guide: Customizing Claude Flow Agents
 
-Complete guide to configuring, customizing, and creating agents for Claude Flow integration with Claude Code.
+Complete guide to configuring, customizing, and creating agents for Claude Flow integration with
+Claude Code.
 
 ## Table of Contents
 
@@ -16,7 +17,8 @@ Complete guide to configuring, customizing, and creating agents for Claude Flow 
 
 ## Agent Overview
 
-Claude Flow provides 54+ specialized agents that coordinate through MCP while Claude Code executes the actual work.
+Claude Flow provides 54+ specialized agents that coordinate through MCP while Claude Code executes
+the actual work.
 
 ### Agent Architecture
 
@@ -56,17 +58,13 @@ Claude Flow provides 54+ specialized agents that coordinate through MCP while Cl
 ### Core Development Agents
 
 #### coder
+
 **Purpose**: General-purpose code implementation
 
 ```json
 {
   "type": "coder",
-  "capabilities": [
-    "implement-features",
-    "refactor-code",
-    "fix-bugs",
-    "write-tests"
-  ],
+  "capabilities": ["implement-features", "refactor-code", "fix-bugs", "write-tests"],
   "languages": ["javascript", "typescript", "python", "go", "rust"],
   "frameworks": ["react", "vue", "express", "fastify"],
   "defaultBehavior": {
@@ -78,23 +76,19 @@ Claude Flow provides 54+ specialized agents that coordinate through MCP while Cl
 ```
 
 **Usage**:
+
 ```bash
 npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### reviewer
+
 **Purpose**: Code review and quality assurance
 
 ```json
 {
   "type": "reviewer",
-  "focus": [
-    "code-quality",
-    "best-practices",
-    "security",
-    "performance",
-    "maintainability"
-  ],
+  "focus": ["code-quality", "best-practices", "security", "performance", "maintainability"],
   "checks": {
     "complexity": true,
     "coverage": true,
@@ -105,17 +99,13 @@ npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### tester
+
 **Purpose**: Test creation and validation
 
 ```json
 {
   "type": "tester",
-  "testTypes": [
-    "unit",
-    "integration",
-    "e2e",
-    "performance"
-  ],
+  "testTypes": ["unit", "integration", "e2e", "performance"],
   "frameworks": ["jest", "vitest", "mocha", "playwright"],
   "coverage": {
     "minimum": 80,
@@ -125,6 +115,7 @@ npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### planner
+
 **Purpose**: Task breakdown and planning
 
 ```json
@@ -140,23 +131,20 @@ npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### researcher
+
 **Purpose**: Research and analysis
 
 ```json
 {
   "type": "researcher",
-  "domains": [
-    "api-patterns",
-    "library-evaluation",
-    "best-practices",
-    "performance-optimization"
-  ]
+  "domains": ["api-patterns", "library-evaluation", "best-practices", "performance-optimization"]
 }
 ```
 
 ### Specialized Development Agents
 
 #### backend-dev
+
 **Specialization**: Backend development
 
 ```json
@@ -172,6 +160,7 @@ npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### mobile-dev
+
 **Specialization**: Mobile development
 
 ```json
@@ -179,81 +168,68 @@ npx claude-flow@alpha agent spawn --type coder
   "type": "mobile-dev",
   "platforms": ["ios", "android", "cross-platform"],
   "frameworks": ["React Native", "Flutter", "SwiftUI", "Kotlin"],
-  "focus": [
-    "responsive-design",
-    "offline-support",
-    "performance",
-    "platform-specific-features"
-  ]
+  "focus": ["responsive-design", "offline-support", "performance", "platform-specific-features"]
 }
 ```
 
 #### ml-developer
+
 **Specialization**: Machine learning
 
 ```json
 {
   "type": "ml-developer",
   "frameworks": ["TensorFlow", "PyTorch", "scikit-learn"],
-  "tasks": [
-    "model-training",
-    "data-preprocessing",
-    "feature-engineering",
-    "model-deployment"
-  ]
+  "tasks": ["model-training", "data-preprocessing", "feature-engineering", "model-deployment"]
 }
 ```
 
 #### cicd-engineer
+
 **Specialization**: CI/CD pipelines
 
 ```json
 {
   "type": "cicd-engineer",
   "platforms": ["GitHub Actions", "GitLab CI", "Jenkins"],
-  "focus": [
-    "pipeline-optimization",
-    "deployment-automation",
-    "test-automation",
-    "monitoring"
-  ]
+  "focus": ["pipeline-optimization", "deployment-automation", "test-automation", "monitoring"]
 }
 ```
 
 ### SPARC Methodology Agents
 
 #### sparc-coord
+
 **Purpose**: SPARC workflow coordination
 
 ```json
 {
   "type": "sparc-coord",
-  "phases": [
-    "specification",
-    "pseudocode",
-    "architecture",
-    "refinement",
-    "completion"
-  ],
+  "phases": ["specification", "pseudocode", "architecture", "refinement", "completion"],
   "orchestration": true
 }
 ```
 
 #### specification
+
 **Purpose**: Requirements analysis
 
 #### pseudocode
+
 **Purpose**: Algorithm design
 
 #### architecture
+
 **Purpose**: System design
 
 #### refinement
+
 **Purpose**: Implementation with TDD
 
 ### Swarm Coordination Agents
 
 #### hierarchical-coordinator
+
 **Purpose**: Hierarchical team management
 
 ```json
@@ -270,6 +246,7 @@ npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### mesh-coordinator
+
 **Purpose**: Peer-to-peer coordination
 
 ```json
@@ -282,6 +259,7 @@ npx claude-flow@alpha agent spawn --type coder
 ```
 
 #### adaptive-coordinator
+
 **Purpose**: Dynamic topology adaptation
 
 ```json
@@ -298,48 +276,44 @@ npx claude-flow@alpha agent spawn --type coder
 ### GitHub Integration Agents
 
 #### pr-manager
+
 **Purpose**: Pull request management
 
 ```json
 {
   "type": "pr-manager",
-  "capabilities": [
-    "pr-creation",
-    "pr-review",
-    "merge-strategy",
-    "conflict-resolution"
-  ]
+  "capabilities": ["pr-creation", "pr-review", "merge-strategy", "conflict-resolution"]
 }
 ```
 
 #### code-review-swarm
+
 **Purpose**: Collaborative code review
 
 #### issue-tracker
+
 **Purpose**: Issue management and triage
 
 #### release-manager
+
 **Purpose**: Release automation
 
 ### Performance & Analysis Agents
 
 #### perf-analyzer
+
 **Purpose**: Performance analysis
 
 ```json
 {
   "type": "perf-analyzer",
-  "metrics": [
-    "response-time",
-    "memory-usage",
-    "cpu-utilization",
-    "database-queries"
-  ],
+  "metrics": ["response-time", "memory-usage", "cpu-utilization", "database-queries"],
   "optimization": true
 }
 ```
 
 #### security-manager
+
 **Purpose**: Security analysis and enforcement
 
 ```json
@@ -515,17 +489,13 @@ module.exports = {
   description: 'Custom agent for specific task',
 
   // Agent capabilities
-  capabilities: [
-    'analyze-code',
-    'generate-docs',
-    'optimize-performance'
-  ],
+  capabilities: ['analyze-code', 'generate-docs', 'optimize-performance'],
 
   // Default configuration
   config: {
     timeout: 300000,
     retries: 3,
-    memory: true
+    memory: true,
   },
 
   // Initialization
@@ -557,11 +527,10 @@ module.exports = {
         agent: this.name,
         task: task.id,
         duration: Date.now() - startTime,
-        status: 'success'
+        status: 'success',
       });
 
       return result;
-
     } catch (error) {
       // Error handling
       await this.handleError(error, task);
@@ -594,7 +563,7 @@ module.exports = {
     return {
       analysis,
       documentation: docs,
-      optimizations
+      optimizations,
     };
   },
 
@@ -619,7 +588,7 @@ module.exports = {
       agent: this.name,
       error: error.message,
       stack: error.stack,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Metrics
@@ -627,7 +596,7 @@ module.exports = {
       agent: this.name,
       task: task.id,
       status: 'error',
-      error: error.message
+      error: error.message,
     });
   },
 
@@ -642,7 +611,7 @@ module.exports = {
 
   async suggestOptimizations(analysis) {
     // Implementation
-  }
+  },
 };
 ```
 
@@ -669,17 +638,13 @@ module.exports = {
   version: '2.0.0',
 
   // Plugin system
-  plugins: [
-    '@claude-flow/plugin-git',
-    '@claude-flow/plugin-github',
-    '@claude-flow/plugin-testing'
-  ],
+  plugins: ['@claude-flow/plugin-git', '@claude-flow/plugin-github', '@claude-flow/plugin-testing'],
 
   // Agent state
   state: {
     tasksCompleted: 0,
     errors: 0,
-    performance: []
+    performance: [],
   },
 
   // Advanced configuration
@@ -688,7 +653,7 @@ module.exports = {
     queueSize: 10,
     adaptiveTimeout: true,
     selfHealing: true,
-    learningEnabled: true
+    learningEnabled: true,
   },
 
   // Initialize with plugins
@@ -729,11 +694,7 @@ module.exports = {
   async executeParallel(task) {
     const subtasks = this.splitTask(task);
 
-    const results = await Promise.all(
-      subtasks.map(subtask =>
-        this.executeSubtask(subtask)
-      )
-    );
+    const results = await Promise.all(subtasks.map(subtask => this.executeSubtask(subtask)));
 
     return this.mergeResults(results);
   },
@@ -748,7 +709,7 @@ module.exports = {
         task: this.context.task,
         result,
         duration: result.duration,
-        quality: result.quality
+        quality: result.quality,
       });
     }
 
@@ -756,7 +717,7 @@ module.exports = {
     this.state.tasksCompleted++;
     this.state.performance.push({
       duration: result.duration,
-      quality: result.quality
+      quality: result.quality,
     });
 
     // Self-healing
@@ -768,8 +729,8 @@ module.exports = {
   // Self-healing capability
   async checkHealth() {
     const recentPerformance = this.state.performance.slice(-10);
-    const avgDuration = recentPerformance.reduce((a, b) =>
-      a + b.duration, 0) / recentPerformance.length;
+    const avgDuration =
+      recentPerformance.reduce((a, b) => a + b.duration, 0) / recentPerformance.length;
 
     // Detect degradation
     if (avgDuration > this.config.timeout * 0.8) {
@@ -787,7 +748,7 @@ module.exports = {
 
     // Optimize configuration
     await this.optimizeConfig();
-  }
+  },
 };
 ```
 
@@ -1028,6 +989,7 @@ npx claude-flow@alpha agent benchmark \
 ```
 
 Usage:
+
 ```bash
 npx claude-flow@alpha swarm start \
   --config .claude-flow/teams/ecommerce.json \
@@ -1080,7 +1042,7 @@ module.exports = {
 
     // Default
     return 'coder';
-  }
+  },
 };
 ```
 
@@ -1167,10 +1129,12 @@ Agent configuration enables:
 - ✅ **Quality**: Consistent results
 
 **Next Steps**:
+
 - [Hook Development Guide](./HOOK_DEVELOPMENT.md)
 - [Template Customization](./TEMPLATE_CUSTOMIZATION.md)
 - [API Reference](../reference/API.md)
 
 ---
 
-**Pro Tip**: Start with built-in agents, customize as needed, create custom agents for unique workflows.
+**Pro Tip**: Start with built-in agents, customize as needed, create custom agents for unique
+workflows.

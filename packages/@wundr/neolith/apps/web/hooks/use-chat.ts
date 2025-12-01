@@ -40,7 +40,10 @@ export interface UseMessagesReturn {
   /** Optimistically add a message */
   addOptimisticMessage: (message: Message) => void;
   /** Update a message optimistically */
-  updateOptimisticMessage: (messageId: string, updates: Partial<Message>) => void;
+  updateOptimisticMessage: (
+    messageId: string,
+    updates: Partial<Message>
+  ) => void;
   /** Remove a message optimistically */
   removeOptimisticMessage: (messageId: string) => void;
 }
@@ -66,9 +69,15 @@ export interface UseThreadReturn {
  */
 export interface UseSendMessageReturn {
   /** Send a new message - returns optimistic ID and the created message */
-  sendMessage: (input: SendMessageInput, currentUser: User) => Promise<{ optimisticId: string; message: Message | null }>;
+  sendMessage: (
+    input: SendMessageInput,
+    currentUser: User
+  ) => Promise<{ optimisticId: string; message: Message | null }>;
   /** Edit an existing message */
-  editMessage: (messageId: string, input: UpdateMessageInput) => Promise<Message | null>;
+  editMessage: (
+    messageId: string,
+    input: UpdateMessageInput
+  ) => Promise<Message | null>;
   /** Delete a message */
   deleteMessage: (messageId: string) => Promise<boolean>;
   /** Whether a mutation is in progress */
@@ -132,7 +141,10 @@ export interface UseMentionSuggestionsReturn {
 /**
  * Hook for fetching and subscribing to channel messages
  */
-export function useMessages(channelId: string, filters?: MessageFilters): UseMessagesReturn {
+export function useMessages(
+  channelId: string,
+  filters?: MessageFilters
+): UseMessagesReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -143,8 +155,8 @@ export function useMessages(channelId: string, filters?: MessageFilters): UseMes
   const fetchMessages = useCallback(
     async (loadMore = false) => {
       if (!channelId) {
-return;
-}
+        return;
+      }
 
       if (loadMore) {
         setIsLoadingMore(true);
@@ -156,11 +168,11 @@ return;
       try {
         const params = new URLSearchParams();
         if (filters?.limit) {
-params.set('limit', String(filters.limit));
-}
+          params.set('limit', String(filters.limit));
+        }
         if (filters?.search) {
-params.set('search', filters.search);
-}
+          params.set('search', filters.search);
+        }
 
         // If loading more, use cursor-based pagination
         if (loadMore && messages.length > 0) {
@@ -175,7 +187,9 @@ params.set('search', filters.search);
           params.set('direction', 'after');
         }
 
-        const response = await fetch(`/api/channels/${channelId}/messages?${params.toString()}`);
+        const response = await fetch(
+          `/api/channels/${channelId}/messages?${params.toString()}`
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch messages');
         }
@@ -221,7 +235,9 @@ params.set('search', filters.search);
         }
 
         // Helper to determine attachment type from mimeType
-        const getAttachmentType = (mimeType: string): 'image' | 'video' | 'audio' | 'file' => {
+        const getAttachmentType = (
+          mimeType: string
+        ): 'image' | 'video' | 'audio' | 'file' => {
           if (mimeType.startsWith('image/')) return 'image';
           if (mimeType.startsWith('video/')) return 'video';
           if (mimeType.startsWith('audio/')) return 'audio';
@@ -240,11 +256,13 @@ params.set('search', filters.search);
         };
 
         // Transform messageAttachments to UI-expected format
-        const transformAttachments = (messageAttachments?: ApiMessageAttachment[]): Attachment[] => {
+        const transformAttachments = (
+          messageAttachments?: ApiMessageAttachment[]
+        ): Attachment[] => {
           if (!messageAttachments || messageAttachments.length === 0) return [];
           return messageAttachments
-            .filter((ma) => ma.file !== null)
-            .map((ma) => ({
+            .filter(ma => ma.file !== null)
+            .map(ma => ({
               id: ma.file!.id,
               name: ma.file!.originalName || ma.file!.filename,
               url: getFileUrl(ma.file),
@@ -273,7 +291,7 @@ params.set('search', filters.search);
         }));
 
         if (loadMore) {
-          setMessages((prev) => [...newMessages, ...prev]);
+          setMessages(prev => [...newMessages, ...prev]);
         } else {
           setMessages(newMessages);
         }
@@ -285,7 +303,13 @@ params.set('search', filters.search);
         setIsLoadingMore(false);
       }
     },
-    [channelId, filters?.limit, filters?.before, filters?.after, filters?.search],
+    [
+      channelId,
+      filters?.limit,
+      filters?.before,
+      filters?.after,
+      filters?.search,
+    ]
   );
 
   // Initial fetch
@@ -305,10 +329,12 @@ params.set('search', filters.search);
     let isMounted = true;
 
     const subscribe = (): (() => void) | null => {
-      const eventSource = new EventSource(`/api/channels/${channelId}/subscribe`);
+      const eventSource = new EventSource(
+        `/api/channels/${channelId}/subscribe`
+      );
 
       // Handle error events from server
-      eventSource.addEventListener('error', (event) => {
+      eventSource.addEventListener('error', event => {
         try {
           // Try to parse as MessageEvent with data
           const messageEvent = event as MessageEvent;
@@ -322,7 +348,7 @@ params.set('search', filters.search);
         }
       });
 
-      eventSource.onmessage = (event) => {
+      eventSource.onmessage = event => {
         try {
           const data = JSON.parse(event.data);
           // Reset reconnect attempts on successful message
@@ -333,29 +359,38 @@ params.set('search', filters.search);
               ...data.message,
               createdAt: new Date(data.message.createdAt),
               updatedAt: new Date(data.message.updatedAt),
-              editedAt: data.message.editedAt ? new Date(data.message.editedAt) : null,
+              editedAt: data.message.editedAt
+                ? new Date(data.message.editedAt)
+                : null,
               // Transform author's avatarUrl to image for UI compatibility
-              author: data.message.author ? {
-                ...data.message.author,
-                name: data.message.author.displayName || data.message.author.name || 'Unknown',
-                image: data.message.author.avatarUrl || data.message.author.image,
-              } : data.message.author,
+              author: data.message.author
+                ? {
+                    ...data.message.author,
+                    name:
+                      data.message.author.displayName ||
+                      data.message.author.name ||
+                      'Unknown',
+                    image:
+                      data.message.author.avatarUrl ||
+                      data.message.author.image,
+                  }
+                : data.message.author,
               // Ensure required fields have defaults
               reactions: data.message.reactions || [],
               replyCount: data.message.replyCount || 0,
               mentions: data.message.mentions || [],
               attachments: data.message.attachments || [],
             };
-            setMessages((prev) => {
+            setMessages(prev => {
               // Avoid duplicates by checking if message already exists
-              if (prev.some((m) => m.id === newMessage.id)) {
+              if (prev.some(m => m.id === newMessage.id)) {
                 return prev;
               }
               return [...prev, newMessage];
             });
           } else if (data.type === 'message_updated') {
-            setMessages((prev) =>
-              prev.map((m) =>
+            setMessages(prev =>
+              prev.map(m =>
                 m.id === data.message.id
                   ? {
                       ...m,
@@ -366,20 +401,30 @@ params.set('search', filters.search);
                         ? new Date(data.message.editedAt)
                         : null,
                       // Transform author's avatarUrl to image for UI compatibility
-                      author: data.message.author ? {
-                        ...data.message.author,
-                        name: data.message.author.displayName || data.message.author.name || 'Unknown',
-                        image: data.message.author.avatarUrl || data.message.author.image,
-                      } : m.author,
+                      author: data.message.author
+                        ? {
+                            ...data.message.author,
+                            name:
+                              data.message.author.displayName ||
+                              data.message.author.name ||
+                              'Unknown',
+                            image:
+                              data.message.author.avatarUrl ||
+                              data.message.author.image,
+                          }
+                        : m.author,
                     }
-                  : m,
-              ),
+                  : m
+              )
             );
           } else if (data.type === 'message_deleted') {
-            setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
+            setMessages(prev => prev.filter(m => m.id !== data.messageId));
           }
         } catch (parseError) {
-          console.error('[Channel Subscribe] Failed to parse message:', parseError);
+          console.error(
+            '[Channel Subscribe] Failed to parse message:',
+            parseError
+          );
         }
       };
 
@@ -389,8 +434,13 @@ params.set('search', filters.search);
         // Implement exponential backoff for reconnection
         if (isMounted && reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++;
-          const backoffTime = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-          console.warn(`[Channel Subscribe] Reconnecting in ${backoffTime}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+          const backoffTime = Math.min(
+            1000 * Math.pow(2, reconnectAttempts),
+            30000
+          );
+          console.warn(
+            `[Channel Subscribe] Reconnecting in ${backoffTime}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`
+          );
 
           setTimeout(() => {
             if (isMounted) {
@@ -398,8 +448,12 @@ params.set('search', filters.search);
             }
           }, backoffTime);
         } else if (reconnectAttempts >= maxReconnectAttempts) {
-          console.error('[Channel Subscribe] Max reconnection attempts reached');
-          setError(new Error('Real-time connection failed after multiple attempts'));
+          console.error(
+            '[Channel Subscribe] Max reconnection attempts reached'
+          );
+          setError(
+            new Error('Real-time connection failed after multiple attempts')
+          );
         }
       };
 
@@ -426,19 +480,22 @@ params.set('search', filters.search);
 
   // Add optimistic message
   const addOptimisticMessage = useCallback((message: Message) => {
-    setMessages((prev) => [...prev, message]);
+    setMessages(prev => [...prev, message]);
   }, []);
 
   // Update message optimistically
-  const updateOptimisticMessage = useCallback((messageId: string, updates: Partial<Message>) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, ...updates } : m)),
-    );
-  }, []);
+  const updateOptimisticMessage = useCallback(
+    (messageId: string, updates: Partial<Message>) => {
+      setMessages(prev =>
+        prev.map(m => (m.id === messageId ? { ...m, ...updates } : m))
+      );
+    },
+    []
+  );
 
   // Remove message optimistically
   const removeOptimisticMessage = useCallback((messageId: string) => {
-    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    setMessages(prev => prev.filter(m => m.id !== messageId));
   }, []);
 
   return {
@@ -496,11 +553,14 @@ export function useThread(parentId: string): UseThreadReturn {
       }
 
       // Helper to transform author data
-      const transformAuthor = (author: ApiAuthor | null | undefined) => author ? ({
-        ...author,
-        name: author.displayName || author.name || 'Unknown',
-        image: author.avatarUrl || author.image,
-      }) : author;
+      const transformAuthor = (author: ApiAuthor | null | undefined) =>
+        author
+          ? {
+              ...author,
+              name: author.displayName || author.name || 'Unknown',
+              image: author.avatarUrl || author.image,
+            }
+          : author;
 
       // API attachment type from thread endpoint
       interface ApiThreadMessageAttachment {
@@ -542,7 +602,9 @@ export function useThread(parentId: string): UseThreadReturn {
       }
 
       // Helper to determine attachment type from mimeType
-      const getAttachmentType = (mimeType: string): 'image' | 'video' | 'audio' | 'file' => {
+      const getAttachmentType = (
+        mimeType: string
+      ): 'image' | 'video' | 'audio' | 'file' => {
         if (mimeType.startsWith('image/')) return 'image';
         if (mimeType.startsWith('video/')) return 'video';
         if (mimeType.startsWith('audio/')) return 'audio';
@@ -561,11 +623,13 @@ export function useThread(parentId: string): UseThreadReturn {
       };
 
       // Transform messageAttachments to UI-expected format
-      const transformAttachments = (messageAttachments?: ApiThreadMessageAttachment[]): Attachment[] => {
+      const transformAttachments = (
+        messageAttachments?: ApiThreadMessageAttachment[]
+      ): Attachment[] => {
         if (!messageAttachments || messageAttachments.length === 0) return [];
         return messageAttachments
-          .filter((ma) => ma.file !== null)
-          .map((ma) => ({
+          .filter(ma => ma.file !== null)
+          .map(ma => ({
             id: ma.file!.id,
             name: ma.file!.originalName || ma.file!.filename,
             url: getFileUrl(ma.file),
@@ -580,13 +644,17 @@ export function useThread(parentId: string): UseThreadReturn {
           ...result.data.parentMessage,
           createdAt: new Date(result.data.parentMessage.createdAt),
           updatedAt: new Date(result.data.parentMessage.updatedAt),
-          editedAt: result.data.parentMessage.editedAt ? new Date(result.data.parentMessage.editedAt) : null,
+          editedAt: result.data.parentMessage.editedAt
+            ? new Date(result.data.parentMessage.editedAt)
+            : null,
           author: transformAuthor(result.data.parentMessage.author),
           reactions: result.data.parentMessage.reactions || [],
           replyCount: result.data.parentMessage.replyCount || 0,
           mentions: result.data.parentMessage.mentions || [],
           // Transform messageAttachments from API to flat attachments format for UI
-          attachments: transformAttachments(result.data.parentMessage.messageAttachments),
+          attachments: transformAttachments(
+            result.data.parentMessage.messageAttachments
+          ),
         } as Message,
         messages: result.data.replies.map((m: ApiThreadMessage) => ({
           ...m,
@@ -600,11 +668,13 @@ export function useThread(parentId: string): UseThreadReturn {
           // Transform messageAttachments from API to flat attachments format for UI
           attachments: transformAttachments(m.messageAttachments),
         })),
-        participants: (result.data.participants || []).map((p: ApiParticipant) => ({
-          ...p,
-          name: p.name || 'Unknown',
-          image: p.avatarUrl || p.image,
-        })),
+        participants: (result.data.participants || []).map(
+          (p: ApiParticipant) => ({
+            ...p,
+            name: p.name || 'Unknown',
+            image: p.avatarUrl || p.image,
+          })
+        ),
       });
     } catch (err) {
       console.error('[useThread] Error fetching thread:', err);
@@ -620,10 +690,10 @@ export function useThread(parentId: string): UseThreadReturn {
   }, [fetchThread]);
 
   const addOptimisticReply = useCallback((message: Message) => {
-    setThread((prev) => {
+    setThread(prev => {
       if (!prev) {
-return null;
-}
+        return null;
+      }
       return {
         ...prev,
         messages: [...prev.messages, message],
@@ -651,7 +721,7 @@ export function useSendMessage(): UseSendMessageReturn {
     async (
       input: SendMessageInput,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _currentUser: User,
+      _currentUser: User
     ): Promise<{ optimisticId: string; message: Message | null }> => {
       setIsSending(true);
       setError(null);
@@ -663,17 +733,20 @@ export function useSendMessage(): UseSendMessageReturn {
 
       try {
         // Send as JSON to match API expectations
-        const response = await fetch(`/api/channels/${input.channelId}/messages`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: input.content,
-            type: input.type || 'TEXT',
-            parentId: input.parentId,
-            metadata: input.metadata || {},
-            attachmentIds: input.attachmentIds || [],
-          }),
-        });
+        const response = await fetch(
+          `/api/channels/${input.channelId}/messages`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: input.content,
+              type: input.type || 'TEXT',
+              parentId: input.parentId,
+              metadata: input.metadata || {},
+              attachmentIds: input.attachmentIds || [],
+            }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error('Failed to send message');
@@ -682,7 +755,9 @@ export function useSendMessage(): UseSendMessageReturn {
         const result = await response.json();
 
         // Helper to determine attachment type from mimeType
-        const getAttachmentType = (mimeType: string): 'image' | 'video' | 'audio' | 'file' => {
+        const getAttachmentType = (
+          mimeType: string
+        ): 'image' | 'video' | 'audio' | 'file' => {
           if (mimeType.startsWith('image/')) return 'image';
           if (mimeType.startsWith('video/')) return 'video';
           if (mimeType.startsWith('audio/')) return 'audio';
@@ -690,7 +765,9 @@ export function useSendMessage(): UseSendMessageReturn {
         };
 
         // Helper to generate file URL
-        const getFileUrl = (file: { id: string; s3Key?: string; s3Bucket?: string } | null): string => {
+        const getFileUrl = (
+          file: { id: string; s3Key?: string; s3Bucket?: string } | null
+        ): string => {
           if (!file) return '';
           // Use s3Key for local storage (direct path access)
           if (file.s3Bucket === 'local' && file.s3Key) {
@@ -715,11 +792,13 @@ export function useSendMessage(): UseSendMessageReturn {
           } | null;
         }
 
-        const transformAttachments = (messageAttachments?: ApiSendMessageAttachment[]): Attachment[] => {
+        const transformAttachments = (
+          messageAttachments?: ApiSendMessageAttachment[]
+        ): Attachment[] => {
           if (!messageAttachments || messageAttachments.length === 0) return [];
           return messageAttachments
-            .filter((ma) => ma.file !== null)
-            .map((ma) => ({
+            .filter(ma => ma.file !== null)
+            .map(ma => ({
               id: ma.file!.id,
               name: ma.file!.originalName || ma.file!.filename,
               url: getFileUrl(ma.file),
@@ -734,11 +813,13 @@ export function useSendMessage(): UseSendMessageReturn {
           createdAt: new Date(result.data.createdAt),
           updatedAt: new Date(result.data.updatedAt),
           // Transform author's avatarUrl to image for UI compatibility
-          author: result.data.author ? {
-            ...result.data.author,
-            name: result.data.author.displayName || result.data.author.name,
-            image: result.data.author.avatarUrl || result.data.author.image,
-          } : result.data.author,
+          author: result.data.author
+            ? {
+                ...result.data.author,
+                name: result.data.author.displayName || result.data.author.name,
+                image: result.data.author.avatarUrl || result.data.author.image,
+              }
+            : result.data.author,
           // Transform messageAttachments to attachments format for UI
           attachments: transformAttachments(result.data.messageAttachments),
           reactions: result.data.reactions || [],
@@ -754,11 +835,14 @@ export function useSendMessage(): UseSendMessageReturn {
         setIsSending(false);
       }
     },
-    [],
+    []
   );
 
   const editMessage = useCallback(
-    async (messageId: string, input: UpdateMessageInput): Promise<Message | null> => {
+    async (
+      messageId: string,
+      input: UpdateMessageInput
+    ): Promise<Message | null> => {
       setIsSending(true);
       setError(null);
 
@@ -780,11 +864,13 @@ export function useSendMessage(): UseSendMessageReturn {
           updatedAt: new Date(result.data.updatedAt),
           editedAt: new Date(result.data.editedAt),
           // Transform author's avatarUrl to image for UI compatibility
-          author: result.data.author ? {
-            ...result.data.author,
-            name: result.data.author.displayName || result.data.author.name,
-            image: result.data.author.avatarUrl || result.data.author.image,
-          } : result.data.author,
+          author: result.data.author
+            ? {
+                ...result.data.author,
+                name: result.data.author.displayName || result.data.author.name,
+                image: result.data.author.avatarUrl || result.data.author.image,
+              }
+            : result.data.author,
         };
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -793,30 +879,33 @@ export function useSendMessage(): UseSendMessageReturn {
         setIsSending(false);
       }
     },
-    [],
+    []
   );
 
-  const deleteMessage = useCallback(async (messageId: string): Promise<boolean> => {
-    setIsSending(true);
-    setError(null);
+  const deleteMessage = useCallback(
+    async (messageId: string): Promise<boolean> => {
+      setIsSending(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/messages/${messageId}`, {
-        method: 'DELETE',
-      });
+      try {
+        const response = await fetch(`/api/messages/${messageId}`, {
+          method: 'DELETE',
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete message');
+        if (!response.ok) {
+          throw new Error('Failed to delete message');
+        }
+
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        return false;
+      } finally {
+        setIsSending(false);
       }
-
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      return false;
-    } finally {
-      setIsSending(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     sendMessage,
@@ -862,9 +951,12 @@ export function useReactions(messageId: string): UseReactionsReturn {
         }
 
         // Check if reaction already exists by fetching current reactions
-        const getResponse = await fetch(`/api/messages/${messageId}/reactions`, {
-          signal: abortController.signal,
-        });
+        const getResponse = await fetch(
+          `/api/messages/${messageId}/reactions`,
+          {
+            signal: abortController.signal,
+          }
+        );
 
         if (!getResponse.ok) {
           throw new Error('Failed to fetch current reactions');
@@ -872,7 +964,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
 
         const getResult = await getResponse.json();
         const existingReaction = getResult.data?.find(
-          (r: ApiReaction) => r.emoji === emoji && r.hasReacted,
+          (r: ApiReaction) => r.emoji === emoji && r.hasReacted
         );
 
         // If exists, delete it; otherwise, add it
@@ -882,27 +974,33 @@ export function useReactions(messageId: string): UseReactionsReturn {
             {
               method: 'DELETE',
               signal: abortController.signal,
-            },
+            }
           );
           if (!deleteResponse.ok) {
             throw new Error('Failed to remove reaction');
           }
         } else {
-          const addResponse = await fetch(`/api/messages/${messageId}/reactions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ emoji }),
-            signal: abortController.signal,
-          });
+          const addResponse = await fetch(
+            `/api/messages/${messageId}/reactions`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ emoji }),
+              signal: abortController.signal,
+            }
+          );
           if (!addResponse.ok) {
             throw new Error('Failed to add reaction');
           }
         }
 
         // Fetch updated reactions list
-        const finalResponse = await fetch(`/api/messages/${messageId}/reactions`, {
-          signal: abortController.signal,
-        });
+        const finalResponse = await fetch(
+          `/api/messages/${messageId}/reactions`,
+          {
+            signal: abortController.signal,
+          }
+        );
         if (!finalResponse.ok) {
           throw new Error('Failed to fetch reactions');
         }
@@ -923,7 +1021,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
         setIsToggling(false);
       }
     },
-    [messageId],
+    [messageId]
   );
 
   // Cleanup on unmount
@@ -945,7 +1043,10 @@ export function useReactions(messageId: string): UseReactionsReturn {
 /**
  * Hook for typing indicator
  */
-export function useTypingIndicator(channelId: string, currentUserId: string): UseTypingIndicatorReturn {
+export function useTypingIndicator(
+  channelId: string,
+  currentUserId: string
+): UseTypingIndicatorReturn {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -971,7 +1072,12 @@ export function useTypingIndicator(channelId: string, currentUserId: string): Us
           users
             .filter((u: { userId: string }) => u.userId !== currentUserId)
             .map((u: { userId: string; userName: string }) => ({
-              user: { id: u.userId, name: u.userName, email: '', status: 'online' as const },
+              user: {
+                id: u.userId,
+                name: u.userName,
+                email: '',
+                status: 'online' as const,
+              },
               channelId,
               timestamp: Date.now(),
             }))
@@ -999,7 +1105,7 @@ export function useTypingIndicator(channelId: string, currentUserId: string): Us
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setTypingUsers((prev) => prev.filter((t) => now - t.timestamp < 5000));
+      setTypingUsers(prev => prev.filter(t => now - t.timestamp < 5000));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -1027,7 +1133,7 @@ export function useTypingIndicator(channelId: string, currentUserId: string): Us
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isTyping: true }),
-    }).catch((error) => {
+    }).catch(error => {
       console.error('[Typing Indicator] Failed to send start typing:', error);
     });
 
@@ -1057,15 +1163,15 @@ export function useTypingIndicator(channelId: string, currentUserId: string): Us
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isTyping: false }),
-    }).catch((error) => {
+    }).catch(error => {
       console.error('[Typing Indicator] Failed to send stop typing:', error);
     });
   }, [channelId, isTyping]);
 
   // Filter out current user from typing users
   const otherTypingUsers = useMemo(
-    () => typingUsers.filter((t) => t.user.id !== currentUserId),
-    [typingUsers, currentUserId],
+    () => typingUsers.filter(t => t.user.id !== currentUserId),
+    [typingUsers, currentUserId]
   );
 
   // Generate typing text
@@ -1100,8 +1206,8 @@ export function useChannel(channelId: string): UseChatChannelReturn {
 
   const fetchChannel = useCallback(async () => {
     if (!channelId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -1140,7 +1246,9 @@ return;
 /**
  * Hook for mention suggestions
  */
-export function useMentionSuggestions(channelId: string): UseMentionSuggestionsReturn {
+export function useMentionSuggestions(
+  channelId: string
+): UseMentionSuggestionsReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -1173,7 +1281,7 @@ export function useMentionSuggestions(channelId: string): UseMentionSuggestionsR
         try {
           const response = await fetch(
             `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
-            { signal: abortController.signal },
+            { signal: abortController.signal }
           );
           if (!response.ok) {
             throw new Error('Failed to search users');
@@ -1196,7 +1304,7 @@ export function useMentionSuggestions(channelId: string): UseMentionSuggestionsR
         }
       }, 300);
     },
-    [channelId],
+    [channelId]
   );
 
   // Cleanup on unmount

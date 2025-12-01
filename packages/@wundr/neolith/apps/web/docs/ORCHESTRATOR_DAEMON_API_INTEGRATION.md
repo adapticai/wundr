@@ -9,6 +9,7 @@ Complete type-safe daemon API integration for Orchestrator session lifecycle man
 Comprehensive TypeScript interfaces for daemon integration:
 
 **Core Interfaces:**
+
 - `DaemonRegistration` - Registration request payload
 - `DaemonInfo` - Daemon instance information
 - `DaemonHeartbeat` - Heartbeat request with metrics
@@ -21,6 +22,7 @@ Comprehensive TypeScript interfaces for daemon integration:
 - `DaemonAuthResponse` - Authentication response
 
 **Response Types:**
+
 - `DaemonRegistrationResponse` - Registration confirmation
 - `DaemonHeartbeatResponse` - Heartbeat acknowledgment
 - `SessionListResponse` - Session list
@@ -36,6 +38,7 @@ Primary daemon management endpoint with full CRUD operations:
 **Endpoints:**
 
 #### POST /api/daemon
+
 - Register new daemon instance
 - Validates Orchestrator ownership and API key
 - Stores daemon info in Redis
@@ -43,6 +46,7 @@ Primary daemon management endpoint with full CRUD operations:
 - Returns heartbeat configuration
 
 **Request:**
+
 ```json
 {
   "vpId": "vp_123",
@@ -61,6 +65,7 @@ Primary daemon management endpoint with full CRUD operations:
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -77,17 +82,20 @@ Primary daemon management endpoint with full CRUD operations:
 ```
 
 #### GET /api/daemon
+
 - Get current daemon status
 - Requires authentication token
 - Returns online/offline status with metrics
 
 **Request:**
+
 ```
 GET /api/daemon
 Authorization: Bearer <access_token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -110,17 +118,20 @@ Authorization: Bearer <access_token>
 ```
 
 #### DELETE /api/daemon
+
 - Unregister daemon instance
 - Cleans up Redis data
 - Sets Orchestrator status to OFFLINE
 
 **Request:**
+
 ```
 DELETE /api/daemon
 Authorization: Bearer <access_token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -135,16 +146,19 @@ Complete session lifecycle management:
 **Endpoints:**
 
 #### GET /api/daemon/sessions
+
 - List all sessions for authenticated Orchestrator
 - Returns active and recent sessions
 
 **Request:**
+
 ```
 GET /api/daemon/sessions
 Authorization: Bearer <access_token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "sessions": [
@@ -167,11 +181,13 @@ Authorization: Bearer <access_token>
 ```
 
 #### POST /api/daemon/sessions
+
 - Create new session
 - Configurable TTL (default: 7 days)
 - Stores in Redis with metadata
 
 **Request:**
+
 ```json
 {
   "vpId": "vp_123",
@@ -186,6 +202,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -204,11 +221,13 @@ Authorization: Bearer <access_token>
 ```
 
 #### PATCH /api/daemon/sessions
+
 - Update session status or metadata
 - Extend TTL if needed
 - Update last activity timestamp
 
 **Request:**
+
 ```json
 {
   "sessionId": "session_daemon_vp123_1234567890_abc",
@@ -221,6 +240,7 @@ Authorization: Bearer <access_token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -230,17 +250,20 @@ Authorization: Bearer <access_token>
 ```
 
 #### DELETE /api/daemon/sessions
+
 - Terminate session
 - Cleanup Redis data
 - Requires sessionId query parameter
 
 **Request:**
+
 ```
 DELETE /api/daemon/sessions?sessionId=session_daemon_vp123_1234567890_abc
 Authorization: Bearer <access_token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -251,18 +274,21 @@ Authorization: Bearer <access_token>
 ## Security Features
 
 ### Authentication
+
 - JWT-based token authentication
 - Bearer token in Authorization header
 - Access token (1 hour) and refresh token (7 days)
 - Token type validation (access vs refresh)
 
 ### Authorization
+
 - Orchestrator ownership validation
 - Organization membership checks
 - Session ownership verification
 - API key hash validation
 
 ### Data Protection
+
 - Sensitive data stored in Redis with TTL
 - API keys hashed before storage
 - Session tokens hashed in Redis
@@ -285,6 +311,7 @@ All endpoints use standardized error responses:
 ```
 
 **Error Codes:**
+
 - `VALIDATION_ERROR` - Invalid input data (400)
 - `UNAUTHORIZED` - Authentication failed (401)
 - `FORBIDDEN` - Insufficient permissions (403)
@@ -296,21 +323,25 @@ All endpoints use standardized error responses:
 ## Redis Data Structures
 
 ### Daemon Registration
+
 - Key: `daemon:registration:{vpId}`
 - TTL: 7 days
 - Data: DaemonInfo + registration metadata
 
 ### Heartbeat
+
 - Key: `daemon:heartbeat:{vpId}`
 - TTL: 90 seconds (3 missed heartbeats)
 - Data: Latest heartbeat with metrics
 
 ### Metrics History
+
 - Key: `daemon:metrics:{vpId}`
 - TTL: 24 hours
 - Data: Last 100 heartbeat metrics (list)
 
 ### Session
+
 - Key: `daemon:session:{sessionId}`
 - TTL: 7 days (configurable)
 - Data: Complete session object
@@ -320,6 +351,7 @@ All endpoints use standardized error responses:
 The new endpoints complement existing daemon infrastructure:
 
 **Existing Endpoints:**
+
 - `/api/daemon/auth` - Authentication (unchanged)
 - `/api/daemon/heartbeat` - Heartbeat (unchanged)
 - `/api/daemon/register` - Old registration (can be deprecated)
@@ -331,6 +363,7 @@ The new endpoints complement existing daemon infrastructure:
 - `/api/daemon/presence` - Presence updates
 
 **New Endpoints:**
+
 - `/api/daemon` - Main daemon CRUD (replaces register/unregister)
 - `/api/daemon/sessions` - Session lifecycle management
 
@@ -354,9 +387,9 @@ const registration = await fetch('/api/daemon', {
       port: 8080,
       protocol: 'http',
       startedAt: new Date().toISOString(),
-      capabilities: ['chat', 'voice']
-    }
-  })
+      capabilities: ['chat', 'voice'],
+    },
+  }),
 });
 
 // 2. Authenticate to get tokens
@@ -366,8 +399,8 @@ const auth = await fetch('/api/daemon/auth', {
   body: JSON.stringify({
     apiKey: 'vp_abc123_xyz789',
     apiSecret: 'secret_xyz',
-    scopes: ['messages:read', 'messages:write']
-  })
+    scopes: ['messages:read', 'messages:write'],
+  }),
 });
 
 const { accessToken } = await auth.json();
@@ -376,24 +409,24 @@ const { accessToken } = await auth.json();
 const session = await fetch('/api/daemon/sessions', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
     vpId: 'vp_123',
     type: 'daemon',
     metadata: {
-      userAgent: 'Orchestrator-Daemon/1.0.0'
-    }
-  })
+      userAgent: 'Orchestrator-Daemon/1.0.0',
+    },
+  }),
 });
 
 // 4. Send heartbeat
 const heartbeat = await fetch('/api/daemon/heartbeat', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
     sessionId: 'session_daemon_vp123_...',
@@ -401,24 +434,24 @@ const heartbeat = await fetch('/api/daemon/heartbeat', {
     metrics: {
       memoryUsageMB: 256,
       cpuUsagePercent: 15.5,
-      activeConnections: 5
-    }
-  })
+      activeConnections: 5,
+    },
+  }),
 });
 
 // 5. Get daemon status
 const status = await fetch('/api/daemon', {
   headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
+    Authorization: `Bearer ${accessToken}`,
+  },
 });
 
 // 6. Unregister on shutdown
 const unregister = await fetch('/api/daemon', {
   method: 'DELETE',
   headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
+    Authorization: `Bearer ${accessToken}`,
+  },
 });
 ```
 
@@ -441,6 +474,7 @@ const unregister = await fetch('/api/daemon', {
 ## TypeScript Validation
 
 All endpoints are type-safe with:
+
 - ✅ Zero TypeScript errors
 - ✅ Full type inference
 - ✅ Zod schema validation

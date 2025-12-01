@@ -45,7 +45,9 @@ export default function ForgotPasswordPage() {
       setSuccess(true);
       setEmail('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset email');
+      setError(
+        err instanceof Error ? err.message : 'Failed to send reset email'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -55,9 +57,12 @@ export default function ForgotPasswordPage() {
     <div className='space-y-6'>
       {/* Page Header */}
       <div className='space-y-2 text-center'>
-        <h2 className='text-2xl font-semibold tracking-tight'>Reset your password</h2>
+        <h2 className='text-2xl font-semibold tracking-tight'>
+          Reset your password
+        </h2>
         <p className='text-sm text-muted-foreground'>
-          Enter your email address and we&apos;ll send you a link to reset your password
+          Enter your email address and we&apos;ll send you a link to reset your
+          password
         </p>
       </div>
 
@@ -66,7 +71,8 @@ export default function ForgotPasswordPage() {
         <div className='rounded-md bg-green-500/10 p-4 text-sm text-green-600 dark:text-green-400'>
           <p className='font-medium'>Check your email</p>
           <p className='mt-1 text-xs'>
-            If an account exists with that email, we&apos;ve sent password reset instructions.
+            If an account exists with that email, we&apos;ve sent password reset
+            instructions.
           </p>
         </div>
       )}
@@ -85,7 +91,9 @@ export default function ForgotPasswordPage() {
             type='email'
             placeholder='Email address'
             value={email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setEmail(e.target.value)
+            }
             disabled={isLoading}
             autoComplete='email'
             autoFocus

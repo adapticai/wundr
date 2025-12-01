@@ -184,7 +184,7 @@ export type ErrorResponse = z.infer<typeof errorResponseSchema>;
 export function createErrorResponse(
   error: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): ErrorResponse {
   return {
     error,
@@ -209,7 +209,7 @@ export const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
  */
 export function isValidStatusTransition(
   currentStatus: string,
-  newStatus: string,
+  newStatus: string
 ): boolean {
   const allowedTransitions = VALID_STATUS_TRANSITIONS[currentStatus] || [];
   return allowedTransitions.includes(newStatus);

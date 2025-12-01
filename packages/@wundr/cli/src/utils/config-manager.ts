@@ -104,7 +104,7 @@ export class ConfigManager {
         'WUNDR_CONFIG_INVALID',
         'Failed to load or parse configuration file',
         { configPath: configFile },
-        true,
+        true
       );
     }
   }
@@ -129,7 +129,7 @@ export class ConfigManager {
         'WUNDR_CONFIG_INVALID',
         'Failed to save configuration file',
         { configPath: configFile },
-        false,
+        false
       );
     }
   }
@@ -169,7 +169,7 @@ export class ConfigManager {
         return {
           valid: false,
           errors: error.issues.map(
-            issue => `${issue.path.join('.')}: ${issue.message}`,
+            issue => `${issue.path.join('.')}: ${issue.message}`
           ),
         };
       }

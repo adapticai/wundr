@@ -40,7 +40,9 @@ export default function DMPage() {
   const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks'>('messages');
+  const [activeTab, setActiveTab] = useState<
+    'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks'
+  >('messages');
   // isStarred is derived from channel data, with local state for optimistic updates
   const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
   const [isStarring, setIsStarring] = useState(false);
@@ -91,7 +93,7 @@ export default function DMPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     dmId,
-    currentUser?.id || '',
+    currentUser?.id || ''
   );
 
   // Thread state
@@ -102,11 +104,7 @@ export default function DMPage() {
   } = useThread(activeThreadId || '');
 
   // Huddle state
-  const {
-    activeHuddle,
-    createHuddle,
-    joinHuddle,
-  } = useHuddle(workspaceSlug);
+  const { activeHuddle, createHuddle, joinHuddle } = useHuddle(workspaceSlug);
 
   // Mark channel as read when opened
   useEffect(() => {
@@ -125,13 +123,18 @@ export default function DMPage() {
     // Cast members to any[] to handle various member formats from API
     const members = channel.members as any[];
     return members
-      .filter((m) => {
+      .filter(m => {
         const memberId = m.userId || m.user?.id || m.id;
         return memberId !== currentUser.id;
       })
-      .map((m) => ({
+      .map(m => ({
         id: m.userId || m.user?.id || m.id,
-        name: m.displayName || m.name || m.user?.displayName || m.user?.name || 'Unknown',
+        name:
+          m.displayName ||
+          m.name ||
+          m.user?.displayName ||
+          m.user?.name ||
+          'Unknown',
         email: m.email || m.user?.email || '',
         image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
         status: 'online' as const,
@@ -143,9 +146,14 @@ export default function DMPage() {
   const allMembers = useMemo(() => {
     if (!channel?.members || !currentUser) return [];
     const members = channel.members as any[];
-    return members.map((m) => ({
+    return members.map(m => ({
       id: m.userId || m.user?.id || m.id,
-      name: m.displayName || m.name || m.user?.displayName || m.user?.name || 'Unknown',
+      name:
+        m.displayName ||
+        m.name ||
+        m.user?.displayName ||
+        m.user?.name ||
+        'Unknown',
       email: m.email || m.user?.email || '',
       image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
       status: 'online' as const,
@@ -178,9 +186,13 @@ export default function DMPage() {
         id: `optimistic-attachment-${index}`,
         name: file.name,
         url: URL.createObjectURL(file), // Temporary URL for preview
-        type: file.type.startsWith('image/') ? 'image' as const :
-              file.type.startsWith('video/') ? 'video' as const :
-              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        type: file.type.startsWith('image/')
+          ? ('image' as const)
+          : file.type.startsWith('video/')
+            ? ('video' as const)
+            : file.type.startsWith('audio/')
+              ? ('audio' as const)
+              : ('file' as const),
         size: file.size,
         mimeType: file.type,
       }));
@@ -206,7 +218,7 @@ export default function DMPage() {
         // Upload files if any
         let uploadedFileIds: string[] = [];
         if (attachments.length > 0) {
-          const uploadPromises = attachments.map(async (file) => {
+          const uploadPromises = attachments.map(async file => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('workspaceId', workspaceSlug);
@@ -220,8 +232,15 @@ export default function DMPage() {
             const result = await response.json();
 
             if (!response.ok) {
-              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
-              console.error('[DM File Upload Error]', { file: file.name, status: response.status, result });
+              const errorMessage =
+                result?.message ||
+                result?.error ||
+                `Failed to upload ${file.name}`;
+              console.error('[DM File Upload Error]', {
+                file: file.name,
+                status: response.status,
+                result,
+              });
               throw new Error(errorMessage);
             }
 
@@ -233,8 +252,13 @@ export default function DMPage() {
 
         // Send message with file IDs
         const { message } = await sendMessage(
-          { content, channelId: dmId, mentions, attachmentIds: uploadedFileIds },
-          currentUser,
+          {
+            content,
+            channelId: dmId,
+            mentions,
+            attachmentIds: uploadedFileIds,
+          },
+          currentUser
         );
 
         // Replace optimistic message with real one
@@ -255,10 +279,20 @@ export default function DMPage() {
         console.error('Failed to send DM:', error);
         // Remove optimistic message on error
         removeOptimisticMessage(optimisticId);
-        toast.error(error instanceof Error ? error.message : 'Failed to send message');
+        toast.error(
+          error instanceof Error ? error.message : 'Failed to send message'
+        );
       }
     },
-    [dmId, workspaceSlug, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
+    [
+      dmId,
+      workspaceSlug,
+      currentUser,
+      sendMessage,
+      addOptimisticMessage,
+      updateOptimisticMessage,
+      removeOptimisticMessage,
+    ]
   );
 
   // Handle send thread reply
@@ -276,9 +310,13 @@ export default function DMPage() {
         id: `optimistic-attachment-${index}`,
         name: file.name,
         url: URL.createObjectURL(file),
-        type: file.type.startsWith('image/') ? 'image' as const :
-              file.type.startsWith('video/') ? 'video' as const :
-              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        type: file.type.startsWith('image/')
+          ? ('image' as const)
+          : file.type.startsWith('video/')
+            ? ('video' as const)
+            : file.type.startsWith('audio/')
+              ? ('audio' as const)
+              : ('file' as const),
         size: file.size,
         mimeType: file.type,
       }));
@@ -302,14 +340,15 @@ export default function DMPage() {
 
       // Update reply count on parent optimistically
       updateOptimisticMessage(activeThreadId, {
-        replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
+        replyCount:
+          (messages.find(m => m.id === activeThreadId)?.replyCount || 0) + 1,
       });
 
       try {
         // Upload files if any
         let uploadedFileIds: string[] = [];
         if (attachments.length > 0) {
-          const uploadPromises = attachments.map(async (file) => {
+          const uploadPromises = attachments.map(async file => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('workspaceId', workspaceSlug);
@@ -323,8 +362,15 @@ export default function DMPage() {
             const result = await response.json();
 
             if (!response.ok) {
-              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
-              console.error('[DM Thread File Upload Error]', { file: file.name, status: response.status, result });
+              const errorMessage =
+                result?.message ||
+                result?.error ||
+                `Failed to upload ${file.name}`;
+              console.error('[DM Thread File Upload Error]', {
+                file: file.name,
+                status: response.status,
+                result,
+              });
               throw new Error(errorMessage);
             }
 
@@ -336,8 +382,14 @@ export default function DMPage() {
 
         // Send message with file IDs
         await sendMessage(
-          { content, channelId: dmId, parentId: activeThreadId, mentions, attachmentIds: uploadedFileIds },
-          currentUser,
+          {
+            content,
+            channelId: dmId,
+            parentId: activeThreadId,
+            mentions,
+            attachmentIds: uploadedFileIds,
+          },
+          currentUser
         );
 
         // Cleanup temporary blob URLs
@@ -350,23 +402,39 @@ export default function DMPage() {
         console.error('Failed to send DM thread reply:', error);
         // Revert reply count on error
         updateOptimisticMessage(activeThreadId, {
-          replyCount: Math.max(0, (messages.find((m) => m.id === activeThreadId)?.replyCount || 1) - 1),
+          replyCount: Math.max(
+            0,
+            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1
+          ),
         });
-        toast.error(error instanceof Error ? error.message : 'Failed to send reply');
+        toast.error(
+          error instanceof Error ? error.message : 'Failed to send reply'
+        );
       }
     },
-    [activeThreadId, dmId, workspaceSlug, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
+    [
+      activeThreadId,
+      dmId,
+      workspaceSlug,
+      currentUser,
+      sendMessage,
+      addOptimisticReply,
+      updateOptimisticMessage,
+      messages,
+    ]
   );
 
   // Handle edit message
   const handleEditMessage = useCallback(
     async (message: Message) => {
-      const result = await editMessage(message.id, { content: message.content });
+      const result = await editMessage(message.id, {
+        content: message.content,
+      });
       if (result) {
         updateOptimisticMessage(message.id, result);
       }
     },
-    [editMessage, updateOptimisticMessage],
+    [editMessage, updateOptimisticMessage]
   );
 
   // Handle delete message
@@ -377,7 +445,7 @@ export default function DMPage() {
         removeOptimisticMessage(messageId);
       }
     },
-    [deleteMessage, removeOptimisticMessage],
+    [deleteMessage, removeOptimisticMessage]
   );
 
   // Handle reaction toggle
@@ -388,34 +456,36 @@ export default function DMPage() {
       }
 
       // Optimistic update
-      const message = messages.find((m) => m.id === messageId);
+      const message = messages.find(m => m.id === messageId);
       if (!message) {
         return;
       }
 
-      const existingReaction = message.reactions.find((r) => r.emoji === emoji);
+      const existingReaction = message.reactions.find(r => r.emoji === emoji);
       let updatedReactions = [...message.reactions];
 
       if (existingReaction) {
         if (existingReaction.hasReacted) {
           // Remove user's reaction
           if (existingReaction.count === 1) {
-            updatedReactions = updatedReactions.filter((r) => r.emoji !== emoji);
+            updatedReactions = updatedReactions.filter(r => r.emoji !== emoji);
           } else {
-            updatedReactions = updatedReactions.map((r) =>
+            updatedReactions = updatedReactions.map(r =>
               r.emoji === emoji
                 ? {
                     ...r,
                     count: (r.count || 1) - 1,
                     hasReacted: false,
-                    userIds: (r.userIds || []).filter((id) => id !== currentUser.id),
+                    userIds: (r.userIds || []).filter(
+                      id => id !== currentUser.id
+                    ),
                   }
-                : r,
+                : r
             );
           }
         } else {
           // Add user's reaction
-          updatedReactions = updatedReactions.map((r) =>
+          updatedReactions = updatedReactions.map(r =>
             r.emoji === emoji
               ? {
                   ...r,
@@ -423,7 +493,7 @@ export default function DMPage() {
                   hasReacted: true,
                   userIds: [...(r.userIds || []), currentUser.id],
                 }
-              : r,
+              : r
           );
         }
       } else {
@@ -443,9 +513,12 @@ export default function DMPage() {
       try {
         let response: Response;
         if (isRemoving) {
-          response = await fetch(`/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`, {
-            method: 'DELETE',
-          });
+          response = await fetch(
+            `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
+            {
+              method: 'DELETE',
+            }
+          );
         } else {
           response = await fetch(`/api/messages/${messageId}/reactions`, {
             method: 'POST',
@@ -463,7 +536,7 @@ export default function DMPage() {
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [currentUser, messages, updateOptimisticMessage],
+    [currentUser, messages, updateOptimisticMessage]
   );
 
   // Handle reply (open thread)
@@ -473,7 +546,12 @@ export default function DMPage() {
 
   // Handle open thread
   const handleOpenThread = useCallback((message: Message) => {
-    console.log('[DM] handleOpenThread called with message:', message.id, 'replyCount:', message.replyCount);
+    console.log(
+      '[DM] handleOpenThread called with message:',
+      message.id,
+      'replyCount:',
+      message.replyCount
+    );
     setActiveThreadId(message.id);
   }, []);
 
@@ -489,10 +567,14 @@ export default function DMPage() {
       await joinHuddle(conversationHuddle.id);
     } else {
       // Create new huddle for this conversation
-      const participantNames = participants.map((p) => p.name).slice(0, 2).join(', ');
-      const huddleName = participants.length > 2
-        ? `${participantNames} +${participants.length - 2}`
-        : participantNames || 'Huddle';
+      const participantNames = participants
+        .map(p => p.name)
+        .slice(0, 2)
+        .join(', ');
+      const huddleName =
+        participants.length > 2
+          ? `${participantNames} +${participants.length - 2}`
+          : participantNames || 'Huddle';
       await createHuddle(huddleName, dmId);
     }
   }, [conversationHuddle, joinHuddle, createHuddle, dmId, participants]);
@@ -523,14 +605,18 @@ export default function DMPage() {
 
     try {
       const method = previousValue ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/conversations/${dmId}/star`, { method });
+      const response = await fetch(`/api/conversations/${dmId}/star`, {
+        method,
+      });
       if (!response.ok) {
         // Revert on failure
         console.error('Failed to toggle star, reverting');
         setLocalIsStarred(previousValue);
         toast.error('Failed to update star status');
       } else {
-        toast.success(newValue ? 'Conversation starred' : 'Conversation unstarred');
+        toast.success(
+          newValue ? 'Conversation starred' : 'Conversation unstarred'
+        );
       }
     } catch (error) {
       // Revert on error
@@ -544,7 +630,7 @@ export default function DMPage() {
 
   // Handle mute toggle
   const handleToggleMute = useCallback(async () => {
-    setIsMuted((prev) => !prev);
+    setIsMuted(prev => !prev);
     try {
       await fetch(`/api/channels/${dmId}/notifications`, {
         method: 'POST',
@@ -553,7 +639,7 @@ export default function DMPage() {
       });
       toast.success(isMuted ? 'Notifications enabled' : 'Conversation muted');
     } catch {
-      setIsMuted((prev) => !prev); // Revert on error
+      setIsMuted(prev => !prev); // Revert on error
       toast.error('Failed to update notification settings');
     }
   }, [dmId, isMuted]);
@@ -588,7 +674,7 @@ export default function DMPage() {
 
   // Handle copy name
   const handleCopyName = useCallback(() => {
-    const names = participants.map((p) => p.name).join(', ');
+    const names = participants.map(p => p.name).join(', ');
     navigator.clipboard.writeText(names);
     toast.success('Name copied to clipboard');
   }, [participants]);
@@ -613,43 +699,59 @@ export default function DMPage() {
   }, []);
 
   // Handle notification change
-  const handleNotificationChange = useCallback(async (setting: 'all' | 'mentions' | 'nothing' | 'muted') => {
-    try {
-      await fetch(`/api/channels/${dmId}/notifications`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ setting }),
-      });
-      toast.success('Notification preferences updated');
-    } catch {
-      toast.error('Failed to update notification preferences');
-    }
-  }, [dmId]);
+  const handleNotificationChange = useCallback(
+    async (setting: 'all' | 'mentions' | 'nothing' | 'muted') => {
+      try {
+        await fetch(`/api/channels/${dmId}/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ setting }),
+        });
+        toast.success('Notification preferences updated');
+      } catch {
+        toast.error('Failed to update notification preferences');
+      }
+    },
+    [dmId]
+  );
 
   // Handle add people
-  const handleAddPeople = useCallback(async (userIds: string[], includeHistory: boolean) => {
-    try {
-      await fetch(`/api/channels/${dmId}/members`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds, includeHistory }),
-      });
-      toast.success(`Added ${userIds.length} ${userIds.length === 1 ? 'person' : 'people'} to the conversation`);
-    } catch {
-      toast.error('Failed to add people to conversation');
-    }
-  }, [dmId]);
+  const handleAddPeople = useCallback(
+    async (userIds: string[], includeHistory: boolean) => {
+      try {
+        await fetch(`/api/channels/${dmId}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds, includeHistory }),
+        });
+        toast.success(
+          `Added ${userIds.length} ${userIds.length === 1 ? 'person' : 'people'} to the conversation`
+        );
+      } catch {
+        toast.error('Failed to add people to conversation');
+      }
+    },
+    [dmId]
+  );
 
   // Handle start DM with member
-  const handleStartDMWithMember = useCallback((userId: string) => {
-    router.push(`/${workspaceSlug}/messages/new?to=${userId}`);
-  }, [router, workspaceSlug]);
+  const handleStartDMWithMember = useCallback(
+    (userId: string) => {
+      router.push(`/${workspaceSlug}/messages/new?to=${userId}`);
+    },
+    [router, workspaceSlug]
+  );
 
   // Handle tab change
-  const handleTabChange = useCallback((tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks') => {
-    setActiveTab(tab);
-    // TODO: Load content for the selected tab
-  }, []);
+  const handleTabChange = useCallback(
+    (
+      tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks'
+    ) => {
+      setActiveTab(tab);
+      // TODO: Load content for the selected tab
+    },
+    []
+  );
 
   // Handle add tab
   const handleAddTab = useCallback((tabType: string) => {
@@ -659,15 +761,19 @@ export default function DMPage() {
 
   // Debug: log thread state changes
   useEffect(() => {
-    console.log('[DM] Thread state:', { activeThreadId, thread, isThreadLoading });
+    console.log('[DM] Thread state:', {
+      activeThreadId,
+      thread,
+      isThreadLoading,
+    });
   }, [activeThreadId, thread, isThreadLoading]);
 
   const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <LoadingSpinner size='lg' />
       </div>
     );
   }
@@ -675,21 +781,24 @@ export default function DMPage() {
   // Require authentication
   if (!currentUser) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">Please sign in to view this conversation.</p>
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <p className='text-muted-foreground'>
+          Please sign in to view this conversation.
+        </p>
       </div>
     );
   }
 
   // Get conversation display name for placeholder
-  const conversationDisplayName = participants.length === 1
-    ? participants[0].name
-    : participants.length > 1
-    ? `${participants[0].name} and ${participants.length - 1} other${participants.length > 2 ? 's' : ''}`
-    : 'this conversation';
+  const conversationDisplayName =
+    participants.length === 1
+      ? participants[0].name
+      : participants.length > 1
+        ? `${participants[0].name} and ${participants.length - 1} other${participants.length > 2 ? 's' : ''}`
+        : 'this conversation';
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* DM Header */}
       <DMHeader
         participants={participants}
@@ -715,10 +824,10 @@ export default function DMPage() {
       />
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className='flex flex-1 overflow-hidden'>
         {/* Tab content */}
         {activeTab === 'messages' && (
-          <div className="flex flex-1 flex-col">
+          <div className='flex flex-1 flex-col'>
             <MessageList
               messages={messages}
               currentUser={currentUser}
@@ -753,20 +862,23 @@ export default function DMPage() {
             channelId={dmId}
             workspaceSlug={workspaceSlug}
             currentUserId={currentUser?.id}
-            mode="conversation"
-            className="flex-1"
+            mode='conversation'
+            className='flex-1'
           />
         )}
 
         {activeTab === 'canvas' && (
-          <div className="flex flex-1 items-center justify-center text-muted-foreground">
+          <div className='flex flex-1 items-center justify-center text-muted-foreground'>
             Canvas tab coming soon
           </div>
         )}
 
-        {(activeTab === 'lists' || activeTab === 'workflows' || activeTab === 'bookmarks') && (
-          <div className="flex flex-1 items-center justify-center text-muted-foreground">
-            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab coming soon
+        {(activeTab === 'lists' ||
+          activeTab === 'workflows' ||
+          activeTab === 'bookmarks') && (
+          <div className='flex flex-1 items-center justify-center text-muted-foreground'>
+            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab coming
+            soon
           </div>
         )}
 
@@ -806,7 +918,7 @@ export default function DMPage() {
         isOpen={isAddPeopleOpen}
         workspaceSlug={workspaceSlug}
         conversationId={dmId}
-        existingMemberIds={allMembers.map((m) => m.id)}
+        existingMemberIds={allMembers.map(m => m.id)}
         onClose={() => setIsAddPeopleOpen(false)}
         onAddPeople={handleAddPeople}
       />
@@ -824,7 +936,7 @@ export default function DMPage() {
           setIsDetailsDialogOpen(false);
           setIsAddPeopleOpen(true);
         }}
-        onViewProfile={(userId) => {
+        onViewProfile={userId => {
           router.push(`/${workspaceSlug}/profile/${userId}`);
         }}
         onStartDM={handleStartDMWithMember}

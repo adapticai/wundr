@@ -15,3 +15,29 @@ packages:
 
   # Configuration packages
   - 'config/*'
+
+# Allow these packages to run postinstall/build scripts
+onlyBuiltDependencies:
+  - '@apollo/protobufjs'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - '@tree-sitter-grammars/tree-sitter-yaml'
+  - 'bcrypt'
+  - 'canvas'
+  - 'core-js'
+  - 'core-js-pure'
+  - 'electron'
+  - 'esbuild'
+  - 'keytar'
+  - 'msgpackr-extract'
+  - 'node-pty'
+  - 'prisma'
+  - 'protobufjs'
+  - 'sharp'
+  - 'sqlite3'
+  - 'tesseract.js'
+  - 'tree-sitter'
+  - 'tree-sitter-json'
+  - 'unrs-resolver'
+  - 'yarn'

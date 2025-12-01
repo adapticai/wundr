@@ -328,7 +328,7 @@ Monitor deployment on the specified platform:
  * @returns Generated structure information
  */
 export async function generateClaudeCodeStructure(
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<ClaudeCodeStructure> {
   const claudeDir = path.join(options.projectPath, '.claude');
 
@@ -365,7 +365,7 @@ export async function generateClaudeCodeStructure(
   if (options.skills && options.skills.length > 0) {
     structure.files.skillsIndex = path.join(
       structure.directories.skills,
-      'README.md',
+      'README.md'
     );
     await generateSkills(structure, options);
   } else {
@@ -376,7 +376,7 @@ export async function generateClaudeCodeStructure(
   if (options.commands && options.commands.length > 0) {
     structure.files.commandsIndex = path.join(
       structure.directories.commands,
-      'README.md',
+      'README.md'
     );
     await generateCommands(structure, options);
   } else {
@@ -397,7 +397,7 @@ export async function generateClaudeCodeStructure(
  */
 async function createDirectories(
   structure: ClaudeCodeStructure,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<void> {
   // Create main directories
   for (const dir of Object.values(structure.directories)) {
@@ -437,7 +437,7 @@ async function createDirectories(
     await fs.ensureDir(path.join(structure.directories.memory, 'sessions'));
     await fs.ensureDir(path.join(structure.directories.memory, 'shared'));
     await fs.ensureDir(
-      path.join(structure.directories.memory, 'session-template'),
+      path.join(structure.directories.memory, 'session-template')
     );
   }
 
@@ -445,7 +445,7 @@ async function createDirectories(
   if (structure.directories.governance) {
     await fs.ensureDir(path.join(structure.directories.governance, 'policies'));
     await fs.ensureDir(
-      path.join(structure.directories.governance, 'evaluators'),
+      path.join(structure.directories.governance, 'evaluators')
     );
   }
 }
@@ -455,7 +455,7 @@ async function createDirectories(
  */
 async function generateAgents(
   structure: ClaudeCodeStructure,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<void> {
   const agentsToGenerate: AgentConfig[] = [];
 
@@ -484,7 +484,7 @@ async function generateAgents(
     const agentPath = path.join(
       structure.directories.agents,
       agent.category,
-      `${agent.id}.md`,
+      `${agent.id}.md`
     );
     await fs.writeFile(agentPath, agentContent);
   }
@@ -499,7 +499,7 @@ async function generateAgents(
  */
 function generateAgentMarkdown(
   agent: AgentConfig,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): string {
   const promptTone = options.promptConfig?.tone || 'professional';
   const verificationProtocol =
@@ -581,7 +581,7 @@ Invoke this agent for tasks related to ${agent.description.toLowerCase()}.
  */
 function generateAgentIndex(
   agents: AgentConfig[],
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): string {
   const byCategory = agents.reduce(
     (acc, agent) => {
@@ -591,7 +591,7 @@ function generateAgentIndex(
       acc[agent.category].push(agent);
       return acc;
     },
-    {} as Record<string, AgentConfig[]>,
+    {} as Record<string, AgentConfig[]>
   );
 
   let content = `# Available Agents
@@ -635,7 +635,7 @@ Agent definitions can be customized by editing the markdown files in each catego
  * Generate default skills
  */
 async function generateDefaultSkills(
-  structure: ClaudeCodeStructure,
+  structure: ClaudeCodeStructure
 ): Promise<void> {
   for (const skill of DEFAULT_SKILLS) {
     const skillPath = path.join(structure.directories.skills, `${skill.id}.md`);
@@ -647,7 +647,7 @@ async function generateDefaultSkills(
   const indexContent = generateSkillsIndex(DEFAULT_SKILLS);
   await fs.writeFile(
     path.join(structure.directories.skills, 'README.md'),
-    indexContent,
+    indexContent
   );
 }
 
@@ -656,7 +656,7 @@ async function generateDefaultSkills(
  */
 async function generateSkills(
   structure: ClaudeCodeStructure,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<void> {
   const skills = [...DEFAULT_SKILLS, ...(options.skills || [])];
 
@@ -720,7 +720,7 @@ function generateSkillsIndex(skills: SkillConfig[]): string {
       acc[skill.category].push(skill);
       return acc;
     },
-    {} as Record<string, SkillConfig[]>,
+    {} as Record<string, SkillConfig[]>
   );
 
   let content = `# Available Skills
@@ -757,13 +757,13 @@ Skills can be invoked using the /skill command:
  * Generate default commands
  */
 async function generateDefaultCommands(
-  structure: ClaudeCodeStructure,
+  structure: ClaudeCodeStructure
 ): Promise<void> {
   for (const command of DEFAULT_COMMANDS) {
     const commandPath = path.join(
       structure.directories.commands,
       command.category,
-      `${command.name}.md`,
+      `${command.name}.md`
     );
     await fs.writeFile(commandPath, command.content);
   }
@@ -772,7 +772,7 @@ async function generateDefaultCommands(
   const indexContent = generateCommandsIndex(DEFAULT_COMMANDS);
   await fs.writeFile(
     path.join(structure.directories.commands, 'README.md'),
-    indexContent,
+    indexContent
   );
 }
 
@@ -781,7 +781,7 @@ async function generateDefaultCommands(
  */
 async function generateCommands(
   structure: ClaudeCodeStructure,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<void> {
   const commands = [...DEFAULT_COMMANDS, ...(options.commands || [])];
 
@@ -789,7 +789,7 @@ async function generateCommands(
     const commandPath = path.join(
       structure.directories.commands,
       command.category,
-      `${command.name}.md`,
+      `${command.name}.md`
     );
     await fs.ensureDir(path.dirname(commandPath));
     await fs.writeFile(commandPath, command.content);
@@ -812,7 +812,7 @@ function generateCommandsIndex(commands: CommandConfig[]): string {
       acc[cmd.category].push(cmd);
       return acc;
     },
-    {} as Record<string, CommandConfig[]>,
+    {} as Record<string, CommandConfig[]>
   );
 
   let content = `# Available Commands
@@ -851,7 +851,7 @@ Commands can be invoked using the / prefix:
  */
 async function generateSettings(
   structure: ClaudeCodeStructure,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<void> {
   const settings: ClaudeSettings = {
     version: '1.0.0',
@@ -915,7 +915,7 @@ async function generateSettings(
  */
 async function generateMemoryStructure(
   structure: ClaudeCodeStructure,
-  options: EnhancedProjectOptions,
+  options: EnhancedProjectOptions
 ): Promise<void> {
   const memoryDir = structure.directories.memory;
   const architecture = options.memoryConfig?.architecture || 'basic';
@@ -935,7 +935,7 @@ async function generateMemoryStructure(
 
 ## Notes
 <!-- Important notes to remember -->
-`,
+`
     );
   } else if (architecture === 'tiered' || architecture === 'memgpt') {
     // Tiered/MemGPT - full memory bank structure
@@ -960,7 +960,7 @@ async function generateMemoryStructure(
 
 ## Handoff Notes
 <!-- For session resumption -->
-`,
+`
     );
 
     // Progress template
@@ -982,7 +982,7 @@ async function generateMemoryStructure(
 
 ## Blockers & Dependencies
 <!-- Items waiting on external input -->
-`,
+`
     );
 
     // Shared memory files
@@ -999,7 +999,7 @@ async function generateMemoryStructure(
 
 ## Integration Points
 <!-- How systems connect -->
-`,
+`
     );
 
     await fs.writeFile(
@@ -1014,7 +1014,7 @@ async function generateMemoryStructure(
 
 ## Optimization Opportunities
 <!-- Areas identified for improvement -->
-`,
+`
     );
   }
 
@@ -1038,7 +1038,7 @@ ${
 ## Usage
 
 ${architecture === 'basic' ? 'The context file is automatically updated during sessions to track progress and important information.' : 'New sessions are created from the template directory. Session memory is persisted and can be resumed across Claude Code sessions.'}
-`,
+`
   );
 }
 

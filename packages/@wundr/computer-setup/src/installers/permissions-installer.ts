@@ -30,7 +30,10 @@ export class PermissionsInstaller implements BaseInstaller {
     return 'n/a';
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     logger.info('Setting up permissions and security...');
 
     if (platform.os === 'darwin') {
@@ -49,17 +52,17 @@ export class PermissionsInstaller implements BaseInstaller {
     await this.setupSshPermissions();
   }
 
-  async configure(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+  async configure(
+    _profile: DeveloperProfile,
+    _platform: SetupPlatform
+  ): Promise<void> {
     // Configuration is done during install
   }
 
   async validate(): Promise<boolean> {
     try {
       const homeDir = os.homedir();
-      const dirs = [
-        `${homeDir}/.npm`,
-        `${homeDir}/.ssh`,
-      ];
+      const dirs = [`${homeDir}/.npm`, `${homeDir}/.ssh`];
 
       for (const dir of dirs) {
         if (fs.existsSync(dir)) {
@@ -76,17 +79,20 @@ export class PermissionsInstaller implements BaseInstaller {
   }
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
-    return [{
-      id: 'setup-permissions',
-      name: 'Setup Permissions & Security',
-      description: 'Configure system permissions, SSH, and development directories',
-      category: 'system',
-      required: true,
-      dependencies: [],
-      estimatedTime: 30,
-      validator: () => this.validate(),
-      installer: () => this.install(profile, platform),
-    }];
+    return [
+      {
+        id: 'setup-permissions',
+        name: 'Setup Permissions & Security',
+        description:
+          'Configure system permissions, SSH, and development directories',
+        category: 'system',
+        required: true,
+        dependencies: [],
+        estimatedTime: 30,
+        validator: () => this.validate(),
+        installer: () => this.install(profile, platform),
+      },
+    ];
   }
 
   private async setupSudoTouchId(): Promise<void> {
@@ -102,7 +108,9 @@ export class PermissionsInstaller implements BaseInstaller {
         lines.splice(1, 0, touchIdLine);
 
         // Write with sudo
-        execSync(`echo '${lines.join('\\n')}' | sudo tee ${sudoConfig} > /dev/null`);
+        execSync(
+          `echo '${lines.join('\\n')}' | sudo tee ${sudoConfig} > /dev/null`
+        );
         logger.info('Touch ID configured for sudo');
       } else {
         logger.info('Touch ID already configured for sudo');
@@ -139,7 +147,9 @@ export class PermissionsInstaller implements BaseInstaller {
         } catch {
           // Try with sudo if regular fails
           try {
-            execSync(`sudo chown -R $(whoami):$(id -gn) "${dir}" 2>/dev/null || true`);
+            execSync(
+              `sudo chown -R $(whoami):$(id -gn) "${dir}" 2>/dev/null || true`
+            );
           } catch {
             logger.debug(`Could not fix permissions for ${dir}`);
           }
@@ -166,7 +176,9 @@ export class PermissionsInstaller implements BaseInstaller {
     if (os.platform() === 'darwin') {
       if (fs.existsSync('/usr/local')) {
         try {
-          execSync('sudo chown -R $(whoami):admin /usr/local/bin /usr/local/lib /usr/local/share 2>/dev/null || true');
+          execSync(
+            'sudo chown -R $(whoami):admin /usr/local/bin /usr/local/lib /usr/local/share 2>/dev/null || true'
+          );
         } catch {
           logger.debug('Could not fix /usr/local permissions');
         }
@@ -174,7 +186,9 @@ export class PermissionsInstaller implements BaseInstaller {
 
       if (fs.existsSync('/opt/homebrew')) {
         try {
-          execSync('sudo chown -R $(whoami):admin /opt/homebrew 2>/dev/null || true');
+          execSync(
+            'sudo chown -R $(whoami):admin /opt/homebrew 2>/dev/null || true'
+          );
         } catch {
           logger.debug('Could not fix /opt/homebrew permissions');
         }
@@ -204,7 +218,9 @@ export class PermissionsInstaller implements BaseInstaller {
 
     // Configure npm to use a directory we own for global packages
     try {
-      execSync(`npm config set prefix "${homeDir}/.npm-global" 2>/dev/null || true`);
+      execSync(
+        `npm config set prefix "${homeDir}/.npm-global" 2>/dev/null || true`
+      );
 
       // Add npm global bin to PATH
       const npmGlobalBin = `${homeDir}/.npm-global/bin`;
@@ -213,7 +229,10 @@ export class PermissionsInstaller implements BaseInstaller {
       if (fs.existsSync(shellRc)) {
         const content = fs.readFileSync(shellRc, 'utf-8');
         if (!content.includes(npmGlobalBin)) {
-          fs.appendFileSync(shellRc, `\\nexport PATH="${npmGlobalBin}:$PATH"\\n`);
+          fs.appendFileSync(
+            shellRc,
+            `\\nexport PATH="${npmGlobalBin}:$PATH"\\n`
+          );
         }
       }
 
@@ -333,7 +352,9 @@ export class PermissionsInstaller implements BaseInstaller {
       // Show hidden files
       execSync('defaults write com.apple.finder AppleShowAllFiles -bool TRUE');
       // Show file extensions
-      execSync('defaults write NSGlobalDomain AppleShowAllExtensions -bool TRUE');
+      execSync(
+        'defaults write NSGlobalDomain AppleShowAllExtensions -bool TRUE'
+      );
       // Show path bar
       execSync('defaults write com.apple.finder ShowPathbar -bool TRUE');
       // Show status bar

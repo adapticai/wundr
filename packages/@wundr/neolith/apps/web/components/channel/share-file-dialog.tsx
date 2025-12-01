@@ -1,7 +1,17 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Hash, User, Users, Search, Loader2, Link2, FileIcon, X, Bot } from 'lucide-react';
+import {
+  Hash,
+  User,
+  Users,
+  Search,
+  Loader2,
+  Link2,
+  FileIcon,
+  X,
+  Bot,
+} from 'lucide-react';
 
 import {
   Dialog,
@@ -100,7 +110,9 @@ interface ShareFileDialogProps {
   /** Current user ID (to exclude from search results) */
   currentUserId?: string;
   /** Callback when file is successfully shared */
-  onShareSuccess?: (destinations: Array<{ type: string; id: string; name: string }>) => void;
+  onShareSuccess?: (
+    destinations: Array<{ type: string; id: string; name: string }>
+  ) => void;
 }
 
 /**
@@ -121,7 +133,9 @@ export function ShareFileDialog({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedDestinations, setSelectedDestinations] = useState<SearchResult[]>([]);
+  const [selectedDestinations, setSelectedDestinations] = useState<
+    SearchResult[]
+  >([]);
   const [message, setMessage] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -142,68 +156,76 @@ export function ShareFileDialog({
   }, [open]);
 
   // Search function with debounce
-  const performSearch = useCallback(async (query: string) => {
-    if (!query.trim() || query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams({
-        q: query,
-        types: 'channels,users,orchestrators,dms',
-        limit: '15',
-      });
-
-      const response = await fetch(`/api/workspaces/${workspaceSlug}/search?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error('Search failed');
+  const performSearch = useCallback(
+    async (query: string) => {
+      if (!query.trim() || query.length < 2) {
+        setSearchResults([]);
+        return;
       }
 
-      const result = await response.json();
-      let results = result.data || [];
+      setIsSearching(true);
+      setError(null);
 
-      // Filter out current user from results
-      if (currentUserId) {
-        results = results.filter((r: SearchResult) => {
-          if (r.type === 'user') return r.id !== currentUserId;
-          return true;
+      try {
+        const params = new URLSearchParams({
+          q: query,
+          types: 'channels,users,orchestrators,dms',
+          limit: '15',
         });
-      }
 
-      setSearchResults(results);
-    } catch (err) {
-      console.error('Search error:', err);
-      setError('Failed to search. Please try again.');
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [workspaceSlug, currentUserId]);
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/search?${params.toString()}`
+        );
+
+        if (!response.ok) {
+          throw new Error('Search failed');
+        }
+
+        const result = await response.json();
+        let results = result.data || [];
+
+        // Filter out current user from results
+        if (currentUserId) {
+          results = results.filter((r: SearchResult) => {
+            if (r.type === 'user') return r.id !== currentUserId;
+            return true;
+          });
+        }
+
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error:', err);
+        setError('Failed to search. Please try again.');
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [workspaceSlug, currentUserId]
+  );
 
   // Debounced search
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
 
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
 
-    searchTimeoutRef.current = setTimeout(() => {
-      performSearch(value);
-    }, 300);
-  }, [performSearch]);
+      searchTimeoutRef.current = setTimeout(() => {
+        performSearch(value);
+      }, 300);
+    },
+    [performSearch]
+  );
 
   // Handle selecting a destination (add to list if not already selected)
   const handleSelectDestination = useCallback((result: SearchResult) => {
-    setSelectedDestinations((prev) => {
+    setSelectedDestinations(prev => {
       // Check if already selected
       const isAlreadySelected = prev.some(
-        (d) => d.type === result.type && d.id === result.id
+        d => d.type === result.type && d.id === result.id
       );
       if (isAlreadySelected) return prev;
       return [...prev, result];
@@ -215,8 +237,8 @@ export function ShareFileDialog({
 
   // Handle removing a destination from selection
   const handleRemoveDestination = useCallback((result: SearchResult) => {
-    setSelectedDestinations((prev) =>
-      prev.filter((d) => !(d.type === result.type && d.id === result.id))
+    setSelectedDestinations(prev =>
+      prev.filter(d => !(d.type === result.type && d.id === result.id))
     );
     setTimeout(() => searchInputRef.current?.focus(), 50);
   }, []);
@@ -246,7 +268,8 @@ export function ShareFileDialog({
     setIsSharing(true);
     setError(null);
 
-    const successfulShares: Array<{ type: string; id: string; name: string }> = [];
+    const successfulShares: Array<{ type: string; id: string; name: string }> =
+      [];
     const messageContent = message.trim() || '';
 
     try {
@@ -261,23 +284,34 @@ export function ShareFileDialog({
         } else if (destination.type === 'dm') {
           channelId = destination.id;
           destinationName = destination.name;
-        } else if (destination.type === 'user' || destination.type === 'orchestrator') {
+        } else if (
+          destination.type === 'user' ||
+          destination.type === 'orchestrator'
+        ) {
           // For users and orchestrators, we need to create or get an existing DM channel
-          const dmResponse = await fetch(`/api/workspaces/${workspaceSlug}/conversations`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              participantIds: [destination.id],
-            }),
-          });
+          const dmResponse = await fetch(
+            `/api/workspaces/${workspaceSlug}/conversations`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                participantIds: [destination.id],
+              }),
+            }
+          );
 
           if (!dmResponse.ok) {
-            throw new Error(`Failed to create conversation with ${destination.displayName || destination.name}`);
+            throw new Error(
+              `Failed to create conversation with ${destination.displayName || destination.name}`
+            );
           }
 
           const dmResult = await dmResponse.json();
           channelId = dmResult.data?.id || dmResult.id;
-          destinationName = destination.displayName || destination.name || (destination.type === 'user' ? destination.email : 'AI Assistant');
+          destinationName =
+            destination.displayName ||
+            destination.name ||
+            (destination.type === 'user' ? destination.email : 'AI Assistant');
         } else {
           continue; // Skip invalid destination types
         }
@@ -294,7 +328,9 @@ export function ShareFileDialog({
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || `Failed to share file to ${destinationName}`);
+          throw new Error(
+            errorData.error || `Failed to share file to ${destinationName}`
+          );
         }
 
         successfulShares.push({
@@ -312,11 +348,22 @@ export function ShareFileDialog({
       onOpenChange(false);
     } catch (err) {
       console.error('Share error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to share file. Please try again.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to share file. Please try again.'
+      );
     } finally {
       setIsSharing(false);
     }
-  }, [file, selectedDestinations, message, workspaceSlug, onShareSuccess, onOpenChange]);
+  }, [
+    file,
+    selectedDestinations,
+    message,
+    workspaceSlug,
+    onShareSuccess,
+    onOpenChange,
+  ]);
 
   // Format file size
   const formatFileSize = (bytes: number) => {
@@ -331,20 +378,24 @@ export function ShareFileDialog({
       return (
         <button
           key={`channel-${result.id}`}
-          type="button"
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent'
           onClick={() => handleSelectDestination(result)}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-            <Hash className="h-4 w-4 text-muted-foreground" />
+          <div className='flex h-8 w-8 items-center justify-center rounded-md bg-muted'>
+            <Hash className='h-4 w-4 text-muted-foreground' />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="truncate font-medium">{result.name}</div>
+          <div className='flex-1 min-w-0'>
+            <div className='truncate font-medium'>{result.name}</div>
             {result.description && (
-              <div className="truncate text-xs text-muted-foreground">{result.description}</div>
+              <div className='truncate text-xs text-muted-foreground'>
+                {result.description}
+              </div>
             )}
           </div>
-          <div className="text-xs text-muted-foreground">{result.memberCount} members</div>
+          <div className='text-xs text-muted-foreground'>
+            {result.memberCount} members
+          </div>
         </button>
       );
     }
@@ -353,8 +404,8 @@ export function ShareFileDialog({
       return (
         <button
           key={`user-${result.id}`}
-          type="button"
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent'
           onClick={() => handleSelectDestination(result)}
         >
           <UserAvatar
@@ -362,14 +413,20 @@ export function ShareFileDialog({
               name: result.name,
               avatarUrl: result.avatarUrl,
             }}
-            size="sm"
+            size='sm'
           />
-          <div className="flex-1 min-w-0">
-            <div className="truncate font-medium">{result.displayName || result.name}</div>
-            <div className="truncate text-xs text-muted-foreground">{result.email}</div>
+          <div className='flex-1 min-w-0'>
+            <div className='truncate font-medium'>
+              {result.displayName || result.name}
+            </div>
+            <div className='truncate text-xs text-muted-foreground'>
+              {result.email}
+            </div>
           </div>
           {result.isOrchestrator && (
-            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">AI</span>
+            <span className='rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary'>
+              AI
+            </span>
           )}
         </button>
       );
@@ -379,16 +436,16 @@ export function ShareFileDialog({
       return (
         <button
           key={`dm-${result.id}`}
-          type="button"
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent'
           onClick={() => handleSelectDestination(result)}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <div className='flex h-8 w-8 items-center justify-center rounded-md bg-muted'>
+            <Users className='h-4 w-4 text-muted-foreground' />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="truncate font-medium">{result.name}</div>
-            <div className="truncate text-xs text-muted-foreground">
+          <div className='flex-1 min-w-0'>
+            <div className='truncate font-medium'>{result.name}</div>
+            <div className='truncate text-xs text-muted-foreground'>
               {result.participants.length} participants
             </div>
           </div>
@@ -400,29 +457,33 @@ export function ShareFileDialog({
       return (
         <button
           key={`orchestrator-${result.id}`}
-          type="button"
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent'
           onClick={() => handleSelectDestination(result)}
         >
-          <div className="relative">
+          <div className='relative'>
             <UserAvatar
               user={{
                 name: result.name,
                 avatarUrl: result.avatarUrl,
               }}
-              size="sm"
+              size='sm'
             />
-            <div className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary">
-              <Bot className="h-2 w-2 text-primary-foreground" />
+            <div className='absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary'>
+              <Bot className='h-2 w-2 text-primary-foreground' />
             </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="truncate font-medium">{result.displayName || result.name}</div>
-            <div className="truncate text-xs text-muted-foreground">
+          <div className='flex-1 min-w-0'>
+            <div className='truncate font-medium'>
+              {result.displayName || result.name}
+            </div>
+            <div className='truncate text-xs text-muted-foreground'>
               {result.discipline || result.role || 'AI Assistant'}
             </div>
           </div>
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">AI</span>
+          <span className='rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary'>
+            AI
+          </span>
         </button>
       );
     }
@@ -436,16 +497,16 @@ export function ShareFileDialog({
     let name: string;
 
     if (destination.type === 'channel') {
-      icon = <Hash className="h-3 w-3" />;
+      icon = <Hash className='h-3 w-3' />;
       name = destination.name;
     } else if (destination.type === 'dm') {
-      icon = <Users className="h-3 w-3" />;
+      icon = <Users className='h-3 w-3' />;
       name = destination.name;
     } else if (destination.type === 'orchestrator') {
-      icon = <Bot className="h-3 w-3" />;
+      icon = <Bot className='h-3 w-3' />;
       name = destination.displayName || destination.name || 'AI Assistant';
     } else {
-      icon = <User className="h-3 w-3" />;
+      icon = <User className='h-3 w-3' />;
       name = destination.displayName || destination.name || destination.email;
     }
 
@@ -457,31 +518,31 @@ export function ShareFileDialog({
     if (selectedDestinations.length === 0) return null;
 
     return (
-      <div className="flex flex-wrap gap-1.5">
-        {selectedDestinations.map((destination) => {
+      <div className='flex flex-wrap gap-1.5'>
+        {selectedDestinations.map(destination => {
           const { icon, name } = getDestinationDisplay(destination);
           return (
             <div
               key={`${destination.type}-${destination.id}`}
-              className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary"
+              className='flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary'
             >
               {icon}
-              <span className="max-w-[120px] truncate">{name}</span>
+              <span className='max-w-[120px] truncate'>{name}</span>
               <button
-                type="button"
+                type='button'
                 onClick={() => handleRemoveDestination(destination)}
-                className="ml-0.5 rounded hover:bg-primary/20"
+                className='ml-0.5 rounded hover:bg-primary/20'
               >
-                <X className="h-3 w-3" />
+                <X className='h-3 w-3' />
               </button>
             </div>
           );
         })}
         {selectedDestinations.length > 1 && (
           <button
-            type="button"
+            type='button'
             onClick={handleClearAll}
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className='text-xs text-muted-foreground hover:text-foreground'
           >
             Clear all
           </button>
@@ -494,35 +555,42 @@ export function ShareFileDialog({
 
   // Shared content for both Dialog and Drawer
   const sharedContent = (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Selected destinations */}
       {selectedDestinations.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">
-            Sharing with {selectedDestinations.length} {selectedDestinations.length === 1 ? 'destination' : 'destinations'}
+        <div className='space-y-2'>
+          <div className='text-xs font-medium text-muted-foreground'>
+            Sharing with {selectedDestinations.length}{' '}
+            {selectedDestinations.length === 1 ? 'destination' : 'destinations'}
           </div>
           {renderSelectedDestinations()}
         </div>
       )}
 
       {/* Search input */}
-      <div className="relative">
-        <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
-          <Search className="h-4 w-4 text-muted-foreground" />
+      <div className='relative'>
+        <div className='flex items-center gap-2 rounded-md border bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring'>
+          <Search className='h-4 w-4 text-muted-foreground' />
           <input
             ref={searchInputRef}
-            type="text"
-            placeholder={selectedDestinations.length > 0 ? "Add another destination..." : "Search for channel or person"}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            type='text'
+            placeholder={
+              selectedDestinations.length > 0
+                ? 'Add another destination...'
+                : 'Search for channel or person'
+            }
+            className='flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground'
             value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            onChange={e => handleSearchChange(e.target.value)}
           />
-          {isSearching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {isSearching && (
+            <Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
+          )}
         </div>
 
         {/* Search results dropdown */}
         {searchResults.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
+          <div className='absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg'>
             {searchResults.map(renderSearchResult)}
           </div>
         )}
@@ -531,45 +599,50 @@ export function ShareFileDialog({
       {/* Message input */}
       <div>
         <textarea
-          placeholder="Add a message if you like."
-          className="min-h-[80px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          placeholder='Add a message if you like.'
+          className='min-h-[80px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring'
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={e => setMessage(e.target.value)}
         />
       </div>
 
       {/* File preview */}
       {(() => {
         const isImage = file.mimeType.startsWith('image/');
-        const imagePreviewUrl = file.thumbnailUrl || (isImage ? file.url : null);
+        const imagePreviewUrl =
+          file.thumbnailUrl || (isImage ? file.url : null);
 
         return (
-          <div className="rounded-md border bg-muted/50 p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-background overflow-hidden">
+          <div className='rounded-md border bg-muted/50 p-3'>
+            <div className='flex items-center gap-3'>
+              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-background overflow-hidden'>
                 {isImage && imagePreviewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={imagePreviewUrl}
                     alt={file.name}
-                    className="h-full w-full object-cover"
+                    className='h-full w-full object-cover'
                   />
                 ) : (
-                  <FileIcon className="h-5 w-5 text-muted-foreground" />
+                  <FileIcon className='h-5 w-5 text-muted-foreground' />
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="truncate font-medium text-sm">{file.name}</div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className='flex-1 min-w-0'>
+                <div className='truncate font-medium text-sm'>{file.name}</div>
+                <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                   {file.uploadedBy && (
                     <>
-                      <span>{file.uploadedBy.displayName || file.uploadedBy.name}</span>
+                      <span>
+                        {file.uploadedBy.displayName || file.uploadedBy.name}
+                      </span>
                       <span>•</span>
                     </>
                   )}
                   {file.uploadedAt && (
                     <>
-                      <span>{new Date(file.uploadedAt).toLocaleDateString()}</span>
+                      <span>
+                        {new Date(file.uploadedAt).toLocaleDateString()}
+                      </span>
                       <span>•</span>
                     </>
                   )}
@@ -583,12 +656,12 @@ export function ShareFileDialog({
 
       {/* Access info */}
       {selectedDestinations.length > 0 && (
-        <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+        <div className='rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground'>
           {(() => {
             // Calculate total access count
             let totalAccess = 0;
             let hasOrchestrator = false;
-            selectedDestinations.forEach((dest) => {
+            selectedDestinations.forEach(dest => {
               if (dest.type === 'channel') {
                 totalAccess += dest.memberCount;
               } else if (dest.type === 'dm') {
@@ -620,25 +693,25 @@ export function ShareFileDialog({
 
       {/* Error message */}
       {error && (
-        <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
           {error}
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <button
-          type="button"
-          className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+          type='button'
+          className='flex items-center gap-1.5 text-sm text-primary hover:underline'
           onClick={handleCopyLink}
         >
-          <Link2 className="h-4 w-4" />
+          <Link2 className='h-4 w-4' />
           Copy link
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => onOpenChange(false)}
             disabled={isSharing}
           >
@@ -650,7 +723,7 @@ export function ShareFileDialog({
           >
             {isSharing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Sharing...
               </>
             ) : selectedDestinations.length > 1 ? (
@@ -668,7 +741,7 @@ export function ShareFileDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className='max-w-md'>
           <DialogHeader>
             <DialogTitle>Share this file</DialogTitle>
           </DialogHeader>
@@ -681,13 +754,11 @@ export function ShareFileDialog({
   // Mobile/Tablet: use Drawer
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[90vh]">
+      <DrawerContent className='max-h-[90vh]'>
         <DrawerHeader>
           <DrawerTitle>Share this file</DrawerTitle>
         </DrawerHeader>
-        <div className="overflow-y-auto px-4 pb-4">
-          {sharedContent}
-        </div>
+        <div className='overflow-y-auto px-4 pb-4'>{sharedContent}</div>
       </DrawerContent>
     </Drawer>
   );

@@ -15,7 +15,9 @@ function RegisterFormLoading() {
   return (
     <div className='space-y-6'>
       <div className='space-y-2 text-center'>
-        <h2 className='text-2xl font-semibold tracking-tight'>Create an account</h2>
+        <h2 className='text-2xl font-semibold tracking-tight'>
+          Create an account
+        </h2>
         <p className='text-sm text-muted-foreground'>Loading...</p>
       </div>
       <div className='space-y-3'>
@@ -166,7 +168,9 @@ function RegisterForm() {
           type='text'
           placeholder='Full name'
           value={name}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setName(e.target.value)
+          }
           disabled={isLoading}
           autoComplete='name'
           required
@@ -175,7 +179,9 @@ function RegisterForm() {
           type='email'
           placeholder='Email address'
           value={email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setEmail(e.target.value)
+          }
           disabled={isLoading}
           autoComplete='email'
           required
@@ -184,7 +190,9 @@ function RegisterForm() {
           type='password'
           placeholder='Password'
           value={password}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
           disabled={isLoading}
           autoComplete='new-password'
           required
@@ -193,7 +201,9 @@ function RegisterForm() {
           type='password'
           placeholder='Confirm password'
           value={confirmPassword}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setConfirmPassword(e.target.value)
+          }
           disabled={isLoading}
           autoComplete='new-password'
           required
@@ -206,7 +216,10 @@ function RegisterForm() {
       {/* Login Link */}
       <p className='text-center text-sm text-muted-foreground'>
         Already have an account?{' '}
-        <Link href='/login' className='font-medium text-primary hover:underline'>
+        <Link
+          href='/login'
+          className='font-medium text-primary hover:underline'
+        >
           Sign in
         </Link>
       </p>

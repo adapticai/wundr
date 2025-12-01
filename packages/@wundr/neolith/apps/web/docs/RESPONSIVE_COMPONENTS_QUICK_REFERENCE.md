@@ -31,6 +31,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 ## Quick Examples
 
 ### ResponsiveModal
+
 ```tsx
 <ResponsiveModal open={open} onOpenChange={setOpen}>
   <ResponsiveModalTrigger>
@@ -49,9 +50,10 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 ```
 
 ### MobileNavDrawer
+
 ```tsx
 <MobileNavDrawer
-  title="Menu"
+  title='Menu'
   items={[
     { href: '/dashboard', label: 'Dashboard', icon: <HomeIcon /> },
     { href: '/settings', label: 'Settings', icon: <SettingsIcon /> },
@@ -60,9 +62,10 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 ```
 
 ### ResponsiveSidebar
+
 ```tsx
-<ResponsiveSidebar title="Menu" collapsible header={<Logo />}>
-  <SidebarNavItem href="/dashboard" label="Dashboard" icon={<HomeIcon />} />
+<ResponsiveSidebar title='Menu' collapsible header={<Logo />}>
+  <SidebarNavItem href='/dashboard' label='Dashboard' icon={<HomeIcon />} />
 </ResponsiveSidebar>
 ```
 

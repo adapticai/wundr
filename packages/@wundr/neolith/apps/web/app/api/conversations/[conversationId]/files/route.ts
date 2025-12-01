@@ -49,7 +49,7 @@ const conversationIdParamSchema = z.object({
  * @returns Prisma where clause for mimeType
  */
 function buildMimeTypeFilter(
-  type: 'image' | 'document' | 'audio' | 'video' | 'archive',
+  type: 'image' | 'document' | 'audio' | 'video' | 'archive'
 ): Prisma.StringFilter {
   // Map singular type names to their ALLOWED_FILE_TYPES keys
   const typeKeyMap: Record<string, keyof typeof ALLOWED_FILE_TYPES> = {
@@ -104,15 +104,18 @@ function buildMimeTypeFilter(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -121,8 +124,11 @@ export async function GET(
     const paramResult = conversationIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid conversation ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid conversation ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -135,9 +141,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -167,9 +173,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this conversation',
-          UPLOAD_ERROR_CODES.FORBIDDEN,
+          UPLOAD_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -190,7 +196,7 @@ export async function GET(
       distinct: ['fileId'],
     });
 
-    const attachedFileIds = attachments.map((a) => a.fileId);
+    const attachedFileIds = attachments.map(a => a.fileId);
 
     // Build where clause for files
     // Include files either:
@@ -257,10 +263,12 @@ export async function GET(
     // Check if there are more files
     const hasMore = files.length > filters.limit;
     const resultFiles = hasMore ? files.slice(0, filters.limit) : files;
-    const nextCursor = hasMore ? resultFiles[resultFiles.length - 1]?.id ?? null : null;
+    const nextCursor = hasMore
+      ? (resultFiles[resultFiles.length - 1]?.id ?? null)
+      : null;
 
     // Transform files to include computed URL
-    const transformedFiles = resultFiles.map((file) => ({
+    const transformedFiles = resultFiles.map(file => ({
       ...file,
       size: Number(file.size),
       url: generateFileUrl(file.s3Key, file.s3Bucket),
@@ -298,13 +306,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/conversations/:conversationId/files] Error:', error);
+    console.error(
+      '[GET /api/conversations/:conversationId/files] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

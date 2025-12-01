@@ -22,7 +22,7 @@ import {
  * Example 1: Basic Usage with Default Sections
  */
 export function BasicSettingsNavExample() {
-  return <SettingsNav workspaceId="my-workspace" />;
+  return <SettingsNav workspaceId='my-workspace' />;
 }
 
 /**
@@ -34,14 +34,27 @@ export function CustomSectionsExample() {
       label: 'Account',
       items: [
         { href: '/my-workspace/settings', label: 'General', icon: Settings },
-        { href: '/my-workspace/settings/profile', label: 'Profile', icon: User },
-        { href: '/my-workspace/settings/billing', label: 'Billing', icon: CreditCard, badge: 'Pro' },
+        {
+          href: '/my-workspace/settings/profile',
+          label: 'Profile',
+          icon: User,
+        },
+        {
+          href: '/my-workspace/settings/billing',
+          label: 'Billing',
+          icon: CreditCard,
+          badge: 'Pro',
+        },
       ],
     },
     {
       label: 'Preferences',
       items: [
-        { href: '/my-workspace/settings/appearance', label: 'Appearance', icon: Palette },
+        {
+          href: '/my-workspace/settings/appearance',
+          label: 'Appearance',
+          icon: Palette,
+        },
         {
           href: '/my-workspace/settings/notifications',
           label: 'Notifications',
@@ -53,7 +66,12 @@ export function CustomSectionsExample() {
     {
       label: 'Team',
       items: [
-        { href: '/my-workspace/settings/members', label: 'Members', icon: Users, badge: 12 },
+        {
+          href: '/my-workspace/settings/members',
+          label: 'Members',
+          icon: Users,
+          badge: 12,
+        },
         {
           href: '/my-workspace/settings/integrations',
           label: 'Integrations',
@@ -65,13 +83,21 @@ export function CustomSectionsExample() {
     {
       label: 'Security',
       items: [
-        { href: '/my-workspace/settings/security', label: 'Security', icon: Shield },
-        { href: '/my-workspace/settings/privacy', label: 'Privacy', icon: Lock },
+        {
+          href: '/my-workspace/settings/security',
+          label: 'Security',
+          icon: Shield,
+        },
+        {
+          href: '/my-workspace/settings/privacy',
+          label: 'Privacy',
+          icon: Lock,
+        },
       ],
     },
   ];
 
-  return <SettingsNav workspaceId="my-workspace" sections={customSections} />;
+  return <SettingsNav workspaceId='my-workspace' sections={customSections} />;
 }
 
 /**
@@ -84,7 +110,11 @@ export function CollapsibleSectionsExample() {
       collapsible: true,
       items: [
         { href: '/my-workspace/settings', label: 'General', icon: Settings },
-        { href: '/my-workspace/settings/profile', label: 'Profile', icon: User },
+        {
+          href: '/my-workspace/settings/profile',
+          label: 'Profile',
+          icon: User,
+        },
       ],
     },
     {
@@ -92,13 +122,19 @@ export function CollapsibleSectionsExample() {
       collapsible: true,
       defaultCollapsed: true,
       items: [
-        { href: '/my-workspace/settings/integrations', label: 'Integrations', icon: Plug },
+        {
+          href: '/my-workspace/settings/integrations',
+          label: 'Integrations',
+          icon: Plug,
+        },
         { href: '/my-workspace/settings/api', label: 'API Keys', icon: Zap },
       ],
     },
   ];
 
-  return <SettingsNav workspaceId="my-workspace" sections={sectionsWithCollapse} />;
+  return (
+    <SettingsNav workspaceId='my-workspace' sections={sectionsWithCollapse} />
+  );
 }
 
 /**
@@ -110,7 +146,11 @@ export function DisabledItemsExample() {
       label: 'Account',
       items: [
         { href: '/my-workspace/settings', label: 'General', icon: Settings },
-        { href: '/my-workspace/settings/profile', label: 'Profile', icon: User },
+        {
+          href: '/my-workspace/settings/profile',
+          label: 'Profile',
+          icon: User,
+        },
         {
           href: '/my-workspace/settings/billing',
           label: 'Billing',
@@ -122,7 +162,9 @@ export function DisabledItemsExample() {
     },
   ];
 
-  return <SettingsNav workspaceId="my-workspace" sections={sectionsWithDisabled} />;
+  return (
+    <SettingsNav workspaceId='my-workspace' sections={sectionsWithDisabled} />
+  );
 }
 
 /**
@@ -134,13 +176,21 @@ export function MobileNavigationExample() {
       label: 'Account',
       items: [
         { href: '/my-workspace/settings', label: 'General', icon: Settings },
-        { href: '/my-workspace/settings/profile', label: 'Profile', icon: User },
+        {
+          href: '/my-workspace/settings/profile',
+          label: 'Profile',
+          icon: User,
+        },
       ],
     },
     {
       label: 'Preferences',
       items: [
-        { href: '/my-workspace/settings/appearance', label: 'Appearance', icon: Palette },
+        {
+          href: '/my-workspace/settings/appearance',
+          label: 'Appearance',
+          icon: Palette,
+        },
         {
           href: '/my-workspace/settings/notifications',
           label: 'Notifications',
@@ -151,7 +201,9 @@ export function MobileNavigationExample() {
     },
   ];
 
-  return <MobileSettingsNav workspaceId="my-workspace" sections={mobileSections} />;
+  return (
+    <MobileSettingsNav workspaceId='my-workspace' sections={mobileSections} />
+  );
 }
 
 /**
@@ -163,13 +215,21 @@ export function ResponsiveExample() {
       label: 'Account',
       items: [
         { href: '/my-workspace/settings', label: 'General', icon: Settings },
-        { href: '/my-workspace/settings/profile', label: 'Profile', icon: User },
+        {
+          href: '/my-workspace/settings/profile',
+          label: 'Profile',
+          icon: User,
+        },
       ],
     },
     {
       label: 'Preferences',
       items: [
-        { href: '/my-workspace/settings/appearance', label: 'Appearance', icon: Palette },
+        {
+          href: '/my-workspace/settings/appearance',
+          label: 'Appearance',
+          icon: Palette,
+        },
         {
           href: '/my-workspace/settings/notifications',
           label: 'Notifications',
@@ -181,8 +241,16 @@ export function ResponsiveExample() {
     {
       label: 'Advanced',
       items: [
-        { href: '/my-workspace/settings/security', label: 'Security', icon: Shield },
-        { href: '/my-workspace/settings/integrations', label: 'Integrations', icon: Plug },
+        {
+          href: '/my-workspace/settings/security',
+          label: 'Security',
+          icon: Shield,
+        },
+        {
+          href: '/my-workspace/settings/integrations',
+          label: 'Integrations',
+          icon: Plug,
+        },
       ],
     },
   ];
@@ -190,13 +258,13 @@ export function ResponsiveExample() {
   return (
     <>
       {/* Desktop Navigation */}
-      <div className="hidden md:block">
-        <SettingsNav workspaceId="my-workspace" sections={sections} />
+      <div className='hidden md:block'>
+        <SettingsNav workspaceId='my-workspace' sections={sections} />
       </div>
 
       {/* Mobile Navigation */}
-      <div className="block md:hidden">
-        <MobileSettingsNav workspaceId="my-workspace" sections={sections} />
+      <div className='block md:hidden'>
+        <MobileSettingsNav workspaceId='my-workspace' sections={sections} />
       </div>
     </>
   );

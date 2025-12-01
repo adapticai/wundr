@@ -1,13 +1,17 @@
 # Report Visualization Components Guide
 
-This guide covers the comprehensive report visualization components built for the monorepo refactoring toolkit. These components provide interactive, theme-aware visualizations with export capabilities.
+This guide covers the comprehensive report visualization components built for the monorepo
+refactoring toolkit. These components provide interactive, theme-aware visualizations with export
+capabilities.
 
 ## Components Overview
 
 ### 1. ReportLoader
+
 The `ReportLoader` component handles loading and parsing JSON analysis reports.
 
 **Features:**
+
 - File upload support (.json files)
 - URL-based report loading
 - Sample report generation
@@ -15,19 +19,19 @@ The `ReportLoader` component handles loading and parsing JSON analysis reports.
 - Error handling with user feedback
 
 **Usage:**
+
 ```tsx
 import { ReportLoader } from '@/components/visualizations';
 
-<ReportLoader 
-  onReportLoad={(report) => setReport(report)}
-  onError={(error) => console.error(error)}
-/>
+<ReportLoader onReportLoad={report => setReport(report)} onError={error => console.error(error)} />;
 ```
 
 ### 2. DuplicatesVisualization
+
 Interactive visualization for duplicate code analysis with multiple view modes.
 
 **Features:**
+
 - Multiple chart types (Bar, Doughnut)
 - View modes: Overview, By Type, By Score, Top Files
 - Score range filtering
@@ -35,20 +39,23 @@ Interactive visualization for duplicate code analysis with multiple view modes.
 - Export functionality (PNG, PDF, CSV, JSON)
 
 **Usage:**
+
 ```tsx
 import { DuplicatesVisualization } from '@/components/visualizations';
 
 <DuplicatesVisualization
   data={report.duplicates}
   duplicateFiles={report.duplicates.duplicateFiles}
-  onFileSelect={(file) => handleFileSelection(file)}
-/>
+  onFileSelect={file => handleFileSelection(file)}
+/>;
 ```
 
 ### 3. DependencyGraph
+
 Comprehensive dependency analysis with multiple visualization modes.
 
 **Features:**
+
 - Overview of dependency types
 - Tree structure visualization
 - Security vulnerabilities display
@@ -57,20 +64,23 @@ Comprehensive dependency analysis with multiple visualization modes.
 - Interactive node selection
 
 **Usage:**
+
 ```tsx
 import { DependencyGraph } from '@/components/visualizations';
 
 <DependencyGraph
   data={report.dependencies}
-  onNodeSelect={(node) => handleNodeSelection(node)}
-  onVulnerabilitySelect={(vuln) => handleVulnerabilitySelection(vuln)}
-/>
+  onNodeSelect={node => handleNodeSelection(node)}
+  onVulnerabilitySelect={vuln => handleVulnerabilitySelection(vuln)}
+/>;
 ```
 
 ### 4. CircularDependencyDiagram
+
 Visual representation of circular dependencies with network diagrams.
 
 **Features:**
+
 - Interactive network diagram
 - Severity-based color coding
 - Multiple view modes (Network, List, Impact)
@@ -79,19 +89,22 @@ Visual representation of circular dependencies with network diagrams.
 - Canvas-based visualization
 
 **Usage:**
+
 ```tsx
 import { CircularDependencyDiagram } from '@/components/visualizations';
 
 <CircularDependencyDiagram
   dependencies={report.circularDependencies}
-  onDependencySelect={(dep) => handleDependencySelection(dep)}
-/>
+  onDependencySelect={dep => handleDependencySelection(dep)}
+/>;
 ```
 
 ### 5. MetricsOverview
+
 Comprehensive metrics dashboard with cards and progress indicators.
 
 **Features:**
+
 - Categorized metrics (Code Quality, Performance, Maintainability, Complexity)
 - Trend indicators (with comparison to previous metrics)
 - Progress bars for target-based metrics
@@ -100,6 +113,7 @@ Comprehensive metrics dashboard with cards and progress indicators.
 - Summary score calculations
 
 **Usage:**
+
 ```tsx
 import { MetricsOverview } from '@/components/visualizations';
 
@@ -107,13 +121,15 @@ import { MetricsOverview } from '@/components/visualizations';
   metrics={report.metrics}
   summary={report.summary}
   previousMetrics={previousReport?.metrics} // Optional for trend comparison
-/>
+/>;
 ```
 
 ### 6. DataTable
+
 Generic, feature-rich data table component with sorting, filtering, and pagination.
 
 **Features:**
+
 - Column-based configuration
 - Sortable columns
 - Filterable columns with dropdown options
@@ -124,36 +140,39 @@ Generic, feature-rich data table component with sorting, filtering, and paginati
 - Responsive design
 
 **Usage:**
+
 ```tsx
 import { DataTable, Column } from '@/components/visualizations';
 
 const columns: Column<DuplicateFile>[] = [
   { key: 'path', title: 'File Path', sortable: true },
   { key: 'type', title: 'Type', sortable: true, filterable: true },
-  { 
-    key: 'duplicateScore', 
-    title: 'Similarity', 
+  {
+    key: 'duplicateScore',
+    title: 'Similarity',
     sortable: true,
-    render: (value) => `${(value * 100).toFixed(1)}%`
-  }
+    render: value => `${(value * 100).toFixed(1)}%`,
+  },
 ];
 
 <DataTable
   data={duplicateFiles}
   columns={columns}
-  title="Duplicate Files"
+  title='Duplicate Files'
   searchable
   exportable
   pagination
   pageSize={10}
-  onRowSelect={(file) => handleRowSelection(file)}
-/>
+  onRowSelect={file => handleRowSelection(file)}
+/>;
 ```
 
 ### 7. ReportDashboard
+
 Complete dashboard combining all visualization components with tabbed interface.
 
 **Features:**
+
 - Tabbed interface for different analysis areas
 - Report header with summary statistics
 - Integrated component interactions
@@ -161,10 +180,11 @@ Complete dashboard combining all visualization components with tabbed interface.
 - Responsive layout
 
 **Usage:**
+
 ```tsx
 import { ReportDashboard } from '@/components/visualizations';
 
-<ReportDashboard initialReport={report} />
+<ReportDashboard initialReport={report} />;
 ```
 
 ## Theme Support
@@ -178,6 +198,7 @@ const { colors, chartDefaults, getColorPalette, isDark } = useChartTheme();
 ```
 
 **Theme Features:**
+
 - Automatic dark/light mode detection
 - Consistent color palette
 - Chart.js integration
@@ -194,7 +215,7 @@ import { exportChart, exportTableData } from '@/utils/chartExport';
 await exportChart(chartRef.current, {
   format: 'png', // 'png' | 'pdf' | 'csv' | 'json'
   filename: 'chart-export',
-  includeData: true
+  includeData: true,
 });
 
 // Export table data
@@ -241,6 +262,7 @@ All components are built with responsive design principles:
 ## Integration Examples
 
 ### Basic Usage
+
 ```tsx
 import { ReportDashboard } from '@/components/visualizations';
 
@@ -250,11 +272,12 @@ function App() {
 ```
 
 ### Custom Integration
+
 ```tsx
-import { 
-  ReportLoader, 
-  MetricsOverview, 
-  DuplicatesVisualization 
+import {
+  ReportLoader,
+  MetricsOverview,
+  DuplicatesVisualization,
 } from '@/components/visualizations';
 
 function CustomDashboard() {
@@ -315,7 +338,8 @@ Enable debug mode for development:
 const DEBUG = process.env.NODE_ENV === 'development';
 
 // Add to component props
-<DependencyGraph data={data} debug={DEBUG} />
+<DependencyGraph data={data} debug={DEBUG} />;
 ```
 
-This comprehensive guide covers all aspects of the report visualization components, from basic usage to advanced customization and troubleshooting.
+This comprehensive guide covers all aspects of the report visualization components, from basic usage
+to advanced customization and troubleshooting.

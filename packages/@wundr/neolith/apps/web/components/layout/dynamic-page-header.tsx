@@ -15,7 +15,7 @@ export function DynamicPageHeader() {
   const { title, subtitle, breadcrumbs } = usePageHeader();
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className='flex flex-col gap-1'>
       {breadcrumbs && breadcrumbs.length > 0 ? (
         <Breadcrumb>
           <BreadcrumbList>
@@ -23,7 +23,7 @@ export function DynamicPageHeader() {
               const isLast = index === breadcrumbs.length - 1;
 
               return (
-                <div key={index} className="contents">
+                <div key={index} className='contents'>
                   <BreadcrumbItem>
                     {isLast ? (
                       <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
@@ -52,7 +52,7 @@ export function DynamicPageHeader() {
       )}
 
       {subtitle && (
-        <p className="text-sm text-muted-foreground transition-opacity duration-200">
+        <p className='text-sm text-muted-foreground transition-opacity duration-200'>
           {subtitle}
         </p>
       )}

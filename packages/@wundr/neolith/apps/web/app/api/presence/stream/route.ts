@@ -26,7 +26,10 @@ import {
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
 
-import type { UserPresenceResponse, PresenceStatusType } from '@/lib/validations/presence';
+import type {
+  UserPresenceResponse,
+  PresenceStatusType,
+} from '@/lib/validations/presence';
 import type { UserStatus, Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -51,16 +54,22 @@ interface UserPreferences {
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
   if (!lastActiveAt) {
-return false;
-}
+    return false;
+  }
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
 /**
  * Get presence from user preferences
  */
-function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferences {
-  if (typeof preferences === 'object' && preferences !== null && !Array.isArray(preferences)) {
+function getPresenceFromPreferences(
+  preferences: Prisma.JsonValue
+): UserPreferences {
+  if (
+    typeof preferences === 'object' &&
+    preferences !== null &&
+    !Array.isArray(preferences)
+  ) {
     return preferences as UserPreferences;
   }
   return {};
@@ -69,7 +78,10 @@ function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferen
 /**
  * Map Prisma UserStatus to presence status
  */
-function mapUserStatusToPresence(status: UserStatus, prefs: UserPreferences): UserPresenceResponse['status'] {
+function mapUserStatusToPresence(
+  status: UserStatus,
+  prefs: UserPreferences
+): UserPresenceResponse['status'] {
   if (prefs.presenceStatus) {
     return prefs.presenceStatus;
   }
@@ -144,14 +156,19 @@ function formatSSEMessage(event: string, data: unknown): string {
  * data: {"timestamp":"2024-01-15T10:30:00Z"}
  * ```
  */
-export async function GET(request: NextRequest): Promise<NextResponse | Response> {
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse | Response> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -164,9 +181,9 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -182,17 +199,21 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
         select: { channelId: true },
       });
 
-      const accessibleChannelIds = new Set(channelMemberships.map((m) => m.channelId));
-      const unauthorizedChannels = channelIds.filter((id) => !accessibleChannelIds.has(id));
+      const accessibleChannelIds = new Set(
+        channelMemberships.map(m => m.channelId)
+      );
+      const unauthorizedChannels = channelIds.filter(
+        id => !accessibleChannelIds.has(id)
+      );
 
       if (unauthorizedChannels.length > 0) {
         return NextResponse.json(
           createPresenceErrorResponse(
             'Access denied to some channels',
             PRESENCE_ERROR_CODES.FORBIDDEN,
-            { unauthorizedChannels },
+            { unauthorizedChannels }
           ),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -211,8 +232,8 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
               timestamp: new Date().toISOString(),
               subscribedChannels: channelIds,
               subscribedUsers: userIds,
-            }),
-          ),
+            })
+          )
         );
 
         // Send initial presence state
@@ -231,7 +252,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
             const presence = buildPresenceResponse(user);
             previousPresence.set(user.id, presence);
             controller.enqueue(
-              encoder.encode(formatSSEMessage('presence:update', presence)),
+              encoder.encode(formatSSEMessage('presence:update', presence))
             );
           }
         }
@@ -258,8 +279,8 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
 
           for (const channel of channels) {
             const onlineUsers = channel.channelMembers
-              .map((m) => buildPresenceResponse(m.user))
-              .filter((p) => p.isOnline);
+              .map(m => buildPresenceResponse(m.user))
+              .filter(p => p.isOnline);
 
             controller.enqueue(
               encoder.encode(
@@ -267,14 +288,17 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
                   channelId: channel.id,
                   totalOnline: onlineUsers.length,
                   onlineUsers,
-                }),
-              ),
+                })
+              )
             );
 
             // Store member presence for change detection
             for (const member of channel.channelMembers) {
               if (!previousPresence.has(member.user.id)) {
-                previousPresence.set(member.user.id, buildPresenceResponse(member.user));
+                previousPresence.set(
+                  member.user.id,
+                  buildPresenceResponse(member.user)
+                );
               }
             }
           }
@@ -286,8 +310,8 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
             // Get all tracked user IDs
             const trackedUserIds = Array.from(previousPresence.keys());
             if (trackedUserIds.length === 0) {
-return;
-}
+              return;
+            }
 
             // Fetch current presence
             const users = await prisma.user.findMany({
@@ -313,7 +337,9 @@ return;
                   prevPresence.customStatus !== currentPresence.customStatus)
               ) {
                 controller.enqueue(
-                  encoder.encode(formatSSEMessage('presence:update', currentPresence)),
+                  encoder.encode(
+                    formatSSEMessage('presence:update', currentPresence)
+                  )
                 );
                 previousPresence.set(user.id, currentPresence);
               }
@@ -330,8 +356,8 @@ return;
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                }),
-              ),
+                })
+              )
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -361,9 +387,9 @@ return;
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

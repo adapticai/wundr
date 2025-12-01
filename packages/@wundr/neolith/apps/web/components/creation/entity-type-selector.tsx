@@ -14,7 +14,13 @@ import {
   Users,
   GitBranch,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { EntityType } from './types';
@@ -101,7 +107,7 @@ export function EntityTypeSelector({
 }: EntityTypeSelectorProps) {
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLButtonElement>,
-    entityType: EntityType,
+    entityType: EntityType
   ) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -111,8 +117,8 @@ export function EntityTypeSelector({
 
   if (variant === 'list') {
     return (
-      <div className="space-y-2" role="list" aria-label="Select entity type">
-        {ENTITY_TYPES.map((type) => (
+      <div className='space-y-2' role='list' aria-label='Select entity type'>
+        {ENTITY_TYPES.map(type => (
           <EntityTypeButton
             key={type.id}
             type={type}
@@ -128,11 +134,11 @@ export function EntityTypeSelector({
 
   return (
     <div
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      role="list"
-      aria-label="Select entity type"
+      className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+      role='list'
+      aria-label='Select entity type'
     >
-      {ENTITY_TYPES.map((type) => (
+      {ENTITY_TYPES.map(type => (
         <EntityTypeCard
           key={type.id}
           type={type}
@@ -168,12 +174,12 @@ function EntityTypeCard({
       className={cn(
         'cursor-pointer transition-all hover:shadow-md',
         selected && 'ring-2 ring-primary',
-        disabled && 'cursor-not-allowed opacity-50',
+        disabled && 'cursor-not-allowed opacity-50'
       )}
       onClick={() => !disabled && onSelect(type.id)}
-      role="listitem"
+      role='listitem'
       tabIndex={disabled ? -1 : 0}
-      onKeyDown={(e) => {
+      onKeyDown={e => {
         if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
           e.preventDefault();
           onSelect(type.id);
@@ -182,21 +188,23 @@ function EntityTypeCard({
       aria-selected={selected}
       aria-disabled={disabled}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
+      <CardHeader className='pb-3'>
+        <div className='flex items-center gap-3'>
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-lg bg-muted',
-              selected && 'bg-primary/10',
+              selected && 'bg-primary/10'
             )}
           >
             <Icon className={cn('h-5 w-5', type.color)} />
           </div>
-          <CardTitle className="text-base">{type.label}</CardTitle>
+          <CardTitle className='text-base'>{type.label}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
-        <CardDescription className="text-sm">{type.description}</CardDescription>
+        <CardDescription className='text-sm'>
+          {type.description}
+        </CardDescription>
       </CardContent>
     </Card>
   );
@@ -211,7 +219,7 @@ interface EntityTypeButtonProps {
   onSelect: (entityType: EntityType) => void;
   onKeyDown: (
     e: React.KeyboardEvent<HTMLButtonElement>,
-    entityType: EntityType,
+    entityType: EntityType
   ) => void;
   disabled: boolean;
 }
@@ -228,20 +236,27 @@ function EntityTypeButton({
   return (
     <Button
       variant={selected ? 'default' : 'outline'}
-      className="h-auto w-full justify-start gap-3 px-4 py-3"
+      className='h-auto w-full justify-start gap-3 px-4 py-3'
       onClick={() => onSelect(type.id)}
-      onKeyDown={(e) => onKeyDown(e, type.id)}
+      onKeyDown={e => onKeyDown(e, type.id)}
       disabled={disabled}
-      role="listitem"
+      role='listitem'
       aria-selected={selected}
     >
-      <Icon className={cn('h-5 w-5', selected ? 'text-primary-foreground' : type.color)} />
-      <div className="flex flex-col items-start gap-0.5">
-        <span className="font-medium">{type.label}</span>
-        <span className={cn(
-          'text-xs',
-          selected ? 'text-primary-foreground/80' : 'text-muted-foreground',
-        )}>
+      <Icon
+        className={cn(
+          'h-5 w-5',
+          selected ? 'text-primary-foreground' : type.color
+        )}
+      />
+      <div className='flex flex-col items-start gap-0.5'>
+        <span className='font-medium'>{type.label}</span>
+        <span
+          className={cn(
+            'text-xs',
+            selected ? 'text-primary-foreground/80' : 'text-muted-foreground'
+          )}
+        >
           {type.description}
         </span>
       </div>
@@ -252,6 +267,8 @@ function EntityTypeButton({
 /**
  * Get entity type info by ID
  */
-export function getEntityTypeInfo(entityType: EntityType): EntityTypeInfo | undefined {
-  return ENTITY_TYPES.find((t) => t.id === entityType);
+export function getEntityTypeInfo(
+  entityType: EntityType
+): EntityTypeInfo | undefined {
+  return ENTITY_TYPES.find(t => t.id === entityType);
 }

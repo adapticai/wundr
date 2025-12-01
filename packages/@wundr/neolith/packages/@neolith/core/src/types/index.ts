@@ -1367,15 +1367,9 @@ export {
 // Agent Enums
 // =============================================================================
 
-export type {
-  AgentStatus,
-  AgentScope,
-} from './agent-enums';
+export type { AgentStatus, AgentScope } from './agent-enums';
 
-export {
-  isAgentStatus,
-  isAgentScope,
-} from './agent-enums';
+export { isAgentStatus, isAgentScope } from './agent-enums';
 
 // =============================================================================
 // Session Manager Types

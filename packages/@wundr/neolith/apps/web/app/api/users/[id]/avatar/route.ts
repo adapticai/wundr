@@ -17,7 +17,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * GET /api/users/[id]/avatar
@@ -29,7 +29,7 @@ import type { NextRequest} from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -47,7 +47,7 @@ export async function GET(
     if (!validSizes.includes(size)) {
       return NextResponse.json(
         { error: `Invalid size. Must be one of: ${validSizes.join(', ')}` },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -62,7 +62,7 @@ export async function GET(
     console.error('Avatar GET error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch avatar' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -85,7 +85,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -101,7 +101,7 @@ export async function POST(
     if (session.user.id !== id && session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Forbidden - can only update your own avatar' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -118,7 +118,7 @@ export async function POST(
       if (!file) {
         return NextResponse.json(
           { error: 'No file provided in form data' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -133,7 +133,7 @@ export async function POST(
       if (!body.source) {
         return NextResponse.json(
           { error: 'Missing "source" field in request body' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -142,9 +142,10 @@ export async function POST(
     } else {
       return NextResponse.json(
         {
-          error: 'Invalid content type. Use multipart/form-data or application/json',
+          error:
+            'Invalid content type. Use multipart/form-data or application/json',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -164,33 +165,34 @@ export async function POST(
 
     // Handle specific avatar service errors
     if (error && typeof error === 'object' && 'name' in error) {
-      const err = error as { name: string; message: string; statusCode?: number };
+      const err = error as {
+        name: string;
+        message: string;
+        statusCode?: number;
+      };
 
       if (err.name === 'InvalidAvatarError') {
-        return NextResponse.json(
-          { error: err.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: err.message }, { status: 400 });
       }
 
       if (err.name === 'AvatarDownloadError') {
         return NextResponse.json(
           { error: 'Failed to download avatar from provided URL' },
-          { status: 502 },
+          { status: 502 }
         );
       }
 
       if (err.name === 'AvatarProcessingError') {
         return NextResponse.json(
           { error: 'Failed to process avatar image' },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
 
     return NextResponse.json(
       { error: 'Failed to upload avatar' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -202,7 +204,7 @@ export async function POST(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -217,7 +219,7 @@ export async function DELETE(
     if (session.user.id !== id && session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Forbidden - can only delete your own avatar' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -239,7 +241,7 @@ export async function DELETE(
     console.error('Avatar delete error:', error);
     return NextResponse.json(
       { error: 'Failed to delete avatar' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

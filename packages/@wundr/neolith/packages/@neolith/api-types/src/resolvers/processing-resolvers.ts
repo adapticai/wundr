@@ -10,11 +10,7 @@
 
 import { GraphQLError } from 'graphql';
 
-import type {
-  PrismaClient,
-  file as PrismaFile,
-  Prisma,
-} from '@prisma/client';
+import type { PrismaClient, file as PrismaFile, Prisma } from '@prisma/client';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -31,7 +27,8 @@ export const ProcessingStatus = {
   Cancelled: 'CANCELLED',
 } as const;
 
-export type ProcessingStatusValue = (typeof ProcessingStatus)[keyof typeof ProcessingStatus];
+export type ProcessingStatusValue =
+  (typeof ProcessingStatus)[keyof typeof ProcessingStatus];
 
 /**
  * Processing job type enum
@@ -44,7 +41,8 @@ export const ProcessingJobType = {
   Thumbnail: 'THUMBNAIL',
 } as const;
 
-export type ProcessingJobTypeValue = (typeof ProcessingJobType)[keyof typeof ProcessingJobType];
+export type ProcessingJobTypeValue =
+  (typeof ProcessingJobType)[keyof typeof ProcessingJobType];
 
 /**
  * User role for authorization checks
@@ -82,7 +80,10 @@ export interface ProcessingService {
   /** Retry a failed job */
   retryJob(jobId: string): Promise<ProcessingJob>;
   /** Extract text from file */
-  extractText(fileId: string, options?: TextExtractionOptions): Promise<ProcessingJob>;
+  extractText(
+    fileId: string,
+    options?: TextExtractionOptions
+  ): Promise<ProcessingJob>;
   /** Run OCR on file */
   runOCR(fileId: string, options?: OCROptions): Promise<ProcessingJob>;
   /** Convert document */
@@ -322,7 +323,18 @@ export const FILE_PROCESSING_COMPLETE = 'FILE_PROCESSING_COMPLETE';
 const SUPPORTED_CONVERSION_FORMATS = ['pdf', 'docx', 'txt', 'html', 'markdown'];
 
 /** Supported OCR languages */
-const SUPPORTED_OCR_LANGUAGES = ['eng', 'spa', 'fra', 'deu', 'ita', 'por', 'chi_sim', 'chi_tra', 'jpn', 'kor'];
+const SUPPORTED_OCR_LANGUAGES = [
+  'eng',
+  'spa',
+  'fra',
+  'deu',
+  'ita',
+  'por',
+  'chi_sim',
+  'chi_tra',
+  'jpn',
+  'kor',
+];
 
 /** Maximum pages for processing */
 const MAX_PAGES = 500;
@@ -407,9 +419,12 @@ function validateOCRLanguages(languages?: string[]): void {
 
   for (const lang of languages) {
     if (!SUPPORTED_OCR_LANGUAGES.includes(lang)) {
-      throw new GraphQLError(`Unsupported OCR language: ${lang}. Supported: ${SUPPORTED_OCR_LANGUAGES.join(', ')}`, {
-        extensions: { code: 'BAD_USER_INPUT', field: 'options.languages' },
-      });
+      throw new GraphQLError(
+        `Unsupported OCR language: ${lang}. Supported: ${SUPPORTED_OCR_LANGUAGES.join(', ')}`,
+        {
+          extensions: { code: 'BAD_USER_INPUT', field: 'options.languages' },
+        }
+      );
     }
   }
 }
@@ -419,9 +434,12 @@ function validateOCRLanguages(languages?: string[]): void {
  */
 function validateConversionFormat(format: string): void {
   if (!SUPPORTED_CONVERSION_FORMATS.includes(format.toLowerCase())) {
-    throw new GraphQLError(`Unsupported conversion format: ${format}. Supported: ${SUPPORTED_CONVERSION_FORMATS.join(', ')}`, {
-      extensions: { code: 'BAD_USER_INPUT', field: 'format' },
-    });
+    throw new GraphQLError(
+      `Unsupported conversion format: ${format}. Supported: ${SUPPORTED_CONVERSION_FORMATS.join(', ')}`,
+      {
+        extensions: { code: 'BAD_USER_INPUT', field: 'format' },
+      }
+    );
   }
 }
 
@@ -429,7 +447,9 @@ function validateConversionFormat(format: string): void {
  * Generate cursor from job for pagination
  */
 function generateCursor(job: ProcessingJob): string {
-  return Buffer.from(`${job.createdAt.toISOString()}:${job.id}`).toString('base64');
+  return Buffer.from(`${job.createdAt.toISOString()}:${job.id}`).toString(
+    'base64'
+  );
 }
 
 /**
@@ -579,7 +599,7 @@ export const processingQueries = {
     const totalCount = 0;
     const hasNextPage = false;
 
-    const edges = jobs.map((job) => ({
+    const edges = jobs.map(job => ({
       node: job,
       cursor: generateCursor(job),
     }));
@@ -644,20 +664,26 @@ export const processingQueries = {
       return {
         content: null,
         metadata: null,
-        errors: [{ code: 'NOT_FOUND', message: 'File not found or access denied' }],
+        errors: [
+          { code: 'NOT_FOUND', message: 'File not found or access denied' },
+        ],
       };
     }
 
     // Get extracted content from file metadata
     const metadata = file.metadata as Record<string, unknown> | null;
     const extractedContent = metadata?.extractedContent as string | undefined;
-    const extractedMetadata = metadata?.processingResult as Record<string, unknown> | undefined;
+    const extractedMetadata = metadata?.processingResult as
+      | Record<string, unknown>
+      | undefined;
 
     if (!extractedContent) {
       return {
         content: null,
         metadata: null,
-        errors: [{ code: 'NOT_PROCESSED', message: 'File has not been processed yet' }],
+        errors: [
+          { code: 'NOT_PROCESSED', message: 'File has not been processed yet' },
+        ],
       };
     }
 
@@ -692,7 +718,10 @@ export const processingMutations = {
     }
 
     if (!context.processingService) {
-      return createErrorPayload('SERVICE_UNAVAILABLE', 'Processing service unavailable');
+      return createErrorPayload(
+        'SERVICE_UNAVAILABLE',
+        'Processing service unavailable'
+      );
     }
 
     const { input } = args;
@@ -717,7 +746,8 @@ export const processingMutations = {
 
       return createSuccessPayload(job);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create job';
+      const message =
+        error instanceof Error ? error.message : 'Failed to create job';
       return createErrorPayload('INTERNAL_ERROR', message);
     }
   },
@@ -740,7 +770,12 @@ export const processingMutations = {
       return {
         success: false,
         jobId: null,
-        errors: [{ code: 'SERVICE_UNAVAILABLE', message: 'Processing service unavailable' }],
+        errors: [
+          {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Processing service unavailable',
+          },
+        ],
       };
     }
 
@@ -761,11 +796,19 @@ export const processingMutations = {
     }
 
     // Check if job can be cancelled
-    if (job.status === ProcessingStatus.Completed || job.status === ProcessingStatus.Cancelled) {
+    if (
+      job.status === ProcessingStatus.Completed ||
+      job.status === ProcessingStatus.Cancelled
+    ) {
       return {
         success: false,
         jobId: args.jobId,
-        errors: [{ code: 'INVALID_STATE', message: 'Job cannot be cancelled in current state' }],
+        errors: [
+          {
+            code: 'INVALID_STATE',
+            message: 'Job cannot be cancelled in current state',
+          },
+        ],
       };
     }
 
@@ -774,7 +817,9 @@ export const processingMutations = {
     return {
       success,
       jobId: success ? args.jobId : null,
-      errors: success ? [] : [{ code: 'CANCEL_FAILED', message: 'Failed to cancel job' }],
+      errors: success
+        ? []
+        : [{ code: 'CANCEL_FAILED', message: 'Failed to cancel job' }],
     };
   },
 
@@ -793,7 +838,10 @@ export const processingMutations = {
     }
 
     if (!context.processingService) {
-      return createErrorPayload('SERVICE_UNAVAILABLE', 'Processing service unavailable');
+      return createErrorPayload(
+        'SERVICE_UNAVAILABLE',
+        'Processing service unavailable'
+      );
     }
 
     const existingJob = await context.processingService.getJob(args.jobId);
@@ -810,7 +858,10 @@ export const processingMutations = {
 
     // Check if job can be retried
     if (existingJob.status !== ProcessingStatus.Failed) {
-      return createErrorPayload('INVALID_STATE', 'Only failed jobs can be retried');
+      return createErrorPayload(
+        'INVALID_STATE',
+        'Only failed jobs can be retried'
+      );
     }
 
     try {
@@ -823,7 +874,8 @@ export const processingMutations = {
 
       return createSuccessPayload(job);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to retry job';
+      const message =
+        error instanceof Error ? error.message : 'Failed to retry job';
       return createErrorPayload('INTERNAL_ERROR', message);
     }
   },
@@ -843,7 +895,10 @@ export const processingMutations = {
     }
 
     if (!context.processingService) {
-      return createErrorPayload('SERVICE_UNAVAILABLE', 'Processing service unavailable');
+      return createErrorPayload(
+        'SERVICE_UNAVAILABLE',
+        'Processing service unavailable'
+      );
     }
 
     // Check file access
@@ -855,11 +910,17 @@ export const processingMutations = {
     // Validate options
     const options = args.options ?? {};
     if (options.maxPages && options.maxPages > MAX_PAGES) {
-      return createErrorPayload('BAD_USER_INPUT', `Maximum pages is ${MAX_PAGES}`);
+      return createErrorPayload(
+        'BAD_USER_INPUT',
+        `Maximum pages is ${MAX_PAGES}`
+      );
     }
 
     try {
-      const job = await context.processingService.extractText(args.fileId, options);
+      const job = await context.processingService.extractText(
+        args.fileId,
+        options
+      );
 
       // Publish events
       await context.pubsub.publish(`${PROCESSING_JOB_UPDATED}_${job.id}`, {
@@ -868,7 +929,10 @@ export const processingMutations = {
 
       return createSuccessPayload(job);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create extraction job';
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to create extraction job';
       return createErrorPayload('INTERNAL_ERROR', message);
     }
   },
@@ -888,7 +952,10 @@ export const processingMutations = {
     }
 
     if (!context.processingService) {
-      return createErrorPayload('SERVICE_UNAVAILABLE', 'Processing service unavailable');
+      return createErrorPayload(
+        'SERVICE_UNAVAILABLE',
+        'Processing service unavailable'
+      );
     }
 
     // Check file access
@@ -903,7 +970,10 @@ export const processingMutations = {
       validateOCRLanguages(options.languages ?? undefined);
     } catch (error) {
       if (error instanceof GraphQLError) {
-        return createErrorPayload(error.extensions?.code as string, error.message);
+        return createErrorPayload(
+          error.extensions?.code as string,
+          error.message
+        );
       }
       throw error;
     }
@@ -918,7 +988,8 @@ export const processingMutations = {
 
       return createSuccessPayload(job);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create OCR job';
+      const message =
+        error instanceof Error ? error.message : 'Failed to create OCR job';
       return createErrorPayload('INTERNAL_ERROR', message);
     }
   },
@@ -938,7 +1009,10 @@ export const processingMutations = {
     }
 
     if (!context.processingService) {
-      return createErrorPayload('SERVICE_UNAVAILABLE', 'Processing service unavailable');
+      return createErrorPayload(
+        'SERVICE_UNAVAILABLE',
+        'Processing service unavailable'
+      );
     }
 
     // Check file access
@@ -952,13 +1026,19 @@ export const processingMutations = {
       validateConversionFormat(args.format);
     } catch (error) {
       if (error instanceof GraphQLError) {
-        return createErrorPayload(error.extensions?.code as string, error.message);
+        return createErrorPayload(
+          error.extensions?.code as string,
+          error.message
+        );
       }
       throw error;
     }
 
     try {
-      const job = await context.processingService.convertDocument(args.fileId, args.format);
+      const job = await context.processingService.convertDocument(
+        args.fileId,
+        args.format
+      );
 
       // Publish events
       await context.pubsub.publish(`${PROCESSING_JOB_UPDATED}_${job.id}`, {
@@ -967,7 +1047,10 @@ export const processingMutations = {
 
       return createSuccessPayload(job);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create conversion job';
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to create conversion job';
       return createErrorPayload('INTERNAL_ERROR', message);
     }
   },
@@ -1009,7 +1092,9 @@ export const processingSubscriptions = {
         }
       }
 
-      return context.pubsub.asyncIterator(`${PROCESSING_JOB_UPDATED}_${args.jobId}`);
+      return context.pubsub.asyncIterator(
+        `${PROCESSING_JOB_UPDATED}_${args.jobId}`
+      );
     },
   },
 
@@ -1036,7 +1121,9 @@ export const processingSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${FILE_PROCESSING_COMPLETE}_${args.fileId}`);
+      return context.pubsub.asyncIterator(
+        `${FILE_PROCESSING_COMPLETE}_${args.fileId}`
+      );
     },
   },
 };

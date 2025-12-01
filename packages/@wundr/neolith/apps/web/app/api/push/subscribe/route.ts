@@ -66,8 +66,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -77,8 +80,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createNotificationErrorResponse('Invalid JSON body', NOTIFICATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createNotificationErrorResponse(
+          'Invalid JSON body',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -89,9 +95,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -142,9 +148,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         data: subscription,
-        message: isNew ? 'Device registered successfully' : 'Device subscription updated',
+        message: isNew
+          ? 'Device registered successfully'
+          : 'Device subscription updated',
       },
-      { status: isNew ? 201 : 200 },
+      { status: isNew ? 201 : 200 }
     );
   } catch (error) {
     // Handle unique constraint violation
@@ -155,18 +163,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Device already registered',
-          NOTIFICATION_ERROR_CODES.DUPLICATE_SUBSCRIPTION,
+          NOTIFICATION_ERROR_CODES.DUPLICATE_SUBSCRIPTION
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

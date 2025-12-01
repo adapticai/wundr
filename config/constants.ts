@@ -36,8 +36,14 @@ export const ANALYSIS_CONFIG = {
 // Dashboard configuration
 export const DASHBOARD_CONFIG = {
   CHART_COLORS: [
-    '#3498db', '#e74c3c', '#2ecc71', '#f39c12',
-    '#9b59b6', '#34495e', '#1abc9c', '#e67e22'
+    '#3498db',
+    '#e74c3c',
+    '#2ecc71',
+    '#f39c12',
+    '#9b59b6',
+    '#34495e',
+    '#1abc9c',
+    '#e67e22',
   ],
   SEVERITY_COLORS: {
     critical: '#e74c3c',
@@ -46,8 +52,11 @@ export const DASHBOARD_CONFIG = {
     low: '#2ecc71',
   },
   CDN_URLS: {
-    CHART_JS: process.env.CHART_JS_CDN || 'https://cdn.jsdelivr.net/npm/chart.js',
-    FONT_AWESOME: process.env.FONT_AWESOME_CDN || 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    CHART_JS:
+      process.env.CHART_JS_CDN || 'https://cdn.jsdelivr.net/npm/chart.js',
+    FONT_AWESOME:
+      process.env.FONT_AWESOME_CDN ||
+      'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   },
 } as const;
 
@@ -110,13 +119,41 @@ export const ESLINT_CONFIG = {
     /Proxy$/,
   ],
   DB_KEYWORDS: [
-    'query', 'insert', 'update', 'delete', 'select',
-    'raw', 'knex', 'sequelize', 'mongoose'
+    'query',
+    'insert',
+    'update',
+    'delete',
+    'select',
+    'raw',
+    'knex',
+    'sequelize',
+    'mongoose',
   ],
   VALID_ASYNC_PREFIXES: [
-    'get', 'set', 'fetch', 'save', 'load', 'create', 'update', 'delete', 'remove',
-    'process', 'handle', 'execute', 'run', 'start', 'stop', 'init', 'cleanup',
-    'validate', 'check', 'verify', 'send', 'receive', 'subscribe', 'unsubscribe'
+    'get',
+    'set',
+    'fetch',
+    'save',
+    'load',
+    'create',
+    'update',
+    'delete',
+    'remove',
+    'process',
+    'handle',
+    'execute',
+    'run',
+    'start',
+    'stop',
+    'init',
+    'cleanup',
+    'validate',
+    'check',
+    'verify',
+    'send',
+    'receive',
+    'subscribe',
+    'unsubscribe',
   ],
 } as const;
 
@@ -125,24 +162,24 @@ export const MONOREPO_CONFIG = {
   DEFAULT_PACKAGES: {
     '@your-org/core': {
       description: 'Core utilities and shared types',
-      include: ['types/', 'interfaces/', 'utils/', 'constants/']
+      include: ['types/', 'interfaces/', 'utils/', 'constants/'],
     },
     '@your-org/services': {
       description: 'Business logic services',
-      include: ['services/', 'handlers/']
+      include: ['services/', 'handlers/'],
     },
     '@your-org/integrations': {
       description: 'External service integrations',
-      include: ['integrations/', 'adapters/']
+      include: ['integrations/', 'adapters/'],
     },
     '@your-org/models': {
       description: 'Data models and schemas',
-      include: ['models/', 'schemas/']
+      include: ['models/', 'schemas/'],
     },
     '@your-org/api': {
       description: 'API routes and controllers',
-      include: ['api/', 'routes/', 'controllers/']
-    }
+      include: ['api/', 'routes/', 'controllers/'],
+    },
   },
   PACKAGE_PREFIX: process.env.PACKAGE_PREFIX || '@your-org',
 } as const;
@@ -161,7 +198,7 @@ export const EXTERNAL_URLS = {
 // Environment-specific configurations
 export const getEnvironmentConfig = () => {
   const env = process.env.NODE_ENV || 'development';
-  
+
   const configs = {
     development: {
       LOG_LEVEL: 'debug',

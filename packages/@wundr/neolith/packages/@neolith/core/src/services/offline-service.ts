@@ -47,7 +47,6 @@ import {
   type MarkReadResult,
 } from '../types/offline';
 
-
 // =============================================================================
 // Custom Errors
 // =============================================================================
@@ -56,7 +55,11 @@ import {
  * Error thrown for offline queue operations.
  */
 export class OfflineQueueError extends GenesisError {
-  constructor(message: string, code: string, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, 500, metadata);
     this.name = 'OfflineQueueError';
   }
@@ -70,7 +73,7 @@ export class QueueFullError extends OfflineQueueError {
     super(
       `Queue is full for user ${userId}. Maximum size: ${maxSize}`,
       'QUEUE_FULL',
-      { userId, maxSize },
+      { userId, maxSize }
     );
     this.name = 'QueueFullError';
   }
@@ -81,11 +84,7 @@ export class QueueFullError extends OfflineQueueError {
  */
 export class ActionNotFoundError extends OfflineQueueError {
   constructor(actionId: string) {
-    super(
-      `Action not found: ${actionId}`,
-      'ACTION_NOT_FOUND',
-      { actionId },
-    );
+    super(`Action not found: ${actionId}`, 'ACTION_NOT_FOUND', { actionId });
     this.name = 'ActionNotFoundError';
   }
 }
@@ -100,7 +99,7 @@ export class ActionProcessingError extends OfflineQueueError {
     super(
       `Failed to process action ${actionId}: ${message}`,
       'ACTION_PROCESSING_FAILED',
-      { actionId, canRetry },
+      { actionId, canRetry }
     );
     this.name = 'ActionProcessingError';
     this.canRetry = canRetry;
@@ -200,7 +199,7 @@ export interface OfflineQueueService {
   updateActionStatus(
     actionId: string,
     status: QueuedActionStatus,
-    error?: string,
+    error?: string
   ): Promise<void>;
 
   /**
@@ -262,7 +261,9 @@ export type ActionProcessorResult =
  * @param action - The queued action to process
  * @returns Promise resolving to the action result
  */
-export type ActionProcessor = (action: QueuedAction) => Promise<ActionProcessorResult>;
+export type ActionProcessor = (
+  action: QueuedAction
+) => Promise<ActionProcessorResult>;
 
 // =============================================================================
 // Service Implementation
@@ -287,7 +288,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
    */
   constructor(
     config: Partial<OfflineQueueConfig> = {},
-    storage?: LocalStorageService,
+    storage?: LocalStorageService
   ) {
     this.config = { ...DEFAULT_OFFLINE_QUEUE_CONFIG, ...config };
     this.storage = storage ?? createLocalStorageService();
@@ -402,7 +403,8 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
         low: 3,
       };
 
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      const priorityDiff =
+        priorityOrder[a.priority] - priorityOrder[b.priority];
       if (priorityDiff !== 0) {
         return priorityDiff;
       }
@@ -470,7 +472,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
 
     try {
       const queue = await this.getQueue(userId);
-      const pendingActions = queue.filter((a) => a.status === 'pending');
+      const pendingActions = queue.filter(a => a.status === 'pending');
 
       // Process in batches
       const batches = this.createBatches(pendingActions, this.config.batchSize);
@@ -505,7 +507,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
   async retryFailed(userId: string): Promise<SyncResult> {
     const queue = await this.getQueue(userId);
     const failedActions = queue.filter(
-      (a) => a.status === 'failed' && a.retryCount < a.maxRetries,
+      a => a.status === 'failed' && a.retryCount < a.maxRetries
     );
 
     // Reset status to pending
@@ -523,21 +525,29 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
   async getQueueStatus(userId: string): Promise<QueueStatus> {
     const queue = await this.getQueue(userId);
 
-    const pendingActions = queue.filter((a) => a.status === 'pending');
-    const processingActions = queue.filter((a) => a.status === 'processing');
-    const failedActions = queue.filter((a) => a.status === 'failed');
+    const pendingActions = queue.filter(a => a.status === 'pending');
+    const processingActions = queue.filter(a => a.status === 'processing');
+    const failedActions = queue.filter(a => a.status === 'failed');
 
-    const oldestPending = pendingActions.length > 0
-      ? new Date(Math.min(...pendingActions.map((a) => new Date(a.timestamp).getTime())))
-      : undefined;
+    const oldestPending =
+      pendingActions.length > 0
+        ? new Date(
+            Math.min(
+              ...pendingActions.map(a => new Date(a.timestamp).getTime())
+            )
+          )
+        : undefined;
 
-    const lastError = failedActions.length > 0
-      ? failedActions[failedActions.length - 1]?.lastError
-      : undefined;
+    const lastError =
+      failedActions.length > 0
+        ? failedActions[failedActions.length - 1]?.lastError
+        : undefined;
 
     // Get last sync timestamp
     const syncStateKey = this.getSyncStateKey(userId);
-    const syncState = await this.storage.get<{ lastSyncAt?: Date }>(syncStateKey);
+    const syncState = await this.storage.get<{ lastSyncAt?: Date }>(
+      syncStateKey
+    );
 
     return {
       userId,
@@ -556,7 +566,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
    */
   async getPendingCount(userId: string): Promise<number> {
     const queue = await this.getQueue(userId);
-    return queue.filter((a) => a.status === 'pending').length;
+    return queue.filter(a => a.status === 'pending').length;
   }
 
   /**
@@ -565,7 +575,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
   async updateActionStatus(
     actionId: string,
     status: QueuedActionStatus,
-    error?: string,
+    error?: string
   ): Promise<void> {
     const action = await this.getAction(actionId);
     if (!action) {
@@ -576,8 +586,12 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
       ...action,
       status,
       lastError: error,
-      lastAttemptAt: status === 'processing' || status === 'failed' ? new Date() : action.lastAttemptAt,
-      retryCount: status === 'failed' ? action.retryCount + 1 : action.retryCount,
+      lastAttemptAt:
+        status === 'processing' || status === 'failed'
+          ? new Date()
+          : action.lastAttemptAt,
+      retryCount:
+        status === 'failed' ? action.retryCount + 1 : action.retryCount,
     };
 
     const key = this.getActionKey(actionId);
@@ -645,7 +659,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
    */
   private async processBatch(
     actions: QueuedAction[],
-    result: SyncResult,
+    result: SyncResult
   ): Promise<void> {
     // Check dependencies and filter out actions with unmet dependencies
     const readyActions: QueuedAction[] = [];
@@ -660,8 +674,8 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
     }
 
     // Process ready actions concurrently
-    const promises = readyActions.map((action) =>
-      this.processAction(action, result),
+    const promises = readyActions.map(action =>
+      this.processAction(action, result)
     );
 
     await Promise.allSettled(promises);
@@ -672,7 +686,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
    */
   private async processAction(
     action: QueuedAction,
-    result: SyncResult,
+    result: SyncResult
   ): Promise<void> {
     const processor = this.processors.get(action.type);
     if (!processor) {
@@ -689,7 +703,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
       // Process with timeout
       const processResult = await this.withTimeout(
         processor(action),
-        this.config.actionTimeoutMs,
+        this.config.actionTimeoutMs
       );
 
       // Success - remove from queue
@@ -699,7 +713,8 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
 
       this.eventEmitter.emit('action:completed', action.id, processResult);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       const canRetry = action.retryCount < action.maxRetries - 1;
 
       await this.updateActionStatus(action.id, 'failed', errorMessage);
@@ -711,21 +726,29 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
         canRetry,
       });
 
-      this.eventEmitter.emit('action:failed', action.id, errorMessage, canRetry);
+      this.eventEmitter.emit(
+        'action:failed',
+        action.id,
+        errorMessage,
+        canRetry
+      );
 
       // Schedule retry if allowed
       if (canRetry) {
         const delay = calculateRetryDelay(action.retryCount, this.config);
         setTimeout(() => {
-          this.storage.get<QueuedAction>(this.getActionKey(action.id)).then((a) => {
-            if (a?.status === 'failed') {
-              this.updateActionStatus(action.id, 'pending').catch(() => {
-                // Ignore errors
-              });
-            }
-          }).catch(() => {
-            // Ignore errors
-          });
+          this.storage
+            .get<QueuedAction>(this.getActionKey(action.id))
+            .then(a => {
+              if (a?.status === 'failed') {
+                this.updateActionStatus(action.id, 'pending').catch(() => {
+                  // Ignore errors
+                });
+              }
+            })
+            .catch(() => {
+              // Ignore errors
+            });
         }, delay);
       }
     }
@@ -736,13 +759,13 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
    */
   private areDependenciesMet(
     action: QueuedAction,
-    completedIds: Set<string>,
+    completedIds: Set<string>
   ): boolean {
     if (!action.dependsOn || action.dependsOn.length === 0) {
       return true;
     }
 
-    return action.dependsOn.every((depId) => completedIds.has(depId));
+    return action.dependsOn.every(depId => completedIds.has(depId));
   }
 
   /**
@@ -759,18 +782,21 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
   /**
    * Wraps a promise with a timeout.
    */
-  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number
+  ): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error(`Operation timed out after ${timeoutMs}ms`));
       }, timeoutMs);
 
       promise
-        .then((result) => {
+        .then(result => {
           clearTimeout(timer);
           resolve(result);
         })
-        .catch((error) => {
+        .catch(error => {
           clearTimeout(timer);
           reject(error);
         });
@@ -822,7 +848,11 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
    * Gets the storage key for sync state.
    */
   private getSyncStateKey(userId: string): string {
-    return generateStorageKey(this.config.storageKeyPrefix, 'sync-state', userId);
+    return generateStorageKey(
+      this.config.storageKeyPrefix,
+      'sync-state',
+      userId
+    );
   }
 
   /**
@@ -836,7 +866,10 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
   /**
    * Adds an action to the user's queue index.
    */
-  private async addToUserQueueIndex(userId: string, actionId: string): Promise<void> {
+  private async addToUserQueueIndex(
+    userId: string,
+    actionId: string
+  ): Promise<void> {
     const index = await this.getUserQueueIndex(userId);
     if (!index.includes(actionId)) {
       index.push(actionId);
@@ -848,9 +881,12 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
   /**
    * Removes an action from the user's queue index.
    */
-  private async removeFromUserQueueIndex(userId: string, actionId: string): Promise<void> {
+  private async removeFromUserQueueIndex(
+    userId: string,
+    actionId: string
+  ): Promise<void> {
     const index = await this.getUserQueueIndex(userId);
-    const newIndex = index.filter((id) => id !== actionId);
+    const newIndex = index.filter(id => id !== actionId);
     const key = this.getUserQueueIndexKey(userId);
     await this.storage.set(key, newIndex);
   }
@@ -869,18 +905,21 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
     // Auto-process if enabled
     if (this.config.autoProcess) {
       // Get all user IDs from storage and process their queues
-      this.storage.getKeys(`${this.config.storageKeyPrefix}index:`).then((keys) => {
-        for (const key of keys) {
-          const userId = key.split(':').pop();
-          if (userId) {
-            this.processQueue(userId).catch(() => {
-              // Ignore errors from auto-processing
-            });
+      this.storage
+        .getKeys(`${this.config.storageKeyPrefix}index:`)
+        .then(keys => {
+          for (const key of keys) {
+            const userId = key.split(':').pop();
+            if (userId) {
+              this.processQueue(userId).catch(() => {
+                // Ignore errors from auto-processing
+              });
+            }
           }
-        }
-      }).catch(() => {
-        // Ignore errors
-      });
+        })
+        .catch(() => {
+          // Ignore errors
+        });
     }
   }
 
@@ -966,7 +1005,7 @@ export class OfflineQueueServiceImpl implements OfflineQueueService {
  */
 export function createOfflineQueueService(
   config: Partial<OfflineQueueConfig> = {},
-  storage?: LocalStorageService,
+  storage?: LocalStorageService
 ): OfflineQueueServiceImpl {
   return new OfflineQueueServiceImpl(config, storage);
 }

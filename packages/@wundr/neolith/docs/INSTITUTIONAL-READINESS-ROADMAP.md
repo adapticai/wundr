@@ -1,10 +1,8 @@
 # NEOLITH INSTITUTIONAL READINESS ROADMAP
 
-**Version:** 1.5.0
-**Date:** November 27, 2025
-**Last Updated:** November 27, 2025, 10:00 UTC (20-Agent Comprehensive Code Audit)
-**Target Launch:** 16 Orchestrator Daemon Machines + Public App Stores
-**Methodology:** Phased deployment with 20-agent parallel swarms per wave
+**Version:** 1.5.0 **Date:** November 27, 2025 **Last Updated:** November 27, 2025, 10:00 UTC
+(20-Agent Comprehensive Code Audit) **Target Launch:** 16 Orchestrator Daemon Machines + Public App
+Stores **Methodology:** Phased deployment with 20-agent parallel swarms per wave
 
 ---
 
@@ -29,54 +27,62 @@
 ## Executive Summary
 
 ### Current Status (Updated: November 27, 2025, 10:00 UTC - 20-Agent Code Audit)
-- **Web App:** ~~35-40%~~ → ~~70-75%~~ → ~~85-90%~~ → **92% complete** (20-Agent Comprehensive Audit)
+
+- **Web App:** ~~35-40%~~ → ~~70-75%~~ → ~~85-90%~~ → **92% complete** (20-Agent Comprehensive
+  Audit)
 - **Desktop App:** 70% complete, missing renderer integration
 - **Mobile App:** 65% complete, native projects not initialized
 - **VP Integration:** ~~40%~~ → **60% complete** (APIs built, daemon integration pending)
 - **Org-Genesis:** ~~0%~~ → **100% integrated** (workspace creation flow complete)
-- **20-Agent Audit:** ✅ Complete (November 27, 2025) - Analyzed 251 API routes, 216 components, 20 feature areas
+- **20-Agent Audit:** ✅ Complete (November 27, 2025) - Analyzed 251 API routes, 216 components, 20
+  feature areas
 
 ### 20-Agent Code Audit Summary (November 27, 2025)
 
-| Area | Agent | Score | Status |
-|------|-------|-------|--------|
-| Auth | 1 | 7/10 | ⚠️ Email/password broken, reset page missing |
-| Dashboard | 2 | 9/10 | ✅ Complete with real Prisma queries |
-| VPs | 3 | 5/5 | ✅ 30+ API endpoints, comprehensive |
-| Workflows | 4 | 7.5/10 | ⚠️ Form-based, action configs empty |
-| Agents | 5 | 8/10 | ⚠️ CRUD works, in-memory mock store |
-| Channels | 6 | 95% | ⚠️ List page doesn't call API |
-| Analytics | 7 | 9/10 | ✅ Real data with export |
-| Deployments | 8 | 7/10 | ⚠️ UI complete, mock backend |
-| Settings | 9 | 8.5/10 | ✅ UI complete, some API missing |
-| Admin | 10 | 96% | ✅ Full RBAC user management |
-| API Routes | 11 | 75% | ⚠️ 251 routes, 75% production-ready |
-| Hooks | 12 | 9/10 | ✅ Production-ready |
-| Lib/Utils | 13 | 8.5/10 | ✅ Comprehensive Zod schemas |
-| Components | 14 | 8.5/10 | ✅ 216 components |
-| Types | 15 | 8/10 | ⚠️ 17 'any' types |
-| **Middleware** | 16 | **3/10** | ❌ **CRITICAL: No middleware.ts** |
-| Prisma | 17 | 8.5/10 | ⚠️ Schema/type mismatches |
-| Tests | 18 | 6.5/10 | ❌ Only 15-20% coverage |
-| **Error Boundaries** | 19 | **6/10** | ❌ **Missing error.tsx files** |
-| **Config** | 20 | **7.5/10** | ❌ **Missing .env.example** |
+| Area                 | Agent | Score      | Status                                       |
+| -------------------- | ----- | ---------- | -------------------------------------------- |
+| Auth                 | 1     | 7/10       | ⚠️ Email/password broken, reset page missing |
+| Dashboard            | 2     | 9/10       | ✅ Complete with real Prisma queries         |
+| VPs                  | 3     | 5/5        | ✅ 30+ API endpoints, comprehensive          |
+| Workflows            | 4     | 7.5/10     | ⚠️ Form-based, action configs empty          |
+| Agents               | 5     | 8/10       | ⚠️ CRUD works, in-memory mock store          |
+| Channels             | 6     | 95%        | ⚠️ List page doesn't call API                |
+| Analytics            | 7     | 9/10       | ✅ Real data with export                     |
+| Deployments          | 8     | 7/10       | ⚠️ UI complete, mock backend                 |
+| Settings             | 9     | 8.5/10     | ✅ UI complete, some API missing             |
+| Admin                | 10    | 96%        | ✅ Full RBAC user management                 |
+| API Routes           | 11    | 75%        | ⚠️ 251 routes, 75% production-ready          |
+| Hooks                | 12    | 9/10       | ✅ Production-ready                          |
+| Lib/Utils            | 13    | 8.5/10     | ✅ Comprehensive Zod schemas                 |
+| Components           | 14    | 8.5/10     | ✅ 216 components                            |
+| Types                | 15    | 8/10       | ⚠️ 17 'any' types                            |
+| **Middleware**       | 16    | **3/10**   | ❌ **CRITICAL: No middleware.ts**            |
+| Prisma               | 17    | 8.5/10     | ⚠️ Schema/type mismatches                    |
+| Tests                | 18    | 6.5/10     | ❌ Only 15-20% coverage                      |
+| **Error Boundaries** | 19    | **6/10**   | ❌ **Missing error.tsx files**               |
+| **Config**           | 20    | **7.5/10** | ❌ **Missing .env.example**                  |
 
 ### Critical Blockers (Updated: November 27, 2025, 10:00 UTC - 20-Agent Audit)
 
 #### ❌ NEW CRITICAL (Discovered by 20-Agent Audit)
+
 13. **No middleware.ts** - No centralized auth, rate limiting, CORS handling ❌ CRITICAL
 14. **Missing error.tsx files** - Route-level error boundaries missing ❌ HIGH
 15. **No .env.example** - Developer onboarding friction ❌ HIGH
 16. **Test coverage at 15-20%** - Insufficient for production confidence ⚠️ MEDIUM
 
 #### Previous Blockers (Status Updated)
+
 1. ~~**VP-Daemon Package:** Does not exist (only CLI stub)~~ ⚠️ Package exists, npm publish pending
 2. ~~**Org-Genesis Integration:** Completely disconnected from workspace creation~~ ✅ RESOLVED
-3. ~~**Autonomous Agent Operation:** No backlog system, no self-directed work~~ ⚠️ APIs built, daemon integration pending
-4. ~~**Browser Testing:** No MCP server configured for automated UI testing~~ ✅ RESOLVED (Playwright MCP configured)
+3. ~~**Autonomous Agent Operation:** No backlog system, no self-directed work~~ ⚠️ APIs built,
+   daemon integration pending
+4. ~~**Browser Testing:** No MCP server configured for automated UI testing~~ ✅ RESOLVED
+   (Playwright MCP configured)
 5. **Mobile Native Projects:** iOS/Android projects not initialized ❌ STILL BLOCKING
 6. **Desktop Renderer:** Production build missing ⚠️ PARTIAL
-7. ~~**STUB APIs:** 7 API endpoints return mock data~~ ✅ REDUCED to 1 (ai-config & notifications IMPLEMENTED)
+7. ~~**STUB APIs:** 7 API endpoints return mock data~~ ✅ REDUCED to 1 (ai-config & notifications
+   IMPLEMENTED)
 8. ~~**Dashboard Activity 404:** Dashboard widget failing~~ ✅ FIXED (Agent swarm)
 9. ~~**Channels API 404:** Dashboard sidebar failing~~ ✅ FIXED (Agent swarm)
 10. ~~**VPs API 404:** VPs page failing~~ ✅ FIXED (Agent swarm)
@@ -84,10 +90,12 @@
 12. ~~**Settings Redirect Bug:** Settings redirecting to onboarding~~ ✅ FIXED (Agent swarm)
 
 ### Success Criteria (Updated November 27, 2025)
+
 - ⚠️ All 24 web pages functional and tested (22/24 complete, agents/deployments partial)
 - ⏳ Desktop app packages for macOS/Windows/Linux (awaiting renderer fix)
 - ⏳ Mobile apps submitted to App Store and Google Play (native projects not initialized)
-- ⏳ Orchestrator agents can autonomously work through backlogs (APIs ready, daemon integration pending)
+- ⏳ Orchestrator agents can autonomously work through backlogs (APIs ready, daemon integration
+  pending)
 - ✅ Workspace creation generates full org hierarchy via org-genesis
 - ⏳ Orchestrator agents can participate in conversations, channels, calls (partial)
 - ⏳ All UI components have proper empty states and skeleton loaders (partial)
@@ -103,14 +111,14 @@
 
 ### Estimated Remaining Work (Post 20-Agent Audit)
 
-| Category | Hours | Priority |
-|----------|-------|----------|
-| Critical Infrastructure (middleware, error boundaries, .env) | 8-11 | ❌ CRITICAL |
-| Auth Fixes (email/password, reset password) | 4-6 | ⚠️ HIGH |
-| Data Integration (channel list, agents, deployments) | 5-10 | ⚠️ MEDIUM |
-| STUB APIs (export only - ai-config & notifications COMPLETE) | 8-10 | ⚠️ LOW |
-| Test Coverage Expansion | 20-30 | LOW |
-| **Total** | **40-62** | - |
+| Category                                                     | Hours     | Priority    |
+| ------------------------------------------------------------ | --------- | ----------- |
+| Critical Infrastructure (middleware, error boundaries, .env) | 8-11      | ❌ CRITICAL |
+| Auth Fixes (email/password, reset password)                  | 4-6       | ⚠️ HIGH     |
+| Data Integration (channel list, agents, deployments)         | 5-10      | ⚠️ MEDIUM   |
+| STUB APIs (export only - ai-config & notifications COMPLETE) | 8-10      | ⚠️ LOW      |
+| Test Coverage Expansion                                      | 20-30     | LOW         |
+| **Total**                                                    | **40-62** | -           |
 
 ---
 
@@ -119,6 +127,7 @@
 ### Recommended Approach: Microsoft Playwright MCP Server
 
 **Why Playwright MCP:**
+
 - ✅ **Official Microsoft support** - actively maintained
 - ✅ **Accessibility-tree based** - no vision models needed
 - ✅ **Fast & lightweight** - structured data vs. screenshots
@@ -126,6 +135,7 @@
 - ✅ **Launched March 2025** - cutting edge
 
 **Installation:**
+
 ```bash
 # Add Playwright MCP server to Claude Code
 claude mcp add playwright npx @playwright/mcp-server
@@ -135,6 +145,7 @@ claude mcp list
 ```
 
 **Alternative: Puppeteer MCP** (if Playwright has issues)
+
 ```bash
 claude mcp add puppeteer npx @modelcontextprotocol/server-puppeteer
 ```
@@ -142,11 +153,13 @@ claude mcp add puppeteer npx @modelcontextprotocol/server-puppeteer
 ### Testing Workflow with Browser MCP
 
 **Setup Phase:**
+
 1. Start Neolith dev server: `pnpm dev` (port 3000)
 2. Playwright MCP connects to http://localhost:3000
 3. Claude Code uses MCP tools to interact with UI
 
 **Test Execution:**
+
 ```
 Agent: "Test the workspace creation flow"
 → Playwright MCP navigates to /login
@@ -160,6 +173,7 @@ Agent: "Test the workspace creation flow"
 ```
 
 **MCP Tools Available:**
+
 - `playwright_navigate` - Go to URL
 - `playwright_click` - Click elements
 - `playwright_fill` - Fill form inputs
@@ -170,6 +184,7 @@ Agent: "Test the workspace creation flow"
 ### Automated Test Scenarios
 
 **Critical User Flows (Must Test):**
+
 1. Authentication (OAuth Google/GitHub)
 2. Workspace creation with org-genesis
 3. Orchestrator creation and configuration
@@ -182,6 +197,7 @@ Agent: "Test the workspace creation flow"
 10. Theme switching
 
 **Per-Page Validation:**
+
 - All 24 pages load without errors
 - Empty states display correctly
 - Skeleton loaders during data fetch
@@ -191,6 +207,7 @@ Agent: "Test the workspace creation flow"
 - Navigation works correctly
 
 **Sources:**
+
 - [Microsoft Playwright MCP](https://github.com/microsoft/playwright-mcp)
 - [Playwright MCP Guide](https://medium.com/@bluudit/playwright-mcp-comprehensive-guide-to-ai-powered-browser-automation-in-2025-712c9fd6cffa)
 - [Browser Automation MCP](https://claudefa.st/blog/tools/mcp-extensions/browser-automation)
@@ -199,16 +216,16 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 0: Critical Foundations (IMMEDIATE)
 
-**Duration:** 1-2 days
-**Agents Required:** 10 specialist agents
-**Execution:** Sequential (blocking dependencies)
+**Duration:** 1-2 days **Agents Required:** 10 specialist agents **Execution:** Sequential (blocking
+dependencies)
 
 ### Task Group 0.1: Build VP-Daemon Package ⚠️ BLOCKER
-**Priority:** CRITICAL
-**Dependencies:** None
-**Agents:** backend-engineer (lead), software-engineer (2), system-architect
+
+**Priority:** CRITICAL **Dependencies:** None **Agents:** backend-engineer (lead), software-engineer
+(2), system-architect
 
 **Tasks:**
+
 - [x] 0.1.1 Create `packages/@wundr/orchestrator-daemon` package structure
 - [x] 0.1.2 Implement daemon core runtime (WebSocket server, session spawning)
 - [x] 0.1.3 Add memory architecture (tiered: scratchpad/episodic/semantic)
@@ -221,6 +238,7 @@ Agent: "Test the workspace creation flow"
 - [x] 0.1.10 Document daemon architecture and API
 
 **Validation:**
+
 ```bash
 ✓ npm install @wundr.io/orchestrator-daemon succeeds
 ✓ wundr orchestrator start launches daemon
@@ -229,12 +247,12 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Task Group 0.2: Install Browser Testing MCP
-**Priority:** CRITICAL
-**Dependencies:** None
-**Agents:** qa-engineer, test-automation-engineer
+
+**Priority:** CRITICAL **Dependencies:** None **Agents:** qa-engineer, test-automation-engineer
 **Execution:** PARALLEL with 0.1
 
 **Tasks:**
+
 - [x] 0.2.1 Install Playwright MCP server: `claude mcp add playwright npx @playwright/mcp-server`
 - [x] 0.2.2 Verify MCP connection: `claude mcp list`
 - [x] 0.2.3 Start Neolith dev server on port 3000
@@ -243,6 +261,7 @@ Agent: "Test the workspace creation flow"
 - [x] 0.2.6 Document browser testing workflow
 
 **Validation:**
+
 ```bash
 ✓ Playwright MCP appears in `claude mcp list`
 ✓ Can navigate to localhost:3000
@@ -251,12 +270,12 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Task Group 0.3: Fix Critical Configuration Issues
-**Priority:** CRITICAL
-**Dependencies:** None
-**Agents:** software-engineer (2), devops-engineer
+
+**Priority:** CRITICAL **Dependencies:** None **Agents:** software-engineer (2), devops-engineer
 **Execution:** PARALLEL with 0.1, 0.2
 
 **Tasks:**
+
 - [x] 0.3.1 Fix mobile Capacitor config (`webDir: '../web/out'` not `dist`)
 - [ ] 0.3.2 Configure Next.js static export for mobile: `output: 'export'` ❌ NOT DONE
 - [x] 0.3.3 Fix desktop Electron renderer path
@@ -265,6 +284,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 0.3.6 Align all package versions to 1.0.3 ⚠️ PARTIAL
 
 **Validation:**
+
 ```bash
 ✓ Mobile build sync succeeds
 ✓ Desktop production build completes
@@ -275,17 +295,18 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 1: Core Infrastructure (Weeks 1-2)
 
-**Duration:** 2 weeks
-**Agents Required:** 20 agents per wave (2 waves)
-**Execution:** PARALLEL where possible
+**Duration:** 2 weeks **Agents Required:** 20 agents per wave (2 waves) **Execution:** PARALLEL
+where possible
 
 ### Wave 1.1: Org-Genesis Integration (Week 1)
-**Priority:** CRITICAL
-**Dependencies:** Phase 0 complete
-**Agents:** backend-engineer (3), frontend-engineer (2), api-engineer (2)
+
+**Priority:** CRITICAL **Dependencies:** Phase 0 complete **Agents:** backend-engineer (3),
+frontend-engineer (2), api-engineer (2)
 
 #### Task Group 1.1.1: Backend Integration
+
 **Tasks:**
+
 - [x] 1.1.1.1 Install `@wundr.io/org-genesis` in web app
 - [x] 1.1.1.2 Create `/api/workspaces/generate-org` endpoint
 - [x] 1.1.1.3 Wire up `createGenesisEngine()` in API route
@@ -298,10 +319,11 @@ Agent: "Test the workspace creation flow"
 - [x] 1.1.1.10 Add error handling and rollback logic
 
 #### Task Group 1.1.2: Frontend Workspace Creation Flow
-**Agents:** frontend-engineer (3), product-designer (2)
-**Dependencies:** 1.1.1 (API must exist)
+
+**Agents:** frontend-engineer (3), product-designer (2) **Dependencies:** 1.1.1 (API must exist)
 
 **Tasks:**
+
 - [x] 1.1.2.1 Create conversational org-genesis UI component
 - [x] 1.1.2.2 Add multi-step wizard for org configuration
 - [x] 1.1.2.3 Display org preview before creation
@@ -314,10 +336,11 @@ Agent: "Test the workspace creation flow"
 - [x] 1.1.2.10 Implement form validation with Zod
 
 #### Task Group 1.1.3: Org Hierarchy Display
-**Agents:** frontend-engineer (2), product-designer (1)
-**Dependencies:** 1.1.2
+
+**Agents:** frontend-engineer (2), product-designer (1) **Dependencies:** 1.1.2
 
 **Tasks:**
+
 - [ ] 1.1.3.1 Create org chart visualization component (tree/hierarchy view)
 - [ ] 1.1.3.2 Add Orchestrator reporting lines display
 - [ ] 1.1.3.3 Show authority levels and permissions
@@ -330,6 +353,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 1.1.3.10 Add empty state for unconfigured orgs
 
 **Validation:**
+
 ```bash
 ✓ Create workspace → conversational flow appears
 ✓ Org manifest generated with VPs and disciplines
@@ -341,12 +365,14 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 1.2: Orchestrator Autonomous Operation Foundation (Week 2)
-**Priority:** CRITICAL
-**Dependencies:** VP-Daemon built (0.1)
-**Agents:** backend-engineer (4), ml-engineer (2), software-engineer (2)
+
+**Priority:** CRITICAL **Dependencies:** VP-Daemon built (0.1) **Agents:** backend-engineer (4),
+ml-engineer (2), software-engineer (2)
 
 #### Task Group 1.2.1: Agent Backlog System
+
 **Tasks:**
+
 - [x] 1.2.1.1 Add Prisma schema for Task model (see audit spec)
 - [x] 1.2.1.2 Create task priority enum (CRITICAL, HIGH, MEDIUM, LOW)
 - [x] 1.2.1.3 Create task status enum (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
@@ -359,10 +385,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 1.2.1.10 Add task completion webhook ❌ NOT DONE
 
 #### Task Group 1.2.2: Orchestrator Memory Integration
-**Agents:** ml-engineer (2), backend-engineer (2)
-**Dependencies:** 1.2.1
+
+**Agents:** ml-engineer (2), backend-engineer (2) **Dependencies:** 1.2.1
 
 **Tasks:**
+
 - [x] 1.2.2.1 Install `@wundr.io/agent-memory` package
 - [ ] 1.2.2.2 Create memory service wrapper ❌ NOT DONE
 - [ ] 1.2.2.3 Implement conversation history persistence per channel ❌ NOT DONE
@@ -375,10 +402,12 @@ Agent: "Test the workspace creation flow"
 - [ ] 1.2.2.10 Integrate with Orchestrator context in Claude sessions ❌ NOT DONE
 
 #### Task Group 1.2.3: Orchestrator Work Execution Engine
-**Agents:** backend-engineer (3), software-engineer (2)
-**Dependencies:** 1.2.1, 1.2.2, VP-Daemon (0.1)
+
+**Agents:** backend-engineer (3), software-engineer (2) **Dependencies:** 1.2.1, 1.2.2, VP-Daemon
+(0.1)
 
 **Tasks:**
+
 - [ ] 1.2.3.1 Create Orchestrator work polling service (checks backlog every N minutes) ❌ NOT DONE
 - [ ] 1.2.3.2 Implement task selection algorithm (priority + deadline + dependencies) ❌ NOT DONE
 - [ ] 1.2.3.3 Spawn Claude Code session for selected task ❌ NOT DONE
@@ -391,6 +420,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 1.2.3.10 Store work artifacts in S3 ❌ NOT DONE
 
 **Validation:**
+
 ```bash
 ✓ Task created in backlog
 ✓ Orchestrator daemon polls and selects task
@@ -402,12 +432,12 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 1.3: S3 Avatar Storage (Week 2)
-**Priority:** HIGH
-**Dependencies:** None (parallel with 1.2)
-**Agents:** backend-engineer (2), software-engineer (1)
-**Execution:** PARALLEL with Wave 1.2
+
+**Priority:** HIGH **Dependencies:** None (parallel with 1.2) **Agents:** backend-engineer (2),
+software-engineer (1) **Execution:** PARALLEL with Wave 1.2
 
 **Tasks:**
+
 - [x] 1.3.1 Create S3 bucket for user avatars (separate from general uploads)
 - [x] 1.3.2 Implement avatar upload service
 - [x] 1.3.3 Add image processing (resize to standard sizes: 32, 64, 128, 256px)
@@ -420,6 +450,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 1.3.10 Implement CDN caching headers ❌ NOT DONE
 
 **Validation:**
+
 ```bash
 ✓ OAuth login downloads provider avatar
 ✓ Avatar uploaded to S3
@@ -433,16 +464,17 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 2: Orchestrator Autonomous Operation (Weeks 3-4)
 
-**Duration:** 2 weeks
-**Agents Required:** 20 agents per wave (2 waves)
+**Duration:** 2 weeks **Agents Required:** 20 agents per wave (2 waves)
 
 ### Wave 2.1: Orchestrator Communication Features (Week 3)
-**Priority:** HIGH
-**Dependencies:** Phase 1 complete
-**Agents:** backend-engineer (3), frontend-engineer (3), api-engineer (2)
+
+**Priority:** HIGH **Dependencies:** Phase 1 complete **Agents:** backend-engineer (3),
+frontend-engineer (3), api-engineer (2)
 
 #### Task Group 2.1.1: VP-Initiated Conversations
+
 **Tasks:**
+
 - [ ] 2.1.1.1 Add `/api/vps/[id]/conversations/initiate` endpoint
 - [ ] 2.1.1.2 Create conversation context retention (thread history)
 - [ ] 2.1.1.3 Implement Orchestrator status update posting
@@ -455,10 +487,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 2.1.1.10 Create Orchestrator notification preferences
 
 #### Task Group 2.1.2: Channel Intelligence
-**Agents:** ml-engineer (2), backend-engineer (2)
-**Dependencies:** 2.1.1
+
+**Agents:** ml-engineer (2), backend-engineer (2) **Dependencies:** 2.1.1
 
 **Tasks:**
+
 - [ ] 2.1.2.1 Auto-join VPs to discipline channels on creation
 - [ ] 2.1.2.2 Implement relevance detection (VP expertise match)
 - [ ] 2.1.2.3 Add channel activity monitoring for VPs
@@ -471,10 +504,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 2.1.2.10 Add channel analytics for VPs
 
 #### Task Group 2.1.3: UI for Orchestrator Interaction
-**Agents:** frontend-engineer (4), ux-researcher (1)
-**Dependencies:** 2.1.1, 2.1.2
+
+**Agents:** frontend-engineer (4), ux-researcher (1) **Dependencies:** 2.1.1, 2.1.2
 
 **Tasks:**
+
 - [ ] 2.1.3.1 Create Orchestrator conversation UI (distinguish Orchestrator vs human messages)
 - [ ] 2.1.3.2 Add Orchestrator status badges (working, idle, blocked, offline)
 - [ ] 2.1.3.3 Show Orchestrator current task in presence tooltip
@@ -487,6 +521,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 2.1.3.10 Add Orchestrator "thinking" indicator during work
 
 **Validation:**
+
 ```bash
 ✓ Orchestrator auto-joins discipline channel on creation
 ✓ Orchestrator posts status update to channel
@@ -499,12 +534,14 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 2.2: Advanced Orchestrator Features (Week 4)
-**Priority:** MEDIUM
-**Dependencies:** Wave 2.1
-**Agents:** backend-engineer (3), ml-engineer (2), software-engineer (2)
+
+**Priority:** MEDIUM **Dependencies:** Wave 2.1 **Agents:** backend-engineer (3), ml-engineer (2),
+software-engineer (2)
 
 #### Task Group 2.2.1: Cross-VP Coordination
+
 **Tasks:**
+
 - [ ] 2.2.1.1 Implement VP→VP task delegation API
 - [ ] 2.2.1.2 Add Orchestrator collaboration requests
 - [ ] 2.2.1.3 Create shared workspace for Orchestrator teams
@@ -517,10 +554,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 2.2.1.10 Implement Orchestrator peer review
 
 #### Task Group 2.2.2: Work Rhythm & Scheduling
-**Agents:** backend-engineer (2), software-engineer (2)
-**Dependencies:** 2.2.1
+
+**Agents:** backend-engineer (2), software-engineer (2) **Dependencies:** 2.2.1
 
 **Tasks:**
+
 - [ ] 2.2.2.1 Implement work hours configuration (from VPCharter)
 - [ ] 2.2.2.2 Add batch processing schedules
 - [ ] 2.2.2.3 Create proactive vs. reactive mode toggle
@@ -533,10 +571,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 2.2.2.10 Implement vacation/maintenance mode
 
 #### Task Group 2.2.3: Analytics & Observability
-**Agents:** data-scientist (2), ml-engineer (1), backend-engineer (2)
-**Dependencies:** 2.2.1, 2.2.2
+
+**Agents:** data-scientist (2), ml-engineer (1), backend-engineer (2) **Dependencies:** 2.2.1, 2.2.2
 
 **Tasks:**
+
 - [ ] 2.2.3.1 Install `@wundr.io/agent-observability`
 - [ ] 2.2.3.2 Track Orchestrator performance metrics (tasks/hour, accuracy)
 - [ ] 2.2.3.3 Measure task completion rates
@@ -549,6 +588,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 2.2.3.10 Add real-time Orchestrator health monitoring
 
 **Validation:**
+
 ```bash
 ✓ Orchestrator delegates sub-task to another VP
 ✓ Multi-VP collaboration on complex task
@@ -562,16 +602,17 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 3: UI/UX Polish & Responsive Design (Weeks 5-6)
 
-**Duration:** 2 weeks
-**Agents Required:** 20 agents per wave (2 waves)
+**Duration:** 2 weeks **Agents Required:** 20 agents per wave (2 waves)
 
 ### Wave 3.1: Responsive Design Improvements (Week 5)
-**Priority:** HIGH
-**Dependencies:** None (parallel with Orchestrator features)
-**Agents:** frontend-engineer (6), product-designer (3), ux-researcher (1)
+
+**Priority:** HIGH **Dependencies:** None (parallel with Orchestrator features) **Agents:**
+frontend-engineer (6), product-designer (3), ux-researcher (1)
 
 #### Task Group 3.1.1: Mobile-First Components
+
 **Tasks:**
+
 - [ ] 3.1.1.1 Create `hooks/use-media-query.ts` hook
 - [ ] 3.1.1.2 Create `components/ui/responsive-modal.tsx` (Dialog on desktop, Drawer on mobile)
 - [ ] 3.1.1.3 Update all modals to use ResponsiveModal
@@ -584,10 +625,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 3.1.1.10 Test on iOS Safari, Android Chrome
 
 #### Task Group 3.1.2: Tablet Optimization
-**Agents:** frontend-engineer (3), product-designer (2)
-**Dependencies:** 3.1.1
+
+**Agents:** frontend-engineer (3), product-designer (2) **Dependencies:** 3.1.1
 
 **Tasks:**
+
 - [ ] 3.1.2.1 Create tablet-specific layouts (2-column where appropriate)
 - [ ] 3.1.2.2 Optimize sidebar for tablet (maybe always visible)
 - [ ] 3.1.2.3 Adjust breakpoints for tablet sizes (768-1024px)
@@ -600,10 +642,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 3.1.2.10 Optimize form layouts for tablet
 
 #### Task Group 3.1.3: Desktop Enhancements
-**Agents:** frontend-engineer (2), product-designer (1)
-**Dependencies:** 3.1.1
+
+**Agents:** frontend-engineer (2), product-designer (1) **Dependencies:** 3.1.1
 
 **Tasks:**
+
 - [ ] 3.1.3.1 Add keyboard shortcuts documentation
 - [ ] 3.1.3.2 Implement command palette (Cmd+K)
 - [ ] 3.1.3.3 Add hover states consistently
@@ -616,6 +659,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 3.1.3.10 Test on 4K displays
 
 **Validation:**
+
 ```bash
 ✓ All modals use Drawer on mobile, Dialog on desktop
 ✓ Mobile navigation drawer works smoothly
@@ -626,12 +670,14 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 3.2: Empty States & Loading States (Week 6)
-**Priority:** HIGH
-**Dependencies:** Wave 3.1
-**Agents:** frontend-engineer (5), product-designer (3), ux-researcher (1)
+
+**Priority:** HIGH **Dependencies:** Wave 3.1 **Agents:** frontend-engineer (5), product-designer
+(3), ux-researcher (1)
 
 #### Task Group 3.2.1: Empty State Components
+
 **Tasks:**
+
 - [ ] 3.2.1.1 Create reusable `EmptyState` component (icon, title, description, CTA)
 - [ ] 3.2.1.2 Add empty state to Dashboard (new users)
 - [ ] 3.2.1.3 Add empty state to Channels list
@@ -649,10 +695,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 3.2.1.15 Test empty states on mobile/tablet/desktop
 
 #### Task Group 3.2.2: Skeleton Loaders
-**Agents:** frontend-engineer (4), product-designer (2)
-**Dependencies:** 3.2.1
+
+**Agents:** frontend-engineer (4), product-designer (2) **Dependencies:** 3.2.1
 
 **Tasks:**
+
 - [ ] 3.2.2.1 Standardize Skeleton usage across all pages
 - [ ] 3.2.2.2 Create VPCardSkeleton (already exists, verify usage)
 - [ ] 3.2.2.3 Create WorkflowCardSkeleton (already exists, verify)
@@ -670,6 +717,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 3.2.2.15 Test loading states with browser MCP
 
 **Validation:**
+
 ```bash
 ✓ All 24 pages have proper empty states
 ✓ All list/grid views show skeleton loaders
@@ -679,12 +727,12 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 3.3: Theme Toggle & Theming (Week 6)
-**Priority:** MEDIUM
-**Dependencies:** None (parallel with 3.2)
-**Agents:** frontend-engineer (3), product-designer (2)
-**Execution:** PARALLEL with Wave 3.2
+
+**Priority:** MEDIUM **Dependencies:** None (parallel with 3.2) **Agents:** frontend-engineer (3),
+product-designer (2) **Execution:** PARALLEL with Wave 3.2
 
 **Tasks:**
+
 - [x] 3.3.1 Create ThemeToggle component (Light/Dark/System options)
 - [x] 3.3.2 Add theme toggle to user menu dropdown
 - [ ] 3.3.3 Add theme toggle to user settings page ❌ NOT DONE (settings 404)
@@ -699,6 +747,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 3.3.12 Test with browser MCP (toggle theme, verify styles) ❌ NOT DONE
 
 **Validation:**
+
 ```bash
 ✓ Theme toggle appears in user menu
 ✓ Light/Dark/System options work
@@ -711,16 +760,17 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 4: Mobile & Desktop Apps (Weeks 7-9)
 
-**Duration:** 3 weeks
-**Agents Required:** 20 agents per wave (3 waves)
+**Duration:** 3 weeks **Agents Required:** 20 agents per wave (3 waves)
 
 ### Wave 4.1: Desktop App Completion (Week 7)
-**Priority:** HIGH
-**Dependencies:** Web app stable
-**Agents:** software-engineer (4), devops-engineer (3), frontend-engineer (2)
+
+**Priority:** HIGH **Dependencies:** Web app stable **Agents:** software-engineer (4),
+devops-engineer (3), frontend-engineer (2)
 
 #### Task Group 4.1.1: Renderer Integration
+
 **Tasks:**
+
 - [ ] 4.1.1.1 Configure Next.js static export: `output: 'export'`
 - [ ] 4.1.1.2 Create desktop-specific Next.js config
 - [ ] 4.1.1.3 Set distDir to 'out' for Electron compatibility
@@ -733,10 +783,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.1.1.10 Verify all API routes work with static export
 
 #### Task Group 4.1.2: Missing Desktop Files
-**Agents:** devops-engineer (3), software-engineer (1)
-**Dependencies:** 4.1.1
+
+**Agents:** devops-engineer (3), software-engineer (1) **Dependencies:** 4.1.1
 
 **Tasks:**
+
 - [ ] 4.1.2.1 Create `scripts/notarize.js` for macOS notarization
 - [ ] 4.1.2.2 Create `build/entitlements.mac.plist`
 - [ ] 4.1.2.3 Create `build/entitlements.mac.inherit.plist`
@@ -749,10 +800,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.1.2.10 Test code signing locally
 
 #### Task Group 4.1.3: Desktop-Specific Features
-**Agents:** software-engineer (3), frontend-engineer (2)
-**Dependencies:** 4.1.1, 4.1.2
+
+**Agents:** software-engineer (3), frontend-engineer (2) **Dependencies:** 4.1.1, 4.1.2
 
 **Tasks:**
+
 - [ ] 4.1.3.1 Implement native file system operations (read/write)
 - [ ] 4.1.3.2 Add native notifications
 - [ ] 4.1.3.3 Implement clipboard access
@@ -765,10 +817,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.1.3.10 Create desktop preferences window
 
 #### Task Group 4.1.4: Platform Builds
-**Agents:** devops-engineer (4)
-**Dependencies:** 4.1.3
+
+**Agents:** devops-engineer (4) **Dependencies:** 4.1.3
 
 **Tasks:**
+
 - [ ] 4.1.4.1 Build for macOS (x64 + arm64 universal binary)
 - [ ] 4.1.4.2 Build for Windows (x64, ia32, arm64)
 - [ ] 4.1.4.3 Build for Linux (AppImage, deb, rpm)
@@ -781,6 +834,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.1.4.10 Test auto-update mechanism
 
 **Validation:**
+
 ```bash
 ✓ npm run package:mac produces working DMG
 ✓ npm run package:win produces working installer
@@ -791,12 +845,14 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 4.2: Mobile App Foundation (Week 8)
-**Priority:** HIGH
-**Dependencies:** Web app stable, mobile config fixed (0.3)
-**Agents:** react-native-engineer (4), mobile-dev (3), devops-engineer (2)
+
+**Priority:** HIGH **Dependencies:** Web app stable, mobile config fixed (0.3) **Agents:**
+react-native-engineer (4), mobile-dev (3), devops-engineer (2)
 
 #### Task Group 4.2.1: Native Project Initialization
+
 **Tasks:**
+
 - [ ] 4.2.1.1 Run `npm run add:ios` to create iOS project
 - [ ] 4.2.1.2 Run `npm run add:android` to create Android project
 - [ ] 4.2.1.3 Verify project structure created correctly
@@ -809,10 +865,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.2.1.10 Fix any sync errors
 
 #### Task Group 4.2.2: Mobile Assets
-**Agents:** product-designer (3), mobile-dev (2)
-**Dependencies:** 4.2.1
+
+**Agents:** product-designer (3), mobile-dev (2) **Dependencies:** 4.2.1
 
 **Tasks:**
+
 - [ ] 4.2.2.1 Design app icon (1024x1024 source)
 - [ ] 4.2.2.2 Install @capacitor/assets: `npm install -D @capacitor/assets`
 - [ ] 4.2.2.3 Run `npx @capacitor/assets generate` for all icon sizes
@@ -825,10 +882,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.2.2.10 Create Google Play screenshots (phone, 7", 10")
 
 #### Task Group 4.2.3: Mobile-Specific Optimizations
-**Agents:** frontend-engineer (3), react-native-engineer (2)
-**Dependencies:** 4.2.1
+
+**Agents:** frontend-engineer (3), react-native-engineer (2) **Dependencies:** 4.2.1
 
 **Tasks:**
+
 - [ ] 4.2.3.1 Add viewport meta tags to layout
 - [ ] 4.2.3.2 Implement safe area CSS (`env(safe-area-inset-*)`)
 - [ ] 4.2.3.3 Install essential Capacitor plugins (keyboard, status-bar, network, haptics)
@@ -841,10 +899,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.2.3.10 Test on low-end devices (performance)
 
 #### Task Group 4.2.4: PWA Manifest
-**Agents:** frontend-engineer (2)
-**Dependencies:** 4.2.2
+
+**Agents:** frontend-engineer (2) **Dependencies:** 4.2.2
 
 **Tasks:**
+
 - [ ] 4.2.4.1 Create `public/manifest.json`
 - [ ] 4.2.4.2 Add app name, short_name, description
 - [ ] 4.2.4.3 Configure display mode (standalone)
@@ -857,6 +916,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.2.4.10 Test offline functionality
 
 **Validation:**
+
 ```bash
 ✓ iOS project opens in Xcode
 ✓ Android project opens in Android Studio
@@ -869,12 +929,13 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 4.3: Mobile Platform Setup (Week 9)
-**Priority:** HIGH
-**Dependencies:** Wave 4.2
-**Agents:** devops-engineer (5), mobile-dev (4)
+
+**Priority:** HIGH **Dependencies:** Wave 4.2 **Agents:** devops-engineer (5), mobile-dev (4)
 
 #### Task Group 4.3.1: iOS Platform Setup
+
 **Tasks:**
+
 - [ ] 4.3.1.1 Create Apple Developer account / access existing
 - [ ] 4.3.1.2 Register App ID (com.wundr.neolith)
 - [ ] 4.3.1.3 Create development provisioning profile
@@ -897,10 +958,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.3.1.20 Submit for App Store review
 
 #### Task Group 4.3.2: Android Platform Setup
-**Agents:** devops-engineer (4), mobile-dev (3)
-**Execution:** PARALLEL with 4.3.1
+
+**Agents:** devops-engineer (4), mobile-dev (3) **Execution:** PARALLEL with 4.3.1
 
 **Tasks:**
+
 - [ ] 4.3.2.1 Create Google Play Console account / access existing
 - [ ] 4.3.2.2 Create app on Google Play Console
 - [ ] 4.3.2.3 Create Firebase project
@@ -923,10 +985,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.3.2.20 Submit for Play Store review
 
 #### Task Group 4.3.3: Push Notifications Integration
-**Agents:** backend-engineer (3), mobile-dev (2)
-**Dependencies:** 4.3.1, 4.3.2
+
+**Agents:** backend-engineer (3), mobile-dev (2) **Dependencies:** 4.3.1, 4.3.2
 
 **Tasks:**
+
 - [ ] 4.3.3.1 Update service worker to handle mobile push
 - [ ] 4.3.3.2 Implement APNs token registration (iOS)
 - [ ] 4.3.3.3 Implement FCM token registration (Android)
@@ -939,6 +1002,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 4.3.3.10 Add notification badges
 
 **Validation:**
+
 ```bash
 ✓ iOS build uploaded to TestFlight
 ✓ Android build uploaded to Play Console beta
@@ -952,16 +1016,17 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 5: Integration & Testing (Weeks 10-11)
 
-**Duration:** 2 weeks
-**Agents Required:** 20 agents per wave (2 waves)
+**Duration:** 2 weeks **Agents Required:** 20 agents per wave (2 waves)
 
 ### Wave 5.1: Comprehensive Browser Testing (Week 10)
-**Priority:** CRITICAL
-**Dependencies:** All features complete
-**Agents:** qa-engineer (6), test-automation-engineer (4)
+
+**Priority:** CRITICAL **Dependencies:** All features complete **Agents:** qa-engineer (6),
+test-automation-engineer (4)
 
 #### Task Group 5.1.1: Automated UI Testing
+
 **Tasks:**
+
 - [ ] 5.1.1.1 Set up Playwright MCP test suite
 - [ ] 5.1.1.2 Test authentication flows (Google, GitHub OAuth)
 - [ ] 5.1.1.3 Test workspace creation with org-genesis
@@ -984,10 +1049,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 5.1.1.20 Fix all critical bugs found
 
 #### Task Group 5.1.2: Cross-Browser Testing
-**Agents:** qa-engineer (4)
-**Dependencies:** 5.1.1
+
+**Agents:** qa-engineer (4) **Dependencies:** 5.1.1
 
 **Tasks:**
+
 - [ ] 5.1.2.1 Test on Chrome (latest + 2 versions back)
 - [ ] 5.1.2.2 Test on Firefox (latest)
 - [ ] 5.1.2.3 Test on Safari (macOS)
@@ -1000,10 +1066,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 5.1.2.10 Test on older Android versions (API 22+)
 
 #### Task Group 5.1.3: Accessibility Testing
-**Agents:** ux-researcher (2), qa-engineer (2)
-**Dependencies:** 5.1.1
+
+**Agents:** ux-researcher (2), qa-engineer (2) **Dependencies:** 5.1.1
 
 **Tasks:**
+
 - [ ] 5.1.3.1 Run Lighthouse accessibility audit on all pages
 - [ ] 5.1.3.2 Test keyboard navigation (Tab, Enter, Esc)
 - [ ] 5.1.3.3 Test with screen reader (VoiceOver, NVDA)
@@ -1016,6 +1083,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 5.1.3.10 Generate accessibility report
 
 **Validation:**
+
 ```bash
 ✓ All 24 pages pass browser tests
 ✓ All critical user flows automated
@@ -1026,12 +1094,14 @@ Agent: "Test the workspace creation flow"
 ```
 
 ### Wave 5.2: Orchestrator Integration Testing (Week 11)
-**Priority:** CRITICAL
-**Dependencies:** Orchestrator features complete (Phase 2)
-**Agents:** backend-engineer (4), qa-engineer (3), ml-engineer (2)
+
+**Priority:** CRITICAL **Dependencies:** Orchestrator features complete (Phase 2) **Agents:**
+backend-engineer (4), qa-engineer (3), ml-engineer (2)
 
 #### Task Group 5.2.1: End-to-End Orchestrator Workflows
+
 **Tasks:**
+
 - [ ] 5.2.1.1 Test workspace creation → org-genesis → VPs created
 - [ ] 5.2.1.2 Test Orchestrator auto-joins discipline channel
 - [ ] 5.2.1.3 Test human assigns task to VP
@@ -1049,10 +1119,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 5.2.1.15 Test Orchestrator analytics tracking
 
 #### Task Group 5.2.2: Orchestrator Daemon Integration
-**Agents:** backend-engineer (3), devops-engineer (2)
-**Dependencies:** 5.2.1
+
+**Agents:** backend-engineer (3), devops-engineer (2) **Dependencies:** 5.2.1
 
 **Tasks:**
+
 - [ ] 5.2.2.1 Deploy VP-Daemon to 16 machines
 - [ ] 5.2.2.2 Test daemon connects to Neolith backend
 - [ ] 5.2.2.3 Test daemon spawns sessions correctly
@@ -1065,10 +1136,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 5.2.2.10 Test daemon health checks
 
 #### Task Group 5.2.3: Slack Integration Testing
-**Agents:** backend-engineer (2), qa-engineer (2)
-**Dependencies:** 5.2.2
+
+**Agents:** backend-engineer (2), qa-engineer (2) **Dependencies:** 5.2.2
 
 **Tasks:**
+
 - [ ] 5.2.3.1 Install `@wundr.io/slack-agent` package
 - [ ] 5.2.3.2 Test Orchestrator connects to Slack workspace
 - [ ] 5.2.3.3 Test Orchestrator dual presence (Slack + Neolith)
@@ -1081,6 +1153,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 5.2.3.10 Test Slack interactive messages
 
 **Validation:**
+
 ```bash
 ✓ Workspace creation generates full org via org-genesis
 ✓ VPs autonomously work through backlogs
@@ -1094,16 +1167,16 @@ Agent: "Test the workspace creation flow"
 
 ## Phase 6: Production Deployment (Week 12)
 
-**Duration:** 1 week
-**Agents Required:** 20 agents
-**Dependencies:** All testing complete
+**Duration:** 1 week **Agents Required:** 20 agents **Dependencies:** All testing complete
 
 ### Wave 6.1: Production Deployment (Week 12)
-**Priority:** CRITICAL
-**Agents:** devops-engineer (6), backend-engineer (3), software-engineer (2)
+
+**Priority:** CRITICAL **Agents:** devops-engineer (6), backend-engineer (3), software-engineer (2)
 
 #### Task Group 6.1.1: Infrastructure Setup
+
 **Tasks:**
+
 - [ ] 6.1.1.1 Set up production database (Postgres on Railway/Supabase)
 - [ ] 6.1.1.2 Set up Redis for caching and sessions
 - [ ] 6.1.1.3 Set up S3 buckets (uploads, avatars)
@@ -1116,10 +1189,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 6.1.1.10 Set up monitoring (Sentry, Datadog, etc.)
 
 #### Task Group 6.1.2: Environment Configuration
-**Agents:** devops-engineer (4)
-**Dependencies:** 6.1.1
+
+**Agents:** devops-engineer (4) **Dependencies:** 6.1.1
 
 **Tasks:**
+
 - [ ] 6.1.2.1 Create production .env files
 - [ ] 6.1.2.2 Configure OAuth apps for production URLs
 - [ ] 6.1.2.3 Generate production API keys
@@ -1132,10 +1206,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 6.1.2.10 Document deployment procedures
 
 #### Task Group 6.1.3: Application Deployment
-**Agents:** devops-engineer (4), backend-engineer (2)
-**Dependencies:** 6.1.2
+
+**Agents:** devops-engineer (4), backend-engineer (2) **Dependencies:** 6.1.2
 
 **Tasks:**
+
 - [ ] 6.1.3.1 Deploy web app to Vercel/Netlify/Railway
 - [ ] 6.1.3.2 Run database migrations on production
 - [ ] 6.1.3.3 Seed initial data (if needed)
@@ -1148,10 +1223,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 6.1.3.10 Smoke test production deployment
 
 #### Task Group 6.1.4: App Store Submissions
-**Agents:** mobile-dev (3), devops-engineer (2)
-**Dependencies:** 6.1.3
+
+**Agents:** mobile-dev (3), devops-engineer (2) **Dependencies:** 6.1.3
 
 **Tasks:**
+
 - [ ] 6.1.4.1 Final iOS build for App Store
 - [ ] 6.1.4.2 Submit iOS app for review
 - [ ] 6.1.4.3 Final Android build for Google Play
@@ -1164,10 +1240,11 @@ Agent: "Test the workspace creation flow"
 - [ ] 6.1.4.10 Announce launch
 
 #### Task Group 6.1.5: Orchestrator Daemon Production Deployment
-**Agents:** devops-engineer (4), backend-engineer (2)
-**Dependencies:** 6.1.3
+
+**Agents:** devops-engineer (4), backend-engineer (2) **Dependencies:** 6.1.3
 
 **Tasks:**
+
 - [ ] 6.1.5.1 Install VP-Daemon on all 16 machines
 - [ ] 6.1.5.2 Configure daemon to connect to production backend
 - [ ] 6.1.5.3 Set up daemon monitoring and alerting
@@ -1180,6 +1257,7 @@ Agent: "Test the workspace creation flow"
 - [ ] 6.1.5.10 Monitor Orchestrator performance
 
 **Validation:**
+
 ```bash
 ✓ Production web app live at neolith.ai
 ✓ Database and infrastructure stable
@@ -1199,6 +1277,7 @@ Agent: "Test the workspace creation flow"
 ### Swarm Composition per Phase
 
 **20-Agent Swarm Template:**
+
 - 1x **task-orchestrator** (coordinator)
 - 4-6x **Domain specialists** (based on phase: frontend, backend, mobile, etc.)
 - 2-3x **QA engineers** (testing, validation)
@@ -1211,11 +1290,13 @@ Agent: "Test the workspace creation flow"
 ### Parallel Execution Strategy
 
 **Phase Pattern:**
+
 - **Sequential waves** when dependencies exist (e.g., 0.1 must complete before 1.1)
 - **Parallel waves** when tasks are independent (e.g., 1.3 can run while 1.2 runs)
 - **Agent spawning**: Single message with multiple Task tool calls for parallel agents
 
 **Example Parallel Spawn:**
+
 ```typescript
 // In one message, spawn 20 agents:
 Task({ subagent_type: "task-orchestrator", ... })
@@ -1228,6 +1309,7 @@ Task({ subagent_type: "frontend-engineer", ... })
 ### Quality Gates
 
 **Between Phases:**
+
 1. All tasks marked complete in TodoWrite
 2. Browser tests pass with Playwright MCP
 3. Code review approval from reviewer agents
@@ -1235,6 +1317,7 @@ Task({ subagent_type: "frontend-engineer", ... })
 5. No critical bugs in issue tracker
 
 **Go/No-Go Criteria:**
+
 - Phase 0: VP-Daemon published to npm, browser MCP working
 - Phase 1: Org-genesis integrated, VPs can be created autonomously
 - Phase 2: Orchestrator can complete at least 1 task end-to-end
@@ -1249,32 +1332,32 @@ Task({ subagent_type: "frontend-engineer", ... })
 
 ### Browser Testing Checklist (Per Page)
 
-| Page | Loads | Empty State | Skeleton | Mobile | Tablet | Desktop | Dark Mode |
-|------|-------|-------------|----------|--------|--------|---------|-----------|
-| Dashboard | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| VPs | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Orchestrator Detail | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Agents | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Workflows | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Deployments | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Analytics | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Channels | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Channel Detail | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Channel Settings | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Call | [ ] | N/A | [ ] | [ ] | [ ] | [ ] | [ ] |
-| User Settings | [ ] | N/A | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Integrations | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Notifications | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Dashboard | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Settings | [ ] | N/A | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Members | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Roles | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Billing | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Activity | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Admin Orchestrator Health | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Login | [ ] | N/A | N/A | [ ] | [ ] | [ ] | [ ] |
-| Register | [ ] | N/A | N/A | [ ] | [ ] | [ ] | [ ] |
-| Auth Error | [ ] | N/A | N/A | [ ] | [ ] | [ ] | [ ] |
+| Page                      | Loads | Empty State | Skeleton | Mobile | Tablet | Desktop | Dark Mode |
+| ------------------------- | ----- | ----------- | -------- | ------ | ------ | ------- | --------- |
+| Dashboard                 | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| VPs                       | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Orchestrator Detail       | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Agents                    | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Workflows                 | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Deployments               | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Analytics                 | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Channels                  | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Channel Detail            | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Channel Settings          | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Call                      | [ ]   | N/A         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| User Settings             | [ ]   | N/A         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Integrations              | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Notifications             | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Dashboard           | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Settings            | [ ]   | N/A         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Members             | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Roles               | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Billing             | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Activity            | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Admin Orchestrator Health | [ ]   | [ ]         | [ ]      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Login                     | [ ]   | N/A         | N/A      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Register                  | [ ]   | N/A         | N/A      | [ ]    | [ ]    | [ ]     | [ ]       |
+| Auth Error                | [ ]   | N/A         | N/A      | [ ]    | [ ]    | [ ]     | [ ]       |
 
 ### Critical User Flows (Automated with Playwright MCP)
 
@@ -1367,18 +1450,18 @@ Task({ subagent_type: "frontend-engineer", ... })
 
 ## Timeline Summary
 
-| Phase | Duration | Weeks | Agents | Key Deliverables |
-|-------|----------|-------|--------|------------------|
-| **Phase 0** | 1-2 days | - | 10 | VP-Daemon package, Browser MCP, Config fixes |
-| **Phase 1** | 2 weeks | 1-2 | 40 | Org-genesis integration, Orchestrator backlog, S3 avatars |
-| **Phase 2** | 2 weeks | 3-4 | 40 | Orchestrator autonomous operation, communication, analytics |
-| **Phase 3** | 2 weeks | 5-6 | 40 | Responsive design, empty states, theme toggle |
-| **Phase 4** | 3 weeks | 7-9 | 60 | Desktop builds, mobile apps, App Store submission |
-| **Phase 5** | 2 weeks | 10-11 | 40 | Browser testing, Orchestrator integration testing |
-| **Phase 6** | 1 week | 12 | 20 | Production deployment, app launches |
-| **Phase 7** | 2-3 weeks | 13-15 | 60 | Production hardening, TODO removal, security audit |
-| **Phase 8** | 3-4 weeks | 16-19 | 80 | Web app backlog completion (see [NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md)) |
-| **TOTAL** | **19 weeks** | | **390 agent-weeks** | **Institutional-grade Neolith** |
+| Phase       | Duration     | Weeks | Agents              | Key Deliverables                                                                    |
+| ----------- | ------------ | ----- | ------------------- | ----------------------------------------------------------------------------------- |
+| **Phase 0** | 1-2 days     | -     | 10                  | VP-Daemon package, Browser MCP, Config fixes                                        |
+| **Phase 1** | 2 weeks      | 1-2   | 40                  | Org-genesis integration, Orchestrator backlog, S3 avatars                           |
+| **Phase 2** | 2 weeks      | 3-4   | 40                  | Orchestrator autonomous operation, communication, analytics                         |
+| **Phase 3** | 2 weeks      | 5-6   | 40                  | Responsive design, empty states, theme toggle                                       |
+| **Phase 4** | 3 weeks      | 7-9   | 60                  | Desktop builds, mobile apps, App Store submission                                   |
+| **Phase 5** | 2 weeks      | 10-11 | 40                  | Browser testing, Orchestrator integration testing                                   |
+| **Phase 6** | 1 week       | 12    | 20                  | Production deployment, app launches                                                 |
+| **Phase 7** | 2-3 weeks    | 13-15 | 60                  | Production hardening, TODO removal, security audit                                  |
+| **Phase 8** | 3-4 weeks    | 16-19 | 80                  | Web app backlog completion (see [NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md)) |
+| **TOTAL**   | **19 weeks** |       | **390 agent-weeks** | **Institutional-grade Neolith**                                                     |
 
 ---
 
@@ -1387,6 +1470,7 @@ Task({ subagent_type: "frontend-engineer", ... })
 ### Launch Readiness Criteria
 
 **Technical:**
+
 - ✅ All 24 web pages functional and tested
 - ✅ Zero P0 bugs, <5 P1 bugs
 - ✅ Lighthouse scores: Performance >85, Accessibility >90
@@ -1396,6 +1480,7 @@ Task({ subagent_type: "frontend-engineer", ... })
 - ✅ 16 Orchestrator daemons operational
 
 **Functional:**
+
 - ✅ Workspace creation generates org via org-genesis
 - ✅ VPs autonomously complete at least 10 tasks
 - ✅ Orchestrator memory persists across sessions
@@ -1403,12 +1488,14 @@ Task({ subagent_type: "frontend-engineer", ... })
 - ✅ Cross-platform Orchestrator operation (Slack + Neolith)
 
 **Performance:**
+
 - ✅ Page load <2s (95th percentile)
 - ✅ API response time <500ms (95th percentile)
 - ✅ Orchestrator task selection <10s
 - ✅ Orchestrator work execution success rate >90%
 
 **User Experience:**
+
 - ✅ Onboarding completion rate >80%
 - ✅ Mobile responsive on all devices
 - ✅ Empty states on all pages
@@ -1484,28 +1571,30 @@ Task({ subagent_type: "frontend-engineer", ... })
 
 ## Phase 7: Production Hardening & Code Completion (Post-Launch)
 
-**Duration:** 2-3 weeks
-**Agents Required:** 20 agents per wave (3 waves)
-**Priority:** Required before institutional deployment
+**Duration:** 2-3 weeks **Agents Required:** 20 agents per wave (3 waves) **Priority:** Required
+before institutional deployment
 
 ### Overview
 
-This phase addresses all TODO comments, placeholder code, mock data, and incomplete implementations discovered during the code audit. These items must be resolved to achieve true institutional-grade, production-ready code.
+This phase addresses all TODO comments, placeholder code, mock data, and incomplete implementations
+discovered during the code audit. These items must be resolved to achieve true institutional-grade,
+production-ready code.
 
 ---
 
 ### Wave 7.1: Critical API Implementation Gaps
 
-**Priority:** CRITICAL
-**Dependencies:** Phase 6 complete (production deployed)
-**Agents:** backend-engineer (5), software-engineer (3), devops-engineer (2)
+**Priority:** CRITICAL **Dependencies:** Phase 6 complete (production deployed) **Agents:**
+backend-engineer (5), software-engineer (3), devops-engineer (2)
 
 #### Task Group 7.1.1: S3 File Operations
 
 **Files Affected:**
+
 - `apps/web/app/api/files/[id]/route.ts:41` - TODO: Implement AWS S3 DeleteObject call
 
 **Tasks:**
+
 - [ ] 7.1.1.1 Implement `deleteFileFromStorage()` using AWS SDK v3
 - [ ] 7.1.1.2 Add proper S3 credentials configuration
 - [ ] 7.1.1.3 Implement S3 error handling (bucket not found, access denied)
@@ -1514,26 +1603,33 @@ This phase addresses all TODO comments, placeholder code, mock data, and incompl
 - [ ] 7.1.1.6 Add retry logic for transient S3 failures
 
 **Implementation:**
+
 ```typescript
 async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<void> {
   const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
   const client = new S3Client({ region: process.env.AWS_REGION });
 
-  await client.send(new DeleteObjectCommand({
-    Bucket: s3Bucket,
-    Key: s3Key,
-  }));
+  await client.send(
+    new DeleteObjectCommand({
+      Bucket: s3Bucket,
+      Key: s3Key,
+    })
+  );
 }
 ```
 
 #### Task Group 7.1.2: LiveKit Recording Integration
 
 **Files Affected:**
-- `apps/web/app/api/calls/[callId]/recording/route.ts:277` - TODO: Start recording via LiveKit Egress API
-- `apps/web/app/api/calls/[callId]/recording/route.ts:433` - TODO: Stop recording via LiveKit Egress API
+
+- `apps/web/app/api/calls/[callId]/recording/route.ts:277` - TODO: Start recording via LiveKit
+  Egress API
+- `apps/web/app/api/calls/[callId]/recording/route.ts:433` - TODO: Stop recording via LiveKit Egress
+  API
 - `apps/web/app/api/huddles/[huddleId]/route.ts:463` - TODO: Notify LiveKit to close the room
 
 **Tasks:**
+
 - [ ] 7.1.2.1 Install `livekit-server-sdk` package
 - [ ] 7.1.2.2 Implement `startRoomCompositeEgress()` for recording start
 - [ ] 7.1.2.3 Implement `stopEgress()` for recording stop
@@ -1546,9 +1642,11 @@ async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<v
 #### Task Group 7.1.3: Audit Log Service
 
 **Files Affected:**
+
 - `apps/web/app/api/vps/[id]/actions/route.ts:219` - TODO: Log the action to audit log service
 
 **Tasks:**
+
 - [ ] 7.1.3.1 Create audit log service
 - [ ] 7.1.3.2 Implement `AuditLog` Prisma model
 - [ ] 7.1.3.3 Add audit logging to all Orchestrator actions
@@ -1559,13 +1657,18 @@ async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<v
 #### Task Group 7.1.4: Daemon API Key Validation
 
 **Files Affected:**
-- `apps/web/app/api/daemon/register/route.ts:138` - TODO: Validate API key against VP's stored key hash
-- `apps/web/app/api/daemon/register/route.ts:147` - TODO: Verify Orchestrator exists and belongs to organization
+
+- `apps/web/app/api/daemon/register/route.ts:138` - TODO: Validate API key against VP's stored key
+  hash
+- `apps/web/app/api/daemon/register/route.ts:147` - TODO: Verify Orchestrator exists and belongs to
+  organization
 - `apps/web/app/api/daemon/register/route.ts:151` - TODO: Get Redis client and heartbeat service
-- `apps/web/app/api/daemon/unregister/route.ts:112` - TODO: Validate API key against VP's stored key hash
+- `apps/web/app/api/daemon/unregister/route.ts:112` - TODO: Validate API key against VP's stored key
+  hash
 - `apps/web/app/api/daemon/unregister/route.ts:120` - TODO: Get Redis client and heartbeat service
 
 **Tasks:**
+
 - [ ] 7.1.4.1 Implement API key hashing (bcrypt or argon2)
 - [ ] 7.1.4.2 Add Orchestrator API key validation in daemon register
 - [ ] 7.1.4.3 Add Orchestrator API key validation in daemon unregister
@@ -1577,9 +1680,11 @@ async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<v
 #### Task Group 7.1.5: Call Invite Notifications
 
 **Files Affected:**
+
 - `apps/web/app/api/calls/[callId]/invite/route.ts:264` - TODO: Send notifications to invited users
 
 **Tasks:**
+
 - [ ] 7.1.5.1 Implement call invite notification service
 - [ ] 7.1.5.2 Send push notifications for call invites
 - [ ] 7.1.5.3 Send in-app notifications for call invites
@@ -1588,6 +1693,7 @@ async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<v
 - [ ] 7.1.5.6 Test notification delivery across platforms
 
 **Validation:**
+
 ```bash
 ✓ S3 file deletion works in production
 ✓ LiveKit recording starts/stops correctly
@@ -1600,17 +1706,19 @@ async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<v
 
 ### Wave 7.2: Mock Data & Placeholder Removal
 
-**Priority:** HIGH
-**Dependencies:** Wave 7.1 complete
-**Agents:** frontend-engineer (5), backend-engineer (3), qa-engineer (2)
+**Priority:** HIGH **Dependencies:** Wave 7.1 complete **Agents:** frontend-engineer (5),
+backend-engineer (3), qa-engineer (2)
 
 #### Task Group 7.2.1: Replace Mock Current User
 
 **Files Affected:**
+
 - `apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/page.tsx:25` - MOCK_CURRENT_USER
-- `apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/settings/page.tsx:24` - MOCK_CURRENT_USER_ID
+- `apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/settings/page.tsx:24` -
+  MOCK_CURRENT_USER_ID
 
 **Tasks:**
+
 - [ ] 7.2.1.1 Create `useCurrentUser()` hook using auth session
 - [ ] 7.2.1.2 Replace all `MOCK_CURRENT_USER` with hook
 - [ ] 7.2.1.3 Replace all `MOCK_CURRENT_USER_ID` with session user ID
@@ -1619,6 +1727,7 @@ async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<v
 - [ ] 7.2.1.6 Test all affected pages with real auth
 
 **Implementation:**
+
 ```typescript
 // hooks/use-current-user.ts
 export function useCurrentUser() {
@@ -1634,10 +1743,14 @@ export function useCurrentUser() {
 #### Task Group 7.2.2: Implement Channels Page Data Fetching
 
 **Files Affected:**
-- `apps/web/app/(workspace)/[workspaceId]/channels/page.tsx:9-10` - TODO: Replace with actual channel fetching logic
-- `apps/web/app/(workspace)/[workspaceId]/channels/page.tsx:82-99` - Placeholder create channel dialog
+
+- `apps/web/app/(workspace)/[workspaceId]/channels/page.tsx:9-10` - TODO: Replace with actual
+  channel fetching logic
+- `apps/web/app/(workspace)/[workspaceId]/channels/page.tsx:82-99` - Placeholder create channel
+  dialog
 
 **Tasks:**
+
 - [ ] 7.2.2.1 Create `useChannels()` hook with SWR/React Query
 - [ ] 7.2.2.2 Implement channel fetching from `/api/channels`
 - [ ] 7.2.2.3 Replace placeholder array with real data
@@ -1651,9 +1764,11 @@ export function useCurrentUser() {
 #### Task Group 7.2.3: Implement Orchestrator Activity Log
 
 **Files Affected:**
+
 - `apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx:355` - "Activity log coming soon"
 
 **Tasks:**
+
 - [ ] 7.2.3.1 Create Orchestrator activity log Prisma model
 - [ ] 7.2.3.2 Create `/api/vps/[id]/activity` endpoint
 - [ ] 7.2.3.3 Track Orchestrator task assignments
@@ -1668,9 +1783,11 @@ export function useCurrentUser() {
 #### Task Group 7.2.4: Implement Orchestrator Agent Management
 
 **Files Affected:**
+
 - `apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx:371` - "Agent management coming soon"
 
 **Tasks:**
+
 - [ ] 7.2.4.1 Create Agent management UI components
 - [ ] 7.2.4.2 Display agents assigned to VP
 - [ ] 7.2.4.3 Add agent assignment/unassignment
@@ -1683,10 +1800,14 @@ export function useCurrentUser() {
 #### Task Group 7.2.5: Implement Credential-Based Auth
 
 **Files Affected:**
-- `apps/web/app/(auth)/login/page.tsx:40` - "Currently a placeholder for future credential-based auth"
-- `apps/web/app/(auth)/register/page.tsx:42` - "Currently a placeholder for future credential-based registration"
+
+- `apps/web/app/(auth)/login/page.tsx:40` - "Currently a placeholder for future credential-based
+  auth"
+- `apps/web/app/(auth)/register/page.tsx:42` - "Currently a placeholder for future credential-based
+  registration"
 
 **Tasks:**
+
 - [ ] 7.2.5.1 Add Credentials provider to NextAuth config
 - [ ] 7.2.5.2 Implement password hashing (bcrypt)
 - [ ] 7.2.5.3 Create user registration API endpoint
@@ -1699,6 +1820,7 @@ export function useCurrentUser() {
 - [ ] 7.2.5.10 Test full email/password auth flow
 
 **Validation:**
+
 ```bash
 ✓ All MOCK_CURRENT_USER references removed
 ✓ Channels page fetches real data
@@ -1711,15 +1833,15 @@ export function useCurrentUser() {
 
 ### Wave 7.3: Code Quality & Console Statement Removal
 
-**Priority:** MEDIUM
-**Dependencies:** Wave 7.2 complete
-**Agents:** software-engineer (4), code-analyzer (3), qa-engineer (3)
+**Priority:** MEDIUM **Dependencies:** Wave 7.2 complete **Agents:** software-engineer (4),
+code-analyzer (3), qa-engineer (3)
 
 #### Task Group 7.3.1: Remove Debug Console Statements
 
 **Scope:** 50+ files with console.log/warn/error statements in API routes
 
 **Tasks:**
+
 - [ ] 7.3.1.1 Create structured logger service (pino or winston)
 - [ ] 7.3.1.2 Replace all `console.error` with structured logger
 - [ ] 7.3.1.3 Replace all `console.warn` with structured logger
@@ -1732,6 +1854,7 @@ export function useCurrentUser() {
 - [ ] 7.3.1.10 Test log aggregation in production
 
 **Implementation:**
+
 ```typescript
 // lib/logger.ts
 import pino from 'pino';
@@ -1739,11 +1862,9 @@ import pino from 'pino';
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   formatters: {
-    level: (label) => ({ level: label }),
+    level: label => ({ level: label }),
   },
-  transport: process.env.NODE_ENV !== 'production'
-    ? { target: 'pino-pretty' }
-    : undefined,
+  transport: process.env.NODE_ENV !== 'production' ? { target: 'pino-pretty' } : undefined,
 });
 
 // Usage in API routes:
@@ -1753,10 +1874,12 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 #### Task Group 7.3.2: Fix Workarounds and Temporary Code
 
 **Files Affected:**
+
 - `apps/web/app/api/daemon/messages/route.ts:188` - Workaround for Prisma type mapping
 - `apps/web/app/api/tasks/route.ts:326` - temporary ID for new task
 
 **Tasks:**
+
 - [ ] 7.3.2.1 Fix Prisma type mapping for daemon messages
 - [ ] 7.3.2.2 Generate proper temporary task IDs with UUID
 - [ ] 7.3.2.3 Review all Prisma queries for type safety
@@ -1766,6 +1889,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 #### Task Group 7.3.3: TypeScript Strictness Improvements
 
 **Tasks:**
+
 - [ ] 7.3.3.1 Enable `strict: true` in all tsconfigs
 - [ ] 7.3.3.2 Fix all resulting type errors
 - [ ] 7.3.3.3 Remove all `any` type usages (replace with proper types)
@@ -1776,6 +1900,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 #### Task Group 7.3.4: Error Handling Standardization
 
 **Tasks:**
+
 - [ ] 7.3.4.1 Create standardized API error response format
 - [ ] 7.3.4.2 Implement global error boundary for React
 - [ ] 7.3.4.3 Add Sentry error tracking to all API routes
@@ -1785,6 +1910,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 - [ ] 7.3.4.7 Test error handling with intentional failures
 
 **Validation:**
+
 ```bash
 ✓ Zero console.* statements in production code
 ✓ Structured logging operational
@@ -1797,13 +1923,13 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 
 ### Wave 7.4: Security Hardening
 
-**Priority:** CRITICAL
-**Dependencies:** Wave 7.3 complete
-**Agents:** security-manager (2), backend-engineer (4), devops-engineer (4)
+**Priority:** CRITICAL **Dependencies:** Wave 7.3 complete **Agents:** security-manager (2),
+backend-engineer (4), devops-engineer (4)
 
 #### Task Group 7.4.1: Input Validation Audit
 
 **Tasks:**
+
 - [ ] 7.4.1.1 Audit all API endpoints for input validation
 - [ ] 7.4.1.2 Add Zod validation to missing endpoints
 - [ ] 7.4.1.3 Sanitize all user inputs (XSS prevention)
@@ -1816,6 +1942,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 #### Task Group 7.4.2: Authentication Security
 
 **Tasks:**
+
 - [ ] 7.4.2.1 Implement session rotation on login
 - [ ] 7.4.2.2 Add session timeout (configurable)
 - [ ] 7.4.2.3 Implement account lockout after failed attempts
@@ -1828,6 +1955,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 #### Task Group 7.4.3: API Security
 
 **Tasks:**
+
 - [ ] 7.4.3.1 Implement rate limiting on all endpoints
 - [ ] 7.4.3.2 Add API key authentication for daemon endpoints
 - [ ] 7.4.3.3 Implement request signing for Orchestrator operations
@@ -1838,6 +1966,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 - [ ] 7.4.3.8 Add abuse detection and blocking
 
 **Validation:**
+
 ```bash
 ✓ OWASP ZAP scan passes with no critical issues
 ✓ All API endpoints have input validation
@@ -1850,23 +1979,25 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 
 ### Phase 7 Summary
 
-| Wave | Focus | Files | Key Deliverables |
-|------|-------|-------|------------------|
-| **7.1** | Critical API Gaps | 8 files | S3 delete, LiveKit recording, audit logs, daemon auth |
-| **7.2** | Mock Data Removal | 6 files | Real user auth, channel fetching, Orchestrator activity/agents, credential auth |
-| **7.3** | Code Quality | 50+ files | Structured logging, TypeScript strict, error handling |
-| **7.4** | Security Hardening | All APIs | Input validation, auth security, API hardening |
+| Wave    | Focus              | Files     | Key Deliverables                                                                |
+| ------- | ------------------ | --------- | ------------------------------------------------------------------------------- |
+| **7.1** | Critical API Gaps  | 8 files   | S3 delete, LiveKit recording, audit logs, daemon auth                           |
+| **7.2** | Mock Data Removal  | 6 files   | Real user auth, channel fetching, Orchestrator activity/agents, credential auth |
+| **7.3** | Code Quality       | 50+ files | Structured logging, TypeScript strict, error handling                           |
+| **7.4** | Security Hardening | All APIs  | Input validation, auth security, API hardening                                  |
 
 ### Phase 7 Completion Criteria
 
 **Code Quality:**
+
 - [ ] Zero TODO/FIXME comments in production code
-- [ ] Zero MOCK_* or placeholder data
+- [ ] Zero MOCK\_\* or placeholder data
 - [ ] Zero `any` types in TypeScript
 - [ ] Zero `console.*` statements (use logger)
 - [ ] TypeScript strict mode: 0 errors
 
 **Security:**
+
 - [ ] OWASP Top 10 vulnerabilities addressed
 - [ ] All inputs validated with Zod
 - [ ] Rate limiting on all endpoints
@@ -1874,6 +2005,7 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 - [ ] Security headers configured
 
 **Functionality:**
+
 - [ ] All "coming soon" features implemented
 - [ ] All placeholder dialogs replaced with real UI
 - [ ] All API endpoints fully functional
@@ -1883,19 +2015,21 @@ logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed
 
 ## Phase 8: Web Application Backlog Completion
 
-**Duration:** 3-4 weeks
-**Agents Required:** 20 agents per wave (4 waves)
-**Priority:** Required for production-ready web application
-**Reference Document:** [NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md)
-**Status:** ✅ COMPLETED (November 26, 2025)
+**Duration:** 3-4 weeks **Agents Required:** 20 agents per wave (4 waves) **Priority:** Required for
+production-ready web application **Reference Document:**
+[NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md) **Status:** ✅ COMPLETED (November 26, 2025)
 
 ### Overview
 
-This phase addresses the comprehensive web application backlog discovered during the November 2025 code review. The full backlog contains **200+ issues** across 35 pages, 160+ API routes, and 17 hooks with an estimated **150-200 hours** of work.
+This phase addresses the comprehensive web application backlog discovered during the November 2025
+code review. The full backlog contains **200+ issues** across 35 pages, 160+ API routes, and 17
+hooks with an estimated **150-200 hours** of work.
 
-**Overall Application Readiness:** ~~35-40%~~ → ~~70-75%~~ → **92% complete** (after Phase 8 + 20-agent audit)
+**Overall Application Readiness:** ~~35-40%~~ → ~~70-75%~~ → **92% complete** (after Phase 8 +
+20-agent audit)
 
 **20-Agent Audit Update (November 27, 2025):**
+
 - ✅ Database schema: Agent, Deployment, ExportJob Prisma models added with migrations
 - ✅ AI Config API: Discovered to be IMPLEMENTED (not stub)
 - ✅ Notifications API: Discovered to be IMPLEMENTED (not stub)
@@ -1906,16 +2040,15 @@ This phase addresses the comprehensive web application backlog discovered during
 
 ### Wave 8.1: Critical Fixes (P0) ✅ COMPLETED
 
-**Priority:** CRITICAL
-**Dependencies:** Phase 7 complete
-**Agents:** backend-engineer (4), frontend-engineer (3), software-engineer (3)
-**Status:** ✅ COMPLETED
+**Priority:** CRITICAL **Dependencies:** Phase 7 complete **Agents:** backend-engineer (4),
+frontend-engineer (3), software-engineer (3) **Status:** ✅ COMPLETED
 
 #### Task Group 8.1.1: Authentication System Completion ✅
 
 **Issue:** User registration broken - API endpoint doesn't exist.
 
 **Tasks:**
+
 - [x] 8.1.1.1 Create `/api/auth/register` endpoint ✅
 - [x] 8.1.1.2 Implement password hashing (bcrypt/argon2) ✅
 - [ ] 8.1.1.3 Add email verification flow ⚠️ PARTIAL (endpoint exists, flow not wired)
@@ -1932,6 +2065,7 @@ This phase addresses the comprehensive web application backlog discovered during
 **Issue:** ALL admin pages call hardcoded organization IDs instead of workspace-scoped routes.
 
 **Tasks:**
+
 - [x] 8.1.2.1 Fix `/admin/page.tsx` - use `workspaceId` from params ✅
 - [x] 8.1.2.2 Fix `/admin/members/page.tsx` - replace `/api/organizations/1/members` ✅
 - [x] 8.1.2.3 Fix `/admin/roles/page.tsx` - replace `/api/organizations/1/roles` ✅
@@ -1948,6 +2082,7 @@ This phase addresses the comprehensive web application backlog discovered during
 **Issue:** `/settings` route returns 404.
 
 **Tasks:**
+
 - [x] 8.1.3.1 Create `/settings/page.tsx` with proper redirect or index ✅
 - [x] 8.1.3.2 Verify all settings sub-routes work ✅
 - [ ] 8.1.3.3 Fix OAuth flows in security settings ⚠️ PARTIAL
@@ -1959,6 +2094,7 @@ This phase addresses the comprehensive web application backlog discovered during
 **Issue:** Channel messages use hardcoded mock user.
 
 **Tasks:**
+
 - [x] 8.1.4.1 Create `useCurrentUser()` hook ✅
 - [x] 8.1.4.2 Replace `MOCK_CURRENT_USER` in channel page ✅
 - [x] 8.1.4.3 Replace `MOCK_CURRENT_USER_ID` in channel settings ✅
@@ -1966,6 +2102,7 @@ This phase addresses the comprehensive web application backlog discovered during
 - [x] 8.1.4.5 Test all affected pages with real auth ✅
 
 **Validation:**
+
 ```bash
 ✓ User registration works end-to-end
 ✓ All admin pages fetch correct workspace data
@@ -1977,23 +2114,23 @@ This phase addresses the comprehensive web application backlog discovered during
 
 ### Wave 8.2: Channel & Messaging Completion (P1) ✅ COMPLETED
 
-**Priority:** HIGH
-**Dependencies:** Wave 8.1 complete
-**Agents:** backend-engineer (4), frontend-engineer (4), api-engineer (2)
-**Status:** ✅ COMPLETED
+**Priority:** HIGH **Dependencies:** Wave 8.1 complete **Agents:** backend-engineer (4),
+frontend-engineer (4), api-engineer (2) **Status:** ✅ COMPLETED
 
 #### Task Group 8.2.1: Channel API Endpoints ✅
 
 **Issue:** 13 channel-related API endpoints missing.
 
 **Tasks:**
+
 - [x] 8.2.1.1 Create `GET /api/workspaces/[id]/channels` - list channels ✅
 - [x] 8.2.1.2 Create `POST /api/workspaces/[id]/channels` - create channel ✅
 - [x] 8.2.1.3 Create `GET /api/workspaces/[id]/channels/[id]` - get channel ✅
 - [x] 8.2.1.4 Create `/api/messages` - send/list messages ✅
 - [ ] 8.2.1.5 Create `DELETE /api/channels/[id]/messages/[msgId]` - delete message ⚠️ PARTIAL
 - [ ] 8.2.1.6 Create `POST /api/channels/[id]/messages/[msgId]/reactions` - add reaction ❌ NOT DONE
-- [ ] 8.2.1.7 Create `DELETE /api/channels/[id]/messages/[msgId]/reactions` - remove reaction ❌ NOT DONE
+- [ ] 8.2.1.7 Create `DELETE /api/channels/[id]/messages/[msgId]/reactions` - remove reaction ❌ NOT
+      DONE
 - [ ] 8.2.1.8 Create `POST /api/channels/[id]/threads` - create thread ❌ NOT DONE
 - [ ] 8.2.1.9 Create `GET /api/channels/[id]/threads/[threadId]` - get thread ❌ NOT DONE
 - [ ] 8.2.1.10 Create `POST /api/channels/[id]/pins` - pin message ❌ NOT DONE
@@ -2003,6 +2140,7 @@ This phase addresses the comprehensive web application backlog discovered during
 #### Task Group 8.2.2: Channel UI Completion ✅
 
 **Tasks:**
+
 - [x] 8.2.2.1 Replace placeholder channel fetching with real API ✅
 - [x] 8.2.2.2 Create proper `CreateChannelDialog` component ✅
 - [x] 8.2.2.3 Add channel type selection (public/private) ✅
@@ -2015,6 +2153,7 @@ This phase addresses the comprehensive web application backlog discovered during
 - [ ] 8.2.2.10 Add read receipts ❌ NOT DONE
 
 **Validation:**
+
 ```bash
 ✓ Channel list fetches real data
 ✓ Channel creation works
@@ -2027,16 +2166,15 @@ This phase addresses the comprehensive web application backlog discovered during
 
 ### Wave 8.3: Orchestrator & Workflow Features (P1) ✅ COMPLETED
 
-**Priority:** HIGH
-**Dependencies:** Wave 8.2 complete
-**Agents:** backend-engineer (4), frontend-engineer (3), ml-engineer (3)
-**Status:** ✅ COMPLETED
+**Priority:** HIGH **Dependencies:** Wave 8.2 complete **Agents:** backend-engineer (4),
+frontend-engineer (3), ml-engineer (3) **Status:** ✅ COMPLETED
 
 #### Task Group 8.3.1: Orchestrator Feature Completion ✅
 
 **Issue:** "Activity log coming soon" and "Agent management coming soon" placeholders.
 
 **Tasks:**
+
 - [x] 8.3.1.1 Create Orchestrator activity log Prisma model ✅ (uses existing ActionLog)
 - [x] 8.3.1.2 Create `/api/workspaces/[id]/vps/[id]/activity` endpoint ✅
 - [x] 8.3.1.3 Track Orchestrator task assignments in activity log ✅
@@ -2055,6 +2193,7 @@ This phase addresses the comprehensive web application backlog discovered during
 **Issue:** Workflow execution is 100% simulated with setTimeout.
 
 **Tasks:**
+
 - [x] 8.3.2.1 Create workflow API endpoints ✅
 - [x] 8.3.2.2 Create `/api/workspaces/[id]/workflows/[id]/execute` endpoint ✅
 - [x] 8.3.2.3 Add real step progress tracking ✅
@@ -2065,10 +2204,12 @@ This phase addresses the comprehensive web application backlog discovered during
 - [x] 8.3.2.8 Add workflow test endpoint ✅
 - [x] 8.3.2.9 Create workflow templates endpoint ✅
 - [x] 8.3.2.10 Add workflow trigger endpoint ✅
-- [ ] 8.3.2.11 Connect to Orchestrator daemon for task execution ❌ NOT DONE (requires VP-Daemon package)
+- [ ] 8.3.2.11 Connect to Orchestrator daemon for task execution ❌ NOT DONE (requires VP-Daemon
+      package)
 - [ ] 8.3.2.12 Implement workflow pause/resume ❌ NOT DONE
 
 **Validation:**
+
 ```bash
 ✓ Orchestrator activity log shows real activities
 ⚠️ Agent management partial
@@ -2080,16 +2221,15 @@ This phase addresses the comprehensive web application backlog discovered during
 
 ### Wave 8.4: Dashboard, Analytics & Stubs (P1-P2) ✅ COMPLETED
 
-**Priority:** MEDIUM
-**Dependencies:** Wave 8.3 complete
-**Agents:** frontend-engineer (5), backend-engineer (3), data-scientist (2)
-**Status:** ✅ COMPLETED
+**Priority:** MEDIUM **Dependencies:** Wave 8.3 complete **Agents:** frontend-engineer (5),
+backend-engineer (3), data-scientist (2) **Status:** ✅ COMPLETED
 
 #### Task Group 8.4.1: Dashboard Real Data ✅
 
 **Issue:** Mock workspaces, mock activity, mock stats.
 
 **Tasks:**
+
 - [x] 8.4.1.1 Create `/api/workspaces/[id]/dashboard/stats` endpoint ✅
 - [x] 8.4.1.2 Create `/api/workspaces/[id]/dashboard/activity` endpoint ✅
 - [x] 8.4.1.3 Calculate real stats (VPs, agents, deployments, workflows) ✅
@@ -2104,6 +2244,7 @@ This phase addresses the comprehensive web application backlog discovered during
 **Issue:** Shows "Analytics coming soon..." placeholder.
 
 **Tasks:**
+
 - [x] 8.4.2.1 Create `/api/workspaces/[id]/analytics` endpoint ✅
 - [x] 8.4.2.2 Create `/api/workspaces/[id]/analytics/metrics` endpoint ✅
 - [x] 8.4.2.3 Create `/api/workspaces/[id]/analytics/trends` endpoint ✅
@@ -2118,6 +2259,7 @@ This phase addresses the comprehensive web application backlog discovered during
 **Issue:** Several missing API endpoints needed for future features.
 
 **STUB APIs Created (require real implementation):**
+
 - [x] 8.4.3.1 Create `/api/workspaces/[id]/integrations` STUB ✅
 - [x] 8.4.3.2 Create `/api/workspaces/[id]/billing` STUB ✅
 - [x] 8.4.3.3 Create `/api/workspaces/[id]/webhooks` STUB ✅
@@ -2129,6 +2271,7 @@ This phase addresses the comprehensive web application backlog discovered during
 - [ ] 8.4.3.9 Deployments page fully functional ⚠️ PARTIAL
 
 **Validation:**
+
 ```bash
 ✓ Dashboard shows real workspace data
 ✓ Analytics APIs complete (7 endpoints)
@@ -2140,23 +2283,25 @@ This phase addresses the comprehensive web application backlog discovered during
 
 ### Phase 8 Summary
 
-| Wave | Focus | Issues | Status | Hours Spent |
-|------|-------|--------|--------|-------------|
-| **8.1** | Critical Fixes (P0) | 5 | ✅ COMPLETED | ~45 |
-| **8.2** | Channels & Messaging | 23 | ✅ COMPLETED | ~40 |
-| **8.3** | Orchestrator & Workflows | 20 | ✅ COMPLETED | ~35 |
-| **8.4** | Dashboard, Analytics, Stubs | 26 | ✅ COMPLETED | ~40 |
-| **Total** | | **74** | **✅ COMPLETED** | **~160** |
+| Wave      | Focus                       | Issues | Status           | Hours Spent |
+| --------- | --------------------------- | ------ | ---------------- | ----------- |
+| **8.1**   | Critical Fixes (P0)         | 5      | ✅ COMPLETED     | ~45         |
+| **8.2**   | Channels & Messaging        | 23     | ✅ COMPLETED     | ~40         |
+| **8.3**   | Orchestrator & Workflows    | 20     | ✅ COMPLETED     | ~35         |
+| **8.4**   | Dashboard, Analytics, Stubs | 26     | ✅ COMPLETED     | ~40         |
+| **Total** |                             | **74** | **✅ COMPLETED** | **~160**    |
 
 ### Phase 8 Completion Criteria (Updated: November 26, 2025, 22:50 UTC)
 
 **Authentication:**
+
 - [x] Email/password registration works ✅
 - [x] Forgot password page created ✅ (Agent swarm fix)
 - [ ] Password reset flow complete ⚠️ PARTIAL (reset-password page pending)
 - [ ] Email verification implemented ⚠️ PARTIAL
 
 **Admin:**
+
 - [x] All admin pages use correct workspace-scoped APIs ✅
 - [x] Member management functional ✅
 - [x] Members page created ✅ (Agent swarm fix)
@@ -2165,6 +2310,7 @@ This phase addresses the comprehensive web application backlog discovered during
 - [x] Billing page shows data ✅ (STUB - returns mock data)
 
 **Channels:**
+
 - [x] Channel CRUD operations work ✅
 - [x] Channels API fixed ✅ (Agent swarm fix - useChannels hook corrected)
 - [x] DM endpoint fixed ✅ (Agent swarm fix - /dm vs /direct-messages)
@@ -2173,6 +2319,7 @@ This phase addresses the comprehensive web application backlog discovered during
 - [ ] Reactions work ❌ NOT DONE
 
 **VPs:**
+
 - [x] Activity log shows real data ✅
 - [x] VPs API fixed ✅ (Agent swarm fix - workspace-scoped endpoint)
 - [x] API response parsing consistent ✅
@@ -2180,23 +2327,27 @@ This phase addresses the comprehensive web application backlog discovered during
 - [ ] Agent management functional ⚠️ PARTIAL
 
 **Workflows:**
+
 - [x] Workflow API endpoints complete ✅
 - [x] Type mismatches fixed ✅ (Agent swarm fix - executionCount/runCount mapping)
 - [x] Progress tracking API complete ✅
 - [ ] Real workflow execution (not simulated) ⚠️ PARTIAL (VP daemon not connected)
 
 **Dashboard/Analytics:**
+
 - [x] Real data throughout ✅
 - [x] Dashboard activity API fixed ✅ (Agent swarm fix - /dashboard/activity endpoint)
 - [x] Quick stats working ✅ (Agent swarm fix - /dashboard/stats API)
 - [x] Analytics APIs complete ✅ (7 endpoints)
 
 **Settings:**
+
 - [x] Settings page exists ✅
 - [x] Settings redirect fixed ✅ (Agent swarm fix - redirect to user's workspace)
 - [x] Profile page working ✅
 
 **Stubs:**
+
 - [ ] Agents page complete ⚠️ PARTIAL
 - [ ] Deployments page complete ⚠️ PARTIAL
 - [x] Analytics APIs complete ✅
@@ -2206,6 +2357,7 @@ This phase addresses the comprehensive web application backlog discovered during
 The following items were identified during Phase 8 but require additional work:
 
 **STUB APIs (7 files) - Require Real Implementation:**
+
 1. `/api/workspaces/[id]/integrations/route.ts` - Mock Slack/GitHub/Jira/Linear
 2. `/api/workspaces/[id]/billing/route.ts` - Mock billing/subscription data
 3. `/api/workspaces/[id]/webhooks/route.ts` - Mock webhook management
@@ -2215,6 +2367,7 @@ The following items were identified during Phase 8 but require additional work:
 7. `/api/notifications/route.ts` - Mock notifications
 
 **Missing Features:**
+
 1. Password reset flow (forgot-password, reset-password pages)
 2. Message reactions system
 3. Message threading system
@@ -2227,30 +2380,29 @@ The following items were identified during Phase 8 but require additional work:
 
 ---
 
-**Document Version:** 1.3.0
-**Last Updated:** November 26, 2025
-**Phase 8 Completed:** November 26, 2025
-**Next Phase:** Phase 9 - STUB Implementation & Remaining Features
+**Document Version:** 1.3.0 **Last Updated:** November 26, 2025 **Phase 8 Completed:** November 26,
+2025 **Next Phase:** Phase 9 - STUB Implementation & Remaining Features
 
 ---
 
 ## 🤖 AGENT 20 COMPREHENSIVE STATUS AUDIT
 
-**Mission:** Post-Phase 8 comprehensive documentation update
-**Date:** November 26, 2025, 22:50 UTC
-**Agent:** Agent 20 (Documentation Status Manager)
-**Scope:** Both NEOLITH-WEB-BACKLOG.md and INSTITUTIONAL-READINESS-ROADMAP.md
+**Mission:** Post-Phase 8 comprehensive documentation update **Date:** November 26, 2025, 22:50 UTC
+**Agent:** Agent 20 (Documentation Status Manager) **Scope:** Both NEOLITH-WEB-BACKLOG.md and
+INSTITUTIONAL-READINESS-ROADMAP.md
 
 ---
 
 ### Executive Audit Summary
 
 **Web Application Readiness Progression:**
+
 - Initial Assessment (Oct 2025): 35-40%
 - Phase 8 Completion (Nov 26, 2025): 70-75%
 - **Post-Agent Swarm Fixes (Nov 26, 2025): 85-90%** ✅
 
 **Critical Metrics:**
+
 - Total API Endpoints Created: **74 workspace-scoped routes**
 - Issues Resolved: **140+ from original 200+**
 - Outstanding Issues: **~25-30 remaining**
@@ -2264,36 +2416,42 @@ The following items were identified during Phase 8 but require additional work:
 The following critical bugs were identified during Playwright UI testing and fixed:
 
 #### 1. Channels API 404 Errors ✅ FIXED
+
 - **Issue:** Dashboard sidebar showing "Failed to fetch channels"
 - **Root Cause:** useChannels hook expected `data.channels` but API returns `data.data`
 - **Fix:** Corrected response parsing in `/hooks/use-channel.ts`
 - **Impact:** Dashboard sidebar and channels page now load correctly
 
 #### 2. VPs API 404 Errors ✅ FIXED
+
 - **Issue:** VPs page showing "Failed to fetch VPs" with zero status counters
 - **Root Cause:** Hook calling `/api/vps?organizationId=...` instead of workspace-scoped endpoint
 - **Fix:** Changed to `/api/workspaces/${workspaceId}/vps` in `/hooks/use-vp.ts`
 - **Impact:** VPs page now loads with correct status counters (Online/Offline/Busy/Away)
 
 #### 3. Workflows Type Mismatch ✅ FIXED
+
 - **Issue:** Workflows page showing "Failed to fetch workflows"
 - **Root Cause:** Database uses `executionCount`, frontend expects `runCount`
 - **Fix:** Added field mapping in `/api/workspaces/[workspaceId]/workflows/route.ts`
 - **Impact:** Workflows page now displays correctly with proper statistics
 
 #### 4. Dashboard Activity 404 Error ✅ FIXED
+
 - **Issue:** Dashboard activity widget showing "Failed to fetch activities"
 - **Root Cause:** Calling legacy endpoint instead of enhanced dashboard endpoint
 - **Fix:** Changed to `/api/workspaces/${workspaceId}/dashboard/activity`
 - **Impact:** Dashboard Recent Activity widget now shows unified activity feed
 
 #### 5. Dashboard Stats Showing Zeros ✅ FIXED
+
 - **Issue:** Quick stats (Team Members, Channels, Workflows, VPs) all showing 0
 - **Root Cause:** Multiple separate API calls inefficient, missing stats API
 - **Fix:** Consolidated to single `/api/workspaces/${workspaceId}/dashboard/stats` call
 - **Impact:** Dashboard shows real counts from database
 
 #### 6. Settings Redirect to Onboarding ✅ FIXED
+
 - **Issue:** Users navigating to `/neolith/settings` saw onboarding wizard
 - **Root Cause:** Settings layout not redirecting to user's actual workspace
 - **Fix:** Added workspace detection logic in `/settings/layout.tsx`
@@ -2303,21 +2461,22 @@ The following critical bugs were identified during Playwright UI testing and fix
 
 ### Quality Score Improvements
 
-| Area       | Before | After | Improvement | Key Changes                                |
-|------------|--------|-------|-------------|--------------------------------------------|
-| Dashboard  | 8/10   | 9/10  | +1.0        | Activity feed working, stats API real data |
-| VPs        | 8.5/10 | 9/10  | +0.5        | API endpoint fixed, status counters work   |
-| Admin      | 8/10   | 9/10  | +1.0        | Members page created, all APIs functional  |
-| Settings   | 7/10   | 8.5/10| +1.5        | Redirect logic fixed, profile page working |
-| Channels   | 7/10   | 8.5/10| +1.5        | useChannels hook fixed, DM endpoint works  |
-| Workflows  | 7.5/10 | 8/10  | +0.5        | Type mismatches resolved, stats accurate   |
-| Auth       | 8/10   | 8.5/10| +0.5        | Forgot password page added                 |
+| Area      | Before | After  | Improvement | Key Changes                                |
+| --------- | ------ | ------ | ----------- | ------------------------------------------ |
+| Dashboard | 8/10   | 9/10   | +1.0        | Activity feed working, stats API real data |
+| VPs       | 8.5/10 | 9/10   | +0.5        | API endpoint fixed, status counters work   |
+| Admin     | 8/10   | 9/10   | +1.0        | Members page created, all APIs functional  |
+| Settings  | 7/10   | 8.5/10 | +1.5        | Redirect logic fixed, profile page working |
+| Channels  | 7/10   | 8.5/10 | +1.5        | useChannels hook fixed, DM endpoint works  |
+| Workflows | 7.5/10 | 8/10   | +0.5        | Type mismatches resolved, stats accurate   |
+| Auth      | 8/10   | 8.5/10 | +0.5        | Forgot password page added                 |
 
 ---
 
 ### Phase Status Update
 
 #### Phase 0: Critical Foundations
+
 - [x] Browser Testing MCP (Playwright) ✅ INSTALLED
 - [x] Orchestrator Daemon Package Built ✅ (dist folder verified, 12 modules)
 - [ ] Orchestrator Daemon Published to npm ❌ PENDING
@@ -2325,6 +2484,7 @@ The following critical bugs were identified during Playwright UI testing and fix
 - [x] Branding Standardized (Genesis → Neolith) ✅
 
 #### Phase 1: Core Infrastructure
+
 - [x] Org-Genesis Integration ✅ COMPLETE (100%)
 - [x] Workspace Creation Flow ✅ COMPLETE
 - [x] S3 Avatar Storage ✅ COMPLETE
@@ -2332,6 +2492,7 @@ The following critical bugs were identified during Playwright UI testing and fix
 - [ ] Orchestrator Work Execution Engine ⚠️ PENDING (APIs ready, daemon integration needed)
 
 #### Phase 8: Web Application Backlog
+
 - **Status:** ✅ COMPLETED (November 26, 2025)
 - **Issues Resolved:** 74 (out of 200+)
 - **API Endpoints Created:** 74 workspace-scoped routes
@@ -2343,6 +2504,7 @@ The following critical bugs were identified during Playwright UI testing and fix
 ### Outstanding Work for Phase 9
 
 #### High Priority (P1)
+
 1. **Billing API Implementation** (8-10 hours)
    - Stripe/payment provider integration
    - Required for commercial launch
@@ -2356,6 +2518,7 @@ The following critical bugs were identified during Playwright UI testing and fix
    - User engagement critical
 
 #### Medium Priority (P2)
+
 4. **Channel Threads & Reactions** (8-10 hours)
 5. **Agents Page Full Implementation** (6-8 hours)
 6. **Deployments Page Full Implementation** (6-8 hours)
@@ -2365,6 +2528,7 @@ The following critical bugs were identified during Playwright UI testing and fix
 10. **Export API** (8-10 hours)
 
 #### Blockers (Critical Path)
+
 11. **Mobile Native Project Initialization** ❌ BLOCKER
     - iOS/Android projects not created
     - Blocks mobile app deployment
@@ -2377,15 +2541,15 @@ The following critical bugs were identified during Playwright UI testing and fix
 
 ### STUB APIs Status
 
-| API Endpoint | Priority | Est. Hours | Status | Purpose |
-|--------------|----------|------------|--------|---------|
-| Integrations | P2 | 6-8 | ⚠️ STUB | OAuth flows, Slack/GitHub/Jira/Linear |
-| Billing | P1 | 8-10 | ⚠️ STUB | Stripe integration, subscriptions |
-| Webhooks | P2 | 10-12 | ⚠️ STUB | Webhook delivery, retry, signing |
-| Audit Log | P1 | 4-6 | ⚠️ STUB | Compliance, audit trail |
-| AI Config | P2 | 6-8 | ⚠️ STUB | Model management, prompts |
-| Export | P2 | 8-10 | ⚠️ STUB | Data export, background jobs |
-| Notifications | P1 | 10-12 | ⚠️ STUB | Push, email, in-app notifications |
+| API Endpoint  | Priority | Est. Hours | Status  | Purpose                               |
+| ------------- | -------- | ---------- | ------- | ------------------------------------- |
+| Integrations  | P2       | 6-8        | ⚠️ STUB | OAuth flows, Slack/GitHub/Jira/Linear |
+| Billing       | P1       | 8-10       | ⚠️ STUB | Stripe integration, subscriptions     |
+| Webhooks      | P2       | 10-12      | ⚠️ STUB | Webhook delivery, retry, signing      |
+| Audit Log     | P1       | 4-6        | ⚠️ STUB | Compliance, audit trail               |
+| AI Config     | P2       | 6-8        | ⚠️ STUB | Model management, prompts             |
+| Export        | P2       | 8-10       | ⚠️ STUB | Data export, background jobs          |
+| Notifications | P1       | 10-12      | ⚠️ STUB | Push, email, in-app notifications     |
 
 **Total STUB Implementation:** 52-66 hours (parallelizable across 3-4 agents)
 
@@ -2394,23 +2558,27 @@ The following critical bugs were identified during Playwright UI testing and fix
 ### Recommended Phase 9 Deployment Strategy
 
 #### Wave 9.1: P1 STUB Implementations (Parallel)
+
 - **Agent 21:** Billing API (Stripe integration)
 - **Agent 22:** Audit Log API (compliance)
 - **Agent 23:** Notifications API (user engagement)
 - **Duration:** 1 week (parallel execution)
 
 #### Wave 9.2: P2 STUB Implementations (Parallel)
+
 - **Agent 24-25:** Integrations + Webhooks APIs
 - **Agent 26-27:** AI Config + Export APIs
 - **Duration:** 1 week (parallel execution)
 
 #### Wave 9.3: Feature Completion (Parallel)
+
 - **Agent 28-29:** Channel threads + reactions
 - **Agent 30:** Agents page implementation
 - **Agent 31:** Deployments page implementation
 - **Duration:** 1 week (parallel execution)
 
 #### Wave 9.4: Critical Blockers (Sequential)
+
 - **Agent 32-34:** Mobile native project initialization
 - **Agent 35-36:** Desktop renderer production build
 - **Duration:** 1 week (some dependencies)
@@ -2443,6 +2611,7 @@ The following critical bugs were identified during Playwright UI testing and fix
 ### Verification & Validation
 
 **Code Analysis Performed:**
+
 - ✅ Counted 74 workspace API endpoints created
 - ✅ Verified Orchestrator daemon package build (dist folder, 12 modules)
 - ✅ Confirmed org-genesis integration in web app package.json
@@ -2450,6 +2619,7 @@ The following critical bugs were identified during Playwright UI testing and fix
 - ✅ Analyzed agent swarm fixes applied to hooks and API routes
 
 **Testing Status:**
+
 - ✅ Playwright MCP server installed and configured
 - ✅ Manual Playwright testing completed (November 26, 2025)
 - ⏳ Automated Playwright test suite pending
@@ -2482,12 +2652,12 @@ The following critical bugs were identified during Playwright UI testing and fix
 ---
 
 **Document Versions:**
+
 - **NEOLITH-WEB-BACKLOG.md:** 2.3.0
 - **INSTITUTIONAL-READINESS-ROADMAP.md:** 1.4.0
 
-**Last Updated:** November 26, 2025, 22:50 UTC
-**Updated By:** Agent 20 (Documentation Status Manager)
-**Next Update:** After Phase 9 Wave 9.1 completion
+**Last Updated:** November 26, 2025, 22:50 UTC **Updated By:** Agent 20 (Documentation Status
+Manager) **Next Update:** After Phase 9 Wave 9.1 completion
 
 ---
 

@@ -21,7 +21,7 @@ test.describe('Channels Page Tests', () => {
     consoleErrors = [];
     consoleWarnings = [];
 
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       } else if (msg.type() === 'warning') {
@@ -30,7 +30,7 @@ test.describe('Channels Page Tests', () => {
     });
 
     // Capture page errors
-    page.on('pageerror', (error) => {
+    page.on('pageerror', error => {
       consoleErrors.push(`Page Error: ${error.message}`);
     });
   });
@@ -48,7 +48,7 @@ test.describe('Channels Page Tests', () => {
       // Take screenshot
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/channels-page-load.png',
-        fullPage: true
+        fullPage: true,
       });
 
       // Check if page loaded
@@ -77,8 +77,14 @@ test.describe('Channels Page Tests', () => {
       await expect(description).toBeVisible();
 
       // Check for empty state or channel grid
-      const hasEmptyState = await page.locator('text=/No Channels Yet/i').isVisible().catch(() => false);
-      const hasChannelGrid = await page.locator('[class*="grid"]').isVisible().catch(() => false);
+      const hasEmptyState = await page
+        .locator('text=/No Channels Yet/i')
+        .isVisible()
+        .catch(() => false);
+      const hasChannelGrid = await page
+        .locator('[class*="grid"]')
+        .isVisible()
+        .catch(() => false);
 
       console.log('✓ Channel list section found');
       console.log(`  Empty state visible: ${hasEmptyState}`);
@@ -86,7 +92,7 @@ test.describe('Channels Page Tests', () => {
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/channels-list-section.png',
-        fullPage: true
+        fullPage: true,
       });
     } catch (error) {
       console.error('✗ Channel list section check failed:', error);
@@ -100,12 +106,14 @@ test.describe('Channels Page Tests', () => {
 
     try {
       // Find and click Create Channel button
-      const createButton = page.locator('button:has-text("Create Channel")').first();
+      const createButton = page
+        .locator('button:has-text("Create Channel")')
+        .first();
       await expect(createButton).toBeVisible({ timeout: 10000 });
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/before-create-button-click.png',
-        fullPage: true
+        fullPage: true,
       });
 
       await createButton.click();
@@ -115,7 +123,7 @@ test.describe('Channels Page Tests', () => {
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/after-create-button-click.png',
-        fullPage: true
+        fullPage: true,
       });
 
       console.log('✓ Create Channel button clicked successfully');
@@ -135,7 +143,9 @@ test.describe('Channels Page Tests', () => {
       await page.waitForTimeout(1000);
 
       // Check dialog appears
-      const dialogTitle = page.locator('[role="dialog"] h2:has-text("Create Channel")');
+      const dialogTitle = page.locator(
+        '[role="dialog"] h2:has-text("Create Channel")'
+      );
       await expect(dialogTitle).toBeVisible({ timeout: 10000 });
 
       // Check for Channel Name input
@@ -154,13 +164,15 @@ test.describe('Channels Page Tests', () => {
 
       // Check for buttons
       const cancelButton = page.locator('button:has-text("Cancel")');
-      const createButton = page.locator('button:has-text("Create Channel")').last();
+      const createButton = page
+        .locator('button:has-text("Create Channel")')
+        .last();
       await expect(cancelButton).toBeVisible();
       await expect(createButton).toBeVisible();
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/create-channel-dialog.png',
-        fullPage: true
+        fullPage: true,
       });
 
       console.log('✓ Create Channel dialog has all required fields');
@@ -185,7 +197,7 @@ test.describe('Channels Page Tests', () => {
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/channel-type-public.png',
-        fullPage: true
+        fullPage: true,
       });
 
       // Click Private
@@ -198,7 +210,7 @@ test.describe('Channels Page Tests', () => {
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/channel-type-private.png',
-        fullPage: true
+        fullPage: true,
       });
 
       console.log('✓ Channel type selection works correctly');
@@ -220,16 +232,21 @@ test.describe('Channels Page Tests', () => {
       await page.waitForTimeout(1000);
 
       // Try to submit empty form
-      const submitButton = page.locator('button[type="submit"]:has-text("Create Channel")');
+      const submitButton = page.locator(
+        'button[type="submit"]:has-text("Create Channel")'
+      );
       await submitButton.click();
       await page.waitForTimeout(500);
 
       // Check for validation error
-      const validationError = await page.locator('text=/required/i').isVisible().catch(() => false);
+      const validationError = await page
+        .locator('text=/required/i')
+        .isVisible()
+        .catch(() => false);
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/form-validation.png',
-        fullPage: true
+        fullPage: true,
       });
 
       console.log('✓ Form validation tested');
@@ -253,7 +270,10 @@ test.describe('Channels Page Tests', () => {
       await page.fill('#channel-name', 'Test Channel Name');
 
       // Fill in description
-      await page.fill('#channel-description', 'This is a test channel description');
+      await page.fill(
+        '#channel-description',
+        'This is a test channel description'
+      );
 
       // Select private type
       await page.locator('label[for="type-private"]').click();
@@ -262,7 +282,7 @@ test.describe('Channels Page Tests', () => {
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/form-filled.png',
-        fullPage: true
+        fullPage: true,
       });
 
       console.log('✓ Form fields filled successfully');
@@ -284,13 +304,15 @@ test.describe('Channels Page Tests', () => {
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/channel-detail-page.png',
-        fullPage: true
+        fullPage: true,
       });
 
       // Check if page loaded (will show loading or error state)
       const pageContent = await page.textContent('body');
       console.log('✓ Channel detail page navigation attempted');
-      console.log(`  Page loaded with content length: ${pageContent?.length || 0}`);
+      console.log(
+        `  Page loaded with content length: ${pageContent?.length || 0}`
+      );
     } catch (error) {
       console.error('✗ Channel detail page navigation failed:', error);
       throw error;
@@ -305,10 +327,11 @@ test.describe('Channels Page Tests', () => {
     await page.waitForTimeout(2000);
 
     // Filter out common non-critical warnings
-    const criticalErrors = consoleErrors.filter(error =>
-      !error.includes('Download the React DevTools') &&
-      !error.includes('favicon') &&
-      !error.includes('sourcemap')
+    const criticalErrors = consoleErrors.filter(
+      error =>
+        !error.includes('Download the React DevTools') &&
+        !error.includes('favicon') &&
+        !error.includes('sourcemap')
     );
 
     console.log('\n=== Console Errors Report ===');
@@ -348,31 +371,54 @@ test.describe('Channels Page Tests', () => {
     try {
       // Test 1: Page load
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      report.pageLoaded = await page.locator('h1:has-text("Channels")').isVisible().catch(() => false);
+      report.pageLoaded = await page
+        .locator('h1:has-text("Channels")')
+        .isVisible()
+        .catch(() => false);
 
       // Test 2: Create button
-      report.createButtonVisible = await page.locator('button:has-text("Create Channel")').isVisible().catch(() => false);
+      report.createButtonVisible = await page
+        .locator('button:has-text("Create Channel")')
+        .isVisible()
+        .catch(() => false);
 
       // Test 3: Dialog opens
       if (report.createButtonVisible) {
         await page.locator('button:has-text("Create Channel")').first().click();
         await page.waitForTimeout(1000);
-        report.dialogOpens = await page.locator('[role="dialog"]').isVisible().catch(() => false);
+        report.dialogOpens = await page
+          .locator('[role="dialog"]')
+          .isVisible()
+          .catch(() => false);
       }
 
       // Test 4: Form fields
       if (report.dialogOpens) {
-        report.formFieldsPresent = (
-          await page.locator('#channel-name').isVisible().catch(() => false) &&
-          await page.locator('#channel-description').isVisible().catch(() => false) &&
-          await page.locator('#type-public').isVisible().catch(() => false) &&
-          await page.locator('#type-private').isVisible().catch(() => false)
-        );
+        report.formFieldsPresent =
+          (await page
+            .locator('#channel-name')
+            .isVisible()
+            .catch(() => false)) &&
+          (await page
+            .locator('#channel-description')
+            .isVisible()
+            .catch(() => false)) &&
+          (await page
+            .locator('#type-public')
+            .isVisible()
+            .catch(() => false)) &&
+          (await page
+            .locator('#type-private')
+            .isVisible()
+            .catch(() => false));
 
         // Test 5: Channel type toggle
         await page.locator('label[for="type-private"]').click();
         await page.waitForTimeout(500);
-        report.channelTypeToggle = await page.locator('#type-private').isChecked().catch(() => false);
+        report.channelTypeToggle = await page
+          .locator('#type-private')
+          .isChecked()
+          .catch(() => false);
       }
 
       report.consoleErrors = consoleErrors;
@@ -382,24 +428,31 @@ test.describe('Channels Page Tests', () => {
       console.log(`Test URL: ${report.testUrl}\n`);
       console.log('Test Results:');
       console.log(`  ${report.pageLoaded ? '✓' : '✗'} Page Loaded`);
-      console.log(`  ${report.createButtonVisible ? '✓' : '✗'} Create Button Visible`);
+      console.log(
+        `  ${report.createButtonVisible ? '✓' : '✗'} Create Button Visible`
+      );
       console.log(`  ${report.dialogOpens ? '✓' : '✗'} Dialog Opens`);
-      console.log(`  ${report.formFieldsPresent ? '✓' : '✗'} Form Fields Present`);
-      console.log(`  ${report.channelTypeToggle ? '✓' : '✗'} Channel Type Toggle Works`);
+      console.log(
+        `  ${report.formFieldsPresent ? '✓' : '✗'} Form Fields Present`
+      );
+      console.log(
+        `  ${report.channelTypeToggle ? '✓' : '✗'} Channel Type Toggle Works`
+      );
       console.log(`\nConsole Errors: ${report.consoleErrors.length}`);
 
       if (report.consoleErrors.length > 0) {
         console.log('\nError Details:');
         report.consoleErrors.forEach((error, i) => {
-          console.log(`  ${i + 1}. ${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`);
+          console.log(
+            `  ${i + 1}. ${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`
+          );
         });
       }
 
       await page.screenshot({
         path: '/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/screenshots/final-report.png',
-        fullPage: true
+        fullPage: true,
       });
-
     } catch (error) {
       console.error('Error generating report:', error);
     }

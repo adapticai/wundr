@@ -95,7 +95,11 @@ interface WorkflowData {
   }>;
 }
 
-type ExtractedData = WorkspaceData | OrchestratorData | SessionManagerData | WorkflowData;
+type ExtractedData =
+  | WorkspaceData
+  | OrchestratorData
+  | SessionManagerData
+  | WorkflowData;
 
 /**
  * Response structure
@@ -148,7 +152,7 @@ const workflowSchema = z.object({
     z.object({
       action: z.string(),
       description: z.string(),
-    }),
+    })
   ),
 });
 
@@ -239,8 +243,16 @@ function buildTools(entityType: EntityType) {
         name: { type: 'string', description: 'Organization name' },
         description: { type: 'string', description: 'Brief description' },
         purpose: { type: 'string', description: 'Mission or primary goal' },
-        teamSize: { type: 'string', enum: ['small', 'medium', 'large'], description: 'Team size' },
-        departments: { type: 'array', items: { type: 'string' }, description: 'Key departments' },
+        teamSize: {
+          type: 'string',
+          enum: ['small', 'medium', 'large'],
+          description: 'Team size',
+        },
+        departments: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Key departments',
+        },
         organizationType: { type: 'string', description: 'Industry or domain' },
       },
       required: ['name', 'description'],
@@ -250,11 +262,29 @@ function buildTools(entityType: EntityType) {
       properties: {
         name: { type: 'string', description: 'Agent name' },
         role: { type: 'string', description: 'Primary role or discipline' },
-        description: { type: 'string', description: 'What this orchestrator does' },
-        capabilities: { type: 'array', items: { type: 'string' }, description: 'Key capabilities' },
-        goals: { type: 'array', items: { type: 'string' }, description: 'Primary objectives' },
-        channels: { type: 'array', items: { type: 'string' }, description: 'Channels to monitor' },
-        communicationStyle: { type: 'string', description: 'Communication style' },
+        description: {
+          type: 'string',
+          description: 'What this orchestrator does',
+        },
+        capabilities: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Key capabilities',
+        },
+        goals: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Primary objectives',
+        },
+        channels: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Channels to monitor',
+        },
+        communicationStyle: {
+          type: 'string',
+          description: 'Communication style',
+        },
       },
       required: ['name', 'role', 'description'],
     },
@@ -262,9 +292,18 @@ function buildTools(entityType: EntityType) {
       type: 'object',
       properties: {
         name: { type: 'string', description: 'Session manager name' },
-        responsibilities: { type: 'string', description: 'What they are responsible for' },
-        parentOrchestrator: { type: 'string', description: 'Parent orchestrator' },
-        context: { type: 'string', description: 'Context or channel they manage' },
+        responsibilities: {
+          type: 'string',
+          description: 'What they are responsible for',
+        },
+        parentOrchestrator: {
+          type: 'string',
+          description: 'Parent orchestrator',
+        },
+        context: {
+          type: 'string',
+          description: 'Context or channel they manage',
+        },
         escalationCriteria: {
           type: 'array',
           items: { type: 'string' },
@@ -296,7 +335,10 @@ function buildTools(entityType: EntityType) {
             type: 'object',
             properties: {
               action: { type: 'string', description: 'Action type' },
-              description: { type: 'string', description: 'What this step does' },
+              description: {
+                type: 'string',
+                description: 'What this step does',
+              },
             },
             required: ['action', 'description'],
           },
@@ -322,7 +364,7 @@ function buildTools(entityType: EntityType) {
 async function callClaude(
   systemPrompt: string,
   messages: ChatMessage[],
-  tools: unknown[],
+  tools: unknown[]
 ): Promise<WizardChatResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -341,7 +383,7 @@ async function callClaude(
       max_tokens: parseInt(process.env.DEFAULT_MAX_TOKENS || '4096', 10),
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
       system: systemPrompt,
-      messages: messages.map((m) => ({
+      messages: messages.map(m => ({
         role: m.role,
         content: m.content,
       })),
@@ -375,7 +417,7 @@ async function callClaude(
   // If not complete, suggest next question
   if (!isComplete && result.stop_reason !== 'tool_use') {
     // Extract last question from message
-    const sentences = message.split(/[.!?]+/).filter((s) => s.trim());
+    const sentences = message.split(/[.!?]+/).filter(s => s.trim());
     const lastSentence = sentences[sentences.length - 1]?.trim();
     if (lastSentence && lastSentence.endsWith('?')) {
       suggestedNextQuestion = lastSentence + '?';
@@ -396,7 +438,7 @@ async function callClaude(
 async function callOpenAI(
   systemPrompt: string,
   messages: ChatMessage[],
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<WizardChatResponse> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -405,11 +447,13 @@ async function callOpenAI(
 
   // Convert tools to OpenAI function format
   const tools = buildTools(entityType);
-  const functions = tools.map((tool: { name: string; description: string; input_schema: object }) => ({
-    name: tool.name,
-    description: tool.description,
-    parameters: tool.input_schema,
-  }));
+  const functions = tools.map(
+    (tool: { name: string; description: string; input_schema: object }) => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.input_schema,
+    })
+  );
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -423,7 +467,7 @@ async function callOpenAI(
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map((m) => ({
+        ...messages.map(m => ({
           role: m.role,
           content: m.content,
         })),
@@ -448,7 +492,9 @@ async function callOpenAI(
   // Check for function call
   if (choice?.message?.function_call?.name === 'extract_entity') {
     try {
-      extractedData = JSON.parse(choice.message.function_call.arguments) as ExtractedData;
+      extractedData = JSON.parse(
+        choice.message.function_call.arguments
+      ) as ExtractedData;
       isComplete = true;
     } catch {
       // Invalid JSON in function call
@@ -468,7 +514,7 @@ async function callOpenAI(
  */
 function validateExtractedData(
   entityType: EntityType,
-  data: unknown,
+  data: unknown
 ): { valid: boolean; data?: ExtractedData; errors?: unknown } {
   const schemas: Record<EntityType, z.ZodSchema> = {
     workspace: workspaceSchema,
@@ -521,7 +567,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: { message: 'Authentication required' } }, { status: 401 });
+      return NextResponse.json(
+        { error: { message: 'Authentication required' } },
+        { status: 401 }
+      );
     }
 
     // Parse request body
@@ -529,12 +578,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: { message: 'Invalid JSON body' } }, { status: 400 });
+      return NextResponse.json(
+        { error: { message: 'Invalid JSON body' } },
+        { status: 400 }
+      );
     }
 
     // Validate request structure
     if (!body || typeof body !== 'object') {
-      return NextResponse.json({ error: { message: 'Invalid request body' } }, { status: 400 });
+      return NextResponse.json(
+        { error: { message: 'Invalid request body' } },
+        { status: 400 }
+      );
     }
 
     const wizardReq = body as WizardChatRequest;
@@ -546,22 +601,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       'session-manager',
       'workflow',
     ];
-    if (!wizardReq.entityType || !validEntityTypes.includes(wizardReq.entityType)) {
+    if (
+      !wizardReq.entityType ||
+      !validEntityTypes.includes(wizardReq.entityType)
+    ) {
       return NextResponse.json(
         {
           error: {
             message: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate messages
     if (!Array.isArray(wizardReq.messages) || wizardReq.messages.length === 0) {
       return NextResponse.json(
-        { error: { message: 'messages array is required and must not be empty' } },
-        { status: 400 },
+        {
+          error: {
+            message: 'messages array is required and must not be empty',
+          },
+        },
+        { status: 400 }
       );
     }
 
@@ -570,13 +632,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!msg.role || !msg.content || typeof msg.content !== 'string') {
         return NextResponse.json(
           { error: { message: 'Each message must have role and content' } },
-          { status: 400 },
+          { status: 400 }
         );
       }
       if (msg.role !== 'user' && msg.role !== 'assistant') {
         return NextResponse.json(
           { error: { message: 'Message role must be "user" or "assistant"' } },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -593,28 +655,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (provider === 'anthropic' && process.env.ANTHROPIC_API_KEY) {
       response = await callClaude(systemPrompt, wizardReq.messages, tools);
     } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
-      response = await callOpenAI(systemPrompt, wizardReq.messages, wizardReq.entityType);
+      response = await callOpenAI(
+        systemPrompt,
+        wizardReq.messages,
+        wizardReq.entityType
+      );
     } else {
       // Fallback: try both
       if (process.env.ANTHROPIC_API_KEY) {
         response = await callClaude(systemPrompt, wizardReq.messages, tools);
       } else if (process.env.OPENAI_API_KEY) {
-        response = await callOpenAI(systemPrompt, wizardReq.messages, wizardReq.entityType);
+        response = await callOpenAI(
+          systemPrompt,
+          wizardReq.messages,
+          wizardReq.entityType
+        );
       } else {
         return NextResponse.json(
           {
             error: {
-              message: 'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
+              message:
+                'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
             },
           },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
 
     // Validate extracted data if present
     if (response.extractedData) {
-      const validation = validateExtractedData(wizardReq.entityType, response.extractedData);
+      const validation = validateExtractedData(
+        wizardReq.entityType,
+        response.extractedData
+      );
       if (!validation.valid) {
         // Data extraction failed validation, mark as incomplete
         response.isComplete = false;
@@ -634,8 +708,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/wizard/chat] Error:', error);
     return NextResponse.json(
-      { error: { message: error instanceof Error ? error.message : 'An internal error occurred' } },
-      { status: 500 },
+      {
+        error: {
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An internal error occurred',
+        },
+      },
+      { status: 500 }
     );
   }
 }

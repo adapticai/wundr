@@ -69,7 +69,10 @@ export function createOperationError(
   };
 }
 
-export function convertErrorToOperationError(error: Error | unknown, code: string = 'UNKNOWN_ERROR'): OperationError {
+export function convertErrorToOperationError(
+  error: Error | unknown,
+  code: string = 'UNKNOWN_ERROR'
+): OperationError {
   const errorMessage = error instanceof Error ? error.message : String(error);
   return createOperationError(code, errorMessage, true, {
     originalError: error instanceof Error ? error.stack : undefined,

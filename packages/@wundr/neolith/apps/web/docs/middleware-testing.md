@@ -12,15 +12,9 @@ import { NextRequest } from 'next/server';
 import middleware from '@/middleware';
 
 describe('Public Routes', () => {
-  const publicRoutes = [
-    '/',
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/api/health',
-  ];
+  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/api/health'];
 
-  publicRoutes.forEach((route) => {
+  publicRoutes.forEach(route => {
     it(`should allow access to ${route} without authentication`, async () => {
       const request = new NextRequest(new URL(route, 'http://localhost:3000'));
       const response = await middleware(request);
@@ -170,7 +164,7 @@ describe('Static Assets', () => {
     '/fonts/inter.woff2',
   ];
 
-  staticPaths.forEach((path) => {
+  staticPaths.forEach(path => {
     it(`should skip middleware for ${path}`, async () => {
       const request = new NextRequest(new URL(path, 'http://localhost:3000'));
       const response = await middleware(request);
@@ -254,6 +248,7 @@ test.describe('Middleware Rate Limiting', () => {
 ### 6. Manual Testing Checklist
 
 #### Authentication
+
 - [ ] Login page is publicly accessible
 - [ ] Register page is publicly accessible
 - [ ] Dashboard redirects to login when not authenticated
@@ -263,6 +258,7 @@ test.describe('Middleware Rate Limiting', () => {
 - [ ] OAuth callbacks work correctly
 
 #### Rate Limiting
+
 - [ ] Rate limit headers appear in API responses
 - [ ] 100 requests per minute limit is enforced
 - [ ] 429 response includes reset time
@@ -271,6 +267,7 @@ test.describe('Middleware Rate Limiting', () => {
 - [ ] Rate limiting doesn't affect non-API routes
 
 #### CORS
+
 - [ ] CORS headers present on API responses
 - [ ] OPTIONS preflight requests return 204
 - [ ] Allowed origins can make requests
@@ -278,6 +275,7 @@ test.describe('Middleware Rate Limiting', () => {
 - [ ] Credentials are allowed
 
 #### Security
+
 - [ ] X-Frame-Options header present
 - [ ] X-Content-Type-Options header present
 - [ ] Referrer-Policy header present
@@ -304,10 +302,7 @@ export function createMockRequest(
   });
 }
 
-export function createAuthenticatedRequest(
-  url: string,
-  sessionToken: string
-): NextRequest {
+export function createAuthenticatedRequest(url: string, sessionToken: string): NextRequest {
   return createMockRequest(url, {
     headers: {
       cookie: `next-auth.session-token=${sessionToken}`,
@@ -409,9 +404,7 @@ describe('Middleware Performance', () => {
   it('should process requests within 50ms', async () => {
     const start = performance.now();
 
-    await middleware(
-      createMockRequest('/api/health')
-    );
+    await middleware(createMockRequest('/api/health'));
 
     const duration = performance.now() - start;
     expect(duration).toBeLessThan(50);

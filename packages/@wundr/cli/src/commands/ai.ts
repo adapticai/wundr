@@ -47,7 +47,7 @@ export class AICommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    pluginManager: PluginManager,
+    pluginManager: PluginManager
   ) {
     this.pluginManager = pluginManager;
     this.aiService = new AIService(configManager);
@@ -79,7 +79,7 @@ export class AICommands {
       .option(
         '--focus <aspect>',
         'review focus (security, performance, style)',
-        'all',
+        'all'
       )
       .option('--severity <level>', 'minimum issue severity', 'info')
       .option('--suggest-fixes', 'suggest fixes for issues')
@@ -94,12 +94,12 @@ export class AICommands {
       .option(
         '--type <type>',
         'refactoring type (extract, rename, optimize)',
-        'optimize',
+        'optimize'
       )
       .option(
         '--scope <scope>',
         'refactoring scope (function, class, file)',
-        'function',
+        'function'
       )
       .option('--dry-run', 'show refactoring plan without applying')
       .action(async (target, options) => {
@@ -113,12 +113,12 @@ export class AICommands {
       .option(
         '--type <type>',
         'documentation type (api, readme, comments)',
-        'api',
+        'api'
       )
       .option(
         '--format <format>',
         'output format (markdown, html, json)',
-        'markdown',
+        'markdown'
       )
       .option('--include-examples', 'include code examples')
       .action(async (target, options) => {
@@ -132,12 +132,12 @@ export class AICommands {
       .option(
         '--framework <framework>',
         'testing framework (jest, mocha, vitest)',
-        'jest',
+        'jest'
       )
       .option(
         '--coverage <level>',
         'coverage level (unit, integration, e2e)',
-        'unit',
+        'unit'
       )
       .option('--mocks', 'generate mock objects')
       .action(async (target, options) => {
@@ -163,7 +163,7 @@ export class AICommands {
       .option(
         '--aspect <aspect>',
         'analysis aspect (complexity, maintainability, security)',
-        'all',
+        'all'
       )
       .option('--suggestions', 'include improvement suggestions')
       .action(async (target, options) => {
@@ -177,7 +177,7 @@ export class AICommands {
       .option(
         '--focus <focus>',
         'optimization focus (speed, memory, bundle)',
-        'speed',
+        'speed'
       )
       .option('--benchmarks', 'run before/after benchmarks')
       .action(async (target, options) => {
@@ -238,7 +238,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -269,7 +269,7 @@ export class AICommands {
         'WUNDR_AI_GENERATE_FAILED',
         'Failed to generate code',
         { type, options },
-        true,
+        true
       );
     }
   }
@@ -283,7 +283,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -323,7 +323,7 @@ export class AICommands {
         'WUNDR_AI_REVIEW_FAILED',
         'Failed to review code',
         { files, options },
-        true,
+        true
       );
     }
   }
@@ -337,7 +337,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -380,7 +380,7 @@ export class AICommands {
         'WUNDR_AI_REFACTOR_FAILED',
         'Failed to refactor code',
         { target, options },
-        true,
+        true
       );
     }
   }
@@ -394,13 +394,13 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
 
       logger.info(
-        `Generating ${options.type} documentation for ${chalk.cyan(target)}...`,
+        `Generating ${options.type} documentation for ${chalk.cyan(target)}...`
       );
 
       const code = await this.readFile(target);
@@ -415,7 +415,7 @@ export class AICommands {
       const outputPath = this.getDocsOutputPath(
         target,
         options.type,
-        options.format,
+        options.format
       );
       await this.saveGeneratedDocs(docs, outputPath);
 
@@ -425,7 +425,7 @@ export class AICommands {
         'WUNDR_AI_DOCS_FAILED',
         'Failed to generate documentation',
         { target, options },
-        true,
+        true
       );
     }
   }
@@ -439,7 +439,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -464,7 +464,7 @@ export class AICommands {
         'WUNDR_AI_TEST_FAILED',
         'Failed to generate tests',
         { target, options },
-        true,
+        true
       );
     }
   }
@@ -478,7 +478,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -495,7 +495,7 @@ export class AICommands {
         'WUNDR_AI_CHAT_FAILED',
         'Failed to start chat session',
         { options },
-        true,
+        true
       );
     }
   }
@@ -509,7 +509,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -530,7 +530,7 @@ export class AICommands {
         'WUNDR_AI_ANALYZE_FAILED',
         'Failed to analyze code',
         { target, options },
-        true,
+        true
       );
     }
   }
@@ -544,7 +544,7 @@ export class AICommands {
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
         console.log(
-          chalk.yellow('Run `wundr ai setup` to configure your API key first'),
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
         );
         return;
       }
@@ -588,7 +588,7 @@ export class AICommands {
         'WUNDR_AI_OPTIMIZE_FAILED',
         'Failed to optimize code',
         { target, options },
-        true,
+        true
       );
     }
   }
@@ -606,7 +606,7 @@ export class AICommands {
         'WUNDR_AI_CONFIG_SET_FAILED',
         'Failed to set AI configuration',
         { key, value },
-        true,
+        true
       );
     }
   }
@@ -628,7 +628,7 @@ export class AICommands {
         'WUNDR_AI_CONFIG_GET_FAILED',
         'Failed to get AI configuration',
         { key },
-        true,
+        true
       );
     }
   }
@@ -640,7 +640,7 @@ export class AICommands {
     try {
       console.log(chalk.blue('\n🤖 Wundr AI Setup'));
       console.log(
-        chalk.gray('Configure your AI assistant for enhanced CLI features\n'),
+        chalk.gray('Configure your AI assistant for enhanced CLI features\n')
       );
 
       let { provider, apiKey } = options;
@@ -697,7 +697,7 @@ export class AICommands {
           console.log(chalk.green('✅ API key is valid and working!'));
         } else {
           console.log(
-            chalk.red(`❌ API key validation failed: ${validation.error}`),
+            chalk.red(`❌ API key validation failed: ${validation.error}`)
           );
           return;
         }
@@ -714,7 +714,7 @@ export class AICommands {
         'WUNDR_AI_SETUP_FAILED',
         'Failed to setup AI configuration',
         { options },
-        true,
+        true
       );
     }
   }
@@ -731,24 +731,24 @@ export class AICommands {
       console.log(`Provider: ${chalk.cyan(status.provider)}`);
       console.log(`Model: ${chalk.cyan(status.model)}`);
       console.log(
-        `API Key: ${status.hasApiKey ? chalk.green('✅ Configured') : chalk.red('❌ Missing')}`,
+        `API Key: ${status.hasApiKey ? chalk.green('✅ Configured') : chalk.red('❌ Missing')}`
       );
       console.log(
-        `Status: ${status.ready ? chalk.green('✅ Ready') : chalk.yellow('⚠️  Not Ready')}`,
+        `Status: ${status.ready ? chalk.green('✅ Ready') : chalk.yellow('⚠️  Not Ready')}`
       );
 
       if (!status.hasApiKey) {
         console.log(chalk.yellow('\n⚠️  API key not configured'));
         console.log(
-          chalk.gray('Run `wundr ai setup` to configure your API key'),
+          chalk.gray('Run `wundr ai setup` to configure your API key')
         );
         console.log(
-          chalk.gray('Or set the CLAUDE_API_KEY environment variable'),
+          chalk.gray('Or set the CLAUDE_API_KEY environment variable')
         );
       } else if (!status.ready) {
         console.log(chalk.yellow('\n⚠️  AI service not ready'));
         console.log(
-          chalk.gray('Try running `wundr ai validate` to check connection'),
+          chalk.gray('Try running `wundr ai validate` to check connection')
         );
       }
     } catch (error) {
@@ -756,7 +756,7 @@ export class AICommands {
         'WUNDR_AI_STATUS_FAILED',
         'Failed to get AI status',
         {},
-        true,
+        true
       );
     }
   }
@@ -783,12 +783,12 @@ export class AICommands {
         if (validation.error?.includes('API key')) {
           console.log(chalk.yellow('\n💡 Try:'));
           console.log(
-            chalk.gray('1. Run `wundr ai setup` to configure your API key'),
+            chalk.gray('1. Run `wundr ai setup` to configure your API key')
           );
           console.log(
             chalk.gray(
-              '2. Check your API key is valid and has sufficient credits',
-            ),
+              '2. Check your API key is valid and has sufficient credits'
+            )
           );
           console.log(chalk.gray('3. Verify your internet connection'));
         }
@@ -798,7 +798,7 @@ export class AICommands {
         'WUNDR_AI_VALIDATE_FAILED',
         'Failed to validate AI connection',
         {},
-        true,
+        true
       );
     }
   }
@@ -856,7 +856,7 @@ export class AICommands {
 
   private async saveGeneratedCode(
     code: string,
-    outputPath: string,
+    outputPath: string
   ): Promise<void> {
     const fs = await import('fs/promises');
     const path = await import('path');
@@ -885,7 +885,7 @@ export class AICommands {
     results.forEach(result => {
       console.log(`\n${chalk.cyan(result.file)} (Score: ${result.score}/100)`);
       if (result.issues.length > 0) {
-        result.issues.forEach((issue) => {
+        result.issues.forEach(issue => {
           console.log(`  ${issue.severity}: ${issue.description}`);
         });
       }
@@ -904,13 +904,18 @@ export class AICommands {
             issue: issue.description,
             severity: issue.severity,
           });
-          console.log(`  - ${issue.description}: ${fix.suggestion || 'No automatic fix available'}`);
+          console.log(
+            `  - ${issue.description}: ${fix.suggestion || 'No automatic fix available'}`
+          );
         }
       }
     }
   }
 
-  private async applyRefactoring(target: string, plan: RefactoringPlan): Promise<void> {
+  private async applyRefactoring(
+    target: string,
+    plan: RefactoringPlan
+  ): Promise<void> {
     const fs = await import('fs/promises');
 
     logger.debug(`Applying refactoring to ${target}`);
@@ -928,7 +933,7 @@ export class AICommands {
   private getDocsOutputPath(
     target: string,
     type: string,
-    format: string,
+    format: string
   ): string {
     const ext = format === 'markdown' ? 'md' : format;
     return `docs/${target}.${type}.${ext}`;
@@ -936,7 +941,7 @@ export class AICommands {
 
   private async saveGeneratedDocs(
     docs: string,
-    outputPath: string,
+    outputPath: string
   ): Promise<void> {
     const fs = await import('fs/promises');
     const path = await import('path');
@@ -1019,8 +1024,8 @@ export class AICommands {
         console.log(chalk.red(`Error: ${error.message}`));
         console.log(
           chalk.yellow(
-            '\nTip: Try `wundr ai validate` to check your connection',
-          ),
+            '\nTip: Try `wundr ai validate` to check your connection'
+          )
         );
       }
     }
@@ -1066,7 +1071,7 @@ export class AICommands {
 
   private async applyOptimization(
     target: string,
-    optimization: OptimizationPlan,
+    optimization: OptimizationPlan
   ): Promise<void> {
     const fs = await import('fs/promises');
 
@@ -1085,7 +1090,10 @@ export class AICommands {
     }
   }
 
-  private displayBenchmarkComparison(before: BenchmarkResult, after: BenchmarkResult): void {
+  private displayBenchmarkComparison(
+    before: BenchmarkResult,
+    after: BenchmarkResult
+  ): void {
     console.log(chalk.blue('\nBenchmark Comparison:'));
     const timeDiff = after.time - before.time;
     const memDiff = after.memory - before.memory;
@@ -1094,10 +1102,10 @@ export class AICommands {
     const memColor = memDiff < 0 ? chalk.green : chalk.yellow;
 
     console.log(
-      `Time: ${before.time}ms → ${after.time}ms (${timeColor(timeDiff > 0 ? '+' : '')}${timeColor(timeDiff + 'ms')})`,
+      `Time: ${before.time}ms → ${after.time}ms (${timeColor(timeDiff > 0 ? '+' : '')}${timeColor(timeDiff + 'ms')})`
     );
     console.log(
-      `Memory: ${before.memory}MB → ${after.memory}MB (${memColor(memDiff > 0 ? '+' : '')}${memColor(memDiff + 'MB')})`,
+      `Memory: ${before.memory}MB → ${after.memory}MB (${memColor(memDiff > 0 ? '+' : '')}${memColor(memDiff + 'MB')})`
     );
   }
 }

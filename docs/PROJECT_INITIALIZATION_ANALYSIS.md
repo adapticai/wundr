@@ -1,16 +1,19 @@
 # Comprehensive Project Initialization & Boilerplate Analysis Report
 
-**Analysis Date**: 2025-11-21
-**Repository**: /Users/iroselli/wundr
-**Scope**: Project initialization, boilerplate setup, and Claude Code configuration
+**Analysis Date**: 2025-11-21 **Repository**: /Users/iroselli/wundr **Scope**: Project
+initialization, boilerplate setup, and Claude Code configuration
 
 ---
 
 ## Executive Summary
 
-The Wundr repository contains a **comprehensive but fragmented** project initialization system with multiple entry points, template engines, and configuration generators. There are **two parallel setup implementations** (one in `/src/cli` and one in `/packages/@wundr/cli`) that need consolidation.
+The Wundr repository contains a **comprehensive but fragmented** project initialization system with
+multiple entry points, template engines, and configuration generators. There are **two parallel
+setup implementations** (one in `/src/cli` and one in `/packages/@wundr/cli`) that need
+consolidation.
 
 ### Key Findings:
+
 - **4 distinct setup command implementations** (duplication)
 - **2 template systems** (TemplateManager vs dynamic generation)
 - **Missing integration points** between systems
@@ -24,15 +27,16 @@ The Wundr repository contains a **comprehensive but fragmented** project initial
 ### 1.1 Current Setup Command Entry Points
 
 #### Location 1: `/Users/iroselli/wundr/src/cli/commands/claude-setup.ts`
-**Status**: Standalone CLI command
-**Lines**: 374
-**Functionality**:
+
+**Status**: Standalone CLI command **Lines**: 374 **Functionality**:
+
 - Standalone `claude-setup` command
 - Steps through: Claude Flow setup → MCP Tools → CLAUDE.md generation → Project templates
 - Uses dynamic CLAUDE.md generator
 - Creates project structure templates (TypeScript, React, Node.js, Monorepo)
 
 **Key Function**:
+
 ```typescript
 export function createClaudeSetupCommand(): Command {
   // Lines 16-91: Main command handler
@@ -46,15 +50,16 @@ export function createClaudeSetupCommand(): Command {
 ```
 
 **Template Creation Functions**:
+
 - `setupTypeScriptTemplate()` (lines 206-236)
 - `setupReactTemplate()` (lines 238-256)
 - `setupNodeTemplate()` (lines 258-271)
 - `setupMonorepoTemplate()` (lines 273-301)
 
 #### Location 2: `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/claude-setup.ts`
-**Status**: Monorepo package CLI
-**Lines**: 697
-**Functionality**:
+
+**Status**: Monorepo package CLI **Lines**: 697 **Functionality**:
+
 - Class-based setup: `ClaudeSetupCommands`
 - Comprehensive agent configuration
 - Hardware-adaptive optimization setup
@@ -68,6 +73,7 @@ export function createClaudeSetupCommand(): Command {
   - `claude-setup extension` - Chrome extension setup
 
 **Key Agent Management**:
+
 ```typescript
 listAgents(): void
 - Core Development: coder, reviewer, tester, planner, researcher
@@ -77,6 +83,7 @@ listAgents(): void
 ```
 
 **Profile-Based Agent Selection**:
+
 ```typescript
 getProfileAgents(profile: string): string[]
 - frontend: [coder, reviewer, tester, mobile-dev]
@@ -86,9 +93,9 @@ getProfileAgents(profile: string): string[]
 ```
 
 #### Location 3: `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/setup.ts`
-**Status**: Machine/environment setup
-**Lines**: 509
-**Functionality**:
+
+**Status**: Machine/environment setup **Lines**: 509 **Functionality**:
+
 - `wundr setup` - Developer environment setup
 - Profile-based orchestration:
   - frontend, backend, fullstack, devops
@@ -98,6 +105,7 @@ getProfileAgents(profile: string): string[]
 - Integration with `RealSetupOrchestrator`
 
 **Sub-commands**:
+
 - `setup` - Main environment setup
 - `setup:profile {frontend|backend|fullstack|devops}`
 - `setup:validate` - Environment validation
@@ -105,9 +113,9 @@ getProfileAgents(profile: string): string[]
 - `setup:personalize` - User configuration
 
 #### Location 4: `/Users/iroselli/wundr/setup/install.sh`
-**Status**: Bash installation script
-**Lines**: 268
-**Functionality**:
+
+**Status**: Bash installation script **Lines**: 268 **Functionality**:
+
 - Cross-platform OS detection (macOS, Linux, Windows)
 - Dependency checks:
   - Node.js 18.x or higher
@@ -128,6 +136,7 @@ getProfileAgents(profile: string): string[]
 **Location**: `/Users/iroselli/wundr/src/claude-generator/`
 
 #### Component Architecture:
+
 ```
 ClaudeConfigGenerator
   ├── ProjectDetector (analyzes project type and structure)
@@ -164,7 +173,8 @@ ClaudeConfigGenerator
      - Footer
 
 3. **`project-detector.ts`** (352 lines)
-   - `detectProjectType()` - Identifies: react, nextjs, nodejs, typescript, monorepo, cli, library, full-stack
+   - `detectProjectType()` - Identifies: react, nextjs, nodejs, typescript, monorepo, cli, library,
+     full-stack
    - `analyzeStructure()` - Examines directories, frameworks, build tools, test frameworks
 
 4. **`quality-analyzer.ts`** (248 lines)
@@ -182,9 +192,11 @@ ClaudeConfigGenerator
 
 ### 2.2 Template File
 
-**Location**: `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
+**Location**:
+`/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
 
 **Content**: 383 lines of comprehensive template covering:
+
 - Verification protocol
 - Concurrent execution rules
 - SPARC commands
@@ -202,6 +214,7 @@ ClaudeConfigGenerator
 ### 3.1 Template Manager (`packages/@wundr/computer-setup/src/templates/`)
 
 #### `template-manager.ts` (100+ lines, partial read)
+
 - `TemplateContext` interface defining:
   - Profile (developer preferences)
   - Project info (name, type, package manager)
@@ -211,6 +224,7 @@ ClaudeConfigGenerator
 - Customization/variable interpolation
 
 #### `project-templates.ts` (100+ lines, partial read)
+
 - `createProjectTemplates()` - Main factory function
 - Project type support:
   - node, react, vue, python, go, rust, java
@@ -229,6 +243,7 @@ ClaudeConfigGenerator
 **Location**: `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/`
 
 Contains templates for:
+
 - CLAUDE.md (static template)
 - Project-specific configurations
 - CI/CD pipelines
@@ -241,6 +256,7 @@ Contains templates for:
 ### 4.1 From `claude-setup.ts` (Direct File Creation)
 
 **Template Structure Created**:
+
 ```
 project/
 ├── CLAUDE.md (dynamically generated)
@@ -259,6 +275,7 @@ project/
 ```
 
 **Generated Files**:
+
 1. **CLAUDE.md** - Dynamic, context-aware configuration
 2. **mcp-tools/install.sh** - Stub script for MCP tool installation
 3. **mcp-tools/package.json** - MCP tools metadata
@@ -267,6 +284,7 @@ project/
 ### 4.2 From Template Manager (Not Yet Fully Integrated)
 
 **Potential Templates** (from `project-templates.ts`):
+
 - Prettier configs
 - ESLint configs
 - Jest configs
@@ -283,6 +301,7 @@ project/
 ### 5.1 CLAUDE.md Generation Flow
 
 **Step-by-Step Process**:
+
 1. Detect project type from package.json + directory structure
 2. Analyze project quality standards (linting, testing, types)
 3. Audit repository for issues and best practices
@@ -292,6 +311,7 @@ project/
 7. Generate comprehensive CLAUDE.md from template engine
 
 **Detected Project Types** and Agent Assignment:
+
 ```
 monorepo → hierarchical topology, 12 max agents
             + package-coordinator, build-orchestrator, version-manager, dependency-analyzer
@@ -320,6 +340,7 @@ full-stack → adaptive topology, 10 max agents
 **Stored At**: `~/.claude/agents/` (per packages/@wundr/cli/src/commands/claude-setup.ts)
 
 **Generated Configuration**:
+
 ```json
 {
   "name": "agent-name",
@@ -336,6 +357,7 @@ full-stack → adaptive topology, 10 max agents
 ```
 
 **Configuration Profiles**:
+
 - frontenddevfrontendev (4 agents)
 - backenddev (5 agents)
 - fullstackdev (6 agents)
@@ -348,6 +370,7 @@ full-stack → adaptive topology, 10 max agents
 ### 6.1 Critical Gaps
 
 #### 1. **Agent Template Integration**
+
 - ❌ Agent configurations NOT copied to new projects
 - ❌ No swarm topology configuration in templates
 - ❌ Agent profiles not included in CLAUDE.md generation
@@ -355,6 +378,7 @@ full-stack → adaptive topology, 10 max agents
 **Impact**: New projects must manually configure agents or run `wundr claude-setup agents`
 
 **Fix Needed**:
+
 ```typescript
 // Missing from setupProjectTemplate()
 - Copy agent configuration templates from ~/.claude/agents/templates/
@@ -363,6 +387,7 @@ full-stack → adaptive topology, 10 max agents
 ```
 
 #### 2. **MCP Tools Configuration**
+
 - ❌ Only stub install.sh created, no actual MCP tools
 - ❌ No MCP configuration for new projects
 - ❌ Missing MCP server setup in CLAUDE.md
@@ -371,6 +396,7 @@ full-stack → adaptive topology, 10 max agents
 **Impact**: New projects can't immediately use MCP tools
 
 **Fix Needed**:
+
 ```typescript
 // Missing from setupMCPTools()
 - Copy MCP tool configurations
@@ -380,6 +406,7 @@ full-stack → adaptive topology, 10 max agents
 ```
 
 #### 3. **Git Hooks & Pre-commit Workflow**
+
 - ❌ Not included in template setup
 - ❌ No husky configuration
 - ❌ Missing pre-commit hooks from CLAUDE.md
@@ -388,12 +415,14 @@ full-stack → adaptive topology, 10 max agents
 **Impact**: Quality standards not enforced automatically
 
 #### 4. **Directory Structure Templates**
+
 - ❌ Only basic directories created
 - ❌ No `.claude/` directory structure
 - ❌ Missing config/ scripts/ examples/ test/ directories
 - ❌ No placeholder files for guidance
 
 **Expected Structure Missing**:
+
 ```
 project/
 ├── .claude/                    ❌ Missing
@@ -414,27 +443,32 @@ project/
 ```
 
 #### 5. **Quality Standards Documentation**
+
 - ❌ No ESLint configuration template
 - ❌ No Jest/test framework setup
 - ❌ No TypeScript strict mode configuration
 - ❌ No code formatting rules
 
 #### 6. **Build System Integration**
+
 - ❌ No build configuration templates
 - ❌ Missing webpack/vite/next.js configs
 - ❌ No CI/CD pipeline templates
 - ❌ Docker support only partially integrated
 
 #### 7. **CLAUDE.md Dynamic Sections Missing**
+
 Even though dynamic generation exists, some critical sections are NOT populated:
 
 **Partially Implemented**:
+
 - ✓ Project metadata
 - ✓ Agent configuration (list only)
 - ✓ MCP tools (generic list, not project-specific)
 - ✓ Build commands
 
 **Missing/Incomplete**:
+
 - ❌ Custom SPARC workflow for project type
 - ❌ Project-specific architecture guidelines
 - ❌ Team-specific conventions
@@ -488,6 +522,7 @@ Output: Setup complete, next steps printed
 ### 7.2 Missing Integration Points
 
 1. **Agent Template Copying**
+
    ```
    setupProjectTemplate() → copyAgentTemplates()
    Expected: ~/.claude/agents/templates/ → project/.claude/agents/
@@ -495,6 +530,7 @@ Output: Setup complete, next steps printed
    ```
 
 2. **MCP Configuration**
+
    ```
    setupMCPTools() → generateMCPConfig()
    Expected: Generate .claude/settings.json with enabled tools
@@ -502,6 +538,7 @@ Output: Setup complete, next steps printed
    ```
 
 3. **Config Template Copying**
+
    ```
    setupProjectTemplate() → copyConfigTemplates()
    Expected: eslint, prettier, jest, tsconfig from templates/
@@ -522,33 +559,37 @@ Output: Setup complete, next steps printed
 ### 8.1 Key Files by Responsibility
 
 #### Setup Command Files:
-| File | Lines | Purpose | Status |
-|------|-------|---------|--------|
-| `/src/cli/commands/claude-setup.ts` | 374 | Standalone CLI setup | Active |
-| `/packages/@wundr/cli/src/commands/claude-setup.ts` | 697 | Monorepo package setup | Active |
-| `/packages/@wundr/cli/src/commands/setup.ts` | 509 | Environment setup | Active |
-| `/setup/install.sh` | 268 | Bash installer | Active |
+
+| File                                                | Lines | Purpose                | Status |
+| --------------------------------------------------- | ----- | ---------------------- | ------ |
+| `/src/cli/commands/claude-setup.ts`                 | 374   | Standalone CLI setup   | Active |
+| `/packages/@wundr/cli/src/commands/claude-setup.ts` | 697   | Monorepo package setup | Active |
+| `/packages/@wundr/cli/src/commands/setup.ts`        | 509   | Environment setup      | Active |
+| `/setup/install.sh`                                 | 268   | Bash installer         | Active |
 
 #### Generator Files:
-| File | Lines | Purpose | Status |
-|------|-------|---------|--------|
-| `/src/claude-generator/claude-config-generator.ts` | 335 | CLAUDE.md generation | Active |
-| `/src/claude-generator/template-engine.ts` | 488 | Template rendering | Active |
-| `/src/claude-generator/project-detector.ts` | 352 | Project type detection | Active |
-| `/src/claude-generator/quality-analyzer.ts` | 248 | Quality analysis | Active |
-| `/src/claude-generator/repository-auditor.ts` | 418 | Repository audit | Active |
-| `/src/claude-generator/types.ts` | 143 | Type definitions | Active |
+
+| File                                               | Lines | Purpose                | Status |
+| -------------------------------------------------- | ----- | ---------------------- | ------ |
+| `/src/claude-generator/claude-config-generator.ts` | 335   | CLAUDE.md generation   | Active |
+| `/src/claude-generator/template-engine.ts`         | 488   | Template rendering     | Active |
+| `/src/claude-generator/project-detector.ts`        | 352   | Project type detection | Active |
+| `/src/claude-generator/quality-analyzer.ts`        | 248   | Quality analysis       | Active |
+| `/src/claude-generator/repository-auditor.ts`      | 418   | Repository audit       | Active |
+| `/src/claude-generator/types.ts`                   | 143   | Type definitions       | Active |
 
 #### Template Files:
-| File | Lines | Purpose | Status |
-|------|-------|---------|--------|
-| `/packages/@wundr/computer-setup/src/templates/template-manager.ts` | 100+ | Template copying | Active (partial) |
-| `/packages/@wundr/computer-setup/src/templates/project-templates.ts` | 100+ | Project templates | Active (partial) |
-| `/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template` | 383 | Static reference | Unused |
+
+| File                                                                     | Lines | Purpose           | Status           |
+| ------------------------------------------------------------------------ | ----- | ----------------- | ---------------- |
+| `/packages/@wundr/computer-setup/src/templates/template-manager.ts`      | 100+  | Template copying  | Active (partial) |
+| `/packages/@wundr/computer-setup/src/templates/project-templates.ts`     | 100+  | Project templates | Active (partial) |
+| `/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template` | 383   | Static reference  | Unused           |
 
 #### Agent Template Files:
-| Location | Files | Purpose | Status |
-|----------|-------|---------|--------|
+
+| Location                     | Files       | Purpose              | Status         |
+| ---------------------------- | ----------- | -------------------- | -------------- |
 | `/.claude/agents/templates/` | 9 .md files | Agent configurations | Reference only |
 
 ### 8.2 Template Directories
@@ -576,6 +617,7 @@ Templates Found:
 **PROBLEM**: Two parallel setup implementations
 
 **SOLUTION**:
+
 1. **Keep `/packages/@wundr/cli/src/commands/claude-setup.ts`** as primary (more complete)
    - Has agent configuration
    - Has hardware optimization
@@ -591,6 +633,7 @@ Templates Found:
 ### 9.2 Template Integration Improvements
 
 #### Implement Agent Template Copying:
+
 ```typescript
 // New function: setupProjectTemplate()
 async function setupAgentTemplates(
@@ -608,6 +651,7 @@ async function setupAgentTemplates(
 ```
 
 #### Implement MCP Tool Configuration:
+
 ```typescript
 // New function: setupMCPTools()
 async function configureMCPTools(
@@ -625,12 +669,10 @@ async function configureMCPTools(
 ```
 
 #### Create Full Directory Structure:
+
 ```typescript
 // New function: createProjectStructure()
-async function createProjectStructure(
-  repoPath: string,
-  projectType: string
-): Promise<void> {
+async function createProjectStructure(repoPath: string, projectType: string): Promise<void> {
   // Create all standard directories:
   // - .claude/{agents,commands,helpers}
   // - config/
@@ -639,7 +681,6 @@ async function createProjectStructure(
   // - docs/
   // - src/
   // - examples/
-
   // Add placeholder/template files:
   // - .claude/settings.json (with defaults)
   // - config/{eslint,prettier,jest,tsconfig}.js
@@ -653,6 +694,7 @@ async function createProjectStructure(
 ### 9.3 CLAUDE.md Generation Enhancements
 
 #### Extend Template Engine:
+
 ```typescript
 // Add missing sections to TemplateEngine
 
@@ -673,6 +715,7 @@ generateTroubleshootingGuide(): string
 ```
 
 #### Improve Dynamic Content:
+
 ```typescript
 // In ClaudeConfigGenerator
 
@@ -694,6 +737,7 @@ generateTroubleshootingGuide(): string
 #### Essential Missing Files:
 
 1. **`.claude/settings.json`**
+
    ```json
    {
      "project": "project-name",
@@ -753,12 +797,14 @@ generateTroubleshootingGuide(): string
 ## 10. Implementation Roadmap
 
 ### Phase 1: Consolidation (Immediate)
+
 - [ ] Merge two `claude-setup.ts` implementations
 - [ ] Create unified `ClaudeSetupCommands` class
 - [ ] Remove duplication in setup logic
 - [ ] Ensure backward compatibility
 
 ### Phase 2: Template Integration (Short-term)
+
 - [ ] Implement `setupAgentTemplates()` function
 - [ ] Implement `configureMCPTools()` function
 - [ ] Create full directory structure factory
@@ -766,6 +812,7 @@ generateTroubleshootingGuide(): string
 - [ ] Generate placeholder files
 
 ### Phase 3: CLAUDE.md Enhancement (Short-term)
+
 - [ ] Add custom SPARC workflow section
 - [ ] Add architecture guidelines
 - [ ] Add convention guide
@@ -773,6 +820,7 @@ generateTroubleshootingGuide(): string
 - [ ] Improve MCP tool section specificity
 
 ### Phase 4: Documentation (Medium-term)
+
 - [ ] Document setup process
 - [ ] Create troubleshooting guide
 - [ ] Add template customization guide
@@ -780,6 +828,7 @@ generateTroubleshootingGuide(): string
 - [ ] Create examples for each project type
 
 ### Phase 5: Testing & Validation (Medium-term)
+
 - [ ] Create test suite for setup commands
 - [ ] Test each project type template
 - [ ] Verify CLAUDE.md generation
@@ -792,15 +841,15 @@ generateTroubleshootingGuide(): string
 
 ### 11.1 Identified Problems
 
-| Issue | Severity | Files | Notes |
-|-------|----------|-------|-------|
-| Code duplication | High | 2 x claude-setup.ts | Two parallel implementations |
-| Missing error handling | Medium | setup.ts | Some commands lack try-catch |
-| Template files unused | Medium | CLAUDE.md.template | Static file, not leveraged |
-| Incomplete template system | Medium | project-templates.ts | Partial implementation |
-| Hard-coded values | Low | Various | Max agents, timeout values |
-| Missing validation | Medium | template-engine.ts | No context validation |
-| Inconsistent error messages | Low | All setup files | Different error formats |
+| Issue                       | Severity | Files                | Notes                        |
+| --------------------------- | -------- | -------------------- | ---------------------------- |
+| Code duplication            | High     | 2 x claude-setup.ts  | Two parallel implementations |
+| Missing error handling      | Medium   | setup.ts             | Some commands lack try-catch |
+| Template files unused       | Medium   | CLAUDE.md.template   | Static file, not leveraged   |
+| Incomplete template system  | Medium   | project-templates.ts | Partial implementation       |
+| Hard-coded values           | Low      | Various              | Max agents, timeout values   |
+| Missing validation          | Medium   | template-engine.ts   | No context validation        |
+| Inconsistent error messages | Low      | All setup files      | Different error formats      |
 
 ### 11.2 Recommendations
 
@@ -836,6 +885,7 @@ generateTroubleshootingGuide(): string
 ### Integration Needed:
 
 #### `/src/cli/commands/claude-setup.ts` → `/packages/@wundr/cli/src/commands/claude-setup.ts`
+
 ```typescript
 // Move to unified class:
 - generateClaudeConfig() [line 171]
@@ -855,6 +905,7 @@ generateTroubleshootingGuide(): string
 ```
 
 #### `/src/claude-generator/` → Project Template Integration
+
 ```typescript
 // In setupProjectTemplate():
 - Generate CLAUDE.md with dynamic engine
@@ -872,6 +923,7 @@ generateTroubleshootingGuide(): string
 ```
 
 #### `/packages/@wundr/computer-setup/` → New Project Setup
+
 ```typescript
 // Add to setupProjectTemplate():
 - Use project-templates.ts factory
@@ -885,7 +937,8 @@ generateTroubleshootingGuide(): string
 
 ## 13. Conclusion
 
-The Wundr project initialization system is **comprehensive but fragmented**. Key improvements needed:
+The Wundr project initialization system is **comprehensive but fragmented**. Key improvements
+needed:
 
 1. **Consolidate** two parallel setup implementations
 2. **Integrate** agent and MCP tool templates with setup process
@@ -902,12 +955,14 @@ The Wundr project initialization system is **comprehensive but fragmented**. Key
 ## Appendix A: File Paths Summary
 
 ### Setup Commands:
+
 - `/Users/iroselli/wundr/src/cli/commands/claude-setup.ts` (374 lines)
 - `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/claude-setup.ts` (697 lines)
 - `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/setup.ts` (509 lines)
 - `/Users/iroselli/wundr/setup/install.sh` (268 lines)
 
 ### Generator System:
+
 - `/Users/iroselli/wundr/src/claude-generator/claude-config-generator.ts` (335 lines)
 - `/Users/iroselli/wundr/src/claude-generator/template-engine.ts` (488 lines)
 - `/Users/iroselli/wundr/src/claude-generator/project-detector.ts` (352 lines)
@@ -916,19 +971,21 @@ The Wundr project initialization system is **comprehensive but fragmented**. Key
 - `/Users/iroselli/wundr/src/claude-generator/types.ts` (143 lines)
 
 ### Template System:
+
 - `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/templates/template-manager.ts` (100+)
 - `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/templates/project-templates.ts` (100+)
-- `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template` (383 lines)
+- `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template` (383
+  lines)
 
 ### Agent Templates:
+
 - `/.claude/agents/templates/` (9 markdown files)
 
 ### Helper Scripts:
+
 - `/.claude/helpers/github-setup.sh`
 - `/.claude/helpers/setup-mcp.sh`
 
 ---
 
-**Report Generated**: 2025-11-21
-**Analyzer**: Code Quality Analyzer
-**Status**: Complete
+**Report Generated**: 2025-11-21 **Analyzer**: Code Quality Analyzer **Status**: Complete

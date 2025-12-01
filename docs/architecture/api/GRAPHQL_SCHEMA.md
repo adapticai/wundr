@@ -2,11 +2,13 @@
 
 ## Overview
 
-The Wundr platform GraphQL API provides a flexible, efficient interface for data querying and mutations. This schema supports real-time subscriptions and follows GraphQL best practices.
+The Wundr platform GraphQL API provides a flexible, efficient interface for data querying and
+mutations. This schema supports real-time subscriptions and follows GraphQL best practices.
 
 ## Schema Definition Language (SDL)
 
 ### Scalars
+
 ```graphql
 scalar DateTime
 scalar JSON
@@ -15,6 +17,7 @@ scalar Upload
 ```
 
 ### Root Types
+
 ```graphql
 type Query {
   # Project queries
@@ -25,7 +28,7 @@ type Query {
     search: String
     orderBy: ProjectOrderBy
   ): ProjectConnection!
-  
+
   # Analysis queries
   analysis(id: UUID!): Analysis
   analyses(
@@ -35,18 +38,18 @@ type Query {
     limit: Int = 20
     offset: Int = 0
   ): AnalysisConnection!
-  
+
   # Setup queries
   setupProfile(id: UUID!): SetupProfile
   setupProfiles: [SetupProfile!]!
   setupSession(id: UUID!): SetupSession
-  
+
   # Configuration queries
   configuration: Configuration!
-  
+
   # User queries
   me: User
-  
+
   # System queries
   health: HealthStatus!
   metrics: SystemMetrics!
@@ -57,19 +60,19 @@ type Mutation {
   createProject(input: CreateProjectInput!): CreateProjectPayload!
   updateProject(id: UUID!, input: UpdateProjectInput!): UpdateProjectPayload!
   deleteProject(id: UUID!): DeleteProjectPayload!
-  
+
   # Analysis mutations
   createAnalysis(input: CreateAnalysisInput!): CreateAnalysisPayload!
   cancelAnalysis(id: UUID!): CancelAnalysisPayload!
-  
+
   # Setup mutations
   createSetupProfile(input: CreateSetupProfileInput!): CreateSetupProfilePayload!
   updateSetupProfile(id: UUID!, input: UpdateSetupProfileInput!): UpdateSetupProfilePayload!
   createSetupSession(input: CreateSetupSessionInput!): CreateSetupSessionPayload!
-  
+
   # Configuration mutations
   updateConfiguration(input: UpdateConfigurationInput!): UpdateConfigurationPayload!
-  
+
   # File mutations
   uploadFile(file: Upload!): UploadFilePayload!
 }
@@ -78,11 +81,11 @@ type Subscription {
   # Analysis subscriptions
   analysisProgress(analysisId: UUID!): AnalysisProgressEvent!
   analysisCompleted(analysisId: UUID!): AnalysisCompletedEvent!
-  
+
   # Setup subscriptions
   setupProgress(sessionId: UUID!): SetupProgressEvent!
   setupCompleted(sessionId: UUID!): SetupCompletedEvent!
-  
+
   # System subscriptions
   systemHealth: HealthStatusEvent!
   notifications(userId: UUID!): NotificationEvent!
@@ -92,6 +95,7 @@ type Subscription {
 ## Core Types
 
 ### Project Types
+
 ```graphql
 type Project {
   id: UUID!
@@ -99,11 +103,7 @@ type Project {
   description: String
   repositoryUrl: String
   configuration: ProjectConfiguration
-  analyses(
-    type: AnalysisType
-    status: AnalysisStatus
-    limit: Int = 10
-  ): AnalysisConnection!
+  analyses(type: AnalysisType, status: AnalysisStatus, limit: Int = 10): AnalysisConnection!
   metrics: ProjectMetrics
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -158,6 +158,7 @@ type CreateProjectPayload {
 ```
 
 ### Analysis Types
+
 ```graphql
 type Analysis {
   id: UUID!
@@ -276,6 +277,7 @@ type CreateAnalysisPayload {
 ```
 
 ### Setup Types
+
 ```graphql
 type SetupProfile {
   id: UUID!
@@ -381,6 +383,7 @@ input CreateSetupSessionInput {
 ```
 
 ### Configuration Types
+
 ```graphql
 type Configuration {
   id: UUID!
@@ -438,6 +441,7 @@ enum IntegrationType {
 ```
 
 ### User Types
+
 ```graphql
 type User {
   id: UUID!
@@ -475,6 +479,7 @@ enum Theme {
 ## Connection Types
 
 ### Page Info
+
 ```graphql
 type PageInfo {
   hasNextPage: Boolean!
@@ -498,6 +503,7 @@ type AnalysisEdge {
 ## Subscription Events
 
 ### Analysis Events
+
 ```graphql
 type AnalysisProgressEvent {
   analysisId: UUID!
@@ -514,6 +520,7 @@ type AnalysisCompletedEvent {
 ```
 
 ### Setup Events
+
 ```graphql
 type SetupProgressEvent {
   sessionId: UUID!
@@ -530,6 +537,7 @@ type SetupCompletedEvent {
 ```
 
 ### System Events
+
 ```graphql
 type HealthStatusEvent {
   status: HealthStatus!
@@ -549,6 +557,7 @@ type NotificationEvent {
 ## Input Types
 
 ### Analysis Options
+
 ```graphql
 input AnalysisOptionsInput {
   includePaths: [String!]
@@ -561,6 +570,7 @@ input AnalysisOptionsInput {
 ```
 
 ### Configuration Inputs
+
 ```graphql
 input UpdateConfigurationInput {
   general: GeneralConfigurationInput
@@ -582,6 +592,7 @@ input GeneralConfigurationInput {
 ## Error Handling
 
 ### Error Types
+
 ```graphql
 type Error {
   code: ErrorCode!
@@ -609,6 +620,7 @@ interface Payload {
 ## Query Examples
 
 ### Complex Project Query
+
 ```graphql
 query GetProjectWithAnalyses($projectId: UUID!) {
   project(id: $projectId) {
@@ -642,6 +654,7 @@ query GetProjectWithAnalyses($projectId: UUID!) {
 ```
 
 ### Analysis Subscription
+
 ```graphql
 subscription WatchAnalysis($analysisId: UUID!) {
   analysisProgress(analysisId: $analysisId) {
@@ -655,6 +668,7 @@ subscription WatchAnalysis($analysisId: UUID!) {
 ```
 
 ### Mutation Example
+
 ```graphql
 mutation CreateAnalysis($input: CreateAnalysisInput!) {
   createAnalysis(input: $input) {
@@ -679,6 +693,7 @@ mutation CreateAnalysis($input: CreateAnalysisInput!) {
 ## Schema Directives
 
 ### Custom Directives
+
 ```graphql
 directive @auth(role: UserRole) on FIELD_DEFINITION
 directive @rateLimit(max: Int!, window: Int!) on FIELD_DEFINITION
@@ -687,6 +702,7 @@ directive @deprecated(reason: String) on FIELD_DEFINITION | ENUM_VALUE
 ```
 
 ### Usage Examples
+
 ```graphql
 type Query {
   projects: [Project!]! @auth(role: DEVELOPER) @rateLimit(max: 100, window: 3600)
@@ -697,6 +713,7 @@ type Query {
 ## Schema Extensions
 
 ### Federation Support
+
 ```graphql
 extend type User @key(fields: "id") {
   id: UUID! @external
@@ -704,4 +721,5 @@ extend type User @key(fields: "id") {
 }
 ```
 
-This GraphQL schema provides a comprehensive, type-safe API for the Wundr platform with support for real-time features, complex queries, and extensible architecture.
+This GraphQL schema provides a comprehensive, type-safe API for the Wundr platform with support for
+real-time features, complex queries, and extensible architecture.

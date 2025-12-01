@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Export API provides comprehensive workspace data export functionality with support for both synchronous (small datasets) and asynchronous (large datasets) operations.
+The Export API provides comprehensive workspace data export functionality with support for both
+synchronous (small datasets) and asynchronous (large datasets) operations.
 
 ## Endpoints
 
@@ -11,6 +12,7 @@ The Export API provides comprehensive workspace data export functionality with s
 Export workspace data synchronously (for datasets <10k records) or create async job.
 
 **Query Parameters:**
+
 - `type` (required): Data type to export
   - `channels` - Channel metadata
   - `messages` - Channel messages
@@ -27,6 +29,7 @@ Export workspace data synchronously (for datasets <10k records) or create async 
 - `endDate` (optional): ISO datetime filter (inclusive)
 
 **Example Request (Synchronous - Small Dataset):**
+
 ```bash
 curl -X GET \
   "https://api.neolith.app/api/workspaces/ws_123/export?type=channels&format=json" \
@@ -34,6 +37,7 @@ curl -X GET \
 ```
 
 **Example Response (Synchronous):**
+
 ```json
 {
   "workspaceId": "ws_123",
@@ -74,6 +78,7 @@ curl -X GET \
 ```
 
 **Example Response (Async - Large Dataset):**
+
 ```json
 {
   "async": true,
@@ -85,6 +90,7 @@ curl -X GET \
 ```
 
 **Example Request (CSV Format):**
+
 ```bash
 curl -X GET \
   "https://api.neolith.app/api/workspaces/ws_123/export?type=tasks&format=csv&startDate=2025-01-01T00:00:00Z" \
@@ -93,6 +99,7 @@ curl -X GET \
 ```
 
 **Example CSV Response:**
+
 ```csv
 # Tasks
 id,title,description,status,priority,dueDate,tags,createdById,assignedToId,createdAt,updatedAt
@@ -107,6 +114,7 @@ task_2,"Fix bug","Bug description","TODO","MEDIUM",,"bug,frontend","user_1",,"20
 Create an async export job (for backward compatibility or explicit async requests).
 
 **Request Body:**
+
 ```json
 {
   "type": "messages",
@@ -117,6 +125,7 @@ Create an async export job (for backward compatibility or explicit async request
 ```
 
 **Example Request:**
+
 ```bash
 curl -X POST \
   "https://api.neolith.app/api/workspaces/ws_123/export" \
@@ -130,6 +139,7 @@ curl -X POST \
 ```
 
 **Example Response:**
+
 ```json
 {
   "async": true,
@@ -147,6 +157,7 @@ curl -X POST \
 List all export jobs for a workspace.
 
 **Query Parameters:**
+
 - `status` (optional): Filter by job status
   - `PENDING` - Waiting to start
   - `PROCESSING` - Currently running
@@ -156,6 +167,7 @@ List all export jobs for a workspace.
 - `offset` (optional): Pagination offset (default: 0)
 
 **Example Request:**
+
 ```bash
 curl -X GET \
   "https://api.neolith.app/api/workspaces/ws_123/export/jobs?status=COMPLETED&limit=10" \
@@ -163,6 +175,7 @@ curl -X GET \
 ```
 
 **Example Response:**
+
 ```json
 {
   "jobs": [
@@ -203,6 +216,7 @@ curl -X GET \
 Get status and details of a specific export job.
 
 **Example Request:**
+
 ```bash
 curl -X GET \
   "https://api.neolith.app/api/workspaces/ws_123/export/jobs/job_abc123" \
@@ -210,6 +224,7 @@ curl -X GET \
 ```
 
 **Example Response (In Progress):**
+
 ```json
 {
   "id": "job_abc123",
@@ -235,6 +250,7 @@ curl -X GET \
 ```
 
 **Example Response (Completed):**
+
 ```json
 {
   "id": "job_abc123",
@@ -260,6 +276,7 @@ curl -X GET \
 ```
 
 **Example Response (Failed):**
+
 ```json
 {
   "id": "job_abc123",
@@ -291,6 +308,7 @@ curl -X GET \
 Cancel a pending/processing job or delete a completed/failed job.
 
 **Example Request:**
+
 ```bash
 curl -X DELETE \
   "https://api.neolith.app/api/workspaces/ws_123/export/jobs/job_abc123" \
@@ -298,6 +316,7 @@ curl -X DELETE \
 ```
 
 **Example Response:**
+
 ```json
 {
   "message": "Export job deleted successfully",
@@ -310,6 +329,7 @@ curl -X DELETE \
 ## Export Data Types
 
 ### Channels Export (type=channels)
+
 ```json
 {
   "channels": [
@@ -328,6 +348,7 @@ curl -X DELETE \
 ```
 
 ### Messages Export (type=messages)
+
 ```json
 {
   "messages": [
@@ -345,6 +366,7 @@ curl -X DELETE \
 ```
 
 ### Tasks Export (type=tasks)
+
 ```json
 {
   "tasks": [
@@ -366,6 +388,7 @@ curl -X DELETE \
 ```
 
 ### Members Export (type=members)
+
 ```json
 {
   "members": [
@@ -386,6 +409,7 @@ curl -X DELETE \
 ```
 
 ### VPs Export (type=vps)
+
 ```json
 {
   "vps": [
@@ -403,6 +427,7 @@ curl -X DELETE \
 ```
 
 ### Workflows Export (type=workflows)
+
 ```json
 {
   "workflows": [
@@ -436,6 +461,7 @@ curl -X DELETE \
 ## Authentication & Permissions
 
 All export endpoints require:
+
 - Valid authentication token
 - Workspace membership
 - `ADMIN` or `OWNER` role in the workspace

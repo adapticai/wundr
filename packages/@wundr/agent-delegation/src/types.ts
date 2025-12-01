@@ -169,7 +169,7 @@ export const SynthesisResultSchema = z.object({
         field: z.string(),
         values: z.array(z.unknown()),
         resolution: z.string(),
-      }),
+      })
     )
     .default([]),
   duration: z.number().nonnegative(),
@@ -425,7 +425,7 @@ export class DelegationError extends Error {
   constructor(
     public readonly code: DelegationErrorCode,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'DelegationError';

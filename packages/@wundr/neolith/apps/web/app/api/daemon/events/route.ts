@@ -13,7 +13,7 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -27,7 +27,8 @@ const eventAckSchema = z.object({
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
  * Error codes for event operations
@@ -65,7 +66,9 @@ interface PendingEvent {
 /**
  * Verify daemon token from Authorization header
  */
-async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+async function verifyDaemonToken(
+  request: NextRequest
+): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid authorization header');
@@ -105,14 +108,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const sinceParam = searchParams.get('since');
-    const since = sinceParam ? new Date(sinceParam) : new Date(Date.now() - 5 * 60 * 1000); // Default: last 5 minutes
+    const since = sinceParam
+      ? new Date(sinceParam)
+      : new Date(Date.now() - 5 * 60 * 1000); // Default: last 5 minutes
 
     // Get Orchestrator info
     const orchestrator = await prisma.orchestrator.findUnique({
@@ -126,7 +131,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -135,12 +140,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where: { userId: orchestrator.userId },
       select: { channelId: true },
     });
-    const channelIds = memberships.map((m) => m.channelId);
+    const channelIds = memberships.map(m => m.channelId);
 
     const events: PendingEvent[] = [];
 
     // Fetch new messages in Orchestrator's channels (using type assertion for Prisma column mapping)
-    type MessageWithAuthorId = { id: string; content: string; createdAt: Date; channelId: string; authorId: string };
+    type MessageWithAuthorId = {
+      id: string;
+      content: string;
+      createdAt: Date;
+      channelId: string;
+      authorId: string;
+    };
     const rawNewMessages = await prisma.message.findMany({
       where: {
         channelId: { in: channelIds },
@@ -152,19 +163,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const newMessagesTyped = rawNewMessages as unknown as MessageWithAuthorId[];
 
     // Filter out own messages and get author/channel info
-    const filteredMessages = newMessagesTyped.filter((m) => m.authorId !== orchestrator.userId);
-    const authorIds = Array.from(new Set(filteredMessages.map((m) => m.authorId)));
+    const filteredMessages = newMessagesTyped.filter(
+      m => m.authorId !== orchestrator.userId
+    );
+    const authorIds = Array.from(
+      new Set(filteredMessages.map(m => m.authorId))
+    );
     const authors = await prisma.user.findMany({
       where: { id: { in: authorIds } },
       select: { id: true, name: true, avatarUrl: true, isOrchestrator: true },
     });
-    const authorMap = new Map(authors.map((a) => [a.id, a]));
+    const authorMap = new Map(authors.map(a => [a.id, a]));
 
     const channels = await prisma.channel.findMany({
       where: { id: { in: channelIds } },
       select: { id: true, name: true },
     });
-    const channelMap = new Map(channels.map((c) => [c.id, c]));
+    const channelMap = new Map(channels.map(c => [c.id, c]));
 
     // Add message events
     for (const message of filteredMessages) {
@@ -175,8 +190,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           message: {
             id: message.id,
             content: message.content,
-            author: authorMap.get(message.authorId) || { id: message.authorId, name: 'Unknown' },
-            channel: channelMap.get(message.channelId) || { id: message.channelId, name: 'Unknown' },
+            author: authorMap.get(message.authorId) || {
+              id: message.authorId,
+              name: 'Unknown',
+            },
+            channel: channelMap.get(message.channelId) || {
+              id: message.channelId,
+              name: 'Unknown',
+            },
             createdAt: message.createdAt.toISOString(),
           },
         },
@@ -196,22 +217,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       orderBy: { createdAt: 'asc' },
       take: 50,
     });
-    const mentionMessagesTyped = rawMentionMessages as unknown as MessageWithAuthorId[];
+    const mentionMessagesTyped =
+      rawMentionMessages as unknown as MessageWithAuthorId[];
 
     // Fetch additional author info for mentions
-    const mentionAuthorIds = Array.from(new Set(mentionMessagesTyped.map((m) => m.authorId))).filter(
-      (id) => !authorMap.has(id),
-    );
+    const mentionAuthorIds = Array.from(
+      new Set(mentionMessagesTyped.map(m => m.authorId))
+    ).filter(id => !authorMap.has(id));
     if (mentionAuthorIds.length > 0) {
       const mentionAuthors = await prisma.user.findMany({
         where: { id: { in: mentionAuthorIds } },
         select: { id: true, name: true, avatarUrl: true, isOrchestrator: true },
       });
-      mentionAuthors.forEach((a) => authorMap.set(a.id, a));
+      mentionAuthors.forEach(a => authorMap.set(a.id, a));
     }
 
     // Add mention events (deduplicated from message events)
-    const existingEventIds = new Set(events.map((e) => e.messageId));
+    const existingEventIds = new Set(events.map(e => e.messageId));
     for (const message of mentionMessagesTyped) {
       if (!existingEventIds.has(message.id)) {
         events.push({
@@ -221,8 +243,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             message: {
               id: message.id,
               content: message.content,
-              author: authorMap.get(message.authorId) || { id: message.authorId, name: 'Unknown' },
-              channel: channelMap.get(message.channelId) || { id: message.channelId, name: 'Unknown' },
+              author: authorMap.get(message.authorId) || {
+                id: message.authorId,
+                name: 'Unknown',
+              },
+              channel: channelMap.get(message.channelId) || {
+                id: message.channelId,
+                name: 'Unknown',
+              },
               createdAt: message.createdAt.toISOString(),
             },
           },
@@ -254,14 +282,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Sort events by creation time
-    events.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    events.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
 
     return NextResponse.json({ events });
   } catch (error) {
     console.error('[GET /api/daemon/events] Error:', error);
     return NextResponse.json(
       { error: 'Failed to get events', code: EVENT_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -294,7 +325,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -304,8 +335,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JSON body', code: EVENT_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Invalid JSON body',
+          code: EVENT_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -313,8 +347,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     const parseResult = eventAckSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Event IDs required', code: EVENT_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Event IDs required',
+          code: EVENT_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -357,8 +394,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[DELETE /api/daemon/events] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to acknowledge events', code: EVENT_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Failed to acknowledge events',
+        code: EVENT_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }

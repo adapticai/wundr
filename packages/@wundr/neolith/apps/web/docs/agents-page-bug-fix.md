@@ -2,9 +2,8 @@
 
 ## Critical Bug Found
 
-**File:** `app/api/workspaces/[workspaceId]/agents/route.ts`
-**Line:** 142
-**Impact:** Runtime crash when searching
+**File:** `app/api/workspaces/[workspaceId]/agents/route.ts` **Line:** 142 **Impact:** Runtime crash
+when searching
 
 ## The Bug
 
@@ -13,9 +12,9 @@
 if (search) {
   const searchLower = search.toLowerCase();
   agents = agents.filter(
-    (agent) =>
+    agent =>
       agent.name.toLowerCase().includes(searchLower) ||
-      agent.description.toLowerCase().includes(searchLower),  // ❌ CRASHES if description is undefined
+      agent.description.toLowerCase().includes(searchLower) // ❌ CRASHES if description is undefined
   );
 }
 ```
@@ -27,9 +26,9 @@ if (search) {
 if (search) {
   const searchLower = search.toLowerCase();
   agents = agents.filter(
-    (agent) =>
+    agent =>
       agent.name.toLowerCase().includes(searchLower) ||
-      agent.description?.toLowerCase().includes(searchLower),  // ✅ Safe optional chaining
+      agent.description?.toLowerCase().includes(searchLower) // ✅ Safe optional chaining
   );
 }
 ```
@@ -38,18 +37,21 @@ if (search) {
 
 - The `Agent` type defines `description` as optional: `description?: string`
 - When creating an agent without a description, it will be `undefined`
-- Calling `.toLowerCase()` on `undefined` throws: `TypeError: Cannot read property 'toLowerCase' of undefined`
+- Calling `.toLowerCase()` on `undefined` throws:
+  `TypeError: Cannot read property 'toLowerCase' of undefined`
 
 ## How to Fix
 
 Replace line 142 in `app/api/workspaces/[workspaceId]/agents/route.ts`:
 
 **Before:**
+
 ```typescript
 agent.description.toLowerCase().includes(searchLower),
 ```
 
 **After:**
+
 ```typescript
 agent.description?.toLowerCase().includes(searchLower),
 ```
@@ -62,6 +64,4 @@ agent.description?.toLowerCase().includes(searchLower),
 
 ---
 
-**Priority:** CRITICAL
-**Assigned To:** Next available developer
-**Status:** PENDING FIX
+**Priority:** CRITICAL **Assigned To:** Next available developer **Status:** PENDING FIX

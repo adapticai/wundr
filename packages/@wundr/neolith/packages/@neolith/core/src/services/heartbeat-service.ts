@@ -49,7 +49,11 @@ export interface RedisClient {
   smembers(key: string): Promise<string[]>;
   zadd(key: string, score: number, member: string): Promise<void>;
   zrange(key: string, start: number, stop: number): Promise<string[]>;
-  zrangebyscore(key: string, min: number | string, max: number | string): Promise<string[]>;
+  zrangebyscore(
+    key: string,
+    min: number | string,
+    max: number | string
+  ): Promise<string[]>;
   zremrangebyrank(key: string, start: number, stop: number): Promise<void>;
   expire(key: string, seconds: number): Promise<void>;
   exists(key: string): Promise<number>;
@@ -63,7 +67,12 @@ export interface RedisClient {
  * Error thrown when heartbeat operations fail.
  */
 export class HeartbeatError extends GenesisError {
-  constructor(message: string, code: string, statusCode: number = 500, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    statusCode: number = 500,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, statusCode, metadata);
     this.name = 'HeartbeatError';
   }
@@ -78,7 +87,7 @@ export class DaemonNotRegisteredError extends HeartbeatError {
       `Daemon not registered for Orchestrator: ${vpId}`,
       'DAEMON_NOT_REGISTERED',
       404,
-      { vpId },
+      { vpId }
     );
     this.name = 'DaemonNotRegisteredError';
   }
@@ -93,7 +102,7 @@ export class DaemonAlreadyRegisteredError extends HeartbeatError {
       `Daemon already registered for Orchestrator: ${vpId}`,
       'DAEMON_ALREADY_REGISTERED',
       409,
-      { vpId },
+      { vpId }
     );
     this.name = 'DaemonAlreadyRegisteredError';
   }
@@ -226,7 +235,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   constructor(
     redis: RedisClient,
     config?: Partial<HeartbeatConfig>,
-    database?: PrismaClient,
+    database?: PrismaClient
   ) {
     this.redis = redis;
     this.config = { ...DEFAULT_HEARTBEAT_CONFIG, ...config };
@@ -240,7 +249,10 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   /**
    * Registers a daemon for a Orchestrator.
    */
-  async registerDaemon(vpId: string, daemonInfo: HeartbeatDaemonInfo): Promise<void> {
+  async registerDaemon(
+    vpId: string,
+    daemonInfo: HeartbeatDaemonInfo
+  ): Promise<void> {
     // Validate Orchestrator exists
     const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
@@ -259,7 +271,9 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     }
 
     // Check if already registered
-    const existingDaemon = await this.redis.get(HEARTBEAT_REDIS_KEYS.daemon(vpId));
+    const existingDaemon = await this.redis.get(
+      HEARTBEAT_REDIS_KEYS.daemon(vpId)
+    );
     if (existingDaemon) {
       throw new DaemonAlreadyRegisteredError(vpId);
     }
@@ -274,12 +288,15 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.daemon(vpId),
       JSON.stringify(daemonData),
-      { EX: this.config.heartbeatTTLSeconds * 10 }, // Longer TTL for daemon info
+      { EX: this.config.heartbeatTTLSeconds * 10 } // Longer TTL for daemon info
     );
 
     // Add to registered Orchestrators set
     await this.redis.sadd(HEARTBEAT_REDIS_KEYS.registeredOrchestrators(), vpId);
-    await this.redis.sadd(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orchestrator.organizationId), vpId);
+    await this.redis.sadd(
+      HEARTBEAT_REDIS_KEYS.orgOrchestrators(orchestrator.organizationId),
+      vpId
+    );
 
     // Initialize health status
     const healthStatus: HealthStatus = {
@@ -290,7 +307,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.health(vpId),
       JSON.stringify(healthStatus),
-      { EX: this.config.heartbeatTTLSeconds },
+      { EX: this.config.heartbeatTTLSeconds }
     );
 
     // Initialize sequence counter
@@ -308,7 +325,9 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   async unregisterDaemon(vpId: string): Promise<void> {
     // Check if registered
-    const existingDaemon = await this.redis.get(HEARTBEAT_REDIS_KEYS.daemon(vpId));
+    const existingDaemon = await this.redis.get(
+      HEARTBEAT_REDIS_KEYS.daemon(vpId)
+    );
     if (!existingDaemon) {
       throw new DaemonNotRegisteredError(vpId);
     }
@@ -324,7 +343,12 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       this.redis.del(HEARTBEAT_REDIS_KEYS.heartbeat(vpId)),
       this.redis.del(HEARTBEAT_REDIS_KEYS.health(vpId)),
       this.redis.srem(HEARTBEAT_REDIS_KEYS.registeredOrchestrators(), vpId),
-      orchestrator ? this.redis.srem(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orchestrator.organizationId), vpId) : Promise.resolve(),
+      orchestrator
+        ? this.redis.srem(
+            HEARTBEAT_REDIS_KEYS.orgOrchestrators(orchestrator.organizationId),
+            vpId
+          )
+        : Promise.resolve(),
     ]);
 
     // Remove sequence counter
@@ -348,7 +372,9 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   async sendHeartbeat(vpId: string, metrics?: HeartbeatMetrics): Promise<void> {
     // Get daemon info to verify registration
-    const daemonInfoStr = await this.redis.get(HEARTBEAT_REDIS_KEYS.daemon(vpId));
+    const daemonInfoStr = await this.redis.get(
+      HEARTBEAT_REDIS_KEYS.daemon(vpId)
+    );
     if (!daemonInfoStr) {
       throw new DaemonNotRegisteredError(vpId);
     }
@@ -393,7 +419,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           startedAt: heartbeatRecord.daemonInfo.startedAt.toISOString(),
         },
       }),
-      { EX: this.config.heartbeatTTLSeconds },
+      { EX: this.config.heartbeatTTLSeconds }
     );
 
     // Add to history
@@ -407,21 +433,19 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           ...heartbeatRecord.daemonInfo,
           startedAt: heartbeatRecord.daemonInfo.startedAt.toISOString(),
         },
-      }),
+      })
     );
 
     // Trim history to max entries
-    const historyCount = (await this.redis.zrange(
-      HEARTBEAT_REDIS_KEYS.history(vpId),
-      0,
-      -1,
-    )).length;
+    const historyCount = (
+      await this.redis.zrange(HEARTBEAT_REDIS_KEYS.history(vpId), 0, -1)
+    ).length;
 
     if (historyCount > this.config.maxHistoryEntries) {
       await this.redis.zremrangebyrank(
         HEARTBEAT_REDIS_KEYS.history(vpId),
         0,
-        historyCount - this.config.maxHistoryEntries - 1,
+        historyCount - this.config.maxHistoryEntries - 1
       );
     }
 
@@ -431,7 +455,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     // Refresh daemon info TTL
     await this.redis.expire(
       HEARTBEAT_REDIS_KEYS.daemon(vpId),
-      this.config.heartbeatTTLSeconds * 10,
+      this.config.heartbeatTTLSeconds * 10
     );
   }
 
@@ -439,7 +463,9 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    * Gets the last heartbeat record for a Orchestrator.
    */
   async getLastHeartbeat(vpId: string): Promise<HeartbeatRecord | null> {
-    const heartbeatStr = await this.redis.get(HEARTBEAT_REDIS_KEYS.heartbeat(vpId));
+    const heartbeatStr = await this.redis.get(
+      HEARTBEAT_REDIS_KEYS.heartbeat(vpId)
+    );
     if (!heartbeatStr) {
       return null;
     }
@@ -485,7 +511,9 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       const now = Date.now();
       const lastTime = lastHeartbeat.timestamp.getTime();
       const elapsed = now - lastTime;
-      const expectedHeartbeats = Math.floor(elapsed / this.config.heartbeatIntervalMs);
+      const expectedHeartbeats = Math.floor(
+        elapsed / this.config.heartbeatIntervalMs
+      );
       const missedHeartbeats = Math.max(0, expectedHeartbeats - 1);
 
       // Determine health status
@@ -521,8 +549,14 @@ export class HeartbeatServiceImpl implements HeartbeatService {
         missedHeartbeats,
         latestMetrics: lastHeartbeat.metrics,
         recovering: health.recovering,
-        unhealthySince: health.unhealthySince ? new Date(health.unhealthySince) : undefined,
-        details: this.getHealthDetails(status, missedHeartbeats, lastHeartbeat.metrics),
+        unhealthySince: health.unhealthySince
+          ? new Date(health.unhealthySince)
+          : undefined,
+        details: this.getHealthDetails(
+          status,
+          missedHeartbeats,
+          lastHeartbeat.metrics
+        ),
       };
 
       return updatedHealth;
@@ -540,7 +574,9 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   async getUnhealthyVPs(orgId: string): Promise<string[]> {
     // Get all Orchestrators for the organization
-    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orgId));
+    const vpIds = await this.redis.smembers(
+      HEARTBEAT_REDIS_KEYS.orgOrchestrators(orgId)
+    );
     const unhealthyVPs: string[] = [];
 
     // Check health of each Orchestrator
@@ -574,7 +610,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.health(vpId),
       JSON.stringify(health),
-      { EX: this.config.heartbeatTTLSeconds },
+      { EX: this.config.heartbeatTTLSeconds }
     );
   }
 
@@ -596,7 +632,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.health(vpId),
       JSON.stringify(health),
-      { EX: this.config.heartbeatTTLSeconds },
+      { EX: this.config.heartbeatTTLSeconds }
     );
 
     // Update Orchestrator status to ONLINE
@@ -629,14 +665,17 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   /**
    * Gets heartbeat history for a Orchestrator.
    */
-  async getHeartbeatHistory(vpId: string, limit: number = 50): Promise<HeartbeatRecord[]> {
+  async getHeartbeatHistory(
+    vpId: string,
+    limit: number = 50
+  ): Promise<HeartbeatRecord[]> {
     const historyStrs = await this.redis.zrange(
       HEARTBEAT_REDIS_KEYS.history(vpId),
       -limit,
-      -1,
+      -1
     );
 
-    return historyStrs.map((str) => {
+    return historyStrs.map(str => {
       const parsed = JSON.parse(str);
       return {
         ...parsed,
@@ -664,7 +703,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   private async updateHealthStatus(
     vpId: string,
-    heartbeat: HeartbeatRecord,
+    heartbeat: HeartbeatRecord
   ): Promise<void> {
     const currentHealth = await this.checkHealth(vpId);
 
@@ -686,7 +725,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           ...health,
           lastHeartbeat: health.lastHeartbeat?.toISOString(),
         }),
-        { EX: this.config.heartbeatTTLSeconds },
+        { EX: this.config.heartbeatTTLSeconds }
       );
     } else {
       // Normal heartbeat update
@@ -706,7 +745,11 @@ export class HeartbeatServiceImpl implements HeartbeatService {
         heartbeat.metrics.messageQueueSize > 1000
       ) {
         health.status = 'degraded';
-        health.details = this.getHealthDetails('degraded', 0, heartbeat.metrics);
+        health.details = this.getHealthDetails(
+          'degraded',
+          0,
+          heartbeat.metrics
+        );
       }
 
       await this.redis.set(
@@ -715,7 +758,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           ...health,
           lastHeartbeat: health.lastHeartbeat?.toISOString(),
         }),
-        { EX: this.config.heartbeatTTLSeconds },
+        { EX: this.config.heartbeatTTLSeconds }
       );
     }
   }
@@ -726,7 +769,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   private getHealthDetails(
     status: HealthStatusType,
     missedHeartbeats: number,
-    metrics?: HeartbeatMetrics,
+    metrics?: HeartbeatMetrics
   ): string {
     switch (status) {
       case 'healthy':
@@ -738,14 +781,14 @@ export class HeartbeatServiceImpl implements HeartbeatService {
         }
         if (metrics) {
           if (metrics.cpuUsage > 90) {
-issues.push('high CPU usage');
-}
+            issues.push('high CPU usage');
+          }
           if (metrics.memoryUsage > 90) {
-issues.push('high memory usage');
-}
+            issues.push('high memory usage');
+          }
           if (metrics.messageQueueSize > 1000) {
-issues.push('large message queue');
-}
+            issues.push('large message queue');
+          }
         }
         return `Orchestrator daemon is degraded: ${issues.join(', ')}`;
       }
@@ -805,7 +848,7 @@ issues.push('large message queue');
 export function createHeartbeatService(
   redis: RedisClient,
   config?: Partial<HeartbeatConfig>,
-  database?: PrismaClient,
+  database?: PrismaClient
 ): HeartbeatServiceImpl {
   return new HeartbeatServiceImpl(redis, config, database);
 }

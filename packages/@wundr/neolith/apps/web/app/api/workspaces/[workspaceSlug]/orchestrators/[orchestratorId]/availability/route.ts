@@ -18,7 +18,10 @@ import {
   checkAvailability,
   reserveTimeSlot,
 } from '@/lib/services/orchestrator-scheduling-service';
-import { createErrorResponse, ORCHESTRATOR_ERROR_CODES } from '@/lib/validations/orchestrator';
+import {
+  createErrorResponse,
+  ORCHESTRATOR_ERROR_CODES,
+} from '@/lib/validations/orchestrator';
 import {
   checkAvailabilitySchema,
   reserveTimeSlotSchema,
@@ -37,7 +40,11 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an Orchestrator within a workspace
  */
-async function checkOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function checkOrchestratorAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -114,14 +121,17 @@ async function checkOrchestratorAccess(workspaceId: string, orchestratorId: stri
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -130,16 +140,26 @@ export async function GET(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
-    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -156,9 +176,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -171,23 +191,30 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Start time must be before end time',
-          SCHEDULING_ERROR_CODES.INVALID_TIME_RANGE,
+          SCHEDULING_ERROR_CODES.INVALID_TIME_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const availability = await checkAvailability(orchestratorId, startDate, endDate);
+    const availability = await checkAvailability(
+      orchestratorId,
+      startDate,
+      endDate
+    );
 
     return NextResponse.json({ data: availability });
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/availability] Error:',
-      error,
+      error
     );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -227,14 +254,17 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -243,8 +273,11 @@ export async function POST(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -253,8 +286,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -264,17 +300,24 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -294,32 +337,40 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Task not found or does not belong to this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.TASK_NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.TASK_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     const startDate = new Date(startTime);
 
     try {
-      const reservation = await reserveTimeSlot(orchestratorId, taskId, startDate, durationMinutes);
+      const reservation = await reserveTimeSlot(
+        orchestratorId,
+        taskId,
+        startDate,
+        durationMinutes
+      );
 
       return NextResponse.json(
         {
           data: reservation,
           message: 'Time slot reserved successfully',
         },
-        { status: 201 },
+        { status: 201 }
       );
     } catch (error) {
-      if (error instanceof Error && error.message === 'Time slot conflict detected') {
+      if (
+        error instanceof Error &&
+        error.message === 'Time slot conflict detected'
+      ) {
         return NextResponse.json(
           createErrorResponse(
             'Time slot conflict - Orchestrator is already scheduled during this time',
-            SCHEDULING_ERROR_CODES.TIME_SLOT_CONFLICT,
+            SCHEDULING_ERROR_CODES.TIME_SLOT_CONFLICT
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
       throw error;
@@ -327,11 +378,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/availability] Error:',
-      error,
+      error
     );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

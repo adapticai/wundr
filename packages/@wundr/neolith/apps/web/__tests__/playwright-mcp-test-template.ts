@@ -115,7 +115,7 @@ export async function navigateToRoute(page: Page, path: string): Promise<void> {
 export async function fillLoginForm(
   page: Page,
   email: string,
-  password: string,
+  password: string
 ): Promise<void> {
   console.log('Filling login form...');
   await page.fill(SELECTORS.AUTH.loginEmail, email);
@@ -143,7 +143,7 @@ export async function submitLoginForm(page: Page): Promise<void> {
 export async function loginUser(
   page: Page,
   email: string,
-  password: string,
+  password: string
 ): Promise<void> {
   await navigateToRoute(page, '/login');
   await fillLoginForm(page, email, password);
@@ -159,7 +159,7 @@ export async function loginUser(
 export async function takeScreenshot(
   page: Page,
   name: string,
-  directory: string = TEST_CONFIG.SCREENSHOT_DIR,
+  directory: string = TEST_CONFIG.SCREENSHOT_DIR
 ): Promise<string> {
   const timestamp = new Date().toISOString().replace(/:/g, '-');
   const filename = `${name}_${timestamp}.png`;
@@ -180,7 +180,7 @@ export async function takeScreenshot(
 export async function getElementText(
   page: Page,
   selector: string,
-  timeout: number = TEST_CONFIG.WAIT_TIMEOUT,
+  timeout: number = TEST_CONFIG.WAIT_TIMEOUT
 ): Promise<string> {
   await page.waitForSelector(selector, { timeout });
   const text = await page.textContent(selector);
@@ -196,7 +196,7 @@ export async function getElementText(
 export async function clickElement(
   page: Page,
   selector: string,
-  timeout: number = TEST_CONFIG.WAIT_TIMEOUT,
+  timeout: number = TEST_CONFIG.WAIT_TIMEOUT
 ): Promise<void> {
   console.log(`Clicking element: ${selector}`);
   await page.waitForSelector(selector, { timeout });
@@ -214,7 +214,7 @@ export async function fillField(
   page: Page,
   selector: string,
   value: string,
-  timeout: number = TEST_CONFIG.WAIT_TIMEOUT,
+  timeout: number = TEST_CONFIG.WAIT_TIMEOUT
 ): Promise<void> {
   console.log(`Filling field: ${selector} with value: ${value}`);
   await page.waitForSelector(selector, { timeout });
@@ -228,13 +228,13 @@ export async function fillField(
  */
 export async function isElementVisible(
   page: Page,
-  selector: string,
+  selector: string
 ): Promise<boolean> {
   try {
     const element = await page.$(selector);
     if (!element) {
-return false;
-}
+      return false;
+    }
     return await element.isVisible();
   } catch {
     return false;
@@ -248,7 +248,7 @@ return false;
  */
 export async function queryElements(
   page: Page,
-  selector: string,
+  selector: string
 ): Promise<string[]> {
   console.log(`Querying elements: ${selector}`);
   const elements = await page.locator(selector).all();
@@ -257,8 +257,8 @@ export async function queryElements(
   for (const element of elements) {
     const text = await element.textContent();
     if (text) {
-texts.push(text.trim());
-}
+      texts.push(text.trim());
+    }
   }
 
   console.log(`Found ${texts.length} elements`);
@@ -288,7 +288,7 @@ export async function getPageTitle(page: Page): Promise<string> {
  */
 export async function waitForLoadState(
   page: Page,
-  state: 'domcontentloaded' | 'load' | 'networkidle' = 'networkidle',
+  state: 'domcontentloaded' | 'load' | 'networkidle' = 'networkidle'
 ): Promise<void> {
   console.log(`Waiting for load state: ${state}`);
   await page.waitForLoadState(state);
@@ -311,10 +311,10 @@ export async function clearAndReload(page: Page): Promise<void> {
  */
 export async function setCookies(
   page: Page,
-  cookies: Array<{ name: string; value: string }>,
+  cookies: Array<{ name: string; value: string }>
 ): Promise<void> {
   const context = page.context();
-  const cookiesList = cookies.map((cookie) => ({
+  const cookiesList = cookies.map(cookie => ({
     name: cookie.name,
     value: cookie.value,
     url: TEST_CONFIG.BASE_URL,
@@ -329,7 +329,7 @@ export async function setCookies(
  */
 export async function executeFlow(
   page: Page,
-  steps: Array<(page: Page) => Promise<void>>,
+  steps: Array<(page: Page) => Promise<void>>
 ): Promise<void> {
   for (let i = 0; i < steps.length; i++) {
     console.log(`Executing step ${i + 1} of ${steps.length}`);
@@ -344,28 +344,32 @@ export async function executeFlow(
  */
 export async function createWorkspaceFlow(page: Page): Promise<void> {
   const steps: Array<(page: Page) => Promise<void>> = [
-    async (p) => {
+    async p => {
       await navigateToRoute(p, '/dashboard');
       await waitForLoadState(p, 'networkidle');
     },
-    async (p) => {
+    async p => {
       // Look for "Create Workspace" button
       const createButton = await p.$('button:has-text("Create Workspace")');
       if (createButton) {
         await clickElement(p, 'button:has-text("Create Workspace")');
       }
     },
-    async (p) => {
+    async p => {
       // Fill workspace form
       await fillField(p, 'input[name="workspace-name"]', 'Test Workspace');
-      await fillField(p, 'textarea[name="description"]', 'Test workspace description');
+      await fillField(
+        p,
+        'textarea[name="description"]',
+        'Test workspace description'
+      );
     },
-    async (p) => {
+    async p => {
       // Submit form
       await clickElement(p, 'button[type="submit"]');
       await waitForLoadState(p, 'networkidle');
     },
-    async (p) => {
+    async p => {
       // Take final screenshot
       await takeScreenshot(p, 'workspace_created');
     },

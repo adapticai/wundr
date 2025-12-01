@@ -52,21 +52,21 @@ export function HuddleButton({
   if (isInHuddle) {
     return (
       <Button
-        variant="outline"
-        size="sm"
+        variant='outline'
+        size='sm'
         onClick={onLeaveHuddle}
         disabled={isLoading}
         className={cn(
           'gap-2 bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20 hover:bg-green-500/20',
-          className,
+          className
         )}
       >
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Mic className="h-4 w-4" />
-            <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+        <div className='flex items-center gap-2'>
+          <div className='relative'>
+            <Mic className='h-4 w-4' />
+            <div className='absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse' />
           </div>
-          <span className="font-medium">
+          <span className='font-medium'>
             In Huddle {participantCount > 0 && `(${participantCount})`}
           </span>
         </div>
@@ -80,34 +80,38 @@ export function HuddleButton({
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             disabled={isLoading}
             className={cn(
               'gap-2 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20',
-              className,
+              className
             )}
           >
-            <Mic className="h-4 w-4" />
-            <span className="font-medium">
+            <Mic className='h-4 w-4' />
+            <span className='font-medium'>
               Join Huddle {participantCount > 0 && `(${participantCount})`}
             </span>
-            <ChevronDown className="h-3 w-3" />
+            <ChevronDown className='h-3 w-3' />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => {
-            onJoinHuddle?.(false);
-            setIsOpen(false);
-          }}>
-            <Video className="mr-2 h-4 w-4" />
+        <DropdownMenuContent align='end'>
+          <DropdownMenuItem
+            onClick={() => {
+              onJoinHuddle?.(false);
+              setIsOpen(false);
+            }}
+          >
+            <Video className='mr-2 h-4 w-4' />
             Join with video
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => {
-            onJoinHuddle?.(true);
-            setIsOpen(false);
-          }}>
-            <Mic className="mr-2 h-4 w-4" />
+          <DropdownMenuItem
+            onClick={() => {
+              onJoinHuddle?.(true);
+              setIsOpen(false);
+            }}
+          >
+            <Mic className='mr-2 h-4 w-4' />
             Join audio only
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -120,29 +124,33 @@ export function HuddleButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           disabled={isLoading}
           className={cn('gap-2', className)}
         >
-          <Mic className="h-4 w-4" />
+          <Mic className='h-4 w-4' />
           <span>Huddle</span>
-          <ChevronDown className="h-3 w-3" />
+          <ChevronDown className='h-3 w-3' />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => {
-          onStartHuddle?.(false);
-          setIsOpen(false);
-        }}>
-          <Video className="mr-2 h-4 w-4" />
+      <DropdownMenuContent align='end'>
+        <DropdownMenuItem
+          onClick={() => {
+            onStartHuddle?.(false);
+            setIsOpen(false);
+          }}
+        >
+          <Video className='mr-2 h-4 w-4' />
           Start with video
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => {
-          onStartHuddle?.(true);
-          setIsOpen(false);
-        }}>
-          <Mic className="mr-2 h-4 w-4" />
+        <DropdownMenuItem
+          onClick={() => {
+            onStartHuddle?.(true);
+            setIsOpen(false);
+          }}
+        >
+          <Mic className='mr-2 h-4 w-4' />
           Start audio only
         </DropdownMenuItem>
       </DropdownMenuContent>

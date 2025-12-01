@@ -19,7 +19,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
         <FilePreviewProvider>
           <PresenceWrapper>{children}</PresenceWrapper>
         </FilePreviewProvider>

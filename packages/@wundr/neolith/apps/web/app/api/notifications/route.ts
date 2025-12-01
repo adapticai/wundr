@@ -20,12 +20,14 @@ import type { NextRequest } from 'next/server';
 /**
  * Zod schemas for validation
  */
-const markAsReadSchema = z.object({
-  ids: z.array(z.string()).optional(),
-  markAll: z.boolean().optional(),
-}).refine(data => data.ids || data.markAll, {
-  message: 'Either provide notification IDs or set markAll to true',
-});
+const markAsReadSchema = z
+  .object({
+    ids: z.array(z.string()).optional(),
+    markAll: z.boolean().optional(),
+  })
+  .refine(data => data.ids || data.markAll, {
+    message: 'Either provide notification IDs or set markAll to true',
+  });
 
 const deleteNotificationsSchema = z.object({
   ids: z.array(z.string()).min(1, 'Provide at least one notification ID'),
@@ -77,21 +79,26 @@ interface PaginationMeta {
  */
 export async function GET(
   request: NextRequest
-): Promise<NextResponse<{ data: NotificationResponse[]; pagination: PaginationMeta } | { error: string }>> {
+): Promise<
+  NextResponse<
+    | { data: NotificationResponse[]; pagination: PaginationMeta }
+    | { error: string }
+  >
+> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('limit') || '20', 10))
+    );
     const readFilter = searchParams.get('read');
     const typeFilter = searchParams.get('type');
 
@@ -158,7 +165,7 @@ export async function GET(
     console.error('[GET /api/notifications] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -177,16 +184,15 @@ export async function GET(
  * @returns Updated notification count
  */
 export async function PATCH(
-  request: NextRequest,
-): Promise<NextResponse<{ data: { updatedCount: number } } | { error: string }>> {
+  request: NextRequest
+): Promise<
+  NextResponse<{ data: { updatedCount: number } } | { error: string }>
+> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Parse request body
@@ -194,10 +200,7 @@ export async function PATCH(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Validate with Zod
@@ -238,14 +241,16 @@ export async function PATCH(
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
-        { status: 400 },
+        {
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+        },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -263,16 +268,15 @@ export async function PATCH(
  * @returns Deleted notification count
  */
 export async function DELETE(
-  request: NextRequest,
-): Promise<NextResponse<{ data: { deletedCount: number } } | { error: string }>> {
+  request: NextRequest
+): Promise<
+  NextResponse<{ data: { deletedCount: number } } | { error: string }>
+> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Parse request body
@@ -280,10 +284,7 @@ export async function DELETE(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Validate with Zod
@@ -309,14 +310,16 @@ export async function DELETE(
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
-        { status: 400 },
+        {
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+        },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

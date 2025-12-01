@@ -92,9 +92,17 @@ interface UseRealtimeSidebarReturn {
   /** Manually reconnect the SSE stream */
   reconnect: () => void;
   /** Optimistically update channel star status */
-  updateChannelStarStatus: (channelId: string, isStarred: boolean, channel?: Channel) => void;
+  updateChannelStarStatus: (
+    channelId: string,
+    isStarred: boolean,
+    channel?: Channel
+  ) => void;
   /** Optimistically update DM star status */
-  updateDMStarStatus: (dmId: string, isStarred: boolean, dm?: DirectMessageChannel) => void;
+  updateDMStarStatus: (
+    dmId: string,
+    isStarred: boolean,
+    dm?: DirectMessageChannel
+  ) => void;
 }
 
 /**
@@ -121,8 +129,15 @@ function transformChannelUpdate(update: ChannelUpdate): Channel {
 /**
  * Map status string to valid User status type
  */
-function mapStatus(status: string): 'online' | 'offline' | 'away' | 'busy' | undefined {
-  if (status === 'online' || status === 'offline' || status === 'away' || status === 'busy') {
+function mapStatus(
+  status: string
+): 'online' | 'offline' | 'away' | 'busy' | undefined {
+  if (
+    status === 'online' ||
+    status === 'offline' ||
+    status === 'away' ||
+    status === 'busy'
+  ) {
     return status;
   }
   return undefined;
@@ -134,7 +149,7 @@ function mapStatus(status: string): 'online' | 'offline' | 'away' | 'busy' | und
 function transformDMUpdate(update: DMUpdate): DirectMessageChannel {
   return {
     id: update.id,
-    participants: update.participants.map((p) => ({
+    participants: update.participants.map(p => ({
       id: p.id,
       user: {
         id: p.user.id,
@@ -189,7 +204,9 @@ export function useRealtimeSidebar({
   enabled = true,
 }: UseRealtimeSidebarOptions): UseRealtimeSidebarReturn {
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>([]);
+  const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>(
+    []
+  );
   const [starredChannels, setStarredChannels] = useState<Channel[]>([]);
   const [starredDMs, setStarredDMs] = useState<DirectMessageChannel[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -250,7 +267,10 @@ export function useRealtimeSidebar({
       eventSource.close();
 
       // Exponential backoff for reconnection (max 30 seconds)
-      const delay = Math.min(1000 * Math.pow(2, reconnectAttemptRef.current), 30000);
+      const delay = Math.min(
+        1000 * Math.pow(2, reconnectAttemptRef.current),
+        30000
+      );
       reconnectAttemptRef.current++;
 
       reconnectTimeoutRef.current = setTimeout(() => {
@@ -273,13 +293,16 @@ export function useRealtimeSidebar({
       try {
         const data = JSON.parse(event.data);
         const newChannels = data.channels.map(transformChannelUpdate);
-        setChannels((prev) => {
+        setChannels(prev => {
           // Merge with existing channels, preferring SSE data for unread counts
           const merged = [...prev];
           for (const newChannel of newChannels) {
-            const existingIndex = merged.findIndex((c) => c.id === newChannel.id);
+            const existingIndex = merged.findIndex(c => c.id === newChannel.id);
             if (existingIndex >= 0) {
-              merged[existingIndex] = { ...merged[existingIndex], unreadCount: newChannel.unreadCount };
+              merged[existingIndex] = {
+                ...merged[existingIndex],
+                unreadCount: newChannel.unreadCount,
+              };
             }
           }
           return merged;
@@ -295,16 +318,17 @@ export function useRealtimeSidebar({
       try {
         const data = JSON.parse(event.data);
         const newDMs = data.directMessages.map(transformDMUpdate);
-        setDirectMessages((prev) => {
+        setDirectMessages(prev => {
           // Merge with existing DMs, preferring SSE data
           const merged = [...prev];
           for (const newDM of newDMs) {
-            const existingIndex = merged.findIndex((d) => d.id === newDM.id);
+            const existingIndex = merged.findIndex(d => d.id === newDM.id);
             if (existingIndex >= 0) {
               merged[existingIndex] = {
                 ...merged[existingIndex],
                 unreadCount: newDM.unreadCount,
-                lastMessage: newDM.lastMessage || merged[existingIndex].lastMessage,
+                lastMessage:
+                  newDM.lastMessage || merged[existingIndex].lastMessage,
               };
             }
           }
@@ -321,8 +345,8 @@ export function useRealtimeSidebar({
       try {
         const data = JSON.parse(event.data);
         const updatedChannel = transformChannelUpdate(data.channel);
-        setChannels((prev) => {
-          const index = prev.findIndex((c) => c.id === updatedChannel.id);
+        setChannels(prev => {
+          const index = prev.findIndex(c => c.id === updatedChannel.id);
           if (index >= 0) {
             const updated = [...prev];
             updated[index] = { ...prev[index], ...updatedChannel };
@@ -341,12 +365,14 @@ export function useRealtimeSidebar({
       try {
         const data = JSON.parse(event.data);
         const newChannel = transformChannelUpdate(data.channel);
-        setChannels((prev) => {
+        setChannels(prev => {
           // Check if channel already exists
-          if (prev.some((c) => c.id === newChannel.id)) {
+          if (prev.some(c => c.id === newChannel.id)) {
             return prev;
           }
-          const updated = [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name));
+          const updated = [...prev, newChannel].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
           onChannelsUpdateRef.current?.(updated);
           return updated;
         });
@@ -359,8 +385,8 @@ export function useRealtimeSidebar({
     eventSource.addEventListener('channel:deleted', (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        setChannels((prev) => {
-          const updated = prev.filter((c) => c.id !== data.channelId);
+        setChannels(prev => {
+          const updated = prev.filter(c => c.id !== data.channelId);
           onChannelsUpdateRef.current?.(updated);
           return updated;
         });
@@ -374,15 +400,17 @@ export function useRealtimeSidebar({
       try {
         const data = JSON.parse(event.data);
         const updatedDM = transformDMUpdate(data.dm);
-        setDirectMessages((prev) => {
-          const index = prev.findIndex((d) => d.id === updatedDM.id);
+        setDirectMessages(prev => {
+          const index = prev.findIndex(d => d.id === updatedDM.id);
           if (index >= 0) {
             const updated = [...prev];
             updated[index] = { ...prev[index], ...updatedDM };
             // Re-sort by most recent activity
             updated.sort((a, b) => {
-              const aDate = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
-              const bDate = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
+              const aDate =
+                a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
+              const bDate =
+                b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
               if (!aDate && !bDate) return 0;
               if (!aDate) return 1;
               if (!bDate) return -1;
@@ -403,9 +431,9 @@ export function useRealtimeSidebar({
       try {
         const data = JSON.parse(event.data);
         const newDM = transformDMUpdate(data.dm);
-        setDirectMessages((prev) => {
+        setDirectMessages(prev => {
           // Check if DM already exists
-          if (prev.some((d) => d.id === newDM.id)) {
+          if (prev.some(d => d.id === newDM.id)) {
             return prev;
           }
           // Add to beginning (most recent)
@@ -441,37 +469,39 @@ export function useRealtimeSidebar({
           const updatedChannel = transformChannelUpdate(data.channel);
           if (isStarred) {
             // Add to starred channels
-            setStarredChannels((prev) => {
-              if (prev.some((c) => c.id === id)) {
-                return prev.map((c) => (c.id === id ? updatedChannel : c));
+            setStarredChannels(prev => {
+              if (prev.some(c => c.id === id)) {
+                return prev.map(c => (c.id === id ? updatedChannel : c));
               }
-              return [...prev, updatedChannel].sort((a, b) => a.name.localeCompare(b.name));
+              return [...prev, updatedChannel].sort((a, b) =>
+                a.name.localeCompare(b.name)
+              );
             });
           } else {
             // Remove from starred channels
-            setStarredChannels((prev) => prev.filter((c) => c.id !== id));
+            setStarredChannels(prev => prev.filter(c => c.id !== id));
           }
           // Also update the channel in the channels list
-          setChannels((prev) =>
-            prev.map((c) => (c.id === id ? { ...c, isStarred } : c))
+          setChannels(prev =>
+            prev.map(c => (c.id === id ? { ...c, isStarred } : c))
           );
         } else if (type === 'dm' && data.dm) {
           const updatedDM = transformDMUpdate(data.dm);
           if (isStarred) {
             // Add to starred DMs
-            setStarredDMs((prev) => {
-              if (prev.some((d) => d.id === id)) {
-                return prev.map((d) => (d.id === id ? updatedDM : d));
+            setStarredDMs(prev => {
+              if (prev.some(d => d.id === id)) {
+                return prev.map(d => (d.id === id ? updatedDM : d));
               }
               return [updatedDM, ...prev];
             });
           } else {
             // Remove from starred DMs
-            setStarredDMs((prev) => prev.filter((d) => d.id !== id));
+            setStarredDMs(prev => prev.filter(d => d.id !== id));
           }
           // Also update the DM in the directMessages list
-          setDirectMessages((prev) =>
-            prev.map((d) => (d.id === id ? { ...d, isStarred } : d))
+          setDirectMessages(prev =>
+            prev.map(d => (d.id === id ? { ...d, isStarred } : d))
           );
         }
       } catch (e) {
@@ -504,66 +534,97 @@ export function useRealtimeSidebar({
   }, [connect]);
 
   // Optimistic update for channel star status
-  const updateChannelStarStatus = useCallback((channelId: string, isStarred: boolean, channel?: Channel) => {
-    console.log('[useRealtimeSidebar] updateChannelStarStatus called:', { channelId, isStarred, hasChannel: !!channel });
-    if (isStarred) {
-      // Add to starred channels
-      setStarredChannels((prev) => {
-        console.log('[useRealtimeSidebar] Adding to starred, prev count:', prev.length);
-        if (prev.some((c) => c.id === channelId)) {
-          console.log('[useRealtimeSidebar] Channel already starred, skipping');
+  const updateChannelStarStatus = useCallback(
+    (channelId: string, isStarred: boolean, channel?: Channel) => {
+      console.log('[useRealtimeSidebar] updateChannelStarStatus called:', {
+        channelId,
+        isStarred,
+        hasChannel: !!channel,
+      });
+      if (isStarred) {
+        // Add to starred channels
+        setStarredChannels(prev => {
+          console.log(
+            '[useRealtimeSidebar] Adding to starred, prev count:',
+            prev.length
+          );
+          if (prev.some(c => c.id === channelId)) {
+            console.log(
+              '[useRealtimeSidebar] Channel already starred, skipping'
+            );
+            return prev;
+          }
+          // Find the channel from channels list or use provided channel
+          const channelToAdd =
+            channel || channels.find(c => c.id === channelId);
+          console.log(
+            '[useRealtimeSidebar] Channel to add:',
+            channelToAdd?.name
+          );
+          if (channelToAdd) {
+            const newList = [
+              ...prev,
+              { ...channelToAdd, isStarred: true },
+            ].sort((a, b) => a.name.localeCompare(b.name));
+            console.log(
+              '[useRealtimeSidebar] New starred count:',
+              newList.length
+            );
+            return newList;
+          }
+          console.log('[useRealtimeSidebar] No channel found to add');
           return prev;
-        }
-        // Find the channel from channels list or use provided channel
-        const channelToAdd = channel || channels.find((c) => c.id === channelId);
-        console.log('[useRealtimeSidebar] Channel to add:', channelToAdd?.name);
-        if (channelToAdd) {
-          const newList = [...prev, { ...channelToAdd, isStarred: true }].sort((a, b) => a.name.localeCompare(b.name));
-          console.log('[useRealtimeSidebar] New starred count:', newList.length);
+        });
+      } else {
+        // Remove from starred channels
+        setStarredChannels(prev => {
+          console.log(
+            '[useRealtimeSidebar] Removing from starred, prev count:',
+            prev.length
+          );
+          const newList = prev.filter(c => c.id !== channelId);
+          console.log(
+            '[useRealtimeSidebar] New starred count after removal:',
+            newList.length
+          );
           return newList;
-        }
-        console.log('[useRealtimeSidebar] No channel found to add');
-        return prev;
-      });
-    } else {
-      // Remove from starred channels
-      setStarredChannels((prev) => {
-        console.log('[useRealtimeSidebar] Removing from starred, prev count:', prev.length);
-        const newList = prev.filter((c) => c.id !== channelId);
-        console.log('[useRealtimeSidebar] New starred count after removal:', newList.length);
-        return newList;
-      });
-    }
-    // Also update the channel in the channels list
-    setChannels((prev) =>
-      prev.map((c) => (c.id === channelId ? { ...c, isStarred } : c))
-    );
-  }, [channels]);
+        });
+      }
+      // Also update the channel in the channels list
+      setChannels(prev =>
+        prev.map(c => (c.id === channelId ? { ...c, isStarred } : c))
+      );
+    },
+    [channels]
+  );
 
   // Optimistic update for DM star status
-  const updateDMStarStatus = useCallback((dmId: string, isStarred: boolean, dm?: DirectMessageChannel) => {
-    if (isStarred) {
-      // Add to starred DMs
-      setStarredDMs((prev) => {
-        if (prev.some((d) => d.id === dmId)) {
+  const updateDMStarStatus = useCallback(
+    (dmId: string, isStarred: boolean, dm?: DirectMessageChannel) => {
+      if (isStarred) {
+        // Add to starred DMs
+        setStarredDMs(prev => {
+          if (prev.some(d => d.id === dmId)) {
+            return prev;
+          }
+          // Find the DM from directMessages list or use provided dm
+          const dmToAdd = dm || directMessages.find(d => d.id === dmId);
+          if (dmToAdd) {
+            return [{ ...dmToAdd, isStarred: true }, ...prev];
+          }
           return prev;
-        }
-        // Find the DM from directMessages list or use provided dm
-        const dmToAdd = dm || directMessages.find((d) => d.id === dmId);
-        if (dmToAdd) {
-          return [{ ...dmToAdd, isStarred: true }, ...prev];
-        }
-        return prev;
-      });
-    } else {
-      // Remove from starred DMs
-      setStarredDMs((prev) => prev.filter((d) => d.id !== dmId));
-    }
-    // Also update the DM in the directMessages list
-    setDirectMessages((prev) =>
-      prev.map((d) => (d.id === dmId ? { ...d, isStarred } : d))
-    );
-  }, [directMessages]);
+        });
+      } else {
+        // Remove from starred DMs
+        setStarredDMs(prev => prev.filter(d => d.id !== dmId));
+      }
+      // Also update the DM in the directMessages list
+      setDirectMessages(prev =>
+        prev.map(d => (d.id === dmId ? { ...d, isStarred } : d))
+      );
+    },
+    [directMessages]
+  );
 
   // Connect on mount
   useEffect(() => {

@@ -31,7 +31,10 @@ interface RouteContext {
  * Helper to check workspace admin access
  * Supports both workspace ID and slug for lookup
  */
-async function checkWorkspaceAdminAccess(workspaceIdOrSlug: string, userId: string) {
+async function checkWorkspaceAdminAccess(
+  workspaceIdOrSlug: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findFirst({
     where: {
       OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }],
@@ -87,10 +90,7 @@ async function checkWorkspaceAdminAccess(workspaceIdOrSlug: string, userId: stri
  *
  * Gets the icon URL for a workspace
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: RouteContext,
-) {
+export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
     const session = await auth();
 
@@ -109,7 +109,10 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workspace not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
@@ -120,7 +123,7 @@ export async function GET(
     console.error('Workspace icon GET error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch workspace icon' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -141,10 +144,7 @@ export async function GET(
  *
  * Returns the icon URL
  */
-export async function POST(
-  request: NextRequest,
-  { params }: RouteContext,
-) {
+export async function POST(request: NextRequest, { params }: RouteContext) {
   try {
     const session = await auth();
 
@@ -155,11 +155,14 @@ export async function POST(
     const { workspaceSlug } = await params;
 
     // Check admin access (supports both ID and slug)
-    const access = await checkWorkspaceAdminAccess(workspaceSlug, session.user.id);
+    const access = await checkWorkspaceAdminAccess(
+      workspaceSlug,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         { error: 'Forbidden - workspace admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -180,7 +183,7 @@ export async function POST(
       if (!file) {
         return NextResponse.json(
           { error: 'No file provided in form data' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -188,16 +191,21 @@ export async function POST(
       if (file.size > 5 * 1024 * 1024) {
         return NextResponse.json(
           { error: 'File size must be less than 5MB' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+      ];
       if (!allowedTypes.includes(file.type)) {
         return NextResponse.json(
           { error: 'Invalid file type. Use JPEG, PNG, WebP, or SVG' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -213,7 +221,7 @@ export async function POST(
       if (!body.source) {
         return NextResponse.json(
           { error: 'Missing "source" field in request body' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -223,7 +231,7 @@ export async function POST(
         if (!matches) {
           return NextResponse.json(
             { error: 'Invalid base64 data URL format' },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -231,11 +239,16 @@ export async function POST(
         fileBuffer = Buffer.from(matches[2], 'base64');
 
         // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/svg+xml',
+        ];
         if (!allowedTypes.includes(mimeType)) {
           return NextResponse.json(
             { error: 'Invalid file type. Use JPEG, PNG, WebP, or SVG' },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -243,7 +256,7 @@ export async function POST(
         if (fileBuffer.length > 5 * 1024 * 1024) {
           return NextResponse.json(
             { error: 'File size must be less than 5MB' },
-            { status: 400 },
+            { status: 400 }
           );
         }
       } else if (body.source.startsWith('http')) {
@@ -262,20 +275,20 @@ export async function POST(
           if (fileBuffer.length > 5 * 1024 * 1024) {
             return NextResponse.json(
               { error: 'Downloaded file size must be less than 5MB' },
-              { status: 400 },
+              { status: 400 }
             );
           }
         } catch (downloadError) {
           console.error('Failed to download icon from URL:', downloadError);
           return NextResponse.json(
             { error: 'Failed to download image from provided URL' },
-            { status: 502 },
+            { status: 502 }
           );
         }
       } else {
         return NextResponse.json(
           { error: 'Source must be a base64 data URL or HTTP URL' },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -283,9 +296,10 @@ export async function POST(
     } else {
       return NextResponse.json(
         {
-          error: 'Invalid content type. Use multipart/form-data or application/json',
+          error:
+            'Invalid content type. Use multipart/form-data or application/json',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -327,7 +341,7 @@ export async function POST(
     console.error('Workspace icon upload error:', error);
     return NextResponse.json(
       { error: 'Failed to upload workspace icon' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -337,10 +351,7 @@ export async function POST(
  *
  * Deletes a workspace's icon
  */
-export async function DELETE(
-  _request: NextRequest,
-  { params }: RouteContext,
-) {
+export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   try {
     const session = await auth();
 
@@ -351,11 +362,14 @@ export async function DELETE(
     const { workspaceSlug } = await params;
 
     // Check admin access (supports both ID and slug)
-    const access = await checkWorkspaceAdminAccess(workspaceSlug, session.user.id);
+    const access = await checkWorkspaceAdminAccess(
+      workspaceSlug,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         { error: 'Forbidden - workspace admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -399,7 +413,7 @@ export async function DELETE(
     console.error('Workspace icon delete error:', error);
     return NextResponse.json(
       { error: 'Failed to delete workspace icon' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

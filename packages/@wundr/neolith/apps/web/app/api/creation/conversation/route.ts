@@ -21,14 +21,23 @@
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createErrorResponse, ORG_ERROR_CODES } from '@/lib/validations/organization';
+import {
+  createErrorResponse,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
 
 import type { NextRequest } from 'next/server';
 
 /**
  * Supported entity types for creation
  */
-type EntityType = 'workspace' | 'orchestrator' | 'session-manager' | 'subagent' | 'workflow' | 'channel';
+type EntityType =
+  | 'workspace'
+  | 'orchestrator'
+  | 'session-manager'
+  | 'subagent'
+  | 'workflow'
+  | 'channel';
 
 /**
  * Chat message structure
@@ -62,7 +71,10 @@ interface ConversationRequest {
 /**
  * Build system prompt for entity type
  */
-function buildSystemPrompt(entityType: EntityType, context?: WorkspaceContext): string {
+function buildSystemPrompt(
+  entityType: EntityType,
+  context?: WorkspaceContext
+): string {
   const basePrompt = `You are an AI assistant helping users create organizational entities in a collaborative AI platform. Your role is to guide users through providing necessary details for creating a ${entityType}.
 
 Be conversational, friendly, and helpful. Ask clarifying questions to gather required information. When you have sufficient details, indicate you're ready to generate a specification.
@@ -228,7 +240,7 @@ async function callClaudeStreaming(
   systemPrompt: string,
   messages: ChatMessage[],
   controller: ReadableStreamDefaultController<Uint8Array>,
-  encoder: TextEncoder,
+  encoder: TextEncoder
 ): Promise<void> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -247,7 +259,7 @@ async function callClaudeStreaming(
       max_tokens: parseInt(process.env.DEFAULT_MAX_TOKENS || '4096', 10),
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
       system: systemPrompt,
-      messages: messages.map((m) => ({
+      messages: messages.map(m => ({
         role: m.role,
         content: m.content,
       })),
@@ -271,21 +283,21 @@ async function callClaudeStreaming(
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-break;
-}
+        break;
+      }
 
       const chunk = decoder.decode(value, { stream: true });
       const lines = chunk.split('\n');
 
       for (const line of lines) {
         if (!line.trim() || !line.startsWith('data: ')) {
-continue;
-}
+          continue;
+        }
 
         const data = line.slice(6); // Remove 'data: ' prefix
         if (data === '[DONE]') {
-continue;
-}
+          continue;
+        }
 
         try {
           const parsed = JSON.parse(data);
@@ -294,13 +306,21 @@ continue;
           if (parsed.type === 'content_block_delta') {
             if (parsed.delta?.type === 'text_delta') {
               // Send text chunk to client
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: parsed.delta.text })}\n\n`));
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ text: parsed.delta.text })}\n\n`
+                )
+              );
             }
           } else if (parsed.type === 'message_stop') {
             // Message complete
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`)
+            );
           } else if (parsed.type === 'error') {
-            throw new Error(parsed.error?.message || 'Unknown error from Claude');
+            throw new Error(
+              parsed.error?.message || 'Unknown error from Claude'
+            );
           }
         } catch (parseError) {
           // Skip invalid JSON lines
@@ -320,7 +340,7 @@ async function callOpenAIStreaming(
   systemPrompt: string,
   messages: ChatMessage[],
   controller: ReadableStreamDefaultController<Uint8Array>,
-  encoder: TextEncoder,
+  encoder: TextEncoder
 ): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -339,7 +359,7 @@ async function callOpenAIStreaming(
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map((m) => ({
+        ...messages.map(m => ({
           role: m.role,
           content: m.content,
         })),
@@ -364,20 +384,22 @@ async function callOpenAIStreaming(
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-break;
-}
+        break;
+      }
 
       const chunk = decoder.decode(value, { stream: true });
       const lines = chunk.split('\n');
 
       for (const line of lines) {
         if (!line.trim() || !line.startsWith('data: ')) {
-continue;
-}
+          continue;
+        }
 
         const data = line.slice(6);
         if (data === '[DONE]') {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`)
+          );
           continue;
         }
 
@@ -386,7 +408,9 @@ continue;
           const content = parsed.choices?.[0]?.delta?.content;
 
           if (content) {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: content })}\n\n`));
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ text: content })}\n\n`)
+            );
           }
         } catch (parseError) {
           // Skip invalid JSON lines
@@ -430,14 +454,19 @@ continue;
  * data: {"done":true}
  * ```
  */
-export async function POST(request: NextRequest): Promise<NextResponse | Response> {
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse | Response> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -447,38 +476,60 @@ export async function POST(request: NextRequest): Promise<NextResponse | Respons
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate request structure
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
-        createErrorResponse('Invalid request body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid request body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     const conversationReq = body as ConversationRequest;
 
     // Validate entity type
-    const validEntityTypes: EntityType[] = ['workspace', 'orchestrator', 'session-manager', 'subagent', 'workflow', 'channel'];
-    if (!conversationReq.entityType || !validEntityTypes.includes(conversationReq.entityType)) {
+    const validEntityTypes: EntityType[] = [
+      'workspace',
+      'orchestrator',
+      'session-manager',
+      'subagent',
+      'workflow',
+      'channel',
+    ];
+    if (
+      !conversationReq.entityType ||
+      !validEntityTypes.includes(conversationReq.entityType)
+    ) {
       return NextResponse.json(
         createErrorResponse(
           `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate messages
-    if (!Array.isArray(conversationReq.messages) || conversationReq.messages.length === 0) {
+    if (
+      !Array.isArray(conversationReq.messages) ||
+      conversationReq.messages.length === 0
+    ) {
       return NextResponse.json(
-        createErrorResponse('messages array is required and must not be empty', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'messages array is required and must not be empty',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -486,20 +537,29 @@ export async function POST(request: NextRequest): Promise<NextResponse | Respons
     for (const msg of conversationReq.messages) {
       if (!msg.role || !msg.content || typeof msg.content !== 'string') {
         return NextResponse.json(
-          createErrorResponse('Each message must have role and content', ORG_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createErrorResponse(
+            'Each message must have role and content',
+            ORG_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
       }
       if (msg.role !== 'user' && msg.role !== 'assistant') {
         return NextResponse.json(
-          createErrorResponse('Message role must be "user" or "assistant"', ORG_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createErrorResponse(
+            'Message role must be "user" or "assistant"',
+            ORG_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
       }
     }
 
     // Build system prompt
-    const systemPrompt = buildSystemPrompt(conversationReq.entityType, conversationReq.workspaceContext);
+    const systemPrompt = buildSystemPrompt(
+      conversationReq.entityType,
+      conversationReq.workspaceContext
+    );
 
     // Determine which LLM provider to use
     const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
@@ -518,41 +578,68 @@ export async function POST(request: NextRequest): Promise<NextResponse | Respons
                 entityType: conversationReq.entityType,
                 provider,
                 timestamp: new Date().toISOString(),
-              })}\n\n`,
-            ),
+              })}\n\n`
+            )
           );
 
           // Call appropriate LLM API
           if (provider === 'anthropic' && process.env.ANTHROPIC_API_KEY) {
-            await callClaudeStreaming(systemPrompt, conversationReq.messages, controller, encoder);
+            await callClaudeStreaming(
+              systemPrompt,
+              conversationReq.messages,
+              controller,
+              encoder
+            );
           } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
-            await callOpenAIStreaming(systemPrompt, conversationReq.messages, controller, encoder);
+            await callOpenAIStreaming(
+              systemPrompt,
+              conversationReq.messages,
+              controller,
+              encoder
+            );
           } else {
             // Fallback: try both
             if (process.env.ANTHROPIC_API_KEY) {
-              await callClaudeStreaming(systemPrompt, conversationReq.messages, controller, encoder);
+              await callClaudeStreaming(
+                systemPrompt,
+                conversationReq.messages,
+                controller,
+                encoder
+              );
             } else if (process.env.OPENAI_API_KEY) {
-              await callOpenAIStreaming(systemPrompt, conversationReq.messages, controller, encoder);
+              await callOpenAIStreaming(
+                systemPrompt,
+                conversationReq.messages,
+                controller,
+                encoder
+              );
             } else {
               controller.enqueue(
                 encoder.encode(
                   `data: ${JSON.stringify({
-                    error: 'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
-                  })}\n\n`,
-                ),
+                    error:
+                      'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
+                  })}\n\n`
+                )
               );
             }
           }
 
           controller.close();
         } catch (error) {
-          console.error('[POST /api/creation/conversation] Streaming error:', error);
+          console.error(
+            '[POST /api/creation/conversation] Streaming error:',
+            error
+          );
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
-                error: error instanceof Error ? error.message : 'Unknown streaming error',
-              })}\n\n`,
-            ),
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : 'Unknown streaming error',
+              })}\n\n`
+            )
           );
           controller.close();
         }
@@ -571,8 +658,11 @@ export async function POST(request: NextRequest): Promise<NextResponse | Respons
   } catch (error) {
     console.error('[POST /api/creation/conversation] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

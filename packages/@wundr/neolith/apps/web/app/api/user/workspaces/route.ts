@@ -116,7 +116,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -151,25 +151,27 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     });
 
     // Transform the data to include membership info at the workspace level
-    const workspaces: WorkspaceWithMembership[] = memberships.map((membership) => ({
-      id: membership.workspace.id,
-      name: membership.workspace.name,
-      slug: membership.workspace.slug,
-      description: membership.workspace.description,
-      avatarUrl: membership.workspace.avatarUrl,
-      visibility: membership.workspace.visibility,
-      settings: membership.workspace.settings,
-      organizationId: membership.workspace.organizationId,
-      createdAt: membership.workspace.createdAt,
-      updatedAt: membership.workspace.updatedAt,
-      organization: membership.workspace.organization,
-      membership: {
-        id: membership.id,
-        role: membership.role,
-        joinedAt: membership.joinedAt,
-      },
-      _count: membership.workspace._count,
-    }));
+    const workspaces: WorkspaceWithMembership[] = memberships.map(
+      membership => ({
+        id: membership.workspace.id,
+        name: membership.workspace.name,
+        slug: membership.workspace.slug,
+        description: membership.workspace.description,
+        avatarUrl: membership.workspace.avatarUrl,
+        visibility: membership.workspace.visibility,
+        settings: membership.workspace.settings,
+        organizationId: membership.workspace.organizationId,
+        createdAt: membership.workspace.createdAt,
+        updatedAt: membership.workspace.updatedAt,
+        organization: membership.workspace.organization,
+        membership: {
+          id: membership.id,
+          role: membership.role,
+          joinedAt: membership.joinedAt,
+        },
+        _count: membership.workspace._count,
+      })
+    );
 
     // Check for pending workspace invites via notifications
     // In the future, this could be replaced with a dedicated workspace invite model
@@ -187,7 +189,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
     // Transform notifications into pending invites
     const invites: PendingInvite[] = await Promise.all(
-      pendingInviteNotifications.map(async (notification) => {
+      pendingInviteNotifications.map(async notification => {
         const metadata = notification.metadata as {
           workspaceId?: string;
           workspaceName?: string;
@@ -203,7 +205,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           invitedBy: metadata.invitedBy || null,
           invitedAt: notification.createdAt,
         };
-      }),
+      })
     );
 
     return NextResponse.json({
@@ -219,7 +221,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

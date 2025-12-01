@@ -79,7 +79,9 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
       s3Key,
       s3Bucket,
       // Generate thumbnail URL for images
-      thumbnailUrl: file.type.startsWith('image/') ? `/api/files/${s3Key}/thumbnail` : null,
+      thumbnailUrl: file.type.startsWith('image/')
+        ? `/api/files/${s3Key}/thumbnail`
+        : null,
       status: 'READY',
       metadata: {
         category: file.type.split('/')[0] || 'file',
@@ -119,8 +121,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MESSAGE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -130,8 +135,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       formData = await request.formData();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid form data', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid form data',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -146,35 +154,50 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Validate required fields
     // Note: content can be empty if there are file attachments or attachment IDs
     const hasAttachments = attachmentFiles.length > 0;
-    const attachmentIdsArray = attachmentIdsStr ? (function() {
-      try {
-        const parsed = JSON.parse(attachmentIdsStr);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })() : [];
+    const attachmentIdsArray = attachmentIdsStr
+      ? (function () {
+          try {
+            const parsed = JSON.parse(attachmentIdsStr);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
     const hasAttachmentIds = attachmentIdsArray.length > 0;
 
-    if ((!content || content.trim().length === 0) && !hasAttachments && !hasAttachmentIds) {
+    if (
+      (!content || content.trim().length === 0) &&
+      !hasAttachments &&
+      !hasAttachmentIds
+    ) {
       return NextResponse.json(
-        createErrorResponse('Message must have content or attachments', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Message must have content or attachments',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (!channelId) {
       return NextResponse.json(
-        createErrorResponse('Channel ID is required', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Channel ID is required',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate content length (only if content is provided)
     if (content && content.length > 4000) {
       return NextResponse.json(
-        createErrorResponse('Message content exceeds maximum length of 4000 characters', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Message content exceeds maximum length of 4000 characters',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -188,8 +211,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
       } catch {
         return NextResponse.json(
-          createErrorResponse('Invalid mentions format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createErrorResponse(
+            'Invalid mentions format',
+            MESSAGE_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
       }
     }
@@ -204,8 +230,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
       } catch {
         return NextResponse.json(
-          createErrorResponse('Invalid attachment IDs format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createErrorResponse(
+            'Invalid attachment IDs format',
+            MESSAGE_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
       }
     }
@@ -216,9 +245,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -233,9 +262,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Parent message not found',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -243,9 +272,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Parent message belongs to a different channel',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -254,9 +283,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Cannot reply to a thread reply',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -269,7 +298,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     for (const file of attachmentFiles) {
       if (file && file.size > 0) {
         try {
-          const fileRecord = await uploadFile(file, session.user.id, membership.channel.workspaceId);
+          const fileRecord = await uploadFile(
+            file,
+            session.user.id,
+            membership.channel.workspaceId
+          );
           uploadedFiles.push(fileRecord);
         } catch (error) {
           console.error('[POST /api/messages] File upload error:', error);
@@ -281,14 +314,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Log if some files failed to upload
     if (uploadErrors.length > 0) {
-      console.warn('[POST /api/messages] Failed to upload files:', uploadErrors);
+      console.warn(
+        '[POST /api/messages] Failed to upload files:',
+        uploadErrors
+      );
     }
 
     // Combine uploaded files with pre-uploaded attachment IDs
-    const allFileIds = [
-      ...uploadedFiles.map((f) => f.id),
-      ...attachmentIds,
-    ];
+    const allFileIds = [...uploadedFiles.map(f => f.id), ...attachmentIds];
 
     // Create the message with attachments
     const message = await prisma.message.create({
@@ -301,12 +334,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         metadata: {
           mentions,
         } as Prisma.InputJsonValue,
-        messageAttachments: allFileIds.length > 0 ? {
-          create: allFileIds.map((fileId) => ({
-            id: crypto.randomUUID(),
-            fileId,
-          })),
-        } : undefined,
+        messageAttachments:
+          allFileIds.length > 0
+            ? {
+                create: allFileIds.map(fileId => ({
+                  id: crypto.randomUUID(),
+                  fileId,
+                })),
+              }
+            : undefined,
       },
       include: {
         author: {
@@ -358,8 +394,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create notifications for mentioned users
     if (mentions.length > 0) {
       const mentionNotifications = mentions
-        .filter((userId) => userId !== session.user.id) // Don't notify self
-        .map((userId) => ({
+        .filter(userId => userId !== session.user.id) // Don't notify self
+        .map(userId => ({
           userId,
           type: 'MENTION' as const,
           title: 'You were mentioned',
@@ -382,27 +418,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Transform message to convert BigInt file sizes to numbers for JSON serialization
     const transformedMessage = {
       ...message,
-      messageAttachments: message.messageAttachments.map((attachment) => ({
+      messageAttachments: message.messageAttachments.map(attachment => ({
         ...attachment,
-        file: attachment.file ? {
-          ...attachment.file,
-          size: Number(attachment.file.size),
-        } : null,
+        file: attachment.file
+          ? {
+              ...attachment.file,
+              size: Number(attachment.file.size),
+            }
+          : null,
       })),
     };
 
-    return NextResponse.json(
-      transformedMessage,
-      { status: 201 },
-    );
+    return NextResponse.json(transformedMessage, { status: 201 });
   } catch (error) {
     console.error('[POST /api/messages] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

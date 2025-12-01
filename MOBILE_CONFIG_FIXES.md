@@ -1,7 +1,9 @@
 # Mobile Configuration Fixes - Capacitor/Neolith App
 
 ## Summary
-Fixed critical configuration issues in the mobile app (Capacitor) to align with Next.js build output and ensure proper app identification across iOS and Android platforms.
+
+Fixed critical configuration issues in the mobile app (Capacitor) to align with Next.js build output
+and ensure proper app identification across iOS and Android platforms.
 
 ## Changes Made
 
@@ -10,6 +12,7 @@ Fixed critical configuration issues in the mobile app (Capacitor) to align with 
 **File:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts`
 
 #### Changes:
+
 - **appId**: Changed from `'com.wundr.genesis'` to `'com.wundr.neolith'`
   - Ensures correct app identification on iOS and Android
   - Aligns with project branding (Genesis → Neolith migration)
@@ -32,6 +35,7 @@ Fixed critical configuration issues in the mobile app (Capacitor) to align with 
 **File:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/next.config.js`
 
 #### Changes:
+
 - **distDir**: Set to `'out'` (explicit configuration)
   - Directs Next.js build output to the `out` directory
   - This directory is referenced by Capacitor's `webDir`
@@ -46,6 +50,7 @@ Fixed critical configuration issues in the mobile app (Capacitor) to align with 
 **File:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/layout.tsx`
 
 #### Changes:
+
 - **Added viewport configuration** to Next.js metadata:
   ```typescript
   viewport: {
@@ -58,6 +63,7 @@ Fixed critical configuration issues in the mobile app (Capacitor) to align with 
   ```
 
 #### Benefits:
+
 - `width: 'device-width'` - Proper responsive scaling on mobile devices
 - `initialScale: 1` - Prevents auto-zoom on focus
 - `maximumScale: 1` - Disables user pinch-zoom for consistent UX
@@ -69,6 +75,7 @@ Fixed critical configuration issues in the mobile app (Capacitor) to align with 
 **File:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/out/index.html`
 
 #### Purpose:
+
 - Created a placeholder index.html for Capacitor's web asset requirements
 - Serves as entry point when app is bundled for mobile
 - Includes:
@@ -80,23 +87,27 @@ Fixed critical configuration issues in the mobile app (Capacitor) to align with 
 ## Testing & Verification
 
 ### Build Process
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
 npm run build
 ```
 
 **Result:** Build completed successfully without API route conflicts
+
 - Output directory: `/packages/@wundr/neolith/apps/web/out`
 - All assets properly generated
 - No errors or missing dependencies
 
 ### Sync Process
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile
 npx cap sync
 ```
 
 **Result:** Sync completed successfully
+
 ```
 ✔ copy web in 2.05ms
 ✔ update web in 1.15ms
@@ -105,15 +116,15 @@ npx cap sync
 
 ## Configuration Summary
 
-| Component | Before | After | Purpose |
-|-----------|--------|-------|---------|
-| App ID | `com.wundr.genesis` | `com.wundr.neolith` | Correct app identification |
-| App Name | `Genesis` | `Neolith` | Brand consistency |
-| Web Directory | `../web/dist` | `../web/out` | Correct build output path |
-| iOS Scheme | `Genesis` | `Neolith` | URL scheme alignment |
-| Public App Name | `Genesis` | `Neolith` | Environment variable update |
-| Viewport Config | Not set | Added | Mobile device optimization |
-| Index Entry | Missing | Created | Web asset requirement |
+| Component       | Before              | After               | Purpose                     |
+| --------------- | ------------------- | ------------------- | --------------------------- |
+| App ID          | `com.wundr.genesis` | `com.wundr.neolith` | Correct app identification  |
+| App Name        | `Genesis`           | `Neolith`           | Brand consistency           |
+| Web Directory   | `../web/dist`       | `../web/out`        | Correct build output path   |
+| iOS Scheme      | `Genesis`           | `Neolith`           | URL scheme alignment        |
+| Public App Name | `Genesis`           | `Neolith`           | Environment variable update |
+| Viewport Config | Not set             | Added               | Mobile device optimization  |
+| Index Entry     | Missing             | Created             | Web asset requirement       |
 
 ## Critical Fixes
 
@@ -156,4 +167,5 @@ npx cap sync
 
 ## Status: COMPLETE
 
-All critical configuration issues have been fixed and tested successfully. The mobile app sync process is now functioning correctly.
+All critical configuration issues have been fixed and tested successfully. The mobile app sync
+process is now functioning correctly.

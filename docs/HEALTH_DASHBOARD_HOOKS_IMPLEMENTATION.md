@@ -1,17 +1,21 @@
 # Health Dashboard Hooks Implementation - Phase 5.3
 
 ## Overview
+
 Comprehensive React hooks for system health monitoring and observability in the Neolith platform.
 
 ## Location
+
 `/Users/maya/wundr/packages/@wundr/neolith/apps/web/hooks/use-health-dashboard.ts`
 
 ## Implemented Hooks
 
 ### 1. useHealthDashboard()
+
 **Purpose**: Fetches system-wide health overview with real-time updates
 
 **Returns**:
+
 - `overview`: SystemHealthOverview | null
 - `isLoading`: boolean
 - `error`: Error | null
@@ -19,6 +23,7 @@ Comprehensive React hooks for system health monitoring and observability in the 
 - `isValidating`: boolean
 
 **Features**:
+
 - Auto-refreshes every 30 seconds
 - Toast notifications on errors
 - Tracks total/healthy/degraded/unhealthy orchestrators
@@ -26,6 +31,7 @@ Comprehensive React hooks for system health monitoring and observability in the 
 - API endpoint: `/api/admin/health`
 
 **Example**:
+
 ```typescript
 const { overview, isLoading, error, refetch } = useHealthDashboard();
 ```
@@ -33,9 +39,11 @@ const { overview, isLoading, error, refetch } = useHealthDashboard();
 ---
 
 ### 2. useOrchestratorHealth(filters?)
+
 **Purpose**: Fetches orchestrator health statuses with pagination and filtering
 
 **Parameters**:
+
 - `filters`: OrchestratorHealthFilters
   - `status?: HealthStatus` - Filter by health status
   - `page?: number` - Current page (pagination)
@@ -44,6 +52,7 @@ const { overview, isLoading, error, refetch } = useHealthDashboard();
   - `sortOrder?: 'asc' | 'desc'`
 
 **Returns**:
+
 - `orchestrators`: OrchestratorHealth[]
 - `total`: number
 - `isLoading`: boolean
@@ -53,6 +62,7 @@ const { overview, isLoading, error, refetch } = useHealthDashboard();
 - `isValidating`: boolean
 
 **Features**:
+
 - Auto-refreshes every 30 seconds
 - Supports status filtering (healthy, degraded, unhealthy)
 - Server-side pagination
@@ -61,26 +71,30 @@ const { overview, isLoading, error, refetch } = useHealthDashboard();
 - API endpoint: `/api/admin/health/orchestrators`
 
 **Example**:
+
 ```typescript
 const { orchestrators, total, pagination } = useOrchestratorHealth({
   status: 'degraded',
   page: 1,
   limit: 20,
   sortBy: 'responseTime',
-  sortOrder: 'desc'
+  sortOrder: 'desc',
 });
 ```
 
 ---
 
 ### 3. useMetricsChart(initialTimeRange?)
+
 **Purpose**: Fetches and transforms metrics data for charting with recharts
 
 **Parameters**:
+
 - `initialTimeRange`: TimeRange (default: '24h')
   - Options: '1h', '24h', '7d', '30d'
 
 **Returns**:
+
 - `chartData`: ChartDataPoint[]
 - `isLoading`: boolean
 - `error`: Error | null
@@ -89,6 +103,7 @@ const { orchestrators, total, pagination } = useOrchestratorHealth({
 - `refetch`: () => void
 
 **Features**:
+
 - Auto-refreshes every 60 seconds
 - Transforms data for recharts compatibility
 - Dynamic timestamp formatting based on time range
@@ -97,6 +112,7 @@ const { orchestrators, total, pagination } = useOrchestratorHealth({
 - API endpoint: `/api/admin/health/metrics?timeRange={timeRange}`
 
 **Chart Data Format**:
+
 ```typescript
 {
   time: string,         // Formatted timestamp
@@ -110,6 +126,7 @@ const { orchestrators, total, pagination } = useOrchestratorHealth({
 ```
 
 **Example**:
+
 ```typescript
 const { chartData, timeRange, setTimeRange } = useMetricsChart('24h');
 
@@ -124,9 +141,11 @@ const { chartData, timeRange, setTimeRange } = useMetricsChart('24h');
 ---
 
 ### 4. useHealthAlerts()
+
 **Purpose**: Fetches and manages health alerts with acknowledgment capabilities
 
 **Returns**:
+
 - `alerts`: HealthAlert[]
 - `acknowledgeAlert`: (alertId: string) => Promise<void>
 - `isLoading`: boolean
@@ -136,6 +155,7 @@ const { chartData, timeRange, setTimeRange } = useMetricsChart('24h');
 - `refetch`: () => void
 
 **Features**:
+
 - Auto-refreshes every 30 seconds
 - Optimistic UI updates on acknowledgment
 - Filter by severity (info, warning, critical)
@@ -145,6 +165,7 @@ const { chartData, timeRange, setTimeRange } = useMetricsChart('24h');
   - POST `/api/admin/health/alerts/{alertId}/acknowledge`
 
 **Example**:
+
 ```typescript
 const { alerts, acknowledgeAlert, filterBySeverity } = useHealthAlerts();
 
@@ -158,21 +179,25 @@ await acknowledgeAlert('alert-123');
 ## Type Definitions
 
 ### HealthStatus
+
 ```typescript
 type HealthStatus = 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
 ```
 
 ### AlertSeverity
+
 ```typescript
 type AlertSeverity = 'info' | 'warning' | 'critical';
 ```
 
 ### TimeRange
+
 ```typescript
 type TimeRange = '1h' | '24h' | '7d' | '30d';
 ```
 
 ### SystemHealthOverview
+
 ```typescript
 interface SystemHealthOverview {
   status: HealthStatus;
@@ -189,6 +214,7 @@ interface SystemHealthOverview {
 ```
 
 ### OrchestratorHealth
+
 ```typescript
 interface OrchestratorHealth {
   id: string;
@@ -206,6 +232,7 @@ interface OrchestratorHealth {
 ```
 
 ### HealthAlert
+
 ```typescript
 interface HealthAlert {
   id: string;
@@ -227,12 +254,14 @@ interface HealthAlert {
 ## SWR Configuration
 
 ### Health Data (30s refresh)
+
 - `refreshInterval`: 30000ms
 - `revalidateOnFocus`: true
 - `revalidateOnReconnect`: true
 - `dedupingInterval`: 5000ms
 
 ### Metrics Data (60s refresh)
+
 - `refreshInterval`: 60000ms
 - `revalidateOnFocus`: true
 - `revalidateOnReconnect`: true
@@ -243,6 +272,7 @@ interface HealthAlert {
 ## Error Handling
 
 All hooks implement graceful error handling with:
+
 1. Toast notifications via `useToast` hook
 2. Error objects returned in hook state
 3. Automatic retry on reconnection
@@ -253,6 +283,7 @@ All hooks implement graceful error handling with:
 ## Exports
 
 All hooks and types are exported from:
+
 ```typescript
 import {
   // Hooks
@@ -260,7 +291,7 @@ import {
   useOrchestratorHealth,
   useMetricsChart,
   useHealthAlerts,
-  
+
   // Types
   HealthStatus,
   AlertSeverity,
@@ -315,4 +346,3 @@ The following API endpoints need to be implemented:
 3. Add E2E tests for health monitoring flows
 4. Set up alerting thresholds
 5. Implement historical data storage
-

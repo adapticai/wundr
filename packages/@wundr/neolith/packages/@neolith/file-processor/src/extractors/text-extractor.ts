@@ -11,7 +11,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-
 import { createOfficeExtractor } from './office-extractor';
 import { createPDFExtractor } from './pdf-extractor';
 import { createTableExtractor } from './table-extractor';
@@ -63,40 +62,106 @@ const FILE_SIGNATURES: Array<{
   category: FileCategory;
 }> = [
   // PDF
-  { signature: [0x25, 0x50, 0x44, 0x46], offset: 0, mimeType: 'application/pdf', extension: 'pdf', category: 'document' },
+  {
+    signature: [0x25, 0x50, 0x44, 0x46],
+    offset: 0,
+    mimeType: 'application/pdf',
+    extension: 'pdf',
+    category: 'document',
+  },
 
   // Office Open XML (ZIP-based)
-  { signature: [0x50, 0x4b, 0x03, 0x04], offset: 0, mimeType: 'application/zip', extension: 'zip', category: 'archive' },
+  {
+    signature: [0x50, 0x4b, 0x03, 0x04],
+    offset: 0,
+    mimeType: 'application/zip',
+    extension: 'zip',
+    category: 'archive',
+  },
 
   // Old Office formats (OLE2)
-  { signature: [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1], offset: 0, mimeType: 'application/x-ole-storage', extension: 'ole', category: 'document' },
+  {
+    signature: [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1],
+    offset: 0,
+    mimeType: 'application/x-ole-storage',
+    extension: 'ole',
+    category: 'document',
+  },
 
   // Images
-  { signature: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], offset: 0, mimeType: 'image/png', extension: 'png', category: 'image' },
-  { signature: [0xff, 0xd8, 0xff], offset: 0, mimeType: 'image/jpeg', extension: 'jpg', category: 'image' },
-  { signature: [0x47, 0x49, 0x46, 0x38], offset: 0, mimeType: 'image/gif', extension: 'gif', category: 'image' },
-  { signature: [0x42, 0x4d], offset: 0, mimeType: 'image/bmp', extension: 'bmp', category: 'image' },
-  { signature: [0x49, 0x49, 0x2a, 0x00], offset: 0, mimeType: 'image/tiff', extension: 'tiff', category: 'image' },
-  { signature: [0x4d, 0x4d, 0x00, 0x2a], offset: 0, mimeType: 'image/tiff', extension: 'tiff', category: 'image' },
-  { signature: [0x52, 0x49, 0x46, 0x46], offset: 0, mimeType: 'image/webp', extension: 'webp', category: 'image' },
+  {
+    signature: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+    offset: 0,
+    mimeType: 'image/png',
+    extension: 'png',
+    category: 'image',
+  },
+  {
+    signature: [0xff, 0xd8, 0xff],
+    offset: 0,
+    mimeType: 'image/jpeg',
+    extension: 'jpg',
+    category: 'image',
+  },
+  {
+    signature: [0x47, 0x49, 0x46, 0x38],
+    offset: 0,
+    mimeType: 'image/gif',
+    extension: 'gif',
+    category: 'image',
+  },
+  {
+    signature: [0x42, 0x4d],
+    offset: 0,
+    mimeType: 'image/bmp',
+    extension: 'bmp',
+    category: 'image',
+  },
+  {
+    signature: [0x49, 0x49, 0x2a, 0x00],
+    offset: 0,
+    mimeType: 'image/tiff',
+    extension: 'tiff',
+    category: 'image',
+  },
+  {
+    signature: [0x4d, 0x4d, 0x00, 0x2a],
+    offset: 0,
+    mimeType: 'image/tiff',
+    extension: 'tiff',
+    category: 'image',
+  },
+  {
+    signature: [0x52, 0x49, 0x46, 0x46],
+    offset: 0,
+    mimeType: 'image/webp',
+    extension: 'webp',
+    category: 'image',
+  },
 ];
 
 /**
  * Office Open XML content type patterns.
  */
-const OOXML_CONTENT_TYPES: Record<string, { mimeType: string; extension: string; category: FileCategory }> = {
+const OOXML_CONTENT_TYPES: Record<
+  string,
+  { mimeType: string; extension: string; category: FileCategory }
+> = {
   'word/document.xml': {
-    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     extension: 'docx',
     category: 'document',
   },
   'xl/workbook.xml': {
-    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     extension: 'xlsx',
     category: 'spreadsheet',
   },
   'ppt/presentation.xml': {
-    mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     extension: 'pptx',
     category: 'presentation',
   },
@@ -125,7 +190,10 @@ export interface TextExtractionService {
    * @param options - PDF-specific extraction options
    * @returns PDF extraction result
    */
-  extractFromPDF(buffer: Buffer, options?: PDFOptions): Promise<PDFExtractionResult>;
+  extractFromPDF(
+    buffer: Buffer,
+    options?: PDFOptions
+  ): Promise<PDFExtractionResult>;
 
   /**
    * Extract text and content from a DOCX document.
@@ -134,7 +202,10 @@ export interface TextExtractionService {
    * @param options - DOCX-specific extraction options
    * @returns DOCX extraction result
    */
-  extractFromDocx(buffer: Buffer, options?: DocxOptions): Promise<DocxExtractionResult>;
+  extractFromDocx(
+    buffer: Buffer,
+    options?: DocxOptions
+  ): Promise<DocxExtractionResult>;
 
   /**
    * Extract text and content from an XLSX spreadsheet.
@@ -143,7 +214,10 @@ export interface TextExtractionService {
    * @param options - XLSX-specific extraction options
    * @returns XLSX extraction result
    */
-  extractFromXlsx(buffer: Buffer, options?: XlsxOptions): Promise<XlsxExtractionResult>;
+  extractFromXlsx(
+    buffer: Buffer,
+    options?: XlsxOptions
+  ): Promise<XlsxExtractionResult>;
 
   /**
    * Detect the file type from a buffer.
@@ -160,7 +234,10 @@ export interface TextExtractionService {
    * @param options - Extraction options
    * @returns Extraction result
    */
-  extractFromFile(filePath: string, options?: ExtractionOptions): Promise<ExtractionResult>;
+  extractFromFile(
+    filePath: string,
+    options?: ExtractionOptions
+  ): Promise<ExtractionResult>;
 
   /**
    * Extract text from a readable stream.
@@ -169,7 +246,10 @@ export interface TextExtractionService {
    * @param options - Extraction options
    * @returns Extraction result
    */
-  extractFromStream(stream: Readable, options?: ExtractionOptions): Promise<ExtractionResult>;
+  extractFromStream(
+    stream: Readable,
+    options?: ExtractionOptions
+  ): Promise<ExtractionResult>;
 }
 
 // ============================================================================
@@ -205,7 +285,9 @@ export interface TextExtractorConfig {
 /**
  * Default configuration values.
  */
-const DEFAULT_CONFIG: Required<Omit<TextExtractorConfig, 'fileProcessorConfig'>> = {
+const DEFAULT_CONFIG: Required<
+  Omit<TextExtractorConfig, 'fileProcessorConfig'>
+> = {
   maxFileSize: 100 * 1024 * 1024, // 100MB
   defaultTimeout: 60000, // 1 minute
   enableOcrByDefault: false,
@@ -218,7 +300,9 @@ const DEFAULT_CONFIG: Required<Omit<TextExtractorConfig, 'fileProcessorConfig'>>
  * Implementation of the text extraction service.
  */
 export class TextExtractor implements TextExtractionService {
-  private config: Required<Omit<TextExtractorConfig, 'fileProcessorConfig'>> & { fileProcessorConfig?: FileProcessorConfig };
+  private config: Required<Omit<TextExtractorConfig, 'fileProcessorConfig'>> & {
+    fileProcessorConfig?: FileProcessorConfig;
+  };
   private pdfExtractor: PDFExtractor;
   private officeExtractor: OfficeExtractor;
   private tableExtractor: TableExtractor;
@@ -236,7 +320,9 @@ export class TextExtractor implements TextExtractionService {
 
     // Initialize sub-extractors
     this.pdfExtractor = createPDFExtractor(this.config.fileProcessorConfig);
-    this.officeExtractor = createOfficeExtractor(this.config.fileProcessorConfig);
+    this.officeExtractor = createOfficeExtractor(
+      this.config.fileProcessorConfig
+    );
     this.tableExtractor = createTableExtractor();
   }
 
@@ -256,7 +342,7 @@ export class TextExtractor implements TextExtractionService {
       if (!fileType.supported) {
         throw new ExtractionError(
           `Unsupported file format: ${fileType.mimeType}`,
-          'UNSUPPORTED_FORMAT',
+          'UNSUPPORTED_FORMAT'
         );
       }
 
@@ -266,21 +352,30 @@ export class TextExtractor implements TextExtractionService {
 
       switch (fileType.extension) {
         case 'pdf':
-          result = await this.extractFromPDF(input.buffer, options as PDFOptions);
+          result = await this.extractFromPDF(
+            input.buffer,
+            options as PDFOptions
+          );
           break;
 
         case 'docx':
-          result = await this.extractFromDocx(input.buffer, options as DocxOptions);
+          result = await this.extractFromDocx(
+            input.buffer,
+            options as DocxOptions
+          );
           break;
 
         case 'xlsx':
-          result = await this.extractFromXlsx(input.buffer, options as XlsxOptions);
+          result = await this.extractFromXlsx(
+            input.buffer,
+            options as XlsxOptions
+          );
           break;
 
         default:
           throw new ExtractionError(
             `No extractor available for format: ${fileType.extension}`,
-            'UNSUPPORTED_FORMAT',
+            'UNSUPPORTED_FORMAT'
           );
       }
 
@@ -296,7 +391,10 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Extract text and content from a PDF document.
    */
-  async extractFromPDF(buffer: Buffer, options?: PDFOptions): Promise<PDFExtractionResult> {
+  async extractFromPDF(
+    buffer: Buffer,
+    options?: PDFOptions
+  ): Promise<PDFExtractionResult> {
     const startTime = Date.now();
 
     try {
@@ -323,7 +421,10 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Extract text and content from a DOCX document.
    */
-  async extractFromDocx(buffer: Buffer, options?: DocxOptions): Promise<DocxExtractionResult> {
+  async extractFromDocx(
+    buffer: Buffer,
+    options?: DocxOptions
+  ): Promise<DocxExtractionResult> {
     const startTime = Date.now();
 
     try {
@@ -346,7 +447,10 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Extract text and content from an XLSX spreadsheet.
    */
-  async extractFromXlsx(buffer: Buffer, options?: XlsxOptions): Promise<XlsxExtractionResult> {
+  async extractFromXlsx(
+    buffer: Buffer,
+    options?: XlsxOptions
+  ): Promise<XlsxExtractionResult> {
     const startTime = Date.now();
 
     try {
@@ -392,7 +496,9 @@ export class TextExtractor implements TextExtractionService {
           extension: sig.extension,
           category: sig.category,
           confidence: 0.9,
-          signature: sig.signature.map(b => b.toString(16).padStart(2, '0')).join(' '),
+          signature: sig.signature
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join(' '),
           supported: this.isSupported(sig.extension),
         };
       }
@@ -411,7 +517,10 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Extract text from a file path.
    */
-  async extractFromFile(filePath: string, options?: ExtractionOptions): Promise<ExtractionResult> {
+  async extractFromFile(
+    filePath: string,
+    options?: ExtractionOptions
+  ): Promise<ExtractionResult> {
     const startTime = Date.now();
 
     try {
@@ -419,7 +528,7 @@ export class TextExtractor implements TextExtractionService {
       if (!fs.existsSync(filePath)) {
         throw new ExtractionError(
           `File not found: ${filePath}`,
-          'FILE_NOT_FOUND',
+          'FILE_NOT_FOUND'
         );
       }
 
@@ -428,7 +537,7 @@ export class TextExtractor implements TextExtractionService {
       if (stats.size > this.config.maxFileSize) {
         throw new ExtractionError(
           `File size exceeds maximum allowed: ${stats.size} > ${this.config.maxFileSize}`,
-          'OUT_OF_MEMORY',
+          'OUT_OF_MEMORY'
         );
       }
 
@@ -449,7 +558,10 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Extract text from a readable stream.
    */
-  async extractFromStream(stream: Readable, options?: ExtractionOptions): Promise<ExtractionResult> {
+  async extractFromStream(
+    stream: Readable,
+    options?: ExtractionOptions
+  ): Promise<ExtractionResult> {
     const startTime = Date.now();
 
     try {
@@ -462,7 +574,7 @@ export class TextExtractor implements TextExtractionService {
         if (totalSize > this.config.maxFileSize) {
           throw new ExtractionError(
             `Stream size exceeds maximum allowed: ${totalSize} > ${this.config.maxFileSize}`,
-            'OUT_OF_MEMORY',
+            'OUT_OF_MEMORY'
           );
         }
         chunks.push(Buffer.from(chunk));
@@ -488,17 +600,23 @@ export class TextExtractor implements TextExtractionService {
    */
   private validateInput(input: ExtractionInput): void {
     if (!input.buffer || !Buffer.isBuffer(input.buffer)) {
-      throw new ExtractionError('Invalid input: buffer is required', 'INVALID_FILE');
+      throw new ExtractionError(
+        'Invalid input: buffer is required',
+        'INVALID_FILE'
+      );
     }
 
     if (input.buffer.length === 0) {
-      throw new ExtractionError('Invalid input: buffer is empty', 'INVALID_FILE');
+      throw new ExtractionError(
+        'Invalid input: buffer is empty',
+        'INVALID_FILE'
+      );
     }
 
     if (input.buffer.length > this.config.maxFileSize) {
       throw new ExtractionError(
         `File size exceeds maximum allowed: ${input.buffer.length} > ${this.config.maxFileSize}`,
-        'OUT_OF_MEMORY',
+        'OUT_OF_MEMORY'
       );
     }
   }
@@ -518,7 +636,7 @@ export class TextExtractor implements TextExtractionService {
     if (buffer.length > this.config.maxFileSize) {
       throw new ExtractionError(
         `Buffer size exceeds maximum allowed: ${buffer.length} > ${this.config.maxFileSize}`,
-        'OUT_OF_MEMORY',
+        'OUT_OF_MEMORY'
       );
     }
   }
@@ -526,7 +644,11 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Check if a signature matches the buffer.
    */
-  private matchSignature(buffer: Buffer, signature: number[], offset: number): boolean {
+  private matchSignature(
+    buffer: Buffer,
+    signature: number[],
+    offset: number
+  ): boolean {
     if (buffer.length < offset + signature.length) {
       return false;
     }
@@ -553,9 +675,15 @@ export class TextExtractor implements TextExtractionService {
       const content = buffer.toString('utf8', 0, Math.min(buffer.length, 4096));
 
       for (const [marker, _type] of Object.entries(OOXML_CONTENT_TYPES)) {
-        if (content.includes(marker) || content.includes('[Content_Types].xml')) {
+        if (
+          content.includes(marker) ||
+          content.includes('[Content_Types].xml')
+        ) {
           // Try to determine specific type
-          if (content.includes('word/') || content.includes('wordprocessingml')) {
+          if (
+            content.includes('word/') ||
+            content.includes('wordprocessingml')
+          ) {
             return OOXML_CONTENT_TYPES['word/document.xml'];
           }
           if (content.includes('xl/') || content.includes('spreadsheetml')) {
@@ -584,9 +712,14 @@ export class TextExtractor implements TextExtractionService {
   /**
    * Create an error result.
    */
-  private createErrorResult(error: unknown, startTime: number): ExtractionResult {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorCode = error instanceof ExtractionError ? error.code : 'EXTRACTION_FAILED';
+  private createErrorResult(
+    error: unknown,
+    startTime: number
+  ): ExtractionResult {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    const errorCode =
+      error instanceof ExtractionError ? error.code : 'EXTRACTION_FAILED';
 
     return {
       text: '',
@@ -641,7 +774,9 @@ export class TextExtractor implements TextExtractionService {
  * });
  * ```
  */
-export function createTextExtractor(config?: TextExtractorConfig): TextExtractionService {
+export function createTextExtractor(
+  config?: TextExtractorConfig
+): TextExtractionService {
   return new TextExtractor(config);
 }
 

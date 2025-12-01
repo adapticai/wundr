@@ -108,62 +108,75 @@ export interface UseAgentMutationsReturn {
  * }
  * ```
  */
-export function useAgents(workspaceId: string, filters?: AgentFilters): UseAgentsReturn {
+export function useAgents(
+  workspaceId: string,
+  filters?: AgentFilters
+): UseAgentsReturn {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAgents = useCallback(async (signal?: AbortSignal): Promise<void> => {
-    if (!workspaceId) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Build query params
-      const params = new URLSearchParams();
-      if (filters?.type) {
-        params.set('type', filters.type);
-      }
-      if (filters?.status) {
-        params.set('status', filters.status);
-      }
-      if (filters?.search) {
-        params.set('search', filters.search);
-      }
-      if (filters?.page !== undefined) {
-        params.set('page', String(filters.page));
-      }
-      if (filters?.limit !== undefined) {
-        params.set('limit', String(filters.limit));
-      }
-
-      const queryString = params.toString();
-      const url = queryString
-        ? `/api/workspaces/${workspaceId}/agents?${queryString}`
-        : `/api/workspaces/${workspaceId}/agents`;
-
-      const response = await fetch(url, { signal });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to fetch agents');
-      }
-      const result: { data: Agent[] } = await response.json();
-
-      setAgents(result.data || []);
-    } catch (err) {
-      // Don't set error for aborted requests
-      if (err instanceof Error && err.name === 'AbortError') {
+  const fetchAgents = useCallback(
+    async (signal?: AbortSignal): Promise<void> => {
+      if (!workspaceId) {
         return;
       }
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      setAgents([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId, filters?.type, filters?.status, filters?.search, filters?.page, filters?.limit]);
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Build query params
+        const params = new URLSearchParams();
+        if (filters?.type) {
+          params.set('type', filters.type);
+        }
+        if (filters?.status) {
+          params.set('status', filters.status);
+        }
+        if (filters?.search) {
+          params.set('search', filters.search);
+        }
+        if (filters?.page !== undefined) {
+          params.set('page', String(filters.page));
+        }
+        if (filters?.limit !== undefined) {
+          params.set('limit', String(filters.limit));
+        }
+
+        const queryString = params.toString();
+        const url = queryString
+          ? `/api/workspaces/${workspaceId}/agents?${queryString}`
+          : `/api/workspaces/${workspaceId}/agents`;
+
+        const response = await fetch(url, { signal });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || 'Failed to fetch agents');
+        }
+        const result: { data: Agent[] } = await response.json();
+
+        setAgents(result.data || []);
+      } catch (err) {
+        // Don't set error for aborted requests
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setAgents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      workspaceId,
+      filters?.type,
+      filters?.status,
+      filters?.search,
+      filters?.page,
+      filters?.limit,
+    ]
+  );
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -185,19 +198,19 @@ export function useAgents(workspaceId: string, filters?: AgentFilters): UseAgent
     if (filters?.search) {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(
-        (agent) =>
+        agent =>
           agent.name.toLowerCase().includes(searchLower) ||
           agent.description?.toLowerCase().includes(searchLower) ||
-          agent.type?.toLowerCase().includes(searchLower),
+          agent.type?.toLowerCase().includes(searchLower)
       );
     }
 
     if (filters?.type) {
-      result = result.filter((agent) => agent.type === filters.type);
+      result = result.filter(agent => agent.type === filters.type);
     }
 
     if (filters?.status) {
-      result = result.filter((agent) => agent.status === filters.status);
+      result = result.filter(agent => agent.status === filters.status);
     }
 
     return result;
@@ -249,33 +262,39 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAgent = useCallback(async (signal?: AbortSignal): Promise<void> => {
-    if (!workspaceId || !agentId) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/agents/${agentId}`, { signal });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to fetch agent');
-      }
-      const result: { data: Agent } = await response.json();
-      setAgent(result.data);
-    } catch (err) {
-      // Don't set error for aborted requests
-      if (err instanceof Error && err.name === 'AbortError') {
+  const fetchAgent = useCallback(
+    async (signal?: AbortSignal): Promise<void> => {
+      if (!workspaceId || !agentId) {
         return;
       }
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      setAgent(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId, agentId]);
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/agents/${agentId}`,
+          { signal }
+        );
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || 'Failed to fetch agent');
+        }
+        const result: { data: Agent } = await response.json();
+        setAgent(result.data);
+      } catch (err) {
+        // Don't set error for aborted requests
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setAgent(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [workspaceId, agentId]
+  );
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -330,95 +349,118 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
  * }
  * ```
  */
-export function useAgentMutations(workspaceId: string): UseAgentMutationsReturn {
+export function useAgentMutations(
+  workspaceId: string
+): UseAgentMutationsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const createAgent = useCallback(async (input: CreateAgentInput): Promise<Agent | null> => {
-    setIsLoading(true);
-    setError(null);
+  const createAgent = useCallback(
+    async (input: CreateAgentInput): Promise<Agent | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/agents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      });
+      try {
+        const response = await fetch(`/api/workspaces/${workspaceId}/agents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to create agent');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || 'Failed to create agent');
+        }
+
+        const result: { data: Agent } = await response.json();
+        return result.data;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        setError(error);
+        return null;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [workspaceId]
+  );
 
-      const result: { data: Agent } = await response.json();
-      return result.data;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
+  const updateAgent = useCallback(
+    async (id: string, input: UpdateAgentInput): Promise<Agent | null> => {
+      setIsLoading(true);
+      setError(null);
 
-  const updateAgent = useCallback(async (id: string, input: UpdateAgentInput): Promise<Agent | null> => {
-    setIsLoading(true);
-    setError(null);
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/agents/${id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input),
+          }
+        );
 
-    try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/agents/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || 'Failed to update agent');
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to update agent');
+        const result: { data: Agent } = await response.json();
+        return result.data;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        setError(error);
+        return null;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [workspaceId]
+  );
 
-      const result: { data: Agent } = await response.json();
-      return result.data;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
+  const deleteAgent = useCallback(
+    async (id: string): Promise<boolean> => {
+      setIsLoading(true);
+      setError(null);
 
-  const deleteAgent = useCallback(async (id: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/agents/${id}`,
+          {
+            method: 'DELETE',
+          }
+        );
 
-    try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/agents/${id}`, {
-        method: 'DELETE',
-      });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || 'Failed to delete agent');
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to delete agent');
+        return true;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        setError(error);
+        return false;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [workspaceId]
+  );
 
-      return true;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      setError(error);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
+  const pauseAgent = useCallback(
+    async (id: string): Promise<Agent | null> => {
+      return updateAgent(id, { status: 'paused' });
+    },
+    [updateAgent]
+  );
 
-  const pauseAgent = useCallback(async (id: string): Promise<Agent | null> => {
-    return updateAgent(id, { status: 'paused' });
-  }, [updateAgent]);
-
-  const resumeAgent = useCallback(async (id: string): Promise<Agent | null> => {
-    return updateAgent(id, { status: 'active' });
-  }, [updateAgent]);
+  const resumeAgent = useCallback(
+    async (id: string): Promise<Agent | null> => {
+      return updateAgent(id, { status: 'active' });
+    },
+    [updateAgent]
+  );
 
   return {
     createAgent,

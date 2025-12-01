@@ -1,6 +1,8 @@
 # Troubleshooting Guide
 
-This guide helps you diagnose and resolve common issues with Wundr. If you don't find a solution here, please check our [FAQ](./FAQ.md) or reach out to our [community support](https://discord.gg/wundr).
+This guide helps you diagnose and resolve common issues with Wundr. If you don't find a solution
+here, please check our [FAQ](./FAQ.md) or reach out to our
+[community support](https://discord.gg/wundr).
 
 ## 🔍 Quick Diagnostics
 
@@ -25,7 +27,8 @@ wundr cache clear --all
 
 ### Command Not Found
 
-**Problem**: `wundr: command not found` or `'wundr' is not recognized as an internal or external command`
+**Problem**: `wundr: command not found` or
+`'wundr' is not recognized as an internal or external command`
 
 **Solutions**:
 
@@ -396,7 +399,6 @@ lsof +D ./src  # Linux/macOS
    - Wundr installation directory
    - Project directories being analyzed
    - Node.js executable
-   
 2. **Temporarily disable** real-time scanning during analysis
 
 3. **Whitelist Wundr processes**:

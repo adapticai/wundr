@@ -91,15 +91,18 @@ async function checkWorkspaceAccess(workspaceSlug: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -108,8 +111,11 @@ export async function GET(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -119,9 +125,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -132,7 +138,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
       Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
-      100,
+      100
     );
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
@@ -156,10 +162,7 @@ export async function GET(
           },
         },
       },
-      orderBy: [
-        { role: 'asc' },
-        { joinedAt: 'asc' },
-      ],
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
       skip: offset,
       take: limit,
     });
@@ -178,9 +181,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -197,15 +200,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -214,8 +220,11 @@ export async function POST(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -225,9 +234,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -238,9 +247,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Workspace Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -253,8 +262,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -265,9 +277,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -290,9 +302,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'User must be a member of the organization to join the workspace',
-          ORG_ERROR_CODES.USER_NOT_FOUND,
+          ORG_ERROR_CODES.USER_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -310,9 +322,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'User is already a member of this workspace',
-          ORG_ERROR_CODES.ALREADY_MEMBER,
+          ORG_ERROR_CODES.ALREADY_MEMBER
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -338,17 +350,20 @@ export async function POST(
     });
 
     return NextResponse.json(
-      { data: newMembership, message: 'Member added to workspace successfully' },
-      { status: 201 },
+      {
+        data: newMembership,
+        message: 'Member added to workspace successfully',
+      },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/members] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

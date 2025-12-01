@@ -12,11 +12,13 @@ Monitor deployment to Railway/Netlify after pushing to main/master.
 ## MCP Tools Used
 
 ### Railway
+
 - `mcp__railway__deploy_status`
 - `mcp__railway__get_logs`
 - `mcp__railway__get_deployments`
 
 ### Netlify
+
 - `mcp__netlify__deploy_status`
 - `mcp__netlify__get_build_logs`
 - `mcp__netlify__get_deploys`
@@ -39,6 +41,7 @@ Monitor deployment to Railway/Netlify after pushing to main/master.
 ## Platform Detection
 
 The command automatically detects the deployment platform:
+
 1. Checks for `railway.json` → Railway
 2. Checks for `netlify.toml` → Netlify
 3. Checks `$RAILWAY_PROJECT_ID` env var → Railway
@@ -47,6 +50,7 @@ The command automatically detects the deployment platform:
 ## Agent Coordination
 
 This command coordinates the following agents:
+
 - **deployment-monitor**: Real-time status tracking
 - **log-analyzer**: Error detection and classification
 - **debug-refactor**: Automatic issue resolution
@@ -54,6 +58,7 @@ This command coordinates the following agents:
 ## Output
 
 The command provides:
+
 - Real-time deployment progress
 - Build/deploy logs streaming
 - Error detection and analysis

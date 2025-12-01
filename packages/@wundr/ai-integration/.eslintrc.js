@@ -4,7 +4,7 @@ module.exports = {
   env: {
     node: true,
     es2022: true,
-    jest: true
+    jest: true,
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -13,19 +13,14 @@ module.exports = {
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
   },
-  plugins: [
-    '@typescript-eslint',
-    'import',
-    'unused-imports',
-    'jest'
-  ],
+  plugins: ['@typescript-eslint', 'import', 'unused-imports', 'jest'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:import/typescript',
-    'plugin:jest/recommended'
+    'plugin:jest/recommended',
   ],
   rules: {
     'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug'] }],
@@ -36,8 +31,8 @@ module.exports = {
       {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_'
-      }
+        caughtErrorsIgnorePattern: '^_',
+      },
     ],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -56,19 +51,19 @@ module.exports = {
           ['parent', 'sibling'],
           'index',
           'object',
-          'type'
+          'type',
         ],
         'newlines-between': 'always',
         alphabetize: {
           order: 'asc',
-          caseInsensitive: true
-        }
-      }
+          caseInsensitive: true,
+        },
+      },
     ],
     'import/no-duplicates': 'error',
     'import/no-default-export': 'error',
     'import/prefer-default-export': 'off',
-    'unused-imports/no-unused-imports': 'error'
+    'unused-imports/no-unused-imports': 'error',
   },
   overrides: [
     {
@@ -83,23 +78,23 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': 'off',
         'unused-imports/no-unused-imports': 'off',
         'no-console': 'off',
-        'jest/expect-expect': 'off'
-      }
+        'jest/expect-expect': 'off',
+      },
     },
     {
       files: ['scripts/**/*.ts'],
       rules: {
         'no-console': 'off',
-        'import/no-default-export': 'off'
-      }
-    }
+        'import/no-default-export': 'off',
+      },
+    },
   ],
   settings: {
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
-        project: ['./tsconfig.json', './tsconfig.test.json']
-      }
-    }
-  }
+        project: ['./tsconfig.json', './tsconfig.test.json'],
+      },
+    },
+  },
 };

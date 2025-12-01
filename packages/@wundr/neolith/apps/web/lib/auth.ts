@@ -10,7 +10,6 @@
  * @module lib/auth
  */
 
-
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { avatarService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
@@ -25,11 +24,18 @@ import Google from 'next-auth/providers/google';
  * Validate required environment variables
  */
 function validateEnvVars() {
-  const requiredVars = ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'];
+  const requiredVars = [
+    'GITHUB_CLIENT_ID',
+    'GITHUB_CLIENT_SECRET',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+  ];
   const missing = requiredVars.filter(varName => !process.env[varName]);
 
   if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+    throw new Error(
+      `Missing required environment variables: ${missing.join(', ')}`
+    );
   }
 }
 
@@ -39,7 +45,8 @@ validateEnvVars();
 /**
  * Email verification configuration
  */
-const EMAIL_VERIFICATION_REQUIRED = process.env.EMAIL_VERIFICATION_REQUIRED === 'true';
+const EMAIL_VERIFICATION_REQUIRED =
+  process.env.EMAIL_VERIFICATION_REQUIRED === 'true';
 
 /**
  * Extended session user type with Neolith-specific fields
@@ -72,8 +79,11 @@ declare module 'next-auth/jwt' {
  * @param storedHash - Stored hash in format "salt:hash"
  * @returns True if password matches, false otherwise
  */
-async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  return new Promise((resolve) => {
+async function verifyPassword(
+  password: string,
+  storedHash: string
+): Promise<boolean> {
+  return new Promise(resolve => {
     const [salt, hash] = storedHash.split(':');
     if (!salt || !hash) {
       resolve(false);
@@ -96,32 +106,42 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
  * @param storedHash - Stored hash of the API key in format "salt:hash"
  * @returns True if API key matches, false otherwise
  */
-async function verifyApiKey(providedKey: string, storedHash: string): Promise<boolean> {
-  return new Promise((resolve) => {
+async function verifyApiKey(
+  providedKey: string,
+  storedHash: string
+): Promise<boolean> {
+  return new Promise(resolve => {
     const [salt, hash] = storedHash.split(':');
     if (!salt || !hash) {
       resolve(false);
       return;
     }
 
-    crypto.pbkdf2(providedKey, salt, 100000, 64, 'sha512', (err, derivedKey) => {
-      if (err) {
-        resolve(false);
-        return;
-      }
-      // Use timingSafeEqual for constant-time comparison to prevent timing attacks
-      try {
-        const hashBuffer = Buffer.from(hash, 'hex');
-        const derivedBuffer = derivedKey;
-        if (hashBuffer.length !== derivedBuffer.length) {
+    crypto.pbkdf2(
+      providedKey,
+      salt,
+      100000,
+      64,
+      'sha512',
+      (err, derivedKey) => {
+        if (err) {
           resolve(false);
           return;
         }
-        resolve(crypto.timingSafeEqual(hashBuffer, derivedBuffer));
-      } catch {
-        resolve(false);
+        // Use timingSafeEqual for constant-time comparison to prevent timing attacks
+        try {
+          const hashBuffer = Buffer.from(hash, 'hex');
+          const derivedBuffer = derivedKey;
+          if (hashBuffer.length !== derivedBuffer.length) {
+            resolve(false);
+            return;
+          }
+          resolve(crypto.timingSafeEqual(hashBuffer, derivedBuffer));
+        } catch {
+          resolve(false);
+        }
       }
-    });
+    );
   });
 }
 
@@ -249,28 +269,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             // Verify API key using secure comparison
             // API key hash should be stored in orchestrator.capabilities.apiKeyHash
-            const orchestratorConfig = orchestrator.capabilities as { apiKeyHash?: string } | null;
+            const orchestratorConfig = orchestrator.capabilities as {
+              apiKeyHash?: string;
+            } | null;
 
             if (!orchestratorConfig?.apiKeyHash) {
               // No API key hash configured for this orchestrator
               if (process.env.NODE_ENV === 'development') {
-                console.error('Orchestrator authentication failed: No API key hash configured', {
-                  orchestratorId,
-                });
+                console.error(
+                  'Orchestrator authentication failed: No API key hash configured',
+                  {
+                    orchestratorId,
+                  }
+                );
               } else {
-                console.error('Orchestrator authentication failed: Configuration error');
+                console.error(
+                  'Orchestrator authentication failed: Configuration error'
+                );
               }
               return null;
             }
 
             // Verify API key using constant-time comparison to prevent timing attacks
-            const isValidKey = await verifyApiKey(apiKey, orchestratorConfig.apiKeyHash);
+            const isValidKey = await verifyApiKey(
+              apiKey,
+              orchestratorConfig.apiKeyHash
+            );
 
             if (!isValidKey) {
               if (process.env.NODE_ENV === 'development') {
-                console.error('Orchestrator authentication failed: Invalid API key', {
-                  orchestratorId,
-                });
+                console.error(
+                  'Orchestrator authentication failed: Invalid API key',
+                  {
+                    orchestratorId,
+                  }
+                );
               } else {
                 console.error('Orchestrator authentication failed');
               }
@@ -280,11 +313,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Check orchestrator status
             if (orchestrator.status === 'OFFLINE') {
               if (process.env.NODE_ENV === 'development') {
-                console.error('Orchestrator authentication failed: Orchestrator is offline', {
-                  orchestratorId,
-                });
+                console.error(
+                  'Orchestrator authentication failed: Orchestrator is offline',
+                  {
+                    orchestratorId,
+                  }
+                );
               } else {
-                console.error('Orchestrator authentication failed: Service unavailable');
+                console.error(
+                  'Orchestrator authentication failed: Service unavailable'
+                );
               }
               return null;
             }
@@ -301,7 +339,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           } catch (error: unknown) {
             // Only log detailed errors in development
             if (process.env.NODE_ENV === 'development') {
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+              const errorMessage =
+                error instanceof Error ? error.message : 'Unknown error';
               console.error('Orchestrator authentication error:', {
                 error: errorMessage,
                 orchestratorId: credentials.orchestratorId,
@@ -396,7 +435,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch (error: unknown) {
           // Only log detailed errors in development
           if (process.env.NODE_ENV === 'development') {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error';
             console.error('Email/password authentication error:', {
               error: errorMessage,
               email: credentials.email,
@@ -439,7 +479,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub && session.user) {
         session.user.id = token.sub;
         session.user.isOrchestrator = Boolean(token.isOrchestrator ?? false);
-        session.user.role = (token.role as 'ADMIN' | 'MEMBER' | 'VIEWER') ?? 'MEMBER';
+        session.user.role =
+          (token.role as 'ADMIN' | 'MEMBER' | 'VIEWER') ?? 'MEMBER';
 
         // Fetch the user's avatar from the database (S3 URL)
         try {
@@ -453,8 +494,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch (error: unknown) {
           // Don't block session creation on avatar fetch failure
           if (process.env.NODE_ENV === 'development') {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Failed to fetch user avatar:', { error: errorMessage, userId: token.sub });
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error';
+            console.error('Failed to fetch user avatar:', {
+              error: errorMessage,
+              userId: token.sub,
+            });
           } else {
             console.error('Failed to fetch user avatar');
           }
@@ -474,9 +519,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // For OAuth providers, check and upload avatar for existing users
       if (account?.provider === 'github' || account?.provider === 'google') {
         // Get the provider's avatar URL
-        const providerAvatarUrl = account.provider === 'github'
-          ? (profile as { avatar_url?: string })?.avatar_url
-          : (profile as { picture?: string })?.picture;
+        const providerAvatarUrl =
+          account.provider === 'github'
+            ? (profile as { avatar_url?: string })?.avatar_url
+            : (profile as { picture?: string })?.picture;
 
         if (user.id && providerAvatarUrl) {
           try {
@@ -495,12 +541,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 providerAvatarUrl,
                 provider: account.provider as 'google' | 'github',
               });
-              console.log(`Uploaded OAuth avatar for existing user ${user.id} from ${account.provider}`);
+              console.log(
+                `Uploaded OAuth avatar for existing user ${user.id} from ${account.provider}`
+              );
             }
           } catch (error: unknown) {
             // Log error but don't block sign in
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            console.error(`Failed to upload OAuth avatar for user ${user.id}:`, errorMessage);
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error';
+            console.error(
+              `Failed to upload OAuth avatar for user ${user.id}:`,
+              errorMessage
+            );
           }
         }
         return true;
@@ -520,10 +572,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return !!orchestrator;
           } catch (error: unknown) {
             if (process.env.NODE_ENV === 'development') {
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              console.error('Failed to verify orchestrator status during sign-in:', { error: errorMessage, userId: user.id });
+              const errorMessage =
+                error instanceof Error ? error.message : 'Unknown error';
+              console.error(
+                'Failed to verify orchestrator status during sign-in:',
+                { error: errorMessage, userId: user.id }
+              );
             } else {
-              console.error('Failed to verify orchestrator status during sign-in');
+              console.error(
+                'Failed to verify orchestrator status during sign-in'
+              );
             }
             return false;
           }
@@ -586,13 +644,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             userId: user.id,
             providerAvatarUrl: user.image,
             // Determine provider from the image URL
-            provider: user.image.includes('googleusercontent') ? 'google' : 'github',
+            provider: user.image.includes('googleusercontent')
+              ? 'google'
+              : 'github',
           });
           console.log(`Successfully uploaded OAuth avatar for user ${user.id}`);
         } catch (error: unknown) {
           // Log error but don't fail user creation
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.error(`Failed to upload OAuth avatar for new user ${user.id}:`, errorMessage);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+          console.error(
+            `Failed to upload OAuth avatar for new user ${user.id}:`,
+            errorMessage
+          );
 
           // Generate fallback avatar if OAuth avatar fails
           try {
@@ -602,8 +666,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
             console.log(`Generated fallback avatar for user ${user.id}`);
           } catch (fallbackError: unknown) {
-            const fallbackErrMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
-            console.error(`Failed to generate fallback avatar for user ${user.id}:`, fallbackErrMessage);
+            const fallbackErrMessage =
+              fallbackError instanceof Error
+                ? fallbackError.message
+                : 'Unknown error';
+            console.error(
+              `Failed to generate fallback avatar for user ${user.id}:`,
+              fallbackErrMessage
+            );
           }
         }
       } else if (user.id && (user.name || user.email)) {
@@ -615,8 +685,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
           console.log(`Generated fallback avatar for new user ${user.id}`);
         } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.error(`Failed to generate fallback avatar for user ${user.id}:`, errorMessage);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+          console.error(
+            `Failed to generate fallback avatar for user ${user.id}:`,
+            errorMessage
+          );
         }
       }
     },
@@ -650,11 +724,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               providerAvatarUrl: user.image,
               provider: account.provider as 'google' | 'github',
             });
-            console.log(`Uploaded OAuth avatar from linked ${account.provider} account for user ${user.id}`);
+            console.log(
+              `Uploaded OAuth avatar from linked ${account.provider} account for user ${user.id}`
+            );
           }
         } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.error(`Failed to upload avatar for linked account:`, errorMessage);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+          console.error(
+            `Failed to upload avatar for linked account:`,
+            errorMessage
+          );
         }
       }
     },

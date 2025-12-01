@@ -14,20 +14,23 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
     return (
       <div
         ref={ref}
-        role="progressbar"
+        role='progressbar'
         aria-valuemin={0}
         aria-valuemax={max}
         aria-valuenow={value}
-        className={cn('relative h-2 w-full overflow-hidden rounded-full bg-secondary', className)}
+        className={cn(
+          'relative h-2 w-full overflow-hidden rounded-full bg-secondary',
+          className
+        )}
         {...props}
       >
         <div
-          className="h-full w-full flex-1 bg-primary transition-all duration-300 ease-in-out"
+          className='h-full w-full flex-1 bg-primary transition-all duration-300 ease-in-out'
           style={{ transform: `translateX(-${100 - percentage}%)` }}
         />
       </div>
     );
-  },
+  }
 );
 Progress.displayName = 'Progress';
 

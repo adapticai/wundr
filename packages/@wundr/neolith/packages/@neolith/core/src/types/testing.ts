@@ -7,7 +7,13 @@
 export type TestEnvironment = 'unit' | 'integration' | 'e2e' | 'performance';
 
 /** Test status */
-export type TestStatus = 'pending' | 'running' | 'passed' | 'failed' | 'skipped' | 'flaky';
+export type TestStatus =
+  | 'pending'
+  | 'running'
+  | 'passed'
+  | 'failed'
+  | 'skipped'
+  | 'flaky';
 
 /** Test priority */
 export type TestPriority = 'critical' | 'high' | 'medium' | 'low';
@@ -274,7 +280,12 @@ export interface MetricSummary {
 /** Documentation types */
 
 /** Documentation category */
-export type DocCategory = 'guide' | 'api' | 'tutorial' | 'reference' | 'changelog';
+export type DocCategory =
+  | 'guide'
+  | 'api'
+  | 'tutorial'
+  | 'reference'
+  | 'changelog';
 
 /** Documentation page */
 export interface DocPage {

@@ -6,7 +6,7 @@
     "lib": ["ES2022"],
     "module": "commonjs",
     "moduleResolution": "node",
-    
+
     // Type Checking
     "strict": true,
     "noImplicitAny": true,
@@ -23,7 +23,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    
+
     // Emit
     "declaration": true,
     "declarationMap": true,
@@ -33,17 +33,17 @@
     "importsNotUsedAsValues": "remove",
     "downlevelIteration": true,
     "newLine": "lf",
-    
+
     // Interop Constraints
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
-    
+
     // Skip Lib Check
     "skipLibCheck": true,
-    
+
     // Advanced
     "allowJs": false,
     "checkJs": false,
@@ -51,11 +51,11 @@
     "emitDecoratorMetadata": true,
     "preserveConstEnums": true,
     "preserveSymlinks": false,
-    
+
     // Output
     "outDir": "./dist",
     "rootDir": "./src",
-    
+
     // Path Mapping
     "baseUrl": ".",
     "paths": {

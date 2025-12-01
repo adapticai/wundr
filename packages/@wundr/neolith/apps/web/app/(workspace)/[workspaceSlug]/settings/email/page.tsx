@@ -12,7 +12,9 @@ interface EmailSettingsPageProps {
   params: Promise<{ workspaceSlug: string }>;
 }
 
-export default async function EmailSettingsPage({ params }: EmailSettingsPageProps) {
+export default async function EmailSettingsPage({
+  params,
+}: EmailSettingsPageProps) {
   const { workspaceSlug } = await params;
 
   // Redirect to notifications page

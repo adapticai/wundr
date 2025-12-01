@@ -108,60 +108,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Send email based on template type
     switch (template) {
       case 'welcome':
-        result = await sendWelcomeEmail(
-          to,
-          props.username || 'Test User',
-          props.loginUrl || `${baseUrl}/login`
-        );
+        result = await sendWelcomeEmail(to, props.username || 'Test User');
         break;
 
       case 'password-reset':
-        result = await sendPasswordResetEmail(
-          to,
-          props.resetUrl || `${baseUrl}/reset-password?token=test-token`,
-          props.username
-        );
+        result = await sendPasswordResetEmail(to, props.token || 'test-token');
         break;
 
       case 'verification':
-        result = await sendVerificationEmail(
-          to,
-          props.verificationUrl || `${baseUrl}/verify-email?token=test-token`,
-          props.username
-        );
+        result = await sendVerificationEmail(to, props.token || 'test-token');
         break;
 
       case 'invitation':
-        result = await sendInvitationEmail({
-          email: to,
-          inviterName: props.inviterName || 'Admin User',
-          workspaceName: props.workspaceName || 'Test Workspace',
-          invitationUrl: props.inviteUrl || `${baseUrl}/invite/test-token`,
-        });
+        result = await sendInvitationEmail(
+          to,
+          props.inviterName || 'Admin User',
+          props.workspaceName || 'Test Workspace',
+          props.token || 'test-token'
+        );
         break;
 
       case 'notification':
-        result = await sendNotificationEmail({
-          email: to,
-          username: props.username,
-          title: props.title || 'Test Notification',
-          message: props.message || 'This is a test notification.',
-          actionUrl: props.actionUrl || `${baseUrl}/dashboard`,
-          actionText: props.actionText || 'View',
-          type: props.type || 'system',
-          timestamp: props.timestamp ? new Date(props.timestamp) : new Date(),
-          unsubscribeUrl: props.unsubscribeUrl,
-          preferencesUrl: props.preferencesUrl,
-        });
+        result = await sendNotificationEmail(
+          to,
+          props.title || 'Test Notification',
+          props.message || 'This is a test notification.'
+        );
         break;
 
       case 'password-changed':
-        result = await sendPasswordChangedEmail(
-          to,
-          props.username || 'Test User',
-          props.timestamp ? new Date(props.timestamp) : new Date(),
-          props.ipAddress || '127.0.0.1'
-        );
+        result = await sendPasswordChangedEmail(to);
         break;
 
       default:
@@ -188,7 +164,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           success: true,
           message: `Test email sent successfully to ${to}`,
           template,
-          data: result.data,
+          messageId: result.messageId,
         },
         { status: 200 }
       );

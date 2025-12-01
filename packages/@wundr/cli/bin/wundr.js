@@ -2,7 +2,7 @@
 
 /**
  * Wundr CLI Entry Point
- * 
+ *
  * This is the main executable for the Wundr CLI tool.
  * It handles cross-platform compatibility and bootstraps the CLI.
  */
@@ -26,7 +26,9 @@ if (isDevelopment && existsSync(srcPath)) {
     if (existsSync(distPath)) {
       require(distPath);
     } else {
-      console.error('No compiled JavaScript found. Please run "npm run build" first.');
+      console.error(
+        'No compiled JavaScript found. Please run "npm run build" first.'
+      );
       process.exit(1);
     }
   }
@@ -38,6 +40,8 @@ if (isDevelopment && existsSync(srcPath)) {
     cli.main();
   }
 } else {
-  console.error('Wundr CLI not properly installed. Please reinstall the package.');
+  console.error(
+    'Wundr CLI not properly installed. Please reinstall the package.'
+  );
   process.exit(1);
 }

@@ -57,8 +57,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -71,9 +74,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -85,7 +88,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       select: { workspaceId: true },
     });
 
-    const accessibleWorkspaceIds = userWorkspaces.map((m) => m.workspaceId);
+    const accessibleWorkspaceIds = userWorkspaces.map(m => m.workspaceId);
 
     if (!accessibleWorkspaceIds.length) {
       return NextResponse.json({
@@ -102,10 +105,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check authorization for specific workspace filter
-    if (filters.workspaceId && !accessibleWorkspaceIds.includes(filters.workspaceId)) {
+    if (
+      filters.workspaceId &&
+      !accessibleWorkspaceIds.includes(filters.workspaceId)
+    ) {
       return NextResponse.json(
-        createErrorResponse('Access denied to this workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Access denied to this workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -131,7 +140,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ...(filters.channelId && { channelId: filters.channelId }),
       ...(filters.assignedToId && { assignedToId: filters.assignedToId }),
       ...(statusArray && { status: { in: statusArray as TaskStatus[] } }),
-      ...(priorityArray && { priority: { in: priorityArray as TaskPriority[] } }),
+      ...(priorityArray && {
+        priority: { in: priorityArray as TaskPriority[] },
+      }),
       ...(filters.search && {
         OR: [
           { title: { contains: filters.search, mode: 'insensitive' } },
@@ -207,8 +218,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/tasks] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -256,8 +270,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -267,8 +284,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -279,9 +299,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -299,9 +319,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          TASK_ERROR_CODES.FORBIDDEN,
+          TASK_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -313,10 +333,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       select: { id: true, workspaceId: true },
     });
 
-    if (!orchestrator || (orchestrator.workspaceId && orchestrator.workspaceId !== input.workspaceId)) {
+    if (
+      !orchestrator ||
+      (orchestrator.workspaceId &&
+        orchestrator.workspaceId !== input.workspaceId)
+    ) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found in this workspace', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found in this workspace',
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -324,7 +351,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const depValidation = await validateTaskDependencies(
       'new-task', // temporary ID for new task
       input.dependsOn || [],
-      input.workspaceId,
+      input.workspaceId
     );
 
     if (!depValidation.isValid) {
@@ -335,9 +362,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           {
             circularDependencies: depValidation.circularDependencies,
             unresolvedDependencies: depValidation.unresolvedDependencies,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -350,8 +377,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       if (!assignee) {
         return NextResponse.json(
-          createErrorResponse('Assignee not found', TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Assignee not found',
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -388,7 +418,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    return NextResponse.json({ data: task, message: 'Task created successfully' }, { status: 201 });
+    return NextResponse.json(
+      { data: task, message: 'Task created successfully' },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[POST /api/tasks] Error:', error);
 
@@ -396,15 +429,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          createErrorResponse('Required resource not found', TASK_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Required resource not found',
+            TASK_ERROR_CODES.NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

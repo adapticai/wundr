@@ -69,7 +69,7 @@ export function MobileNavDrawer({
         setIsOpen(newOpen);
       }
     },
-    [onOpenChange],
+    [onOpenChange]
   );
 
   const handleItemClick = React.useCallback(
@@ -82,7 +82,7 @@ export function MobileNavDrawer({
         item.onClick();
       }
     },
-    [handleOpenChange],
+    [handleOpenChange]
   );
 
   const isControlled = open !== undefined;
@@ -92,38 +92,40 @@ export function MobileNavDrawer({
     <Drawer open={drawerOpen} onOpenChange={handleOpenChange}>
       <DrawerTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          aria-label="Open menu"
+          variant='ghost'
+          size='icon'
+          className='md:hidden'
+          aria-label='Open menu'
         >
-          <Menu className="h-5 w-5" />
+          <Menu className='h-5 w-5' />
         </Button>
       </DrawerTrigger>
       <DrawerContent className={cn('max-h-[85vh]', className)}>
-        <DrawerHeader className="text-left">
-          <div className="flex items-center justify-between">
+        <DrawerHeader className='text-left'>
+          <div className='flex items-center justify-between'>
             <div>
               <DrawerTitle>{title}</DrawerTitle>
-              {description && <DrawerDescription>{description}</DrawerDescription>}
+              {description && (
+                <DrawerDescription>{description}</DrawerDescription>
+              )}
             </div>
             <DrawerClose asChild>
-              <Button variant="ghost" size="icon">
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
+              <Button variant='ghost' size='icon'>
+                <X className='h-5 w-5' />
+                <span className='sr-only'>Close</span>
               </Button>
             </DrawerClose>
           </div>
         </DrawerHeader>
 
-        {header && <div className="px-4">{header}</div>}
+        {header && <div className='px-4'>{header}</div>}
 
-        <nav className="flex flex-col gap-1 p-4 overflow-y-auto">
+        <nav className='flex flex-col gap-1 p-4 overflow-y-auto'>
           {items.map((item, index) => (
             <a
               key={index}
               href={item.href}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 handleItemClick(item);
                 window.location.href = item.href;
@@ -132,11 +134,11 @@ export function MobileNavDrawer({
                 'flex items-center gap-3 rounded-lg px-3 py-3',
                 'text-sm font-medium transition-colors',
                 'hover:bg-accent hover:text-accent-foreground',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               )}
             >
               {item.icon && (
-                <span className="flex h-5 w-5 items-center justify-center">
+                <span className='flex h-5 w-5 items-center justify-center'>
                   {item.icon}
                 </span>
               )}
@@ -146,9 +148,7 @@ export function MobileNavDrawer({
         </nav>
 
         {footer && (
-          <div className="border-t border-border p-4 mt-auto">
-            {footer}
-          </div>
+          <div className='border-t border-border p-4 mt-auto'>{footer}</div>
         )}
       </DrawerContent>
     </Drawer>
@@ -177,7 +177,7 @@ export function MobileNavDrawerItem({
         'text-sm font-medium transition-colors text-left',
         'hover:bg-accent hover:text-accent-foreground',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        className,
+        className
       )}
     >
       {children}

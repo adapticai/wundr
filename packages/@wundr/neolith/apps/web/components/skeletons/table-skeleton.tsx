@@ -22,36 +22,36 @@ export function TableSkeleton({
     <div className={cn('space-y-4', className)}>
       {/* Filters Section */}
       {showFilters && (
-        <div className="flex flex-wrap items-center gap-4">
-          <Skeleton className="h-10 flex-1 min-w-[200px] rounded-lg" />
-          <Skeleton className="h-10 w-32 rounded-lg" />
-          <Skeleton className="h-10 w-32 rounded-lg" />
+        <div className='flex flex-wrap items-center gap-4'>
+          <Skeleton className='h-10 flex-1 min-w-[200px] rounded-lg' />
+          <Skeleton className='h-10 w-32 rounded-lg' />
+          <Skeleton className='h-10 w-32 rounded-lg' />
         </div>
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full">
+      <div className='overflow-x-auto rounded-lg border border-border'>
+        <table className='w-full'>
           {showHeader && (
-            <thead className="bg-muted">
+            <thead className='bg-muted'>
               <tr>
                 {[...Array(columns)].map((_, i) => (
-                  <th key={i} className="px-4 py-3 text-left">
-                    <Skeleton className="h-4 w-24" />
+                  <th key={i} className='px-4 py-3 text-left'>
+                    <Skeleton className='h-4 w-24' />
                   </th>
                 ))}
               </tr>
             </thead>
           )}
-          <tbody className="divide-y divide-border">
+          <tbody className='divide-y divide-border'>
             {[...Array(rows)].map((_, rowIndex) => (
-              <tr key={rowIndex} className="hover:bg-muted/50">
+              <tr key={rowIndex} className='hover:bg-muted/50'>
                 {[...Array(columns)].map((_, colIndex) => (
-                  <td key={colIndex} className="px-4 py-3">
+                  <td key={colIndex} className='px-4 py-3'>
                     {colIndex === 0 ? (
                       <TableCellWithAvatarSkeleton />
                     ) : colIndex === columns - 1 ? (
-                      <Skeleton className="h-8 w-16 ml-auto rounded" />
+                      <Skeleton className='h-8 w-16 ml-auto rounded' />
                     ) : (
                       <Skeleton className={cn('h-4', getRandomWidth())} />
                     )}
@@ -65,11 +65,11 @@ export function TableSkeleton({
 
       {/* Pagination */}
       {showPagination && (
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-4 w-48" />
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-20 rounded" />
-            <Skeleton className="h-9 w-20 rounded" />
+        <div className='flex items-center justify-between'>
+          <Skeleton className='h-4 w-48' />
+          <div className='flex gap-2'>
+            <Skeleton className='h-9 w-20 rounded' />
+            <Skeleton className='h-9 w-20 rounded' />
           </div>
         </div>
       )}
@@ -79,11 +79,11 @@ export function TableSkeleton({
 
 function TableCellWithAvatarSkeleton() {
   return (
-    <div className="flex items-center gap-3">
-      <Skeleton className="h-9 w-9 rounded-full shrink-0" />
-      <div className="space-y-1">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-3 w-24" />
+    <div className='flex items-center gap-3'>
+      <Skeleton className='h-9 w-9 rounded-full shrink-0' />
+      <div className='space-y-1'>
+        <Skeleton className='h-4 w-32' />
+        <Skeleton className='h-3 w-24' />
       </div>
     </div>
   );
@@ -122,7 +122,11 @@ export function AuditLogTableSkeleton({ className }: { className?: string }) {
   );
 }
 
-export function IntegrationTableSkeleton({ className }: { className?: string }) {
+export function IntegrationTableSkeleton({
+  className,
+}: {
+  className?: string;
+}) {
   return (
     <TableSkeleton
       className={className}

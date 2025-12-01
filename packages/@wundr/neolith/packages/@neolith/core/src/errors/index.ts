@@ -29,7 +29,7 @@ export class GenesisError extends Error {
     message: string,
     code: string,
     statusCode: number = 500,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'GenesisError';
@@ -63,12 +63,15 @@ export class GenesisError extends Error {
  * Error thrown when a Orchestrator is not found.
  */
 export class OrchestratorNotFoundError extends GenesisError {
-  constructor(identifier: string, identifierType: 'id' | 'slug' | 'email' = 'id') {
+  constructor(
+    identifier: string,
+    identifierType: 'id' | 'slug' | 'email' = 'id'
+  ) {
     super(
       `Orchestrator not found with ${identifierType}: ${identifier}`,
       'VP_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'VPNotFoundError';
   }
@@ -83,7 +86,7 @@ export class OrchestratorAlreadyExistsError extends GenesisError {
       `Orchestrator already exists with ${identifierType}: ${identifier}`,
       'VP_ALREADY_EXISTS',
       409,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'VPAlreadyExistsError';
   }
@@ -112,7 +115,7 @@ export class OrchestratorOperationNotPermittedError extends GenesisError {
       `Orchestrator operation '${operation}' not permitted: ${reason}`,
       'VP_OPERATION_NOT_PERMITTED',
       403,
-      { operation, reason },
+      { operation, reason }
     );
     this.name = 'VPOperationNotPermittedError';
   }
@@ -127,7 +130,7 @@ export class OrchestratorInvalidStateError extends GenesisError {
       `Orchestrator ${vpId} is in state '${currentState}', but '${requiredState}' is required`,
       'VP_INVALID_STATE',
       409,
-      { vpId, currentState, requiredState },
+      { vpId, currentState, requiredState }
     );
     this.name = 'VPInvalidStateError';
   }
@@ -141,7 +144,11 @@ export class OrchestratorInvalidStateError extends GenesisError {
  * Error thrown when API key operations fail.
  */
 export class APIKeyError extends GenesisError {
-  constructor(message: string, code: string, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, 400, metadata);
     this.name = 'APIKeyError';
   }
@@ -151,7 +158,9 @@ export class APIKeyError extends GenesisError {
  * Error thrown when API key is invalid.
  */
 export class InvalidAPIKeyError extends GenesisError {
-  constructor(reason: 'invalid' | 'expired' | 'revoked' | 'malformed' = 'invalid') {
+  constructor(
+    reason: 'invalid' | 'expired' | 'revoked' | 'malformed' = 'invalid'
+  ) {
     const messages = {
       invalid: 'The provided API key is invalid',
       expired: 'The API key has expired',
@@ -173,7 +182,7 @@ export class APIKeyGenerationError extends GenesisError {
       `Failed to generate API key for Orchestrator ${vpId}: ${reason}`,
       'API_KEY_GENERATION_FAILED',
       500,
-      { vpId, reason },
+      { vpId, reason }
     );
     this.name = 'APIKeyGenerationError';
   }
@@ -192,7 +201,7 @@ export class SessionManagerNotFoundError extends GenesisError {
       `Session Manager not found with ${identifierType}: ${identifier}`,
       'SESSION_MANAGER_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'SessionManagerNotFoundError';
   }
@@ -207,7 +216,7 @@ export class SessionManagerAlreadyExistsError extends GenesisError {
       `Session Manager already exists with ${identifierType}: ${identifier}`,
       'SESSION_MANAGER_ALREADY_EXISTS',
       409,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'SessionManagerAlreadyExistsError';
   }
@@ -236,7 +245,7 @@ export class SessionManagerOperationNotPermittedError extends GenesisError {
       `Session Manager operation '${operation}' not permitted: ${reason}`,
       'SESSION_MANAGER_OPERATION_NOT_PERMITTED',
       403,
-      { operation, reason },
+      { operation, reason }
     );
     this.name = 'SessionManagerOperationNotPermittedError';
   }
@@ -251,7 +260,7 @@ export class SessionManagerInvalidStateError extends GenesisError {
       `Session Manager ${smId} is in state '${currentState}', but '${requiredState}' is required`,
       'SESSION_MANAGER_INVALID_STATE',
       409,
-      { smId, currentState, requiredState },
+      { smId, currentState, requiredState }
     );
     this.name = 'SessionManagerInvalidStateError';
   }
@@ -270,7 +279,7 @@ export class OrganizationNotFoundError extends GenesisError {
       `Organization not found with ${identifierType}: ${identifier}`,
       'ORGANIZATION_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'OrganizationNotFoundError';
   }
@@ -289,7 +298,7 @@ export class DatabaseError extends GenesisError {
       `Database operation '${operation}' failed: ${originalError?.message || 'Unknown error'}`,
       'DATABASE_ERROR',
       500,
-      { operation, originalError: originalError?.message },
+      { operation, originalError: originalError?.message }
     );
     this.name = 'DatabaseError';
   }
@@ -304,7 +313,7 @@ export class TransactionError extends GenesisError {
       `Transaction failed during '${operation}': ${originalError?.message || 'Unknown error'}`,
       'TRANSACTION_ERROR',
       500,
-      { operation, originalError: originalError?.message },
+      { operation, originalError: originalError?.message }
     );
     this.name = 'TransactionError';
   }
@@ -354,14 +363,11 @@ export function wrapError(error: unknown, context: string): GenesisError {
       `${context}: ${error.message}`,
       'WRAPPED_ERROR',
       500,
-      { originalError: error.message, context },
+      { originalError: error.message, context }
     );
   }
 
-  return new GenesisError(
-    `${context}: Unknown error`,
-    'UNKNOWN_ERROR',
-    500,
-    { context },
-  );
+  return new GenesisError(`${context}: Unknown error`, 'UNKNOWN_ERROR', 500, {
+    context,
+  });
 }

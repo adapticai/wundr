@@ -2,7 +2,9 @@
 
 ## Overview
 
-The `GlobalSearchBar` component is a sophisticated command palette-style search interface for the workspace header. It provides instant search across channels, messages, members, workflows, and virtual people with an intuitive keyboard-driven interface.
+The `GlobalSearchBar` component is a sophisticated command palette-style search interface for the
+workspace header. It provides instant search across channels, messages, members, workflows, and
+virtual people with an intuitive keyboard-driven interface.
 
 ## File Location
 
@@ -72,7 +74,7 @@ import { GlobalSearchBar } from '@/components/layout/global-search-bar';
 function WorkspaceHeader() {
   return (
     <header>
-      <GlobalSearchBar workspaceId="workspace-123" />
+      <GlobalSearchBar workspaceId='workspace-123' />
     </header>
   );
 }
@@ -81,10 +83,7 @@ function WorkspaceHeader() {
 ### With Custom Styling
 
 ```tsx
-<GlobalSearchBar 
-  workspaceId="workspace-123" 
-  className="w-full max-w-xl"
-/>
+<GlobalSearchBar workspaceId='workspace-123' className='w-full max-w-xl' />
 ```
 
 ## API Integration
@@ -98,6 +97,7 @@ GET /api/workspaces/{workspaceId}/search?q={query}&limit=15&highlight=true
 ```
 
 **Parameters:**
+
 - `q` (required): Search query string
 - `limit` (optional): Maximum results to return (default: 15)
 - `highlight` (optional): Enable result highlighting (default: true)
@@ -136,11 +136,11 @@ GET /api/workspaces/{workspaceId}/search?q={query}&limit=15&highlight=true
 ### State Management
 
 ```typescript
-const [open, setOpen] = useState(false);              // Dialog visibility
-const [query, setQuery] = useState('');               // Search input value
-const [results, setResults] = useState<SearchResult[]>([]);  // Search results
+const [open, setOpen] = useState(false); // Dialog visibility
+const [query, setQuery] = useState(''); // Search input value
+const [results, setResults] = useState<SearchResult[]>([]); // Search results
 const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
-const [isLoading, setIsLoading] = useState(false);    // Loading indicator
+const [isLoading, setIsLoading] = useState(false); // Loading indicator
 const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 ```
 
@@ -168,11 +168,11 @@ const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
 ```tsx
 <button
-  type="button"
+  type='button'
   onClick={() => setOpen(true)}
-  className="flex items-center gap-2 px-3 h-9 rounded-lg border"
+  className='flex items-center gap-2 px-3 h-9 rounded-lg border'
 >
-  <Search className="h-4 w-4" />
+  <Search className='h-4 w-4' />
   <span>Search...</span>
   <kbd>⌘K</kbd>
 </button>
@@ -181,6 +181,7 @@ const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 ### Search Dialog
 
 Uses shadcn Command components:
+
 - `Command` - Container
 - `CommandInput` - Search input
 - `CommandList` - Results list
@@ -193,20 +194,16 @@ Uses shadcn Command components:
 
 ```tsx
 <CommandItem onSelect={() => handleSelect(result)}>
-  <Icon className="mr-2 h-4 w-4" />
-  <div className="flex flex-col flex-1 gap-1">
-    <div className="flex items-center gap-2">
-      <span className="font-medium">{result.name}</span>
+  <Icon className='mr-2 h-4 w-4' />
+  <div className='flex flex-col flex-1 gap-1'>
+    <div className='flex items-center gap-2'>
+      <span className='font-medium'>{result.name}</span>
       {result.metadata?.memberCount && (
-        <Badge variant="secondary">
-          {result.metadata.memberCount} members
-        </Badge>
+        <Badge variant='secondary'>{result.metadata.memberCount} members</Badge>
       )}
     </div>
     {result.description && (
-      <span className="text-xs text-muted-foreground">
-        {result.description}
-      </span>
+      <span className='text-xs text-muted-foreground'>{result.description}</span>
     )}
   </div>
 </CommandItem>
@@ -217,6 +214,7 @@ Uses shadcn Command components:
 ### Theme Integration
 
 The component uses Tailwind CSS with theme variables:
+
 - `bg-background` - Background colors
 - `text-foreground` - Text colors
 - `border-input` - Border colors
@@ -249,6 +247,7 @@ debounceTimerRef.current = setTimeout(() => {
 ### Memoization
 
 Callback functions are memoized with `useCallback`:
+
 - `handleQueryChange`
 - `handleSelect`
 - `handleRecentSearchClick`
@@ -285,8 +284,8 @@ useEffect(() => {
   ...
 </button>
 
-<div 
-  role="button" 
+<div
+  role="button"
   tabIndex={0}
   aria-label="Close search"
 >
@@ -307,6 +306,7 @@ useEffect(() => {
 **Key:** `recent-searches-{workspaceId}`
 
 **Value:**
+
 ```json
 [
   {
@@ -321,6 +321,7 @@ useEffect(() => {
 ```
 
 **Storage Limits:**
+
 - Maximum 5 recent searches per workspace
 - Sorted by timestamp (most recent first)
 - Deduplicated by query string
@@ -351,6 +352,7 @@ useEffect(() => {
 ### Unit Tests
 
 Test scenarios:
+
 1. Trigger button opens dialog
 2. Keyboard shortcut opens dialog
 3. Search query triggers debounced API call
@@ -408,21 +410,25 @@ Test scenarios:
 ### Common Issues
 
 **Search not triggering:**
+
 - Ensure workspaceId prop is provided
 - Check API endpoint is accessible
 - Verify user has workspace access
 
 **Keyboard shortcut not working:**
+
 - Check for conflicting shortcuts
 - Verify browser allows keyboard events
 - Test in different browsers
 
 **Recent searches not persisting:**
+
 - Check localStorage is enabled
 - Verify storage quota not exceeded
 - Test in incognito mode
 
 **Results not displaying:**
+
 - Check API response format
 - Verify result transformation logic
 - Inspect console for errors
@@ -436,6 +442,7 @@ Test scenarios:
 ## Support
 
 For issues or questions about the GlobalSearchBar component:
+
 1. Check this documentation
 2. Review the component source code
 3. Test with the search API directly

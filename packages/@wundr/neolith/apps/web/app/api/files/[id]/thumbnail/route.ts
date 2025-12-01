@@ -42,7 +42,7 @@ function generateThumbnailUrl(
   s3Key: string,
   s3Bucket: string,
   width: number = 200,
-  height: number = 200,
+  height: number = 200
 ): string {
   const cdnDomain = process.env.CDN_DOMAIN;
   const region = process.env.AWS_REGION ?? 'us-east-1';
@@ -76,15 +76,18 @@ function generateThumbnailUrl(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -93,8 +96,11 @@ export async function GET(
     const paramResult = fileIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid file ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid file ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -125,7 +131,7 @@ export async function GET(
     if (!file) {
       return NextResponse.json(
         createErrorResponse('File not found', UPLOAD_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -135,21 +141,19 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Thumbnails are only available for image files',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check if file is ready
     if (file.status !== 'READY') {
       return NextResponse.json(
-        createErrorResponse(
-          'File is not ready',
-          UPLOAD_ERROR_CODES.NOT_FOUND,
-          { status: file.status },
-        ),
-        { status: 404 },
+        createErrorResponse('File is not ready', UPLOAD_ERROR_CODES.NOT_FOUND, {
+          status: file.status,
+        }),
+        { status: 404 }
       );
     }
 
@@ -167,15 +171,16 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Generate thumbnail URL
-    const thumbnailUrl = file.thumbnailUrl
-      ?? generateThumbnailUrl(file.s3Key, file.s3Bucket, validWidth, validHeight);
+    const thumbnailUrl =
+      file.thumbnailUrl ??
+      generateThumbnailUrl(file.s3Key, file.s3Bucket, validWidth, validHeight);
 
     // Redirect to thumbnail URL
     return NextResponse.redirect(thumbnailUrl);
@@ -184,9 +189,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

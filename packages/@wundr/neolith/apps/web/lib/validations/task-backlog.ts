@@ -24,7 +24,10 @@ export const assignTaskSchema = z.object({
   }),
 
   /** Optional notes about the assignment */
-  notes: z.string().max(1000, 'Notes must be less than 1000 characters').optional(),
+  notes: z
+    .string()
+    .max(1000, 'Notes must be less than 1000 characters')
+    .optional(),
 
   /** Optional metadata */
   metadata: z.record(z.unknown()).optional(),
@@ -40,10 +43,16 @@ export const completeTaskSchema = z.object({
   result: z.record(z.unknown()).optional(),
 
   /** Completion notes */
-  notes: z.string().max(5000, 'Notes must be less than 5000 characters').optional(),
+  notes: z
+    .string()
+    .max(5000, 'Notes must be less than 5000 characters')
+    .optional(),
 
   /** Artifacts produced (URLs, file IDs, etc.) */
-  artifacts: z.array(z.string().max(500)).max(50, 'Maximum 50 artifacts').default([]),
+  artifacts: z
+    .array(z.string().max(500))
+    .max(50, 'Maximum 50 artifacts')
+    .default([]),
 
   /** Metadata about completion */
   metadata: z.record(z.unknown()).optional(),
@@ -83,7 +92,7 @@ export const vpBacklogFiltersSchema = z.object({
   /** Include completed tasks */
   includeCompleted: z
     .union([z.boolean(), z.string()])
-    .transform((val) => {
+    .transform(val => {
       if (typeof val === 'string') {
         return val === 'true';
       }
@@ -98,7 +107,9 @@ export const vpBacklogFiltersSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(50),
 
   /** Sort field */
-  sortBy: z.enum(['priority', 'dueDate', 'createdAt', 'status']).default('priority'),
+  sortBy: z
+    .enum(['priority', 'dueDate', 'createdAt', 'status'])
+    .default('priority'),
 
   /** Sort direction */
   sortOrder: z.enum(['asc', 'desc']).default('asc'),
@@ -106,7 +117,7 @@ export const vpBacklogFiltersSchema = z.object({
   /** Include statistics */
   includeStats: z
     .union([z.boolean(), z.string()])
-    .transform((val) => {
+    .transform(val => {
       if (typeof val === 'string') {
         return val === 'true';
       }
@@ -122,7 +133,10 @@ export type VPBacklogFiltersInput = z.infer<typeof vpBacklogFiltersSchema>;
  */
 export const addBacklogTaskSchema = z.object({
   /** Task title/heading */
-  title: z.string().min(1, 'Title is required').max(500, 'Title must be less than 500 characters'),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(500, 'Title must be less than 500 characters'),
 
   /** Detailed task description */
   description: z
@@ -159,7 +173,11 @@ export const addBacklogTaskSchema = z.object({
   dependsOn: z.array(z.string().cuid('Invalid task ID')).default([]),
 
   /** Assigned to user ID (can be human or VP) */
-  assignedToId: z.string().cuid('Invalid assignee ID format').optional().nullable(),
+  assignedToId: z
+    .string()
+    .cuid('Invalid assignee ID format')
+    .optional()
+    .nullable(),
 
   /** Additional metadata */
   metadata: z.record(z.unknown()).optional(),
@@ -183,4 +201,5 @@ export const BACKLOG_ERROR_CODES = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
-export type BacklogErrorCode = (typeof BACKLOG_ERROR_CODES)[keyof typeof BACKLOG_ERROR_CODES];
+export type BacklogErrorCode =
+  (typeof BACKLOG_ERROR_CODES)[keyof typeof BACKLOG_ERROR_CODES];

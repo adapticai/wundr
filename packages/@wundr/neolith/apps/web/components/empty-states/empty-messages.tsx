@@ -17,7 +17,7 @@ export function EmptyMessages({ channelName }: EmptyMessagesProps) {
     <EmptyState
       icon={MessageSquare}
       title={channelName ? `Welcome to #${channelName}` : 'No messages yet'}
-      description="This is the beginning of your conversation. Send a message to get started."
+      description='This is the beginning of your conversation. Send a message to get started.'
     />
   );
 }

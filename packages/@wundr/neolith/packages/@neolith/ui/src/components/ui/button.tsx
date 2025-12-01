@@ -75,7 +75,7 @@ const buttonVariants = cva(
       variant: 'primary',
       size: 'md',
     },
-  },
+  }
 );
 
 /**
@@ -127,7 +127,17 @@ export interface ButtonProps
  * @returns A styled button element
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild: _asChild = false, type = 'button', ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild: _asChild = false,
+      type = 'button',
+      ...props
+    },
+    ref
+  ) => {
     // Note: asChild support would require @radix-ui/react-slot
     // For now, we render a standard button element (asChild param reserved for future use)
     return (
@@ -138,7 +148,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       />
     );
-  },
+  }
 );
 
 Button.displayName = 'Button';

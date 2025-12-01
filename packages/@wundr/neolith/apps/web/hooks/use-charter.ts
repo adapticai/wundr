@@ -127,15 +127,37 @@ export interface UseCharterVersionsReturn {
  */
 export interface UseCharterMutationsReturn {
   /** Create a new charter version */
-  createVersion: (charterId: string, input: CreateCharterVersionInput, signal?: AbortSignal) => Promise<CharterVersion | null>;
+  createVersion: (
+    charterId: string,
+    input: CreateCharterVersionInput,
+    signal?: AbortSignal
+  ) => Promise<CharterVersion | null>;
   /** Update charter version metadata */
-  updateVersion: (charterId: string, version: number, input: UpdateCharterVersionInput, signal?: AbortSignal) => Promise<CharterVersion | null>;
+  updateVersion: (
+    charterId: string,
+    version: number,
+    input: UpdateCharterVersionInput,
+    signal?: AbortSignal
+  ) => Promise<CharterVersion | null>;
   /** Activate a specific version */
-  activateVersion: (charterId: string, version: number, signal?: AbortSignal) => Promise<CharterVersion | null>;
+  activateVersion: (
+    charterId: string,
+    version: number,
+    signal?: AbortSignal
+  ) => Promise<CharterVersion | null>;
   /** Rollback to a previous version */
-  rollback: (charterId: string, input: RollbackCharterInput, signal?: AbortSignal) => Promise<CharterVersion | null>;
+  rollback: (
+    charterId: string,
+    input: RollbackCharterInput,
+    signal?: AbortSignal
+  ) => Promise<CharterVersion | null>;
   /** Get diff between two versions */
-  getDiff: (charterId: string, v1: number, v2: number, signal?: AbortSignal) => Promise<CharterDiff | null>;
+  getDiff: (
+    charterId: string,
+    v1: number,
+    v2: number,
+    signal?: AbortSignal
+  ) => Promise<CharterDiff | null>;
   /** Whether a mutation is in progress */
   isLoading: boolean;
   /** Error object if mutation failed */
@@ -177,55 +199,68 @@ export function useCharter(orchestratorId: string): UseCharterReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchCharter = useCallback(async (signal?: AbortSignal): Promise<void> => {
-    if (!orchestratorId) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // First, get the orchestrator to find its charter
-      const orchestratorResponse = await fetch(`/api/orchestrators/${orchestratorId}`, { signal });
-
-      if (!orchestratorResponse.ok) {
-        const errorData = await orchestratorResponse.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to fetch orchestrator: ${orchestratorResponse.status}`);
+  const fetchCharter = useCallback(
+    async (signal?: AbortSignal): Promise<void> => {
+      if (!orchestratorId) {
+        return;
       }
 
-      const orchestratorResult = await orchestratorResponse.json();
-      const orchestratorCharter = orchestratorResult.data?.charter;
+      setIsLoading(true);
+      setError(null);
 
-      if (!orchestratorCharter) {
+      try {
+        // First, get the orchestrator to find its charter
+        const orchestratorResponse = await fetch(
+          `/api/orchestrators/${orchestratorId}`,
+          { signal }
+        );
+
+        if (!orchestratorResponse.ok) {
+          const errorData = await orchestratorResponse.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to fetch orchestrator: ${orchestratorResponse.status}`
+          );
+        }
+
+        const orchestratorResult = await orchestratorResponse.json();
+        const orchestratorCharter = orchestratorResult.data?.charter;
+
+        if (!orchestratorCharter) {
+          setCharter(null);
+          setVersion(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Set charter directly from orchestrator if it's embedded
+        if (typeof orchestratorCharter === 'object') {
+          setCharter(orchestratorCharter as Charter);
+          setVersion(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Otherwise, fetch active charter version
+        // Note: We need charterId to fetch versions, which might not be directly available
+        // This is a limitation of the current API structure
         setCharter(null);
         setVersion(null);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        setError(
+          err instanceof Error
+            ? err
+            : new Error('Unknown error occurred while fetching charter')
+        );
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      // Set charter directly from orchestrator if it's embedded
-      if (typeof orchestratorCharter === 'object') {
-        setCharter(orchestratorCharter as Charter);
-        setVersion(null);
-        setIsLoading(false);
-        return;
-      }
-
-      // Otherwise, fetch active charter version
-      // Note: We need charterId to fetch versions, which might not be directly available
-      // This is a limitation of the current API structure
-      setCharter(null);
-      setVersion(null);
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
-      }
-      setError(err instanceof Error ? err : new Error('Unknown error occurred while fetching charter'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [orchestratorId]);
+    },
+    [orchestratorId]
+  );
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -297,60 +332,75 @@ export function useCharterVersions(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchVersions = useCallback(async (signal?: AbortSignal): Promise<void> => {
-    if (!charterId) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      if (options?.isActive !== undefined) {
-        params.set('isActive', String(options.isActive));
-      }
-      if (options?.page !== undefined) {
-        params.set('page', String(options.page));
-      }
-      if (options?.limit !== undefined) {
-        params.set('limit', String(options.limit));
-      }
-
-      const queryString = params.toString();
-      const url = queryString
-        ? `/api/charters/${charterId}/versions?${queryString}`
-        : `/api/charters/${charterId}/versions`;
-
-      const response = await fetch(url, { signal });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to fetch charter versions: ${response.status}`);
-      }
-
-      const result: { data: CharterVersion[]; pagination?: PaginationMetadata } = await response.json();
-
-      // Transform date strings to Date objects
-      const transformedVersions = (result.data || []).map((v) => ({
-        ...v,
-        createdAt: new Date(v.createdAt),
-        updatedAt: new Date(v.updatedAt),
-      }));
-
-      setVersions(transformedVersions);
-      setPagination(result.pagination || null);
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+  const fetchVersions = useCallback(
+    async (signal?: AbortSignal): Promise<void> => {
+      if (!charterId) {
         return;
       }
-      setError(err instanceof Error ? err : new Error('Unknown error occurred while fetching charter versions'));
-      setVersions([]);
-      setPagination(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [charterId, options?.isActive, options?.page, options?.limit]);
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams();
+        if (options?.isActive !== undefined) {
+          params.set('isActive', String(options.isActive));
+        }
+        if (options?.page !== undefined) {
+          params.set('page', String(options.page));
+        }
+        if (options?.limit !== undefined) {
+          params.set('limit', String(options.limit));
+        }
+
+        const queryString = params.toString();
+        const url = queryString
+          ? `/api/charters/${charterId}/versions?${queryString}`
+          : `/api/charters/${charterId}/versions`;
+
+        const response = await fetch(url, { signal });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to fetch charter versions: ${response.status}`
+          );
+        }
+
+        const result: {
+          data: CharterVersion[];
+          pagination?: PaginationMetadata;
+        } = await response.json();
+
+        // Transform date strings to Date objects
+        const transformedVersions = (result.data || []).map(v => ({
+          ...v,
+          createdAt: new Date(v.createdAt),
+          updatedAt: new Date(v.updatedAt),
+        }));
+
+        setVersions(transformedVersions);
+        setPagination(result.pagination || null);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        setError(
+          err instanceof Error
+            ? err
+            : new Error(
+                'Unknown error occurred while fetching charter versions'
+              )
+        );
+        setVersions([]);
+        setPagination(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [charterId, options?.isActive, options?.page, options?.limit]
+  );
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -418,195 +468,252 @@ export function useCharterMutations(): UseCharterMutationsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const createVersion = useCallback(async (
-    charterId: string,
-    input: CreateCharterVersionInput,
-    signal?: AbortSignal
-  ): Promise<CharterVersion | null> => {
-    setIsLoading(true);
-    setError(null);
+  const createVersion = useCallback(
+    async (
+      charterId: string,
+      input: CreateCharterVersionInput,
+      signal?: AbortSignal
+    ): Promise<CharterVersion | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/charters/${charterId}/versions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-        signal,
-      });
+      try {
+        const response = await fetch(`/api/charters/${charterId}/versions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+          signal,
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to create charter version: ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to create charter version: ${response.status}`
+          );
+        }
 
-      const result: { data: CharterVersion } = await response.json();
+        const result: { data: CharterVersion } = await response.json();
 
-      // Invalidate SWR cache for this charter
-      mutate(`/api/charters/${charterId}/versions`);
+        // Invalidate SWR cache for this charter
+        mutate(`/api/charters/${charterId}/versions`);
 
-      return result.data;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+        return result.data;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return null;
+        }
+        const error =
+          err instanceof Error
+            ? err
+            : new Error(
+                'Unknown error occurred while creating charter version'
+              );
+        setError(error);
         return null;
+      } finally {
+        setIsLoading(false);
       }
-      const error = err instanceof Error ? err : new Error('Unknown error occurred while creating charter version');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const updateVersion = useCallback(async (
-    charterId: string,
-    version: number,
-    input: UpdateCharterVersionInput,
-    signal?: AbortSignal
-  ): Promise<CharterVersion | null> => {
-    setIsLoading(true);
-    setError(null);
+  const updateVersion = useCallback(
+    async (
+      charterId: string,
+      version: number,
+      input: UpdateCharterVersionInput,
+      signal?: AbortSignal
+    ): Promise<CharterVersion | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/charters/${charterId}/versions/${version}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-        signal,
-      });
+      try {
+        const response = await fetch(
+          `/api/charters/${charterId}/versions/${version}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input),
+            signal,
+          }
+        );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to update charter version: ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to update charter version: ${response.status}`
+          );
+        }
 
-      const result: { data: CharterVersion } = await response.json();
+        const result: { data: CharterVersion } = await response.json();
 
-      // Invalidate SWR cache
-      mutate(`/api/charters/${charterId}/versions`);
-      mutate(`/api/charters/${charterId}/versions/${version}`);
+        // Invalidate SWR cache
+        mutate(`/api/charters/${charterId}/versions`);
+        mutate(`/api/charters/${charterId}/versions/${version}`);
 
-      return result.data;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+        return result.data;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return null;
+        }
+        const error =
+          err instanceof Error
+            ? err
+            : new Error(
+                'Unknown error occurred while updating charter version'
+              );
+        setError(error);
         return null;
+      } finally {
+        setIsLoading(false);
       }
-      const error = err instanceof Error ? err : new Error('Unknown error occurred while updating charter version');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const activateVersion = useCallback(async (
-    charterId: string,
-    version: number,
-    signal?: AbortSignal
-  ): Promise<CharterVersion | null> => {
-    setIsLoading(true);
-    setError(null);
+  const activateVersion = useCallback(
+    async (
+      charterId: string,
+      version: number,
+      signal?: AbortSignal
+    ): Promise<CharterVersion | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/charters/${charterId}/activate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ version }),
-        signal,
-      });
+      try {
+        const response = await fetch(`/api/charters/${charterId}/activate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ version }),
+          signal,
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to activate charter version: ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to activate charter version: ${response.status}`
+          );
+        }
 
-      const result: { data: CharterVersion } = await response.json();
+        const result: { data: CharterVersion } = await response.json();
 
-      // Invalidate SWR cache
-      mutate(`/api/charters/${charterId}/versions`);
+        // Invalidate SWR cache
+        mutate(`/api/charters/${charterId}/versions`);
 
-      return result.data;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+        return result.data;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return null;
+        }
+        const error =
+          err instanceof Error
+            ? err
+            : new Error(
+                'Unknown error occurred while activating charter version'
+              );
+        setError(error);
         return null;
+      } finally {
+        setIsLoading(false);
       }
-      const error = err instanceof Error ? err : new Error('Unknown error occurred while activating charter version');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const rollback = useCallback(async (
-    charterId: string,
-    input: RollbackCharterInput,
-    signal?: AbortSignal
-  ): Promise<CharterVersion | null> => {
-    setIsLoading(true);
-    setError(null);
+  const rollback = useCallback(
+    async (
+      charterId: string,
+      input: RollbackCharterInput,
+      signal?: AbortSignal
+    ): Promise<CharterVersion | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/charters/${charterId}/rollback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-        signal,
-      });
+      try {
+        const response = await fetch(`/api/charters/${charterId}/rollback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+          signal,
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to rollback charter: ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to rollback charter: ${response.status}`
+          );
+        }
 
-      const result: { data: CharterVersion } = await response.json();
+        const result: { data: CharterVersion } = await response.json();
 
-      // Invalidate SWR cache
-      mutate(`/api/charters/${charterId}/versions`);
+        // Invalidate SWR cache
+        mutate(`/api/charters/${charterId}/versions`);
 
-      return result.data;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+        return result.data;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return null;
+        }
+        const error =
+          err instanceof Error
+            ? err
+            : new Error('Unknown error occurred while rolling back charter');
+        setError(error);
         return null;
+      } finally {
+        setIsLoading(false);
       }
-      const error = err instanceof Error ? err : new Error('Unknown error occurred while rolling back charter');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const getDiff = useCallback(async (
-    charterId: string,
-    v1: number,
-    v2: number,
-    signal?: AbortSignal
-  ): Promise<CharterDiff | null> => {
-    setIsLoading(true);
-    setError(null);
+  const getDiff = useCallback(
+    async (
+      charterId: string,
+      v1: number,
+      v2: number,
+      signal?: AbortSignal
+    ): Promise<CharterDiff | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const params = new URLSearchParams({ v1: String(v1), v2: String(v2) });
-      const response = await fetch(`/api/charters/${charterId}/diff?${params}`, { signal });
+      try {
+        const params = new URLSearchParams({ v1: String(v1), v2: String(v2) });
+        const response = await fetch(
+          `/api/charters/${charterId}/diff?${params}`,
+          { signal }
+        );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Failed to get charter diff: ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error?.message ||
+              `Failed to get charter diff: ${response.status}`
+          );
+        }
 
-      const result: { data: CharterDiff } = await response.json();
-      return result.data;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+        const result: { data: CharterDiff } = await response.json();
+        return result.data;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return null;
+        }
+        const error =
+          err instanceof Error
+            ? err
+            : new Error('Unknown error occurred while getting charter diff');
+        setError(error);
         return null;
+      } finally {
+        setIsLoading(false);
       }
-      const error = err instanceof Error ? err : new Error('Unknown error occurred while getting charter diff');
-      setError(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     createVersion,

@@ -35,9 +35,19 @@ export class ProfilePersonalizerSimple {
   private async setupGitConfig(): Promise<void> {
     try {
       const { execa } = await import('execa');
-      await execa('git', ['config', '--global', 'user.name', this.config.fullName]);
+      await execa('git', [
+        'config',
+        '--global',
+        'user.name',
+        this.config.fullName,
+      ]);
       if (this.config.email) {
-        await execa('git', ['config', '--global', 'user.email', this.config.email]);
+        await execa('git', [
+          'config',
+          '--global',
+          'user.email',
+          this.config.email,
+        ]);
       }
       logger.info('Git configuration updated');
     } catch (error) {
@@ -50,10 +60,10 @@ export class ProfilePersonalizerSimple {
       const { promises: fs } = await import('fs');
       const os = await import('os');
       const path = await import('path');
-      
+
       const homeDir = os.homedir();
       const devDir = path.join(homeDir, 'Development');
-      
+
       const directories = [
         devDir,
         path.join(devDir, 'projects'),
@@ -64,7 +74,7 @@ export class ProfilePersonalizerSimple {
       for (const dir of directories) {
         await fs.mkdir(dir, { recursive: true });
       }
-      
+
       logger.info('Development directories created');
     } catch (error) {
       logger.warn('Could not create directories:', (error as Error).message);

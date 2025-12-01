@@ -1,17 +1,20 @@
 # Deployment Model Migration Summary
 
 ## Overview
+
 Successfully migrated Deployments from in-memory mock store to Prisma database models.
 
 ## Changes Made
 
 ### 1. Prisma Schema Updates
 
-**File:** `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
+**File:**
+`/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
 
 #### Added Models
 
 **deployment**
+
 - Stores deployment records for services, agents, workflows, and integrations
 - Fields include: name, description, type, status, environment, version, url
 - Git info: commitHash, branch
@@ -22,34 +25,40 @@ Successfully migrated Deployments from in-memory mock store to Prisma database m
 - Relations: belongs to workspace, has many logs
 
 **deploymentLog**
+
 - Stores log entries for each deployment
 - Fields: level, message, metadata, timestamp
 - Cascades delete when deployment is deleted
 
 #### Added Enums
+
 - `DeploymentStatus`: PENDING, BUILDING, DEPLOYING, ACTIVE, FAILED, STOPPED
 - `DeploymentEnvironment`: DEVELOPMENT, STAGING, PRODUCTION
 - `LogLevel`: DEBUG, INFO, WARN, ERROR
 - `DeploymentType`: SERVICE, AGENT, WORKFLOW, INTEGRATION
 
 #### Updated Models
+
 - `workspace`: Added `deployments deployment[]` relation
 
 ### 2. API Route Updates
 
 #### `/app/api/workspaces/[workspaceId]/deployments/route.ts`
+
 - **GET**: Query deployments from database with filtering (status, environment, type, search)
 - **POST**: Create new deployment in database
 - Added status/environment/type mapping between frontend (lowercase) and database (UPPERCASE) enums
 - Transform database records to frontend format
 
 #### `/app/api/workspaces/[workspaceId]/deployments/[deploymentId]/route.ts`
+
 - **GET**: Fetch single deployment by ID with workspace validation
 - **PATCH**: Update deployment (merges config, sets status to BUILDING)
 - **DELETE**: Delete deployment (cascade deletes logs)
 - Added 404 handling for missing deployments
 
 #### `/app/api/workspaces/[workspaceId]/deployments/[deploymentId]/logs/route.ts`
+
 - **GET**: Query deployment logs with filtering (level, limit)
 - Added workspace validation
 - Transform database records to frontend format
@@ -57,21 +66,26 @@ Successfully migrated Deployments from in-memory mock store to Prisma database m
 ### 3. Key Implementation Details
 
 #### Data Transformation
+
 The API routes transform between frontend types and database enums:
 
 **Status Mapping:**
+
 - Frontend: `deploying`, `running`, `stopped`, `failed`, `updating`
 - Database: `PENDING`, `BUILDING`, `DEPLOYING`, `ACTIVE`, `FAILED`, `STOPPED`
 
 **Environment Mapping:**
+
 - Frontend: `production`, `staging`, `development`
 - Database: `PRODUCTION`, `STAGING`, `DEVELOPMENT`
 
 **Type Mapping:**
+
 - Frontend: `service`, `agent`, `workflow`, `integration`
 - Database: `SERVICE`, `AGENT`, `WORKFLOW`, `INTEGRATION`
 
 #### JSON Storage
+
 - `config`: Stores deployment configuration (region, replicas, resources, env vars)
 - `health`: Stores health status, lastCheck, uptime
 - `stats`: Stores requests, errors, latencyP50, latencyP99
@@ -80,19 +94,23 @@ The API routes transform between frontend types and database enums:
 ## Migration Commands
 
 ### 1. Generate Prisma Client
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database
 pnpm db:generate
 ```
 
 ### 2. Create and Apply Migration
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database
 pnpm db:migrate
 ```
+
 When prompted, name the migration: `add_deployment_models`
 
 ### 3. Verify Database
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database
 npx prisma studio
@@ -116,6 +134,7 @@ npx prisma studio
 ## Database Schema Validation
 
 Schema validation passed:
+
 ```
 ✓ Prisma schema loaded from prisma/schema.prisma
 ✓ The schema at prisma/schema.prisma is valid
@@ -147,18 +166,21 @@ Schema validation passed:
 ## Next Steps
 
 1. **Run Migration** (Required):
+
    ```bash
    cd /Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database
    pnpm db:migrate
    ```
 
 2. **Generate Client** (Required):
+
    ```bash
    cd /Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database
    pnpm db:generate
    ```
 
 3. **Build and Test**:
+
    ```bash
    cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
    pnpm build

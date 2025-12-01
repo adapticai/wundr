@@ -65,16 +65,19 @@ export const PasswordChangedEmail = ({
           <EmailHeader />
 
           <Section style={contentSection}>
-            <EmailText variant="h1">Password Changed Successfully</EmailText>
+            <EmailText variant='h1'>Password Changed Successfully</EmailText>
 
             <EmailText>Hello {username},</EmailText>
 
             <EmailText>
-              This email confirms that your Neolith password has been changed successfully.
+              This email confirms that your Neolith password has been changed
+              successfully.
             </EmailText>
 
             <Section style={detailsContainer}>
-              <EmailText variant="h2" style={detailsHeading}>Change Details:</EmailText>
+              <EmailText variant='h2' style={detailsHeading}>
+                Change Details:
+              </EmailText>
               {email && (
                 <EmailText style={detailItem}>
                   <strong>Account:</strong> {email}
@@ -95,17 +98,20 @@ export const PasswordChangedEmail = ({
                 <strong>Did you make this change?</strong>
               </EmailText>
               <EmailText style={warningText}>
-                If you did not request this password change, please contact our support team
-                immediately. Your account security is important to us.
+                If you did not request this password change, please contact our
+                support team immediately. Your account security is important to
+                us.
               </EmailText>
             </Section>
 
-            <EmailText variant="small">
+            <EmailText variant='small'>
               For security reasons, we recommend:
             </EmailText>
             <ul style={list}>
               <li style={listItem}>Using a strong, unique password</li>
-              <li style={listItem}>Enabling two-factor authentication if available</li>
+              <li style={listItem}>
+                Enabling two-factor authentication if available
+              </li>
               <li style={listItem}>Never sharing your password with anyone</li>
             </ul>
           </Section>

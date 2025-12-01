@@ -47,8 +47,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,8 +61,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -70,9 +76,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,9 +89,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Cannot create DM with yourself',
-          ORG_ERROR_CODES.DM_SELF_NOT_ALLOWED,
+          ORG_ERROR_CODES.DM_SELF_NOT_ALLOWED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -98,9 +104,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -138,9 +144,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'You are not a member of this workspace',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -148,9 +154,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Target user is not a member of this workspace',
-          ORG_ERROR_CODES.USER_NOT_FOUND,
+          ORG_ERROR_CODES.USER_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -185,13 +191,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (existingDM) {
       // Filter out the current user to get the "other" participant
       const otherParticipant = existingDM.channelMembers.find(
-        (m: { userId: string }) => m.userId !== session.user.id,
+        (m: { userId: string }) => m.userId !== session.user.id
       );
 
       return NextResponse.json({
         data: {
           ...existingDM,
-          displayName: otherParticipant?.user.displayName || otherParticipant?.user.name,
+          displayName:
+            otherParticipant?.user.displayName || otherParticipant?.user.name,
           participant: otherParticipant?.user,
         },
         isNew: false,
@@ -199,7 +206,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create new DM channel
-    const dmChannel = await prisma.$transaction(async (tx) => {
+    const dmChannel = await prisma.$transaction(async tx => {
       // Create the DM channel
       const newChannel = await tx.channel.create({
         data: {
@@ -249,29 +256,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Get the other participant
     const otherParticipant = dmChannel?.channelMembers.find(
-      (m: { userId: string }) => m.userId !== session.user.id,
+      (m: { userId: string }) => m.userId !== session.user.id
     );
 
     return NextResponse.json(
       {
         data: {
           ...dmChannel,
-          displayName: otherParticipant?.user.displayName || otherParticipant?.user.name,
+          displayName:
+            otherParticipant?.user.displayName || otherParticipant?.user.name,
           participant: otherParticipant?.user,
         },
         isNew: true,
         message: 'DM channel created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/dm] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

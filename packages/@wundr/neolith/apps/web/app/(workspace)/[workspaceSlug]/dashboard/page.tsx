@@ -21,14 +21,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const { workspaceSlug } = await params;
 
   // Resolve slug to workspace ID and check user access
-  const workspaceAccess = await getWorkspaceWithAccess(workspaceSlug, session.user.id);
+  const workspaceAccess = await getWorkspaceWithAccess(
+    workspaceSlug,
+    session.user.id
+  );
   if (!workspaceAccess) {
     notFound();
   }
 
-  return (
-    <DashboardContent
-      workspaceId={workspaceAccess.workspaceId}
-    />
-  );
+  return <DashboardContent workspaceId={workspaceAccess.id} />;
 }

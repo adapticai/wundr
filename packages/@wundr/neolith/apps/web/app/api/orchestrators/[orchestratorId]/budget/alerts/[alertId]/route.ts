@@ -34,13 +34,16 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an orchestrator
  */
-async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: string) {
+async function getOrchestratorWithAccessCheck(
+  orchestratorId: string,
+  userId: string
+) {
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
@@ -60,12 +63,15 @@ async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: st
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
   const membership = userOrganizations.find(
-    (m) => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -83,15 +89,18 @@ async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: st
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', BUDGET_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          BUDGET_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -106,8 +115,11 @@ export async function PATCH(
 
     if (!orchestratorParamResult.success || !alertParamResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameter format', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameter format',
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -117,8 +129,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -129,24 +144,27 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: AcknowledgeAlertInput = parseResult.data;
 
     // Get orchestrator with access check
-    const result = await getOrchestratorWithAccessCheck(params.orchestratorId, session.user.id);
+    const result = await getOrchestratorWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -172,21 +190,27 @@ export async function PATCH(
 
     if (!alert || alert.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Alert not found', BUDGET_ERROR_CODES.ALERT_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Alert not found',
+          BUDGET_ERROR_CODES.ALERT_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     const alertData = alert[0];
 
     // Check if alert is already acknowledged
-    if (alertData.status === 'ACKNOWLEDGED' || alertData.status === 'RESOLVED') {
+    if (
+      alertData.status === 'ACKNOWLEDGED' ||
+      alertData.status === 'RESOLVED'
+    ) {
       return NextResponse.json(
         createErrorResponse(
           'Alert has already been acknowledged or resolved',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR,
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -199,7 +223,8 @@ export async function PATCH(
             suppressSimilar: true,
             suppressionDurationMinutes: input.suppressionDurationMinutes,
             suppressUntil: new Date(
-              now.getTime() + (input.suppressionDurationMinutes ?? 60) * 60 * 1000,
+              now.getTime() +
+                (input.suppressionDurationMinutes ?? 60) * 60 * 1000
             ).toISOString(),
           }),
         }
@@ -260,14 +285,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/orchestrators/:orchestratorId/budget/alerts/:alertId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

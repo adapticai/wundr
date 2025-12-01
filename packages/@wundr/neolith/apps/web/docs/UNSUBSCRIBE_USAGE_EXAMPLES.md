@@ -103,9 +103,7 @@ async function sendBulkMarketingEmail() {
   });
 
   // Filter out unsubscribed users
-  const subscribedUsers = users.filter(
-    (user) => !isUnsubscribed(user.preferences, 'marketing')
-  );
+  const subscribedUsers = users.filter(user => !isUnsubscribed(user.preferences, 'marketing'));
 
   console.log(`Sending to ${subscribedUsers.length} of ${users.length} users`);
 
@@ -212,9 +210,9 @@ async function updateEmailPreferences(
 
 // Usage
 await updateEmailPreferences('user-123', {
-  marketing: false,      // Unsubscribe from marketing
-  notifications: true,   // Subscribe to notifications
-  digest: true,          // Subscribe to digest
+  marketing: false, // Unsubscribe from marketing
+  notifications: true, // Subscribe to notifications
+  digest: true, // Subscribe to digest
 });
 ```
 
@@ -401,9 +399,7 @@ class EmailCampaignService {
       select: { id: true, email: true, preferences: true },
     });
 
-    const subscribedUsers = users.filter(
-      (user) => !isUnsubscribed(user.preferences, emailType)
-    );
+    const subscribedUsers = users.filter(user => !isUnsubscribed(user.preferences, emailType));
 
     console.log(
       `Campaign: ${subscribedUsers.length} recipients (${users.length - subscribedUsers.length} unsubscribed)`
@@ -420,7 +416,7 @@ class EmailCampaignService {
       });
 
       // Rate limit
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
 }
@@ -466,7 +462,9 @@ async function processNotificationQueue() {
 
 ---
 
-**Note:** Always test unsubscribe functionality thoroughly before deploying to production. Verify that:
+**Note:** Always test unsubscribe functionality thoroughly before deploying to production. Verify
+that:
+
 1. Tokens are properly signed and verified
 2. Database updates work correctly
 3. Email templates display unsubscribe links

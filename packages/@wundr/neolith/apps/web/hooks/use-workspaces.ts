@@ -155,20 +155,24 @@ const userWorkspacesFetcher = async (url: string) => {
   const data = response_data.data || response_data;
 
   // Transform workspaces with date parsing and ensure proper types
-  const transformedWorkspaces = (data.workspaces || []).map((workspace: Workspace) => ({
-    ...workspace,
-    createdAt: new Date(workspace.createdAt),
-    updatedAt: new Date(workspace.updatedAt),
-    settings: workspace.settings || {},
-    visibility: workspace.visibility || 'PRIVATE',
-  }));
+  const transformedWorkspaces = (data.workspaces || []).map(
+    (workspace: Workspace) => ({
+      ...workspace,
+      createdAt: new Date(workspace.createdAt),
+      updatedAt: new Date(workspace.updatedAt),
+      settings: workspace.settings || {},
+      visibility: workspace.visibility || 'PRIVATE',
+    })
+  );
 
   // Transform invites with date parsing
-  const transformedInvites = (data.invites || []).map((invite: WorkspaceInvite) => ({
-    ...invite,
-    createdAt: new Date(invite.createdAt),
-    expiresAt: invite.expiresAt ? new Date(invite.expiresAt) : null,
-  }));
+  const transformedInvites = (data.invites || []).map(
+    (invite: WorkspaceInvite) => ({
+      ...invite,
+      createdAt: new Date(invite.createdAt),
+      expiresAt: invite.expiresAt ? new Date(invite.expiresAt) : null,
+    })
+  );
 
   return { workspaces: transformedWorkspaces, invites: transformedInvites };
 };
@@ -276,7 +280,9 @@ export function useWorkspace(workspaceId: string | null): UseWorkspaceReturn {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to fetch workspace: ${response.statusText}`);
+        throw new Error(
+          errorData.error || `Failed to fetch workspace: ${response.statusText}`
+        );
       }
 
       const result = await response.json();
@@ -297,7 +303,8 @@ export function useWorkspace(workspaceId: string | null): UseWorkspaceReturn {
       if (err instanceof Error && err.name === 'AbortError') {
         return;
       }
-      const error = err instanceof Error ? err : new Error('Failed to fetch workspace');
+      const error =
+        err instanceof Error ? err : new Error('Failed to fetch workspace');
       setError(error);
       console.error('[useWorkspace] Error:', error);
     } finally {

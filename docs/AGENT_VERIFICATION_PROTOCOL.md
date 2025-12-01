@@ -9,6 +9,7 @@ This protocol MUST be followed by all agents, including those spawned through Ta
 ## 1. BEFORE CLAIMING SUCCESS
 
 **ALWAYS run these commands and show output:**
+
 ```bash
 # For any code implementation
 npm run build  # or appropriate build command
@@ -20,6 +21,7 @@ npm test       # if tests exist
 ## 2. WHEN IMPLEMENTING FEATURES
 
 **Step-by-step verification:**
+
 1. Write the code
 2. Save the file
 3. Run the build - SHOW OUTPUT
@@ -57,21 +59,25 @@ Verification: [Commands run to test]
 ## 6. AGENT-SPECIFIC INSTRUCTIONS
 
 ### For Code Implementation Agents:
+
 - MUST show build output after changes
 - MUST demonstrate feature working
 - MUST report TypeScript errors immediately
 
 ### For Testing Agents:
+
 - MUST run tests and show actual results
 - MUST report coverage numbers from real output
 - MUST show test failures, not hide them
 
 ### For Documentation Agents:
+
 - MUST verify links work
 - MUST check code examples compile
 - MUST validate build of documentation site
 
 ### For DevOps/CI Agents:
+
 - MUST run pipelines and show results
 - MUST verify deployments actually work
 - MUST test scripts before claiming ready
@@ -89,6 +95,7 @@ Before reporting task complete, answer with ACTUAL COMMAND OUTPUT:
 ## 8. FORBIDDEN BEHAVIORS
 
 **NEVER DO THIS:**
+
 - ❌ Claim "build successful" without running build
 - ❌ Say "tests pass" without running tests
 - ❌ Report "implemented" without verification
@@ -99,6 +106,7 @@ Before reporting task complete, answer with ACTUAL COMMAND OUTPUT:
 ## 9. REQUIRED BEHAVIORS
 
 **ALWAYS DO THIS:**
+
 - ✅ Run actual commands
 - ✅ Show real output
 - ✅ Report failures immediately
@@ -109,6 +117,7 @@ Before reporting task complete, answer with ACTUAL COMMAND OUTPUT:
 ## 10. VERIFICATION SCRIPT
 
 **Run this before claiming success:**
+
 ```bash
 ./scripts/verify-claims.sh
 ```
@@ -152,4 +161,5 @@ Added to FAILURES.md for tracking
 
 ---
 
-**Remember: It's better to report a failure honestly than to claim false success. Trust is built on verification, not imagination.**
+**Remember: It's better to report a failure honestly than to claim false success. Trust is built on
+verification, not imagination.**

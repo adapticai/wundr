@@ -4,11 +4,15 @@ import path from 'path';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 
-
 import { errorHandler } from '../utils/error-handler';
 import { logger } from '../utils/logger';
 
-import type { Plugin, PluginContext, PluginCommand, PluginHook } from '../types';
+import type {
+  Plugin,
+  PluginContext,
+  PluginCommand,
+  PluginHook,
+} from '../types';
 import type { ConfigManager } from '../utils/config-manager';
 
 /**
@@ -36,7 +40,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_INIT_FAILED',
         'Failed to initialize plugin system',
         {},
-        true,
+        true
       );
     }
   }
@@ -65,7 +69,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_LOAD_FAILED',
         'Failed to load plugins',
         {},
-        true,
+        true
       );
     }
   }
@@ -104,7 +108,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_LOAD_SINGLE_FAILED',
         `Failed to load plugin: ${pluginName}`,
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -136,7 +140,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_UNLOAD_FAILED',
         `Failed to unload plugin: ${pluginName}`,
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -166,7 +170,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_INSTALL_FAILED',
         `Failed to install plugin: ${pluginName}`,
         { pluginName, options },
-        true,
+        true
       );
     }
   }
@@ -196,7 +200,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_UNINSTALL_FAILED',
         `Failed to uninstall plugin: ${pluginName}`,
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -219,7 +223,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_ENABLE_FAILED',
         `Failed to enable plugin: ${pluginName}`,
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -238,7 +242,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_DISABLE_FAILED',
         `Failed to disable plugin: ${pluginName}`,
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -348,7 +352,7 @@ export class PluginManager {
         .filter(
           plugin =>
             plugin.name.toLowerCase().includes(query.toLowerCase()) ||
-            plugin.description.toLowerCase().includes(query.toLowerCase()),
+            plugin.description.toLowerCase().includes(query.toLowerCase())
         )
         .slice(0, options.limit || 20);
     } catch (error) {
@@ -375,7 +379,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_UPDATE_FAILED',
         `Failed to update plugin: ${pluginName}`,
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -426,7 +430,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_LINK_FAILED',
         'Failed to link plugin',
         { pluginPath },
-        true,
+        true
       );
     }
   }
@@ -454,7 +458,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_UNLINK_FAILED',
         'Failed to unlink plugin',
         { pluginName },
-        true,
+        true
       );
     }
   }
@@ -476,7 +480,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_TEST_FAILED',
         `Failed to test plugin: ${pluginName}`,
         { pluginName, options },
-        true,
+        true
       );
     }
   }
@@ -498,7 +502,7 @@ export class PluginManager {
         'WUNDR_PLUGIN_PUBLISH_FAILED',
         'Failed to publish plugin',
         { options },
-        true,
+        true
       );
     }
   }
@@ -509,7 +513,7 @@ export class PluginManager {
   async setPluginConfig(
     pluginName: string,
     key: string,
-    value: string,
+    value: string
   ): Promise<void> {
     this.configManager.set(`plugins.${pluginName}.${key}`, value);
     await this.configManager.saveConfig();
@@ -630,7 +634,7 @@ export class PluginManager {
   private removePluginHooks(pluginName: string): void {
     for (const [event, hooks] of this.pluginHooks) {
       const filteredHooks = hooks.filter(
-        hook => !hook.event.startsWith(pluginName),
+        hook => !hook.event.startsWith(pluginName)
       );
       this.pluginHooks.set(event, filteredHooks);
     }
@@ -690,7 +694,7 @@ export class PluginManager {
 
   private async installNpmPlugin(
     pluginName: string,
-    options: any,
+    options: any
   ): Promise<void> {
     const versionSpec = options.version ? `@${options.version}` : '';
     const targetPath = path.join(this.pluginsDir, pluginName);
@@ -737,7 +741,7 @@ export class PluginManager {
           resolve();
         } else {
           reject(
-            new Error(`Command failed with exit code ${code}: ${command}`),
+            new Error(`Command failed with exit code ${code}: ${command}`)
           );
         }
       });

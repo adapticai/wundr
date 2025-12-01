@@ -12,24 +12,24 @@ import {
   VPTaskAssignmentDialog,
 
   // NEW - Wave 2.1.3
-  VPPresenceTooltip,      // Rich hover card with task info
-  VPMessageIndicator,     // Message type indicators
-  VPMessageWrapper,       // Message styling wrapper
-  VPMessageBadge,         // Compact Orchestrator badge
-  VPWorkSummary,          // Dashboard stats widget
-  VPThinkingIndicator,    // Processing animations
-  InlineThinkingIndicator,// Inline version
-  TypingIndicator,        // Typing states
-  ProcessingBanner,       // Full-width banner
-  VPEscalationCard,       // Escalation display
-  VPEscalationListItem,   // Compact list version
+  VPPresenceTooltip, // Rich hover card with task info
+  VPMessageIndicator, // Message type indicators
+  VPMessageWrapper, // Message styling wrapper
+  VPMessageBadge, // Compact Orchestrator badge
+  VPWorkSummary, // Dashboard stats widget
+  VPThinkingIndicator, // Processing animations
+  InlineThinkingIndicator, // Inline version
+  TypingIndicator, // Typing states
+  ProcessingBanner, // Full-width banner
+  VPEscalationCard, // Escalation display
+  VPEscalationListItem, // Compact list version
 } from '@/components/vp';
 
 import {
-  useVP,              // Single Orchestrator data
-  useVPs,             // Multiple Orchestrators
-  useVPMutations,     // CRUD operations
-  useVPPresence,      // NEW - Single Orchestrator presence
+  useVP, // Single Orchestrator data
+  useVPs, // Multiple Orchestrators
+  useVPMutations, // CRUD operations
+  useVPPresence, // NEW - Single Orchestrator presence
   useMultipleVPPresence, // NEW - Multiple Orchestrator presence
 } from '@/hooks';
 ```
@@ -39,6 +39,7 @@ import {
 ## Common Use Cases
 
 ### 1. Show Orchestrator with Current Status
+
 ```tsx
 <Orchestrator PresenceTooltip vp={vp} currentTask={presence?.currentTask}>
   <Orchestrator Card vp={vp} workspaceId={workspaceId} />
@@ -46,6 +47,7 @@ import {
 ```
 
 ### 2. Orchestrator Message in Chat
+
 ```tsx
 <Orchestrator MessageWrapper isVP={message.isFromVP}>
   <div className="flex gap-3">
@@ -60,28 +62,26 @@ import {
 ```
 
 ### 3. Orchestrator Processing Task
+
 ```tsx
-{isProcessing && (
-  <Orchestrator ThinkingIndicator
-    vpName={vp.title}
-    taskContext="Analyzing data"
-    variant="dots"
-  />
-)}
+{
+  isProcessing && (
+    <Orchestrator ThinkingIndicator vpName={vp.title} taskContext='Analyzing data' variant='dots' />
+  );
+}
 ```
 
 ### 4. Orchestrator Dashboard Stats
+
 ```tsx
-<Orchestrator WorkSummary
-  vp={vp}
-  stats={stats}
-  workspaceId={workspaceId}
-/>
+<Orchestrator WorkSummary vp={vp} stats={stats} workspaceId={workspaceId} />
 ```
 
 ### 5. Orchestrator Escalation Alert
+
 ```tsx
-<Orchestrator EscalationCard
+<Orchestrator
+  EscalationCard
   escalation={escalation}
   workspaceId={workspaceId}
   onAssign={handleAssign}
@@ -90,10 +90,11 @@ import {
 ```
 
 ### 6. Real-time Presence
+
 ```tsx
 const { presence, isLoading } = useVPPresence(vpId, {
   refreshInterval: 5000,
-  onPresenceChange: (p) => console.log('Status:', p.status)
+  onPresenceChange: p => console.log('Status:', p.status),
 });
 ```
 
@@ -102,52 +103,58 @@ const { presence, isLoading } = useVPPresence(vpId, {
 ## Component Props Quick Reference
 
 ### VPPresenceTooltip
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| orchestrator | Orchestrator | Yes | Orchestrator data object |
-| currentTask | VPTask \| null | No | Current task info |
-| children | ReactNode | Yes | Trigger element |
-| workspaceId | string | No | For task links |
+
+| Prop         | Type           | Required | Description              |
+| ------------ | -------------- | -------- | ------------------------ |
+| orchestrator | Orchestrator   | Yes      | Orchestrator data object |
+| currentTask  | VPTask \| null | No       | Current task info        |
+| children     | ReactNode      | Yes      | Trigger element          |
+| workspaceId  | string         | No       | For task links           |
 
 ### VPMessageIndicator
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| vpName | string | Yes | Orchestrator name |
-| avatarUrl | string \| null | No | Avatar URL |
-| variant | 'badge' \| 'icon' \| 'label' \| 'subtle' | 'badge' | Display style |
-| size | 'sm' \| 'md' \| 'lg' | 'md' | Size variant |
-| showLabel | boolean | false | Show "AI" label |
+
+| Prop      | Type                                     | Default | Description       |
+| --------- | ---------------------------------------- | ------- | ----------------- |
+| vpName    | string                                   | Yes     | Orchestrator name |
+| avatarUrl | string \| null                           | No      | Avatar URL        |
+| variant   | 'badge' \| 'icon' \| 'label' \| 'subtle' | 'badge' | Display style     |
+| size      | 'sm' \| 'md' \| 'lg'                     | 'md'    | Size variant      |
+| showLabel | boolean                                  | false   | Show "AI" label   |
 
 ### VPWorkSummary
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| orchestrator | Orchestrator | Yes | Orchestrator data |
-| stats | VPWorkStats | Yes | Statistics object |
-| workspaceId | string | No | For links |
+
+| Prop         | Type         | Required | Description       |
+| ------------ | ------------ | -------- | ----------------- |
+| orchestrator | Orchestrator | Yes      | Orchestrator data |
+| stats        | VPWorkStats  | Yes      | Statistics object |
+| workspaceId  | string       | No       | For links         |
 
 ### VPThinkingIndicator
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| variant | 'dots' \| 'spinner' \| 'pulse' | 'dots' | Animation type |
-| size | 'sm' \| 'md' \| 'lg' | 'md' | Size |
-| vpName | string | No | Orchestrator name |
-| taskContext | string | No | What Orchestrator is doing |
-| showText | boolean | true | Show label |
+
+| Prop        | Type                           | Default | Description                |
+| ----------- | ------------------------------ | ------- | -------------------------- |
+| variant     | 'dots' \| 'spinner' \| 'pulse' | 'dots'  | Animation type             |
+| size        | 'sm' \| 'md' \| 'lg'           | 'md'    | Size                       |
+| vpName      | string                         | No      | Orchestrator name          |
+| taskContext | string                         | No      | What Orchestrator is doing |
+| showText    | boolean                        | true    | Show label                 |
 
 ### VPEscalationCard
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| escalation | VPEscalation | Yes | Escalation data |
-| workspaceId | string | No | For links |
-| onAssign | Function | No | Assign callback |
-| onResolve | Function | No | Resolve callback |
-| onRespond | Function | No | Respond callback |
+
+| Prop        | Type         | Required | Description      |
+| ----------- | ------------ | -------- | ---------------- |
+| escalation  | VPEscalation | Yes      | Escalation data  |
+| workspaceId | string       | No       | For links        |
+| onAssign    | Function     | No       | Assign callback  |
+| onResolve   | Function     | No       | Resolve callback |
+| onRespond   | Function     | No       | Respond callback |
 
 ---
 
 ## Hook Return Types
 
 ### useVPPresence
+
 ```typescript
 {
   presence: VPPresenceData | null;
@@ -159,6 +166,7 @@ const { presence, isLoading } = useVPPresence(vpId, {
 ```
 
 ### VPPresenceData Structure
+
 ```typescript
 {
   vpId: string;
@@ -180,18 +188,21 @@ const { presence, isLoading } = useVPPresence(vpId, {
 ## Color Coding Reference
 
 ### Status Colors
+
 - **ONLINE:** Green (`bg-green-500`)
 - **BUSY:** Yellow (`bg-yellow-500`)
 - **AWAY:** Orange (`bg-orange-500`)
 - **OFFLINE:** Gray (`bg-gray-400`)
 
 ### Priority Colors
+
 - **low:** Gray (`bg-gray-100`)
 - **medium:** Blue (`bg-blue-100`)
 - **high:** Orange (`bg-orange-100`)
 - **urgent:** Red (`bg-red-100`)
 
 ### Escalation Types
+
 - **blocked:** Red
 - **unclear:** Orange
 - **permission:** Yellow
@@ -203,21 +214,23 @@ const { presence, isLoading } = useVPPresence(vpId, {
 ## Size Classes
 
 | Size | Avatar | Icon | Text | Padding |
-|------|--------|------|------|---------|
-| sm | 6x6 | 3x3 | xs | 1.5/2 |
-| md | 8x8 | 4x4 | sm | 2/3 |
-| lg | 10x10 | 5x5 | base | 2.5/4 |
+| ---- | ------ | ---- | ---- | ------- |
+| sm   | 6x6    | 3x3  | xs   | 1.5/2   |
+| md   | 8x8    | 4x4  | sm   | 2/3     |
+| lg   | 10x10  | 5x5  | base | 2.5/4   |
 
 ---
 
 ## Animation Variants
 
 ### VPThinkingIndicator
+
 - **dots:** Three bouncing dots (staggered)
 - **spinner:** Rotating circle
 - **pulse:** Expanding/fading ring
 
 ### Timing
+
 - Bounce: 1000ms
 - Spin: 1000ms
 - Ping: 1000ms
@@ -228,6 +241,7 @@ const { presence, isLoading } = useVPPresence(vpId, {
 ## Accessibility
 
 All components include:
+
 - ARIA labels
 - role="status" for live regions
 - Keyboard navigation
@@ -250,34 +264,41 @@ All components include:
 ## Common Patterns
 
 ### Pattern: Orchestrator Status Indicator
+
 ```tsx
 const { presence } = useVPPresence(vpId);
 
-<Orchestrator StatusBadge
+<Orchestrator
+  StatusBadge
   status={presence?.status || 'OFFLINE'}
   showPulse={presence?.isProcessing}
-/>
+/>;
 ```
 
 ### Pattern: Task Progress Display
+
 ```tsx
-{presence?.currentTask && (
-  <div>
-    <p>{presence.currentTask.title}</p>
-    <Progress value={presence.currentTask.progress} />
-    <span>{presence.currentTask.estimatedMinutes}m remaining</span>
-  </div>
-)}
+{
+  presence?.currentTask && (
+    <div>
+      <p>{presence.currentTask.title}</p>
+      <Progress value={presence.currentTask.progress} />
+      <span>{presence.currentTask.estimatedMinutes}m remaining</span>
+    </div>
+  );
+}
 ```
 
 ### Pattern: Multiple Orchestrator Monitoring
+
 ```tsx
 const { presenceMap } = useMultipleVPPresence(vpIds);
 
 return vpIds.map(vpId => {
   const presence = presenceMap.get(vpId);
   return (
-    <Orchestrator Card
+    <Orchestrator
+      Card
       key={vpId}
       vp={vps.find(v => v.id === vpId)}
       status={presence?.status}
@@ -288,15 +309,15 @@ return vpIds.map(vpId => {
 ```
 
 ### Pattern: Conditional Processing State
+
 ```tsx
-{presence?.isProcessing ? (
-  <Orchestrator ThinkingIndicator
-    vpName={vp.title}
-    variant="dots"
-  />
-) : (
-  <Orchestrator StatusBadge status={presence?.status} />
-)}
+{
+  presence?.isProcessing ? (
+    <Orchestrator ThinkingIndicator vpName={vp.title} variant='dots' />
+  ) : (
+    <Orchestrator StatusBadge status={presence?.status} />
+  );
+}
 ```
 
 ---
@@ -304,24 +325,28 @@ return vpIds.map(vpId => {
 ## Troubleshooting
 
 ### Issue: Presence not updating
+
 - Check `refreshInterval` is set
 - Verify `enabled` prop is true
 - Check API endpoint returns correct data
 - Ensure Orchestrator ID is valid
 
 ### Issue: Components not styling correctly
+
 - Verify Tailwind classes are included
 - Check theme provider is wrapping app
 - Ensure `cn()` utility is working
 - Check for CSS conflicts
 
 ### Issue: TypeScript errors
+
 - Verify all types are imported
 - Check Orchestrator type matches database schema
 - Ensure hooks are properly typed
 - Update to latest type definitions
 
 ### Issue: Animations not working
+
 - Check Tailwind config includes animations
 - Verify keyframes are defined
 - Ensure `animate-*` classes are present
@@ -372,5 +397,4 @@ return vpIds.map(vpId => {
 
 ---
 
-**Last Updated:** 2025-11-27
-**Version:** 1.0.0
+**Last Updated:** 2025-11-27 **Version:** 1.0.0

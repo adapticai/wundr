@@ -16,8 +16,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { FileType } from '../../types';
 
-import type { QueueStats, JobResult, QueueEvent, QueueEventListener } from '../../queue';
-import type { FileProcessingJob, ProcessorResult, JobProgress as _JobProgress, JobStatus } from '../../types';
+import type {
+  QueueStats,
+  JobResult,
+  QueueEvent,
+  QueueEventListener,
+} from '../../queue';
+import type {
+  FileProcessingJob,
+  ProcessorResult,
+  JobProgress as _JobProgress,
+  JobStatus,
+} from '../../types';
 
 // =============================================================================
 // MOCK SETUP
@@ -92,7 +102,7 @@ function createMockProcessingQueue(): ProcessingQueue {
 
   const emit = (event: QueueEvent, data: unknown) => {
     const listeners = eventListeners.get(event) ?? [];
-    listeners.forEach((listener) => {
+    listeners.forEach(listener => {
       try {
         listener(event, data);
       } catch {
@@ -133,7 +143,7 @@ function createMockProcessingQueue(): ProcessingQueue {
         throw new Error('Queue not initialized');
       }
 
-      const bulkData = jobs.map((job) => ({
+      const bulkData = jobs.map(job => ({
         name: job.jobId,
         data: job,
         opts: { priority: job.priority ?? 5 },
@@ -141,11 +151,13 @@ function createMockProcessingQueue(): ProcessingQueue {
 
       const bullJobs = await mockBullQueue.addBulk(bulkData);
 
-      jobs.forEach((job) => {
+      jobs.forEach(job => {
         emit('job:added' as QueueEvent, { jobId: job.jobId });
       });
 
-      return bullJobs?.map((j: { id: string }) => j.id) ?? jobs.map((j) => j.jobId);
+      return (
+        bullJobs?.map((j: { id: string }) => j.id) ?? jobs.map(j => j.jobId)
+      );
     }),
 
     getJobStatus: vi.fn(async (jobId: string): Promise<JobResult | null> => {
@@ -155,8 +167,8 @@ function createMockProcessingQueue(): ProcessingQueue {
 
       const job = await mockBullQueue.getJob(jobId);
       if (!job) {
-return null;
-}
+        return null;
+      }
 
       return {
         jobId: job.id,
@@ -177,8 +189,8 @@ return null;
 
       const job = await mockBullQueue.getJob(jobId);
       if (!job) {
-return false;
-}
+        return false;
+      }
 
       if (job.status === 'active') {
         return false; // Cannot cancel active jobs
@@ -195,8 +207,8 @@ return false;
 
       const job = await mockBullQueue.getJob(jobId);
       if (!job) {
-return false;
-}
+        return false;
+      }
 
       if (job.status !== 'failed') {
         return false;
@@ -212,14 +224,15 @@ return false;
         throw new Error('Queue not initialized');
       }
 
-      const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
-        mockBullQueue.getWaitingCount(),
-        mockBullQueue.getActiveCount(),
-        mockBullQueue.getCompletedCount(),
-        mockBullQueue.getFailedCount(),
-        mockBullQueue.getDelayedCount(),
-        mockBullQueue.getPausedCount(),
-      ]);
+      const [waiting, active, completed, failed, delayed, paused] =
+        await Promise.all([
+          mockBullQueue.getWaitingCount(),
+          mockBullQueue.getActiveCount(),
+          mockBullQueue.getCompletedCount(),
+          mockBullQueue.getFailedCount(),
+          mockBullQueue.getDelayedCount(),
+          mockBullQueue.getPausedCount(),
+        ]);
 
       return { waiting, active, completed, failed, delayed, paused };
     }),
@@ -244,7 +257,9 @@ return false;
       }
 
       const jobs = await mockBullQueue.getCompleted();
-      await Promise.all(jobs.map((job: { remove: () => Promise<void> }) => job.remove()));
+      await Promise.all(
+        jobs.map((job: { remove: () => Promise<void> }) => job.remove())
+      );
       return jobs.length;
     }),
 
@@ -254,7 +269,9 @@ return false;
       }
 
       const jobs = await mockBullQueue.getFailed();
-      await Promise.all(jobs.map((job: { remove: () => Promise<void> }) => job.remove()));
+      await Promise.all(
+        jobs.map((job: { remove: () => Promise<void> }) => job.remove())
+      );
       return jobs.length;
     }),
 
@@ -278,7 +295,9 @@ return false;
 /**
  * Create mock file processing job
  */
-function createMockJob(overrides: Partial<FileProcessingJob> = {}): FileProcessingJob {
+function createMockJob(
+  overrides: Partial<FileProcessingJob> = {}
+): FileProcessingJob {
   return {
     jobId: `job_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     filePath: '/path/to/file.pdf',
@@ -303,7 +322,10 @@ describe('ProcessingQueue', () => {
 
     // Setup default mock returns
     mockBullQueue.add.mockResolvedValue({ id: 'bull_job_1' });
-    mockBullQueue.addBulk.mockResolvedValue([{ id: 'bulk_1' }, { id: 'bulk_2' }]);
+    mockBullQueue.addBulk.mockResolvedValue([
+      { id: 'bulk_1' },
+      { id: 'bulk_2' },
+    ]);
     mockBullQueue.getWaitingCount.mockResolvedValue(0);
     mockBullQueue.getActiveCount.mockResolvedValue(0);
     mockBullQueue.getCompletedCount.mockResolvedValue(0);
@@ -344,7 +366,7 @@ describe('ProcessingQueue', () => {
         expect.objectContaining({
           priority: 5,
           attempts: 3,
-        }),
+        })
       );
     });
 
@@ -361,8 +383,14 @@ describe('ProcessingQueue', () => {
     });
 
     it('sets correct priority', async () => {
-      const highPriorityJob = createMockJob({ priority: 1, jobId: 'high_priority' });
-      const lowPriorityJob = createMockJob({ priority: 10, jobId: 'low_priority' });
+      const highPriorityJob = createMockJob({
+        priority: 1,
+        jobId: 'high_priority',
+      });
+      const lowPriorityJob = createMockJob({
+        priority: 10,
+        jobId: 'low_priority',
+      });
 
       await queue.addJob(highPriorityJob);
       await queue.addJob(lowPriorityJob);
@@ -371,14 +399,14 @@ describe('ProcessingQueue', () => {
         1,
         'high_priority',
         highPriorityJob,
-        expect.objectContaining({ priority: 1 }),
+        expect.objectContaining({ priority: 1 })
       );
 
       expect(mockBullQueue.add).toHaveBeenNthCalledWith(
         2,
         'low_priority',
         lowPriorityJob,
-        expect.objectContaining({ priority: 10 }),
+        expect.objectContaining({ priority: 10 })
       );
     });
 
@@ -391,7 +419,7 @@ describe('ProcessingQueue', () => {
       expect(mockBullQueue.add).toHaveBeenCalledWith(
         'default_priority',
         job,
-        expect.objectContaining({ priority: 5 }),
+        expect.objectContaining({ priority: 5 })
       );
     });
 
@@ -399,7 +427,9 @@ describe('ProcessingQueue', () => {
       const uninitializedQueue = createMockProcessingQueue();
       const job = createMockJob();
 
-      await expect(uninitializedQueue.addJob(job)).rejects.toThrow('Queue not initialized');
+      await expect(uninitializedQueue.addJob(job)).rejects.toThrow(
+        'Queue not initialized'
+      );
     });
 
     it('emits job:added event', async () => {
@@ -409,7 +439,9 @@ describe('ProcessingQueue', () => {
       const job = createMockJob({ jobId: 'event_test' });
       await queue.addJob(job);
 
-      expect(listener).toHaveBeenCalledWith('job:added', { jobId: 'event_test' });
+      expect(listener).toHaveBeenCalledWith('job:added', {
+        jobId: 'event_test',
+      });
     });
   });
 
@@ -473,12 +505,10 @@ describe('ProcessingQueue', () => {
 
     it('handles concurrent jobs', async () => {
       const jobs = Array.from({ length: 10 }, (_, i) =>
-        createMockJob({ jobId: `concurrent_${i}` }),
+        createMockJob({ jobId: `concurrent_${i}` })
       );
 
-      mockBullQueue.addBulk.mockResolvedValue(
-        jobs.map((j) => ({ id: j.jobId })),
-      );
+      mockBullQueue.addBulk.mockResolvedValue(jobs.map(j => ({ id: j.jobId })));
 
       const jobIds = await queue.addBulkJobs(jobs);
 
@@ -746,7 +776,9 @@ describe('ProcessingQueue', () => {
     it('throws after close', async () => {
       await queue.close();
 
-      await expect(queue.addJob(createMockJob())).rejects.toThrow('Queue not initialized');
+      await expect(queue.addJob(createMockJob())).rejects.toThrow(
+        'Queue not initialized'
+      );
     });
   });
 });
@@ -762,9 +794,11 @@ describe('ProcessingQueue Integration', () => {
     queue = createMockProcessingQueue();
     vi.clearAllMocks();
 
-    mockBullQueue.add.mockImplementation(async (name: string, data: FileProcessingJob) => ({
-      id: data.jobId,
-    }));
+    mockBullQueue.add.mockImplementation(
+      async (name: string, data: FileProcessingJob) => ({
+        id: data.jobId,
+      })
+    );
 
     await queue.initialize();
   });
@@ -871,10 +905,14 @@ describe('ProcessingQueue Integration', () => {
     const processOrder: number[] = [];
 
     mockBullQueue.add.mockImplementation(
-      async (_name: string, data: FileProcessingJob, opts: { priority: number }) => {
+      async (
+        _name: string,
+        data: FileProcessingJob,
+        opts: { priority: number }
+      ) => {
         processOrder.push(opts.priority);
         return { id: data.jobId };
-      },
+      }
     );
 
     await queue.addJob(createMockJob({ jobId: 'low', priority: 10 }));

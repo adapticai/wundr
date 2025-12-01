@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
 import { useFileUpload } from '@/hooks/use-upload';
 import { DEFAULT_MAX_FILE_SIZE, DEFAULT_MAX_FILES } from '@/types/upload';
@@ -108,12 +114,12 @@ export function UploadProvider({
       // Auto-show queue when files are added
       setIsQueueVisible(true);
     },
-    [uploadFiles],
+    [uploadFiles]
   );
 
   const showQueue = useCallback(() => setIsQueueVisible(true), []);
   const hideQueue = useCallback(() => setIsQueueVisible(false), []);
-  const toggleQueue = useCallback(() => setIsQueueVisible((prev) => !prev), []);
+  const toggleQueue = useCallback(() => setIsQueueVisible(prev => !prev), []);
 
   const value = useMemo<UploadContextValue>(
     () => ({
@@ -160,10 +166,12 @@ export function UploadProvider({
       showQueue,
       hideQueue,
       toggleQueue,
-    ],
+    ]
   );
 
-  return <UploadContext.Provider value={value}>{children}</UploadContext.Provider>;
+  return (
+    <UploadContext.Provider value={value}>{children}</UploadContext.Provider>
+  );
 }
 
 /**

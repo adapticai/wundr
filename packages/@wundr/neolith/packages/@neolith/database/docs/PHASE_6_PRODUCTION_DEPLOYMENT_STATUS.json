@@ -18,9 +18,7 @@
             "Connection pool settings defined (min: 5, max: 20)",
             "No evidence of actual deployed database"
           ],
-          "files": [
-            "/packages/@wundr/neolith/.env.production.template"
-          ]
+          "files": ["/packages/@wundr/neolith/.env.production.template"]
         },
         "redis_caching": {
           "status": "CONFIGURED_NOT_DEPLOYED",
@@ -45,9 +43,7 @@
             "AWS credentials templates present",
             "No evidence of actual bucket creation"
           ],
-          "files": [
-            "/packages/@wundr/neolith/.env.production.template"
-          ]
+          "files": ["/packages/@wundr/neolith/.env.production.template"]
         },
         "livekit_server": {
           "status": "CONFIGURED_NOT_DEPLOYED",
@@ -57,9 +53,7 @@
             "API key and secret placeholders",
             "No evidence of actual LiveKit deployment"
           ],
-          "files": [
-            "/packages/@wundr/neolith/.env.production.template"
-          ]
+          "files": ["/packages/@wundr/neolith/.env.production.template"]
         },
         "dns_and_ssl": {
           "status": "CONFIGURED_NOT_DEPLOYED",
@@ -90,9 +84,7 @@
             "Feature flags defined",
             "No actual .env.production file (correctly excluded from git)"
           ],
-          "files": [
-            "/packages/@wundr/neolith/.env.production.template"
-          ],
+          "files": ["/packages/@wundr/neolith/.env.production.template"],
           "required_env_vars": {
             "application": ["APP_SECRET", "AUTH_SECRET", "NEXTAUTH_SECRET"],
             "database": ["DATABASE_URL"],
@@ -110,11 +102,7 @@
               "STORAGE_BUCKET",
               "AVATAR_STORAGE_BUCKET"
             ],
-            "livekit": [
-              "LIVEKIT_API_KEY",
-              "LIVEKIT_API_SECRET",
-              "LIVEKIT_URL"
-            ],
+            "livekit": ["LIVEKIT_API_KEY", "LIVEKIT_API_SECRET", "LIVEKIT_URL"],
             "email": ["RESEND_API_KEY"],
             "push": ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"],
             "vp_daemon": ["VP_DAEMON_AUTH_KEY"],
@@ -130,9 +118,7 @@
             "Placeholder values in template (not actual credentials)",
             "No evidence of registered OAuth apps"
           ],
-          "files": [
-            "/packages/@wundr/neolith/.env.production.template"
-          ]
+          "files": ["/packages/@wundr/neolith/.env.production.template"]
         },
         "secret_management": {
           "status": "CONFIGURED",
@@ -238,10 +224,7 @@
             "Blue-green deployment strategy in CD workflow",
             "No HPA (Horizontal Pod Autoscaler) configured"
           ],
-          "files": [
-            "/k8s/deployment.yaml",
-            "/.github/workflows/cd.yml"
-          ]
+          "files": ["/k8s/deployment.yaml", "/.github/workflows/cd.yml"]
         },
         "cicd_workflows": {
           "status": "COMPREHENSIVE",
@@ -285,9 +268,7 @@
             "No signing certificates or provisioning profiles found",
             "No evidence of App Store Connect configuration"
           ],
-          "files": [
-            "/packages/@wundr/neolith/apps/mobile/package.json"
-          ],
+          "files": ["/packages/@wundr/neolith/apps/mobile/package.json"],
           "next_steps": [
             "Run: npx cap add ios",
             "Configure signing in Xcode",
@@ -307,9 +288,7 @@
             "No signing keystore found",
             "No evidence of Google Play Console configuration"
           ],
-          "files": [
-            "/packages/@wundr/neolith/apps/mobile/package.json"
-          ],
+          "files": ["/packages/@wundr/neolith/apps/mobile/package.json"],
           "next_steps": [
             "Run: npx cap add android",
             "Generate signing keystore",
@@ -360,9 +339,7 @@
             "No capacitor.config.ts found",
             "Platforms not yet added"
           ],
-          "files": [
-            "/packages/@wundr/neolith/apps/mobile/package.json"
-          ]
+          "files": ["/packages/@wundr/neolith/apps/mobile/package.json"]
         }
       }
     },
@@ -429,9 +406,7 @@
             "No evidence of initialized VPs",
             "No Orchestrator Charter files found in production locations"
           ],
-          "files": [
-            "/packages/@wundr/neolith/.env.production.template"
-          ]
+          "files": ["/packages/@wundr/neolith/.env.production.template"]
         },
         "integration_with_web_app": {
           "status": "API_ENDPOINTS_EXIST",

@@ -66,7 +66,7 @@ export class RagStoreManageHandler {
 
   private createStore(
     name: string | undefined,
-    config?: { type?: string; embeddingModel?: string; dimensions?: number },
+    config?: { type?: string; embeddingModel?: string; dimensions?: number }
   ): string {
     const storeName = name || `store-${Date.now()}`;
     const storePath = path.join(RAG_STORE_DIR, `${storeName}.json`);
@@ -132,7 +132,9 @@ export class RagStoreManageHandler {
   }
 
   private listStores(): string {
-    const files = fs.readdirSync(RAG_STORE_DIR).filter(f => f.endsWith('.json'));
+    const files = fs
+      .readdirSync(RAG_STORE_DIR)
+      .filter(f => f.endsWith('.json'));
     const stores = [];
 
     for (const file of files) {
@@ -321,8 +323,8 @@ export class RagStoreManageHandler {
     const uniquePaths = new Set<string>();
     const uniqueDocs = data.documents.filter((doc: { path: string }) => {
       if (uniquePaths.has(doc.path)) {
-return false;
-}
+        return false;
+      }
       uniquePaths.add(doc.path);
       return true;
     });
@@ -359,7 +361,9 @@ return false;
       });
     }
 
-    const targetPath = backupPath || path.join(process.cwd(), `${name}-backup-${Date.now()}.json`);
+    const targetPath =
+      backupPath ||
+      path.join(process.cwd(), `${name}-backup-${Date.now()}.json`);
     fs.copyFileSync(storePath, targetPath);
 
     return JSON.stringify({

@@ -83,15 +83,17 @@ function groupByTimeBuckets<T extends { createdAt: Date }>(
 
   // Initialize all buckets
   for (let i = 0; i < dataPoints; i++) {
-    const bucketTime = startTime.getTime() + (i * intervalMs);
+    const bucketTime = startTime.getTime() + i * intervalMs;
     buckets.set(bucketTime, []);
   }
 
   // Assign data to buckets
   data.forEach(item => {
     const itemTime = item.createdAt.getTime();
-    const bucketIndex = Math.floor((itemTime - startTime.getTime()) / intervalMs);
-    const bucketTime = startTime.getTime() + (bucketIndex * intervalMs);
+    const bucketIndex = Math.floor(
+      (itemTime - startTime.getTime()) / intervalMs
+    );
+    const bucketTime = startTime.getTime() + bucketIndex * intervalMs;
 
     if (buckets.has(bucketTime)) {
       buckets.get(bucketTime)!.push(item);
@@ -132,7 +134,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -147,7 +149,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -160,7 +162,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!['1h', '24h', '7d', '30d'].includes(timeRange)) {
       return NextResponse.json(
         { error: 'Invalid timeRange. Must be one of: 1h, 24h, 7d, 30d' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -174,11 +176,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
 
     // Fetch all data in parallel
-    const [
-      sessionManagers,
-      tokenUsageRecords,
-      auditLogs,
-    ] = await Promise.all([
+    const [sessionManagers, tokenUsageRecords, auditLogs] = await Promise.all([
       // Session data
       prisma.sessionManager.findMany({
         where: {
@@ -224,7 +222,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       startTime,
       intervalMinutes,
       dataPoints,
-      (items) => items.filter(s => s.status === 'ACTIVE').length
+      items => items.filter(s => s.status === 'ACTIVE').length
     );
 
     // Group token usage by time buckets (sum tokens)
@@ -233,7 +231,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       startTime,
       intervalMinutes,
       dataPoints,
-      (items) => items.reduce((sum, item) => sum + item.totalTokens, 0)
+      items => items.reduce((sum, item) => sum + item.totalTokens, 0)
     );
 
     // Group errors by time buckets
@@ -242,22 +240,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       startTime,
       intervalMinutes,
       dataPoints,
-      (items) => items.filter(log => ['error', 'critical'].includes(log.severity)).length
+      items =>
+        items.filter(log => ['error', 'critical'].includes(log.severity)).length
     );
 
     // Calculate latency metrics (extract from audit log metadata if available)
     // For now, return placeholder data as response time tracking is not yet implemented
     const latency: LatencyMetrics = {
       p50: Array.from({ length: dataPoints }, (_, i) => ({
-        timestamp: new Date(startTime.getTime() + (i * intervalMinutes * 60 * 1000)).toISOString(),
+        timestamp: new Date(
+          startTime.getTime() + i * intervalMinutes * 60 * 1000
+        ).toISOString(),
         value: 0,
       })),
       p95: Array.from({ length: dataPoints }, (_, i) => ({
-        timestamp: new Date(startTime.getTime() + (i * intervalMinutes * 60 * 1000)).toISOString(),
+        timestamp: new Date(
+          startTime.getTime() + i * intervalMinutes * 60 * 1000
+        ).toISOString(),
         value: 0,
       })),
       p99: Array.from({ length: dataPoints }, (_, i) => ({
-        timestamp: new Date(startTime.getTime() + (i * intervalMinutes * 60 * 1000)).toISOString(),
+        timestamp: new Date(
+          startTime.getTime() + i * intervalMinutes * 60 * 1000
+        ).toISOString(),
         value: 0,
       })),
     };
@@ -277,7 +282,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health/metrics] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

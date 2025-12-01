@@ -11,7 +11,10 @@ interface ProtectedRouteProps {
   requireOrchestrator?: boolean;
 }
 
-export function ProtectedRoute({ children, requireOrchestrator = false }: ProtectedRouteProps) {
+export function ProtectedRoute({
+  children,
+  requireOrchestrator = false,
+}: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, isOrchestrator } = useAuth();
 
   useEffect(() => {

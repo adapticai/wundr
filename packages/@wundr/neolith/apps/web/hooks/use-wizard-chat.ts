@@ -51,201 +51,206 @@ export function useWizardChat(options: UseWizardChatOptions = {}) {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Add assistant message to context
-  const addAssistantMessage = useCallback((
-    content: string,
-    metadata?: Message['metadata']
-  ) => {
-    const message: Message = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      role: 'assistant',
-      content,
-      timestamp: Date.now(),
-      metadata,
-    };
+  const addAssistantMessage = useCallback(
+    (content: string, metadata?: Message['metadata']) => {
+      const message: Message = {
+        id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        role: 'assistant',
+        content,
+        timestamp: Date.now(),
+        metadata,
+      };
 
-    // Note: This would need to be added to the context
-    // For now, we'll update the extracted data if present
-    if (metadata?.extractedData) {
-      updateExtractedData(metadata.extractedData);
-    }
+      // Note: This would need to be added to the context
+      // For now, we'll update the extracted data if present
+      if (metadata?.extractedData) {
+        updateExtractedData(metadata.extractedData);
+      }
 
-    return message;
-  }, [updateExtractedData]);
+      return message;
+    },
+    [updateExtractedData]
+  );
 
   // Handle streaming response
-  const handleStreamingResponse = useCallback(async (
-    response: Response
-  ): Promise<WizardChatResponse> => {
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let fullContent = '';
-    let extractedData: Partial<ExtractedEntityData> = {};
-    let conversationId: string | undefined;
+  const handleStreamingResponse = useCallback(
+    async (response: Response): Promise<WizardChatResponse> => {
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = '';
+      let extractedData: Partial<ExtractedEntityData> = {};
+      let conversationId: string | undefined;
 
-    if (!reader) {
-      throw new Error('Response body is not readable');
-    }
+      if (!reader) {
+        throw new Error('Response body is not readable');
+      }
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
 
-        if (done) break;
+          if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim());
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n').filter(line => line.trim());
 
-        for (const line of lines) {
-          try {
-            const data: WizardChatStreamChunk = JSON.parse(line);
+          for (const line of lines) {
+            try {
+              const data: WizardChatStreamChunk = JSON.parse(line);
 
-            switch (data.type) {
-              case 'content':
-                if (data.content) {
-                  fullContent += data.content;
-                  setStreamingContent(fullContent);
-                }
-                break;
+              switch (data.type) {
+                case 'content':
+                  if (data.content) {
+                    fullContent += data.content;
+                    setStreamingContent(fullContent);
+                  }
+                  break;
 
-              case 'data':
-                if (data.data) {
-                  extractedData = { ...extractedData, ...data.data };
-                  updateExtractedData(data.data);
-                }
-                break;
+                case 'data':
+                  if (data.data) {
+                    extractedData = { ...extractedData, ...data.data };
+                    updateExtractedData(data.data);
+                  }
+                  break;
 
-              case 'error':
-                throw new Error(data.error || 'Unknown streaming error');
+                case 'error':
+                  throw new Error(data.error || 'Unknown streaming error');
 
-              case 'done':
-                break;
+                case 'done':
+                  break;
+              }
+
+              if (onChunkReceived) {
+                onChunkReceived(data);
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse streaming chunk:', parseError);
             }
-
-            if (onChunkReceived) {
-              onChunkReceived(data);
-            }
-          } catch (parseError) {
-            console.warn('Failed to parse streaming chunk:', parseError);
           }
         }
-      }
 
-      return {
-        message: fullContent,
-        extractedData,
-        conversationId,
-      };
-    } finally {
-      reader.releaseLock();
-      setStreamingContent('');
-    }
-  }, [updateExtractedData, onChunkReceived]);
+        return {
+          message: fullContent,
+          extractedData,
+          conversationId,
+        };
+      } finally {
+        reader.releaseLock();
+        setStreamingContent('');
+      }
+    },
+    [updateExtractedData, onChunkReceived]
+  );
 
   // Send message to wizard chat API
-  const sendMessage = useCallback(async (
-    userMessage: string
-  ): Promise<WizardChatResponse | null> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const sendMessage = useCallback(
+    async (userMessage: string): Promise<WizardChatResponse | null> => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Cancel any ongoing request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      abortControllerRef.current = new AbortController();
-
-      const requestBody = {
-        message: userMessage,
-        entityType: state.entityType,
-        conversationId: state.conversationId,
-        context: {
-          currentData: state.extractedData,
-          messageHistory: state.messages.slice(-5), // Last 5 messages for context
-        },
-        streaming: enableStreaming,
-      };
-
-      const response = await fetch('/api/wizard/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-        signal: abortControllerRef.current.signal,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || `Request failed with status ${response.status}`
-        );
-      }
-
-      let result: WizardChatResponse;
-
-      if (enableStreaming && response.headers.get('content-type')?.includes('stream')) {
-        result = await handleStreamingResponse(response);
-      } else {
-        result = await response.json();
-      }
-
-      // Update conversation ID if provided
-      if (result.conversationId) {
-        setConversationId(result.conversationId);
-      }
-
-      // Add assistant message
-      addAssistantMessage(result.message, {
-        entityType: state.entityType || undefined,
-        extractedData: result.extractedData,
-      });
-
-      // Update extracted data if present
-      if (result.extractedData) {
-        updateExtractedData(result.extractedData);
-      }
-
-      if (onComplete) {
-        onComplete(result);
-      }
-
-      return result;
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          console.log('Request was cancelled');
-          return null;
+        // Cancel any ongoing request
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
         }
 
-        setError(error.message);
+        abortControllerRef.current = new AbortController();
 
-        if (onError) {
-          onError(error);
+        const requestBody = {
+          message: userMessage,
+          entityType: state.entityType,
+          conversationId: state.conversationId,
+          context: {
+            currentData: state.extractedData,
+            messageHistory: state.messages.slice(-5), // Last 5 messages for context
+          },
+          streaming: enableStreaming,
+        };
+
+        const response = await fetch('/api/wizard/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          signal: abortControllerRef.current.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || `Request failed with status ${response.status}`
+          );
         }
-      }
 
-      return null;
-    } finally {
-      setLoading(false);
-      abortControllerRef.current = null;
-    }
-  }, [
-    state.entityType,
-    state.conversationId,
-    state.extractedData,
-    state.messages,
-    enableStreaming,
-    setLoading,
-    setError,
-    setConversationId,
-    updateExtractedData,
-    addAssistantMessage,
-    handleStreamingResponse,
-    onComplete,
-    onError,
-  ]);
+        let result: WizardChatResponse;
+
+        if (
+          enableStreaming &&
+          response.headers.get('content-type')?.includes('stream')
+        ) {
+          result = await handleStreamingResponse(response);
+        } else {
+          result = await response.json();
+        }
+
+        // Update conversation ID if provided
+        if (result.conversationId) {
+          setConversationId(result.conversationId);
+        }
+
+        // Add assistant message
+        addAssistantMessage(result.message, {
+          entityType: state.entityType || undefined,
+          extractedData: result.extractedData,
+        });
+
+        // Update extracted data if present
+        if (result.extractedData) {
+          updateExtractedData(result.extractedData);
+        }
+
+        if (onComplete) {
+          onComplete(result);
+        }
+
+        return result;
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            console.log('Request was cancelled');
+            return null;
+          }
+
+          setError(error.message);
+
+          if (onError) {
+            onError(error);
+          }
+        }
+
+        return null;
+      } finally {
+        setLoading(false);
+        abortControllerRef.current = null;
+      }
+    },
+    [
+      state.entityType,
+      state.conversationId,
+      state.extractedData,
+      state.messages,
+      enableStreaming,
+      setLoading,
+      setError,
+      setConversationId,
+      updateExtractedData,
+      addAssistantMessage,
+      handleStreamingResponse,
+      onComplete,
+      onError,
+    ]
+  );
 
   // Cancel ongoing request
   const cancelRequest = useCallback(() => {
@@ -325,7 +330,9 @@ export function useWizardSuggestions() {
 // Hook for validating extracted data
 export function useWizardValidation() {
   const { state } = useWizard();
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const validate = useCallback(async () => {
     if (!state.entityType) return false;

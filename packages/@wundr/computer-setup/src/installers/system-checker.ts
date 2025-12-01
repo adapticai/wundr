@@ -17,7 +17,7 @@ export class SystemChecker implements BaseInstaller {
   name = 'system-checker';
   private readonly homeDir = os.homedir();
   private readonly logger = new Logger({ name: 'system-checker' });
-  
+
   isSupported(platform: SetupPlatform): boolean {
     return ['darwin', 'linux'].includes(platform.os);
   }
@@ -31,8 +31,13 @@ export class SystemChecker implements BaseInstaller {
     return 'System Check v1.0';
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    this.logger.info(`Running system health check for ${profile.name || 'user'} on ${platform.os}...`);
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
+    this.logger.info(
+      `Running system health check for ${profile.name || 'user'} on ${platform.os}...`
+    );
 
     // Clean problematic configurations
     await this.cleanProblematicConfigs();
@@ -43,23 +48,30 @@ export class SystemChecker implements BaseInstaller {
     if (nodeNpmFixed) {
       this.logger.info('System check passed - Node.js and npm are working');
     } else {
-      this.logger.warn('System check found issues - will be addressed during setup');
+      this.logger.warn(
+        'System check found issues - will be addressed during setup'
+      );
     }
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     // Log configuration context for debugging
-    this.logger.info(`System check completed for ${profile.name || 'user'} on ${platform.os}`);
+    this.logger.info(
+      `System check completed for ${profile.name || 'user'} on ${platform.os}`
+    );
   }
 
   async validate(): Promise<boolean> {
     try {
       // Check if Node.js is working
       await execa('node', ['--version']);
-      
+
       // Check if npm is working
       await execa('npm', ['--version']);
-      
+
       return true;
     } catch {
       return false;
@@ -67,17 +79,20 @@ export class SystemChecker implements BaseInstaller {
   }
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
-    return [{
-      id: 'system-check',
-      name: 'System Health Check',
-      description: 'Check and repair system for previous broken installations',
-      category: 'system',
-      required: true,
-      dependencies: [],
-      estimatedTime: 60,
-      validator: () => this.validate(),
-      installer: () => this.install(profile, platform),
-    }];
+    return [
+      {
+        id: 'system-check',
+        name: 'System Health Check',
+        description:
+          'Check and repair system for previous broken installations',
+        category: 'system',
+        required: true,
+        dependencies: [],
+        estimatedTime: 60,
+        validator: () => this.validate(),
+        installer: () => this.install(profile, platform),
+      },
+    ];
   }
 
   private async checkAndFixNodeNpm(): Promise<boolean> {
@@ -105,7 +120,9 @@ export class SystemChecker implements BaseInstaller {
       // Check for the specific graceful-fs error
       const errorStr = error instanceof Error ? error.message : String(error);
       if (errorStr.includes("Cannot find module 'graceful-fs'")) {
-        this.logger.info('Detected missing graceful-fs module - npm is completely broken');
+        this.logger.info(
+          'Detected missing graceful-fs module - npm is completely broken'
+        );
       }
     }
 
@@ -126,7 +143,10 @@ export class SystemChecker implements BaseInstaller {
           // Get current version or use LTS
           let currentVersion = 'none';
           try {
-            const { stdout } = await execa('bash', ['-c', `source ${nvmScript} && nvm current`]);
+            const { stdout } = await execa('bash', [
+              '-c',
+              `source ${nvmScript} && nvm current`,
+            ]);
             currentVersion = stdout.trim();
           } catch {
             currentVersion = 'none';
@@ -134,15 +154,23 @@ export class SystemChecker implements BaseInstaller {
 
           if (currentVersion === 'none' || currentVersion === 'system') {
             this.logger.info('No NVM-managed Node.js found, installing LTS...');
-            await execa('bash', ['-c', `source ${nvmScript} && nvm install --lts && nvm use --lts && nvm alias default lts/*`]);
+            await execa('bash', [
+              '-c',
+              `source ${nvmScript} && nvm install --lts && nvm use --lts && nvm alias default lts/*`,
+            ]);
           } else {
             this.logger.info(`Found NVM-managed Node.js: ${currentVersion}`);
             // If npm is broken, reinstall the current version
             try {
               await execa('npm', ['--version']);
             } catch {
-              this.logger.info(`Reinstalling Node.js ${currentVersion} to fix npm...`);
-              await execa('bash', ['-c', `source ${nvmScript} && nvm uninstall ${currentVersion} || true && nvm install ${currentVersion} && nvm use ${currentVersion}`]);
+              this.logger.info(
+                `Reinstalling Node.js ${currentVersion} to fix npm...`
+              );
+              await execa('bash', [
+                '-c',
+                `source ${nvmScript} && nvm uninstall ${currentVersion} || true && nvm install ${currentVersion} && nvm use ${currentVersion}`,
+              ]);
             }
           }
 
@@ -152,7 +180,9 @@ export class SystemChecker implements BaseInstaller {
             this.logger.info(`Successfully repaired npm: ${stdout.trim()}`);
             needsRepair = false;
           } catch {
-            this.logger.warn('npm repair failed - will be handled by subsequent scripts');
+            this.logger.warn(
+              'npm repair failed - will be handled by subsequent scripts'
+            );
           }
         } catch {
           this.logger.info('NVM script not found or not executable');
@@ -161,7 +191,9 @@ export class SystemChecker implements BaseInstaller {
     } catch {
       this.logger.info('NVM not installed yet');
       if (needsRepair) {
-        this.logger.info('Node.js/npm needs repair but NVM not available - will install fresh');
+        this.logger.info(
+          'Node.js/npm needs repair but NVM not available - will install fresh'
+        );
       }
     }
 
@@ -178,8 +210,13 @@ export class SystemChecker implements BaseInstaller {
 
       const npmrcContent = await fs.readFile(npmrcPath, 'utf-8');
 
-      if (npmrcContent.includes('prefix=') || npmrcContent.includes('globalconfig=')) {
-        this.logger.info('Found problematic .npmrc configuration, backing up and cleaning...');
+      if (
+        npmrcContent.includes('prefix=') ||
+        npmrcContent.includes('globalconfig=')
+      ) {
+        this.logger.info(
+          'Found problematic .npmrc configuration, backing up and cleaning...'
+        );
 
         // Create backup
         const backupPath = `${npmrcPath}.backup.${new Date().toISOString().split('T')[0].replace(/-/g, '')}_${Date.now()}`;
@@ -188,7 +225,10 @@ export class SystemChecker implements BaseInstaller {
         // Remove problematic lines
         const cleanedContent = npmrcContent
           .split('\n')
-          .filter(line => !line.startsWith('prefix=') && !line.startsWith('globalconfig='))
+          .filter(
+            line =>
+              !line.startsWith('prefix=') && !line.startsWith('globalconfig=')
+          )
           .join('\n');
 
         await fs.writeFile(npmrcPath, cleanedContent);
@@ -204,19 +244,28 @@ export class SystemChecker implements BaseInstaller {
       this.logger.info('Cleaning npm cache directories...');
 
       try {
-        await fs.rm(path.join(npmDir, '_logs'), { recursive: true, force: true });
+        await fs.rm(path.join(npmDir, '_logs'), {
+          recursive: true,
+          force: true,
+        });
       } catch {
         // Ignore errors when cleaning _logs directory - it may not exist or be in use
       }
 
       try {
-        await fs.rm(path.join(npmDir, '_npx'), { recursive: true, force: true });
+        await fs.rm(path.join(npmDir, '_npx'), {
+          recursive: true,
+          force: true,
+        });
       } catch {
         // Ignore errors when cleaning _npx directory - it may not exist or be in use
       }
 
       try {
-        await fs.rm(path.join(npmDir, '_cacache'), { recursive: true, force: true });
+        await fs.rm(path.join(npmDir, '_cacache'), {
+          recursive: true,
+          force: true,
+        });
       } catch {
         // Ignore errors when cleaning _cacache directory - it may not exist or be in use
       }
@@ -226,6 +275,8 @@ export class SystemChecker implements BaseInstaller {
   }
 
   async uninstall(): Promise<void> {
-    this.logger.info('System checker cannot be uninstalled as it provides diagnostic functionality');
+    this.logger.info(
+      'System checker cannot be uninstalled as it provides diagnostic functionality'
+    );
   }
 }

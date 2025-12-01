@@ -19,11 +19,7 @@
   "bin": {
     "wundr-mcp": "./bin/wundr-mcp"
   },
-  "files": [
-    "dist",
-    "bin",
-    "mcp.json"
-  ],
+  "files": ["dist", "bin", "mcp.json"],
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",

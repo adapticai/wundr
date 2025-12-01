@@ -1,6 +1,7 @@
 # ConversationalWizard Component
 
-Reusable LLM-powered conversational interface for entity creation with chat-style UI and form editing capabilities.
+Reusable LLM-powered conversational interface for entity creation with chat-style UI and form
+editing capabilities.
 
 ## Features
 
@@ -24,18 +25,18 @@ The primary component that orchestrates the entire wizard flow.
 import { ConversationalWizard } from '@/components/wizard';
 
 <ConversationalWizard
-  entityType="workspace"
-  onComplete={(data) => console.log('Created:', data)}
+  entityType='workspace'
+  onComplete={data => console.log('Created:', data)}
   onCancel={() => console.log('Cancelled')}
   initialContext="Let's create an amazing workspace!"
   onSendMessage={async (message, history) => {
     // Your LLM API call here
     return {
-      response: "AI response...",
-      extractedData: { name: "...", description: "..." }
+      response: 'AI response...',
+      extractedData: { name: '...', description: '...' },
     };
   }}
-/>
+/>;
 ```
 
 ### 2. ChatMessage
@@ -44,8 +45,8 @@ Renders individual message bubbles in the conversation.
 
 ```tsx
 <ChatMessage
-  role="assistant"
-  content="How can I help you today?"
+  role='assistant'
+  content='How can I help you today?'
   timestamp={new Date()}
   isStreaming={false}
 />
@@ -57,7 +58,7 @@ Input field with send button and action controls.
 
 ```tsx
 <ChatInput
-  onSend={(message) => handleSend(message)}
+  onSend={message => handleSend(message)}
   disabled={isLoading}
   onCancel={() => handleCancel()}
   onReviewDetails={() => switchToForm()}
@@ -70,12 +71,12 @@ Editable form view of extracted entity data.
 
 ```tsx
 <EntityReviewForm
-  entityType="workflow"
+  entityType='workflow'
   data={extractedData}
-  onSubmit={(data) => createEntity(data)}
+  onSubmit={data => createEntity(data)}
   onBackToChat={() => switchToChat()}
   onCancel={() => close()}
-  onUpdate={(data) => syncData(data)}
+  onUpdate={data => syncData(data)}
 />
 ```
 
@@ -83,14 +84,14 @@ Editable form view of extracted entity data.
 
 ### ConversationalWizardProps
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `entityType` | `EntityType` | Yes | Type of entity being created |
-| `onComplete` | `(data: EntityData) => void` | Yes | Callback when entity creation is complete |
-| `onCancel` | `() => void` | Yes | Callback when user cancels |
-| `initialContext` | `string` | No | Optional starting prompt to seed the conversation |
-| `onSendMessage` | `(message: string, history: Message[]) => Promise<{response: string, extractedData?: EntityData}>` | No | Custom LLM API handler |
-| `initialData` | `EntityData` | No | Initial data for editing mode |
+| Prop             | Type                                                                                               | Required | Description                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------- |
+| `entityType`     | `EntityType`                                                                                       | Yes      | Type of entity being created                      |
+| `onComplete`     | `(data: EntityData) => void`                                                                       | Yes      | Callback when entity creation is complete         |
+| `onCancel`       | `() => void`                                                                                       | Yes      | Callback when user cancels                        |
+| `initialContext` | `string`                                                                                           | No       | Optional starting prompt to seed the conversation |
+| `onSendMessage`  | `(message: string, history: Message[]) => Promise<{response: string, extractedData?: EntityData}>` | No       | Custom LLM API handler                            |
+| `initialData`    | `EntityData`                                                                                       | No       | Initial data for editing mode                     |
 
 ### EntityData
 
@@ -132,9 +133,9 @@ function CreateWorkspaceDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="workspace"
+          entityType='workspace'
           onComplete={handleComplete}
           onCancel={() => setIsOpen(false)}
         />
@@ -176,11 +177,11 @@ function CreateOrchestratorWizard() {
 
   return (
     <ConversationalWizard
-      entityType="orchestrator"
-      onComplete={(data) => createOrchestrator(data)}
+      entityType='orchestrator'
+      onComplete={data => createOrchestrator(data)}
       onCancel={() => router.back()}
       onSendMessage={handleSendMessage}
-      initialContext="I need an orchestrator for customer support."
+      initialContext='I need an orchestrator for customer support.'
     />
   );
 }
@@ -190,13 +191,13 @@ function CreateOrchestratorWizard() {
 
 ```tsx
 <ConversationalWizard
-  entityType="workflow"
+  entityType='workflow'
   initialData={{
-    name: "Onboarding Workflow",
-    description: "Automated user onboarding process",
-    trigger: "user_join",
+    name: 'Onboarding Workflow',
+    description: 'Automated user onboarding process',
+    trigger: 'user_join',
   }}
-  onComplete={(data) => updateWorkflow(data)}
+  onComplete={data => updateWorkflow(data)}
   onCancel={() => close()}
 />
 ```
@@ -230,11 +231,13 @@ The wizard expects your `onSendMessage` handler to return:
 }
 ```
 
-When `extractedData` is provided, the "Review Details" button becomes enabled, allowing users to switch to form view.
+When `extractedData` is provided, the "Review Details" button becomes enabled, allowing users to
+switch to form view.
 
 ## Default Behavior
 
 If no `onSendMessage` handler is provided, the wizard uses a mock implementation that:
+
 1. Acknowledges the first message
 2. After 2-3 messages, generates basic extracted data
 3. Enables the form view

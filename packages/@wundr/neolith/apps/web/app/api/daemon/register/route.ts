@@ -9,7 +9,6 @@
  * @module app/api/daemon/register/route
  */
 
-
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -62,7 +61,7 @@ const REGISTER_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -115,8 +114,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', REGISTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          REGISTER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -127,20 +129,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           REGISTER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { orchestratorId, organizationId, apiKey, daemonInfo } = parseResult.data;
+    const { orchestratorId, organizationId, apiKey, daemonInfo } =
+      parseResult.data;
 
     // TODO: Validate API key against Orchestrator's stored key hash
     // This would use orchestratorService.validateAPIKey(apiKey)
     if (!apiKey.startsWith('gns_')) {
       return NextResponse.json(
-        createErrorResponse('Invalid API key', REGISTER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Invalid API key',
+          REGISTER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -174,7 +180,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         message: 'Daemon registered successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/daemon/register] Error:', error);
@@ -185,15 +191,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Daemon already registered for this Orchestrator',
-            REGISTER_ERROR_CODES.DAEMON_ALREADY_REGISTERED,
+            REGISTER_ERROR_CODES.DAEMON_ALREADY_REGISTERED
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
       if (error.message.includes('Orchestrator not found')) {
         return NextResponse.json(
-          createErrorResponse('Orchestrator not found', REGISTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Orchestrator not found',
+            REGISTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -201,9 +210,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        REGISTER_ERROR_CODES.INTERNAL_ERROR,
+        REGISTER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

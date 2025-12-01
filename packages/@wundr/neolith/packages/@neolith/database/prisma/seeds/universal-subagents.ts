@@ -21,7 +21,8 @@ export const UNIVERSAL_SUBAGENTS = [
   // Tier 3: Code Quality & Analysis
   {
     name: 'Code Reviewer',
-    description: 'Reviews code for quality, best practices, and potential issues',
+    description:
+      'Reviews code for quality, best practices, and potential issues',
     charterId: 'charter_code_reviewer_v1',
     charterData: {
       role: 'Code Quality Specialist',
@@ -36,18 +37,29 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['code_review', 'static_analysis', 'security_scan', 'linting'],
+    capabilities: [
+      'code_review',
+      'static_analysis',
+      'security_scan',
+      'linting',
+    ],
     mcpTools: ['read', 'grep', 'glob'],
     maxTokensPerTask: 50000,
     worktreeRequirement: 'read',
   },
   {
     name: 'Test Generator',
-    description: 'Generates unit tests, integration tests, and test coverage reports',
+    description:
+      'Generates unit tests, integration tests, and test coverage reports',
     charterId: 'charter_test_generator_v1',
     charterData: {
       role: 'Test Engineering Specialist',
-      expertise: ['unit_testing', 'integration_testing', 'test_coverage', 'tdd'],
+      expertise: [
+        'unit_testing',
+        'integration_testing',
+        'test_coverage',
+        'tdd',
+      ],
       systemPrompt:
         'You are a test engineering specialist. Generate comprehensive unit tests and integration tests for code. Follow TDD principles and ensure high test coverage.',
       guidelines: [
@@ -65,11 +77,17 @@ export const UNIVERSAL_SUBAGENTS = [
   },
   {
     name: 'Documentation Writer',
-    description: 'Creates and maintains technical documentation, API docs, and code comments',
+    description:
+      'Creates and maintains technical documentation, API docs, and code comments',
     charterId: 'charter_documentation_writer_v1',
     charterData: {
       role: 'Technical Documentation Specialist',
-      expertise: ['technical_writing', 'api_documentation', 'user_guides', 'inline_comments'],
+      expertise: [
+        'technical_writing',
+        'api_documentation',
+        'user_guides',
+        'inline_comments',
+      ],
       systemPrompt:
         'You are a technical documentation specialist. Create clear, comprehensive documentation for code, APIs, and systems. Write user-friendly guides and maintain inline code comments.',
       guidelines: [
@@ -80,7 +98,12 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['documentation', 'api_docs', 'readme_generation', 'commenting'],
+    capabilities: [
+      'documentation',
+      'api_docs',
+      'readme_generation',
+      'commenting',
+    ],
     mcpTools: ['read', 'write', 'edit', 'grep'],
     maxTokensPerTask: 50000,
     worktreeRequirement: 'write',
@@ -89,11 +112,17 @@ export const UNIVERSAL_SUBAGENTS = [
   // Tier 3: Development Support
   {
     name: 'Refactoring Specialist',
-    description: 'Refactors code for better maintainability, performance, and structure',
+    description:
+      'Refactors code for better maintainability, performance, and structure',
     charterId: 'charter_refactoring_specialist_v1',
     charterData: {
       role: 'Code Refactoring Expert',
-      expertise: ['refactoring', 'design_patterns', 'code_optimization', 'architecture'],
+      expertise: [
+        'refactoring',
+        'design_patterns',
+        'code_optimization',
+        'architecture',
+      ],
       systemPrompt:
         'You are a code refactoring expert. Improve code structure, apply design patterns, optimize performance, and enhance maintainability while preserving functionality.',
       guidelines: [
@@ -104,18 +133,29 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['refactoring', 'optimization', 'pattern_application', 'restructuring'],
+    capabilities: [
+      'refactoring',
+      'optimization',
+      'pattern_application',
+      'restructuring',
+    ],
     mcpTools: ['read', 'write', 'edit', 'grep', 'glob'],
     maxTokensPerTask: 70000,
     worktreeRequirement: 'write',
   },
   {
     name: 'Bug Investigator',
-    description: 'Investigates bugs, analyzes error logs, and provides debugging insights',
+    description:
+      'Investigates bugs, analyzes error logs, and provides debugging insights',
     charterId: 'charter_bug_investigator_v1',
     charterData: {
       role: 'Debugging Specialist',
-      expertise: ['debugging', 'log_analysis', 'root_cause_analysis', 'error_tracking'],
+      expertise: [
+        'debugging',
+        'log_analysis',
+        'root_cause_analysis',
+        'error_tracking',
+      ],
       systemPrompt:
         'You are a debugging specialist. Investigate bugs by analyzing code, error logs, and stack traces. Provide root cause analysis and suggest fixes.',
       guidelines: [
@@ -126,14 +166,20 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['debugging', 'log_analysis', 'error_tracking', 'root_cause_analysis'],
+    capabilities: [
+      'debugging',
+      'log_analysis',
+      'error_tracking',
+      'root_cause_analysis',
+    ],
     mcpTools: ['read', 'grep', 'bash'],
     maxTokensPerTask: 50000,
     worktreeRequirement: 'read',
   },
   {
     name: 'Dependency Manager',
-    description: 'Manages dependencies, updates packages, and resolves version conflicts',
+    description:
+      'Manages dependencies, updates packages, and resolves version conflicts',
     charterId: 'charter_dependency_manager_v1',
     charterData: {
       role: 'Dependency Management Specialist',
@@ -153,7 +199,12 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['dependency_management', 'version_resolution', 'security_audit', 'updates'],
+    capabilities: [
+      'dependency_management',
+      'version_resolution',
+      'security_audit',
+      'updates',
+    ],
     mcpTools: ['read', 'write', 'edit', 'bash'],
     maxTokensPerTask: 40000,
     worktreeRequirement: 'write',
@@ -162,7 +213,8 @@ export const UNIVERSAL_SUBAGENTS = [
   // Tier 3: DevOps & Infrastructure
   {
     name: 'CI/CD Configurator',
-    description: 'Sets up and maintains CI/CD pipelines and deployment workflows',
+    description:
+      'Sets up and maintains CI/CD pipelines and deployment workflows',
     charterId: 'charter_cicd_configurator_v1',
     charterData: {
       role: 'CI/CD Pipeline Specialist',
@@ -177,18 +229,29 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['cicd_setup', 'pipeline_configuration', 'deployment_automation', 'testing'],
+    capabilities: [
+      'cicd_setup',
+      'pipeline_configuration',
+      'deployment_automation',
+      'testing',
+    ],
     mcpTools: ['read', 'write', 'edit', 'bash'],
     maxTokensPerTask: 50000,
     worktreeRequirement: 'write',
   },
   {
     name: 'Infrastructure Auditor',
-    description: 'Audits infrastructure configurations for security and best practices',
+    description:
+      'Audits infrastructure configurations for security and best practices',
     charterId: 'charter_infrastructure_auditor_v1',
     charterData: {
       role: 'Infrastructure Security Specialist',
-      expertise: ['security_audit', 'infrastructure', 'compliance', 'best_practices'],
+      expertise: [
+        'security_audit',
+        'infrastructure',
+        'compliance',
+        'best_practices',
+      ],
       systemPrompt:
         'You are an infrastructure security specialist. Audit infrastructure configurations for security vulnerabilities, compliance issues, and adherence to best practices.',
       guidelines: [
@@ -199,7 +262,12 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['security_audit', 'compliance_check', 'infrastructure_review', 'reporting'],
+    capabilities: [
+      'security_audit',
+      'compliance_check',
+      'infrastructure_review',
+      'reporting',
+    ],
     mcpTools: ['read', 'grep', 'glob'],
     maxTokensPerTask: 40000,
     worktreeRequirement: 'read',
@@ -234,7 +302,12 @@ export const UNIVERSAL_SUBAGENTS = [
     charterId: 'charter_schema_designer_v1',
     charterData: {
       role: 'Database Schema Specialist',
-      expertise: ['database_design', 'schema_optimization', 'data_modeling', 'migrations'],
+      expertise: [
+        'database_design',
+        'schema_optimization',
+        'data_modeling',
+        'migrations',
+      ],
       systemPrompt:
         'You are a database schema specialist. Design efficient database schemas, optimize data models, and plan database migrations. Ensure data integrity and performance.',
       guidelines: [
@@ -245,7 +318,12 @@ export const UNIVERSAL_SUBAGENTS = [
       ],
     },
     tier: 3,
-    capabilities: ['schema_design', 'optimization', 'migration_planning', 'modeling'],
+    capabilities: [
+      'schema_design',
+      'optimization',
+      'migration_planning',
+      'modeling',
+    ],
     mcpTools: ['read', 'write', 'edit'],
     maxTokensPerTask: 50000,
     worktreeRequirement: 'write',
@@ -326,7 +404,7 @@ export async function seedUniversalSubagents(): Promise<void> {
 export async function cleanupUniversalSubagents(): Promise<void> {
   console.log('Cleaning up universal subagents...\n');
 
-  const charterIds = UNIVERSAL_SUBAGENTS.map((s) => s.charterId);
+  const charterIds = UNIVERSAL_SUBAGENTS.map(s => s.charterId);
 
   const result = await prisma.subagent.deleteMany({
     where: {
@@ -345,7 +423,7 @@ if (require.main === module) {
       await prisma.$disconnect();
       process.exit(0);
     })
-    .catch(async (error) => {
+    .catch(async error => {
       console.error('Universal subagents seed failed:', error);
       await prisma.$disconnect();
       process.exit(1);

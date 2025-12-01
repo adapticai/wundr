@@ -41,15 +41,18 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,8 +61,11 @@ export async function GET(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -97,7 +103,7 @@ export async function GET(
     if (!callChannelId) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -109,8 +115,11 @@ export async function GET(
 
     if (!channel) {
       return NextResponse.json(
-        createErrorResponse('Channel not found', CALL_ERROR_CODES.CHANNEL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Channel not found',
+          CALL_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -126,7 +135,7 @@ export async function GET(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Access denied', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -142,8 +151,11 @@ export async function GET(
       });
       if (!channelMembership) {
         return NextResponse.json(
-          createErrorResponse('Access denied to private channel', CALL_ERROR_CODES.FORBIDDEN),
-          { status: 403 },
+          createErrorResponse(
+            'Access denied to private channel',
+            CALL_ERROR_CODES.FORBIDDEN
+          ),
+          { status: 403 }
         );
       }
     }
@@ -152,17 +164,19 @@ export async function GET(
     let participants: CallParticipant[] = [];
 
     try {
-      const participantResults = await prisma.$queryRaw<Array<{
-        id: string;
-        user_id: string;
-        display_name: string | null;
-        joined_at: Date;
-        left_at: Date | null;
-        is_audio_enabled: boolean;
-        is_video_enabled: boolean;
-        user_name: string | null;
-        user_avatar: string | null;
-      }>>`
+      const participantResults = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          user_id: string;
+          display_name: string | null;
+          joined_at: Date;
+          left_at: Date | null;
+          is_audio_enabled: boolean;
+          is_video_enabled: boolean;
+          user_name: string | null;
+          user_avatar: string | null;
+        }>
+      >`
         SELECT
           cp.id,
           cp.user_id,
@@ -180,7 +194,7 @@ export async function GET(
         ORDER BY cp.joined_at ASC
       `;
 
-      participants = participantResults.map((p) => ({
+      participants = participantResults.map(p => ({
         id: p.id,
         callId: params.callId,
         userId: p.user_id,
@@ -204,14 +218,17 @@ export async function GET(
       data: participants,
       meta: {
         total: participants.length,
-        active: participants.filter((p) => !p.leftAt).length,
+        active: participants.filter(p => !p.leftAt).length,
       },
     });
   } catch (error) {
     console.error('[GET /api/calls/:callId/participants] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

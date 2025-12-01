@@ -8,15 +8,15 @@
  * Context goal type for categorizing the intent of the request
  */
 export type ContextGoal =
-  | 'understanding'      // User wants to understand code/architecture
-  | 'implementation'     // User wants to implement a feature
-  | 'refactoring'        // User wants to refactor code
-  | 'debugging'          // User wants to debug an issue
-  | 'migration'          // User wants to migrate/upgrade code
-  | 'documentation'      // User wants to create/update docs
-  | 'testing'            // User wants to write/fix tests
-  | 'analysis'           // User wants to analyze codebase
-  | 'search';            // User wants to find specific code
+  | 'understanding' // User wants to understand code/architecture
+  | 'implementation' // User wants to implement a feature
+  | 'refactoring' // User wants to refactor code
+  | 'debugging' // User wants to debug an issue
+  | 'migration' // User wants to migrate/upgrade code
+  | 'documentation' // User wants to create/update docs
+  | 'testing' // User wants to write/fix tests
+  | 'analysis' // User wants to analyze codebase
+  | 'search'; // User wants to find specific code
 
 /**
  * Pattern match result from request analysis

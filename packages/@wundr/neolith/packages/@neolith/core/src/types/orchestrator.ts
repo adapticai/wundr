@@ -422,7 +422,9 @@ export interface SlugOptions {
 /**
  * Type guard to check if a JSON value is an OrchestratorCharter.
  */
-export function isOrchestratorCharter(value: unknown): value is OrchestratorCharter {
+export function isOrchestratorCharter(
+  value: unknown
+): value is OrchestratorCharter {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -438,7 +440,9 @@ export function isOrchestratorCharter(value: unknown): value is OrchestratorChar
 /**
  * Type guard to check if a JSON value is an OrchestratorServiceAccountConfig.
  */
-export function isOrchestratorServiceAccountConfig(value: unknown): value is OrchestratorServiceAccountConfig {
+export function isOrchestratorServiceAccountConfig(
+  value: unknown
+): value is OrchestratorServiceAccountConfig {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -451,7 +455,8 @@ export function isOrchestratorServiceAccountConfig(value: unknown): value is Orc
  * Default Orchestrator charter template.
  */
 export const DEFAULT_ORCHESTRATOR_CHARTER: OrchestratorCharter = {
-  systemPrompt: 'You are an AI assistant representing a Virtual Person in an organization.',
+  systemPrompt:
+    'You are an AI assistant representing a Virtual Person in an organization.',
   personality: {
     tone: 'professional',
     decisionStyle: 'analytical',

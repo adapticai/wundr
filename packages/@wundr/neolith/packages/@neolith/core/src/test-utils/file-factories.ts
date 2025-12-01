@@ -15,12 +15,23 @@ import { vi } from 'vitest';
 /**
  * File type enum
  */
-export type FileType = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT' | 'ARCHIVE' | 'OTHER';
+export type FileType =
+  | 'IMAGE'
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'DOCUMENT'
+  | 'ARCHIVE'
+  | 'OTHER';
 
 /**
  * Upload status enum
  */
-export type UploadStatus = 'PENDING' | 'UPLOADING' | 'PROCESSING' | 'COMPLETE' | 'FAILED';
+export type UploadStatus =
+  | 'PENDING'
+  | 'UPLOADING'
+  | 'PROCESSING'
+  | 'COMPLETE'
+  | 'FAILED';
 
 /**
  * Image size enum
@@ -166,7 +177,7 @@ export function generateETag(): string {
 export function generateStorageKey(
   channelId: string,
   userId: string,
-  filename: string,
+  filename: string
 ): string {
   const timestamp = Date.now();
   const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -190,7 +201,7 @@ export function generateStorageKey(
  * ```
  */
 export function createMockFileRecord(
-  overrides: Partial<FileRecord> = {},
+  overrides: Partial<FileRecord> = {}
 ): FileRecord {
   const id = overrides.id ?? generateFileId();
   const channelId = overrides.channelId ?? 'ch_default';
@@ -201,7 +212,9 @@ export function createMockFileRecord(
   return {
     id,
     name,
-    key: overrides.key ?? `channels/${channelId}/files/${userId}/${Date.now()}-${name}`,
+    key:
+      overrides.key ??
+      `channels/${channelId}/files/${userId}/${Date.now()}-${name}`,
     type: overrides.type ?? 'DOCUMENT',
     mimeType: overrides.mimeType ?? 'application/pdf',
     size: overrides.size ?? 1024000,
@@ -224,7 +237,7 @@ export function createMockFileRecord(
  * @returns Mock image file record
  */
 export function createMockImageFile(
-  overrides: Partial<FileRecord> = {},
+  overrides: Partial<FileRecord> = {}
 ): FileRecord {
   const id = overrides.id ?? generateFileId();
   const name = overrides.name ?? 'photo.jpg';
@@ -254,7 +267,7 @@ export function createMockImageFile(
  * @returns Mock video file record
  */
 export function createMockVideoFile(
-  overrides: Partial<FileRecord> = {},
+  overrides: Partial<FileRecord> = {}
 ): FileRecord {
   const name = overrides.name ?? 'video.mp4';
 
@@ -283,13 +296,13 @@ export function createMockVideoFile(
  */
 export function createMockFileList(
   count: number,
-  overrides: Partial<FileRecord> = {},
+  overrides: Partial<FileRecord> = {}
 ): FileRecord[] {
   return Array.from({ length: count }, (_, i) =>
     createMockFileRecord({
       ...overrides,
       name: `file-${i + 1}.pdf`,
-    }),
+    })
   );
 }
 
@@ -300,7 +313,7 @@ export function createMockFileList(
  * @returns Mock file record with author relation
  */
 export function createMockFileWithAuthor(
-  overrides: Partial<FileRecord> = {},
+  overrides: Partial<FileRecord> = {}
 ): FileRecord & { author: FileAuthor } {
   const file = createMockFileRecord(overrides);
 
@@ -326,7 +339,7 @@ export function createMockFileWithAuthor(
  * @returns Mock upload result
  */
 export function createMockUploadResult(
-  overrides: Partial<UploadResult> = {},
+  overrides: Partial<UploadResult> = {}
 ): UploadResult {
   const key = overrides.key ?? `uploads/${Date.now()}/file.pdf`;
 
@@ -345,20 +358,23 @@ export function createMockUploadResult(
  * @returns Mock signed URL result
  */
 export function createMockSignedUrl(
-  overrides: Partial<SignedUrlResult> = {},
+  overrides: Partial<SignedUrlResult> = {}
 ): SignedUrlResult {
   const key = overrides.key ?? `uploads/${Date.now()}/file.pdf`;
   const expiresAt = overrides.expiresAt ?? new Date(Date.now() + 3600000);
 
   return {
-    url: overrides.url ?? `https://bucket.s3.amazonaws.com/${key}?X-Amz-Signature=mock`,
+    url:
+      overrides.url ??
+      `https://bucket.s3.amazonaws.com/${key}?X-Amz-Signature=mock`,
     key,
     fields: overrides.fields ?? {
       key,
       'Content-Type': 'application/pdf',
       'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
       'X-Amz-Credential': 'mock',
-      'X-Amz-Date': new Date().toISOString().replace(/[:-]/g, '').split('.')[0] + 'Z',
+      'X-Amz-Date':
+        new Date().toISOString().replace(/[:-]/g, '').split('.')[0] + 'Z',
       'X-Amz-Signature': 'mock_signature',
       Policy: 'mock_policy',
     },
@@ -373,7 +389,7 @@ export function createMockSignedUrl(
  * @returns Mock multipart upload init result
  */
 export function createMockMultipartUploadInit(
-  overrides: Partial<MultipartUploadInit> = {},
+  overrides: Partial<MultipartUploadInit> = {}
 ): MultipartUploadInit {
   return {
     uploadId: overrides.uploadId ?? generateUploadId(),
@@ -405,7 +421,7 @@ export function createMockCompletedParts(count: number): FileCompletedPart[] {
  * @returns Mock image metadata
  */
 export function createMockImageMetadata(
-  overrides: Partial<ImageMetadata> = {},
+  overrides: Partial<ImageMetadata> = {}
 ): ImageMetadata {
   return {
     width: overrides.width ?? 1920,
@@ -427,7 +443,7 @@ export function createMockImageMetadata(
  */
 export function createMockImageVariant(
   size: ImageSize,
-  key: string,
+  key: string
 ): ImageVariant {
   const dimensions: Record<ImageSize, { width: number; height: number }> = {
     thumbnail: { width: 150, height: 150 },
@@ -455,8 +471,14 @@ export function createMockImageVariant(
  * @returns Array of all image variants
  */
 export function createMockImageVariants(key: string): ImageVariant[] {
-  const sizes: ImageSize[] = ['thumbnail', 'small', 'medium', 'large', 'original'];
-  return sizes.map((size) => createMockImageVariant(size, key));
+  const sizes: ImageSize[] = [
+    'thumbnail',
+    'small',
+    'medium',
+    'large',
+    'original',
+  ];
+  return sizes.map(size => createMockImageVariant(size, key));
 }
 
 // =============================================================================
@@ -526,23 +548,31 @@ export function createMockPrismaFileModel() {
  */
 export function createMockStorageService() {
   return {
-    getSignedUploadUrl: vi.fn().mockImplementation(async (key: string) =>
-      createMockSignedUrl({ key }),
-    ),
-    getSignedDownloadUrl: vi.fn().mockImplementation(async (key: string) =>
-      `https://cdn.example.com/${key}?signature=mock`,
-    ),
+    getSignedUploadUrl: vi
+      .fn()
+      .mockImplementation(async (key: string) => createMockSignedUrl({ key })),
+    getSignedDownloadUrl: vi
+      .fn()
+      .mockImplementation(
+        async (key: string) => `https://cdn.example.com/${key}?signature=mock`
+      ),
     deleteFile: vi.fn().mockResolvedValue(undefined),
-    initiateMultipartUpload: vi.fn().mockImplementation(async (key: string) =>
-      createMockMultipartUploadInit({ key }),
-    ),
-    getMultipartPartUrl: vi.fn().mockImplementation(
-      async (key: string, uploadId: string, partNumber: number) =>
-        `https://bucket.s3.amazonaws.com/${key}?uploadId=${uploadId}&partNumber=${partNumber}`,
-    ),
-    completeMultipartUpload: vi.fn().mockImplementation(async (key: string) => ({
-      location: `https://cdn.example.com/${key}`,
-    })),
+    initiateMultipartUpload: vi
+      .fn()
+      .mockImplementation(async (key: string) =>
+        createMockMultipartUploadInit({ key })
+      ),
+    getMultipartPartUrl: vi
+      .fn()
+      .mockImplementation(
+        async (key: string, uploadId: string, partNumber: number) =>
+          `https://bucket.s3.amazonaws.com/${key}?uploadId=${uploadId}&partNumber=${partNumber}`
+      ),
+    completeMultipartUpload: vi
+      .fn()
+      .mockImplementation(async (key: string) => ({
+        location: `https://cdn.example.com/${key}`,
+      })),
     abortMultipartUpload: vi.fn().mockResolvedValue(undefined),
   };
 }
@@ -558,24 +588,31 @@ export function createMockStorageService() {
  */
 export function createMockImageService() {
   return {
-    processImage: vi.fn().mockImplementation(async () =>
-      createMockImageMetadata(),
-    ),
-    generateVariants: vi.fn().mockImplementation(
-      async (key: string, sizes: ImageSize[]) =>
-        sizes.map((size) => createMockImageVariant(size, key)),
-    ),
+    processImage: vi
+      .fn()
+      .mockImplementation(async () => createMockImageMetadata()),
+    generateVariants: vi
+      .fn()
+      .mockImplementation(async (key: string, sizes: ImageSize[]) =>
+        sizes.map(size => createMockImageVariant(size, key))
+      ),
     generateThumbnail: vi.fn().mockImplementation(async (key: string) => {
       const thumbnailKey = key.replace(/\.[^.]+$/, '_thumb.webp');
       return `https://cdn.example.com/${thumbnailKey}`;
     }),
-    resizeImage: vi.fn().mockImplementation(
-      async (_input: string, output: string, options: { width?: number; height?: number }) => ({
-        key: output,
-        width: options.width ?? 800,
-        height: options.height ?? 600,
-      }),
-    ),
+    resizeImage: vi
+      .fn()
+      .mockImplementation(
+        async (
+          _input: string,
+          output: string,
+          options: { width?: number; height?: number }
+        ) => ({
+          key: output,
+          width: options.width ?? 800,
+          height: options.height ?? 600,
+        })
+      ),
     optimizeImage: vi.fn().mockImplementation(async (key: string) => ({
       key: key.replace(/\.[^.]+$/, '_optimized.webp'),
       originalSize: 500000,
@@ -638,7 +675,7 @@ export const MAX_FILE_SIZES: Record<FileType, number> = {
 export function createMockValidationError(
   code: string,
   message: string,
-  field?: string,
+  field?: string
 ): { code: string; message: string; path?: string[] } {
   return {
     code,

@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Wundr platform REST API provides comprehensive access to analysis, setup, and configuration functionality. This document defines the complete API specification following OpenAPI 3.0 standards.
+The Wundr platform REST API provides comprehensive access to analysis, setup, and configuration
+functionality. This document defines the complete API specification following OpenAPI 3.0 standards.
 
 ## Base Configuration
 
@@ -31,6 +32,7 @@ servers:
 ## Authentication
 
 ### Bearer Token Authentication
+
 ```yaml
 components:
   securitySchemes:
@@ -49,6 +51,7 @@ components:
 ### Projects API
 
 #### List Projects
+
 ```yaml
 /projects:
   get:
@@ -91,32 +94,34 @@ components:
 ```
 
 #### Create Project
+
 ```yaml
-  post:
-    summary: Create a new project
-    tags: [Projects]
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
+post:
+  summary: Create a new project
+  tags: [Projects]
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CreateProjectRequest'
+  responses:
+    '201':
+      description: Project created successfully
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CreateProjectRequest'
-    responses:
-      '201':
-        description: Project created successfully
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Project'
-      '400':
-        $ref: '#/components/responses/BadRequest'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+            $ref: '#/components/schemas/Project'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
 ```
 
 #### Get Project
+
 ```yaml
 /projects/{projectId}:
   get:
@@ -145,6 +150,7 @@ components:
 ### Analysis API
 
 #### List Analyses
+
 ```yaml
 /projects/{projectId}/analyses:
   get:
@@ -181,35 +187,37 @@ components:
 ```
 
 #### Create Analysis
+
 ```yaml
-  post:
-    summary: Create new analysis
-    tags: [Analysis]
-    security:
-      - bearerAuth: []
-    parameters:
-      - name: projectId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
+post:
+  summary: Create new analysis
+  tags: [Analysis]
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: projectId
+      in: path
       required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CreateAnalysisRequest'
+  responses:
+    '202':
+      description: Analysis started
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CreateAnalysisRequest'
-    responses:
-      '202':
-        description: Analysis started
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Analysis'
+            $ref: '#/components/schemas/Analysis'
 ```
 
 #### Get Analysis Results
+
 ```yaml
 /analyses/{analysisId}:
   get:
@@ -236,6 +244,7 @@ components:
 ### Setup API
 
 #### List Setup Profiles
+
 ```yaml
 /setup/profiles:
   get:
@@ -255,6 +264,7 @@ components:
 ```
 
 #### Create Setup Session
+
 ```yaml
 /setup/sessions:
   post:
@@ -280,6 +290,7 @@ components:
 ### Configuration API
 
 #### Get Configuration
+
 ```yaml
 /config:
   get:
@@ -297,25 +308,26 @@ components:
 ```
 
 #### Update Configuration
+
 ```yaml
-  put:
-    summary: Update configuration
-    tags: [Configuration]
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
+put:
+  summary: Update configuration
+  tags: [Configuration]
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/UpdateConfigurationRequest'
+  responses:
+    '200':
+      description: Configuration updated
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/UpdateConfigurationRequest'
-    responses:
-      '200':
-        description: Configuration updated
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Configuration'
+            $ref: '#/components/schemas/Configuration'
 ```
 
 ## Data Schemas
@@ -323,6 +335,7 @@ components:
 ### Core Models
 
 #### Project Schema
+
 ```yaml
 components:
   schemas:
@@ -358,172 +371,179 @@ components:
 ```
 
 #### Analysis Schema
+
 ```yaml
-    Analysis:
-      type: object
-      required:
-        - id
-        - projectId
-        - type
-        - status
-        - createdAt
-      properties:
-        id:
-          type: string
-          format: uuid
-        projectId:
-          type: string
-          format: uuid
-        type:
-          type: string
-          enum: [quality, security, dependencies, duplicates, complexity]
-        status:
-          type: string
-          enum: [pending, running, completed, failed]
-        progress:
-          type: integer
-          minimum: 0
-          maximum: 100
-        results:
-          $ref: '#/components/schemas/AnalysisResults'
-        createdAt:
-          type: string
-          format: date-time
-        completedAt:
-          type: string
-          format: date-time
+Analysis:
+  type: object
+  required:
+    - id
+    - projectId
+    - type
+    - status
+    - createdAt
+  properties:
+    id:
+      type: string
+      format: uuid
+    projectId:
+      type: string
+      format: uuid
+    type:
+      type: string
+      enum: [quality, security, dependencies, duplicates, complexity]
+    status:
+      type: string
+      enum: [pending, running, completed, failed]
+    progress:
+      type: integer
+      minimum: 0
+      maximum: 100
+    results:
+      $ref: '#/components/schemas/AnalysisResults'
+    createdAt:
+      type: string
+      format: date-time
+    completedAt:
+      type: string
+      format: date-time
 ```
 
 #### Setup Profile Schema
+
 ```yaml
-    SetupProfile:
+SetupProfile:
+  type: object
+  required:
+    - id
+    - name
+    - tools
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+    tools:
+      type: array
+      items:
+        $ref: '#/components/schemas/Tool'
+    configuration:
       type: object
-      required:
-        - id
-        - name
-        - tools
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-        tools:
-          type: array
-          items:
-            $ref: '#/components/schemas/Tool'
-        configuration:
-          type: object
-          additionalProperties: true
-        templates:
-          type: array
-          items:
-            $ref: '#/components/schemas/Template'
+      additionalProperties: true
+    templates:
+      type: array
+      items:
+        $ref: '#/components/schemas/Template'
 ```
 
 ### Request Schemas
 
 #### Create Project Request
+
 ```yaml
-    CreateProjectRequest:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 255
-        description:
-          type: string
-          maxLength: 1000
-        repositoryUrl:
-          type: string
-          format: uri
-        configuration:
-          $ref: '#/components/schemas/ProjectConfiguration'
+CreateProjectRequest:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 255
+    description:
+      type: string
+      maxLength: 1000
+    repositoryUrl:
+      type: string
+      format: uri
+    configuration:
+      $ref: '#/components/schemas/ProjectConfiguration'
 ```
 
 #### Create Analysis Request
+
 ```yaml
-    CreateAnalysisRequest:
+CreateAnalysisRequest:
+  type: object
+  required:
+    - type
+  properties:
+    type:
+      type: string
+      enum: [quality, security, dependencies, duplicates, complexity]
+    options:
       type: object
-      required:
-        - type
       properties:
-        type:
-          type: string
-          enum: [quality, security, dependencies, duplicates, complexity]
-        options:
-          type: object
-          properties:
-            includePaths:
-              type: array
-              items:
-                type: string
-            excludePaths:
-              type: array
-              items:
-                type: string
-            depth:
-              type: integer
-              minimum: 1
-              maximum: 10
+        includePaths:
+          type: array
+          items:
+            type: string
+        excludePaths:
+          type: array
+          items:
+            type: string
+        depth:
+          type: integer
+          minimum: 1
+          maximum: 10
 ```
 
 ### Response Schemas
 
 #### Analysis Results
+
 ```yaml
-    AnalysisResults:
-      type: object
-      properties:
-        summary:
-          $ref: '#/components/schemas/AnalysisSummary'
-        metrics:
-          type: array
-          items:
-            $ref: '#/components/schemas/Metric'
-        issues:
-          type: array
-          items:
-            $ref: '#/components/schemas/Issue'
-        recommendations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Recommendation'
+AnalysisResults:
+  type: object
+  properties:
+    summary:
+      $ref: '#/components/schemas/AnalysisSummary'
+    metrics:
+      type: array
+      items:
+        $ref: '#/components/schemas/Metric'
+    issues:
+      type: array
+      items:
+        $ref: '#/components/schemas/Issue'
+    recommendations:
+      type: array
+      items:
+        $ref: '#/components/schemas/Recommendation'
 ```
 
 #### Metric Schema
+
 ```yaml
-    Metric:
-      type: object
-      required:
-        - name
-        - value
-        - category
-      properties:
-        name:
-          type: string
-        value:
-          oneOf:
-            - type: number
-            - type: string
-        category:
-          type: string
-          enum: [quality, performance, security, maintainability]
-        description:
-          type: string
-        trend:
-          type: string
-          enum: [improving, declining, stable]
+Metric:
+  type: object
+  required:
+    - name
+    - value
+    - category
+  properties:
+    name:
+      type: string
+    value:
+      oneOf:
+        - type: number
+        - type: string
+    category:
+      type: string
+      enum: [quality, performance, security, maintainability]
+    description:
+      type: string
+    trend:
+      type: string
+      enum: [improving, declining, stable]
 ```
 
 ## Error Handling
 
 ### Standard Error Response
+
 ```yaml
 components:
   responses:
@@ -533,21 +553,21 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    
+
     Unauthorized:
       description: Unauthorized
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    
+
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    
+
     InternalError:
       description: Internal server error
       content:
@@ -583,6 +603,7 @@ components:
 ## Rate Limiting
 
 ### Rate Limit Headers
+
 ```yaml
 # Response headers for all endpoints
 headers:
@@ -602,6 +623,7 @@ headers:
 ```
 
 ### Rate Limits by Endpoint Category
+
 - **Authentication**: 10 requests per minute
 - **Analysis Operations**: 30 requests per hour
 - **Setup Operations**: 60 requests per hour
@@ -611,6 +633,7 @@ headers:
 ## Pagination
 
 ### Standard Pagination
+
 ```yaml
 components:
   schemas:
@@ -632,82 +655,87 @@ components:
 ## WebSocket Events
 
 ### Connection Endpoint
+
 ```
 WSS wss://api.wundr.io/v1/ws?token={jwt_token}
 ```
 
 ### Event Types
+
 ```typescript
 // Analysis events
 interface AnalysisStartedEvent {
-  type: 'analysis.started'
+  type: 'analysis.started';
   data: {
-    analysisId: string
-    projectId: string
-    type: string
-  }
+    analysisId: string;
+    projectId: string;
+    type: string;
+  };
 }
 
 interface AnalysisProgressEvent {
-  type: 'analysis.progress'
+  type: 'analysis.progress';
   data: {
-    analysisId: string
-    progress: number
-    stage: string
-  }
+    analysisId: string;
+    progress: number;
+    stage: string;
+  };
 }
 
 interface AnalysisCompletedEvent {
-  type: 'analysis.completed'
+  type: 'analysis.completed';
   data: {
-    analysisId: string
-    results: AnalysisResults
-  }
+    analysisId: string;
+    results: AnalysisResults;
+  };
 }
 
 // Setup events
 interface SetupProgressEvent {
-  type: 'setup.progress'
+  type: 'setup.progress';
   data: {
-    sessionId: string
-    progress: number
-    currentStep: string
-  }
+    sessionId: string;
+    progress: number;
+    currentStep: string;
+  };
 }
 ```
 
 ## SDK Generation
 
 ### Supported Languages
+
 - **TypeScript/JavaScript** - Primary SDK with full type support
 - **Python** - Community SDK with basic functionality
 - **Go** - Enterprise SDK for backend integrations
 - **Java** - Enterprise SDK for JVM environments
 
 ### Example Usage
+
 ```typescript
-import { WundrClient } from '@wundr/sdk'
+import { WundrClient } from '@wundr/sdk';
 
 const client = new WundrClient({
   apiKey: process.env.WUNDR_API_KEY,
-  baseUrl: 'https://api.wundr.io/v1'
-})
+  baseUrl: 'https://api.wundr.io/v1',
+});
 
 // Create analysis
 const analysis = await client.analyses.create({
   projectId: 'project-uuid',
-  type: 'quality'
-})
+  type: 'quality',
+});
 
 // Subscribe to progress
-client.ws.on('analysis.progress', (event) => {
-  console.log(`Progress: ${event.data.progress}%`)
-})
+client.ws.on('analysis.progress', event => {
+  console.log(`Progress: ${event.data.progress}%`);
+});
 ```
 
 ## Testing
 
 ### Test Endpoints
+
 ```yaml
 /test/health:
   get:
@@ -729,4 +757,5 @@ client.ws.on('analysis.progress', (event) => {
         description: Echo response
 ```
 
-This REST API specification provides a comprehensive foundation for the Wundr platform's HTTP-based communication layer, ensuring consistency, type safety, and excellent developer experience.
+This REST API specification provides a comprehensive foundation for the Wundr platform's HTTP-based
+communication layer, ensuring consistency, type safety, and excellent developer experience.

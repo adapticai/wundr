@@ -102,7 +102,11 @@ describe('MergeStrategyManager', () => {
   describe('JSON merge', () => {
     it('should deep merge JSON objects', async () => {
       const base = JSON.stringify({ a: 1, b: { c: 2 } }, null, 2);
-      const user = JSON.stringify({ a: 1, b: { c: 2 }, userField: 'test' }, null, 2);
+      const user = JSON.stringify(
+        { a: 1, b: { c: 2 }, userField: 'test' },
+        null,
+        2
+      );
       const target = JSON.stringify({ a: 1, b: { c: 2, d: 3 } }, null, 2);
 
       const result = await manager.threeWayMerge({
@@ -171,7 +175,9 @@ describe('ThreeWayMergeAlgorithm', () => {
       const content = 'line 1\nline 2';
       const result = threeWayMergeAlgorithm(content, content, content);
 
-      const unchangedLines = result.lines.filter(l => l.status === LineStatus.UNCHANGED);
+      const unchangedLines = result.lines.filter(
+        l => l.status === LineStatus.UNCHANGED
+      );
       expect(unchangedLines.length).toBeGreaterThan(0);
     });
   });
@@ -192,9 +198,13 @@ describe('ThreeWayMergeAlgorithm', () => {
 
 describe('ConflictMarkerResolution', () => {
   it('should resolve conflicts with KEEP_EXISTING strategy', () => {
-    const content = 'before\n<<<<<<< OURS\nour content\n=======\ntheir content\n>>>>>>> THEIRS\nafter';
+    const content =
+      'before\n<<<<<<< OURS\nour content\n=======\ntheir content\n>>>>>>> THEIRS\nafter';
 
-    const resolved = resolveConflictMarkers(content, ConflictStrategy.KEEP_EXISTING);
+    const resolved = resolveConflictMarkers(
+      content,
+      ConflictStrategy.KEEP_EXISTING
+    );
 
     expect(resolved).toContain('our content');
     expect(resolved).not.toContain('their content');
@@ -202,16 +212,21 @@ describe('ConflictMarkerResolution', () => {
   });
 
   it('should resolve conflicts with USE_TEMPLATE strategy', () => {
-    const content = 'before\n<<<<<<< OURS\nour content\n=======\ntheir content\n>>>>>>> THEIRS\nafter';
+    const content =
+      'before\n<<<<<<< OURS\nour content\n=======\ntheir content\n>>>>>>> THEIRS\nafter';
 
-    const resolved = resolveConflictMarkers(content, ConflictStrategy.USE_TEMPLATE);
+    const resolved = resolveConflictMarkers(
+      content,
+      ConflictStrategy.USE_TEMPLATE
+    );
 
     expect(resolved).not.toContain('our content');
     expect(resolved).toContain('their content');
   });
 
   it('should resolve conflicts with MERGE strategy', () => {
-    const content = 'before\n<<<<<<< OURS\nour content\n=======\ntheir content\n>>>>>>> THEIRS\nafter';
+    const content =
+      'before\n<<<<<<< OURS\nour content\n=======\ntheir content\n>>>>>>> THEIRS\nafter';
 
     const resolved = resolveConflictMarkers(content, ConflictStrategy.MERGE);
 
@@ -222,9 +237,12 @@ describe('ConflictMarkerResolution', () => {
 
 describe('MarkdownMerge', () => {
   it('should preserve user sections during merge', () => {
-    const base = '# Doc\n\nContent\n\n<!-- USER_START -->\nUser notes\n<!-- USER_END -->\n\nMore content';
-    const ours = '# Doc\n\nContent\n\n<!-- USER_START -->\nModified user notes\n<!-- USER_END -->\n\nMore content';
-    const theirs = '# Doc\n\nUpdated content\n\n<!-- USER_START -->\nUser notes\n<!-- USER_END -->\n\nUpdated more content';
+    const base =
+      '# Doc\n\nContent\n\n<!-- USER_START -->\nUser notes\n<!-- USER_END -->\n\nMore content';
+    const ours =
+      '# Doc\n\nContent\n\n<!-- USER_START -->\nModified user notes\n<!-- USER_END -->\n\nMore content';
+    const theirs =
+      '# Doc\n\nUpdated content\n\n<!-- USER_START -->\nUser notes\n<!-- USER_END -->\n\nUpdated more content';
 
     const result = mergeMarkdown(base, ours, theirs, true);
 
@@ -239,7 +257,12 @@ describe('UnifiedDiff', () => {
     const theirs = 'line 1\nline 2';
 
     const mergeResult = threeWayMergeAlgorithm(base, ours, theirs);
-    const diff = createUnifiedDiff(mergeResult, 'original', 'modified', 'template');
+    const diff = createUnifiedDiff(
+      mergeResult,
+      'original',
+      'modified',
+      'template'
+    );
 
     expect(diff).toContain('--- original');
     expect(diff).toContain('+++ modified / template');
@@ -309,7 +332,9 @@ describe('FileValidators', () => {
       const result = markdownValidator.validate(content);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.code === 'UNCLOSED_CODE_BLOCK')).toBe(true);
+      expect(result.errors.some(e => e.code === 'UNCLOSED_CODE_BLOCK')).toBe(
+        true
+      );
     });
   });
 
@@ -326,7 +351,9 @@ describe('FileValidators', () => {
       const result = scriptValidator.validate(content);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.code === 'DANGEROUS_COMMAND')).toBe(true);
+      expect(result.errors.some(e => e.code === 'DANGEROUS_COMMAND')).toBe(
+        true
+      );
     });
   });
 
@@ -366,8 +393,19 @@ describe('FileValidators', () => {
   describe('createValidationSummary', () => {
     it('should create accurate summary', () => {
       const results = new Map([
-        ['/valid.json', { valid: true, errors: [], warnings: [], suggestions: [] }],
-        ['/invalid.json', { valid: false, errors: [{ path: 'root', message: 'error', code: 'ERR' }], warnings: [], suggestions: [] }],
+        [
+          '/valid.json',
+          { valid: true, errors: [], warnings: [], suggestions: [] },
+        ],
+        [
+          '/invalid.json',
+          {
+            valid: false,
+            errors: [{ path: 'root', message: 'error', code: 'ERR' }],
+            warnings: [],
+            suggestions: [],
+          },
+        ],
       ]);
 
       const summary = createValidationSummary(results);

@@ -30,16 +30,17 @@ npm run dev
 
 ## Core Features
 
-| Feature | Status | Configuration |
-|---------|--------|---------------|
-| Authentication | ✅ | NextAuth.js v5, Edge Runtime |
-| Rate Limiting | ✅ | 100 req/min per IP |
-| CORS | ✅ | `ALLOWED_ORIGINS` env var |
-| Security Headers | ✅ | Auto-applied |
+| Feature          | Status | Configuration                |
+| ---------------- | ------ | ---------------------------- |
+| Authentication   | ✅     | NextAuth.js v5, Edge Runtime |
+| Rate Limiting    | ✅     | 100 req/min per IP           |
+| CORS             | ✅     | `ALLOWED_ORIGINS` env var    |
+| Security Headers | ✅     | Auto-applied                 |
 
 ## Environment Variables
 
 ### Required (Already configured)
+
 ```env
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=<your-secret>
@@ -50,6 +51,7 @@ GOOGLE_CLIENT_SECRET=<secret>
 ```
 
 ### Optional
+
 ```env
 ALLOWED_ORIGINS=https://app.example.com,https://api.example.com
 UPSTASH_REDIS_REST_URL=<redis-url>  # Production rate limiting
@@ -83,6 +85,7 @@ UPSTASH_REDIS_REST_TOKEN=<token>
 - **Response**: 429 Too Many Requests
 
 **Headers**:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -101,51 +104,61 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 ## Common Tasks
 
 ### Add a Public Route
+
 Edit `middleware.ts`:
+
 ```typescript
 const PUBLIC_ROUTES = [
   '/',
   '/login',
-  '/your-new-route',  // Add here
+  '/your-new-route', // Add here
   // ...
 ];
 ```
 
 ### Customize Rate Limit
+
 Edit `middleware.ts`:
+
 ```typescript
-const RATE_LIMIT_WINDOW = 60 * 1000;      // Window in ms
-const RATE_LIMIT_MAX_REQUESTS = 100;      // Max requests
+const RATE_LIMIT_WINDOW = 60 * 1000; // Window in ms
+const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests
 ```
 
 ### Add Allowed Origin
+
 Update `.env.local`:
+
 ```env
 ALLOWED_ORIGINS=https://app.example.com,https://new-origin.com
 ```
 
 ## Response Codes
 
-| Code | Meaning | When |
-|------|---------|------|
-| 200 | OK | Successful request |
-| 204 | No Content | OPTIONS preflight |
-| 302 | Redirect | Unauthenticated (non-API) |
-| 401 | Unauthorized | Unauthenticated (API) |
-| 429 | Too Many Requests | Rate limit exceeded |
+| Code | Meaning           | When                      |
+| ---- | ----------------- | ------------------------- |
+| 200  | OK                | Successful request        |
+| 204  | No Content        | OPTIONS preflight         |
+| 302  | Redirect          | Unauthenticated (non-API) |
+| 401  | Unauthorized      | Unauthenticated (API)     |
+| 429  | Too Many Requests | Rate limit exceeded       |
 
 ## Troubleshooting
 
 ### Issue: "401 Unauthorized" on public route
+
 **Fix**: Add route to `PUBLIC_ROUTES` in `middleware.ts`
 
 ### Issue: CORS error
+
 **Fix**: Add origin to `ALLOWED_ORIGINS` environment variable
 
 ### Issue: Rate limit too strict
+
 **Fix**: Increase `RATE_LIMIT_MAX_REQUESTS` in `middleware.ts`
 
 ### Issue: Session not found
+
 **Fix**: Verify NextAuth.js configuration in `lib/auth.edge.ts`
 
 ## Production Checklist

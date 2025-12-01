@@ -19,6 +19,7 @@
 ## Quick Start
 
 ### 1. Verify Dev Server is Running
+
 ```bash
 # The dev server should be running on port 3000
 lsof -ti:3000
@@ -28,12 +29,14 @@ npm run dev
 ```
 
 ### 2. Run All Auth Tests
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
 npx playwright test auth.spec.ts
 ```
 
 ### 3. Run Specific Test Suites
+
 ```bash
 # Login page tests only
 npx playwright test auth.spec.ts -g "Login Page"
@@ -52,6 +55,7 @@ npx playwright test auth.spec.ts -g "OAuth"
 ```
 
 ### 4. Run with Visual Feedback
+
 ```bash
 # Headed mode (see browser)
 npx playwright test auth.spec.ts --headed
@@ -64,6 +68,7 @@ npx playwright test auth.spec.ts --ui
 ```
 
 ### 5. Generate Report
+
 ```bash
 # Run tests and generate HTML report
 npx playwright test auth.spec.ts --reporter=html
@@ -75,6 +80,7 @@ npx playwright show-report
 ## Test Coverage Summary
 
 ### ✅ Login Flow (12 tests)
+
 - Page rendering
 - Form validation
 - Error handling
@@ -83,6 +89,7 @@ npx playwright show-report
 - Accessibility
 
 ### ✅ Registration Flow (10 tests)
+
 - Page rendering
 - Field validation
 - Password requirements
@@ -90,18 +97,21 @@ npx playwright show-report
 - Loading states
 
 ### ✅ Forgot Password (9 tests)
+
 - Form validation
 - Success messaging
 - Security best practices
 - Navigation
 
 ### ✅ Reset Password (8 tests)
+
 - Token validation
 - Password strength
 - Complexity requirements
 - Confirmation matching
 
 ### ✅ Protected Routes (6 tests)
+
 - Dashboard
 - Workspace routes
 - Admin routes
@@ -110,29 +120,35 @@ npx playwright show-report
 - Workflows
 
 ### ✅ Session Management (2 tests)
+
 - Session persistence
 - Expiration handling
 
 ### ✅ OAuth Flows (3 tests)
+
 - GitHub OAuth
 - Google OAuth
 - Button states
 
 ### ✅ Accessibility (5 tests)
+
 - Keyboard navigation
 - ARIA labels
 - Focus management
 
 ### ✅ Mobile (3 tests)
+
 - Responsive layout
 - Touch targets
 - No horizontal scroll
 
 ### ✅ Error Handling (2 tests)
+
 - Network errors
 - API errors
 
 ### ✅ Logout (1 test)
+
 - Session termination
 
 **Total: 61 test cases**
@@ -153,26 +169,34 @@ Running 61 tests using 1 worker
 ## Common Issues & Solutions
 
 ### Issue: Tests timeout
+
 **Solution**: Increase timeout or ensure dev server is running
+
 ```bash
 npx playwright test auth.spec.ts --timeout=60000
 ```
 
 ### Issue: "No such file or directory"
+
 **Solution**: Make sure you're in the correct directory
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
 ```
 
 ### Issue: OAuth tests fail
+
 **Solution**: OAuth tests may need mock providers or environment variables
+
 ```bash
 # Skip OAuth tests in development
 npx playwright test auth.spec.ts --grep-invert "OAuth"
 ```
 
 ### Issue: Database errors
+
 **Solution**: Ensure test database is set up or use mock API responses
+
 ```typescript
 // See fixtures/auth.ts for setupAuthMocks()
 ```
@@ -180,6 +204,7 @@ npx playwright test auth.spec.ts --grep-invert "OAuth"
 ## Using Test Fixtures
 
 ### Example: Test with Authenticated User
+
 ```typescript
 import { test } from './fixtures/auth';
 
@@ -190,6 +215,7 @@ test('access dashboard', async ({ authenticatedPage }) => {
 ```
 
 ### Example: Test with Admin User
+
 ```typescript
 import { test } from './fixtures/auth';
 
@@ -200,6 +226,7 @@ test('access admin panel', async ({ adminPage }) => {
 ```
 
 ### Example: Login via UI
+
 ```typescript
 import { loginViaUI } from './fixtures/auth';
 
@@ -215,6 +242,7 @@ test('realistic login', async ({ page }) => {
 ## CI/CD Integration
 
 ### GitHub Actions
+
 ```yaml
 - name: Run auth tests
   run: npx playwright test auth.spec.ts --reporter=github
@@ -227,6 +255,7 @@ test('realistic login', async ({ page }) => {
 ```
 
 ### Environment Variables
+
 ```bash
 export PLAYWRIGHT_BASE_URL=http://localhost:3000
 export NEXTAUTH_URL=http://localhost:3000
@@ -258,6 +287,7 @@ export NEXTAUTH_SECRET=test-secret
 ## Support
 
 For issues or questions:
+
 1. Check [README-AUTH-TESTING.md](./README-AUTH-TESTING.md)
 2. Review test code for examples
 3. Check Playwright documentation
@@ -265,7 +295,5 @@ For issues or questions:
 
 ---
 
-**Created**: 2025-11-27
-**Test Coverage**: Authentication flows
-**Framework**: Playwright
+**Created**: 2025-11-27 **Test Coverage**: Authentication flows **Framework**: Playwright
 **Status**: Ready for use

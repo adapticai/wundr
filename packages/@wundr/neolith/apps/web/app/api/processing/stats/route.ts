@@ -44,9 +44,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -65,25 +65,29 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });
-    const accessibleWorkspaceIds = new Set(userWorkspaces.map((w) => w.workspaceId));
+    const accessibleWorkspaceIds = new Set(
+      userWorkspaces.map(w => w.workspaceId)
+    );
 
     // Get all jobs (or filter by workspace for non-admins)
     const allJobs = Array.from(processingJobs.values());
     const relevantJobs = isAdmin
       ? allJobs
-      : allJobs.filter((job) => accessibleWorkspaceIds.has(job.workspaceId));
+      : allJobs.filter(job => accessibleWorkspaceIds.has(job.workspaceId));
 
     // Calculate statistics
-    const pending = relevantJobs.filter((j) => j.status === 'pending').length;
-    const queued = relevantJobs.filter((j) => j.status === 'queued').length;
-    const processing = relevantJobs.filter((j) => j.status === 'processing').length;
-    const completed = relevantJobs.filter((j) => j.status === 'completed').length;
-    const failed = relevantJobs.filter((j) => j.status === 'failed').length;
-    const cancelled = relevantJobs.filter((j) => j.status === 'cancelled').length;
+    const pending = relevantJobs.filter(j => j.status === 'pending').length;
+    const queued = relevantJobs.filter(j => j.status === 'queued').length;
+    const processing = relevantJobs.filter(
+      j => j.status === 'processing'
+    ).length;
+    const completed = relevantJobs.filter(j => j.status === 'completed').length;
+    const failed = relevantJobs.filter(j => j.status === 'failed').length;
+    const cancelled = relevantJobs.filter(j => j.status === 'cancelled').length;
 
     // Calculate average processing time for completed jobs
     const completedJobs = relevantJobs.filter(
-      (j) => j.status === 'completed' && j.startedAt && j.completedAt,
+      j => j.status === 'completed' && j.startedAt && j.completedAt
     );
     const avgProcessingTime =
       completedJobs.length > 0
@@ -97,15 +101,13 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     // Calculate throughput (jobs completed in last hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentCompleted = relevantJobs.filter(
-      (j) =>
-        j.status === 'completed' &&
-        j.completedAt &&
-        j.completedAt >= oneHourAgo,
+      j =>
+        j.status === 'completed' && j.completedAt && j.completedAt >= oneHourAgo
     ).length;
 
     // Find oldest pending job
     const pendingJobs = relevantJobs
-      .filter((j) => j.status === 'pending' || j.status === 'queued')
+      .filter(j => j.status === 'pending' || j.status === 'queued')
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     const oldestPendingJob =
       pendingJobs.length > 0 ? pendingJobs[0].createdAt : null;
@@ -124,7 +126,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
     // Calculate success rate
     const totalFinished = completed + failed;
-    const successRate = totalFinished > 0 ? (completed / totalFinished) * 100 : 100;
+    const successRate =
+      totalFinished > 0 ? (completed / totalFinished) * 100 : 100;
 
     // Build response
     const stats = {
@@ -166,8 +169,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       ? {
           global: {
             totalJobs: allJobs.length,
-            totalWorkspaces: new Set(allJobs.map((j) => j.workspaceId)).size,
-            totalUsers: new Set(allJobs.map((j) => j.createdById)).size,
+            totalWorkspaces: new Set(allJobs.map(j => j.workspaceId)).size,
+            totalUsers: new Set(allJobs.map(j => j.createdById)).size,
           },
         }
       : null;
@@ -188,9 +191,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -203,14 +206,14 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
  */
 function formatDuration(ms: number): string {
   if (ms < 1000) {
-return `${Math.round(ms)}ms`;
-}
+    return `${Math.round(ms)}ms`;
+  }
   if (ms < 60000) {
-return `${(ms / 1000).toFixed(1)}s`;
-}
+    return `${(ms / 1000).toFixed(1)}s`;
+  }
   if (ms < 3600000) {
-return `${(ms / 60000).toFixed(1)}m`;
-}
+    return `${(ms / 60000).toFixed(1)}m`;
+  }
   return `${(ms / 3600000).toFixed(1)}h`;
 }
 
@@ -227,7 +230,7 @@ function getQueueHealthStatus(
   pending: number,
   queued: number,
   processing: number,
-  failed: number,
+  failed: number
 ): 'healthy' | 'degraded' | 'critical' {
   const backlog = pending + queued;
   const failureRate = (failed / (processing + failed + 1)) * 100;

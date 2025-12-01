@@ -147,7 +147,7 @@ export class AgentEvaluator {
   async runEvalSuite(
     suite: EvalSuite,
     agent: AgentExecutor,
-    options: RunEvalSuiteOptions = {},
+    options: RunEvalSuiteOptions = {}
   ): Promise<EvalResults> {
     const runId = uuidv4();
     const startedAt = new Date();
@@ -168,7 +168,7 @@ export class AgentEvaluator {
 
     if (options.filterTags && options.filterTags.length > 0) {
       testCases = testCases.filter(tc =>
-        tc.tags.some(tag => options.filterTags!.includes(tag)),
+        tc.tags.some(tag => options.filterTags!.includes(tag))
       );
     }
 
@@ -220,7 +220,7 @@ export class AgentEvaluator {
           suite,
           agent,
           iteration,
-          config,
+          config
         );
         testResults.push(result);
 
@@ -289,7 +289,7 @@ export class AgentEvaluator {
     input: string,
     response: string,
     rubric: GradingRubric = DEFAULT_GRADING_RUBRIC,
-    options: GradeWithLLMOptions,
+    options: GradeWithLLMOptions
   ): Promise<{
     criterionResults: CriterionResult[];
     overallAssessment: string;
@@ -327,7 +327,7 @@ export class AgentEvaluator {
     suite: EvalSuite,
     agent: AgentExecutor,
     iteration: number,
-    config: EvalSuite['config'],
+    config: EvalSuite['config']
   ): Promise<TestCaseResult> {
     const startTime = Date.now();
     let actualOutput = '';
@@ -340,7 +340,7 @@ export class AgentEvaluator {
       agentOutput = await Promise.race([
         agent.execute(testCase.input, testCase.context),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Execution timeout')), timeout),
+          setTimeout(() => reject(new Error('Execution timeout')), timeout)
         ),
       ]);
       actualOutput = agentOutput.response;
@@ -385,7 +385,7 @@ export class AgentEvaluator {
       if (testCase.expectedOutput) {
         const expectationResult = await this.checkExpectedOutput(
           actualOutput,
-          testCase,
+          testCase
         );
 
         if (!expectationResult.passed) {
@@ -424,7 +424,7 @@ export class AgentEvaluator {
           {
             context: testCase.context,
             referenceAnswer: testCase.referenceAnswer,
-          },
+          }
         );
         criterionResults = gradeResult.criterionResults;
         overallAssessment = gradeResult.overallAssessment;
@@ -466,7 +466,7 @@ export class AgentEvaluator {
    */
   private async checkExpectedOutput(
     actualOutput: string,
-    testCase: EvalTestCase,
+    testCase: EvalTestCase
   ): Promise<{ passed: boolean; score: number; explanation: string }> {
     const expected = testCase.expectedOutput;
     if (!expected) {
@@ -633,7 +633,7 @@ class LLMGrader {
       referenceAnswer?: string;
       customSystemPrompt?: string;
       includeExamples?: boolean;
-    } = {},
+    } = {}
   ): Promise<{
     criterionResults: CriterionResult[];
     overallAssessment: string;
@@ -645,7 +645,7 @@ class LLMGrader {
       input,
       response,
       rubric,
-      options,
+      options
     );
     const systemPrompt = options.customSystemPrompt || GRADING_SYSTEM_PROMPT;
 
@@ -669,7 +669,7 @@ class LLMGrader {
       context?: string;
       referenceAnswer?: string;
       includeExamples?: boolean;
-    },
+    }
   ): string {
     // Build context section
     const contextSection = options.context
@@ -715,7 +715,7 @@ class LLMGrader {
    */
   private async callLLM(
     _systemPrompt: string,
-    _userPrompt: string,
+    _userPrompt: string
   ): Promise<string> {
     // In a real implementation, this would call the LLM API based on config.provider
     // For now, we simulate a response structure
@@ -734,7 +734,7 @@ class LLMGrader {
     // This would use fetch/axios to call OpenAI, Anthropic, or custom APIs
     throw new Error(
       `LLM provider '${this.config.provider}' integration not implemented. ` +
-        'Configure with a custom grading function or implement the API call.',
+        'Configure with a custom grading function or implement the API call.'
     );
   }
 
@@ -781,7 +781,7 @@ class LLMGrader {
    */
   private parseGradingResponse(
     llmResponse: string,
-    rubric: GradingRubric,
+    rubric: GradingRubric
   ): {
     criterionResults: CriterionResult[];
     overallAssessment: string;
@@ -805,7 +805,7 @@ class LLMGrader {
       const criterionResults: CriterionResult[] = [];
       for (const criterion of rubric.criteria) {
         const llmCriterion = parsed.criteria?.find(
-          (c: { criterionId: string }) => c.criterionId === criterion.id,
+          (c: { criterionId: string }) => c.criterionId === criterion.id
         );
 
         const score = llmCriterion?.score ?? 5;
@@ -827,7 +827,7 @@ class LLMGrader {
       const passed = determinePassStatus(
         criterionResults,
         overallScore,
-        rubric,
+        rubric
       );
 
       return {
@@ -875,7 +875,7 @@ export function createEvaluator(): AgentEvaluator {
  * @returns AgentEvaluator instance
  */
 export function createEvaluatorWithLLM(
-  llmConfig: LLMProviderConfig,
+  llmConfig: LLMProviderConfig
 ): AgentEvaluator {
   return new AgentEvaluator(llmConfig);
 }

@@ -10,15 +10,11 @@ import { VPAnalyticsCard } from '@/components/orchestrator/orchestrator-analytic
 
 export default function VPDashboardPage({ params }: { params: { id: string } }) {
   return (
-    <div className="container py-6">
+    <div className='container py-6'>
       <h1>VP Dashboard</h1>
 
       {/* Add analytics card */}
-      <Orchestrator AnalyticsCard
-        vpId={params.id}
-        timeRange="7d"
-        className="mt-4"
-      />
+      <Orchestrator AnalyticsCard vpId={params.id} timeRange='7d' className='mt-4' />
     </div>
   );
 }
@@ -85,17 +81,20 @@ trends.forEach(period => {
 ### GET /api/orchestrators/[id]/analytics
 
 **Request:**
+
 ```bash
 GET /api/orchestrators/vp_123/analytics?timeRange=30d&includeDaily=true&includeWeekly=true
 ```
 
 **Query Parameters:**
+
 - `timeRange`: '24h' | '7d' | '30d' | '90d' | 'all' (default: '7d')
 - `includeDaily`: boolean (default: true)
 - `includeWeekly`: boolean (default: true)
 - `includeMonthly`: boolean (default: false)
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -140,24 +139,22 @@ GET /api/orchestrators/vp_123/analytics?timeRange=30d&includeDaily=true&includeW
 
 ```typescript
 interface VPAnalyticsCardProps {
-  vpId: string;              // Required: Orchestrator identifier
-  className?: string;        // Optional: Additional CSS classes
+  vpId: string; // Required: Orchestrator identifier
+  className?: string; // Optional: Additional CSS classes
   timeRange?: MetricTimeRange; // Optional: Time range (default: '7d')
 }
 ```
 
 **Example with all props:**
+
 ```tsx
-<Orchestrator AnalyticsCard
-  vpId="vp_abc123"
-  timeRange="30d"
-  className="shadow-lg rounded-xl"
-/>
+<Orchestrator AnalyticsCard vpId='vp_abc123' timeRange='30d' className='shadow-lg rounded-xl' />
 ```
 
 ## Service Functions
 
 ### trackTaskCompletion
+
 ```typescript
 trackTaskCompletion(
   vpId: string,
@@ -168,6 +165,7 @@ trackTaskCompletion(
 ```
 
 ### getVPMetrics
+
 ```typescript
 getVPMetrics(
   vpId: string,
@@ -176,6 +174,7 @@ getVPMetrics(
 ```
 
 ### calculateSuccessRate
+
 ```typescript
 calculateSuccessRate(
   vpId: string,
@@ -184,6 +183,7 @@ calculateSuccessRate(
 ```
 
 ### getVPTrends
+
 ```typescript
 getVPTrends(
   vpId: string,
@@ -193,6 +193,7 @@ getVPTrends(
 ```
 
 ### getVPAnalytics
+
 ```typescript
 getVPAnalytics(
   vpId: string
@@ -202,24 +203,26 @@ getVPAnalytics(
 ## Common Use Cases
 
 ### 1. Orchestrator Performance Dashboard
+
 ```tsx
 function VPPerformanceDashboard({ vpId }: { vpId: string }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
       {/* 24 hour metrics */}
-      <Orchestrator AnalyticsCard vpId={vpId} timeRange="24h" />
+      <Orchestrator AnalyticsCard vpId={vpId} timeRange='24h' />
 
       {/* 7 day metrics */}
-      <Orchestrator AnalyticsCard vpId={vpId} timeRange="7d" />
+      <Orchestrator AnalyticsCard vpId={vpId} timeRange='7d' />
 
       {/* 30 day metrics */}
-      <Orchestrator AnalyticsCard vpId={vpId} timeRange="30d" />
+      <Orchestrator AnalyticsCard vpId={vpId} timeRange='30d' />
     </div>
   );
 }
 ```
 
 ### 2. Success Rate Badge
+
 ```tsx
 import { calculateSuccessRate } from '@/lib/services/orchestrator-analytics-service';
 
@@ -227,15 +230,12 @@ async function SuccessRateBadge({ vpId }: { vpId: string }) {
   const rate = await calculateSuccessRate(vpId, '7d');
   const color = rate >= 90 ? 'green' : rate >= 70 ? 'yellow' : 'red';
 
-  return (
-    <span className={`badge badge-${color}`}>
-      {rate.toFixed(1)}% success
-    </span>
-  );
+  return <span className={`badge badge-${color}`}>{rate.toFixed(1)}% success</span>;
 }
 ```
 
 ### 3. Trend Chart Data
+
 ```tsx
 import { getVPTrends } from '@/lib/services/orchestrator-analytics-service';
 
@@ -245,23 +245,22 @@ async function getTrendChartData(vpId: string) {
   return trends.map(t => ({
     date: t.periodStart.toLocaleDateString(),
     completions: t.tasksCompleted,
-    successRate: t.successRate
+    successRate: t.successRate,
   }));
 }
 ```
 
 ### 4. Orchestrator Comparison
+
 ```typescript
 async function compareVPs(vpIds: string[]) {
-  const metrics = await Promise.all(
-    vpIds.map(id => getVPMetrics(id, '7d'))
-  );
+  const metrics = await Promise.all(vpIds.map(id => getVPMetrics(id, '7d')));
 
   return metrics.map((m, i) => ({
     vpId: vpIds[i],
     successRate: m.successRate,
     tasksCompleted: m.tasksCompleted,
-    avgDuration: m.avgDurationMinutes
+    avgDuration: m.avgDurationMinutes,
   }));
 }
 ```
@@ -282,20 +281,23 @@ async function compareVPs(vpIds: string[]) {
 ## Styling Customization
 
 ### Custom Card Styling
+
 ```tsx
-<Orchestrator AnalyticsCard
+<Orchestrator
+  AnalyticsCard
   vpId={vpId}
-  className="
+  className='
     border-2
     border-primary
     shadow-2xl
     hover:shadow-3xl
     transition-shadow
-  "
+  '
 />
 ```
 
 ### Custom Time Range Selector
+
 ```tsx
 const [timeRange, setTimeRange] = useState<MetricTimeRange>('7d');
 
@@ -322,18 +324,21 @@ const [timeRange, setTimeRange] = useState<MetricTimeRange>('7d');
 ## Troubleshooting
 
 ### Issue: "Analytics data not loading"
+
 - Check authentication is working
 - Verify Orchestrator exists in database
 - Check browser console for errors
 - Verify API endpoint is accessible
 
 ### Issue: "Metrics showing 0"
+
 - Ensure Orchestrator has completed tasks
 - Check task status values are correct
 - Verify time range includes task dates
 - Check database connectivity
 
 ### Issue: "Success rate incorrect"
+
 - Verify task status transitions
 - Check DONE vs CANCELLED counts
 - Ensure timestamps are accurate
@@ -351,5 +356,4 @@ const [timeRange, setTimeRange] = useState<MetricTimeRange>('7d');
 
 ---
 
-**Last Updated:** 2025-11-26
-**Version:** 1.0.0
+**Last Updated:** 2025-11-26 **Version:** 1.0.0

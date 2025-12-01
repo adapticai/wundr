@@ -1,6 +1,7 @@
 # Template Customization Guide: Adapting Claude Flow for Your Projects
 
-Complete guide to customizing templates, workflows, and configurations for different project types with Claude Flow.
+Complete guide to customizing templates, workflows, and configurations for different project types
+with Claude Flow.
 
 ## Table of Contents
 
@@ -15,7 +16,8 @@ Complete guide to customizing templates, workflows, and configurations for diffe
 
 ## Template System Overview
 
-Claude Flow templates provide pre-configured setups for different project types, frameworks, and workflows.
+Claude Flow templates provide pre-configured setups for different project types, frameworks, and
+workflows.
 
 ### Template Structure
 
@@ -55,6 +57,7 @@ npx claude-flow@alpha init --template base
 ```
 
 **Includes**:
+
 - Basic agent configuration
 - Standard hooks (format, lint, test)
 - Generic file patterns
@@ -70,6 +73,7 @@ npx claude-flow@alpha init --template react
 ```
 
 **Features**:
+
 ```json
 {
   "template": "react",
@@ -93,11 +97,7 @@ npx claude-flow@alpha init --template react
     }
   },
   "hooks": {
-    "post-edit": [
-      "format-jsx",
-      "organize-imports",
-      "check-prop-types"
-    ]
+    "post-edit": ["format-jsx", "organize-imports", "check-prop-types"]
   },
   "workflows": {
     "component": "create-component-workflow",
@@ -116,6 +116,7 @@ npx claude-flow@alpha init --template nodejs-backend
 ```
 
 **Features**:
+
 ```json
 {
   "template": "nodejs-backend",
@@ -137,15 +138,8 @@ npx claude-flow@alpha init --template nodejs-backend
     }
   },
   "hooks": {
-    "post-edit-api": [
-      "validate-openapi",
-      "generate-client",
-      "update-docs"
-    ],
-    "post-edit-model": [
-      "generate-migration",
-      "update-schema"
-    ]
+    "post-edit-api": ["validate-openapi", "generate-client", "update-docs"],
+    "post-edit-model": ["generate-migration", "update-schema"]
   }
 }
 ```
@@ -159,6 +153,7 @@ npx claude-flow@alpha init --template python
 ```
 
 **Features**:
+
 ```json
 {
   "template": "python",
@@ -177,12 +172,7 @@ npx claude-flow@alpha init --template python
     }
   },
   "hooks": {
-    "post-edit": [
-      "format-black",
-      "lint-ruff",
-      "type-check-mypy",
-      "sort-imports"
-    ]
+    "post-edit": ["format-black", "lint-ruff", "type-check-mypy", "sort-imports"]
   }
 }
 ```
@@ -196,6 +186,7 @@ npx claude-flow@alpha init --template monorepo
 ```
 
 **Features**:
+
 ```json
 {
   "template": "monorepo",
@@ -213,11 +204,7 @@ npx claude-flow@alpha init --template monorepo
     }
   },
   "hooks": {
-    "pre-commit": [
-      "check-cross-package-deps",
-      "validate-versions",
-      "run-affected-tests"
-    ]
+    "pre-commit": ["check-cross-package-deps", "validate-versions", "run-affected-tests"]
   }
 }
 ```
@@ -231,6 +218,7 @@ npx claude-flow@alpha init --template microservices
 ```
 
 **Features**:
+
 - Service-specific agents
 - API gateway configuration
 - Service discovery setup
@@ -285,16 +273,8 @@ Edit `.claude-flow/templates/my-react-template/config.json`:
   },
 
   "hooks": {
-    "post-create-component": [
-      "generate-storybook",
-      "generate-tests",
-      "update-index"
-    ],
-    "post-edit-component": [
-      "format-code",
-      "check-accessibility",
-      "optimize-imports"
-    ]
+    "post-create-component": ["generate-storybook", "generate-tests", "update-index"],
+    "post-edit-component": ["format-code", "check-accessibility", "optimize-imports"]
   },
 
   "generators": {
@@ -307,12 +287,7 @@ Edit `.claude-flow/templates/my-react-template/config.json`:
 
   "workflows": {
     "feature": {
-      "steps": [
-        "create-component",
-        "create-hook",
-        "create-tests",
-        "update-routes"
-      ]
+      "steps": ["create-component", "create-hook", "create-tests", "update-routes"]
     }
   }
 }
@@ -329,22 +304,13 @@ Add custom agent configurations:
       "type": "reviewer",
       "specialization": "accessibility",
       "files": ["**/*.tsx"],
-      "checks": [
-        "aria-labels",
-        "keyboard-navigation",
-        "color-contrast",
-        "semantic-html"
-      ],
+      "checks": ["aria-labels", "keyboard-navigation", "color-contrast", "semantic-html"],
       "autoFix": true
     },
     "performance-optimizer": {
       "type": "perf-analyzer",
       "files": ["**/*.tsx"],
-      "checks": [
-        "bundle-size",
-        "render-performance",
-        "memory-leaks"
-      ],
+      "checks": ["bundle-size", "render-performance", "memory-leaks"],
       "thresholds": {
         "bundleSize": "100kb",
         "renderTime": "16ms"
@@ -376,11 +342,7 @@ Add custom hooks:
     },
     "pre-commit": {
       "enabled": true,
-      "hooks": [
-        "check-types",
-        "check-accessibility",
-        "check-bundle-size"
-      ]
+      "hooks": ["check-types", "check-accessibility", "check-bundle-size"]
     }
   }
 }
@@ -418,12 +380,7 @@ touch .claude-flow/templates/my-template/workflows.json
   },
 
   "structure": {
-    "directories": [
-      "src",
-      "tests",
-      "docs",
-      "config"
-    ],
+    "directories": ["src", "tests", "docs", "config"],
     "files": {
       "src/index.ts": "templates/index.ts.hbs",
       "tests/setup.ts": "templates/test-setup.ts.hbs",
@@ -432,15 +389,8 @@ touch .claude-flow/templates/my-template/workflows.json
   },
 
   "dependencies": {
-    "required": [
-      "typescript",
-      "prettier",
-      "eslint"
-    ],
-    "optional": [
-      "jest",
-      "vitest"
-    ]
+    "required": ["typescript", "prettier", "eslint"],
+    "optional": ["jest", "vitest"]
   },
 
   "scripts": {
@@ -512,10 +462,7 @@ touch .claude-flow/templates/my-template/workflows.json
   "hooks": {
     "pre-task": {
       "enabled": true,
-      "scripts": [
-        ".claude-flow/hooks/validate-env.js",
-        ".claude-flow/hooks/load-context.js"
-      ]
+      "scripts": [".claude-flow/hooks/validate-env.js", ".claude-flow/hooks/load-context.js"]
     },
     "post-edit": {
       "enabled": true,
@@ -527,10 +474,7 @@ touch .claude-flow/templates/my-template/workflows.json
     },
     "pre-commit": {
       "enabled": true,
-      "scripts": [
-        ".claude-flow/hooks/run-tests.js",
-        ".claude-flow/hooks/check-coverage.js"
-      ]
+      "scripts": [".claude-flow/hooks/run-tests.js", ".claude-flow/hooks/check-coverage.js"]
     }
   }
 }
@@ -736,11 +680,7 @@ npx claude-flow@alpha init --template my-template
   },
 
   "hooks": {
-    "post-create-page": [
-      "update-sitemap",
-      "generate-metadata",
-      "create-tests"
-    ]
+    "post-create-page": ["update-sitemap", "generate-metadata", "create-tests"]
   }
 }
 ```
@@ -806,20 +746,13 @@ npx claude-flow@alpha init --template my-template
   },
 
   "hooks": {
-    "post-edit-model": [
-      "make-migrations",
-      "migrate"
-    ]
+    "post-edit-model": ["make-migrations", "migrate"]
   },
 
   "generators": {
     "app": {
       "command": "django-admin startapp",
-      "postCreate": [
-        "register-app",
-        "create-urls",
-        "create-admin"
-      ]
+      "postCreate": ["register-app", "create-urls", "create-admin"]
     }
   }
 }
@@ -940,22 +873,12 @@ npx claude-flow@alpha init --template my-template
 
   "workflows": {
     "train-model": {
-      "steps": [
-        "prepare-data",
-        "train-model",
-        "evaluate-model",
-        "register-model",
-        "deploy-model"
-      ]
+      "steps": ["prepare-data", "train-model", "evaluate-model", "register-model", "deploy-model"]
     }
   },
 
   "hooks": {
-    "post-train": [
-      "log-metrics",
-      "save-artifacts",
-      "update-registry"
-    ]
+    "post-train": ["log-metrics", "save-artifacts", "update-registry"]
   }
 }
 ```
@@ -1018,9 +941,11 @@ npx claude-flow@alpha init --template my-template
 # My Custom Template
 
 ## Description
+
 Template for React applications with TypeScript and Tailwind.
 
 ## Features
+
 - TypeScript strict mode
 - Tailwind CSS
 - Jest + React Testing Library
@@ -1028,11 +953,11 @@ Template for React applications with TypeScript and Tailwind.
 - Automated accessibility checks
 
 ## Usage
-\`\`\`bash
-npx claude-flow@alpha init --template my-react-template
-\`\`\`
+
+\`\`\`bash npx claude-flow@alpha init --template my-react-template \`\`\`
 
 ## Configuration
+
 See [CONFIG.md](./CONFIG.md) for details.
 ```
 
@@ -1059,10 +984,12 @@ Template customization enables:
 - ✅ **Scalability**: Handle complex architectures
 
 **Next Steps**:
+
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
 - [Migration Guide](./MIGRATION.md)
 - [API Reference](../reference/API.md)
 
 ---
 
-**Pro Tip**: Start with a built-in template, customize gradually, create custom templates for repeated project types.
+**Pro Tip**: Start with a built-in template, customize gradually, create custom templates for
+repeated project types.

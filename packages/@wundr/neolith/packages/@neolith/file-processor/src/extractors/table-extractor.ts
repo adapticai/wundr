@@ -219,13 +219,19 @@ export class TableExtractorImpl implements TableExtractor {
           currentDelimiter = detected.delimiter;
           tableStartLine = i;
           currentTableLines = [line];
-        } else if (this.isSameDelimiterPattern(currentDelimiter, detected.delimiter)) {
+        } else if (
+          this.isSameDelimiterPattern(currentDelimiter, detected.delimiter)
+        ) {
           // Continue current table
           currentTableLines.push(line);
         } else {
           // Different delimiter - close current and start new
           if (currentTableLines.length >= this.config.minRows) {
-            const table = this.parseTableLines(currentTableLines, currentDelimiter, tableStartLine);
+            const table = this.parseTableLines(
+              currentTableLines,
+              currentDelimiter,
+              tableStartLine
+            );
             if (table) {
               tables.push(table);
             }
@@ -241,7 +247,11 @@ export class TableExtractorImpl implements TableExtractor {
         } else if (line.trim() === '') {
           // Empty line might end the table
           if (currentTableLines.length >= this.config.minRows) {
-            const table = this.parseTableLines(currentTableLines, currentDelimiter!, tableStartLine);
+            const table = this.parseTableLines(
+              currentTableLines,
+              currentDelimiter!,
+              tableStartLine
+            );
             if (table) {
               tables.push(table);
             }
@@ -252,7 +262,11 @@ export class TableExtractorImpl implements TableExtractor {
         } else {
           // Non-table line - end current table
           if (currentTableLines.length >= this.config.minRows) {
-            const table = this.parseTableLines(currentTableLines, currentDelimiter!, tableStartLine);
+            const table = this.parseTableLines(
+              currentTableLines,
+              currentDelimiter!,
+              tableStartLine
+            );
             if (table) {
               tables.push(table);
             }
@@ -266,7 +280,11 @@ export class TableExtractorImpl implements TableExtractor {
 
     // Handle remaining table at end of text
     if (currentTableLines.length >= this.config.minRows && currentDelimiter) {
-      const table = this.parseTableLines(currentTableLines, currentDelimiter, tableStartLine);
+      const table = this.parseTableLines(
+        currentTableLines,
+        currentDelimiter,
+        tableStartLine
+      );
       if (table) {
         tables.push(table);
       }
@@ -289,7 +307,11 @@ export class TableExtractorImpl implements TableExtractor {
       const tableHtml = match[1];
       const table = this.parseHTMLTable(tableHtml);
 
-      if (table && table.rowCount >= this.config.minRows - 1 && table.columnCount >= this.config.minColumns) {
+      if (
+        table &&
+        table.rowCount >= this.config.minRows - 1 &&
+        table.columnCount >= this.config.minColumns
+      ) {
         tables.push(table);
       }
       _tableIndex++;
@@ -312,7 +334,7 @@ export class TableExtractorImpl implements TableExtractor {
     }
 
     const rowCount = cells.length;
-    const columnCount = Math.max(...cells.map((row) => row.length));
+    const columnCount = Math.max(...cells.map(row => row.length));
 
     // Detect if first row is headers
     const hasHeaders = this.detectHeaders(cells);
@@ -336,7 +358,7 @@ export class TableExtractorImpl implements TableExtractor {
    * Detect if text contains tabular data.
    */
   detectTables(text: string): boolean {
-    const lines = text.split('\n').filter((line) => line.trim().length > 0);
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
 
     if (lines.length < this.config.minRows) {
       return false;
@@ -349,7 +371,10 @@ export class TableExtractorImpl implements TableExtractor {
     for (const line of lines) {
       const detected = this.detectDelimiter(line);
 
-      if (detected.delimiter && detected.columnCount >= this.config.minColumns) {
+      if (
+        detected.delimiter &&
+        detected.columnCount >= this.config.minColumns
+      ) {
         if (
           prevDelimiter &&
           this.isSameDelimiterPattern(prevDelimiter, detected.delimiter) &&
@@ -385,21 +410,26 @@ export class TableExtractorImpl implements TableExtractor {
       ...options,
     };
 
-    const rows = this.parseDelimitedText(csv, opts.delimiter, opts.quote, opts.escape);
+    const rows = this.parseDelimitedText(
+      csv,
+      opts.delimiter,
+      opts.quote,
+      opts.escape
+    );
 
     // Filter empty rows
     let filteredRows = opts.skipEmptyRows
-      ? rows.filter((row) => row.some((cell) => cell.trim().length > 0))
+      ? rows.filter(row => row.some(cell => cell.trim().length > 0))
       : rows;
 
     // Trim cells
     if (opts.trimCells) {
-      filteredRows = filteredRows.map((row) => row.map((cell) => cell.trim()));
+      filteredRows = filteredRows.map(row => row.map(cell => cell.trim()));
     }
 
     // Normalize column count
-    const maxCols = Math.max(...filteredRows.map((row) => row.length), 0);
-    const normalizedRows = filteredRows.map((row) => {
+    const maxCols = Math.max(...filteredRows.map(row => row.length), 0);
+    const normalizedRows = filteredRows.map(row => {
       while (row.length < maxCols) {
         row.push('');
       }
@@ -407,7 +437,8 @@ export class TableExtractorImpl implements TableExtractor {
     });
 
     // Extract headers and data
-    const headers = opts.hasHeaders && normalizedRows.length > 0 ? normalizedRows[0] : [];
+    const headers =
+      opts.hasHeaders && normalizedRows.length > 0 ? normalizedRows[0] : [];
     const dataRows = opts.hasHeaders ? normalizedRows.slice(1) : normalizedRows;
 
     return {
@@ -434,7 +465,7 @@ export class TableExtractorImpl implements TableExtractor {
   normalizeTable(table: ExtractedTable): ExtractedTable {
     const maxCols = Math.max(
       table.headers.length,
-      ...table.rows.map((row) => row.length),
+      ...table.rows.map(row => row.length)
     );
 
     const normalizedHeaders = [...table.headers];
@@ -442,7 +473,7 @@ export class TableExtractorImpl implements TableExtractor {
       normalizedHeaders.push('');
     }
 
-    const normalizedRows = table.rows.map((row) => {
+    const normalizedRows = table.rows.map(row => {
       const normalized = [...row];
       while (normalized.length < maxCols) {
         normalized.push('');
@@ -498,7 +529,7 @@ export class TableExtractorImpl implements TableExtractor {
       lines.push(`| ${headerCells.join(' | ')} |`);
 
       // Separator row
-      const separators = widths.map((w) => '-'.repeat(w));
+      const separators = widths.map(w => '-'.repeat(w));
       lines.push(`| ${separators.join(' | ')} |`);
     }
 
@@ -518,7 +549,10 @@ export class TableExtractorImpl implements TableExtractor {
   /**
    * Detect delimiter used in a line.
    */
-  private detectDelimiter(line: string): { delimiter: RegExp | null; columnCount: number } {
+  private detectDelimiter(line: string): {
+    delimiter: RegExp | null;
+    columnCount: number;
+  } {
     for (const pattern of this.config.delimiterPatterns) {
       const parts = line.split(pattern);
       if (parts.length >= this.config.minColumns) {
@@ -549,28 +583,28 @@ export class TableExtractorImpl implements TableExtractor {
   private parseTableLines(
     lines: string[],
     delimiter: RegExp,
-    startRow: number,
+    startRow: number
   ): ExtractedTable | null {
     // Filter out separator lines
-    const dataLines = lines.filter((line) => !this.isSeparatorLine(line));
+    const dataLines = lines.filter(line => !this.isSeparatorLine(line));
 
     if (dataLines.length < this.config.minRows) {
       return null;
     }
 
     // Parse rows
-    const rows = dataLines.map((line) =>
-      line.split(delimiter).map((cell) => cell.trim()),
+    const rows = dataLines.map(line =>
+      line.split(delimiter).map(cell => cell.trim())
     );
 
     // Normalize column count
-    const maxCols = Math.max(...rows.map((row) => row.length));
+    const maxCols = Math.max(...rows.map(row => row.length));
 
     if (maxCols < this.config.minColumns) {
       return null;
     }
 
-    const normalizedRows = rows.map((row) => {
+    const normalizedRows = rows.map(row => {
       while (row.length < maxCols) {
         row.push('');
       }
@@ -610,7 +644,8 @@ export class TableExtractorImpl implements TableExtractor {
       const cells: string[] = [];
 
       // Extract cells (th and td)
-      const cellRegex = /<(th|td)[^>]*(?:colspan="(\d+)")?[^>]*(?:rowspan="(\d+)")?[^>]*>([\s\S]*?)<\/\1>/gi;
+      const cellRegex =
+        /<(th|td)[^>]*(?:colspan="(\d+)")?[^>]*(?:rowspan="(\d+)")?[^>]*>([\s\S]*?)<\/\1>/gi;
       let cellMatch;
       let colIndex = 0;
 
@@ -650,8 +685,8 @@ export class TableExtractorImpl implements TableExtractor {
     }
 
     // Normalize column count
-    const maxCols = Math.max(...rows.map((row) => row.length));
-    const normalizedRows = rows.map((row) => {
+    const maxCols = Math.max(...rows.map(row => row.length));
+    const normalizedRows = rows.map(row => {
       while (row.length < maxCols) {
         row.push('');
       }
@@ -659,8 +694,11 @@ export class TableExtractorImpl implements TableExtractor {
     });
 
     // Detect headers (check for th tags or first row patterns)
-    const hasTheader = /<thead/i.test(tableHtml) || /<th/i.test(tableHtml.split(/<\/tr>/i)[0] || '');
-    const headers = hasTheader && normalizedRows.length > 0 ? normalizedRows[0] : [];
+    const hasTheader =
+      /<thead/i.test(tableHtml) ||
+      /<th/i.test(tableHtml.split(/<\/tr>/i)[0] || '');
+    const headers =
+      hasTheader && normalizedRows.length > 0 ? normalizedRows[0] : [];
     const dataRows = hasTheader ? normalizedRows.slice(1) : normalizedRows;
 
     return {
@@ -718,8 +756,8 @@ export class TableExtractorImpl implements TableExtractor {
         }
       }
       if (dataRowsHaveNumbers) {
-break;
-}
+        break;
+      }
     }
 
     // First row is likely headers if it's all text and data rows have numbers
@@ -748,7 +786,10 @@ break;
   /**
    * Detect column types.
    */
-  private detectColumnTypes(rows: string[][], hasHeaders: boolean): ColumnType[] {
+  private detectColumnTypes(
+    rows: string[][],
+    hasHeaders: boolean
+  ): ColumnType[] {
     const dataRows = hasHeaders ? rows.slice(1) : rows;
 
     if (dataRows.length === 0 || rows[0].length === 0) {
@@ -759,7 +800,9 @@ break;
     const types: ColumnType[] = [];
 
     for (let col = 0; col < columnCount; col++) {
-      const values = dataRows.map((row) => row[col] || '').filter((v) => v.trim().length > 0);
+      const values = dataRows
+        .map(row => row[col] || '')
+        .filter(v => v.trim().length > 0);
 
       if (values.length === 0) {
         types.push('empty');
@@ -769,10 +812,14 @@ break;
       // Check for each type
       const typeChecks = {
         number: (v: string) => /^-?\d+([.,]\d+)?$/.test(v.trim()),
-        currency: (v: string) => /^[$\u00A3\u20AC\u00A5]?\s*-?\d+([.,]\d+)?\s*[$\u00A3\u20AC\u00A5]?$/.test(v.trim()),
+        currency: (v: string) =>
+          /^[$\u00A3\u20AC\u00A5]?\s*-?\d+([.,]\d+)?\s*[$\u00A3\u20AC\u00A5]?$/.test(
+            v.trim()
+          ),
         percentage: (v: string) => /^-?\d+([.,]\d+)?\s*%$/.test(v.trim()),
         boolean: (v: string) => /^(true|false|yes|no|y|n|1|0)$/i.test(v.trim()),
-        date: (v: string) => !isNaN(Date.parse(v)) && /\d{1,4}[-/]\d{1,2}[-/]\d{1,4}/.test(v),
+        date: (v: string) =>
+          !isNaN(Date.parse(v)) && /\d{1,4}[-/]\d{1,2}[-/]\d{1,4}/.test(v),
       };
 
       let detectedType: ColumnType = 'string';
@@ -789,8 +836,8 @@ break;
 
       // Check for mixed types
       if (detectedType === 'string') {
-        const hasNumbers = values.some((v) => /\d/.test(v));
-        const hasLetters = values.some((v) => /[a-zA-Z]/.test(v));
+        const hasNumbers = values.some(v => /\d/.test(v));
+        const hasLetters = values.some(v => /[a-zA-Z]/.test(v));
         if (hasNumbers && hasLetters) {
           detectedType = 'mixed';
         }
@@ -810,7 +857,7 @@ break;
       return [];
     }
 
-    const columnCount = Math.max(...rows.map((row) => row.length));
+    const columnCount = Math.max(...rows.map(row => row.length));
     const widths: number[] = new Array(columnCount).fill(0);
 
     for (const row of rows) {
@@ -829,7 +876,7 @@ break;
     text: string,
     delimiter: string,
     quote: string,
-    escape: string,
+    escape: string
   ): string[][] {
     const rows: string[][] = [];
     const lines = text.split(/\r?\n/);
@@ -880,11 +927,19 @@ break;
   /**
    * Format a row for CSV output.
    */
-  private formatCSVRow(row: string[], delimiter: string, quote: string): string {
+  private formatCSVRow(
+    row: string[],
+    delimiter: string,
+    quote: string
+  ): string {
     return row
-      .map((cell) => {
+      .map(cell => {
         // Quote cells that contain delimiter, quote, or newline
-        if (cell.includes(delimiter) || cell.includes(quote) || cell.includes('\n')) {
+        if (
+          cell.includes(delimiter) ||
+          cell.includes(quote) ||
+          cell.includes('\n')
+        ) {
           const escaped = cell.replace(new RegExp(quote, 'g'), quote + quote);
           return `${quote}${escaped}${quote}`;
         }
@@ -898,7 +953,7 @@ break;
    */
   private calculateMarkdownWidths(table: ExtractedTable): number[] {
     const allRows = [table.headers, ...table.rows];
-    const columnCount = Math.max(...allRows.map((row) => row.length));
+    const columnCount = Math.max(...allRows.map(row => row.length));
     const widths: number[] = new Array(columnCount).fill(3); // Minimum width of 3 for "---"
 
     for (const row of allRows) {
@@ -951,7 +1006,9 @@ break;
  * const markdown = extractor.toMarkdown(tables[0]);
  * ```
  */
-export function createTableExtractor(config?: TableDetectionConfig): TableExtractor {
+export function createTableExtractor(
+  config?: TableDetectionConfig
+): TableExtractor {
   return new TableExtractorImpl(config);
 }
 

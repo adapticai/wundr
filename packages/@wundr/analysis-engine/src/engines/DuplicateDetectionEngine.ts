@@ -39,8 +39,9 @@ interface DuplicateDetectionConfig {
 /**
  * High-performance duplicate detection engine with multiple algorithms
  */
-export class DuplicateDetectionEngine
-  implements BaseAnalyzer<DuplicateCluster[]> {
+export class DuplicateDetectionEngine implements BaseAnalyzer<
+  DuplicateCluster[]
+> {
   public readonly name = 'DuplicateDetectionEngine';
   public readonly version = '2.0.0';
 
@@ -63,7 +64,7 @@ export class DuplicateDetectionEngine
    */
   async analyze(
     entities: EntityInfo[],
-    _analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
 
@@ -88,7 +89,7 @@ export class DuplicateDetectionEngine
     // Phase 4: Advanced clustering
     const finalClusters = await this.performAdvancedClustering(
       clusters,
-      entities,
+      entities
     );
 
     // Phase 5: Generate consolidation suggestions
@@ -99,7 +100,7 @@ export class DuplicateDetectionEngine
    * Hash-based duplicate detection - fastest method
    */
   private async detectHashBasedDuplicates(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     const normalizedGroups = new Map<string, EntityInfo[]>();
     const semanticGroups = new Map<string, EntityInfo[]>();
@@ -128,8 +129,8 @@ export class DuplicateDetectionEngine
       if (duplicateEntities.length > 1) {
         const firstEntity = duplicateEntities[0];
         if (!firstEntity) {
-continue;
-}
+          continue;
+        }
 
         const cluster: DuplicateCluster = {
           id: createId(),
@@ -150,14 +151,14 @@ continue;
       if (duplicateEntities.length > 1) {
         // Check if already covered by structural match
         const existingCluster = clusters.find(c =>
-          c.entities.some(e => duplicateEntities.includes(e)),
+          c.entities.some(e => duplicateEntities.includes(e))
         );
 
         if (!existingCluster) {
           const firstEntity = duplicateEntities[0];
           if (!firstEntity) {
-continue;
-}
+            continue;
+          }
 
           const cluster: DuplicateCluster = {
             id: createId(),
@@ -181,7 +182,7 @@ continue;
    * Semantic duplicate detection using AST and type analysis
    */
   private async detectSemanticDuplicates(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
 
@@ -200,7 +201,7 @@ continue;
    * Find semantic clusters for entities of the same type
    */
   private async findSemanticClustersForType(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const processed = new Set<string>();
@@ -209,8 +210,8 @@ continue;
       entities,
       async entity => {
         if (processed.has(entity.id)) {
-return;
-}
+          return;
+        }
 
         const similarEntities = [entity];
         processed.add(entity.id);
@@ -223,7 +224,7 @@ return;
 
           const similarity = this.calculateSemanticSimilarity(
             entity,
-            otherEntity,
+            otherEntity
           );
           if (similarity >= this.config.minSimilarity) {
             similarEntities.push(otherEntity);
@@ -244,7 +245,7 @@ return;
           });
         }
       },
-      10, // Reasonable concurrency for complex calculations
+      10 // Reasonable concurrency for complex calculations
     );
 
     return clusters;
@@ -254,7 +255,7 @@ return;
    * Fuzzy duplicate detection for partial matches
    */
   private async detectFuzzyDuplicates(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const entitiesByType = this.groupEntitiesByType(entities);
@@ -271,7 +272,7 @@ return;
    * Find fuzzy clusters using edit distance and token similarity
    */
   private async findFuzzyClustersForType(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const similarities = await this.calculateSimilarityMatrix(entities);
@@ -281,8 +282,8 @@ return;
 
     for (const entity of entities) {
       if (processed.has(entity.id)) {
-continue;
-}
+        continue;
+      }
 
       const cluster = [entity];
       processed.add(entity.id);
@@ -322,7 +323,7 @@ continue;
    * Calculate similarity matrix for fuzzy matching
    */
   private async calculateSimilarityMatrix(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<SimilarityMatrix> {
     const matrix: SimilarityMatrix = {};
 
@@ -341,7 +342,7 @@ continue;
           matrix[entity.id]![otherEntity.id] = similarity;
         }
       },
-      8, // Reasonable concurrency for matrix calculation
+      8 // Reasonable concurrency for matrix calculation
     );
 
     return matrix;
@@ -352,11 +353,11 @@ continue;
    */
   private calculateSemanticSimilarity(
     entity1: EntityInfo,
-    entity2: EntityInfo,
+    entity2: EntityInfo
   ): number {
     if (entity1.type !== entity2.type) {
-return 0;
-}
+      return 0;
+    }
 
     let similarity = 0;
     let factors = 0;
@@ -371,7 +372,7 @@ return 0;
     if (entity1.members && entity2.members) {
       const memberSimilarity = this.calculateMemberSimilarity(
         entity1.members,
-        entity2.members,
+        entity2.members
       );
       similarity += memberSimilarity;
       factors++;
@@ -381,7 +382,7 @@ return 0;
     if (entity1.complexity && entity2.complexity) {
       const complexitySimilarity = this.calculateComplexitySimilarity(
         entity1.complexity,
-        entity2.complexity,
+        entity2.complexity
       );
       similarity += complexitySimilarity;
       factors++;
@@ -390,7 +391,7 @@ return 0;
     // Dependency similarity
     const dependencySimilarity = this.calculateDependencySimilarity(
       entity1.dependencies,
-      entity2.dependencies,
+      entity2.dependencies
     );
     similarity += dependencySimilarity;
     factors++;
@@ -403,11 +404,11 @@ return 0;
    */
   private calculateFuzzySimilarity(
     entity1: EntityInfo,
-    entity2: EntityInfo,
+    entity2: EntityInfo
   ): number {
     if (entity1.type !== entity2.type) {
-return 0;
-}
+      return 0;
+    }
 
     let similarity = 0;
     let factors = 0;
@@ -415,7 +416,7 @@ return 0;
     // Name similarity (Levenshtein distance)
     const nameSimilarity = this.calculateStringSimilarity(
       entity1.name,
-      entity2.name,
+      entity2.name
     );
     similarity += nameSimilarity;
     factors++;
@@ -424,7 +425,7 @@ return 0;
     if (entity1.signature && entity2.signature) {
       const signatureSimilarity = this.calculateStringSimilarity(
         entity1.signature,
-        entity2.signature,
+        entity2.signature
       );
       similarity += signatureSimilarity;
       factors++;
@@ -434,7 +435,7 @@ return 0;
     if (entity1.jsDoc && entity2.jsDoc) {
       const jsdocSimilarity = this.calculateStringSimilarity(
         entity1.jsDoc,
-        entity2.jsDoc,
+        entity2.jsDoc
       );
       similarity += jsdocSimilarity * 0.5; // Lower weight for documentation
       factors += 0.5;
@@ -448,24 +449,24 @@ return 0;
    */
   private calculateStringSimilarity(str1: string, str2: string): number {
     if (str1 === str2) {
-return 1.0;
-}
+      return 1.0;
+    }
     if (str1.length === 0 || str2.length === 0) {
-return 0;
-}
+      return 0;
+    }
 
     // Simple Jaccard similarity for tokens
     const tokens1 = new Set(
       str1
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2),
+        .filter(t => t.length > 2)
     );
     const tokens2 = new Set(
       str2
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2),
+        .filter(t => t.length > 2)
     );
 
     const intersection = new Set([...tokens1].filter(t => tokens2.has(t)));
@@ -479,7 +480,7 @@ return 0;
    */
   private calculateMemberSimilarity(
     members1: EntityMembers,
-    members2: EntityMembers,
+    members2: EntityMembers
   ): number {
     let similarity = 0;
     let factors = 0;
@@ -488,7 +489,7 @@ return 0;
     if (members1.methods && members2.methods) {
       const methodSimilarity = this.calculateArraySimilarity(
         members1.methods.map(m => m.name),
-        members2.methods.map(m => m.name),
+        members2.methods.map(m => m.name)
       );
       similarity += methodSimilarity;
       factors++;
@@ -498,7 +499,7 @@ return 0;
     if (members1.properties && members2.properties) {
       const propertySimilarity = this.calculateArraySimilarity(
         members1.properties.map(p => p.name),
-        members2.properties.map(p => p.name),
+        members2.properties.map(p => p.name)
       );
       similarity += propertySimilarity;
       factors++;
@@ -512,7 +513,7 @@ return 0;
    */
   private calculateComplexitySimilarity(
     complexity1: ComplexityMetrics,
-    complexity2: ComplexityMetrics,
+    complexity2: ComplexityMetrics
   ): number {
     const factors: Array<keyof ComplexityMetrics> = [
       'cyclomatic',
@@ -543,7 +544,7 @@ return 0;
    */
   private calculateDependencySimilarity(
     deps1: string[],
-    deps2: string[],
+    deps2: string[]
   ): number {
     return this.calculateArraySimilarity(deps1, deps2);
   }
@@ -566,7 +567,7 @@ return 0;
    */
   private async performAdvancedClustering(
     initialClusters: DuplicateCluster[],
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     switch (this.config.clusteringAlgorithm) {
       case 'hierarchical':
@@ -583,7 +584,7 @@ return 0;
    * Hierarchical clustering for better grouping
    */
   private async hierarchicalClustering(
-    clusters: DuplicateCluster[],
+    clusters: DuplicateCluster[]
   ): Promise<DuplicateCluster[]> {
     // Merge similar clusters
     const mergedClusters: DuplicateCluster[] = [];
@@ -591,8 +592,8 @@ return 0;
 
     for (const cluster of clusters) {
       if (processed.has(cluster.id)) {
-continue;
-}
+        continue;
+      }
 
       const mergedCluster = { ...cluster };
       processed.add(cluster.id);
@@ -607,7 +608,7 @@ continue;
           mergedCluster.entities.push(...otherCluster.entities);
           mergedCluster.similarity = Math.min(
             mergedCluster.similarity,
-            otherCluster.similarity,
+            otherCluster.similarity
           );
           processed.add(otherCluster.id);
         }
@@ -626,7 +627,7 @@ continue;
    */
   private async densityBasedClustering(
     clusters: DuplicateCluster[],
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     // Implementation of density-based clustering
     const densityClusters: DuplicateCluster[] = [];
@@ -635,13 +636,13 @@ continue;
     // For each entity, find dense neighborhoods
     for (const entity of entities) {
       if (processed.has(entity.id)) {
-continue;
-}
+        continue;
+      }
 
       const neighborhood = this.findNeighborhood(
         entity,
         entities,
-        this.config.minSimilarity,
+        this.config.minSimilarity
       );
 
       if (neighborhood.length >= 2) {
@@ -671,14 +672,14 @@ continue;
   private findNeighborhood(
     centerEntity: EntityInfo,
     entities: EntityInfo[],
-    threshold: number,
+    threshold: number
   ): EntityInfo[] {
     const neighborhood = [centerEntity];
 
     for (const entity of entities) {
       if (entity.id === centerEntity.id) {
-continue;
-}
+        continue;
+      }
 
       const similarity = this.calculateSemanticSimilarity(centerEntity, entity);
       if (similarity >= threshold) {
@@ -693,7 +694,7 @@ continue;
    * Optimize hash-based clusters
    */
   private optimizeHashClusters(
-    clusters: DuplicateCluster[],
+    clusters: DuplicateCluster[]
   ): DuplicateCluster[] {
     return clusters
       .filter(cluster => cluster.entities.length <= this.config.maxClusterSize)
@@ -705,13 +706,13 @@ continue;
    */
   private mergeClusters(
     existingClusters: DuplicateCluster[],
-    newClusters: DuplicateCluster[],
+    newClusters: DuplicateCluster[]
   ): DuplicateCluster[] {
     const uniqueClusters: DuplicateCluster[] = [];
 
     for (const newCluster of newClusters) {
       const overlapping = existingClusters.find(existing =>
-        this.clustersOverlap(existing, newCluster),
+        this.clustersOverlap(existing, newCluster)
       );
 
       if (!overlapping) {
@@ -727,7 +728,7 @@ continue;
    */
   private clustersOverlap(
     cluster1: DuplicateCluster,
-    cluster2: DuplicateCluster,
+    cluster2: DuplicateCluster
   ): boolean {
     const entities1 = new Set(cluster1.entities.map(e => e.id));
     const entities2 = new Set(cluster2.entities.map(e => e.id));
@@ -747,7 +748,7 @@ continue;
    */
   private shouldMergeClusters(
     cluster1: DuplicateCluster,
-    cluster2: DuplicateCluster,
+    cluster2: DuplicateCluster
   ): boolean {
     return (
       cluster1.type === cluster2.type &&
@@ -761,7 +762,7 @@ continue;
    * Group entities by type for efficient processing
    */
   private groupEntitiesByType(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Map<string, EntityInfo[]> {
     const groups = new Map<string, EntityInfo[]>();
 
@@ -780,8 +781,8 @@ continue;
    */
   private calculateAverageSimilarity(entities: EntityInfo[]): number {
     if (entities.length < 2) {
-return 1.0;
-}
+      return 1.0;
+    }
 
     let totalSimilarity = 0;
     let pairs = 0;
@@ -790,7 +791,7 @@ return 1.0;
       for (let j = i + 1; j < entities.length; j++) {
         totalSimilarity += this.calculateSemanticSimilarity(
           entities[i]!,
-          entities[j]!,
+          entities[j]!
         );
         pairs++;
       }
@@ -806,7 +807,7 @@ return 1.0;
     const count = entities.length;
     const totalComplexity = entities.reduce(
       (sum, e) => sum + (e.complexity?.cyclomatic || 0),
-      0,
+      0
     );
     const avgDependencies =
       entities.reduce((sum, e) => sum + e.dependencies.length, 0) / count;
@@ -825,13 +826,13 @@ return 1.0;
    * Enhance clusters with consolidation suggestions
    */
   private enhanceClustersWithSuggestions(
-    clusters: DuplicateCluster[],
+    clusters: DuplicateCluster[]
   ): DuplicateCluster[] {
     return clusters.map(cluster => ({
       ...cluster,
       consolidationSuggestion: this.generateConsolidationSuggestion(
         cluster.entities,
-        cluster.type,
+        cluster.type
       ),
     }));
   }
@@ -841,7 +842,7 @@ return 1.0;
    */
   private generateConsolidationSuggestion(
     entities: EntityInfo[],
-    entityType: string,
+    entityType: string
   ): ConsolidationSuggestion {
     const primaryEntity = entities[0];
     if (!primaryEntity) {
@@ -876,7 +877,7 @@ return 1.0;
    */
   private generateConsolidationSteps(
     strategy: 'merge' | 'extract' | 'refactor',
-    _entities: EntityInfo[],
+    _entities: EntityInfo[]
   ): string[] {
     const baseSteps = [
       'Review all duplicate implementations for functional differences',

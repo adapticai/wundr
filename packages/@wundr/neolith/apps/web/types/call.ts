@@ -10,7 +10,11 @@ import type { User } from './chat';
 /**
  * Status of a call connection
  */
-export type CallStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
+export type CallStatus =
+  | 'connecting'
+  | 'connected'
+  | 'reconnecting'
+  | 'disconnected';
 
 /**
  * Type of call being conducted
@@ -20,7 +24,11 @@ export type CallType = 'video' | 'audio' | 'huddle';
 /**
  * Quality rating for participant network connection
  */
-export type ParticipantConnectionQuality = 'excellent' | 'good' | 'poor' | 'lost';
+export type ParticipantConnectionQuality =
+  | 'excellent'
+  | 'good'
+  | 'poor'
+  | 'lost';
 
 /**
  * Media device type for input/output selection
@@ -241,14 +249,24 @@ export type CallEvent =
   | { type: 'call_ended'; callId: string; endedAt: ISOTimestamp }
   | { type: 'recording_started'; callId: string }
   | { type: 'recording_stopped'; callId: string }
-  | { type: 'connection_quality_changed'; participantId: string; quality: ParticipantConnectionQuality };
+  | {
+      type: 'connection_quality_changed';
+      participantId: string;
+      quality: ParticipantConnectionQuality;
+    };
 
 /**
  * Error types specific to call operations
  */
 export interface CallError {
   /** Error code for programmatic handling */
-  code: 'CALL_NOT_FOUND' | 'PERMISSION_DENIED' | 'ROOM_FULL' | 'MEDIA_DEVICE_ERROR' | 'CONNECTION_FAILED' | 'INVALID_TOKEN';
+  code:
+    | 'CALL_NOT_FOUND'
+    | 'PERMISSION_DENIED'
+    | 'ROOM_FULL'
+    | 'MEDIA_DEVICE_ERROR'
+    | 'CONNECTION_FAILED'
+    | 'INVALID_TOKEN';
   /** Human-readable error message */
   message: string;
   /** Optional additional error details */

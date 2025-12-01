@@ -36,7 +36,13 @@ interface RouteContext {
  */
 const initiateConsensusSchema = z.object({
   /** Type of consensus item */
-  type: z.enum(['task_approval', 'decision', 'resource_allocation', 'priority_change', 'other']),
+  type: z.enum([
+    'task_approval',
+    'decision',
+    'resource_allocation',
+    'priority_change',
+    'other',
+  ]),
 
   /** Title/subject of consensus */
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -107,7 +113,7 @@ interface ConsensusMetadata {
  */
 async function verifyWorkspaceAccess(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<{ success: boolean; organizationId?: string; error?: string }> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -141,15 +147,18 @@ async function verifyWorkspaceAccess(
 function calculateConsensusResult(
   votes: Array<{ vote: string }>,
   threshold: number,
-  requiredOrchestratorIds: string[],
+  requiredOrchestratorIds: string[]
 ): { status: 'PENDING' | 'APPROVED' | 'REJECTED'; reason: string } {
   const totalRequired = requiredOrchestratorIds.length;
-  const approveVotes = votes.filter((v) => v.vote === 'APPROVE').length;
+  const approveVotes = votes.filter(v => v.vote === 'APPROVE').length;
   const totalVotes = votes.length;
 
   // Check if all votes are in
   if (totalVotes < totalRequired) {
-    return { status: 'PENDING', reason: 'Awaiting votes from all required Orchestrators' };
+    return {
+      status: 'PENDING',
+      reason: 'Awaiting votes from all required Orchestrators',
+    };
   }
 
   // Calculate approval percentage
@@ -179,7 +188,7 @@ function calculateConsensusResult(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -188,9 +197,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -199,14 +208,17 @@ export async function POST(
     const { workspaceSlug: workspaceId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -218,9 +230,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -231,14 +243,22 @@ export async function POST(
         createCoordinationErrorResponse(
           'Validation failed',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { type, title, description, requiredOrchestratorIds, threshold, taskId, deadline, metadata } =
-      parseResult.data;
+    const {
+      type,
+      title,
+      description,
+      requiredOrchestratorIds,
+      threshold,
+      taskId,
+      deadline,
+      metadata,
+    } = parseResult.data;
 
     // Verify all required Orchestrators exist and belong to workspace organization
     const orchestrators = await prisma.orchestrator.findMany({
@@ -257,9 +277,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Some Orchestrators not found or not in workspace organization',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -276,9 +296,9 @@ export async function POST(
         return NextResponse.json(
           createCoordinationErrorResponse(
             'Task not found in workspace',
-            ORCHESTRATOR_COORDINATION_ERROR_CODES.TASK_NOT_FOUND,
+            ORCHESTRATOR_COORDINATION_ERROR_CODES.TASK_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -309,11 +329,15 @@ export async function POST(
     });
 
     const currentSettings =
-      workspace?.settings && typeof workspace.settings === 'object' && !Array.isArray(workspace.settings)
+      workspace?.settings &&
+      typeof workspace.settings === 'object' &&
+      !Array.isArray(workspace.settings)
         ? (workspace.settings as Record<string, unknown>)
         : {};
     const consensuses =
-      currentSettings.consensuses && typeof currentSettings.consensuses === 'object' && !Array.isArray(currentSettings.consensuses)
+      currentSettings.consensuses &&
+      typeof currentSettings.consensuses === 'object' &&
+      !Array.isArray(currentSettings.consensuses)
         ? (currentSettings.consensuses as Record<string, ConsensusMetadata>)
         : {};
     consensuses[consensusId] = consensusMetadata;
@@ -331,7 +355,7 @@ export async function POST(
 
     // Create notifications for all required Orchestrators
     await Promise.all(
-      orchestrators.map((orchestrator) =>
+      orchestrators.map(orchestrator =>
         prisma.notification.create({
           data: {
             userId: orchestrator.userId,
@@ -351,15 +375,15 @@ export async function POST(
             },
             read: false,
           },
-        }),
-      ),
+        })
+      )
     );
 
     return NextResponse.json({
       data: {
         consensusId,
         ...consensusMetadata,
-        requiredOrchestrators: orchestrators.map((orchestrator) => ({
+        requiredOrchestrators: orchestrators.map(orchestrator => ({
           id: orchestrator.id,
           role: orchestrator.role,
         })),
@@ -367,13 +391,16 @@ export async function POST(
       message: 'Consensus vote initiated successfully',
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/consensus] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/consensus] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -389,7 +416,7 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -398,9 +425,9 @@ export async function GET(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -409,14 +436,17 @@ export async function GET(
     const { workspaceSlug: workspaceId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -432,11 +462,15 @@ export async function GET(
     });
 
     const currentSettings =
-      workspace?.settings && typeof workspace.settings === 'object' && !Array.isArray(workspace.settings)
+      workspace?.settings &&
+      typeof workspace.settings === 'object' &&
+      !Array.isArray(workspace.settings)
         ? (workspace.settings as Record<string, unknown>)
         : {};
     const consensuses =
-      currentSettings.consensuses && typeof currentSettings.consensuses === 'object' && !Array.isArray(currentSettings.consensuses)
+      currentSettings.consensuses &&
+      typeof currentSettings.consensuses === 'object' &&
+      !Array.isArray(currentSettings.consensuses)
         ? (currentSettings.consensuses as Record<string, ConsensusMetadata>)
         : {};
 
@@ -445,12 +479,14 @@ export async function GET(
 
     // Filter by status if specified
     if (status) {
-      consensusArray = consensusArray.filter((c) => c.status === status);
+      consensusArray = consensusArray.filter(c => c.status === status);
     }
 
     // Filter by Orchestrator if specified
     if (orchestratorId) {
-      consensusArray = consensusArray.filter((c) => c.requiredOrchestratorIds.includes(orchestratorId));
+      consensusArray = consensusArray.filter(c =>
+        c.requiredOrchestratorIds.includes(orchestratorId)
+      );
     }
 
     // Sort by most recent first
@@ -463,13 +499,16 @@ export async function GET(
       count: consensusArray.length,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/consensus] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/consensus] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -485,7 +524,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -494,9 +533,9 @@ export async function PATCH(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -505,14 +544,17 @@ export async function PATCH(
     const { workspaceSlug: workspaceId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -524,9 +566,9 @@ export async function PATCH(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -537,9 +579,9 @@ export async function PATCH(
         createCoordinationErrorResponse(
           'Validation failed',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -558,9 +600,9 @@ export async function PATCH(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Orchestrator not found',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -571,11 +613,15 @@ export async function PATCH(
     });
 
     const currentSettings =
-      workspace?.settings && typeof workspace.settings === 'object' && !Array.isArray(workspace.settings)
+      workspace?.settings &&
+      typeof workspace.settings === 'object' &&
+      !Array.isArray(workspace.settings)
         ? (workspace.settings as Record<string, unknown>)
         : {};
     const consensuses =
-      currentSettings.consensuses && typeof currentSettings.consensuses === 'object' && !Array.isArray(currentSettings.consensuses)
+      currentSettings.consensuses &&
+      typeof currentSettings.consensuses === 'object' &&
+      !Array.isArray(currentSettings.consensuses)
         ? (currentSettings.consensuses as Record<string, ConsensusMetadata>)
         : {};
 
@@ -585,9 +631,9 @@ export async function PATCH(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Consensus not found',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -596,14 +642,16 @@ export async function PATCH(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Orchestrator is not required to vote on this consensus',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Check if Orchestrator already voted
-    const existingVoteIndex = consensus.votes.findIndex((v) => v.orchestratorId === orchestratorId);
+    const existingVoteIndex = consensus.votes.findIndex(
+      v => v.orchestratorId === orchestratorId
+    );
     if (existingVoteIndex !== -1) {
       // Update existing vote
       consensus.votes[existingVoteIndex] = {
@@ -623,7 +671,11 @@ export async function PATCH(
     }
 
     // Calculate consensus result
-    const result = calculateConsensusResult(consensus.votes, consensus.threshold, consensus.requiredOrchestratorIds);
+    const result = calculateConsensusResult(
+      consensus.votes,
+      consensus.threshold,
+      consensus.requiredOrchestratorIds
+    );
     consensus.status = result.status;
     consensus.updatedAt = new Date().toISOString();
 
@@ -647,7 +699,7 @@ export async function PATCH(
       });
 
       await Promise.all(
-        allOrchestrators.map((participant) =>
+        allOrchestrators.map(participant =>
           prisma.notification.create({
             data: {
               userId: participant.userId,
@@ -665,8 +717,8 @@ export async function PATCH(
               },
               read: false,
             },
-          }),
-        ),
+          })
+        )
       );
     }
 
@@ -678,13 +730,16 @@ export async function PATCH(
       message: `Vote recorded successfully. ${result.reason}`,
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/orchestrators/consensus] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/orchestrators/consensus] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

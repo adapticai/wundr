@@ -44,7 +44,7 @@ export class IntentClassifier {
 
           // Extract entities using pattern extractors
           for (const [entityName, extractor] of Object.entries(
-            pattern.entityExtractors,
+            pattern.entityExtractors
           )) {
             try {
               entities[entityName] = extractor(match);
@@ -56,7 +56,7 @@ export class IntentClassifier {
           const confidence = this.calculateConfidence(
             match,
             pattern,
-            normalizedInput,
+            normalizedInput
           );
 
           results.push({
@@ -98,7 +98,7 @@ export class IntentClassifier {
   matchesIntent(
     input: string,
     intentName: string,
-    minConfidence = 0.7,
+    minConfidence = 0.7
   ): boolean {
     const intents = this.classifyIntent(input);
     const matchedIntent = intents.find(intent => intent.name === intentName);
@@ -351,7 +351,7 @@ export class IntentClassifier {
   private calculateConfidence(
     match: RegExpMatchArray,
     pattern: IntentPattern,
-    normalizedInput: string,
+    normalizedInput: string
   ): number {
     let confidence = 0.7; // Base confidence
 
@@ -376,14 +376,14 @@ export class IntentClassifier {
   // Entity extraction helper methods
   private extractServiceName(input: string): string | undefined {
     const match = input.match(
-      /(?:service\s+)?(?:called\s+|named\s+)?([A-Z][a-zA-Z]*)/,
+      /(?:service\s+)?(?:called\s+|named\s+)?([A-Z][a-zA-Z]*)/
     );
     return match?.[1];
   }
 
   private extractComponentName(input: string): string | undefined {
     const match = input.match(
-      /(?:component\s+)?(?:called\s+|named\s+)?([A-Z][a-zA-Z]*)/,
+      /(?:component\s+)?(?:called\s+|named\s+)?([A-Z][a-zA-Z]*)/
     );
     return match?.[1];
   }
@@ -425,7 +425,7 @@ export class IntentClassifier {
 
   private extractBatchFile(input: string): string | undefined {
     const match = input.match(
-      /batch\s+(?:file\s+)?([^\s]+\.(?:json|yaml|yml))/,
+      /batch\s+(?:file\s+)?([^\s]+\.(?:json|yaml|yml))/
     );
     return match?.[1];
   }

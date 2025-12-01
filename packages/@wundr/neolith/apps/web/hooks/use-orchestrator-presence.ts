@@ -91,15 +91,13 @@ export interface UseOrchestratorPresenceReturn {
  */
 export function useOrchestratorPresence(
   orchestratorId: string,
-  options: UseOrchestratorPresenceOptions = {},
+  options: UseOrchestratorPresenceOptions = {}
 ): UseOrchestratorPresenceReturn {
-  const {
-    refreshInterval = 5000,
-    enabled = true,
-    onPresenceChange,
-  } = options;
+  const { refreshInterval = 5000, enabled = true, onPresenceChange } = options;
 
-  const [presence, setPresence] = useState<OrchestratorPresenceData | null>(null);
+  const [presence, setPresence] = useState<OrchestratorPresenceData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -109,7 +107,9 @@ export function useOrchestratorPresence(
     }
 
     try {
-      const response = await fetch(`/api/orchestrators/${orchestratorId}/presence`);
+      const response = await fetch(
+        `/api/orchestrators/${orchestratorId}/presence`
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch Orchestrator presence');
@@ -158,14 +158,17 @@ export function useOrchestratorPresence(
     fetchPresence();
   }, [fetchPresence]);
 
-  const updatePresence = useCallback((updates: Partial<OrchestratorPresenceData>): void => {
-    setPresence((prev) => {
-      if (!prev) {
-return null;
-}
-      return { ...prev, ...updates };
-    });
-  }, []);
+  const updatePresence = useCallback(
+    (updates: Partial<OrchestratorPresenceData>): void => {
+      setPresence(prev => {
+        if (!prev) {
+          return null;
+        }
+        return { ...prev, ...updates };
+      });
+    },
+    []
+  );
 
   return {
     presence,
@@ -207,14 +210,16 @@ return null;
  */
 export function useMultipleOrchestratorPresence(
   orchestratorIds: string[],
-  options: Omit<UseOrchestratorPresenceOptions, 'onPresenceChange'> = {},
+  options: Omit<UseOrchestratorPresenceOptions, 'onPresenceChange'> = {}
 ): {
   presenceMap: Map<string, OrchestratorPresenceData>;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
 } {
-  const [presenceMap, setPresenceMap] = useState<Map<string, OrchestratorPresenceData>>(new Map());
+  const [presenceMap, setPresenceMap] = useState<
+    Map<string, OrchestratorPresenceData>
+  >(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -227,12 +232,12 @@ export function useMultipleOrchestratorPresence(
 
     try {
       // Fetch all Orchestrator presence data in parallel
-      const promises = orchestratorIds.map((orchestratorId) =>
+      const promises = orchestratorIds.map(orchestratorId =>
         fetch(`/api/orchestrators/${orchestratorId}/presence`)
-          .then((res) => {
+          .then(res => {
             if (!res.ok) {
-throw new Error(`Failed to fetch presence for ${orchestratorId}`);
-}
+              throw new Error(`Failed to fetch presence for ${orchestratorId}`);
+            }
             return res.json();
           })
           .then((result: { data: OrchestratorPresenceData }) => ({
@@ -242,13 +247,13 @@ throw new Error(`Failed to fetch presence for ${orchestratorId}`);
               lastActive: new Date(result.data.lastActive),
             },
           }))
-          .catch(() => null),
+          .catch(() => null)
       );
 
       const results = await Promise.all(promises);
 
       const newMap = new Map<string, OrchestratorPresenceData>();
-      results.forEach((result) => {
+      results.forEach(result => {
         if (result) {
           newMap.set(result.orchestratorId, result.data);
         }

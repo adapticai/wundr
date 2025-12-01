@@ -2,7 +2,9 @@
 
 ## Overview
 
-The `wundr update` command provides a comprehensive system for updating wundr projects to new versions while preserving user customizations, managing conflicts, and ensuring safe rollback capabilities.
+The `wundr update` command provides a comprehensive system for updating wundr projects to new
+versions while preserving user customizations, managing conflicts, and ensuring safe rollback
+capabilities.
 
 ## Architecture Diagram
 
@@ -52,16 +54,19 @@ The `wundr update` command provides a comprehensive system for updating wundr pr
 The main orchestrator for project updates. Coordinates all other components.
 
 **Key Classes:**
+
 - `ProjectUpdateManager`: Main update orchestration
 - `ProjectUpdateCommands`: CLI command registration
 
 **Features:**
+
 - Command-line option parsing
 - Update workflow coordination
 - Progress reporting
 - Error handling and recovery
 
 **Usage:**
+
 ```bash
 # Update entire project
 wundr update project
@@ -84,6 +89,7 @@ wundr update project --version 2.0.0
 Detects the current state of a wundr project.
 
 **Key Interfaces:**
+
 ```typescript
 interface ProjectState {
   version: string;
@@ -112,6 +118,7 @@ interface ComponentState {
 ```
 
 **Features:**
+
 - Version detection
 - Configuration state analysis
 - Component inventory
@@ -125,6 +132,7 @@ interface ComponentState {
 Implements three-way merge for templates and configuration files.
 
 **Key Features:**
+
 ```typescript
 interface MergeResult {
   success: boolean;
@@ -137,6 +145,7 @@ interface MergeResult {
 ```
 
 **Merge Strategies:**
+
 - `three-way`: Standard three-way merge (base, user, target)
 - `user-priority`: Prefer user changes over updates
 - `target-priority`: Prefer updates over user changes
@@ -144,6 +153,7 @@ interface MergeResult {
 - `section-merge`: Section-based merging for markdown
 
 **File Type Support:**
+
 - JSON: Deep object merge with conflict detection
 - YAML: Structure-aware merging
 - Markdown: Section-based merging
@@ -155,10 +165,12 @@ interface MergeResult {
 Provides backup, rollback, and transaction support.
 
 **Key Classes:**
+
 - `SafetyManager`: Backup and rollback management
 - `UpdateTransaction`: Atomic update operations
 
 **Features:**
+
 ```typescript
 interface UpdateBackup {
   id: string;
@@ -176,6 +188,7 @@ interface UpdateBackup {
 ```
 
 **Safety Features:**
+
 - Automatic backup to `.wundr-backup-{timestamp}/`
 - Backup compression (optional)
 - Backup verification and integrity checks
@@ -189,6 +202,7 @@ interface UpdateBackup {
 Handles conflicts during project updates.
 
 **Key Interfaces:**
+
 ```typescript
 interface UpdateConflict {
   id: string;
@@ -211,12 +225,14 @@ interface ResolutionSuggestion {
 ```
 
 **Resolution Options:**
+
 - `keep-user`: Preserve user's modifications
 - `take-target`: Accept new version
 - `keep-both`: Merge both versions
 - `manual`: User edits the content
 
 **Features:**
+
 - Interactive conflict resolution
 - Auto-resolution for low-severity conflicts
 - Conflict categorization (config, template, code, etc.)
@@ -274,36 +290,43 @@ interface ResolutionSuggestion {
 
 ## CLI Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--dry-run` | Preview changes without applying | `false` |
-| `--force` | Skip confirmation prompts | `false` |
-| `--skip-backup` | Don't create backup | `false` |
-| `--components <names>` | Update specific components | All |
-| `--version <version>` | Target version | Latest |
-| `--no-interactive` | Disable interactive mode | Enabled |
-| `--verbose` | Detailed output | `false` |
-| `--show-diff` | Show differences | `true` |
-| `--auto-resolve` | Auto-resolve conflicts | `false` |
-| `--no-rollback` | Disable rollback on failure | Enabled |
+| Option                 | Description                      | Default |
+| ---------------------- | -------------------------------- | ------- |
+| `--dry-run`            | Preview changes without applying | `false` |
+| `--force`              | Skip confirmation prompts        | `false` |
+| `--skip-backup`        | Don't create backup              | `false` |
+| `--components <names>` | Update specific components       | All     |
+| `--version <version>`  | Target version                   | Latest  |
+| `--no-interactive`     | Disable interactive mode         | Enabled |
+| `--verbose`            | Detailed output                  | `false` |
+| `--show-diff`          | Show differences                 | `true`  |
+| `--auto-resolve`       | Auto-resolve conflicts           | `false` |
+| `--no-rollback`        | Disable rollback on failure      | Enabled |
 
 ## Subcommands
 
 ### `wundr update project`
+
 Main update command. Updates the project to a new version.
 
 ### `wundr update check`
+
 Check for available updates without making changes.
 
 ### `wundr update history`
+
 Show update history from `.wundr-update.log`.
 
 ### `wundr update rollback [backupId]`
+
 Rollback to a previous backup state.
+
 - `--list`: List available backups
 
 ### `wundr update cleanup`
+
 Clean up old backups.
+
 - `--keep <n>`: Number of backups to retain (default: 5)
 
 ## Logging

@@ -4,7 +4,9 @@ Complete conversational UI for AI-powered organization creation using `@wundr.io
 
 ## Overview
 
-The org-genesis UI provides a multi-step wizard that guides users through creating a complete organizational structure from conversational input. The system generates VPs, disciplines, channels, and agents based on user descriptions.
+The org-genesis UI provides a multi-step wizard that guides users through creating a complete
+organizational structure from conversational input. The system generates VPs, disciplines, channels,
+and agents based on user descriptions.
 
 ## Components
 
@@ -13,12 +15,14 @@ The org-genesis UI provides a multi-step wizard that guides users through creati
 Main wizard component orchestrating the 4-step flow:
 
 **Steps:**
+
 1. **Basic Info** - Organization name and type
 2. **Description** - Conversational description and strategy
 3. **Configuration** - Target assets, risk tolerance, team size
 4. **Preview** - Visual org chart with regenerate/customize options
 
 **Usage:**
+
 ```tsx
 import { OrgGenesisWizard } from '@/components/org-genesis';
 
@@ -28,6 +32,7 @@ export function CreateOrganization() {
 ```
 
 **Features:**
+
 - Multi-step form with progress tracking
 - Zod validation at each step
 - Loading states with skeleton UI
@@ -39,11 +44,13 @@ export function CreateOrganization() {
 Preview component showing generated organization:
 
 **Tabs:**
+
 - **Overview** - Mission, vision, values, summary
 - **Structure** - Visual org chart
 - **Details** - VP/discipline breakdown
 
 **Actions:**
+
 - **Regenerate** - Generate new structure with same inputs
 - **Customize** - Edit generated structure (future)
 - **Create Organization** - Accept and create workspace
@@ -51,6 +58,7 @@ Preview component showing generated organization:
 ### 3. OrgChartVisualization
 
 Visual hierarchical chart displaying:
+
 - Organization root
 - VPs with responsibilities and KPIs
 - Disciplines with capabilities
@@ -140,11 +148,13 @@ app/api/workspaces/generate-org/
 ## Testing
 
 Run tests:
+
 ```bash
 npm run test
 ```
 
 Test coverage includes:
+
 - Step navigation
 - Form validation
 - Error handling
@@ -179,6 +189,7 @@ Test coverage includes:
 ## Dependencies
 
 ### Required UI Components (shadcn/ui)
+
 - Button
 - Card
 - Dialog
@@ -191,6 +202,7 @@ Test coverage includes:
 - Tabs
 
 ### Required Packages
+
 - `react-hook-form` - Form management
 - `@hookform/resolvers` - Zod integration
 - `zod` - Validation
@@ -221,7 +233,7 @@ export function CreateOrganizationButton() {
       <DialogTrigger asChild>
         <Button>Create AI-Powered Organization</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-5xl max-h-[90vh] overflow-y-auto'>
         <OrgGenesisWizard />
       </DialogContent>
     </Dialog>
@@ -232,6 +244,7 @@ export function CreateOrganizationButton() {
 ## Styling
 
 Components use Tailwind CSS with design system tokens:
+
 - `primary` - Primary brand color
 - `muted` - Secondary backgrounds
 - `card` - Card backgrounds
@@ -258,6 +271,7 @@ Components use Tailwind CSS with design system tokens:
 ## Error Handling
 
 Comprehensive error handling:
+
 - Network errors
 - Validation errors
 - API errors
@@ -268,6 +282,7 @@ Comprehensive error handling:
 ## Contributing
 
 When adding features:
+
 1. Update validation schemas
 2. Add tests
 3. Update this README

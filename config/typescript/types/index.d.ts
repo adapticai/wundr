@@ -26,21 +26,14 @@ export type {
   Optional,
   Required,
   DeepPartial,
-  DeepRequired
+  DeepRequired,
 } from './global';
 
 // Node.js specific exports
-export type {
-  Monorepo,
-  Analysis,
-  Git,
-  CLI
-} from './global';
+export type { Monorepo, Analysis, Git, CLI } from './global';
 
 // Toolkit specific exports
-export type {
-  RefactoringToolkit as RT
-} from './utils';
+export type { RefactoringToolkit as RT } from './utils';
 
 // Utility functions for type guards
 declare global {
@@ -56,9 +49,15 @@ declare global {
 
 // Type assertion helpers
 export interface TypeAssertions {
-  assertNonEmptyArray<T>(arr: T[], message?: string): asserts arr is NonEmptyArray<T>;
+  assertNonEmptyArray<T>(
+    arr: T[],
+    message?: string
+  ): asserts arr is NonEmptyArray<T>;
   assertFilePath(path: string, message?: string): asserts path is FilePath;
-  assertDirectoryPath(path: string, message?: string): asserts path is DirectoryPath;
+  assertDirectoryPath(
+    path: string,
+    message?: string
+  ): asserts path is DirectoryPath;
   assertJSONValue(value: unknown, message?: string): asserts value is JSONValue;
 }
 
@@ -74,12 +73,24 @@ export interface TypeCheckers {
 
 // Configuration validation
 export interface ConfigValidators {
-  validateToolkitConfig(config: unknown): config is RefactoringToolkit.Config.ToolkitConfig;
-  validateProjectConfig(config: unknown): config is RefactoringToolkit.Config.ProjectConfig;
-  validateAnalysisConfig(config: unknown): config is RefactoringToolkit.Config.AnalysisConfig;
-  validateRefactoringConfig(config: unknown): config is RefactoringToolkit.Config.RefactoringConfig;
-  validateQualityConfig(config: unknown): config is RefactoringToolkit.Config.QualityConfig;
-  validateReportingConfig(config: unknown): config is RefactoringToolkit.Config.ReportingConfig;
+  validateToolkitConfig(
+    config: unknown
+  ): config is RefactoringToolkit.Config.ToolkitConfig;
+  validateProjectConfig(
+    config: unknown
+  ): config is RefactoringToolkit.Config.ProjectConfig;
+  validateAnalysisConfig(
+    config: unknown
+  ): config is RefactoringToolkit.Config.AnalysisConfig;
+  validateRefactoringConfig(
+    config: unknown
+  ): config is RefactoringToolkit.Config.RefactoringConfig;
+  validateQualityConfig(
+    config: unknown
+  ): config is RefactoringToolkit.Config.QualityConfig;
+  validateReportingConfig(
+    config: unknown
+  ): config is RefactoringToolkit.Config.ReportingConfig;
 }
 
 // Error types specific to the toolkit
@@ -95,28 +106,44 @@ export class ToolkitError extends Error {
 }
 
 export class ValidationError extends ToolkitError {
-  constructor(message: string, public readonly field: string, details?: any) {
+  constructor(
+    message: string,
+    public readonly field: string,
+    details?: any
+  ) {
     super(message, 'VALIDATION_ERROR', details);
     this.name = 'ValidationError';
   }
 }
 
 export class ConfigurationError extends ToolkitError {
-  constructor(message: string, public readonly configPath?: string, details?: any) {
+  constructor(
+    message: string,
+    public readonly configPath?: string,
+    details?: any
+  ) {
     super(message, 'CONFIGURATION_ERROR', details);
     this.name = 'ConfigurationError';
   }
 }
 
 export class AnalysisError extends ToolkitError {
-  constructor(message: string, public readonly file?: string, details?: any) {
+  constructor(
+    message: string,
+    public readonly file?: string,
+    details?: any
+  ) {
     super(message, 'ANALYSIS_ERROR', details);
     this.name = 'AnalysisError';
   }
 }
 
 export class RefactoringError extends ToolkitError {
-  constructor(message: string, public readonly operation?: string, details?: any) {
+  constructor(
+    message: string,
+    public readonly operation?: string,
+    details?: any
+  ) {
     super(message, 'REFACTORING_ERROR', details);
     this.name = 'RefactoringError';
   }

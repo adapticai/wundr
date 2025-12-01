@@ -61,7 +61,9 @@ export interface RedisConfig {
 /**
  * Default Redis configuration.
  */
-export const DEFAULT_REDIS_CONFIG: Required<Omit<RedisConfig, 'password' | 'tls' | 'url' | 'retryStrategy'>> = {
+export const DEFAULT_REDIS_CONFIG: Required<
+  Omit<RedisConfig, 'password' | 'tls' | 'url' | 'retryStrategy'>
+> = {
   host: 'localhost',
   port: 6379,
   db: 0,
@@ -79,7 +81,11 @@ export const DEFAULT_REDIS_CONFIG: Required<Omit<RedisConfig, 'password' | 'tls'
 /**
  * Connection state for monitoring.
  */
-export type RedisConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
+export type RedisConnectionState =
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
+  | 'error';
 
 /**
  * Redis client wrapper with connection state tracking.
@@ -133,7 +139,9 @@ let isInitialized = false;
  */
 export function createRedisClient(config?: RedisConfig): Redis {
   const options = buildRedisOptions(config);
-  const client = config?.url ? new Redis(config.url, options) : new Redis(options);
+  const client = config?.url
+    ? new Redis(config.url, options)
+    : new Redis(options);
 
   setupClientEventHandlers(client);
 
@@ -149,7 +157,9 @@ export function createRedisClient(config?: RedisConfig): Redis {
  */
 export function createSubscriberClient(config?: RedisConfig): Redis {
   const options = buildRedisOptions(config);
-  const client = config?.url ? new Redis(config.url, options) : new Redis(options);
+  const client = config?.url
+    ? new Redis(config.url, options)
+    : new Redis(options);
 
   setupClientEventHandlers(client, 'subscriber');
 
@@ -233,7 +243,9 @@ export function isRedisAvailable(): boolean {
  * @param timeoutMs - Maximum time to wait in milliseconds
  * @returns Promise that resolves when connected or rejects on timeout
  */
-export async function waitForConnection(timeoutMs: number = 10000): Promise<void> {
+export async function waitForConnection(
+  timeoutMs: number = 10000
+): Promise<void> {
   if (connectionState === 'connected') {
     return;
   }
@@ -274,7 +286,7 @@ export async function disconnectRedis(): Promise<void> {
     disconnectPromises.push(
       singletonClient.quit().then(() => {
         singletonClient = null;
-      }),
+      })
     );
   }
 
@@ -282,7 +294,7 @@ export async function disconnectRedis(): Promise<void> {
     disconnectPromises.push(
       subscriberClient.quit().then(() => {
         subscriberClient = null;
-      }),
+      })
     );
   }
 
@@ -350,14 +362,16 @@ function buildRedisOptions(config?: RedisConfig): RedisOptions {
   }
 
   // Default retry strategy with exponential backoff
-  options.retryStrategy = config?.retryStrategy ?? ((times: number) => {
-    if (times > 10) {
-      // Stop retrying after 10 attempts
-      return null;
-    }
-    // Exponential backoff: 50ms, 100ms, 200ms, ... up to 30 seconds
-    return Math.min(times * 50, 30000);
-  });
+  options.retryStrategy =
+    config?.retryStrategy ??
+    ((times: number) => {
+      if (times > 10) {
+        // Stop retrying after 10 attempts
+        return null;
+      }
+      // Exponential backoff: 50ms, 100ms, 200ms, ... up to 30 seconds
+      return Math.min(times * 50, 30000);
+    });
 
   return options;
 }
@@ -376,7 +390,7 @@ function setupClientEventHandlers(client: Redis, label: string = 'main'): void {
     logDebug(`Redis ${label} client ready`);
   });
 
-  client.on('error', (err) => {
+  client.on('error', err => {
     connectionState = 'error';
     logError(`Redis ${label} client error:`, err);
   });
@@ -396,7 +410,10 @@ function setupClientEventHandlers(client: Redis, label: string = 'main'): void {
  * Debug logging helper.
  */
 function logDebug(message: string): void {
-  if (process.env.DEBUG?.includes('redis') || process.env.NODE_ENV === 'development') {
+  if (
+    process.env.DEBUG?.includes('redis') ||
+    process.env.NODE_ENV === 'development'
+  ) {
     // eslint-disable-next-line no-console
     console.debug(`[Redis] ${message}`);
   }

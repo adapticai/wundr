@@ -2,7 +2,10 @@ interface LogoProps {
   className?: string;
 }
 
-export function Logo({ className, ...props }: LogoProps & Record<string, unknown>) {
+export function Logo({
+  className,
+  ...props
+}: LogoProps & Record<string, unknown>) {
   return (
     // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
     <svg viewBox='0 0 745 166' className={className} fill='none' {...props}>

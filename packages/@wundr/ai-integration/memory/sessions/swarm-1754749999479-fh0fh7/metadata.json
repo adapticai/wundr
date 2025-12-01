@@ -1,1 +1,19 @@
-{"sessionId":"swarm-1754749999479-fh0fh7","createdAt":"2025-08-09T14:33:19.491Z","config":{"maxConcurrentAgents":10,"defaultTopology":"adaptive","hooks":{"preTask":true,"postTask":true,"sessionRestore":true,"exportMetrics":true},"sparc":{"enabledPhases":["specification","architecture","refinement"],"parallelExecution":true,"autoOptimization":true}}}
+{
+  "sessionId": "swarm-1754749999479-fh0fh7",
+  "createdAt": "2025-08-09T14:33:19.491Z",
+  "config": {
+    "maxConcurrentAgents": 10,
+    "defaultTopology": "adaptive",
+    "hooks": {
+      "preTask": true,
+      "postTask": true,
+      "sessionRestore": true,
+      "exportMetrics": true
+    },
+    "sparc": {
+      "enabledPhases": ["specification", "architecture", "refinement"],
+      "parallelExecution": true,
+      "autoOptimization": true
+    }
+  }
+}

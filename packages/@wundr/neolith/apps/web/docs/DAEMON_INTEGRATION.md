@@ -1,10 +1,12 @@
 # Orchestrator Daemon Integration
 
-This document describes how the Neolith web application connects to and interacts with the orchestrator-daemon.
+This document describes how the Neolith web application connects to and interacts with the
+orchestrator-daemon.
 
 ## Overview
 
-The daemon integration provides real-time communication between the web UI and the orchestrator-daemon WebSocket server. This enables:
+The daemon integration provides real-time communication between the web UI and the
+orchestrator-daemon WebSocket server. This enables:
 
 - Spawning new orchestrator sessions
 - Real-time streaming output from sessions
@@ -39,6 +41,7 @@ The daemon integration provides real-time communication between the web UI and t
 Low-level WebSocket client that manages the connection to the orchestrator-daemon.
 
 **Features:**
+
 - Automatic reconnection with exponential backoff
 - Type-safe message handling
 - Event-based architecture
@@ -46,6 +49,7 @@ Low-level WebSocket client that manages the connection to the orchestrator-daemo
 - Session tracking
 
 **Usage:**
+
 ```typescript
 import { getDaemonClient } from '@/lib/daemon-client';
 
@@ -56,7 +60,7 @@ client.on('connected', () => {
   console.log('Connected to daemon');
 });
 
-client.on('session_spawned', (session) => {
+client.on('session_spawned', session => {
   console.log('New session:', session.id);
 });
 ```
@@ -66,6 +70,7 @@ client.on('session_spawned', (session) => {
 React hook that provides a clean API for components to interact with the daemon.
 
 **Features:**
+
 - Automatic connection management
 - Session state tracking
 - Real-time streaming handlers
@@ -73,16 +78,12 @@ React hook that provides a clean API for components to interact with the daemon.
 - Reconnection state
 
 **Usage:**
+
 ```typescript
 import { useDaemon } from '@/hooks';
 
 function MyComponent() {
-  const {
-    connected,
-    sessions,
-    spawnSession,
-    executeTask,
-  } = useDaemon({ autoConnect: true });
+  const { connected, sessions, spawnSession, executeTask } = useDaemon({ autoConnect: true });
 
   // Use the hook...
 }
@@ -93,6 +94,7 @@ function MyComponent() {
 Hook for monitoring a specific session with streaming support.
 
 **Usage:**
+
 ```typescript
 import { useSessionMonitor } from '@/hooks';
 
@@ -129,10 +131,10 @@ const { connected } = useDaemon({
 
   // Event handlers for streaming
   handlers: {
-    onStreamChunk: (chunk) => {
+    onStreamChunk: chunk => {
       console.log('Chunk:', chunk.chunk);
     },
-    onToolCallStart: (info) => {
+    onToolCallStart: info => {
       console.log('Tool starting:', info.toolName);
     },
     onTaskCompleted: (sessionId, taskId, result) => {
@@ -147,6 +149,7 @@ const { connected } = useDaemon({
 ### Client → Server Messages
 
 #### Spawn Session
+
 ```json
 {
   "type": "spawn_session",
@@ -165,6 +168,7 @@ const { connected } = useDaemon({
 ```
 
 #### Execute Task
+
 ```json
 {
   "type": "execute_task",
@@ -178,6 +182,7 @@ const { connected } = useDaemon({
 ```
 
 #### Get Session Status
+
 ```json
 {
   "type": "session_status",
@@ -188,6 +193,7 @@ const { connected } = useDaemon({
 ```
 
 #### Stop Session
+
 ```json
 {
   "type": "stop_session",
@@ -198,6 +204,7 @@ const { connected } = useDaemon({
 ```
 
 #### Get Daemon Status
+
 ```json
 {
   "type": "daemon_status"
@@ -205,6 +212,7 @@ const { connected } = useDaemon({
 ```
 
 #### Heartbeat
+
 ```json
 {
   "type": "ping"
@@ -214,6 +222,7 @@ const { connected } = useDaemon({
 ### Server → Client Messages
 
 #### Session Spawned
+
 ```json
 {
   "type": "session_spawned",
@@ -230,6 +239,7 @@ const { connected } = useDaemon({
 ```
 
 #### Stream Chunk
+
 ```json
 {
   "type": "stream_chunk",
@@ -245,6 +255,7 @@ const { connected } = useDaemon({
 ```
 
 #### Tool Call Start
+
 ```json
 {
   "type": "tool_call_start",
@@ -259,6 +270,7 @@ const { connected } = useDaemon({
 ```
 
 #### Tool Call Result
+
 ```json
 {
   "type": "tool_call_result",
@@ -273,6 +285,7 @@ const { connected } = useDaemon({
 ```
 
 #### Task Completed
+
 ```json
 {
   "type": "task_completed",
@@ -283,6 +296,7 @@ const { connected } = useDaemon({
 ```
 
 #### Daemon Status Update
+
 ```json
 {
   "type": "daemon_status_update",
@@ -355,6 +369,7 @@ if (!connected) {
 ### Reconnection
 
 Automatic reconnection with exponential backoff:
+
 - 1st attempt: 3 seconds
 - 2nd attempt: 6 seconds
 - 3rd attempt: 12 seconds
@@ -363,26 +378,28 @@ Automatic reconnection with exponential backoff:
 ## Performance Considerations
 
 ### Heartbeat Interval
+
 Default: 30 seconds. Keeps connection alive.
 
 ### Message Throttling
+
 Stream chunks are sent as they arrive. For high-frequency updates, consider debouncing in the UI.
 
 ### Memory Management
+
 Sessions are tracked in memory. Clean up old sessions:
 
 ```typescript
 const { stopSession, sessions } = useDaemon();
 
 // Stop inactive sessions
-sessions
-  .filter(s => s.status === 'completed')
-  .forEach(s => stopSession(s.id));
+sessions.filter(s => s.status === 'completed').forEach(s => stopSession(s.id));
 ```
 
 ## Security
 
 ### WebSocket Authentication
+
 Connection is established without authentication initially. Implement token-based auth if needed:
 
 ```typescript
@@ -394,10 +411,13 @@ this.ws.addEventListener('open', () => {
 ```
 
 ### CORS Configuration
+
 For production, configure CORS on the daemon server to only allow your web domain.
 
 ### SSL/TLS
+
 Use `wss://` in production:
+
 ```bash
 NEXT_PUBLIC_DAEMON_WS_URL=wss://daemon.yourapp.com
 ```
@@ -405,16 +425,19 @@ NEXT_PUBLIC_DAEMON_WS_URL=wss://daemon.yourapp.com
 ## Troubleshooting
 
 ### Connection Fails
+
 1. Check daemon is running: `curl http://localhost:8787/health`
 2. Verify WebSocket URL in `.env.local`
 3. Check browser console for WebSocket errors
 
 ### No Messages Received
+
 1. Verify daemon is sending messages
 2. Check event handler registration in `useDaemon`
 3. Inspect WebSocket frames in browser DevTools
 
 ### Sessions Not Updating
+
 1. Ensure session ID matches
 2. Check that daemon is emitting session events
 3. Verify event listeners are registered
@@ -422,18 +445,21 @@ NEXT_PUBLIC_DAEMON_WS_URL=wss://daemon.yourapp.com
 ## Development
 
 ### Start the Daemon
+
 ```bash
 cd packages/@wundr/orchestrator-daemon
 npm run start:dev
 ```
 
 ### Start the Web UI
+
 ```bash
 cd packages/@wundr/neolith/apps/web
 npm run dev
 ```
 
 ### Test WebSocket Connection
+
 ```bash
 # In browser console:
 const ws = new WebSocket('ws://localhost:8787');

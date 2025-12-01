@@ -25,7 +25,9 @@ class DeploymentCycle {
   }
 
   async run() {
-    console.log(`🔄 Starting deployment cycle (max ${this.maxCycles} iterations)`);
+    console.log(
+      `🔄 Starting deployment cycle (max ${this.maxCycles} iterations)`
+    );
     console.log(`📡 Platform: ${this.platform}`);
 
     while (this.currentCycle < this.maxCycles) {
@@ -79,7 +81,7 @@ class DeploymentCycle {
     return {
       success: false,
       reason: 'max_cycles_reached',
-      cycles: this.currentCycle
+      cycles: this.currentCycle,
     };
   }
 
@@ -175,7 +177,10 @@ class DeploymentCycle {
 
     try {
       execSync('git add -A', { stdio: 'pipe' });
-      execSync(`git commit -m "fix: auto-fix deployment issues - ${fixSummary}"`, { stdio: 'pipe' });
+      execSync(
+        `git commit -m "fix: auto-fix deployment issues - ${fixSummary}"`,
+        { stdio: 'pipe' }
+      );
       execSync('git push origin main', { stdio: 'pipe' });
       console.log('   Changes pushed successfully');
     } catch (error) {
@@ -211,19 +216,27 @@ class DeploymentCycle {
 if (require.main === module) {
   const args = process.argv.slice(2);
   const options = {
-    platform: args.find(a => a.startsWith('--platform='))?.split('=')[1] || 'railway',
-    maxCycles: parseInt(args.find(a => a.startsWith('--max-cycles='))?.split('=')[1] || '5'),
-    timeout: parseInt(args.find(a => a.startsWith('--timeout='))?.split('=')[1] || '300000'),
+    platform:
+      args.find(a => a.startsWith('--platform='))?.split('=')[1] || 'railway',
+    maxCycles: parseInt(
+      args.find(a => a.startsWith('--max-cycles='))?.split('=')[1] || '5'
+    ),
+    timeout: parseInt(
+      args.find(a => a.startsWith('--timeout='))?.split('=')[1] || '300000'
+    ),
   };
 
   console.log('🚀 Deployment Cycle Controller');
   console.log('================================\n');
 
   const cycle = new DeploymentCycle(options);
-  cycle.run()
+  cycle
+    .run()
     .then(result => {
       if (result.success) {
-        console.log(`\n✅ Deployment successful after ${result.cycles} cycle(s)`);
+        console.log(
+          `\n✅ Deployment successful after ${result.cycles} cycle(s)`
+        );
         process.exit(0);
       } else {
         console.log(`\n❌ Deployment failed: ${result.reason}`);

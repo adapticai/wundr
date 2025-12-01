@@ -14,7 +14,7 @@ interface EmailFooterProps {
 
 export const EmailFooter = ({
   includeUnsubscribe = false,
-  unsubscribeUrl
+  unsubscribeUrl,
 }: EmailFooterProps) => {
   return (
     <>
@@ -28,22 +28,42 @@ export const EmailFooter = ({
           <tbody>
             <tr>
               <td style={socialCell}>
-                <Link href="https://x.com/neolith" target="_blank" rel="noopener noreferrer" style={socialLink}>
+                <Link
+                  href='https://x.com/neolith'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  style={socialLink}
+                >
                   <span style={socialIcon}>𝕏</span>
                 </Link>
               </td>
               <td style={socialCell}>
-                <Link href="https://instagram.com/neolith" target="_blank" rel="noopener noreferrer" style={socialLink}>
+                <Link
+                  href='https://instagram.com/neolith'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  style={socialLink}
+                >
                   <span style={socialIcon}>📷</span>
                 </Link>
               </td>
               <td style={socialCell}>
-                <Link href="https://github.com/neolith" target="_blank" rel="noopener noreferrer" style={socialLink}>
+                <Link
+                  href='https://github.com/neolith'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  style={socialLink}
+                >
                   <span style={socialIcon}>⚙</span>
                 </Link>
               </td>
               <td style={socialCell}>
-                <Link href="https://linkedin.com/company/neolith" target="_blank" rel="noopener noreferrer" style={socialLink}>
+                <Link
+                  href='https://linkedin.com/company/neolith'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  style={socialLink}
+                >
                   <span style={socialIcon}>in</span>
                 </Link>
               </td>
@@ -60,15 +80,30 @@ export const EmailFooter = ({
 
         {/* Links */}
         <Text style={footerLinks}>
-          <Link href="https://neolith.ai" target="_blank" rel="noopener noreferrer" style={footerLink}>
+          <Link
+            href='https://neolith.ai'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={footerLink}
+          >
             Website
           </Link>
           {' • '}
-          <Link href="https://neolith.ai/docs" target="_blank" rel="noopener noreferrer" style={footerLink}>
+          <Link
+            href='https://neolith.ai/docs'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={footerLink}
+          >
             Documentation
           </Link>
           {' • '}
-          <Link href="https://neolith.ai/support" target="_blank" rel="noopener noreferrer" style={footerLink}>
+          <Link
+            href='https://neolith.ai/support'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={footerLink}
+          >
             Support
           </Link>
         </Text>
@@ -76,7 +111,12 @@ export const EmailFooter = ({
         {/* Unsubscribe */}
         {includeUnsubscribe && unsubscribeUrl && (
           <Text style={footerText}>
-            <Link href={unsubscribeUrl} target="_blank" rel="noopener noreferrer" style={unsubscribeLink}>
+            <Link
+              href={unsubscribeUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              style={unsubscribeLink}
+            >
               Unsubscribe from these emails
             </Link>
           </Text>
@@ -88,7 +128,8 @@ export const EmailFooter = ({
         </Text>
 
         <Text style={footerSmall}>
-          This email was sent from a notification-only address. Please do not reply.
+          This email was sent from a notification-only address. Please do not
+          reply.
         </Text>
       </Section>
     </>

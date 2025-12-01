@@ -27,7 +27,9 @@ export interface UseDesktopNotificationsReturn {
   permission: NotificationPermission;
   isSupported: boolean;
   requestPermission: () => Promise<NotificationPermission>;
-  sendNotification: (options: DesktopNotificationOptions) => Promise<Notification | null>;
+  sendNotification: (
+    options: DesktopNotificationOptions
+  ) => Promise<Notification | null>;
   isPermissionGranted: boolean;
   isPermissionDenied: boolean;
 }
@@ -36,7 +38,8 @@ export interface UseDesktopNotificationsReturn {
  * Hook for managing desktop notifications
  */
 export function useDesktopNotifications(): UseDesktopNotificationsReturn {
-  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [permission, setPermission] =
+    useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
 
   // Check if notifications are supported and get initial permission
@@ -52,27 +55,30 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
   /**
    * Request notification permission from the user
    */
-  const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
-    if (!isSupported) {
-      console.warn('Notifications are not supported in this browser');
-      return 'denied';
-    }
+  const requestPermission =
+    useCallback(async (): Promise<NotificationPermission> => {
+      if (!isSupported) {
+        console.warn('Notifications are not supported in this browser');
+        return 'denied';
+      }
 
-    try {
-      const result = await Notification.requestPermission();
-      setPermission(result as NotificationPermission);
-      return result as NotificationPermission;
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      return 'denied';
-    }
-  }, [isSupported]);
+      try {
+        const result = await Notification.requestPermission();
+        setPermission(result as NotificationPermission);
+        return result as NotificationPermission;
+      } catch (error) {
+        console.error('Error requesting notification permission:', error);
+        return 'denied';
+      }
+    }, [isSupported]);
 
   /**
    * Send a desktop notification
    */
   const sendNotification = useCallback(
-    async (options: DesktopNotificationOptions): Promise<Notification | null> => {
+    async (
+      options: DesktopNotificationOptions
+    ): Promise<Notification | null> => {
       if (!isSupported) {
         console.warn('Notifications are not supported in this browser');
         return null;
@@ -102,7 +108,7 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
 
         // Handle notification click
         if (options.onClick) {
-          notification.onclick = (event) => {
+          notification.onclick = event => {
             event.preventDefault();
             window.focus();
             options.onClick?.();
@@ -130,7 +136,7 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
         return null;
       }
     },
-    [isSupported, permission, requestPermission],
+    [isSupported, permission, requestPermission]
   );
 
   return {
@@ -149,7 +155,7 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
 export function useNotificationOnCondition(
   condition: boolean,
   options: DesktopNotificationOptions,
-  deps: React.DependencyList = [],
+  deps: React.DependencyList = []
 ) {
   const { sendNotification, isPermissionGranted } = useDesktopNotifications();
 

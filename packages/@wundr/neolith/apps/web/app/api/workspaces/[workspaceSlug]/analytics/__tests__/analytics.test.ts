@@ -162,8 +162,12 @@ describe('Analytics API Routes', () => {
       mockGetServerSession.mockResolvedValue(null);
 
       const { GET } = await import('../metrics/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/metrics'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -176,8 +180,12 @@ describe('Analytics API Routes', () => {
       mockPrisma.workspaceMember.findFirst.mockResolvedValue(null);
 
       const { GET } = await import('../metrics/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/metrics'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(403);
     });
@@ -196,8 +204,12 @@ describe('Analytics API Routes', () => {
       });
 
       const { GET } = await import('../metrics/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics?period=month');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/metrics?period=month'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -218,8 +230,12 @@ describe('Analytics API Routes', () => {
       });
 
       const { GET } = await import('../metrics/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics?period=week');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/metrics?period=week'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(200);
     });
@@ -240,8 +256,12 @@ describe('Analytics API Routes', () => {
       });
 
       const { GET } = await import('../realtime/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/realtime');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/realtime'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -265,8 +285,12 @@ describe('Analytics API Routes', () => {
       });
 
       const { GET } = await import('../trends/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/trends?metric=messages');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/trends?metric=messages'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -290,8 +314,12 @@ describe('Analytics API Routes', () => {
       });
 
       const { GET } = await import('../insights/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/insights?period=month');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/insights?period=month'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -308,14 +336,19 @@ describe('Analytics API Routes', () => {
       });
 
       const { POST } = await import('../track/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/track', {
-        method: 'POST',
-        body: JSON.stringify({
-          eventType: 'message.sent',
-          eventData: { channelId: 'ch-1' },
-        }),
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/track',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            eventType: 'message.sent',
+            eventData: { channelId: 'ch-1' },
+          }),
+        }
+      );
+      const response = await POST(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
       });
-      const response = await POST(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -329,11 +362,16 @@ describe('Analytics API Routes', () => {
       });
 
       const { POST } = await import('../track/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/track', {
-        method: 'POST',
-        body: JSON.stringify({}),
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/track',
+        {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }
+      );
+      const response = await POST(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
       });
-      const response = await POST(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
 
       expect(response.status).toBe(400);
     });
@@ -354,11 +392,16 @@ describe('Analytics API Routes', () => {
       });
 
       const { POST } = await import('../export/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/export', {
-        method: 'POST',
-        body: JSON.stringify({ period: 'month', format: 'json' }),
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/export',
+        {
+          method: 'POST',
+          body: JSON.stringify({ period: 'month', format: 'json' }),
+        }
+      );
+      const response = await POST(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
       });
-      const response = await POST(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
 
       expect(response.status).toBe(403);
     });
@@ -377,11 +420,16 @@ describe('Analytics API Routes', () => {
       });
 
       const { POST } = await import('../export/route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/export', {
-        method: 'POST',
-        body: JSON.stringify({ period: 'month', format: 'json' }),
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/analytics/export',
+        {
+          method: 'POST',
+          body: JSON.stringify({ period: 'month', format: 'json' }),
+        }
+      );
+      const response = await POST(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
       });
-      const response = await POST(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
 
       expect(response.status).toBe(200);
     });

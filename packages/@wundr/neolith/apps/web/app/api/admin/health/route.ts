@@ -52,7 +52,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -146,14 +146,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       monthly: monthlyTokens._sum.totalTokens || 0,
       limit: budgetConfigs._sum.monthlyLimit || 10000000,
       percentUsed: budgetConfigs._sum.monthlyLimit
-        ? ((monthlyTokens._sum.totalTokens || 0) / budgetConfigs._sum.monthlyLimit) * 100
+        ? ((monthlyTokens._sum.totalTokens || 0) /
+            budgetConfigs._sum.monthlyLimit) *
+          100
         : 0,
     };
 
     // Calculate error rate (percentage)
-    const errorRate = totalRecentLogs > 0
-      ? (recentErrors / totalRecentLogs) * 100
-      : 0;
+    const errorRate =
+      totalRecentLogs > 0 ? (recentErrors / totalRecentLogs) * 100 : 0;
 
     // Calculate system uptime in milliseconds
     const uptime = Date.now() - startTime;
@@ -171,7 +172,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

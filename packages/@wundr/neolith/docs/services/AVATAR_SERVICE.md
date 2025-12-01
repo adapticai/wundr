@@ -1,10 +1,12 @@
 # Avatar Service
 
-Complete S3-based avatar storage system with OAuth integration, image processing, and fallback generation.
+Complete S3-based avatar storage system with OAuth integration, image processing, and fallback
+generation.
 
 ## Features
 
-- **OAuth Integration**: Automatically downloads and stores avatars from Google and GitHub during sign-in
+- **OAuth Integration**: Automatically downloads and stores avatars from Google and GitHub during
+  sign-in
 - **Image Processing**: Generates multiple size variants (32px, 64px, 128px, 256px) using Sharp
 - **Fallback Avatars**: Generates SVG-based initials avatars with consistent colors
 - **S3 Storage**: Supports AWS S3, Cloudflare R2, and MinIO
@@ -19,11 +21,11 @@ The service generates 4 size variants for every avatar:
 
 ```typescript
 AVATAR_SIZES = {
-  SMALL: 32,    // Thumbnails, small UI elements
-  MEDIUM: 64,   // Chat messages, notifications
-  LARGE: 128,   // Profile cards, sidebars
-  XLARGE: 256,  // Profile pages, full view
-}
+  SMALL: 32, // Thumbnails, small UI elements
+  MEDIUM: 64, // Chat messages, notifications
+  LARGE: 128, // Profile cards, sidebars
+  XLARGE: 256, // Profile pages, full view
+};
 ```
 
 ### Storage Structure
@@ -83,11 +85,13 @@ AVATAR_STORAGE_PUBLIC_URL=https://avatars.cdn.yourapp.com
 ### AWS S3 Setup
 
 1. **Create S3 Bucket**:
+
 ```bash
 aws s3 mb s3://my-app-avatars --region us-east-1
 ```
 
 2. **Configure CORS** (for direct uploads):
+
 ```json
 [
   {
@@ -101,6 +105,7 @@ aws s3 mb s3://my-app-avatars --region us-east-1
 ```
 
 3. **Set Bucket Policy** (for public read access):
+
 ```json
 {
   "Version": "2012-10-17",
@@ -125,6 +130,7 @@ aws s3 mb s3://my-app-avatars --region us-east-1
 ### Cloudflare R2 Setup
 
 1. **Create R2 Bucket**:
+
 ```bash
 wrangler r2 bucket create my-app-avatars
 ```
@@ -290,10 +296,11 @@ Example fallback avatar for "John Doe":
 Set in S3 upload metadata:
 
 ```typescript
-CacheControl: 'public, max-age=31536000, immutable'
+CacheControl: 'public, max-age=31536000, immutable';
 ```
 
 Recommended CloudFront settings:
+
 - **Minimum TTL**: 86400 (1 day)
 - **Maximum TTL**: 31536000 (1 year)
 - **Default TTL**: 604800 (1 week)
@@ -354,12 +361,12 @@ When user updates avatar, old files are **not** deleted to prevent CDN cache iss
 
 ### Common Errors
 
-| Error | HTTP | Description |
-|-------|------|-------------|
-| `InvalidAvatarError` | 400 | Invalid format or corrupted file |
-| `AvatarDownloadError` | 502 | Failed to download from provider |
-| `AvatarProcessingError` | 500 | Image processing failed |
-| `AvatarServiceError` | 500 | Generic service error |
+| Error                   | HTTP | Description                      |
+| ----------------------- | ---- | -------------------------------- |
+| `InvalidAvatarError`    | 400  | Invalid format or corrupted file |
+| `AvatarDownloadError`   | 502  | Failed to download from provider |
+| `AvatarProcessingError` | 500  | Image processing failed          |
+| `AvatarServiceError`    | 500  | Generic service error            |
 
 ### Retry Strategy
 

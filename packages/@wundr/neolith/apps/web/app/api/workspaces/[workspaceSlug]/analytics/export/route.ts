@@ -22,7 +22,7 @@ import { getServerSession } from '@/lib/auth';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -67,14 +67,14 @@ export async function GET(
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO 8601 format (YYYY-MM-DD)' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (startDate > endDate) {
       return NextResponse.json(
         { error: 'Start date must be before end date' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -96,7 +96,11 @@ export async function GET(
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            const csv = convertMetricsToCSV(filteredMetrics, startDate, endDate);
+            const csv = convertMetricsToCSV(
+              filteredMetrics,
+              startDate,
+              endDate
+            );
             controller.enqueue(encoder.encode(csv));
             controller.close();
           } catch (error) {
@@ -142,7 +146,7 @@ export async function GET(
         error: 'Failed to export analytics',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -159,7 +163,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -185,21 +189,21 @@ export async function POST(
     if (!frequency || !['daily', 'weekly', 'monthly'].includes(frequency)) {
       return NextResponse.json(
         { error: 'Invalid frequency. Must be: daily, weekly, or monthly' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!format || !['csv', 'json'].includes(format)) {
       return NextResponse.json(
         { error: 'Invalid format. Must be: csv or json' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json(
         { error: 'Recipients must be a non-empty array of email addresses' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -209,7 +213,7 @@ export async function POST(
     if (invalidEmails.length > 0) {
       return NextResponse.json(
         { error: `Invalid email addresses: ${invalidEmails.join(', ')}` },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -220,11 +224,16 @@ export async function POST(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workspace not found' },
+        { status: 404 }
+      );
     }
 
-    const currentSettings = workspace.settings as Record<string, unknown> || {};
-    const scheduledExports = (currentSettings.scheduledExports as Record<string, unknown>[]) || [];
+    const currentSettings =
+      (workspace.settings as Record<string, unknown>) || {};
+    const scheduledExports =
+      (currentSettings.scheduledExports as Record<string, unknown>[]) || [];
 
     // Create new scheduled export configuration
     const exportConfig = {
@@ -253,10 +262,13 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({
-      message: 'Scheduled export created successfully',
-      export: exportConfig,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Scheduled export created successfully',
+        export: exportConfig,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Scheduled export creation error:', error);
     return NextResponse.json(
@@ -264,7 +276,7 @@ export async function POST(
         error: 'Failed to create scheduled export',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -274,7 +286,7 @@ export async function POST(
  */
 function filterMetrics(
   metrics: UsageMetrics,
-  filter?: string[],
+  filter?: string[]
 ): Partial<UsageMetrics> {
   if (!filter || filter.length === 0) {
     return metrics;
@@ -307,14 +319,16 @@ function filterMetrics(
 function convertMetricsToCSV(
   metrics: Partial<UsageMetrics>,
   startDate?: Date,
-  endDate?: Date,
+  endDate?: Date
 ): string {
   const lines: string[] = [];
 
   // Add metadata header
   if (startDate && endDate) {
     lines.push('# Analytics Export');
-    lines.push(`# Date Range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    lines.push(
+      `# Date Range: ${startDate.toISOString()} to ${endDate.toISOString()}`
+    );
     lines.push(`# Generated: ${new Date().toISOString()}`);
     lines.push('');
   }
@@ -353,9 +367,15 @@ function convertMetricsToCSV(
 
   // Orchestrators
   if (metrics.orchestrator) {
-    lines.push(`Orchestrators,Total,${metrics.orchestrator.totalOrchestrators}`);
-    lines.push(`Orchestrators,Active,${metrics.orchestrator.activeOrchestrators}`);
-    lines.push(`Orchestrators,Messages Sent,${metrics.orchestrator.messagesSent}`);
+    lines.push(
+      `Orchestrators,Total,${metrics.orchestrator.totalOrchestrators}`
+    );
+    lines.push(
+      `Orchestrators,Active,${metrics.orchestrator.activeOrchestrators}`
+    );
+    lines.push(
+      `Orchestrators,Messages Sent,${metrics.orchestrator.messagesSent}`
+    );
   }
 
   return lines.join('\n');

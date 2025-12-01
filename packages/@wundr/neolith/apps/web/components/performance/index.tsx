@@ -2,9 +2,13 @@
 
 import { memo, lazy, Suspense, useRef, useEffect, useState } from 'react';
 
-import { useLazyLoad, useConnectionAware, useVirtualizedData } from '@/hooks/use-performance';
+import {
+  useLazyLoad,
+  useConnectionAware,
+  useVirtualizedData,
+} from '@/hooks/use-performance';
 
-import type { ComponentType, ReactNode} from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 /**
  * Props for the Skeleton component
@@ -165,18 +169,19 @@ export interface CriticalCSSProps {
 /**
  * Lazy component with preload capability
  */
-type LazyWithPreload<T extends ComponentType<Record<string, unknown>>> = React.LazyExoticComponent<T> & {
-  preload: () => Promise<{ default: T }>;
-};
+type LazyWithPreload<T extends ComponentType<Record<string, unknown>>> =
+  React.LazyExoticComponent<T> & {
+    preload: () => Promise<{ default: T }>;
+  };
 
 /**
  * Lazy component wrapper with loading fallback and preload capability
  * @param importFn - Dynamic import function for the component
  * @returns Lazy component with preload method
  */
-export function lazyWithPreload<T extends ComponentType<Record<string, unknown>>>(
-  importFn: () => Promise<{ default: T }>,
-): LazyWithPreload<T> {
+export function lazyWithPreload<
+  T extends ComponentType<Record<string, unknown>>,
+>(importFn: () => Promise<{ default: T }>): LazyWithPreload<T> {
   const LazyComponent = lazy(importFn) as LazyWithPreload<T>;
   LazyComponent.preload = importFn;
   return LazyComponent;
@@ -185,16 +190,12 @@ export function lazyWithPreload<T extends ComponentType<Record<string, unknown>>
 /**
  * Loading skeleton placeholder for content
  */
-export function Skeleton({
-  className = '',
-  width,
-  height,
-}: SkeletonProps) {
+export function Skeleton({ className = '', width, height }: SkeletonProps) {
   return (
     <div
       className={`animate-pulse bg-muted rounded ${className}`}
       style={{ width, height }}
-      aria-hidden="true"
+      aria-hidden='true'
     />
   );
 }
@@ -212,8 +213,8 @@ export function LoadingSpinner({ size = 'md' }: LoadingSpinnerProps) {
   return (
     <div
       className={`${sizeClasses[size]} animate-spin rounded-full border-2 border-muted border-t-primary`}
-      role="status"
-      aria-label="Loading"
+      role='status'
+      aria-label='Loading'
     />
   );
 }
@@ -227,13 +228,12 @@ export function LazyComponent({
   rootMargin = '50px',
   threshold = 0.1,
 }: LazyComponentProps) {
-  const { ref, isVisible } = useLazyLoad<HTMLDivElement>(() => {}, { rootMargin, threshold });
+  const { ref, isVisible } = useLazyLoad<HTMLDivElement>(() => {}, {
+    rootMargin,
+    threshold,
+  });
 
-  return (
-    <div ref={ref}>
-      {isVisible ? children : fallback}
-    </div>
-  );
+  return <div ref={ref}>{isVisible ? children : fallback}</div>;
 }
 
 /**
@@ -262,18 +262,21 @@ export const LazyImage = memo(function LazyImage({
   }, [priority, src]);
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
+    <div
+      className={`relative overflow-hidden ${className}`}
+      style={{ width, height }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {!loaded && !error && placeholder === 'blur' && blurDataURL && (
         <img
           src={blurDataURL}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover filter blur-lg scale-110"
-          aria-hidden="true"
+          alt=''
+          className='absolute inset-0 w-full h-full object-cover filter blur-lg scale-110'
+          aria-hidden='true'
         />
       )}
       {!loaded && !error && !blurDataURL && (
-        <Skeleton className="absolute inset-0" />
+        <Skeleton className='absolute inset-0' />
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -283,7 +286,7 @@ export const LazyImage = memo(function LazyImage({
         width={width}
         height={height}
         loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
+        decoding='async'
         className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
         onLoad={() => {
           setLoaded(true);
@@ -292,8 +295,8 @@ export const LazyImage = memo(function LazyImage({
         onError={() => setError(true)}
       />
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted">
-          <span className="text-muted-foreground text-sm">Failed to load</span>
+        <div className='absolute inset-0 flex items-center justify-center bg-muted'>
+          <span className='text-muted-foreground text-sm'>Failed to load</span>
         </div>
       )}
     </div>
@@ -332,11 +335,14 @@ export function VirtualizedList<T>({
   overscan = 3,
   className = '',
 }: VirtualizedListProps<T>) {
-  const { visibleItems, totalHeight, handleScroll } = useVirtualizedData(items, {
-    itemHeight,
-    containerHeight,
-    overscan,
-  });
+  const { visibleItems, totalHeight, handleScroll } = useVirtualizedData(
+    items,
+    {
+      itemHeight,
+      containerHeight,
+      overscan,
+    }
+  );
 
   return (
     <div
@@ -362,11 +368,7 @@ export function SuspenseBoundary({
   children,
   fallback = <LoadingSpinner />,
 }: SuspenseBoundaryProps) {
-  return (
-    <Suspense fallback={fallback}>
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={fallback}>{children}</Suspense>;
 }
 
 /**
@@ -403,11 +405,7 @@ export function DeferredContent({
 /**
  * Progressive enhancement wrapper for SSR, client, and enhanced content
  */
-export function Progressive({
-  ssr,
-  client,
-  enhanced,
-}: ProgressiveProps) {
+export function Progressive({ ssr, client, enhanced }: ProgressiveProps) {
   const [mounted, setMounted] = useState(false);
   const [jsEnabled, setJsEnabled] = useState(false);
 
@@ -417,11 +415,11 @@ export function Progressive({
   }, []);
 
   if (!mounted) {
-return <>{ssr}</>;
-}
+    return <>{ssr}</>;
+  }
   if (!jsEnabled) {
-return <>{client}</>;
-}
+    return <>{client}</>;
+  }
   return <>{enhanced || client}</>;
 }
 
@@ -444,8 +442,8 @@ export const ResponsiveImage = memo(function ResponsiveImage({
       srcSet={srcSet}
       sizes={sizes}
       alt={alt}
-      loading="lazy"
-      decoding="async"
+      loading='lazy'
+      decoding='async'
       className={className}
     />
   );
@@ -456,9 +454,6 @@ export const ResponsiveImage = memo(function ResponsiveImage({
  */
 export function CriticalCSS({ css }: CriticalCSSProps) {
   return (
-    <style
-      dangerouslySetInnerHTML={{ __html: css }}
-      data-critical="true"
-    />
+    <style dangerouslySetInnerHTML={{ __html: css }} data-critical='true' />
   );
 }

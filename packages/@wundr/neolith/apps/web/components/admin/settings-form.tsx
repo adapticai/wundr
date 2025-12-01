@@ -115,10 +115,12 @@ export function SettingsForm({
     ...DEFAULT_SETTINGS,
     ...initialSettings,
   }));
-  const [originalSettings, setOriginalSettings] = useState<WorkspaceSettings>(() => ({
-    ...DEFAULT_SETTINGS,
-    ...initialSettings,
-  }));
+  const [originalSettings, setOriginalSettings] = useState<WorkspaceSettings>(
+    () => ({
+      ...DEFAULT_SETTINGS,
+      ...initialSettings,
+    })
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -135,15 +137,15 @@ export function SettingsForm({
   const updateSettings = useCallback(
     <K extends keyof WorkspaceSettings>(
       section: K,
-      updates: Partial<WorkspaceSettings[K]>,
+      updates: Partial<WorkspaceSettings[K]>
     ) => {
-      setSettings((prev) => ({
+      setSettings(prev => ({
         ...prev,
         [section]: { ...prev[section], ...updates },
       }));
       setErrors({});
     },
-    [],
+    []
   );
 
   const validate = useCallback((): boolean => {
@@ -154,7 +156,8 @@ export function SettingsForm({
     }
 
     if (settings.security.passwordMinLength < 6) {
-      newErrors['security.passwordMinLength'] = 'Password must be at least 6 characters';
+      newErrors['security.passwordMinLength'] =
+        'Password must be at least 6 characters';
     }
 
     if (settings.messaging.editWindowMinutes < 0) {
@@ -167,8 +170,8 @@ export function SettingsForm({
 
   const handleSave = async () => {
     if (!validate()) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -189,18 +192,18 @@ return;
   return (
     <div className={cn('space-y-6', className)}>
       {/* Tabs */}
-      <div className="border-b border-border">
-        <nav className="flex gap-4" aria-label="Settings tabs">
-          {TABS.map((tab) => (
+      <div className='border-b border-border'>
+        <nav className='flex gap-4' aria-label='Settings tabs'>
+          {TABS.map(tab => (
             <button
               key={tab.id}
-              type="button"
+              type='button'
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 'pb-3 text-sm font-medium border-b-2 transition-colors',
                 activeTab === tab.id
                   ? 'border-stone-700 dark:border-stone-300 text-stone-700 dark:text-stone-300'
-                  : 'border-transparent text-muted-foreground hover:text-foreground',
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               )}
               aria-selected={activeTab === tab.id} // eslint-disable-line jsx-a11y/role-supports-aria-props
             >
@@ -211,63 +214,63 @@ return;
       </div>
 
       {/* Tab content */}
-      <div className="min-h-[400px]">
+      <div className='min-h-[400px]'>
         {activeTab === 'general' && (
           <GeneralSettings
             settings={settings.general}
             errors={errors}
-            onChange={(updates) => updateSettings('general', updates)}
+            onChange={updates => updateSettings('general', updates)}
           />
         )}
         {activeTab === 'security' && (
           <SecurityTabSettings
             settings={settings.security}
             errors={errors}
-            onChange={(updates) => updateSettings('security', updates)}
+            onChange={updates => updateSettings('security', updates)}
           />
         )}
         {activeTab === 'messaging' && (
           <MessagingSettings
             settings={settings.messaging}
             errors={errors}
-            onChange={(updates) => updateSettings('messaging', updates)}
+            onChange={updates => updateSettings('messaging', updates)}
           />
         )}
         {activeTab === 'notifications' && (
           <NotificationSettings
             settings={settings.notifications}
             errors={errors}
-            onChange={(updates) => updateSettings('notifications', updates)}
+            onChange={updates => updateSettings('notifications', updates)}
           />
         )}
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-border">
-        <div className="text-sm text-muted-foreground">
+      <div className='flex items-center justify-between pt-4 border-t border-border'>
+        <div className='text-sm text-muted-foreground'>
           {isDirty ? 'You have unsaved changes' : 'All changes saved'}
         </div>
-        <div className="flex gap-3">
+        <div className='flex gap-3'>
           <button
-            type="button"
+            type='button'
             onClick={handleReset}
             disabled={!isDirty || isSaving}
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium',
               'bg-muted text-muted-foreground hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
             Reset
           </button>
           <button
-            type="button"
+            type='button'
             onClick={handleSave}
             disabled={!isDirty || isSaving}
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium',
               'bg-primary text-primary-foreground hover:bg-primary/90',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
@@ -295,50 +298,52 @@ interface GeneralSettingsProps {
  */
 function GeneralSettings({ settings, errors, onChange }: GeneralSettingsProps) {
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Workspace Name
         </label>
         <input
-          type="text"
+          type='text'
           value={settings.name}
-          onChange={(e) => onChange({ name: e.target.value })}
+          onChange={e => onChange({ name: e.target.value })}
           className={cn(
             'w-full max-w-md px-3 py-2 rounded-lg',
             'bg-muted border text-foreground',
-            errors['general.name'] ? 'border-destructive' : 'border-border',
+            errors['general.name'] ? 'border-destructive' : 'border-border'
           )}
-          placeholder="My Workspace"
+          placeholder='My Workspace'
         />
         {errors['general.name'] && (
-          <p className="mt-1 text-sm text-destructive">{errors['general.name']}</p>
+          <p className='mt-1 text-sm text-destructive'>
+            {errors['general.name']}
+          </p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Description
         </label>
         <textarea
           value={settings.description}
-          onChange={(e) => onChange({ description: e.target.value })}
-          className="w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground"
+          onChange={e => onChange({ description: e.target.value })}
+          className='w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground'
           rows={3}
-          placeholder="Describe your workspace..."
+          placeholder='Describe your workspace...'
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Timezone
         </label>
         <select
           value={settings.timezone}
-          onChange={(e) => onChange({ timezone: e.target.value })}
-          className="w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground"
+          onChange={e => onChange({ timezone: e.target.value })}
+          className='w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground'
         >
-          {TIMEZONES.map((tz) => (
+          {TIMEZONES.map(tz => (
             <option key={tz} value={tz}>
               {tz}
             </option>
@@ -347,15 +352,15 @@ function GeneralSettings({ settings, errors, onChange }: GeneralSettingsProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Language
         </label>
         <select
           value={settings.language}
-          onChange={(e) => onChange({ language: e.target.value })}
-          className="w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground"
+          onChange={e => onChange({ language: e.target.value })}
+          className='w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground'
         >
-          {LANGUAGES.map((lang) => (
+          {LANGUAGES.map(lang => (
             <option key={lang.code} value={lang.code}>
               {lang.label}
             </option>
@@ -381,68 +386,78 @@ interface SecurityTabSettingsProps {
 /**
  * Security settings tab component
  */
-function SecurityTabSettings({ settings, errors, onChange }: SecurityTabSettingsProps) {
+function SecurityTabSettings({
+  settings,
+  errors,
+  onChange,
+}: SecurityTabSettingsProps) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between max-w-md">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between max-w-md'>
         <div>
-          <label className="block text-sm font-medium text-foreground">
+          <label className='block text-sm font-medium text-foreground'>
             Require MFA
           </label>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             All members must enable two-factor authentication
           </p>
         </div>
         <button
-          type="button"
+          type='button'
           onClick={() => onChange({ mfaRequired: !settings.mfaRequired })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.mfaRequired ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
+            settings.mfaRequired ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted'
           )}
-          role="switch"
+          role='switch'
           aria-checked={settings.mfaRequired}
         >
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.mfaRequired ? 'translate-x-5' : 'translate-x-0',
+              settings.mfaRequired ? 'translate-x-5' : 'translate-x-0'
             )}
           />
         </button>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Session Timeout (hours)
         </label>
         <input
-          type="number"
+          type='number'
           value={settings.sessionTimeout}
-          onChange={(e) => onChange({ sessionTimeout: parseInt(e.target.value) || 1 })}
-          className="w-32 px-3 py-2 rounded-lg bg-muted border border-border text-foreground"
+          onChange={e =>
+            onChange({ sessionTimeout: parseInt(e.target.value) || 1 })
+          }
+          className='w-32 px-3 py-2 rounded-lg bg-muted border border-border text-foreground'
           min={1}
           max={168}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Minimum Password Length
         </label>
         <input
-          type="number"
+          type='number'
           value={settings.passwordMinLength}
-          onChange={(e) => onChange({ passwordMinLength: parseInt(e.target.value) || 6 })}
+          onChange={e =>
+            onChange({ passwordMinLength: parseInt(e.target.value) || 6 })
+          }
           className={cn(
             'w-32 px-3 py-2 rounded-lg bg-muted border text-foreground',
-            errors['security.passwordMinLength'] ? 'border-destructive' : 'border-border',
+            errors['security.passwordMinLength']
+              ? 'border-destructive'
+              : 'border-border'
           )}
           min={6}
           max={32}
         />
         {errors['security.passwordMinLength'] && (
-          <p className="mt-1 text-sm text-destructive">
+          <p className='mt-1 text-sm text-destructive'>
             {errors['security.passwordMinLength']}
           </p>
         )}
@@ -466,32 +481,38 @@ interface MessagingSettingsProps {
 /**
  * Messaging settings section component
  */
-function MessagingSettings({ settings, errors, onChange }: MessagingSettingsProps) {
+function MessagingSettings({
+  settings,
+  errors,
+  onChange,
+}: MessagingSettingsProps) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between max-w-md">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between max-w-md'>
         <div>
-          <label className="block text-sm font-medium text-foreground">
+          <label className='block text-sm font-medium text-foreground'>
             Allow Message Editing
           </label>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             Members can edit their sent messages
           </p>
         </div>
         <button
-          type="button"
+          type='button'
           onClick={() => onChange({ allowEditing: !settings.allowEditing })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.allowEditing ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
+            settings.allowEditing
+              ? 'bg-stone-700 dark:bg-stone-300'
+              : 'bg-muted'
           )}
-          role="switch"
+          role='switch'
           aria-checked={settings.allowEditing}
         >
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.allowEditing ? 'translate-x-5' : 'translate-x-0',
+              settings.allowEditing ? 'translate-x-5' : 'translate-x-0'
             )}
           />
         </button>
@@ -499,62 +520,68 @@ function MessagingSettings({ settings, errors, onChange }: MessagingSettingsProp
 
       {settings.allowEditing && (
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
+          <label className='block text-sm font-medium text-foreground mb-1'>
             Edit Window (minutes)
           </label>
           <input
-            type="number"
+            type='number'
             value={settings.editWindowMinutes}
-            onChange={(e) => onChange({ editWindowMinutes: parseInt(e.target.value) || 0 })}
+            onChange={e =>
+              onChange({ editWindowMinutes: parseInt(e.target.value) || 0 })
+            }
             className={cn(
               'w-32 px-3 py-2 rounded-lg bg-muted border text-foreground',
-              errors['messaging.editWindowMinutes'] ? 'border-destructive' : 'border-border',
+              errors['messaging.editWindowMinutes']
+                ? 'border-destructive'
+                : 'border-border'
             )}
             min={0}
           />
-          <p className="mt-1 text-sm text-muted-foreground">
-            0 = unlimited
-          </p>
+          <p className='mt-1 text-sm text-muted-foreground'>0 = unlimited</p>
         </div>
       )}
 
-      <div className="flex items-center justify-between max-w-md">
+      <div className='flex items-center justify-between max-w-md'>
         <div>
-          <label className="block text-sm font-medium text-foreground">
+          <label className='block text-sm font-medium text-foreground'>
             Allow Message Deletion
           </label>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             Members can delete their sent messages
           </p>
         </div>
         <button
-          type="button"
+          type='button'
           onClick={() => onChange({ allowDeletion: !settings.allowDeletion })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.allowDeletion ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
+            settings.allowDeletion
+              ? 'bg-stone-700 dark:bg-stone-300'
+              : 'bg-muted'
           )}
-          role="switch"
+          role='switch'
           aria-checked={settings.allowDeletion}
         >
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.allowDeletion ? 'translate-x-5' : 'translate-x-0',
+              settings.allowDeletion ? 'translate-x-5' : 'translate-x-0'
             )}
           />
         </button>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           File Upload Limit (MB)
         </label>
         <input
-          type="number"
+          type='number'
           value={settings.fileUploadLimit}
-          onChange={(e) => onChange({ fileUploadLimit: parseInt(e.target.value) || 1 })}
-          className="w-32 px-3 py-2 rounded-lg bg-muted border border-border text-foreground"
+          onChange={e =>
+            onChange({ fileUploadLimit: parseInt(e.target.value) || 1 })
+          }
+          className='w-32 px-3 py-2 rounded-lg bg-muted border border-border text-foreground'
           min={1}
           max={100}
         />
@@ -578,54 +605,61 @@ interface NotificationSettingsProps {
 /**
  * Notification settings section component
  */
-function NotificationSettings({ settings, errors: _errors, onChange }: NotificationSettingsProps) {
+function NotificationSettings({
+  settings,
+  errors: _errors,
+  onChange,
+}: NotificationSettingsProps) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between max-w-md">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between max-w-md'>
         <div>
-          <label className="block text-sm font-medium text-foreground">
+          <label className='block text-sm font-medium text-foreground'>
             Default Sound
           </label>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             Play notification sounds by default
           </p>
         </div>
         <button
-          type="button"
+          type='button'
           onClick={() => onChange({ defaultSound: !settings.defaultSound })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.defaultSound ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
+            settings.defaultSound
+              ? 'bg-stone-700 dark:bg-stone-300'
+              : 'bg-muted'
           )}
-          role="switch"
+          role='switch'
           aria-checked={settings.defaultSound}
         >
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.defaultSound ? 'translate-x-5' : 'translate-x-0',
+              settings.defaultSound ? 'translate-x-5' : 'translate-x-0'
             )}
           />
         </button>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <label className='block text-sm font-medium text-foreground mb-1'>
           Email Digest Frequency
         </label>
         <select
           value={settings.digestFrequency}
-          onChange={(e) =>
+          onChange={e =>
             onChange({
-              digestFrequency: e.target.value as WorkspaceSettings['notifications']['digestFrequency'],
+              digestFrequency: e.target
+                .value as WorkspaceSettings['notifications']['digestFrequency'],
             })
           }
-          className="w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground"
+          className='w-full max-w-md px-3 py-2 rounded-lg bg-muted border border-border text-foreground'
         >
-          <option value="immediate">Immediate</option>
-          <option value="hourly">Hourly</option>
-          <option value="daily">Daily</option>
-          <option value="none">None</option>
+          <option value='immediate'>Immediate</option>
+          <option value='hourly'>Hourly</option>
+          <option value='daily'>Daily</option>
+          <option value='none'>None</option>
         </select>
       </div>
     </div>

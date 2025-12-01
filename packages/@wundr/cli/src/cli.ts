@@ -47,7 +47,7 @@ export class WundrCLI {
     this.pluginManager = new PluginManager(this.configManager);
     this.interactiveMode = new InteractiveMode(
       this.configManager,
-      this.pluginManager,
+      this.pluginManager
     );
 
     this.setupProgram();
@@ -63,7 +63,7 @@ export class WundrCLI {
     this.program
       .name('wundr')
       .description(
-        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams',
+        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams'
       )
       .version(version, '-v, --version', 'display version number')
       .helpOption('-h, --help', 'display help for command')
@@ -74,7 +74,7 @@ export class WundrCLI {
 ║║║║ ║║║║ ║║╠╦╝
 ╚╩╝╚═╝╝╚╝═╩╝╩╚═
 The Unified Developer Platform
-      `,
+      `
       )
       .configureOutput({
         writeOut: str => process.stdout.write(str),
@@ -208,7 +208,7 @@ The Unified Developer Platform
       .option(
         '--layout <type>',
         'TUI layout (dashboard, monitor, debug)',
-        'dashboard',
+        'dashboard'
       )
       .action(async options => {
         await this.interactiveMode.launchTUI(options.layout);

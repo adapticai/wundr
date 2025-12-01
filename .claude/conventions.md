@@ -1,6 +1,7 @@
 # Project Conventions
 
-> **Purpose**: This document establishes coding standards, organizational patterns, and workflow protocols to ensure consistency, maintainability, and quality across the codebase.
+> **Purpose**: This document establishes coding standards, organizational patterns, and workflow
+> protocols to ensure consistency, maintainability, and quality across the codebase.
 
 ## Table of Contents
 
@@ -19,7 +20,8 @@
 
 ### General Principles
 
-1. **Clarity over Cleverness**: Write code that is easy to understand, not code that shows off technical prowess
+1. **Clarity over Cleverness**: Write code that is easy to understand, not code that shows off
+   technical prowess
 2. **Consistency**: Follow established patterns in the codebase
 3. **DRY (Don't Repeat Yourself)**: Extract reusable logic into functions/modules
 4. **KISS (Keep It Simple, Stupid)**: Prefer simple solutions over complex ones
@@ -53,12 +55,13 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile> => {
 };
 
 // ❌ BAD: Unclear, untyped, poor structure
-const getUser = async (id) => {
+const getUser = async id => {
   return await db.users.find(id);
 };
 ```
 
 **Rules:**
+
 - Always use TypeScript for type safety
 - Prefer `const` and `let` over `var`
 - Use arrow functions for callbacks and utilities
@@ -109,6 +112,7 @@ def fetch_user_profile(user_id: str) -> UserProfile:
 ```
 
 **Rules:**
+
 - Follow PEP 8 style guide
 - Use type hints for all function signatures
 - Maximum line length: 88 characters (Black formatter)
@@ -120,15 +124,18 @@ def fetch_user_profile(user_id: str) -> UserProfile:
 ### Code Organization
 
 #### Function/Method Size
+
 - **Target**: 10-20 lines per function
 - **Maximum**: 50 lines (if exceeded, refactor into smaller functions)
 - **Complexity**: Maximum cyclomatic complexity of 10
 
 #### Class Size
+
 - **Target**: 100-300 lines per class
 - **Maximum**: 500 lines (if exceeded, split into multiple classes)
 
 #### File Size
+
 - **Target**: 200-400 lines per file
 - **Maximum**: 500 lines (if exceeded, split into multiple files)
 
@@ -137,7 +144,11 @@ def fetch_user_profile(user_id: str) -> UserProfile:
 ```typescript
 // ✅ GOOD: Specific errors, proper logging, graceful degradation
 class UserServiceError extends Error {
-  constructor(message: string, public code: string, public details?: unknown) {
+  constructor(
+    message: string,
+    public code: string,
+    public details?: unknown
+  ) {
     super(message);
     this.name = 'UserServiceError';
   }
@@ -164,7 +175,7 @@ const processUser = async (userId: string): Promise<ProcessedUser> => {
 };
 
 // ❌ BAD: Silent failures, generic errors
-const processUser = async (userId) => {
+const processUser = async userId => {
   try {
     return await fetchUser(userId);
   } catch (e) {
@@ -175,6 +186,7 @@ const processUser = async (userId) => {
 ```
 
 **Rules:**
+
 - Never swallow errors silently
 - Use custom error classes for domain-specific errors
 - Log errors with context and stack traces
@@ -202,9 +214,7 @@ const calculateDiscount = (user: User, price: number): number => {
   // Edge case: Free items should never have discounts applied
   if (price === 0) return 0;
 
-  const discountRate = user.tier === 'premium'
-    ? 0.15
-    : user.purchases >= 10 ? 0.05 : 0;
+  const discountRate = user.tier === 'premium' ? 0.15 : user.purchases >= 10 ? 0.05 : 0;
 
   return Math.floor(price * (1 - discountRate));
 };
@@ -222,6 +232,7 @@ const calculateDiscount = (user, price) => {
 ```
 
 **Rules:**
+
 - Use JSDoc/docstrings for all public APIs
 - Explain WHY, not WHAT (code should be self-explanatory)
 - Document non-obvious business logic
@@ -289,24 +300,25 @@ module-name/
 ### File Naming Conventions
 
 #### General Rules
+
 - Use lowercase with hyphens: `user-service.ts`, `auth-middleware.ts`
 - Use clear, descriptive names: `email-validator.ts` not `validator.ts`
 - Suffix indicates purpose: `.service.ts`, `.controller.ts`, `.test.ts`
 
 #### Specific Patterns
 
-| File Type | Pattern | Example |
-|-----------|---------|---------|
-| Service | `*.service.ts` | `user.service.ts` |
-| Controller | `*.controller.ts` | `auth.controller.ts` |
-| Repository | `*.repository.ts` | `user.repository.ts` |
-| Types | `*.types.ts` | `api.types.ts` |
-| Constants | `*.constants.ts` | `http.constants.ts` |
-| Utils | `*.utils.ts` | `date.utils.ts` |
-| Middleware | `*.middleware.ts` | `auth.middleware.ts` |
-| Unit Tests | `*.test.ts` | `user.test.ts` |
+| File Type         | Pattern                 | Example                   |
+| ----------------- | ----------------------- | ------------------------- |
+| Service           | `*.service.ts`          | `user.service.ts`         |
+| Controller        | `*.controller.ts`       | `auth.controller.ts`      |
+| Repository        | `*.repository.ts`       | `user.repository.ts`      |
+| Types             | `*.types.ts`            | `api.types.ts`            |
+| Constants         | `*.constants.ts`        | `http.constants.ts`       |
+| Utils             | `*.utils.ts`            | `date.utils.ts`           |
+| Middleware        | `*.middleware.ts`       | `auth.middleware.ts`      |
+| Unit Tests        | `*.test.ts`             | `user.test.ts`            |
 | Integration Tests | `*.integration.test.ts` | `api.integration.test.ts` |
-| E2E Tests | `*.e2e.test.ts` | `checkout.e2e.test.ts` |
+| E2E Tests         | `*.e2e.test.ts`         | `checkout.e2e.test.ts`    |
 
 ### Import Organization
 
@@ -331,6 +343,7 @@ import type { Request, Response } from 'express';
 ```
 
 **Rules:**
+
 - Group imports by source (external, internal, relative)
 - Alphabetize within each group
 - Use absolute imports (`@/`) for cross-module references
@@ -369,6 +382,7 @@ const auth = true;
 ```
 
 **Rules:**
+
 - `UPPER_SNAKE_CASE` for constants
 - `camelCase` for variables and function parameters
 - Boolean variables: prefix with `is`, `has`, `should`, `can`
@@ -379,19 +393,36 @@ const auth = true;
 
 ```typescript
 // ✅ GOOD
-const calculateTotalPrice = (items: Item[]): number => { /* ... */ };
-const fetchUserById = async (id: string): Promise<User> => { /* ... */ };
-const isValidEmail = (email: string): boolean => { /* ... */ };
-const handleSubmit = (): void => { /* ... */ };
+const calculateTotalPrice = (items: Item[]): number => {
+  /* ... */
+};
+const fetchUserById = async (id: string): Promise<User> => {
+  /* ... */
+};
+const isValidEmail = (email: string): boolean => {
+  /* ... */
+};
+const handleSubmit = (): void => {
+  /* ... */
+};
 
 // ❌ BAD
-const calc = (items) => { /* ... */ };
-const get = async (id) => { /* ... */ };
-const check = (email) => { /* ... */ };
-const submit = () => { /* ... */ };
+const calc = items => {
+  /* ... */
+};
+const get = async id => {
+  /* ... */
+};
+const check = email => {
+  /* ... */
+};
+const submit = () => {
+  /* ... */
+};
 ```
 
 **Rules:**
+
 - `camelCase` for functions and methods
 - Start with verb: `get`, `set`, `calculate`, `fetch`, `handle`, `process`
 - Boolean functions: prefix with `is`, `has`, `should`, `can`
@@ -402,21 +433,38 @@ const submit = () => { /* ... */ };
 
 ```typescript
 // ✅ GOOD
-class UserService { /* ... */ }
-class HttpClient { /* ... */ }
-interface UserProfile { /* ... */ }
-interface PaymentGateway { /* ... */ }
+class UserService {
+  /* ... */
+}
+class HttpClient {
+  /* ... */
+}
+interface UserProfile {
+  /* ... */
+}
+interface PaymentGateway {
+  /* ... */
+}
 type UserId = string;
 type ApiResponse<T> = { data: T; status: number };
 
 // ❌ BAD
-class userservice { /* ... */ }
-class client { /* ... */ }
-interface user { /* ... */ }
-interface gateway { /* ... */ }
+class userservice {
+  /* ... */
+}
+class client {
+  /* ... */
+}
+interface user {
+  /* ... */
+}
+interface gateway {
+  /* ... */
+}
 ```
 
 **Rules:**
+
 - `PascalCase` for classes, interfaces, types, and enums
 - Use noun phrases
 - Interfaces: describe shape/capability (e.g., `Serializable`, `UserProfile`)
@@ -448,6 +496,7 @@ enum roles {
 ```
 
 **Rules:**
+
 - `PascalCase` for enum name
 - `PascalCase` for enum members
 - Use string or number values explicitly
@@ -479,6 +528,7 @@ def calc(items):
 ```
 
 **Rules:**
+
 - `UPPER_SNAKE_CASE` for constants
 - `snake_case` for variables, functions, and module names
 - `PascalCase` for classes
@@ -501,6 +551,7 @@ emailTemplates/
 ```
 
 **Rules:**
+
 - `kebab-case` for files and directories
 - Match file name to primary export (e.g., `UserService` class in `user-service.ts`)
 - Use descriptive names, avoid abbreviations
@@ -524,19 +575,13 @@ Brief one-sentence description.
 
 ## Installation
 
-\`\`\`bash
-npm install
-npm run build
-\`\`\`
+\`\`\`bash npm install npm run build \`\`\`
 
 ## Usage
 
-\`\`\`typescript
-import { UserService } from './user-service';
+\`\`\`typescript import { UserService } from './user-service';
 
-const service = new UserService();
-const user = await service.findById('123');
-\`\`\`
+const service = new UserService(); const user = await service.findById('123'); \`\`\`
 
 ## API Reference
 
@@ -547,26 +592,26 @@ const user = await service.findById('123');
 Finds user by ID.
 
 **Parameters:**
+
 - `id` - User identifier
 
 **Returns:** Promise resolving to User object
 
 **Throws:**
+
 - `NotFoundError` - User not found
 - `ValidationError` - Invalid ID format
 
 ## Configuration
 
 Environment variables:
+
 - `DATABASE_URL` - Database connection string
 - `API_KEY` - Third-party API key
 
 ## Testing
 
-\`\`\`bash
-npm test
-npm run test:coverage
-\`\`\`
+\`\`\`bash npm test npm run test:coverage \`\`\`
 
 ## Contributing
 
@@ -581,7 +626,7 @@ MIT
 
 Use JSDoc/docstrings for all public APIs:
 
-```typescript
+````typescript
 /**
  * Processes payment for an order.
  *
@@ -614,9 +659,10 @@ async function processPayment(
 ): Promise<PaymentConfirmation> {
   // Implementation
 }
-```
+````
 
 **Required for all public functions:**
+
 - Brief description (first line)
 - Detailed explanation (if needed)
 - All parameters with types and descriptions
@@ -638,8 +684,9 @@ Accepted
 
 ## Context
 
-We need to choose a primary database for storing user data, orders, and
-product catalog. Requirements:
+We need to choose a primary database for storing user data, orders, and product catalog.
+Requirements:
+
 - ACID compliance for financial transactions
 - Support for complex queries and relationships
 - Scalability to 10M+ users
@@ -652,6 +699,7 @@ We will use PostgreSQL as our primary database.
 ## Consequences
 
 ### Positive
+
 - Strong ACID guarantees for transactions
 - Rich query capabilities with SQL
 - Excellent tooling (pgAdmin, monitoring)
@@ -659,11 +707,13 @@ We will use PostgreSQL as our primary database.
 - Large community and expertise available
 
 ### Negative
+
 - More complex to scale horizontally than NoSQL
 - Requires careful index management
 - More expensive than some alternatives
 
 ### Neutral
+
 - Team needs PostgreSQL training
 - Must set up proper backup/replication
 
@@ -711,6 +761,7 @@ if (user.role === 'admin') {
 ```
 
 **Rules:**
+
 - Explain WHY, not WHAT
 - Document edge cases and business rules
 - Include references for non-obvious decisions
@@ -731,21 +782,23 @@ if (user.role === 'admin') {
 
 ### Coverage Requirements
 
-| Test Type | Minimum Coverage | Target Coverage |
-|-----------|-----------------|-----------------|
-| Unit | 70% | 85%+ |
-| Integration | 50% | 70%+ |
-| E2E | Critical paths | All user flows |
+| Test Type   | Minimum Coverage | Target Coverage |
+| ----------- | ---------------- | --------------- |
+| Unit        | 70%              | 85%+            |
+| Integration | 50%              | 70%+            |
+| E2E         | Critical paths   | All user flows  |
 
 ### Unit Tests
 
 **What to test:**
+
 - Pure functions and business logic
 - Error handling and edge cases
 - State transitions
 - Input validation
 
 **What NOT to test:**
+
 - Third-party libraries
 - Trivial getters/setters
 - Configuration files
@@ -799,6 +852,7 @@ describe('UserService', () => {
 ```
 
 **Rules:**
+
 - One test file per source file
 - Use descriptive test names: `should [expected behavior] when [condition]`
 - Test both happy path and error cases
@@ -810,6 +864,7 @@ describe('UserService', () => {
 ### Integration Tests
 
 **What to test:**
+
 - API endpoints with real database
 - Multi-module interactions
 - External service integrations (with test instances)
@@ -848,9 +903,7 @@ describe('User API Integration', () => {
     });
 
     it('should return 400 for invalid email', async () => {
-      const response = await app.request
-        .post('/users')
-        .send({ name: 'John', email: 'invalid' });
+      const response = await app.request.post('/users').send({ name: 'John', email: 'invalid' });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('Invalid email');
@@ -860,6 +913,7 @@ describe('User API Integration', () => {
 ```
 
 **Rules:**
+
 - Use test database/services, never production
 - Clean up after each test
 - Test real integration points
@@ -869,6 +923,7 @@ describe('User API Integration', () => {
 ### E2E Tests
 
 **What to test:**
+
 - Critical user flows (signup, checkout, etc.)
 - Cross-browser compatibility
 - Performance benchmarks
@@ -898,13 +953,13 @@ test.describe('Checkout Flow', () => {
     await page.click('[data-testid="pay-button"]');
 
     // Verify success
-    await expect(page.locator('[data-testid="success-message"]'))
-      .toContainText('Order confirmed');
+    await expect(page.locator('[data-testid="success-message"]')).toContainText('Order confirmed');
   });
 });
 ```
 
 **Rules:**
+
 - Use data-testid attributes for selectors
 - Test only critical paths
 - Keep E2E tests minimal (slow and brittle)
@@ -944,6 +999,7 @@ export const fixtures = {
 ```
 
 **Rules:**
+
 - Centralize test fixtures
 - Use factories for complex object creation
 - Avoid hardcoded IDs (use generators)
@@ -968,6 +1024,7 @@ chore/update-dependencies
 **Pattern:** `<type>/<description>`
 
 **Types:**
+
 - `feature/` - New features
 - `bugfix/` - Bug fixes
 - `hotfix/` - Urgent production fixes
@@ -977,6 +1034,7 @@ chore/update-dependencies
 - `chore/` - Maintenance tasks
 
 **Rules:**
+
 - Use kebab-case for description
 - Keep branch names short but descriptive
 - Include issue number if applicable: `feature/123-add-user-auth`
@@ -999,6 +1057,7 @@ Closes #123
 ```
 
 **Format:**
+
 ```
 <type>(<scope>): <subject>
 
@@ -1008,6 +1067,7 @@ Closes #123
 ```
 
 **Types:**
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation
@@ -1019,6 +1079,7 @@ Closes #123
 - `ci` - CI/CD changes
 
 **Rules:**
+
 - First line: max 72 characters
 - Use imperative mood: "add" not "added" or "adds"
 - Capitalize first letter of subject
@@ -1029,10 +1090,12 @@ Closes #123
 ### Git Workflow
 
 **Main Branches:**
+
 - `main` (or `master`) - Production-ready code
 - `develop` - Integration branch for features
 
 **Supporting Branches:**
+
 - Feature branches: `feature/*`
 - Release branches: `release/*`
 - Hotfix branches: `hotfix/*`
@@ -1065,11 +1128,13 @@ git branch -d feature/add-user-auth
 ### Pull Request Guidelines
 
 **PR Title:** Follow commit message format
+
 ```
 feat(auth): Add JWT authentication
 ```
 
 **PR Description Template:**
+
 ```markdown
 ## Description
 
@@ -1113,6 +1178,7 @@ Closes #123
 ```
 
 **PR Rules:**
+
 - Keep PRs small (<500 lines changed when possible)
 - One feature/fix per PR
 - Include tests with code changes
@@ -1137,6 +1203,7 @@ Closes #123
 - [ ] Code is maintainable
 
 **Review feedback format:**
+
 - **Blocking**: Must be fixed before merge
 - **Non-blocking**: Nice-to-have improvements
 - **Question**: Seeking clarification
@@ -1155,18 +1222,19 @@ Closes #123
 
 ### Overview
 
-When using Claude Code with MCP tools and agent swarms, follow these protocols to ensure efficient collaboration and avoid conflicts.
+When using Claude Code with MCP tools and agent swarms, follow these protocols to ensure efficient
+collaboration and avoid conflicts.
 
 ### Agent Types and Responsibilities
 
-| Agent Type | Responsibilities | Primary Tools |
-|------------|-----------------|---------------|
+| Agent Type      | Responsibilities                      | Primary Tools                           |
+| --------------- | ------------------------------------- | --------------------------------------- |
 | **Coordinator** | Orchestrate work, manage dependencies | TodoWrite, task_orchestrate, swarm_init |
-| **Researcher** | Analyze requirements, gather context | Read, Grep, Glob, WebSearch |
-| **Planner** | Break down tasks, design approach | TodoWrite, architecture diagrams |
-| **Coder** | Implement features, write code | Write, Edit, Bash |
-| **Tester** | Write/run tests, validate quality | Bash (test runners), Read, Write |
-| **Reviewer** | Code review, quality assurance | Read, Grep, analysis tools |
+| **Researcher**  | Analyze requirements, gather context  | Read, Grep, Glob, WebSearch             |
+| **Planner**     | Break down tasks, design approach     | TodoWrite, architecture diagrams        |
+| **Coder**       | Implement features, write code        | Write, Edit, Bash                       |
+| **Tester**      | Write/run tests, validate quality     | Bash (test runners), Read, Write        |
+| **Reviewer**    | Code review, quality assurance        | Read, Grep, analysis tools              |
 
 ### Agent Communication Protocol
 
@@ -1191,50 +1259,50 @@ npx claude-flow@alpha hooks session-restore --session-id "swarm-$(date +%s)"
 TodoWrite({
   todos: [
     {
-      id: "research-1",
-      content: "Analyze codebase for authentication patterns",
-      status: "in_progress",
-      activeForm: "Analyzing authentication patterns",
-      assignee: "researcher",
-      priority: "high"
+      id: 'research-1',
+      content: 'Analyze codebase for authentication patterns',
+      status: 'in_progress',
+      activeForm: 'Analyzing authentication patterns',
+      assignee: 'researcher',
+      priority: 'high',
     },
     {
-      id: "design-1",
-      content: "Design JWT authentication architecture",
-      status: "pending",
-      activeForm: "Designing JWT architecture",
-      assignee: "planner",
-      priority: "high",
-      dependsOn: ["research-1"]
+      id: 'design-1',
+      content: 'Design JWT authentication architecture',
+      status: 'pending',
+      activeForm: 'Designing JWT architecture',
+      assignee: 'planner',
+      priority: 'high',
+      dependsOn: ['research-1'],
     },
     {
-      id: "implement-1",
-      content: "Implement JWT middleware",
-      status: "pending",
-      activeForm: "Implementing JWT middleware",
-      assignee: "coder",
-      priority: "high",
-      dependsOn: ["design-1"]
+      id: 'implement-1',
+      content: 'Implement JWT middleware',
+      status: 'pending',
+      activeForm: 'Implementing JWT middleware',
+      assignee: 'coder',
+      priority: 'high',
+      dependsOn: ['design-1'],
     },
     {
-      id: "test-1",
-      content: "Write integration tests for authentication",
-      status: "pending",
-      activeForm: "Writing authentication tests",
-      assignee: "tester",
-      priority: "medium",
-      dependsOn: ["implement-1"]
+      id: 'test-1',
+      content: 'Write integration tests for authentication',
+      status: 'pending',
+      activeForm: 'Writing authentication tests',
+      assignee: 'tester',
+      priority: 'medium',
+      dependsOn: ['implement-1'],
     },
     {
-      id: "review-1",
-      content: "Review authentication implementation",
-      status: "pending",
-      activeForm: "Reviewing authentication code",
-      assignee: "reviewer",
-      priority: "medium",
-      dependsOn: ["test-1"]
-    }
-  ]
+      id: 'review-1',
+      content: 'Review authentication implementation',
+      status: 'pending',
+      activeForm: 'Reviewing authentication code',
+      assignee: 'reviewer',
+      priority: 'medium',
+      dependsOn: ['test-1'],
+    },
+  ],
 });
 ```
 
@@ -1319,18 +1387,18 @@ Message 3: Write("/path/to/file.ts")
 ```typescript
 // ✅ CORRECT: Independent operations in parallel
 [
-  Read("/src/module1/file1.ts"),  // Independent
-  Read("/src/module2/file2.ts"),  // Independent
-  Grep({ pattern: "TODO", output_mode: "files_with_matches" }),  // Independent
-]
+  Read('/src/module1/file1.ts'), // Independent
+  Read('/src/module2/file2.ts'), // Independent
+  Grep({ pattern: 'TODO', output_mode: 'files_with_matches' }), // Independent
+];
 
 // ✅ CORRECT: Dependent operations sequentially
 // First message
-Read("/src/config.ts")
+Read('/src/config.ts');
 
 // Wait for response, then second message
-Edit("/src/config.ts", oldConfig, newConfig)
-Bash("npm run build")  // Depends on edit completing
+Edit('/src/config.ts', oldConfig, newConfig);
+Bash('npm run build'); // Depends on edit completing
 ```
 
 ### Agent State Management
@@ -1410,11 +1478,13 @@ npx claude-flow@alpha task status --show-bottlenecks
 
 ### Overview
 
-Git worktrees allow you to check out multiple branches simultaneously in different directories, enabling parallel development without constant branch switching.
+Git worktrees allow you to check out multiple branches simultaneously in different directories,
+enabling parallel development without constant branch switching.
 
 ### When to Use Worktrees
 
 **Use worktrees for:**
+
 - Working on multiple features simultaneously
 - Testing features while developing others
 - Emergency hotfixes while feature work is in progress
@@ -1422,6 +1492,7 @@ Git worktrees allow you to check out multiple branches simultaneously in differe
 - Running long-running processes (builds, tests) while continuing work
 
 **Don't use worktrees for:**
+
 - Simple branch switching (use `git checkout`)
 - Short-lived tasks (<1 hour)
 - When you have uncommitted changes (commit or stash first)
@@ -1682,10 +1753,10 @@ Before committing code, verify:
 ## Maintenance
 
 This conventions document should be:
+
 - **Reviewed**: Quarterly or when adding new technologies
 - **Updated**: When team agrees on new patterns
 - **Enforced**: Through PR reviews and automated linting
 - **Referenced**: In onboarding and documentation
 
-**Last Updated:** 2025-01-21
-**Next Review:** 2025-04-21
+**Last Updated:** 2025-01-21 **Next Review:** 2025-04-21

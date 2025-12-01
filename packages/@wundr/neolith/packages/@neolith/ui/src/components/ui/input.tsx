@@ -47,7 +47,7 @@ const inputVariants = cva(
       variant: 'default',
       size: 'md',
     },
-  },
+  }
 );
 
 /**
@@ -96,13 +96,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         type={type}
-        className={cn(inputVariants({ variant: error ? 'error' : variant, size, className }))}
+        className={cn(
+          inputVariants({ variant: error ? 'error' : variant, size, className })
+        )}
         ref={ref}
         aria-invalid={error ? 'true' : undefined}
         {...props}
       />
     );
-  },
+  }
 );
 
 Input.displayName = 'Input';

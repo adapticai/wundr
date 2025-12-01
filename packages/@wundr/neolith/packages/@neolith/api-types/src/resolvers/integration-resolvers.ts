@@ -30,7 +30,8 @@ export const IntegrationProvider = {
   Custom: 'CUSTOM',
 } as const;
 
-export type IntegrationProviderValue = (typeof IntegrationProvider)[keyof typeof IntegrationProvider];
+export type IntegrationProviderValue =
+  (typeof IntegrationProvider)[keyof typeof IntegrationProvider];
 
 /**
  * Integration status enum
@@ -43,7 +44,8 @@ export const IntegrationStatus = {
   Revoked: 'REVOKED',
 } as const;
 
-export type IntegrationStatusValue = (typeof IntegrationStatus)[keyof typeof IntegrationStatus];
+export type IntegrationStatusValue =
+  (typeof IntegrationStatus)[keyof typeof IntegrationStatus];
 
 /**
  * Integration permission enum
@@ -56,7 +58,8 @@ export const IntegrationPermission = {
   Sync: 'SYNC',
 } as const;
 
-export type IntegrationPermissionValue = (typeof IntegrationPermission)[keyof typeof IntegrationPermission];
+export type IntegrationPermissionValue =
+  (typeof IntegrationPermission)[keyof typeof IntegrationPermission];
 
 /**
  * Webhook event enum
@@ -78,7 +81,8 @@ export const WebhookEvent = {
   VPAction: 'VP_ACTION',
 } as const;
 
-export type WebhookEventValue = (typeof WebhookEvent)[keyof typeof WebhookEvent];
+export type WebhookEventValue =
+  (typeof WebhookEvent)[keyof typeof WebhookEvent];
 
 /**
  * Webhook status enum
@@ -90,7 +94,8 @@ export const WebhookStatus = {
   Failed: 'FAILED',
 } as const;
 
-export type WebhookStatusValue = (typeof WebhookStatus)[keyof typeof WebhookStatus];
+export type WebhookStatusValue =
+  (typeof WebhookStatus)[keyof typeof WebhookStatus];
 
 /**
  * Delivery status enum
@@ -102,7 +107,8 @@ export const DeliveryStatus = {
   Retrying: 'RETRYING',
 } as const;
 
-export type DeliveryStatusValue = (typeof DeliveryStatus)[keyof typeof DeliveryStatus];
+export type DeliveryStatusValue =
+  (typeof DeliveryStatus)[keyof typeof DeliveryStatus];
 
 /**
  * User role for authorization checks
@@ -178,13 +184,19 @@ export interface IntegrationService {
   /** Get webhook event types */
   getWebhookEvents(): Promise<WebhookEventInfo[]>;
   /** Trigger webhook */
-  triggerWebhook(webhookId: string, event: WebhookEventValue, payload: unknown): Promise<WebhookDelivery>;
+  triggerWebhook(
+    webhookId: string,
+    event: WebhookEventValue,
+    payload: unknown
+  ): Promise<WebhookDelivery>;
   /** Retry failed delivery */
   retryDelivery(deliveryId: string): Promise<WebhookDelivery>;
   /** Generate webhook secret */
   generateSecret(): string;
   /** Rotate webhook secret */
-  rotateSecret(webhookId: string): Promise<{ secret: string; previousSecret: string | null }>;
+  rotateSecret(
+    webhookId: string
+  ): Promise<{ secret: string; previousSecret: string | null }>;
 }
 
 /**
@@ -819,7 +831,7 @@ export const integrationTypeDefs = `#graphql
  * Type guard to check if user is authenticated
  */
 function isAuthenticated(
-  context: GraphQLContext,
+  context: GraphQLContext
 ): context is GraphQLContext & { user: ContextUser } {
   return context.user !== null;
 }
@@ -828,7 +840,8 @@ function isAuthenticated(
  * Generate a random webhook secret
  */
 function generateWebhookSecret(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = 'whsec_';
   for (let i = 0; i < 32; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -873,8 +886,8 @@ function isValidWebhookEvents(events: WebhookEventValue[]): boolean {
  */
 function calculateSuccessRate(deliveries: WebhookDelivery[]): number {
   if (deliveries.length === 0) {
-return 100;
-}
+    return 100;
+  }
   const successful = deliveries.filter(d => d.status === 'DELIVERED').length;
   return Math.round((successful / deliveries.length) * 10000) / 100;
 }
@@ -887,7 +900,8 @@ function getProviderInfo(): ProviderInfo[] {
     {
       provider: 'SLACK',
       name: 'Slack',
-      description: 'Connect with Slack workspaces for messaging and notifications',
+      description:
+        'Connect with Slack workspaces for messaging and notifications',
       iconUrl: 'https://cdn.genesis.app/icons/slack.svg',
       docsUrl: 'https://docs.genesis.app/integrations/slack',
       permissions: ['READ', 'WRITE', 'SYNC'],
@@ -986,85 +1000,139 @@ function getWebhookEventInfo(): WebhookEventInfo[] {
       event: 'MESSAGE_CREATED',
       name: 'Message Created',
       description: 'Triggered when a new message is created',
-      payloadSchema: { type: 'object', properties: { messageId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { messageId: { type: 'string' } },
+      },
     },
     {
       event: 'MESSAGE_UPDATED',
       name: 'Message Updated',
       description: 'Triggered when a message is edited',
-      payloadSchema: { type: 'object', properties: { messageId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { messageId: { type: 'string' } },
+      },
     },
     {
       event: 'MESSAGE_DELETED',
       name: 'Message Deleted',
       description: 'Triggered when a message is deleted',
-      payloadSchema: { type: 'object', properties: { messageId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { messageId: { type: 'string' } },
+      },
     },
     {
       event: 'CHANNEL_CREATED',
       name: 'Channel Created',
       description: 'Triggered when a new channel is created',
-      payloadSchema: { type: 'object', properties: { channelId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { channelId: { type: 'string' } },
+      },
     },
     {
       event: 'CHANNEL_UPDATED',
       name: 'Channel Updated',
       description: 'Triggered when a channel is updated',
-      payloadSchema: { type: 'object', properties: { channelId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { channelId: { type: 'string' } },
+      },
     },
     {
       event: 'CHANNEL_DELETED',
       name: 'Channel Deleted',
       description: 'Triggered when a channel is deleted',
-      payloadSchema: { type: 'object', properties: { channelId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { channelId: { type: 'string' } },
+      },
     },
     {
       event: 'MEMBER_JOINED',
       name: 'Member Joined',
       description: 'Triggered when a user joins a channel',
-      payloadSchema: { type: 'object', properties: { userId: { type: 'string' }, channelId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string' },
+          channelId: { type: 'string' },
+        },
+      },
     },
     {
       event: 'MEMBER_LEFT',
       name: 'Member Left',
       description: 'Triggered when a user leaves a channel',
-      payloadSchema: { type: 'object', properties: { userId: { type: 'string' }, channelId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string' },
+          channelId: { type: 'string' },
+        },
+      },
     },
     {
       event: 'FILE_UPLOADED',
       name: 'File Uploaded',
       description: 'Triggered when a file is uploaded',
-      payloadSchema: { type: 'object', properties: { fileId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { fileId: { type: 'string' } },
+      },
     },
     {
       event: 'FILE_DELETED',
       name: 'File Deleted',
       description: 'Triggered when a file is deleted',
-      payloadSchema: { type: 'object', properties: { fileId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { fileId: { type: 'string' } },
+      },
     },
     {
       event: 'CALL_STARTED',
       name: 'Call Started',
       description: 'Triggered when a call begins',
-      payloadSchema: { type: 'object', properties: { callId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { callId: { type: 'string' } },
+      },
     },
     {
       event: 'CALL_ENDED',
       name: 'Call Ended',
       description: 'Triggered when a call ends',
-      payloadSchema: { type: 'object', properties: { callId: { type: 'string' }, duration: { type: 'number' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: {
+          callId: { type: 'string' },
+          duration: { type: 'number' },
+        },
+      },
     },
     {
       event: 'VP_MESSAGE',
       name: 'VP Message',
       description: 'Triggered when a Orchestrator sends a message',
-      payloadSchema: { type: 'object', properties: { vpId: { type: 'string' }, messageId: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: { vpId: { type: 'string' }, messageId: { type: 'string' } },
+      },
     },
     {
       event: 'VP_ACTION',
       name: 'VP Action',
       description: 'Triggered when a Orchestrator performs an action',
-      payloadSchema: { type: 'object', properties: { vpId: { type: 'string' }, actionType: { type: 'string' } } },
+      payloadSchema: {
+        type: 'object',
+        properties: {
+          vpId: { type: 'string' },
+          actionType: { type: 'string' },
+        },
+      },
     },
   ];
 }
@@ -1083,7 +1151,7 @@ export const integrationQueries = {
   integration: async (
     _parent: unknown,
     args: IntegrationQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<IntegrationConfig | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1091,9 +1159,9 @@ export const integrationQueries = {
       });
     }
 
-    const integration = await context.prisma.integrationConfig.findUnique({
+    const integration = (await context.prisma.integrationConfig.findUnique({
       where: { id: args.id },
-    }) as IntegrationConfig | null;
+    })) as IntegrationConfig | null;
 
     return integration;
   },
@@ -1104,7 +1172,7 @@ export const integrationQueries = {
   integrations: async (
     _parent: unknown,
     args: IntegrationsQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<IntegrationConfig[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1138,7 +1206,7 @@ export const integrationQueries = {
   webhook: async (
     _parent: unknown,
     args: WebhookQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookConfig | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1146,9 +1214,9 @@ export const integrationQueries = {
       });
     }
 
-    const webhook = await context.prisma.webhookConfig.findUnique({
+    const webhook = (await context.prisma.webhookConfig.findUnique({
       where: { id: args.id },
-    }) as WebhookConfig | null;
+    })) as WebhookConfig | null;
 
     return webhook;
   },
@@ -1159,7 +1227,7 @@ export const integrationQueries = {
   webhooks: async (
     _parent: unknown,
     args: WebhooksQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookConfig[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1193,7 +1261,7 @@ export const integrationQueries = {
   webhookDeliveries: async (
     _parent: unknown,
     args: WebhookDeliveriesQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookDelivery[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1227,7 +1295,7 @@ export const integrationQueries = {
   availableProviders: async (
     _parent: unknown,
     _args: Record<string, never>,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<ProviderInfo[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1248,7 +1316,7 @@ export const integrationQueries = {
   webhookEvents: async (
     _parent: unknown,
     _args: Record<string, never>,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookEventInfo[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1278,7 +1346,7 @@ export const integrationMutations = {
   createIntegration: async (
     _parent: unknown,
     args: CreateIntegrationArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<IntegrationConfig> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1300,7 +1368,7 @@ export const integrationMutations = {
     }
 
     // Create the integration
-    const integration = await context.prisma.integrationConfig.create({
+    const integration = (await context.prisma.integrationConfig.create({
       data: {
         workspaceId,
         provider: input.provider,
@@ -1311,12 +1379,15 @@ export const integrationMutations = {
         settings: input.settings ?? {},
         createdBy: context.user.id,
       },
-    }) as IntegrationConfig;
+    })) as IntegrationConfig;
 
     // Publish status change event
-    await context.pubsub.publish(`${INTEGRATION_STATUS_CHANGED}_${workspaceId}`, {
-      integrationStatusChanged: integration,
-    });
+    await context.pubsub.publish(
+      `${INTEGRATION_STATUS_CHANGED}_${workspaceId}`,
+      {
+        integrationStatusChanged: integration,
+      }
+    );
 
     return integration;
   },
@@ -1327,7 +1398,7 @@ export const integrationMutations = {
   updateIntegration: async (
     _parent: unknown,
     args: UpdateIntegrationArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<IntegrationConfig> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1338,9 +1409,9 @@ export const integrationMutations = {
     const { id, input } = args;
 
     // Verify integration exists
-    const existing = await context.prisma.integrationConfig.findUnique({
+    const existing = (await context.prisma.integrationConfig.findUnique({
       where: { id },
-    }) as IntegrationConfig | null;
+    })) as IntegrationConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Integration not found', {
@@ -1367,16 +1438,19 @@ export const integrationMutations = {
       updateData.permissions = input.permissions;
     }
 
-    const integration = await context.prisma.integrationConfig.update({
+    const integration = (await context.prisma.integrationConfig.update({
       where: { id },
       data: updateData,
-    }) as IntegrationConfig;
+    })) as IntegrationConfig;
 
     // Publish status change event if status changed
     if (input.status && input.status !== existing.status) {
-      await context.pubsub.publish(`${INTEGRATION_STATUS_CHANGED}_${existing.workspaceId}`, {
-        integrationStatusChanged: integration,
-      });
+      await context.pubsub.publish(
+        `${INTEGRATION_STATUS_CHANGED}_${existing.workspaceId}`,
+        {
+          integrationStatusChanged: integration,
+        }
+      );
     }
 
     return integration;
@@ -1388,7 +1462,7 @@ export const integrationMutations = {
   deleteIntegration: async (
     _parent: unknown,
     args: DeleteIntegrationArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<boolean> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1396,9 +1470,9 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.integrationConfig.findUnique({
+    const existing = (await context.prisma.integrationConfig.findUnique({
       where: { id: args.id },
-    }) as IntegrationConfig | null;
+    })) as IntegrationConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Integration not found', {
@@ -1425,7 +1499,7 @@ export const integrationMutations = {
   testIntegration: async (
     _parent: unknown,
     args: TestIntegrationArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<TestConnectionResult> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1433,9 +1507,9 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.integrationConfig.findUnique({
+    const existing = (await context.prisma.integrationConfig.findUnique({
       where: { id: args.id },
-    }) as IntegrationConfig | null;
+    })) as IntegrationConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Integration not found', {
@@ -1466,7 +1540,7 @@ export const integrationMutations = {
   syncIntegration: async (
     _parent: unknown,
     args: SyncIntegrationArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<SyncResult> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1474,9 +1548,9 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.integrationConfig.findUnique({
+    const existing = (await context.prisma.integrationConfig.findUnique({
       where: { id: args.id },
-    }) as IntegrationConfig | null;
+    })) as IntegrationConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Integration not found', {
@@ -1527,7 +1601,7 @@ export const integrationMutations = {
   createWebhook: async (
     _parent: unknown,
     args: CreateWebhookArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookCreateResult> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1576,19 +1650,28 @@ export const integrationMutations = {
     }
 
     // Generate secret
-    const secret = context.integrationService?.generateSecret() ?? generateWebhookSecret();
+    const secret =
+      context.integrationService?.generateSecret() ?? generateWebhookSecret();
 
     // Merge retry policy with defaults
     const retryPolicy: WebhookRetryPolicy = {
       ...getDefaultRetryPolicy(),
-      ...(input.retryPolicy?.maxAttempts && { maxAttempts: input.retryPolicy.maxAttempts }),
-      ...(input.retryPolicy?.initialDelayMs && { initialDelayMs: input.retryPolicy.initialDelayMs }),
-      ...(input.retryPolicy?.maxDelayMs && { maxDelayMs: input.retryPolicy.maxDelayMs }),
-      ...(input.retryPolicy?.backoffMultiplier && { backoffMultiplier: input.retryPolicy.backoffMultiplier }),
+      ...(input.retryPolicy?.maxAttempts && {
+        maxAttempts: input.retryPolicy.maxAttempts,
+      }),
+      ...(input.retryPolicy?.initialDelayMs && {
+        initialDelayMs: input.retryPolicy.initialDelayMs,
+      }),
+      ...(input.retryPolicy?.maxDelayMs && {
+        maxDelayMs: input.retryPolicy.maxDelayMs,
+      }),
+      ...(input.retryPolicy?.backoffMultiplier && {
+        backoffMultiplier: input.retryPolicy.backoffMultiplier,
+      }),
     };
 
     // Create the webhook
-    const webhook = await context.prisma.webhookConfig.create({
+    const webhook = (await context.prisma.webhookConfig.create({
       data: {
         workspaceId,
         integrationId: input.integrationId ?? null,
@@ -1602,7 +1685,7 @@ export const integrationMutations = {
         createdBy: context.user.id,
         failureCount: 0,
       },
-    }) as WebhookConfig;
+    })) as WebhookConfig;
 
     return {
       webhook,
@@ -1616,7 +1699,7 @@ export const integrationMutations = {
   updateWebhook: async (
     _parent: unknown,
     args: UpdateWebhookArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookConfig> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1627,9 +1710,9 @@ export const integrationMutations = {
     const { id, input } = args;
 
     // Verify webhook exists
-    const existing = await context.prisma.webhookConfig.findUnique({
+    const existing = (await context.prisma.webhookConfig.findUnique({
       where: { id },
-    }) as WebhookConfig | null;
+    })) as WebhookConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Webhook not found', {
@@ -1674,10 +1757,10 @@ export const integrationMutations = {
       updateData.headers = input.headers;
     }
 
-    const webhook = await context.prisma.webhookConfig.update({
+    const webhook = (await context.prisma.webhookConfig.update({
       where: { id },
       data: updateData,
-    }) as WebhookConfig;
+    })) as WebhookConfig;
 
     return webhook;
   },
@@ -1688,7 +1771,7 @@ export const integrationMutations = {
   deleteWebhook: async (
     _parent: unknown,
     args: DeleteWebhookArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<boolean> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1696,9 +1779,9 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.webhookConfig.findUnique({
+    const existing = (await context.prisma.webhookConfig.findUnique({
       where: { id: args.id },
-    }) as WebhookConfig | null;
+    })) as WebhookConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Webhook not found', {
@@ -1725,7 +1808,7 @@ export const integrationMutations = {
   testWebhook: async (
     _parent: unknown,
     args: TestWebhookArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookDelivery> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1733,9 +1816,9 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.webhookConfig.findUnique({
+    const existing = (await context.prisma.webhookConfig.findUnique({
       where: { id: args.id },
-    }) as WebhookConfig | null;
+    })) as WebhookConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Webhook not found', {
@@ -1748,13 +1831,16 @@ export const integrationMutations = {
       const delivery = await context.integrationService.triggerWebhook(
         args.id,
         'MESSAGE_CREATED',
-        { test: true, timestamp: new Date().toISOString() },
+        { test: true, timestamp: new Date().toISOString() }
       );
 
       // Publish webhook delivered event
-      await context.pubsub.publish(`${WEBHOOK_DELIVERED}_${existing.workspaceId}`, {
-        webhookDelivered: delivery,
-      });
+      await context.pubsub.publish(
+        `${WEBHOOK_DELIVERED}_${existing.workspaceId}`,
+        {
+          webhookDelivered: delivery,
+        }
+      );
 
       return delivery;
     }
@@ -1800,7 +1886,7 @@ export const integrationMutations = {
   rotateWebhookSecret: async (
     _parent: unknown,
     args: RotateWebhookSecretArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookSecretResult> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1808,9 +1894,9 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.webhookConfig.findUnique({
+    const existing = (await context.prisma.webhookConfig.findUnique({
       where: { id: args.id },
-    }) as WebhookConfig | null;
+    })) as WebhookConfig | null;
 
     if (!existing) {
       throw new GraphQLError('Webhook not found', {
@@ -1829,10 +1915,10 @@ export const integrationMutations = {
       newSecret = generateWebhookSecret();
     }
 
-    const webhook = await context.prisma.webhookConfig.update({
+    const webhook = (await context.prisma.webhookConfig.update({
       where: { id: args.id },
       data: { secret: newSecret },
-    }) as WebhookConfig;
+    })) as WebhookConfig;
 
     return {
       webhook,
@@ -1847,7 +1933,7 @@ export const integrationMutations = {
   retryDelivery: async (
     _parent: unknown,
     args: RetryDeliveryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookDelivery> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1855,10 +1941,10 @@ export const integrationMutations = {
       });
     }
 
-    const existing = await context.prisma.webhookDelivery.findUnique({
+    const existing = (await context.prisma.webhookDelivery.findUnique({
       where: { id: args.deliveryId },
       include: { attempts: true },
-    }) as unknown as WebhookDelivery | null;
+    })) as unknown as WebhookDelivery | null;
 
     if (!existing) {
       throw new GraphQLError('Delivery not found', {
@@ -1878,11 +1964,11 @@ export const integrationMutations = {
     }
 
     // Update delivery status to retrying
-    const delivery = await context.prisma.webhookDelivery.update({
+    const delivery = (await context.prisma.webhookDelivery.update({
       where: { id: args.deliveryId },
       data: { status: 'RETRYING' },
       include: { attempts: true },
-    }) as unknown as WebhookDelivery;
+    })) as unknown as WebhookDelivery;
 
     return delivery;
   },
@@ -1903,7 +1989,7 @@ export const integrationSubscriptions = {
     subscribe: async (
       _parent: unknown,
       args: IntegrationStatusChangedArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -1911,7 +1997,9 @@ export const integrationSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${INTEGRATION_STATUS_CHANGED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${INTEGRATION_STATUS_CHANGED}_${args.workspaceId}`
+      );
     },
   },
 
@@ -1922,7 +2010,7 @@ export const integrationSubscriptions = {
     subscribe: async (
       _parent: unknown,
       args: WebhookDeliveredArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -1930,7 +2018,9 @@ export const integrationSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${WEBHOOK_DELIVERED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${WEBHOOK_DELIVERED}_${args.workspaceId}`
+      );
     },
   },
 };
@@ -1949,7 +2039,7 @@ export const IntegrationConfigFieldResolvers = {
   workspace: async (
     parent: IntegrationConfig,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workspace | null> => {
     // Use dataloader if available
     if (context.dataloaders?.workspace) {
@@ -1969,7 +2059,7 @@ export const IntegrationConfigFieldResolvers = {
   creator: async (
     parent: IntegrationConfig,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<User | null> => {
     // Use dataloader if available
     if (context.dataloaders?.user) {
@@ -2004,7 +2094,7 @@ export const WebhookConfigFieldResolvers = {
   workspace: async (
     parent: WebhookConfig,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workspace | null> => {
     // Use dataloader if available
     if (context.dataloaders?.workspace) {
@@ -2024,7 +2114,7 @@ export const WebhookConfigFieldResolvers = {
   integration: async (
     parent: WebhookConfig,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<IntegrationConfig | null> => {
     if (!parent.integrationId) {
       return null;
@@ -2048,7 +2138,7 @@ export const WebhookConfigFieldResolvers = {
   recentDeliveries: async (
     parent: WebhookConfig,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WebhookDelivery[]> => {
     const deliveries = await context.prisma.webhookDelivery.findMany({
       where: { webhookId: parent.id },
@@ -2066,7 +2156,7 @@ export const WebhookConfigFieldResolvers = {
   successRate: async (
     parent: WebhookConfig,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<number> => {
     const deliveries = await context.prisma.webhookDelivery.findMany({
       where: { webhookId: parent.id },
@@ -2140,7 +2230,10 @@ export const integrationResolvers = {
  * ```
  */
 export function createIntegrationResolvers(
-  baseContext: Pick<GraphQLContext, 'prisma' | 'pubsub' | 'integrationService' | 'dataloaders'>,
+  baseContext: Pick<
+    GraphQLContext,
+    'prisma' | 'pubsub' | 'integrationService' | 'dataloaders'
+  >
 ) {
   const createContext = (user: ContextUser): GraphQLContext => ({
     ...baseContext,
@@ -2150,44 +2243,122 @@ export function createIntegrationResolvers(
 
   return {
     Query: {
-      integration: (_: unknown, args: IntegrationQueryArgs, ctx: { user: ContextUser }) =>
-        integrationQueries.integration(_, args, createContext(ctx.user)),
-      integrations: (_: unknown, args: IntegrationsQueryArgs, ctx: { user: ContextUser }) =>
-        integrationQueries.integrations(_, args, createContext(ctx.user)),
-      webhook: (_: unknown, args: WebhookQueryArgs, ctx: { user: ContextUser }) =>
-        integrationQueries.webhook(_, args, createContext(ctx.user)),
-      webhooks: (_: unknown, args: WebhooksQueryArgs, ctx: { user: ContextUser }) =>
-        integrationQueries.webhooks(_, args, createContext(ctx.user)),
-      webhookDeliveries: (_: unknown, args: WebhookDeliveriesQueryArgs, ctx: { user: ContextUser }) =>
+      integration: (
+        _: unknown,
+        args: IntegrationQueryArgs,
+        ctx: { user: ContextUser }
+      ) => integrationQueries.integration(_, args, createContext(ctx.user)),
+      integrations: (
+        _: unknown,
+        args: IntegrationsQueryArgs,
+        ctx: { user: ContextUser }
+      ) => integrationQueries.integrations(_, args, createContext(ctx.user)),
+      webhook: (
+        _: unknown,
+        args: WebhookQueryArgs,
+        ctx: { user: ContextUser }
+      ) => integrationQueries.webhook(_, args, createContext(ctx.user)),
+      webhooks: (
+        _: unknown,
+        args: WebhooksQueryArgs,
+        ctx: { user: ContextUser }
+      ) => integrationQueries.webhooks(_, args, createContext(ctx.user)),
+      webhookDeliveries: (
+        _: unknown,
+        args: WebhookDeliveriesQueryArgs,
+        ctx: { user: ContextUser }
+      ) =>
         integrationQueries.webhookDeliveries(_, args, createContext(ctx.user)),
-      availableProviders: (_: unknown, args: Record<string, never>, ctx: { user: ContextUser }) =>
+      availableProviders: (
+        _: unknown,
+        args: Record<string, never>,
+        ctx: { user: ContextUser }
+      ) =>
         integrationQueries.availableProviders(_, args, createContext(ctx.user)),
-      webhookEvents: (_: unknown, args: Record<string, never>, ctx: { user: ContextUser }) =>
-        integrationQueries.webhookEvents(_, args, createContext(ctx.user)),
+      webhookEvents: (
+        _: unknown,
+        args: Record<string, never>,
+        ctx: { user: ContextUser }
+      ) => integrationQueries.webhookEvents(_, args, createContext(ctx.user)),
     },
     Mutation: {
-      createIntegration: (_: unknown, args: CreateIntegrationArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.createIntegration(_, args, createContext(ctx.user)),
-      updateIntegration: (_: unknown, args: UpdateIntegrationArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.updateIntegration(_, args, createContext(ctx.user)),
-      deleteIntegration: (_: unknown, args: DeleteIntegrationArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.deleteIntegration(_, args, createContext(ctx.user)),
-      testIntegration: (_: unknown, args: TestIntegrationArgs, ctx: { user: ContextUser }) =>
+      createIntegration: (
+        _: unknown,
+        args: CreateIntegrationArgs,
+        ctx: { user: ContextUser }
+      ) =>
+        integrationMutations.createIntegration(
+          _,
+          args,
+          createContext(ctx.user)
+        ),
+      updateIntegration: (
+        _: unknown,
+        args: UpdateIntegrationArgs,
+        ctx: { user: ContextUser }
+      ) =>
+        integrationMutations.updateIntegration(
+          _,
+          args,
+          createContext(ctx.user)
+        ),
+      deleteIntegration: (
+        _: unknown,
+        args: DeleteIntegrationArgs,
+        ctx: { user: ContextUser }
+      ) =>
+        integrationMutations.deleteIntegration(
+          _,
+          args,
+          createContext(ctx.user)
+        ),
+      testIntegration: (
+        _: unknown,
+        args: TestIntegrationArgs,
+        ctx: { user: ContextUser }
+      ) =>
         integrationMutations.testIntegration(_, args, createContext(ctx.user)),
-      syncIntegration: (_: unknown, args: SyncIntegrationArgs, ctx: { user: ContextUser }) =>
+      syncIntegration: (
+        _: unknown,
+        args: SyncIntegrationArgs,
+        ctx: { user: ContextUser }
+      ) =>
         integrationMutations.syncIntegration(_, args, createContext(ctx.user)),
-      createWebhook: (_: unknown, args: CreateWebhookArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.createWebhook(_, args, createContext(ctx.user)),
-      updateWebhook: (_: unknown, args: UpdateWebhookArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.updateWebhook(_, args, createContext(ctx.user)),
-      deleteWebhook: (_: unknown, args: DeleteWebhookArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.deleteWebhook(_, args, createContext(ctx.user)),
-      testWebhook: (_: unknown, args: TestWebhookArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.testWebhook(_, args, createContext(ctx.user)),
-      rotateWebhookSecret: (_: unknown, args: RotateWebhookSecretArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.rotateWebhookSecret(_, args, createContext(ctx.user)),
-      retryDelivery: (_: unknown, args: RetryDeliveryArgs, ctx: { user: ContextUser }) =>
-        integrationMutations.retryDelivery(_, args, createContext(ctx.user)),
+      createWebhook: (
+        _: unknown,
+        args: CreateWebhookArgs,
+        ctx: { user: ContextUser }
+      ) => integrationMutations.createWebhook(_, args, createContext(ctx.user)),
+      updateWebhook: (
+        _: unknown,
+        args: UpdateWebhookArgs,
+        ctx: { user: ContextUser }
+      ) => integrationMutations.updateWebhook(_, args, createContext(ctx.user)),
+      deleteWebhook: (
+        _: unknown,
+        args: DeleteWebhookArgs,
+        ctx: { user: ContextUser }
+      ) => integrationMutations.deleteWebhook(_, args, createContext(ctx.user)),
+      testWebhook: (
+        _: unknown,
+        args: TestWebhookArgs,
+        ctx: { user: ContextUser }
+      ) => integrationMutations.testWebhook(_, args, createContext(ctx.user)),
+      rotateWebhookSecret: (
+        _: unknown,
+        args: RotateWebhookSecretArgs,
+        ctx: { user: ContextUser }
+      ) =>
+        integrationMutations.rotateWebhookSecret(
+          _,
+          args,
+          createContext(ctx.user)
+        ),
+      retryDelivery: (
+        _: unknown,
+        args: RetryDeliveryArgs,
+        ctx: { user: ContextUser }
+      ) => integrationMutations.retryDelivery(_, args, createContext(ctx.user)),
     },
     Subscription: integrationSubscriptions,
     IntegrationConfig: IntegrationConfigFieldResolvers,

@@ -1,6 +1,7 @@
 # Conversational Creation Components
 
-Reusable components for creating entities (Orchestrators, Workflows, Channels, etc.) via conversational interfaces powered by LLM.
+Reusable components for creating entities (Orchestrators, Workflows, Channels, etc.) via
+conversational interfaces powered by LLM.
 
 ## Components
 
@@ -9,6 +10,7 @@ Reusable components for creating entities (Orchestrators, Workflows, Channels, e
 Main component that provides a chat-based interface for entity creation.
 
 **Features:**
+
 - Chat message list (user and AI messages)
 - Text input with send button
 - Streaming response display
@@ -46,6 +48,7 @@ function CreateOrchestratorDialog() {
 ## Entity Types
 
 Supported entity types:
+
 - `workspace` - Create a new workspace
 - `orchestrator` - Create a new orchestrator (VP)
 - `session-manager` - Create a new session manager
@@ -60,18 +63,12 @@ Supported entity types:
 Hook for managing conversational creation state and API calls.
 
 ```typescript
-const {
-  sendMessage,
-  isLoading,
-  error,
-  generatedSpec,
-  hasGeneratedSpec,
-  workspaceContext,
-} = useConversationalCreation({
-  entityType: 'orchestrator',
-  workspaceId: 'workspace-123',
-  onSpecGenerated: (spec) => console.log(spec),
-});
+const { sendMessage, isLoading, error, generatedSpec, hasGeneratedSpec, workspaceContext } =
+  useConversationalCreation({
+    entityType: 'orchestrator',
+    workspaceId: 'workspace-123',
+    onSpecGenerated: spec => console.log(spec),
+  });
 ```
 
 ## API Integration
@@ -79,6 +76,7 @@ const {
 The component expects a POST endpoint at `/api/creation/conversation`:
 
 **Request:**
+
 ```json
 {
   "entityType": "orchestrator",
@@ -97,6 +95,7 @@ The component expects a POST endpoint at `/api/creation/conversation`:
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Great! Let me ask a few questions...",
@@ -115,6 +114,7 @@ The component expects a POST endpoint at `/api/creation/conversation`:
 ## Types
 
 See `types.ts` for complete type definitions:
+
 - `EntityType` - Supported entity types
 - `EntitySpec` - Generated specification structure
 - `ChatMessage` - Message format

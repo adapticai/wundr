@@ -23,7 +23,7 @@ test.describe('Deployments Page', () => {
   test('page loads without errors', async ({ page }) => {
     // Check for console errors
     const errors: string[] = [];
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
       }
@@ -44,15 +44,21 @@ test.describe('Deployments Page', () => {
 
   test('displays page header and description', async ({ page }) => {
     await expect(page.locator('h1')).toContainText('Deployments');
-    await expect(page.getByText('Monitor and manage your deployed services')).toBeVisible();
+    await expect(
+      page.getByText('Monitor and manage your deployed services')
+    ).toBeVisible();
   });
 
   test('displays New Deployment button', async ({ page }) => {
-    const newDeploymentBtn = page.getByRole('button', { name: /New Deployment/i });
+    const newDeploymentBtn = page.getByRole('button', {
+      name: /New Deployment/i,
+    });
     await expect(newDeploymentBtn).toBeVisible();
   });
 
-  test('opens Create Deployment modal when clicking New Deployment button', async ({ page }) => {
+  test('opens Create Deployment modal when clicking New Deployment button', async ({
+    page,
+  }) => {
     // Click New Deployment button
     await page.getByRole('button', { name: /New Deployment/i }).click();
 
@@ -132,9 +138,13 @@ test.describe('Deployments Page', () => {
 
   test('displays environment filter buttons', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'All' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Production' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Production' })
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Staging' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Development' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Development' })
+    ).toBeVisible();
   });
 
   test('can switch between environment filters', async ({ page }) => {
@@ -171,7 +181,9 @@ test.describe('Deployments Page', () => {
 
     // Check that form shows validation (browser native validation)
     const nameInput = page.locator('input[id="name"]');
-    const isInvalid = await nameInput.evaluate((el) => !(el as HTMLInputElement).validity.valid);
+    const isInvalid = await nameInput.evaluate(
+      el => !(el as HTMLInputElement).validity.valid
+    );
     expect(isInvalid).toBe(true);
   });
 
@@ -181,13 +193,19 @@ test.describe('Deployments Page', () => {
 
     // Fill form
     await page.locator('input[id="name"]').fill('Test Deployment');
-    await page.locator('textarea[id="description"]').fill('This is a test deployment');
+    await page
+      .locator('textarea[id="description"]')
+      .fill('This is a test deployment');
     await page.locator('select[id="type"]').selectOption('service');
     await page.locator('select[id="environment"]').selectOption('development');
 
     // Check values
-    await expect(page.locator('input[id="name"]')).toHaveValue('Test Deployment');
-    await expect(page.locator('textarea[id="description"]')).toHaveValue('This is a test deployment');
+    await expect(page.locator('input[id="name"]')).toHaveValue(
+      'Test Deployment'
+    );
+    await expect(page.locator('textarea[id="description"]')).toHaveValue(
+      'This is a test deployment'
+    );
   });
 
   test('configuration section displays all fields', async ({ page }) => {
@@ -228,7 +246,7 @@ test.describe('Deployments Page', () => {
   test('checks for JavaScript errors on page load', async ({ page }) => {
     const jsErrors: string[] = [];
 
-    page.on('pageerror', (error) => {
+    page.on('pageerror', error => {
       jsErrors.push(error.message);
     });
 
@@ -245,8 +263,10 @@ test.describe('Deployments Page', () => {
   test('checks for failed network requests', async ({ page }) => {
     const failedRequests: string[] = [];
 
-    page.on('requestfailed', (request) => {
-      failedRequests.push(`${request.method()} ${request.url()} - ${request.failure()?.errorText}`);
+    page.on('requestfailed', request => {
+      failedRequests.push(
+        `${request.method()} ${request.url()} - ${request.failure()?.errorText}`
+      );
     });
 
     await page.goto(DEPLOYMENTS_URL);
@@ -257,7 +277,9 @@ test.describe('Deployments Page', () => {
     }
   });
 
-  test('page is accessible - has proper heading hierarchy', async ({ page }) => {
+  test('page is accessible - has proper heading hierarchy', async ({
+    page,
+  }) => {
     await page.goto(DEPLOYMENTS_URL);
 
     // Check H1 exists

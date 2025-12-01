@@ -155,7 +155,9 @@ export class SearchServiceImpl implements SearchService {
     }
 
     if (query.query.length > 500) {
-      throw new SearchValidationError('Search query too long (max 500 characters)');
+      throw new SearchValidationError(
+        'Search query too long (max 500 characters)'
+      );
     }
 
     const cacheKey = this.buildCacheKey(query);
@@ -170,15 +172,21 @@ export class SearchServiceImpl implements SearchService {
 
     const limit = Math.min(
       query.pagination?.limit ?? this.defaultLimit,
-      this.maxLimit,
+      this.maxLimit
     );
     const offset = query.pagination?.offset ?? 0;
 
     // Build search query for each type
-    const types = query.filters?.types ?? ['message', 'file', 'channel', 'user', 'vp'];
+    const types = query.filters?.types ?? [
+      'message',
+      'file',
+      'channel',
+      'user',
+      'vp',
+    ];
 
-    const searchPromises = types.map((type) =>
-      this.searchByType(type, query, limit, offset),
+    const searchPromises = types.map(type =>
+      this.searchByType(type, query, limit, offset)
     );
 
     const typeResults = await Promise.all(searchPromises);
@@ -228,21 +236,51 @@ export class SearchServiceImpl implements SearchService {
     type: SearchResultType,
     query: SearchQuery,
     limit: number,
-    offset: number,
+    offset: number
   ): Promise<SearchResult[]> {
     const tsQuery = this.buildTsQuery(query.query);
 
     switch (type) {
       case 'message':
-        return this.searchMessages(tsQuery, query.filters, limit, offset, query.highlight);
+        return this.searchMessages(
+          tsQuery,
+          query.filters,
+          limit,
+          offset,
+          query.highlight
+        );
       case 'file':
-        return this.searchFiles(tsQuery, query.filters, limit, offset, query.highlight);
+        return this.searchFiles(
+          tsQuery,
+          query.filters,
+          limit,
+          offset,
+          query.highlight
+        );
       case 'channel':
-        return this.searchChannels(tsQuery, query.filters, limit, offset, query.highlight);
+        return this.searchChannels(
+          tsQuery,
+          query.filters,
+          limit,
+          offset,
+          query.highlight
+        );
       case 'user':
-        return this.searchUsers(tsQuery, query.filters, limit, offset, query.highlight);
+        return this.searchUsers(
+          tsQuery,
+          query.filters,
+          limit,
+          offset,
+          query.highlight
+        );
       case 'vp':
-        return this.searchVPs(tsQuery, query.filters, limit, offset, query.highlight);
+        return this.searchVPs(
+          tsQuery,
+          query.filters,
+          limit,
+          offset,
+          query.highlight
+        );
       default:
         return [];
     }
@@ -263,11 +301,11 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false,
+    highlight = false
   ): Promise<SearchResult[]> {
     // Build WHERE conditions dynamically
     const conditions: string[] = [
-      'to_tsvector(\'english\', m.content) @@ to_tsquery(\'english\', $1)',
+      "to_tsvector('english', m.content) @@ to_tsquery('english', $1)",
     ];
     // SQL parameter types: string, string[], Date, or number
     type SqlParam = string | string[] | Date | number;
@@ -293,20 +331,26 @@ export class SearchServiceImpl implements SearchService {
     }
 
     if (filters?.dateRange) {
-      conditions.push(`m."createdAt" BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+      conditions.push(
+        `m."createdAt" BETWEEN $${paramIndex} AND $${paramIndex + 1}`
+      );
       params.push(filters.dateRange.start, filters.dateRange.end);
       paramIndex += 2;
     }
 
     if (filters?.isThreadReply !== undefined) {
-      conditions.push(filters.isThreadReply ? 'm."threadId" IS NOT NULL' : 'm."threadId" IS NULL');
+      conditions.push(
+        filters.isThreadReply
+          ? 'm."threadId" IS NOT NULL'
+          : 'm."threadId" IS NULL'
+      );
     }
 
     const whereClause = conditions.join(' AND ');
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? ', ts_headline(\'english\', m.content, to_tsquery(\'english\', $1)) as headline'
+      ? ", ts_headline('english', m.content, to_tsquery('english', $1)) as headline"
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -346,36 +390,39 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row: {
-      id: string;
-      content: string;
-      channelId: string;
-      channelName: string;
-      senderId: string;
-      senderName: string;
-      sentAt: Date;
-      threadId: string | null;
-      hasAttachments: boolean;
-      rank: number;
-      headline: string | null;
-    }) => ({
-      id: row.id,
-      type: 'message' as const,
-      score: row.rank,
-      highlight: highlight && row.headline ? { content: [row.headline] } : undefined,
-      data: {
+    return results.map(
+      (row: {
+        id: string;
+        content: string;
+        channelId: string;
+        channelName: string;
+        senderId: string;
+        senderName: string;
+        sentAt: Date;
+        threadId: string | null;
+        hasAttachments: boolean;
+        rank: number;
+        headline: string | null;
+      }) => ({
+        id: row.id,
         type: 'message' as const,
-        messageId: row.id,
-        content: row.content,
-        channelId: row.channelId,
-        channelName: row.channelName,
-        senderId: row.senderId,
-        senderName: row.senderName,
-        sentAt: row.sentAt,
-        threadId: row.threadId ?? undefined,
-        hasAttachments: row.hasAttachments,
-      },
-    }));
+        score: row.rank,
+        highlight:
+          highlight && row.headline ? { content: [row.headline] } : undefined,
+        data: {
+          type: 'message' as const,
+          messageId: row.id,
+          content: row.content,
+          channelId: row.channelId,
+          channelName: row.channelName,
+          senderId: row.senderId,
+          senderName: row.senderName,
+          sentAt: row.sentAt,
+          threadId: row.threadId ?? undefined,
+          hasAttachments: row.hasAttachments,
+        },
+      })
+    );
   }
 
   /**
@@ -393,10 +440,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false,
+    highlight = false
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      'to_tsvector(\'english\', COALESCE(a."fileName", \'\') || \' \' || COALESCE(a."extractedText", \'\')) @@ to_tsquery(\'english\', $1)',
+      "to_tsvector('english', COALESCE(a.\"fileName\", '') || ' ' || COALESCE(a.\"extractedText\", '')) @@ to_tsquery('english', $1)",
     ];
     // SQL parameter types: string, string[], Date, or number
     type SqlParam = string | string[] | Date | number;
@@ -416,7 +463,9 @@ export class SearchServiceImpl implements SearchService {
     }
 
     if (filters?.dateRange) {
-      conditions.push(`a."createdAt" BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+      conditions.push(
+        `a."createdAt" BETWEEN $${paramIndex} AND $${paramIndex + 1}`
+      );
       params.push(filters.dateRange.start, filters.dateRange.end);
       paramIndex += 2;
     }
@@ -468,38 +517,41 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row: {
-      id: string;
-      fileName: string;
-      fileType: string;
-      fileSize: number;
-      channelId: string;
-      channelName: string;
-      uploaderId: string;
-      uploaderName: string;
-      uploadedAt: Date;
-      extractedText: string | null;
-      rank: number;
-      headline: string | null;
-    }) => ({
-      id: row.id,
-      type: 'file' as const,
-      score: row.rank,
-      highlight: highlight && row.headline ? { fileName: [row.headline] } : undefined,
-      data: {
+    return results.map(
+      (row: {
+        id: string;
+        fileName: string;
+        fileType: string;
+        fileSize: number;
+        channelId: string;
+        channelName: string;
+        uploaderId: string;
+        uploaderName: string;
+        uploadedAt: Date;
+        extractedText: string | null;
+        rank: number;
+        headline: string | null;
+      }) => ({
+        id: row.id,
         type: 'file' as const,
-        fileId: row.id,
-        fileName: row.fileName,
-        fileType: row.fileType,
-        fileSize: row.fileSize,
-        channelId: row.channelId,
-        channelName: row.channelName,
-        uploaderId: row.uploaderId,
-        uploaderName: row.uploaderName,
-        uploadedAt: row.uploadedAt,
-        extractedText: row.extractedText ?? undefined,
-      },
-    }));
+        score: row.rank,
+        highlight:
+          highlight && row.headline ? { fileName: [row.headline] } : undefined,
+        data: {
+          type: 'file' as const,
+          fileId: row.id,
+          fileName: row.fileName,
+          fileType: row.fileType,
+          fileSize: row.fileSize,
+          channelId: row.channelId,
+          channelName: row.channelName,
+          uploaderId: row.uploaderId,
+          uploaderName: row.uploaderName,
+          uploadedAt: row.uploadedAt,
+          extractedText: row.extractedText ?? undefined,
+        },
+      })
+    );
   }
 
   /**
@@ -517,10 +569,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false,
+    highlight = false
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      'to_tsvector(\'english\', c.name || \' \' || COALESCE(c.description, \'\')) @@ to_tsquery(\'english\', $1)',
+      "to_tsvector('english', c.name || ' ' || COALESCE(c.description, '')) @@ to_tsquery('english', $1)",
     ];
     // SQL parameter types: string, string[], Date, or number
     type SqlParam = string | string[] | Date | number;
@@ -537,7 +589,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? ', ts_headline(\'english\', c.name || \' \' || COALESCE(c.description, \'\'), to_tsquery(\'english\', $1)) as headline'
+      ? ", ts_headline('english', c.name || ' ' || COALESCE(c.description, ''), to_tsquery('english', $1)) as headline"
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -569,30 +621,33 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row: {
-      id: string;
-      name: string;
-      description: string | null;
-      memberCount: bigint;
-      isPrivate: boolean;
-      createdAt: Date;
-      rank: number;
-      headline: string | null;
-    }) => ({
-      id: row.id,
-      type: 'channel' as const,
-      score: row.rank,
-      highlight: highlight && row.headline ? { title: [row.headline] } : undefined,
-      data: {
+    return results.map(
+      (row: {
+        id: string;
+        name: string;
+        description: string | null;
+        memberCount: bigint;
+        isPrivate: boolean;
+        createdAt: Date;
+        rank: number;
+        headline: string | null;
+      }) => ({
+        id: row.id,
         type: 'channel' as const,
-        channelId: row.id,
-        name: row.name,
-        description: row.description ?? undefined,
-        memberCount: Number(row.memberCount),
-        isPrivate: row.isPrivate,
-        createdAt: row.createdAt,
-      },
-    }));
+        score: row.rank,
+        highlight:
+          highlight && row.headline ? { title: [row.headline] } : undefined,
+        data: {
+          type: 'channel' as const,
+          channelId: row.id,
+          name: row.name,
+          description: row.description ?? undefined,
+          memberCount: Number(row.memberCount),
+          isPrivate: row.isPrivate,
+          createdAt: row.createdAt,
+        },
+      })
+    );
   }
 
   /**
@@ -610,10 +665,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false,
+    highlight = false
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      'to_tsvector(\'english\', u.name || \' \' || u.email || \' \' || COALESCE(u.discipline, \'\')) @@ to_tsquery(\'english\', $1)',
+      "to_tsvector('english', u.name || ' ' || u.email || ' ' || COALESCE(u.discipline, '')) @@ to_tsquery('english', $1)",
     ];
     // SQL parameter types: string, string[], Date, or number
     type SqlParam = string | string[] | Date | number;
@@ -636,7 +691,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? ', ts_headline(\'english\', u.name || \' \' || u.email, to_tsquery(\'english\', $1)) as headline'
+      ? ", ts_headline('english', u.name || ' ' || u.email, to_tsquery('english', $1)) as headline"
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -669,30 +724,33 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row: {
-      id: string;
-      name: string;
-      email: string;
-      role: string;
-      discipline: string | null;
-      avatarUrl: string | null;
-      rank: number;
-      headline: string | null;
-    }) => ({
-      id: row.id,
-      type: 'user' as const,
-      score: row.rank,
-      highlight: highlight && row.headline ? { title: [row.headline] } : undefined,
-      data: {
+    return results.map(
+      (row: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+        discipline: string | null;
+        avatarUrl: string | null;
+        rank: number;
+        headline: string | null;
+      }) => ({
+        id: row.id,
         type: 'user' as const,
-        userId: row.id,
-        name: row.name,
-        email: row.email,
-        role: row.role,
-        discipline: row.discipline ?? undefined,
-        avatarUrl: row.avatarUrl ?? undefined,
-      },
-    }));
+        score: row.rank,
+        highlight:
+          highlight && row.headline ? { title: [row.headline] } : undefined,
+        data: {
+          type: 'user' as const,
+          userId: row.id,
+          name: row.name,
+          email: row.email,
+          role: row.role,
+          discipline: row.discipline ?? undefined,
+          avatarUrl: row.avatarUrl ?? undefined,
+        },
+      })
+    );
   }
 
   /**
@@ -710,10 +768,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false,
+    highlight = false
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      'to_tsvector(\'english\', vp.name || \' \' || vp.discipline || \' \' || array_to_string(vp.capabilities, \' \')) @@ to_tsquery(\'english\', $1)',
+      "to_tsvector('english', vp.name || ' ' || vp.discipline || ' ' || array_to_string(vp.capabilities, ' ')) @@ to_tsquery('english', $1)",
     ];
     // SQL parameter types: string, string[], Date, or number
     type SqlParam = string | string[] | Date | number;
@@ -742,7 +800,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? ', ts_headline(\'english\', vp.name || \' \' || vp.discipline, to_tsquery(\'english\', $1)) as headline'
+      ? ", ts_headline('english', vp.name || ' ' || vp.discipline, to_tsquery('english', $1)) as headline"
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -772,28 +830,31 @@ export class SearchServiceImpl implements SearchService {
       }>
     >(sqlQuery, ...params);
 
-    return results.map((row: {
-      id: string;
-      name: string;
-      discipline: string;
-      status: string;
-      capabilities: string[];
-      rank: number;
-      headline: string | null;
-    }) => ({
-      id: row.id,
-      type: 'vp' as const,
-      score: row.rank,
-      highlight: highlight && row.headline ? { title: [row.headline] } : undefined,
-      data: {
+    return results.map(
+      (row: {
+        id: string;
+        name: string;
+        discipline: string;
+        status: string;
+        capabilities: string[];
+        rank: number;
+        headline: string | null;
+      }) => ({
+        id: row.id,
         type: 'vp' as const,
-        vpId: row.id,
-        name: row.name,
-        discipline: row.discipline,
-        status: row.status,
-        capabilities: row.capabilities,
-      },
-    }));
+        score: row.rank,
+        highlight:
+          highlight && row.headline ? { title: [row.headline] } : undefined,
+        data: {
+          type: 'vp' as const,
+          vpId: row.id,
+          name: row.name,
+          discipline: row.discipline,
+          status: row.status,
+          capabilities: row.capabilities,
+        },
+      })
+    );
   }
 
   /**
@@ -805,8 +866,8 @@ export class SearchServiceImpl implements SearchService {
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter((term) => term.length > 0)
-      .map((term) => `${term}:*`);
+      .filter(term => term.length > 0)
+      .map(term => `${term}:*`);
 
     return terms.join(' & ');
   }
@@ -816,7 +877,7 @@ export class SearchServiceImpl implements SearchService {
    */
   private sortResults(
     results: SearchResult[],
-    sort: SearchSort,
+    sort: SearchSort
   ): SearchResult[] {
     const multiplier = sort.direction === 'asc' ? 1 : -1;
 
@@ -871,12 +932,12 @@ export class SearchServiceImpl implements SearchService {
    */
   private async buildFacets(
     query: SearchQuery,
-    types: SearchResultType[],
+    types: SearchResultType[]
   ): Promise<SearchFacets> {
     const facets: SearchFacets = {};
 
     if (query.facets?.includes('types')) {
-      facets.types = types.map((type) => ({
+      facets.types = types.map(type => ({
         key: type,
         label: type.charAt(0).toUpperCase() + type.slice(1),
         count: 0, // Would need separate count queries in production
@@ -906,7 +967,7 @@ export class SearchServiceImpl implements SearchService {
     prefix: string,
     _workspaceId: string,
     userId: string,
-    limit = 5,
+    limit = 5
   ): Promise<SearchSuggestion[]> {
     const suggestions: SearchSuggestion[] = [];
 
@@ -980,7 +1041,9 @@ export class SearchServiceImpl implements SearchService {
 /**
  * Create a new SearchService instance
  */
-export function createSearchService(config: SearchServiceConfig): SearchService {
+export function createSearchService(
+  config: SearchServiceConfig
+): SearchService {
   return new SearchServiceImpl(config);
 }
 
@@ -995,7 +1058,9 @@ export function getSearchService(config?: SearchServiceConfig): SearchService {
     searchServiceInstance = createSearchService(config);
   }
   if (!searchServiceInstance) {
-    throw new Error('SearchService not initialized. Call getSearchService with config first.');
+    throw new Error(
+      'SearchService not initialized. Call getSearchService with config first.'
+    );
   }
   return searchServiceInstance;
 }

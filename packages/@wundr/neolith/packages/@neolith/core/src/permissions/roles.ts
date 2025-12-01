@@ -7,7 +7,6 @@
  * @packageDocumentation
  */
 
-
 import { Permission } from './permissions';
 
 import type {
@@ -15,7 +14,6 @@ import type {
   OrganizationRole,
   WorkspaceRole,
 } from '@neolith/database';
-
 
 // =============================================================================
 // Role Definition Types
@@ -366,7 +364,7 @@ export const CHANNEL_ROLES: Record<ChannelRole, RoleDefinition> = {
 export function resolveRolePermissions(
   role: RoleDefinition,
   roleMap: Record<string, RoleDefinition>,
-  visited: Set<string> = new Set(),
+  visited: Set<string> = new Set()
 ): Permission[] {
   const permissions = new Set<Permission>(role.permissions);
 
@@ -384,7 +382,7 @@ export function resolveRolePermissions(
         const inheritedPermissions = resolveRolePermissions(
           inheritedRole,
           roleMap,
-          visited,
+          visited
         );
         for (const perm of inheritedPermissions) {
           permissions.add(perm);
@@ -403,7 +401,7 @@ export function resolveRolePermissions(
  * @returns Array of all permissions for the role
  */
 export function getOrganizationRolePermissions(
-  role: OrganizationRole,
+  role: OrganizationRole
 ): Permission[] {
   const roleDefinition = ORGANIZATION_ROLES[role];
   if (!roleDefinition) {
@@ -411,7 +409,7 @@ export function getOrganizationRolePermissions(
   }
   return resolveRolePermissions(
     roleDefinition,
-    ORGANIZATION_ROLES as Record<string, RoleDefinition>,
+    ORGANIZATION_ROLES as Record<string, RoleDefinition>
   );
 }
 
@@ -428,7 +426,7 @@ export function getWorkspaceRolePermissions(role: WorkspaceRole): Permission[] {
   }
   return resolveRolePermissions(
     roleDefinition,
-    WORKSPACE_ROLES as Record<string, RoleDefinition>,
+    WORKSPACE_ROLES as Record<string, RoleDefinition>
   );
 }
 
@@ -445,7 +443,7 @@ export function getChannelRolePermissions(role: ChannelRole): Permission[] {
   }
   return resolveRolePermissions(
     roleDefinition,
-    CHANNEL_ROLES as Record<string, RoleDefinition>,
+    CHANNEL_ROLES as Record<string, RoleDefinition>
   );
 }
 
@@ -458,7 +456,7 @@ export function getChannelRolePermissions(role: ChannelRole): Permission[] {
  */
 export function roleHasPermission(
   permissions: Permission[],
-  permission: Permission,
+  permission: Permission
 ): boolean {
   // ADMIN_FULL grants all permissions
   if (permissions.includes(Permission.ADMIN_FULL)) {
@@ -510,7 +508,7 @@ export const CHANNEL_ROLE_HIERARCHY: readonly ChannelRole[] = [
 export function compareRoles<T>(
   role1: T,
   role2: T,
-  hierarchy: readonly T[],
+  hierarchy: readonly T[]
 ): number {
   const index1 = hierarchy.indexOf(role1);
   const index2 = hierarchy.indexOf(role2);
@@ -528,7 +526,7 @@ export function compareRoles<T>(
 export function isAtLeastRole<T>(
   role: T,
   requiredRole: T,
-  hierarchy: readonly T[],
+  hierarchy: readonly T[]
 ): boolean {
   return compareRoles(role, requiredRole, hierarchy) >= 0;
 }

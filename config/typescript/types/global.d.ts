@@ -10,26 +10,26 @@ declare global {
       NODE_ENV: 'development' | 'production' | 'test';
       DEBUG?: string;
       LOG_LEVEL?: 'error' | 'warn' | 'info' | 'debug' | 'trace';
-      
+
       // Database configuration
       DATABASE_URL?: string;
       REDIS_URL?: string;
-      
+
       // API configuration
       API_PORT?: string;
       API_HOST?: string;
       API_KEY?: string;
-      
+
       // Monorepo specific
       MONOREPO_ROOT?: string;
       PACKAGE_MANAGER?: 'npm' | 'yarn' | 'pnpm';
       WORKSPACE_ROOT?: string;
-      
+
       // CI/CD
       CI?: string;
       GITHUB_TOKEN?: string;
       BUILD_NUMBER?: string;
-      
+
       // Analysis and reporting
       ANALYSIS_OUTPUT_DIR?: string;
       REPORT_FORMAT?: 'json' | 'html' | 'markdown';
@@ -61,20 +61,14 @@ declare global {
   type FilePath = string;
   type DirectoryPath = string;
   type GlobPattern = string;
-  
+
   // JSON types
-  type JSONValue = 
-    | string 
-    | number 
-    | boolean 
-    | null 
-    | JSONObject 
-    | JSONArray;
-  
+  type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
+
   interface JSONObject {
     [key: string]: JSONValue;
   }
-  
+
   interface JSONArray extends Array<JSONValue> {
     // JSON array type extending Array<JSONValue>
     // Provides type safety for JSON arrays in global context
@@ -82,7 +76,7 @@ declare global {
 
   // Error handling
   type ErrorLevel = 'low' | 'medium' | 'high' | 'critical';
-  type Result<T, E = Error> = 
+  type Result<T, E = Error> =
     | { success: true; data: T }
     | { success: false; error: E };
 

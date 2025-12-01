@@ -32,7 +32,10 @@ interface StatusWidgetProps {
   onSetCustomStatus?: () => void;
 }
 
-export function StatusWidget({ workspaceSlug, onSetCustomStatus }: StatusWidgetProps) {
+export function StatusWidget({
+  workspaceSlug,
+  onSetCustomStatus,
+}: StatusWidgetProps) {
   const [status, setStatus] = useState<UserStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -133,34 +136,34 @@ export function StatusWidget({ workspaceSlug, onSetCustomStatus }: StatusWidgetP
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Your Status</CardTitle>
+        <CardTitle className='text-lg'>Your Status</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className='space-y-4'>
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            <p className="font-medium">Error</p>
-            <p className="mt-1 text-xs">{error}</p>
+          <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+            <p className='font-medium'>Error</p>
+            <p className='mt-1 text-xs'>{error}</p>
           </div>
         )}
 
         {/* Current Status */}
-        <div className="rounded-lg border p-4 bg-muted/50">
+        <div className='rounded-lg border p-4 bg-muted/50'>
           {status ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{status.emoji}</span>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <span className='text-2xl'>{status.emoji}</span>
                 <div>
-                  <p className="text-sm font-medium">{status.message}</p>
+                  <p className='text-sm font-medium'>{status.message}</p>
                   {status.expiresAt && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className='text-xs text-muted-foreground'>
                       Until {new Date(status.expiresAt).toLocaleTimeString()}
                     </p>
                   )}
                 </div>
               </div>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleClearStatus}
                 disabled={isUpdating}
               >
@@ -168,7 +171,7 @@ export function StatusWidget({ workspaceSlug, onSetCustomStatus }: StatusWidgetP
               </Button>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-2">
+            <p className='text-sm text-muted-foreground text-center py-2'>
               No status set
             </p>
           )}
@@ -176,8 +179,10 @@ export function StatusWidget({ workspaceSlug, onSetCustomStatus }: StatusWidgetP
 
         {/* Quick Presets */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">Quick presets</p>
-          <div className="grid grid-cols-2 gap-2">
+          <p className='text-xs font-medium text-muted-foreground mb-2'>
+            Quick presets
+          </p>
+          <div className='grid grid-cols-2 gap-2'>
             {STATUS_PRESETS.map((preset, index) => (
               <PresetButton
                 key={index}
@@ -195,8 +200,8 @@ export function StatusWidget({ workspaceSlug, onSetCustomStatus }: StatusWidgetP
 
         {/* Custom Status Link */}
         <Button
-          variant="outline"
-          className="w-full"
+          variant='outline'
+          className='w-full'
           onClick={handleCustomStatus}
           disabled={isUpdating}
         >
@@ -214,7 +219,12 @@ interface PresetButtonProps {
   isActive: boolean;
 }
 
-function PresetButton({ preset, onClick, disabled, isActive }: PresetButtonProps) {
+function PresetButton({
+  preset,
+  onClick,
+  disabled,
+  isActive,
+}: PresetButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -226,8 +236,8 @@ function PresetButton({ preset, onClick, disabled, isActive }: PresetButtonProps
         isActive && 'bg-accent border-primary'
       )}
     >
-      <span className="text-lg">{preset.emoji}</span>
-      <span className="text-xs font-medium truncate">{preset.message}</span>
+      <span className='text-lg'>{preset.emoji}</span>
+      <span className='text-xs font-medium truncate'>{preset.message}</span>
     </button>
   );
 }
@@ -236,16 +246,16 @@ function StatusWidgetSkeleton() {
   return (
     <Card>
       <CardHeader>
-        <Skeleton className="h-6 w-24" />
+        <Skeleton className='h-6 w-24' />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Skeleton className="h-16 w-full" />
-        <div className="grid grid-cols-2 gap-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-12 w-full" />
+      <CardContent className='space-y-4'>
+        <Skeleton className='h-16 w-full' />
+        <div className='grid grid-cols-2 gap-2'>
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className='h-12 w-full' />
           ))}
         </div>
-        <Skeleton className="h-10 w-full" />
+        <Skeleton className='h-10 w-full' />
       </CardContent>
     </Card>
   );

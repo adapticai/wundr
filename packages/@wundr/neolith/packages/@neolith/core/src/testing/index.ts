@@ -17,12 +17,11 @@ import type {
 
 /** Create a mock function */
 export function createMock<T extends (...args: unknown[]) => unknown>(
-  config?: Partial<MockConfig>,
+  config?: Partial<MockConfig>
 ): T & MockInstance {
   const calls: MockCall[] = [];
-  let implementation: ((...args: unknown[]) => unknown) | undefined = config?.implementation as
-    | ((...args: unknown[]) => unknown)
-    | undefined;
+  let implementation: ((...args: unknown[]) => unknown) | undefined =
+    config?.implementation as ((...args: unknown[]) => unknown) | undefined;
   let returnValue: unknown = config?.returnValue;
   let resolvedValue: unknown = config?.resolvedValue;
   let rejectedValue: unknown = config?.rejectedValue;
@@ -75,8 +74,13 @@ export function createMock<T extends (...args: unknown[]) => unknown>(
   // Add mock instance properties
   Object.defineProperty(mockFn, 'calls', { get: () => [...calls] });
   Object.defineProperty(mockFn, 'callCount', { get: () => calls.length });
-  Object.defineProperty(mockFn, 'lastCall', { get: () => calls[calls.length - 1] });
-  Object.defineProperty(mockFn, 'name', { value: config?.name ?? 'mock', writable: false });
+  Object.defineProperty(mockFn, 'lastCall', {
+    get: () => calls[calls.length - 1],
+  });
+  Object.defineProperty(mockFn, 'name', {
+    value: config?.name ?? 'mock',
+    writable: false,
+  });
 
   mockFn.mockClear = () => {
     calls.length = 0;
@@ -128,10 +132,12 @@ export function createMock<T extends (...args: unknown[]) => unknown>(
 /** Create a spy on an object method */
 export function createSpy<T extends object, K extends keyof T>(
   obj: T,
-  method: K,
+  method: K
 ): T[K] & MockInstance {
   const original = obj[method];
-  const mock = createMock<T[K] extends (...args: unknown[]) => unknown ? T[K] : never>({
+  const mock = createMock<
+    T[K] extends (...args: unknown[]) => unknown ? T[K] : never
+  >({
     name: String(method),
     implementation: original as (...args: unknown[]) => unknown,
   });
@@ -151,7 +157,7 @@ export function createSpy<T extends object, K extends keyof T>(
 export function createFixture<T>(
   name: string,
   data: T,
-  options?: { setup?: () => Promise<void>; teardown?: () => Promise<void> },
+  options?: { setup?: () => Promise<void>; teardown?: () => Promise<void> }
 ): Fixture<T> {
   return {
     name,
@@ -170,7 +176,10 @@ export function createFactory<T>(defaults: T): FactoryFunction<T> {
 }
 
 /** Generate test data using a factory */
-export function generateMany<T>(factory: FactoryFunction<T>, count: number): T[] {
+export function generateMany<T>(
+  factory: FactoryFunction<T>,
+  count: number
+): T[] {
   return Array.from({ length: count }, () => factory());
 }
 
@@ -179,7 +188,7 @@ export function createSeeder<T>(
   name: string,
   factory: FactoryFunction<T>,
   count: number,
-  dependencies?: string[],
+  dependencies?: string[]
 ): Seeder<T> {
   return {
     name,
@@ -245,7 +254,7 @@ export const vpFactory = createFactory({
 /** Wait for a condition */
 export async function waitFor(
   condition: () => boolean | Promise<boolean>,
-  options: { timeout?: number; interval?: number } = {},
+  options: { timeout?: number; interval?: number } = {}
 ): Promise<void> {
   const { timeout = 5000, interval = 100 } = options;
   const startTime = Date.now();
@@ -254,7 +263,7 @@ export async function waitFor(
     if (await condition()) {
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, interval));
+    await new Promise(resolve => setTimeout(resolve, interval));
   }
 
   throw new Error(`Timeout waiting for condition after ${timeout}ms`);
@@ -262,11 +271,13 @@ export async function waitFor(
 
 /** Wait for a specific duration */
 export function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /** Create an in-memory mock server */
-export function createMockServer(baseUrl: string = 'http://localhost:3000'): MockServer {
+export function createMockServer(
+  baseUrl: string = 'http://localhost:3000'
+): MockServer {
   const routes: Map<string, MockResponse> = new Map();
   const requests: Array<{ method: string; path: string }> = [];
   let isRunning = false;
@@ -288,8 +299,12 @@ export function createMockServer(baseUrl: string = 'http://localhost:3000'): Moc
       routes.set(`${method.toUpperCase()} ${path}`, response);
     },
     verify: () => {
-      const matched = requests.filter((r) => routes.has(`${r.method} ${r.path}`)).length;
-      const unmatched = requests.filter((r) => !routes.has(`${r.method} ${r.path}`));
+      const matched = requests.filter(r =>
+        routes.has(`${r.method} ${r.path}`)
+      ).length;
+      const unmatched = requests.filter(
+        r => !routes.has(`${r.method} ${r.path}`)
+      );
       return {
         matched,
         unmatched: unmatched.length,
@@ -338,12 +353,12 @@ function topologicalSort<T>(seeders: Seeder<T>[]): Seeder<T>[] {
   const result: Seeder<T>[] = [];
   const visited = new Set<string>();
   const visiting = new Set<string>();
-  const seederMap = new Map(seeders.map((s) => [s.name, s]));
+  const seederMap = new Map(seeders.map(s => [s.name, s]));
 
   function visit(seeder: Seeder<T>): void {
     if (visited.has(seeder.name)) {
-return;
-}
+      return;
+    }
     if (visiting.has(seeder.name)) {
       throw new Error(`Circular dependency detected: ${seeder.name}`);
     }
@@ -407,7 +422,10 @@ export const assert = {
     }
   },
 
-  rejects: async (fn: () => Promise<unknown>, message?: string): Promise<void> => {
+  rejects: async (
+    fn: () => Promise<unknown>,
+    message?: string
+  ): Promise<void> => {
     let threw = false;
     try {
       await fn();
@@ -471,4 +489,11 @@ export async function cleanupTestContext(context: TestContext): Promise<void> {
 }
 
 /** Export types */
-export type { Fixture, FactoryFunction, Seeder, TestDatabase, MockServer, MockResponse };
+export type {
+  Fixture,
+  FactoryFunction,
+  Seeder,
+  TestDatabase,
+  MockServer,
+  MockResponse,
+};

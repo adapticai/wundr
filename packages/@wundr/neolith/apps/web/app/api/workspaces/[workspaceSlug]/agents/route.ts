@@ -42,7 +42,15 @@ interface RouteContext {
  */
 const createAgentSchema = z.object({
   name: z.string().min(1).max(100),
-  type: z.enum(['task', 'research', 'coding', 'data', 'qa', 'support', 'custom']),
+  type: z.enum([
+    'task',
+    'research',
+    'coding',
+    'data',
+    'qa',
+    'support',
+    'custom',
+  ]),
   description: z.string().optional(),
   config: z
     .object({
@@ -55,25 +63,31 @@ const createAgentSchema = z.object({
     })
     .optional(),
   systemPrompt: z.string().optional(),
-  tools: z.array(z.enum([
-    'web_search',
-    'code_execution',
-    'file_operations',
-    'data_analysis',
-    'api_calls',
-    'database_query',
-    'image_generation',
-    'text_analysis',
-    'translation',
-    'summarization',
-  ])).optional(),
+  tools: z
+    .array(
+      z.enum([
+        'web_search',
+        'code_execution',
+        'file_operations',
+        'data_analysis',
+        'api_calls',
+        'database_query',
+        'image_generation',
+        'text_analysis',
+        'translation',
+        'summarization',
+      ])
+    )
+    .optional(),
 });
 
 /**
  * Validation schema for query parameters
  */
 const querySchema = z.object({
-  type: z.enum(['task', 'research', 'coding', 'data', 'qa', 'support', 'custom']).optional(),
+  type: z
+    .enum(['task', 'research', 'coding', 'data', 'qa', 'support', 'custom'])
+    .optional(),
   status: z.enum(['active', 'paused', 'inactive']).optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().min(1).optional(),
@@ -91,7 +105,7 @@ const querySchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -99,7 +113,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -107,13 +121,20 @@ export async function GET(
     const { workspaceSlug: workspaceId } = params;
 
     // Parse and validate query parameters
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams.entries());
+    const searchParams = Object.fromEntries(
+      request.nextUrl.searchParams.entries()
+    );
     const queryResult = querySchema.safeParse(searchParams);
 
     if (!queryResult.success) {
       return NextResponse.json(
-        { error: { message: 'Invalid query parameters', errors: queryResult.error.flatten() } },
-        { status: 400 },
+        {
+          error: {
+            message: 'Invalid query parameters',
+            errors: queryResult.error.flatten(),
+          },
+        },
+        { status: 400 }
       );
     }
 
@@ -125,7 +146,14 @@ export async function GET(
     };
 
     if (type) {
-      where.type = type.toUpperCase() as 'TASK' | 'RESEARCH' | 'CODING' | 'DATA' | 'QA' | 'SUPPORT' | 'CUSTOM';
+      where.type = type.toUpperCase() as
+        | 'TASK'
+        | 'RESEARCH'
+        | 'CODING'
+        | 'DATA'
+        | 'QA'
+        | 'SUPPORT'
+        | 'CUSTOM';
     }
 
     if (status) {
@@ -146,7 +174,7 @@ export async function GET(
     });
 
     // Transform to API format
-    const agents: Agent[] = dbAgents.map((dbAgent) => ({
+    const agents: Agent[] = dbAgents.map(dbAgent => ({
       id: dbAgent.id,
       workspaceId: dbAgent.workspaceId,
       name: dbAgent.name,
@@ -180,7 +208,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/agents] Error:', error);
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -196,7 +224,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -204,7 +232,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -218,7 +246,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -232,7 +260,7 @@ export async function POST(
             errors: parseResult.error.flatten().fieldErrors,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -252,7 +280,14 @@ export async function POST(
       data: {
         workspaceId,
         name: input.name,
-        type: input.type.toUpperCase() as 'TASK' | 'RESEARCH' | 'CODING' | 'DATA' | 'QA' | 'SUPPORT' | 'CUSTOM',
+        type: input.type.toUpperCase() as
+          | 'TASK'
+          | 'RESEARCH'
+          | 'CODING'
+          | 'DATA'
+          | 'QA'
+          | 'SUPPORT'
+          | 'CUSTOM',
         description: input.description || null,
         status: 'ACTIVE',
         model: config.model,
@@ -304,13 +339,13 @@ export async function POST(
         data: newAgent,
         message: 'Agent created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/agents] Error:', error);
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

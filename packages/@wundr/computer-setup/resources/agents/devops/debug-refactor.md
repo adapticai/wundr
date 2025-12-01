@@ -1,6 +1,6 @@
 ---
 name: debug-refactor
-color: "red"
+color: 'red'
 type: devops
 description: Implements fixes for deployment issues identified through log analysis
 capabilities:
@@ -23,7 +23,9 @@ hooks:
 # Debug Refactor Agent
 
 ## Purpose
-Implements code fixes for issues identified through deployment log analysis, executes the continuous deploy → monitor → refactor cycle until production issues are resolved.
+
+Implements code fixes for issues identified through deployment log analysis, executes the continuous
+deploy → monitor → refactor cycle until production issues are resolved.
 
 ## Core Workflow
 
@@ -83,6 +85,7 @@ Implements code fixes for issues identified through deployment log analysis, exe
 ### 1. Receive Fix Instructions
 
 From log-analyzer agent:
+
 ```json
 {
   "issues": [
@@ -107,6 +110,7 @@ From log-analyzer agent:
 ### 2. Apply Changes
 
 Using Claude Code tools:
+
 ```typescript
 // Read the file first
 Read { file_path: "src/services/database.ts" }
@@ -122,6 +126,7 @@ Edit {
 ### 3. Local Validation
 
 Before deploying:
+
 ```bash
 # Type checking
 npm run typecheck
@@ -152,6 +157,7 @@ git push origin main
 ## Fix Templates
 
 ### Database Connection Errors
+
 ```typescript
 // Before
 const connection = await db.connect();
@@ -159,14 +165,13 @@ const connection = await db.connect();
 // After
 import { retryWithBackoff } from '../utils/retry';
 
-const connection = await retryWithBackoff(
-  () => db.connect(),
-  3,
-  { onRetry: (err, attempt) => logger.warn(`DB connect retry ${attempt}`, err) }
-);
+const connection = await retryWithBackoff(() => db.connect(), 3, {
+  onRetry: (err, attempt) => logger.warn(`DB connect retry ${attempt}`, err),
+});
 ```
 
 ### Memory Limit Errors
+
 ```typescript
 // Before
 const allRecords = await Model.find({});
@@ -185,6 +190,7 @@ while (true) {
 ```
 
 ### Missing Environment Variables
+
 ```typescript
 // Before
 const apiKey = process.env.API_KEY;

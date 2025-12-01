@@ -49,25 +49,25 @@ function DeviceSelect({
   disabled?: boolean;
 }) {
   return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-medium text-foreground">{label}</label>
+    <div className='space-y-1.5'>
+      <label className='text-sm font-medium text-foreground'>{label}</label>
       <select
         value={selectedDevice || ''}
-        onChange={(e) => onSelect(e.target.value)}
+        onChange={e => onSelect(e.target.value)}
         disabled={disabled || devices.length === 0}
         className={clsx(
           'w-full px-3 py-2 rounded-lg',
           'bg-muted border border-border',
           'text-sm text-foreground',
           'focus:outline-none focus:ring-2 focus:ring-stone-500',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'disabled:opacity-50 disabled:cursor-not-allowed'
         )}
         aria-label={label}
       >
         {devices.length === 0 ? (
-          <option value="">No devices available</option>
+          <option value=''>No devices available</option>
         ) : (
-          devices.map((device) => (
+          devices.map(device => (
             <option key={device.deviceId} value={device.deviceId}>
               {device.label}
             </option>
@@ -103,15 +103,17 @@ function AudioLevelIndicator({
     analyser.fftSize = 256;
     analyserRef.current = analyser;
 
-    const source = audioContext.createMediaStreamSource(new MediaStream([audioTrack]));
+    const source = audioContext.createMediaStreamSource(
+      new MediaStream([audioTrack])
+    );
     source.connect(analyser);
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
     const updateLevel = () => {
       if (!analyserRef.current) {
-return;
-}
+        return;
+      }
 
       analyserRef.current.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
@@ -131,13 +133,17 @@ return;
   }, [audioTrack, isEnabled]);
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-muted-foreground">Mic level:</span>
-      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+    <div className='flex items-center gap-2'>
+      <span className='text-xs text-muted-foreground'>Mic level:</span>
+      <div className='flex-1 h-2 bg-muted rounded-full overflow-hidden'>
         <div
           className={clsx(
             'h-full transition-all duration-75',
-            level > 70 ? 'bg-green-500' : level > 30 ? 'bg-yellow-500' : 'bg-muted-foreground',
+            level > 70
+              ? 'bg-green-500'
+              : level > 30
+                ? 'bg-yellow-500'
+                : 'bg-muted-foreground'
           )}
           style={{ width: `${level}%` }}
         />
@@ -251,15 +257,16 @@ export function PreJoin({
       className={clsx(
         'flex flex-col items-center justify-center min-h-screen p-6',
         'bg-background',
-        className,
+        className
       )}
     >
-      <div className="w-full max-w-2xl space-y-6">
+      <div className='w-full max-w-2xl space-y-6'>
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">Ready to join?</h1>
-          <p className="text-muted-foreground">
-            Joining <span className="font-medium text-foreground">{roomName}</span>
+        <div className='text-center space-y-2'>
+          <h1 className='text-2xl font-bold text-foreground'>Ready to join?</h1>
+          <p className='text-muted-foreground'>
+            Joining{' '}
+            <span className='font-medium text-foreground'>{roomName}</span>
           </p>
         </div>
 
@@ -267,7 +274,7 @@ export function PreJoin({
         <div
           className={clsx(
             'relative aspect-video rounded-xl overflow-hidden',
-            'bg-muted border border-border',
+            'bg-muted border border-border'
           )}
         >
           {isVideoEnabled && videoTrack ? (
@@ -276,76 +283,78 @@ export function PreJoin({
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover transform scale-x-[-1]"
+              className='w-full h-full object-cover transform scale-x-[-1]'
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-full bg-stone-500/10 flex items-center justify-center">
+            <div className='w-full h-full flex items-center justify-center'>
+              <div className='text-center space-y-2'>
+                <div className='w-20 h-20 mx-auto rounded-full bg-stone-500/10 flex items-center justify-center'>
                   <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-10 h-10 text-stone-700 dark:text-stone-300"
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    className='w-10 h-10 text-stone-700 dark:text-stone-300'
                   >
-                    <path d="M10.66 6H14a2 2 0 0 1 2 2v2.34l1 1L22 8v8" />
-                    <path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l10 10Z" />
-                    <line x1="2" x2="22" y1="2" y2="22" />
+                    <path d='M10.66 6H14a2 2 0 0 1 2 2v2.34l1 1L22 8v8' />
+                    <path d='M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l10 10Z' />
+                    <line x1='2' x2='22' y1='2' y2='22' />
                   </svg>
                 </div>
-                <p className="text-sm text-muted-foreground">Camera is off</p>
+                <p className='text-sm text-muted-foreground'>Camera is off</p>
               </div>
             </div>
           )}
 
           {/* Media toggle buttons overlay */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className='absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2'>
             <button
               onClick={toggleAudio}
               className={clsx(
                 'w-12 h-12 rounded-full flex items-center justify-center transition-all',
                 isAudioEnabled
                   ? 'bg-muted hover:bg-muted/80 text-foreground'
-                  : 'bg-red-500 hover:bg-red-600 text-white',
+                  : 'bg-red-500 hover:bg-red-600 text-white'
               )}
-              aria-label={isAudioEnabled ? 'Mute microphone' : 'Unmute microphone'}
+              aria-label={
+                isAudioEnabled ? 'Mute microphone' : 'Unmute microphone'
+              }
             >
               {isAudioEnabled ? (
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  className='w-5 h-5'
                 >
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" x2="12" y1="19" y2="22" />
+                  <path d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z' />
+                  <path d='M19 10v2a7 7 0 0 1-14 0v-2' />
+                  <line x1='12' x2='12' y1='19' y2='22' />
                 </svg>
               ) : (
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  className='w-5 h-5'
                 >
-                  <line x1="2" x2="22" y1="2" y2="22" />
-                  <path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2" />
-                  <path d="M5 10v2a7 7 0 0 0 12 5" />
-                  <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33" />
-                  <path d="M9 9v3a3 3 0 0 0 5.12 2.12" />
-                  <line x1="12" x2="12" y1="19" y2="22" />
+                  <line x1='2' x2='22' y1='2' y2='22' />
+                  <path d='M18.89 13.23A7.12 7.12 0 0 0 19 12v-2' />
+                  <path d='M5 10v2a7 7 0 0 0 12 5' />
+                  <path d='M15 9.34V5a3 3 0 0 0-5.68-1.33' />
+                  <path d='M9 9v3a3 3 0 0 0 5.12 2.12' />
+                  <line x1='12' x2='12' y1='19' y2='22' />
                 </svg>
               )}
             </button>
@@ -356,38 +365,38 @@ export function PreJoin({
                 'w-12 h-12 rounded-full flex items-center justify-center transition-all',
                 isVideoEnabled
                   ? 'bg-muted hover:bg-muted/80 text-foreground'
-                  : 'bg-red-500 hover:bg-red-600 text-white',
+                  : 'bg-red-500 hover:bg-red-600 text-white'
               )}
               aria-label={isVideoEnabled ? 'Turn off camera' : 'Turn on camera'}
             >
               {isVideoEnabled ? (
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  className='w-5 h-5'
                 >
-                  <path d="m22 8-6 4 6 4V8Z" />
-                  <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+                  <path d='m22 8-6 4 6 4V8Z' />
+                  <rect width='14' height='12' x='2' y='6' rx='2' ry='2' />
                 </svg>
               ) : (
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  className='w-5 h-5'
                 >
-                  <path d="M10.66 6H14a2 2 0 0 1 2 2v2.34l1 1L22 8v8" />
-                  <path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l10 10Z" />
-                  <line x1="2" x2="22" y1="2" y2="22" />
+                  <path d='M10.66 6H14a2 2 0 0 1 2 2v2.34l1 1L22 8v8' />
+                  <path d='M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l10 10Z' />
+                  <line x1='2' x2='22' y1='2' y2='22' />
                 </svg>
               )}
             </button>
@@ -404,46 +413,50 @@ export function PreJoin({
 
         {/* Error display */}
         {error && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+          <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm'>
             {error.message}
           </div>
         )}
 
         {/* Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <DeviceSelect
             devices={devices.video}
             selectedDevice={selectedVideoDevice}
             onSelect={setVideoDevice}
-            label="Camera"
+            label='Camera'
             disabled={!isVideoEnabled}
           />
           <DeviceSelect
             devices={devices.audio}
             selectedDevice={selectedAudioDevice}
             onSelect={setAudioDevice}
-            label="Microphone"
+            label='Microphone'
             disabled={!isAudioEnabled}
           />
         </div>
 
         {/* Name input */}
         {(requireName || !initialUserName) && (
-          <div className="space-y-1.5">
-            <label htmlFor="userName" className="text-sm font-medium text-foreground">
-              Your name {requireName && <span className="text-destructive">*</span>}
+          <div className='space-y-1.5'>
+            <label
+              htmlFor='userName'
+              className='text-sm font-medium text-foreground'
+            >
+              Your name{' '}
+              {requireName && <span className='text-destructive'>*</span>}
             </label>
             <input
-              id="userName"
-              type="text"
+              id='userName'
+              type='text'
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Enter your name"
+              onChange={e => setUserName(e.target.value)}
+              placeholder='Enter your name'
               className={clsx(
                 'w-full px-3 py-2 rounded-lg',
                 'bg-muted border border-border',
                 'text-foreground placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-stone-500',
+                'focus:outline-none focus:ring-2 focus:ring-stone-500'
               )}
               autoFocus
             />
@@ -451,7 +464,7 @@ export function PreJoin({
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-3">
+        <div className='flex gap-3'>
           {onCancel && (
             <button
               onClick={onCancel}
@@ -459,7 +472,7 @@ export function PreJoin({
                 'flex-1 px-4 py-3 rounded-lg',
                 'bg-muted hover:bg-muted/80',
                 'text-foreground font-medium',
-                'transition-colors',
+                'transition-colors'
               )}
             >
               Cancel
@@ -473,7 +486,7 @@ export function PreJoin({
               'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
               'text-white font-medium',
               'transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
             {isJoining ? 'Joining...' : 'Join call'}
@@ -481,12 +494,20 @@ export function PreJoin({
         </div>
 
         {/* Keyboard hints */}
-        <p className="text-center text-xs text-muted-foreground">
-          Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground">Enter</kbd> to join
+        <p className='text-center text-xs text-muted-foreground'>
+          Press{' '}
+          <kbd className='px-1.5 py-0.5 rounded bg-muted text-foreground'>
+            Enter
+          </kbd>{' '}
+          to join
           {onCancel && (
             <>
               {' '}
-              or <kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground">Esc</kbd> to cancel
+              or{' '}
+              <kbd className='px-1.5 py-0.5 rounded bg-muted text-foreground'>
+                Esc
+              </kbd>{' '}
+              to cancel
             </>
           )}
         </p>

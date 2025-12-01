@@ -105,14 +105,22 @@ describe('DaemonApiService', () => {
     mockRedis = createExtendedMockRedis();
 
     authService = new DaemonAuthService({
-      prisma: mockPrisma as unknown as Parameters<typeof DaemonAuthService['prototype']['constructor']>[0]['prisma'],
-      redis: mockRedis as unknown as Parameters<typeof DaemonAuthService['prototype']['constructor']>[0]['redis'],
+      prisma: mockPrisma as unknown as Parameters<
+        (typeof DaemonAuthService)['prototype']['constructor']
+      >[0]['prisma'],
+      redis: mockRedis as unknown as Parameters<
+        (typeof DaemonAuthService)['prototype']['constructor']
+      >[0]['redis'],
       jwtSecret: 'test-secret',
     });
 
     apiService = new DaemonApiService({
-      prisma: mockPrisma as unknown as Parameters<typeof DaemonApiService['prototype']['constructor']>[0]['prisma'],
-      redis: mockRedis as unknown as Parameters<typeof DaemonApiService['prototype']['constructor']>[0]['redis'],
+      prisma: mockPrisma as unknown as Parameters<
+        (typeof DaemonApiService)['prototype']['constructor']
+      >[0]['prisma'],
+      redis: mockRedis as unknown as Parameters<
+        (typeof DaemonApiService)['prototype']['constructor']
+      >[0]['redis'],
       authService,
     });
   });
@@ -195,7 +203,10 @@ describe('DaemonApiService', () => {
       mockPrisma.channelMember.findFirst.mockResolvedValue(null);
 
       await expect(
-        apiService.sendMessage(mockToken, { channelId: 'ch-1', content: 'Hello' }),
+        apiService.sendMessage(mockToken, {
+          channelId: 'ch-1',
+          content: 'Hello',
+        })
       ).rejects.toThrow('VP does not have access to this channel');
     });
 
@@ -206,7 +217,10 @@ describe('DaemonApiService', () => {
       };
 
       await expect(
-        apiService.sendMessage(limitedToken, { channelId: 'ch-1', content: 'Hello' }),
+        apiService.sendMessage(limitedToken, {
+          channelId: 'ch-1',
+          content: 'Hello',
+        })
       ).rejects.toThrow('Missing required scope');
     });
   });
@@ -250,13 +264,16 @@ describe('DaemonApiService', () => {
       mockPrisma.message.findMany.mockResolvedValue([]);
       mockPrisma.user.findMany.mockResolvedValue([]);
 
-      await apiService.getMessages(mockToken, 'ch-1', { limit: 10, before: 'msg-5' });
+      await apiService.getMessages(mockToken, 'ch-1', {
+        limit: 10,
+        before: 'msg-5',
+      });
 
       expect(mockPrisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { channelId: 'ch-1', id: { lt: 'msg-5' } },
           take: 10,
-        }),
+        })
       );
     });
 
@@ -265,13 +282,16 @@ describe('DaemonApiService', () => {
       mockPrisma.message.findMany.mockResolvedValue([]);
       mockPrisma.user.findMany.mockResolvedValue([]);
 
-      await apiService.getMessages(mockToken, 'ch-1', { limit: 10, after: 'msg-5' });
+      await apiService.getMessages(mockToken, 'ch-1', {
+        limit: 10,
+        after: 'msg-5',
+      });
 
       expect(mockPrisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { channelId: 'ch-1', id: { gt: 'msg-5' } },
           take: 10,
-        }),
+        })
       );
     });
 
@@ -285,7 +305,7 @@ describe('DaemonApiService', () => {
       expect(mockPrisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           take: 100,
-        }),
+        })
       );
     });
   });
@@ -374,7 +394,10 @@ describe('DaemonApiService', () => {
 
       expect(mockPrisma.channelMember.upsert).toHaveBeenCalledWith({
         where: {
-          channelId_userId: { channelId: 'ch-1', userId: 'user-orchestrator-1' },
+          channelId_userId: {
+            channelId: 'ch-1',
+            userId: 'user-orchestrator-1',
+          },
         },
         create: {
           channelId: 'ch-1',
@@ -389,7 +412,7 @@ describe('DaemonApiService', () => {
       mockPrisma.channel.findUnique.mockResolvedValue(null);
 
       await expect(apiService.joinChannel(mockToken, 'ch-404')).rejects.toThrow(
-        'Channel not found',
+        'Channel not found'
       );
     });
 
@@ -400,7 +423,7 @@ describe('DaemonApiService', () => {
       });
 
       await expect(apiService.joinChannel(mockToken, 'ch-1')).rejects.toThrow(
-        'Cannot join private channel',
+        'Cannot join private channel'
       );
     });
   });
@@ -467,7 +490,7 @@ describe('DaemonApiService', () => {
           where: expect.objectContaining({
             workspaceId: 'ws-1',
           }),
-        }),
+        })
       );
     });
   });
@@ -495,7 +518,7 @@ describe('DaemonApiService', () => {
 
       expect(mockRedis.publish).toHaveBeenCalledWith(
         `workspace:${mockToken.workspaceId}:presence`,
-        expect.stringContaining('away'),
+        expect.stringContaining('away')
       );
     });
   });
@@ -521,7 +544,9 @@ describe('DaemonApiService', () => {
     it('should throw if Orchestrator not found', async () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
-      await expect(apiService.getConfig(mockToken)).rejects.toThrow('VP not found');
+      await expect(apiService.getConfig(mockToken)).rejects.toThrow(
+        'VP not found'
+      );
     });
 
     it('should handle Orchestrator without capabilities', async () => {
@@ -585,7 +610,7 @@ describe('DaemonApiService', () => {
           messagesSent: 10,
           messagesReceived: 20,
           errors: 0,
-        }),
+        })
       );
       expect(mockRedis.expire).toHaveBeenCalled();
     });
@@ -611,7 +636,7 @@ describe('DaemonApiService', () => {
       expect(topic).toBe('channel:ch-1:messages');
       expect(mockRedis.sadd).toHaveBeenCalledWith(
         `daemon:subscriptions:${mockToken.daemonId}`,
-        'ch-1',
+        'ch-1'
       );
     });
 
@@ -620,7 +645,7 @@ describe('DaemonApiService', () => {
 
       expect(mockRedis.srem).toHaveBeenCalledWith(
         `daemon:subscriptions:${mockToken.daemonId}`,
-        'ch-1',
+        'ch-1'
       );
     });
 
@@ -676,7 +701,7 @@ describe('DaemonApiService', () => {
       expect(mockRedis.del).toHaveBeenCalled();
       expect(mockRedis.rpush).toHaveBeenCalledWith(
         expect.any(String),
-        JSON.stringify({ id: 'evt-2' }),
+        JSON.stringify({ id: 'evt-2' })
       );
     });
   });
@@ -693,7 +718,7 @@ describe('DaemonApiService', () => {
       };
 
       await expect(apiService.getChannels(noScopeToken)).rejects.toThrow(
-        'Missing required scope: channels:read',
+        'Missing required scope: channels:read'
       );
     });
 

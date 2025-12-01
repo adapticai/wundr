@@ -520,7 +520,10 @@
       "priority": 3,
       "issue": "Settings page uses fields that don't exist in API response",
       "impact": "Security, notification, and advanced settings cannot be saved",
-      "files": ["app/(workspace)/[workspaceId]/admin/settings/page.tsx", "app/api/workspaces/[workspaceId]/admin/settings/route.ts"],
+      "files": [
+        "app/(workspace)/[workspaceId]/admin/settings/page.tsx",
+        "app/api/workspaces/[workspaceId]/admin/settings/route.ts"
+      ],
       "fix": "Extend API to support all settings fields or remove unsupported UI"
     },
     {
@@ -534,7 +537,9 @@
       "priority": 5,
       "issue": "VP Health endpoints use inconsistent resource naming (organizations vs workspaces)",
       "impact": "VP health features may not work",
-      "files": ["app/(workspace)/[workspaceId]/admin/orchestrator-health/page.tsx"],
+      "files": [
+        "app/(workspace)/[workspaceId]/admin/orchestrator-health/page.tsx"
+      ],
       "fix": "Standardize on workspaceId or organizationId throughout Orchestrator health feature"
     }
   ],

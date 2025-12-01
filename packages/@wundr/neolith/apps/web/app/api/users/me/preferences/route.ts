@@ -58,7 +58,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof ERROR_CODES)[keyof typeof ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -72,7 +72,9 @@ function createErrorResponse(
 /**
  * Extract user preferences from Prisma JSON field
  */
-function extractUserPreferences(preferences: Prisma.JsonValue): UserPreferences {
+function extractUserPreferences(
+  preferences: Prisma.JsonValue
+): UserPreferences {
   if (
     typeof preferences === 'object' &&
     preferences !== null &&
@@ -133,8 +135,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -147,7 +152,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     if (!user) {
       return NextResponse.json(
         createErrorResponse('User not found', ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -159,9 +164,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -205,8 +210,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -217,7 +225,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -226,9 +234,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Request body must be an object',
-          ERROR_CODES.VALIDATION_ERROR,
+          ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -236,7 +244,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const errors: Record<string, string> = {};
 
     // Validate theme if provided
-    if ('theme' in input && input.theme !== undefined && !isValidTheme(input.theme)) {
+    if (
+      'theme' in input &&
+      input.theme !== undefined &&
+      !isValidTheme(input.theme)
+    ) {
       errors.theme = 'Theme must be one of: light, dark, system';
     }
 
@@ -281,7 +293,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -294,7 +306,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     if (!user) {
       return NextResponse.json(
         createErrorResponse('User not found', ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -324,9 +336,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

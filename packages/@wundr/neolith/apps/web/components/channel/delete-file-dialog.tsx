@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FileIcon, FileText, Image, Loader2, Music, Video, Archive, AlertTriangle } from 'lucide-react';
+import {
+  FileIcon,
+  FileText,
+  Image,
+  Loader2,
+  Music,
+  Video,
+  Archive,
+  AlertTriangle,
+} from 'lucide-react';
 
 import {
   Dialog,
@@ -61,8 +70,18 @@ function getFileIcon(mimeType: string) {
   if (mimeType.startsWith('image/')) return Image;
   if (mimeType.startsWith('video/')) return Video;
   if (mimeType.startsWith('audio/')) return Music;
-  if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return FileText;
-  if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('rar')) return Archive;
+  if (
+    mimeType.includes('pdf') ||
+    mimeType.includes('document') ||
+    mimeType.includes('text')
+  )
+    return FileText;
+  if (
+    mimeType.includes('zip') ||
+    mimeType.includes('tar') ||
+    mimeType.includes('rar')
+  )
+    return Archive;
   return FileIcon;
 }
 
@@ -115,40 +134,49 @@ export function DeleteFileDialog({
 
   // Shared content for both Dialog and Drawer
   const sharedContent = (
-    <div className="space-y-4 w-full overflow-hidden">
+    <div className='space-y-4 w-full overflow-hidden'>
       {/* Warning banner */}
-      <div className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 overflow-hidden">
-        <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-        <div className="text-sm">
-          <p className="font-medium text-destructive">This action cannot be undone</p>
-          <p className="text-muted-foreground mt-1">
-            This file will be permanently deleted and removed from any messages where it was shared.
+      <div className='flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 overflow-hidden'>
+        <AlertTriangle className='h-5 w-5 text-destructive shrink-0 mt-0.5' />
+        <div className='text-sm'>
+          <p className='font-medium text-destructive'>
+            This action cannot be undone
+          </p>
+          <p className='text-muted-foreground mt-1'>
+            This file will be permanently deleted and removed from any messages
+            where it was shared.
           </p>
         </div>
       </div>
 
       {/* File preview */}
-      <div className="rounded-lg border bg-muted/30 p-3 overflow-hidden">
-        <div className="flex items-center gap-3">
+      <div className='rounded-lg border bg-muted/30 p-3 overflow-hidden'>
+        <div className='flex items-center gap-3'>
           {/* Thumbnail or Icon */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden">
+          <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden'>
             {isImage && imagePreviewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imagePreviewUrl}
                 alt={file.originalName}
-                className="h-full w-full object-cover"
+                className='h-full w-full object-cover'
               />
             ) : (
-              <FileTypeIcon className="h-6 w-6 text-muted-foreground" />
+              <FileTypeIcon className='h-6 w-6 text-muted-foreground' />
             )}
           </div>
 
           {/* File info */}
-          <div className="flex-1 min-w-0 overflow-hidden">
-            <p className="truncate font-medium text-sm" title={file.originalName}>{file.originalName}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {formatFileSize(file.size)} • Uploaded by {file.uploadedBy.displayName || file.uploadedBy.name}
+          <div className='flex-1 min-w-0 overflow-hidden'>
+            <p
+              className='truncate font-medium text-sm'
+              title={file.originalName}
+            >
+              {file.originalName}
+            </p>
+            <p className='text-xs text-muted-foreground truncate'>
+              {formatFileSize(file.size)} • Uploaded by{' '}
+              {file.uploadedBy.displayName || file.uploadedBy.name}
             </p>
           </div>
         </div>
@@ -156,28 +184,29 @@ export function DeleteFileDialog({
 
       {/* Permission warning */}
       {!canDelete && (
-        <p className="text-sm text-destructive">
-          You don&apos;t have permission to delete this file. Only the uploader or workspace admins can delete files.
+        <p className='text-sm text-destructive'>
+          You don&apos;t have permission to delete this file. Only the uploader
+          or workspace admins can delete files.
         </p>
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2">
+      <div className='flex items-center justify-end gap-2'>
         <Button
-          variant="outline"
+          variant='outline'
           onClick={() => onOpenChange(false)}
           disabled={isDeleting}
         >
           Cancel
         </Button>
         <Button
-          variant="destructive"
+          variant='destructive'
           onClick={handleDelete}
           disabled={isDeleting || !canDelete}
         >
           {isDeleting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
               Deleting...
             </>
           ) : (
@@ -192,7 +221,7 @@ export function DeleteFileDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md overflow-hidden">
+        <DialogContent className='max-w-md overflow-hidden'>
           <DialogHeader>
             <DialogTitle>Delete file</DialogTitle>
           </DialogHeader>
@@ -209,9 +238,7 @@ export function DeleteFileDialog({
         <DrawerHeader>
           <DrawerTitle>Delete file</DrawerTitle>
         </DrawerHeader>
-        <div className="px-4 pb-4">
-          {sharedContent}
-        </div>
+        <div className='px-4 pb-4'>{sharedContent}</div>
       </DrawerContent>
     </Drawer>
   );

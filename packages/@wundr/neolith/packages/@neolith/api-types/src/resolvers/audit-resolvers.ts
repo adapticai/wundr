@@ -100,7 +100,8 @@ export const AuditCategory = {
   COMPLIANCE: 'compliance',
 } as const;
 
-export type AuditCategoryValue = (typeof AuditCategory)[keyof typeof AuditCategory];
+export type AuditCategoryValue =
+  (typeof AuditCategory)[keyof typeof AuditCategory];
 
 /**
  * Audit severity enum values
@@ -111,7 +112,8 @@ export const AuditSeverity = {
   CRITICAL: 'critical',
 } as const;
 
-export type AuditSeverityValue = (typeof AuditSeverity)[keyof typeof AuditSeverity];
+export type AuditSeverityValue =
+  (typeof AuditSeverity)[keyof typeof AuditSeverity];
 
 /**
  * Export status enum values
@@ -123,7 +125,8 @@ export const ExportStatus = {
   FAILED: 'failed',
 } as const;
 
-export type ExportStatusValue = (typeof ExportStatus)[keyof typeof ExportStatus];
+export type ExportStatusValue =
+  (typeof ExportStatus)[keyof typeof ExportStatus];
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -294,7 +297,12 @@ export const auditQueries = {
    */
   auditLogs: async (
     _parent: unknown,
-    { filter, limit, offset, sort }: {
+    {
+      filter,
+      limit,
+      offset,
+      sort,
+    }: {
       filter: {
         workspaceId: string;
         actions?: string[];
@@ -332,10 +340,13 @@ export const auditQueries = {
         actorTypes: filter.actorTypes as ('user' | 'vp' | 'system' | 'api')[],
         resourceTypes: filter.resourceTypes,
         resourceIds: filter.resourceIds,
-        dateRange: filter.dateFrom && filter.dateTo ? {
-          start: filter.dateFrom,
-          end: filter.dateTo,
-        } : undefined,
+        dateRange:
+          filter.dateFrom && filter.dateTo
+            ? {
+                start: filter.dateFrom,
+                end: filter.dateTo,
+              }
+            : undefined,
         success: filter.success,
         search: filter.search,
       },
@@ -349,7 +360,11 @@ export const auditQueries = {
    */
   auditStats: async (
     _parent: unknown,
-    { workspaceId, dateFrom, dateTo }: {
+    {
+      workspaceId,
+      dateFrom,
+      dateTo,
+    }: {
       workspaceId: string;
       dateFrom?: Date;
       dateTo?: Date;
@@ -395,7 +410,11 @@ export const auditMutations = {
    */
   requestAuditExport: async (
     _parent: unknown,
-    { workspaceId, filter, format }: {
+    {
+      workspaceId,
+      filter,
+      format,
+    }: {
       workspaceId: string;
       filter: { workspaceId: string };
       format: string;

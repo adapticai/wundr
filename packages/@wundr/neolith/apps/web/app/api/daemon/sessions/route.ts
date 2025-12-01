@@ -34,7 +34,8 @@ import type {
 // Configuration
 // =============================================================================
 
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 const DEFAULT_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 // =============================================================================
@@ -88,7 +89,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): DaemonErrorResponse {
   return {
     error: {
@@ -185,7 +186,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -209,7 +210,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Sort by creation date (newest first)
-    sessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    sessions.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
     const response: SessionListResponse = {
       sessions,
@@ -220,8 +224,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/daemon/sessions] Error:', error);
     return NextResponse.json(
-      createErrorResponse('Failed to list sessions', ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'Failed to list sessions',
+        ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -261,7 +268,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -272,7 +279,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -282,7 +289,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors: parseResult.error.flatten().fieldErrors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -291,8 +298,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Verify Orchestrator ownership
     if (sessionData.orchestratorId !== token.orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Cannot create session for different Orchestrator', ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Cannot create session for different Orchestrator',
+          ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -304,13 +314,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Generate session ID and timestamps
-    const sessionId = generateSessionId(sessionData.orchestratorId, sessionData.type);
+    const sessionId = generateSessionId(
+      sessionData.orchestratorId,
+      sessionData.type
+    );
     const now = new Date();
     const ttl = sessionData.timeoutSeconds || DEFAULT_SESSION_TTL_SECONDS;
     const expiresAt = new Date(now.getTime() + ttl * 1000);
@@ -333,8 +349,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (redisError) {
       console.error('Redis session storage error:', redisError);
       return NextResponse.json(
-        createErrorResponse('Failed to create session', ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 },
+        createErrorResponse(
+          'Failed to create session',
+          ERROR_CODES.INTERNAL_ERROR
+        ),
+        { status: 500 }
       );
     }
 
@@ -348,8 +367,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/daemon/sessions] Error:', error);
     return NextResponse.json(
-      createErrorResponse('Failed to create session', ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'Failed to create session',
+        ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -386,7 +408,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -397,7 +419,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -407,7 +429,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors: parseResult.error.flatten().fieldErrors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -422,15 +444,21 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch (redisError) {
       console.error('Redis session retrieval error:', redisError);
       return NextResponse.json(
-        createErrorResponse('Failed to retrieve session', ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 },
+        createErrorResponse(
+          'Failed to retrieve session',
+          ERROR_CODES.INTERNAL_ERROR
+        ),
+        { status: 500 }
       );
     }
 
     if (!sessionData) {
       return NextResponse.json(
-        createErrorResponse('Session not found or expired', ERROR_CODES.SESSION_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Session not found or expired',
+          ERROR_CODES.SESSION_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -440,8 +468,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     // Verify session ownership
     if (session.orchestratorId !== token.orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Cannot update session for different Orchestrator', ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Cannot update session for different Orchestrator',
+          ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -465,13 +496,18 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     let ttl = DEFAULT_SESSION_TTL_SECONDS;
     if (updateData.extendTTL) {
       const now = new Date();
-      const newExpiresAt = new Date(now.getTime() + DEFAULT_SESSION_TTL_SECONDS * 1000);
+      const newExpiresAt = new Date(
+        now.getTime() + DEFAULT_SESSION_TTL_SECONDS * 1000
+      );
       session.expiresAt = newExpiresAt.toISOString();
     } else {
       // Calculate remaining TTL
       const expiresAt = new Date(session.expiresAt);
       const now = new Date();
-      ttl = Math.max(60, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+      ttl = Math.max(
+        60,
+        Math.floor((expiresAt.getTime() - now.getTime()) / 1000)
+      );
     }
 
     // Update session in Redis
@@ -480,8 +516,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch (redisError) {
       console.error('Redis session update error:', redisError);
       return NextResponse.json(
-        createErrorResponse('Failed to update session', ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 },
+        createErrorResponse(
+          'Failed to update session',
+          ERROR_CODES.INTERNAL_ERROR
+        ),
+        { status: 500 }
       );
     }
 
@@ -495,8 +534,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[PATCH /api/daemon/sessions] Error:', error);
     return NextResponse.json(
-      createErrorResponse('Failed to update session', ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'Failed to update session',
+        ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -525,7 +567,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -535,8 +577,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     if (!sessionId) {
       return NextResponse.json(
-        createErrorResponse('Session ID is required', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Session ID is required',
+          ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -549,15 +594,21 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch (redisError) {
       console.error('Redis session retrieval error:', redisError);
       return NextResponse.json(
-        createErrorResponse('Failed to retrieve session', ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 },
+        createErrorResponse(
+          'Failed to retrieve session',
+          ERROR_CODES.INTERNAL_ERROR
+        ),
+        { status: 500 }
       );
     }
 
     if (!sessionData) {
       return NextResponse.json(
-        createErrorResponse('Session not found or expired', ERROR_CODES.SESSION_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Session not found or expired',
+          ERROR_CODES.SESSION_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -566,8 +617,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     // Verify session ownership
     if (session.orchestratorId !== token.orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Cannot delete session for different Orchestrator', ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Cannot delete session for different Orchestrator',
+          ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -577,8 +631,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch (redisError) {
       console.error('Redis session deletion error:', redisError);
       return NextResponse.json(
-        createErrorResponse('Failed to delete session', ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 },
+        createErrorResponse(
+          'Failed to delete session',
+          ERROR_CODES.INTERNAL_ERROR
+        ),
+        { status: 500 }
       );
     }
 
@@ -591,8 +648,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[DELETE /api/daemon/sessions] Error:', error);
     return NextResponse.json(
-      createErrorResponse('Failed to delete session', ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'Failed to delete session',
+        ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

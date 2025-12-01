@@ -41,7 +41,7 @@ export function useFileUpload({
 
       // Check file type
       if (allowedTypes && allowedTypes.length > 0) {
-        const isAllowed = allowedTypes.some((type) => {
+        const isAllowed = allowedTypes.some(type => {
           if (type.endsWith('/*')) {
             const prefix = type.slice(0, -2);
             return file.type.startsWith(prefix);
@@ -64,7 +64,7 @@ export function useFileUpload({
       const newUploads = new Map(uploads);
       const addedIds: string[] = [];
 
-      files.forEach((file) => {
+      files.forEach(file => {
         const error = validateFile(file);
         const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -103,11 +103,15 @@ export function useFileUpload({
 
       try {
         // Update status to uploading
-        setUploads((prev) => {
+        setUploads(prev => {
           const newUploads = new Map(prev);
           const current = newUploads.get(id);
           if (current) {
-            newUploads.set(id, { ...current, status: 'uploading', progress: 0 });
+            newUploads.set(id, {
+              ...current,
+              status: 'uploading',
+              progress: 0,
+            });
           }
           return newUploads;
         });
@@ -128,7 +132,7 @@ export function useFileUpload({
 
         // Simulate progress (in production, use presigned URL with progress tracking)
         const progressInterval = setInterval(() => {
-          setUploads((prev) => {
+          setUploads(prev => {
             const newUploads = new Map(prev);
             const current = newUploads.get(id);
             if (current && current.status === 'uploading') {
@@ -149,7 +153,7 @@ export function useFileUpload({
         clearInterval(progressInterval);
 
         // Update status to success
-        setUploads((prev) => {
+        setUploads(prev => {
           const newUploads = new Map(prev);
           newUploads.set(id, {
             ...upload,
@@ -163,9 +167,10 @@ export function useFileUpload({
         onUploadComplete?.(id, result);
         return result;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Upload failed';
 
-        setUploads((prev) => {
+        setUploads(prev => {
           const newUploads = new Map(prev);
           newUploads.set(id, {
             ...upload,
@@ -186,14 +191,14 @@ export function useFileUpload({
     const results: UploadResult[] = [];
     const uploadPromises: Promise<UploadResult | null>[] = [];
 
-    uploads.forEach((upload) => {
+    uploads.forEach(upload => {
       if (upload.status === 'pending') {
         uploadPromises.push(uploadFile(upload.id));
       }
     });
 
     const uploadResults = await Promise.all(uploadPromises);
-    uploadResults.forEach((result) => {
+    uploadResults.forEach(result => {
       if (result) {
         results.push(result);
       }

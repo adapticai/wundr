@@ -60,7 +60,10 @@ interface UseHuddlesReturn {
 /**
  * useHuddles hook for real-time huddle management
  */
-export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesReturn {
+export function useHuddles(
+  workspaceSlug: string,
+  userId?: string
+): UseHuddlesReturn {
   const [huddles, setHuddles] = useState<Huddle[]>([]);
   const [activeHuddle, setActiveHuddle] = useState<Huddle | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -77,8 +80,8 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
       return;
     }
 
-    const userHuddle = huddles.find((h) =>
-      h.participants.some((p) => p.user.id === userId),
+    const userHuddle = huddles.find(h =>
+      h.participants.some(p => p.user.id === userId)
     );
     setActiveHuddle(userHuddle || null);
   }, [huddles, userId]);
@@ -102,7 +105,7 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
       setIsLoading(false);
     };
 
-    eventSource.onmessage = (event) => {
+    eventSource.onmessage = event => {
       try {
         const data: HuddleEvent = JSON.parse(event.data);
 
@@ -116,13 +119,13 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
 
           case 'huddle:created':
             if (data.huddle) {
-              setHuddles((prev) => [...prev, data.huddle!]);
+              setHuddles(prev => [...prev, data.huddle!]);
             }
             break;
 
           case 'huddle:ended':
             if (data.huddleId) {
-              setHuddles((prev) => prev.filter((h) => h.id !== data.huddleId));
+              setHuddles(prev => prev.filter(h => h.id !== data.huddleId));
             }
             break;
 
@@ -133,8 +136,8 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
           case 'huddle:participant:speaking':
             // Update huddle with new participant state
             if (data.huddle) {
-              setHuddles((prev) =>
-                prev.map((h) => (h.id === data.huddle!.id ? data.huddle! : h)),
+              setHuddles(prev =>
+                prev.map(h => (h.id === data.huddle!.id ? data.huddle! : h))
               );
             }
             break;
@@ -180,11 +183,14 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
   const createHuddle = useCallback(
     async (name: string, channelId?: string): Promise<Huddle | null> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceSlug}/huddles`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'create', name, channelId }),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/huddles`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'create', name, channelId }),
+          }
+        );
 
         if (!response.ok) {
           const data = await response.json();
@@ -199,17 +205,20 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
         return null;
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   const joinHuddle = useCallback(
     async (huddleId: string): Promise<boolean> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceSlug}/huddles`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'join', huddleId }),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/huddles`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'join', huddleId }),
+          }
+        );
 
         if (!response.ok) {
           const data = await response.json();
@@ -223,7 +232,7 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
         return false;
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   const leaveHuddle = useCallback(async (): Promise<boolean> => {
@@ -300,15 +309,18 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
       if (!activeHuddle) return false;
 
       try {
-        const response = await fetch(`/api/workspaces/${workspaceSlug}/huddles`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'speaking',
-            huddleId: activeHuddle.id,
-            isSpeaking,
-          }),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/huddles`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'speaking',
+              huddleId: activeHuddle.id,
+              isSpeaking,
+            }),
+          }
+        );
 
         if (!response.ok) {
           return false;
@@ -319,7 +331,7 @@ export function useHuddles(workspaceSlug: string, userId?: string): UseHuddlesRe
         return false;
       }
     },
-    [workspaceSlug, activeHuddle],
+    [workspaceSlug, activeHuddle]
   );
 
   return {

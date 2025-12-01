@@ -38,15 +38,15 @@ interface RouteContext {
 async function getWorkflowWithAccess(
   workspaceId: string,
   workflowId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
   });
 
   if (!workspace) {
-return { error: 'workspace_not_found' };
-}
+    return { error: 'workspace_not_found' };
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -58,8 +58,8 @@ return { error: 'workspace_not_found' };
   });
 
   if (!orgMembership) {
-return { error: 'workspace_not_found' };
-}
+    return { error: 'workspace_not_found' };
+  }
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
@@ -85,8 +85,8 @@ return { error: 'workspace_not_found' };
   });
 
   if (!workflow) {
-return { error: 'workflow_not_found' };
-}
+    return { error: 'workflow_not_found' };
+  }
 
   return {
     workspace,
@@ -111,15 +111,18 @@ return { error: 'workflow_not_found' };
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -128,19 +131,29 @@ export async function GET(
     const { workspaceSlug: workspaceId, workflowId } = params;
 
     // Get workflow with access check
-    const result = await getWorkflowWithAccess(workspaceId, workflowId, session.user.id);
+    const result = await getWorkflowWithAccess(
+      workspaceId,
+      workflowId,
+      session.user.id
+    );
 
     if ('error' in result) {
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workspace not found or access denied',
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -149,8 +162,11 @@ export async function GET(
 
     if (!workflow) {
       return NextResponse.json(
-        createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workflow not found',
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -201,9 +217,10 @@ export async function GET(
       total: workflow.executionCount,
       success: workflow.successCount,
       failure: workflow.failureCount,
-      successRate: workflow.executionCount > 0
-        ? ((workflow.successCount / workflow.executionCount) * 100).toFixed(1)
-        : '0.0',
+      successRate:
+        workflow.executionCount > 0
+          ? ((workflow.successCount / workflow.executionCount) * 100).toFixed(1)
+          : '0.0',
     };
 
     // Return enhanced response
@@ -216,10 +233,16 @@ export async function GET(
       statistics,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/workflows/:workflowId] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -252,15 +275,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -269,19 +295,29 @@ export async function PATCH(
     const { workspaceSlug: workspaceId, workflowId } = params;
 
     // Get workflow with access check
-    const result = await getWorkflowWithAccess(workspaceId, workflowId, session.user.id);
+    const result = await getWorkflowWithAccess(
+      workspaceId,
+      workflowId,
+      session.user.id
+    );
 
     if ('error' in result) {
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workspace not found or access denied',
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -289,8 +325,11 @@ export async function PATCH(
     // Must be workspace member to update workflows
     if (!result.workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('You must be a workspace member to update workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You must be a workspace member to update workflows',
+          WORKFLOW_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -300,8 +339,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -312,9 +354,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -324,26 +366,26 @@ export async function PATCH(
     const updateData: Prisma.workflowUpdateInput = {};
 
     if (input.name !== undefined) {
-updateData.name = input.name;
-}
+      updateData.name = input.name;
+    }
     if (input.description !== undefined) {
-updateData.description = input.description;
-}
+      updateData.description = input.description;
+    }
     if (input.trigger !== undefined) {
-updateData.trigger = input.trigger as Prisma.InputJsonValue;
-}
+      updateData.trigger = input.trigger as Prisma.InputJsonValue;
+    }
     if (input.actions !== undefined) {
-updateData.actions = input.actions as unknown as Prisma.InputJsonValue;
-}
+      updateData.actions = input.actions as unknown as Prisma.InputJsonValue;
+    }
     if (input.status !== undefined) {
-updateData.status = input.status;
-}
+      updateData.status = input.status;
+    }
     if (input.tags !== undefined) {
-updateData.tags = input.tags;
-}
+      updateData.tags = input.tags;
+    }
     if (input.metadata !== undefined) {
-updateData.metadata = input.metadata as Prisma.InputJsonValue;
-}
+      updateData.metadata = input.metadata as Prisma.InputJsonValue;
+    }
 
     // Update workflow
     const workflow = await prisma.workflow.update({
@@ -358,12 +400,21 @@ updateData.metadata = input.metadata as Prisma.InputJsonValue;
       },
     });
 
-    return NextResponse.json({ workflow, message: 'Workflow updated successfully' });
+    return NextResponse.json({
+      workflow,
+      message: 'Workflow updated successfully',
+    });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/workflows/:workflowId] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -381,15 +432,18 @@ updateData.metadata = input.metadata as Prisma.InputJsonValue;
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -398,19 +452,29 @@ export async function DELETE(
     const { workspaceSlug: workspaceId, workflowId } = params;
 
     // Get workflow with access check
-    const result = await getWorkflowWithAccess(workspaceId, workflowId, session.user.id);
+    const result = await getWorkflowWithAccess(
+      workspaceId,
+      workflowId,
+      session.user.id
+    );
 
     if ('error' in result) {
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workspace not found or access denied',
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -418,8 +482,11 @@ export async function DELETE(
     // Must be workspace member to archive workflows
     if (!result.workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('You must be a workspace member to archive workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You must be a workspace member to archive workflows',
+          WORKFLOW_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -428,8 +495,11 @@ export async function DELETE(
     // Check if workflow is already archived
     if (workflow.status === 'ARCHIVED') {
       return NextResponse.json(
-        createErrorResponse('Workflow is already archived', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-        { status: 409 },
+        createErrorResponse(
+          'Workflow is already archived',
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+        ),
+        { status: 409 }
       );
     }
 
@@ -450,10 +520,16 @@ export async function DELETE(
       workflowId,
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/workflows/:workflowId] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

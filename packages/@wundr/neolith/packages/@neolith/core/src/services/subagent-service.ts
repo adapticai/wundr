@@ -33,7 +33,10 @@ export class SubagentNotFoundError extends Error {
 }
 
 export class SubagentValidationError extends Error {
-  constructor(message: string, public readonly errors?: Record<string, string[]>) {
+  constructor(
+    message: string,
+    public readonly errors?: Record<string, string[]>
+  ) {
     super(message);
     this.name = 'SubagentValidationError';
   }
@@ -144,7 +147,10 @@ export interface SubagentService {
    * @throws {SubagentNotFoundError} If the Subagent doesn't exist
    * @throws {SessionManagerNotFoundError} If the Session Manager doesn't exist
    */
-  assignToSessionManager(subagentId: string, sessionManagerId: string): Promise<SubagentWithRelations>;
+  assignToSessionManager(
+    subagentId: string,
+    sessionManagerId: string
+  ): Promise<SubagentWithRelations>;
 
   /**
    * Unassigns a Subagent from its Session Manager.
@@ -153,7 +159,9 @@ export interface SubagentService {
    * @returns The updated Subagent
    * @throws {SubagentNotFoundError} If the Subagent doesn't exist
    */
-  unassignFromSessionManager(subagentId: string): Promise<SubagentWithRelations>;
+  unassignFromSessionManager(
+    subagentId: string
+  ): Promise<SubagentWithRelations>;
 }
 
 // =============================================================================
@@ -213,13 +221,18 @@ export class SubagentServiceImpl implements SubagentService {
           status: 'INACTIVE',
         },
         include: {
-          sessionManager: { select: { id: true, name: true, orchestratorId: true } },
+          sessionManager: {
+            select: { id: true, name: true, orchestratorId: true },
+          },
         },
       });
 
       return this.mapToType(result);
     } catch (error) {
-      throw new TransactionError('createSubagent', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createSubagent',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -230,7 +243,9 @@ export class SubagentServiceImpl implements SubagentService {
     const result = await this.db.subagent.findUnique({
       where: { id },
       include: {
-        sessionManager: { select: { id: true, name: true, orchestratorId: true } },
+        sessionManager: {
+          select: { id: true, name: true, orchestratorId: true },
+        },
       },
     });
 
@@ -242,7 +257,7 @@ export class SubagentServiceImpl implements SubagentService {
    */
   async listBySessionManager(
     sessionManagerId: string,
-    options: ListSubagentsOptions = {},
+    options: ListSubagentsOptions = {}
   ): Promise<PaginatedSubagentResult> {
     const {
       status,
@@ -267,7 +282,9 @@ export class SubagentServiceImpl implements SubagentService {
       this.db.subagent.findMany({
         where,
         include: {
-          sessionManager: { select: { id: true, name: true, orchestratorId: true } },
+          sessionManager: {
+            select: { id: true, name: true, orchestratorId: true },
+          },
         },
         skip,
         take,
@@ -278,7 +295,7 @@ export class SubagentServiceImpl implements SubagentService {
 
     const lastItem = data[data.length - 1];
     return {
-      data: data.map((item) => this.mapToType(item)),
+      data: data.map(item => this.mapToType(item)),
       total,
       hasMore: skip + data.length < total,
       nextCursor: lastItem?.id,
@@ -288,7 +305,9 @@ export class SubagentServiceImpl implements SubagentService {
   /**
    * Lists global Subagents with pagination.
    */
-  async listGlobal(options: ListSubagentsOptions = {}): Promise<PaginatedSubagentResult> {
+  async listGlobal(
+    options: ListSubagentsOptions = {}
+  ): Promise<PaginatedSubagentResult> {
     const {
       status,
       scope,
@@ -310,7 +329,9 @@ export class SubagentServiceImpl implements SubagentService {
       this.db.subagent.findMany({
         where,
         include: {
-          sessionManager: { select: { id: true, name: true, orchestratorId: true } },
+          sessionManager: {
+            select: { id: true, name: true, orchestratorId: true },
+          },
         },
         skip,
         take,
@@ -321,7 +342,7 @@ export class SubagentServiceImpl implements SubagentService {
 
     const lastItem = data[data.length - 1];
     return {
-      data: data.map((item) => this.mapToType(item)),
+      data: data.map(item => this.mapToType(item)),
       total,
       hasMore: skip + data.length < total,
       nextCursor: lastItem?.id,
@@ -338,18 +359,23 @@ export class SubagentServiceImpl implements SubagentService {
         status: 'ACTIVE',
       },
       include: {
-        sessionManager: { select: { id: true, name: true, orchestratorId: true } },
+        sessionManager: {
+          select: { id: true, name: true, orchestratorId: true },
+        },
       },
       orderBy: { name: 'asc' },
     });
 
-    return results.map((item) => this.mapToType(item));
+    return results.map(item => this.mapToType(item));
   }
 
   /**
    * Updates a Subagent.
    */
-  async update(id: string, data: UpdateSubagentInput): Promise<SubagentWithRelations> {
+  async update(
+    id: string,
+    data: UpdateSubagentInput
+  ): Promise<SubagentWithRelations> {
     const existing = await this.getById(id);
     if (!existing) {
       throw new SubagentNotFoundError(id);
@@ -369,47 +395,52 @@ export class SubagentServiceImpl implements SubagentService {
       // Build update data with proper type casting
       const updateData: any = {};
       if (data.name !== undefined) {
-updateData.name = data.name;
-}
+        updateData.name = data.name;
+      }
       if (data.description !== undefined) {
-updateData.description = data.description;
-}
+        updateData.description = data.description;
+      }
       if (data.charterData !== undefined) {
-updateData.charterData = data.charterData;
-}
+        updateData.charterData = data.charterData;
+      }
       if (data.sessionManagerId !== undefined) {
-updateData.sessionManagerId = data.sessionManagerId;
-}
+        updateData.sessionManagerId = data.sessionManagerId;
+      }
       if (data.isGlobal !== undefined) {
-updateData.isGlobal = data.isGlobal;
-}
+        updateData.isGlobal = data.isGlobal;
+      }
       if (data.scope !== undefined) {
-updateData.scope = data.scope;
-}
+        updateData.scope = data.scope;
+      }
       if (data.capabilities !== undefined) {
-updateData.capabilities = data.capabilities;
-}
+        updateData.capabilities = data.capabilities;
+      }
       if (data.mcpTools !== undefined) {
-updateData.mcpTools = data.mcpTools;
-}
+        updateData.mcpTools = data.mcpTools;
+      }
       if (data.maxTokensPerTask !== undefined) {
-updateData.maxTokensPerTask = data.maxTokensPerTask;
-}
+        updateData.maxTokensPerTask = data.maxTokensPerTask;
+      }
       if (data.status !== undefined) {
-updateData.status = data.status;
-}
+        updateData.status = data.status;
+      }
 
       const result = await this.db.subagent.update({
         where: { id },
         data: updateData,
         include: {
-          sessionManager: { select: { id: true, name: true, orchestratorId: true } },
+          sessionManager: {
+            select: { id: true, name: true, orchestratorId: true },
+          },
         },
       });
 
       return this.mapToType(result);
     } catch (error) {
-      throw new TransactionError('updateSubagent', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'updateSubagent',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -425,7 +456,10 @@ updateData.status = data.status;
     try {
       await this.db.subagent.delete({ where: { id } });
     } catch (error) {
-      throw new TransactionError('deleteSubagent', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteSubagent',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -446,7 +480,10 @@ updateData.status = data.status;
   /**
    * Assigns a Subagent to a Session Manager.
    */
-  async assignToSessionManager(subagentId: string, sessionManagerId: string): Promise<SubagentWithRelations> {
+  async assignToSessionManager(
+    subagentId: string,
+    sessionManagerId: string
+  ): Promise<SubagentWithRelations> {
     // Validate session manager exists
     const sm = await this.db.sessionManager.findUnique({
       where: { id: sessionManagerId },
@@ -461,7 +498,9 @@ updateData.status = data.status;
   /**
    * Unassigns a Subagent from its Session Manager.
    */
-  async unassignFromSessionManager(subagentId: string): Promise<SubagentWithRelations> {
+  async unassignFromSessionManager(
+    subagentId: string
+  ): Promise<SubagentWithRelations> {
     return this.update(subagentId, { sessionManagerId: null });
   }
 
@@ -555,7 +594,9 @@ updateData.status = data.status;
  * await subagentService.activate(subagent.id);
  * ```
  */
-export function createSubagentService(database?: PrismaClient): SubagentServiceImpl {
+export function createSubagentService(
+  database?: PrismaClient
+): SubagentServiceImpl {
   return new SubagentServiceImpl(database);
 }
 

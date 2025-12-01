@@ -471,7 +471,9 @@ function generateSlug(name: string): string {
  * @returns Base64 encoded cursor
  */
 function generateCursor(item: { createdAt: Date; id: string }): string {
-  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString('base64');
+  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString(
+    'base64'
+  );
 }
 
 /**
@@ -809,7 +811,13 @@ export const channelQueries = {
       orderBy: [{ joinedAt: 'desc' }, { id: 'desc' }],
       include: {
         user: {
-          select: { id: true, email: true, name: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
     });
@@ -821,7 +829,7 @@ export const channelQueries = {
     const hasNextPage = members.length > first;
     const nodes = hasNextPage ? members.slice(0, -1) : members;
 
-    const edges = nodes.map((member: typeof members[number]) => ({
+    const edges = nodes.map((member: (typeof members)[number]) => ({
       node: {
         id: member.id,
         role: member.role,
@@ -911,7 +919,9 @@ export const channelQueries = {
       select: { workspaceId: true },
     });
 
-    const firstUserWsIds = new Set(firstUserWorkspaces.map((m: { workspaceId: string }) => m.workspaceId));
+    const firstUserWsIds = new Set(
+      firstUserWorkspaces.map((m: { workspaceId: string }) => m.workspaceId)
+    );
     const commonWorkspaceId = secondUserWorkspaces.find(
       (m: { workspaceId: string }) => firstUserWsIds.has(m.workspaceId)
     )?.workspaceId;
@@ -1123,9 +1133,12 @@ export const channelMutations = {
     // Check modification permission
     const canModify = await canModifyChannel(context, id);
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify this channel', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify this channel',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Validate input
@@ -1351,7 +1364,9 @@ export const channelMutations = {
     if (channel.type !== 'PUBLIC') {
       return {
         member: null,
-        errors: [{ code: 'FORBIDDEN', message: 'Can only self-join public channels' }],
+        errors: [
+          { code: 'FORBIDDEN', message: 'Can only self-join public channels' },
+        ],
       };
     }
 
@@ -1377,7 +1392,9 @@ export const channelMutations = {
     if (existingMember) {
       return {
         member: null,
-        errors: [{ code: 'CONFLICT', message: 'Already a member of this channel' }],
+        errors: [
+          { code: 'CONFLICT', message: 'Already a member of this channel' },
+        ],
       };
     }
 
@@ -1464,7 +1481,9 @@ export const channelMutations = {
       return {
         success: false,
         deletedId: null,
-        errors: [{ code: 'NOT_FOUND', message: 'Not a member of this channel' }],
+        errors: [
+          { code: 'NOT_FOUND', message: 'Not a member of this channel' },
+        ],
       };
     }
 
@@ -1473,7 +1492,12 @@ export const channelMutations = {
       return {
         success: false,
         deletedId: null,
-        errors: [{ code: 'FORBIDDEN', message: 'Channel owner cannot leave. Transfer ownership first.' }],
+        errors: [
+          {
+            code: 'FORBIDDEN',
+            message: 'Channel owner cannot leave. Transfer ownership first.',
+          },
+        ],
       };
     }
 
@@ -1575,7 +1599,9 @@ export const channelMutations = {
     if (!wsMembership) {
       return {
         member: null,
-        errors: [{ code: 'FORBIDDEN', message: 'User must be a workspace member' }],
+        errors: [
+          { code: 'FORBIDDEN', message: 'User must be a workspace member' },
+        ],
       };
     }
 
@@ -1600,7 +1626,12 @@ export const channelMutations = {
     if (role === 'OWNER') {
       return {
         member: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role directly' }],
+        errors: [
+          {
+            code: 'BAD_USER_INPUT',
+            message: 'Cannot assign OWNER role directly',
+          },
+        ],
       };
     }
 
@@ -1805,7 +1836,9 @@ export const channelMutations = {
     if (role === 'OWNER') {
       return {
         member: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role' }],
+        errors: [
+          { code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role' },
+        ],
       };
     }
 
@@ -1879,7 +1912,9 @@ export const channelSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${CHANNEL_CREATED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${CHANNEL_CREATED}_${args.workspaceId}`
+      );
     },
   },
 
@@ -1928,7 +1963,9 @@ export const channelSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${CHANNEL_UPDATED}_${args.channelId}`);
+      return context.pubsub.asyncIterator(
+        `${CHANNEL_UPDATED}_${args.channelId}`
+      );
     },
   },
 
@@ -1961,7 +1998,9 @@ export const channelSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${CHANNEL_DELETED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${CHANNEL_DELETED}_${args.workspaceId}`
+      );
     },
   },
 
@@ -2097,11 +2136,7 @@ export const ChannelFieldResolvers = {
    * @param context - GraphQL context
    * @returns The creator user
    */
-  creator: async (
-    parent: Channel,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  creator: async (parent: Channel, _args: unknown, context: GraphQLContext) => {
     if (!parent.createdById) {
       return null;
     }
@@ -2118,16 +2153,18 @@ export const ChannelFieldResolvers = {
    * @param context - GraphQL context
    * @returns Array of channel members
    */
-  members: async (
-    parent: Channel,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  members: async (parent: Channel, _args: unknown, context: GraphQLContext) => {
     return context.prisma.channelMember.findMany({
       where: { channelId: parent.id },
       include: {
         user: {
-          select: { id: true, email: true, name: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
       orderBy: { joinedAt: 'asc' },

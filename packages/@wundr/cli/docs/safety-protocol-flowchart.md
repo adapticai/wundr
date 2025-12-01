@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document describes the safety protocol flowchart for the Wundr CLI update system. The system provides comprehensive backup, validation, and rollback capabilities to ensure safe project updates.
+This document describes the safety protocol flowchart for the Wundr CLI update system. The system
+provides comprehensive backup, validation, and rollback capabilities to ensure safe project updates.
 
 ## Safety Protocol Flowchart
 

@@ -16,13 +16,14 @@ interface EmailButtonProps {
 export const EmailButton = ({
   href,
   children,
-  variant = 'primary'
+  variant = 'primary',
 }: EmailButtonProps) => {
-  const buttonStyle = variant === 'primary'
-    ? primaryButton
-    : variant === 'secondary'
-    ? secondaryButton
-    : outlineButton;
+  const buttonStyle =
+    variant === 'primary'
+      ? primaryButton
+      : variant === 'secondary'
+        ? secondaryButton
+        : outlineButton;
 
   return (
     <Button style={buttonStyle} href={href}>

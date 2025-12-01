@@ -35,19 +35,18 @@ const aiConfigSchema = z.object({
   maxTokens: z.number().min(1).max(128000).default(4096),
   systemPrompt: z.string().nullable().default(null),
   customPrompts: z.record(z.string()).default({}),
-  enabledFeatures: z.array(z.string()).default([
-    'summarization',
-    'suggestions',
-    'codeCompletion',
-    'autoTagging'
-  ]),
-  rateLimits: z.object({
-    requestsPerMinute: z.number().default(60),
-    tokensPerDay: z.number().default(100000),
-  }).default({
-    requestsPerMinute: 60,
-    tokensPerDay: 100000,
-  }),
+  enabledFeatures: z
+    .array(z.string())
+    .default(['summarization', 'suggestions', 'codeCompletion', 'autoTagging']),
+  rateLimits: z
+    .object({
+      requestsPerMinute: z.number().default(60),
+      tokensPerDay: z.number().default(100000),
+    })
+    .default({
+      requestsPerMinute: 60,
+      tokensPerDay: 100000,
+    }),
 });
 
 /**
@@ -77,16 +76,13 @@ interface AIConfigResponse {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse<{ data: AIConfigResponse } | { error: string }>> {
   try {
     // Verify authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug: workspaceId } = await context.params;
@@ -102,7 +98,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -120,15 +116,16 @@ export async function GET(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Extract aiConfig from settings, apply defaults if not set
     const settings = workspace.settings as Record<string, unknown> | null;
-    const rawAiConfig = settings && typeof settings === 'object' && 'aiConfig' in settings
-      ? settings.aiConfig
-      : {};
+    const rawAiConfig =
+      settings && typeof settings === 'object' && 'aiConfig' in settings
+        ? settings.aiConfig
+        : {};
     const aiConfig = aiConfigSchema.parse(rawAiConfig);
 
     const response: AIConfigResponse = {
@@ -144,7 +141,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/ai-config] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -161,16 +158,13 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse<{ data: AIConfigResponse } | { error: string }>> {
   try {
     // Verify authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug: workspaceId } = await context.params;
@@ -186,15 +180,17 @@ export async function PATCH(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Only ADMIN and OWNER can update AI configuration
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
-        { error: 'Forbidden: Only workspace admins can update AI configuration' },
-        { status: 403 },
+        {
+          error: 'Forbidden: Only workspace admins can update AI configuration',
+        },
+        { status: 403 }
       );
     }
 
@@ -203,10 +199,7 @@ export async function PATCH(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Validate with Zod schema (partial update allowed)
@@ -222,14 +215,19 @@ export async function PATCH(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Merge with existing config
-    const currentSettings = workspace.settings as Record<string, unknown> | null;
+    const currentSettings = workspace.settings as Record<
+      string,
+      unknown
+    > | null;
     const currentConfig =
-      currentSettings && typeof currentSettings === 'object' && 'aiConfig' in currentSettings
+      currentSettings &&
+      typeof currentSettings === 'object' &&
+      'aiConfig' in currentSettings
         ? (currentSettings.aiConfig as Partial<AIConfig>)
         : {};
     const mergedConfig = { ...currentConfig, ...validatedConfig };
@@ -253,9 +251,14 @@ export async function PATCH(
     });
 
     // Parse final config with defaults
-    const finalSettings = updatedWorkspace.settings as Record<string, unknown> | null;
+    const finalSettings = updatedWorkspace.settings as Record<
+      string,
+      unknown
+    > | null;
     const rawFinalConfig =
-      finalSettings && typeof finalSettings === 'object' && 'aiConfig' in finalSettings
+      finalSettings &&
+      typeof finalSettings === 'object' &&
+      'aiConfig' in finalSettings
         ? finalSettings.aiConfig
         : {};
     const finalConfig = aiConfigSchema.parse(rawFinalConfig);
@@ -270,19 +273,24 @@ export async function PATCH(
 
     return NextResponse.json({ data: response });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/ai-config] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/ai-config] Error:',
+      error
+    );
 
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
-        { status: 400 },
+        {
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+        },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -43,7 +43,12 @@ export type DigestFrequency = 'instant' | 'hourly' | 'daily' | 'none';
 /**
  * Delivery status for a notification.
  */
-export type DeliveryStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'read';
+export type DeliveryStatus =
+  | 'pending'
+  | 'sent'
+  | 'delivered'
+  | 'failed'
+  | 'read';
 
 // =============================================================================
 // Push Notification Types
@@ -420,7 +425,9 @@ export type NotificationEvent =
 /**
  * Callback for notification created events.
  */
-export type OnNotificationCreatedCallback = (notification: Notification) => void;
+export type OnNotificationCreatedCallback = (
+  notification: Notification
+) => void;
 
 /**
  * Callback for notification read events.
@@ -430,7 +437,10 @@ export type OnNotificationReadCallback = (notificationId: string) => void;
 /**
  * Callback for push sent events.
  */
-export type OnPushSentCallback = (notification: PushNotification, result: PushSendResult | BatchResult) => void;
+export type OnPushSentCallback = (
+  notification: PushNotification,
+  result: PushSendResult | BatchResult
+) => void;
 
 // =============================================================================
 // Configuration Types
@@ -496,25 +506,39 @@ export function isDevicePlatform(value: unknown): value is DevicePlatform {
  */
 export function isNotificationType(value: unknown): value is NotificationType {
   const validTypes: NotificationType[] = [
-    'message', 'mention', 'thread_reply',
-    'call_incoming', 'call_missed',
-    'channel_invite', 'file_shared',
-    'vp_status', 'system',
+    'message',
+    'mention',
+    'thread_reply',
+    'call_incoming',
+    'call_missed',
+    'channel_invite',
+    'file_shared',
+    'vp_status',
+    'system',
   ];
-  return typeof value === 'string' && validTypes.includes(value as NotificationType);
+  return (
+    typeof value === 'string' && validTypes.includes(value as NotificationType)
+  );
 }
 
 /**
  * Type guard to check if a value is a valid DigestFrequency.
  */
 export function isDigestFrequency(value: unknown): value is DigestFrequency {
-  return value === 'instant' || value === 'hourly' || value === 'daily' || value === 'none';
+  return (
+    value === 'instant' ||
+    value === 'hourly' ||
+    value === 'daily' ||
+    value === 'none'
+  );
 }
 
 /**
  * Type guard to check if a value is a valid NotificationPreferences.
  */
-export function isNotificationPreferences(value: unknown): value is NotificationPreferences {
+export function isNotificationPreferences(
+  value: unknown
+): value is NotificationPreferences {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -535,7 +559,9 @@ export function isNotificationPreferences(value: unknown): value is Notification
 /**
  * Type guard to check if a value is a valid DeviceRegistration.
  */
-export function isDeviceRegistration(value: unknown): value is DeviceRegistration {
+export function isDeviceRegistration(
+  value: unknown
+): value is DeviceRegistration {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -569,7 +595,9 @@ export function isPushNotification(value: unknown): value is PushNotification {
 /**
  * Type guard to check if a value is a valid CreateNotificationInput.
  */
-export function isCreateNotificationInput(value: unknown): value is CreateNotificationInput {
+export function isCreateNotificationInput(
+  value: unknown
+): value is CreateNotificationInput {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -663,10 +691,19 @@ export const NOTIFICATION_TYPES: NotificationType[] = [
 /**
  * Notification type to preference mapping.
  */
-export const NOTIFICATION_TYPE_TO_PREFERENCE: Record<NotificationType, keyof Pick<
-  NotificationPreferences,
-  'messages' | 'mentions' | 'threads' | 'calls' | 'channelUpdates' | 'vpStatus' | 'system'
->> = {
+export const NOTIFICATION_TYPE_TO_PREFERENCE: Record<
+  NotificationType,
+  keyof Pick<
+    NotificationPreferences,
+    | 'messages'
+    | 'mentions'
+    | 'threads'
+    | 'calls'
+    | 'channelUpdates'
+    | 'vpStatus'
+    | 'system'
+  >
+> = {
   message: 'messages',
   mention: 'mentions',
   thread_reply: 'threads',

@@ -21,10 +21,10 @@ describe('Cross-Platform Compatibility Tests', () => {
   describe('Binary Execution', () => {
     test('should execute CLI binary on current platform', async () => {
       const binaryPath = path.join(__dirname, '../../bin/wundr.js');
-      
+
       const result = await testHelper.runCommand('node', [
         binaryPath,
-        '--version'
+        '--version',
       ]);
 
       expect(result.code).toBe(0);
@@ -32,12 +32,14 @@ describe('Cross-Platform Compatibility Tests', () => {
 
     test('should handle platform-specific paths', async () => {
       const testPath = isWindows ? 'C:\\test\\path' : '/test/path';
-      
+
       // Test path handling
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'project',
-        '--path', testPath
+        'init',
+        'project',
+        '--path',
+        testPath,
       ]);
 
       expect([0, 1]).toContain(result.code); // May fail due to permissions
@@ -47,7 +49,7 @@ describe('Cross-Platform Compatibility Tests', () => {
       // Test minimum node version compatibility
       const nodeVersion = process.version;
       const major = parseInt(nodeVersion.slice(1).split('.')[0]);
-      
+
       expect(major).toBeGreaterThanOrEqual(18);
     });
   });
@@ -56,7 +58,7 @@ describe('Cross-Platform Compatibility Tests', () => {
     test('should handle different path separators', async () => {
       const separator = path.sep;
       const testDir = path.join(testHelper.getTestDir(), 'subdir');
-      
+
       expect(separator).toBeDefined();
       expect(testDir).toContain(separator);
     });
@@ -66,9 +68,11 @@ describe('Cross-Platform Compatibility Tests', () => {
         // Case-insensitive filesystems
         const result = await testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          'create', 'component', 'TestCase'
+          'create',
+          'component',
+          'TestCase',
         ]);
-        
+
         expect(result.code).toBe(0);
       } else {
         // Case-sensitive filesystem (Linux)
@@ -78,12 +82,19 @@ describe('Cross-Platform Compatibility Tests', () => {
 
     test('should handle special characters in paths', async () => {
       // Test paths with spaces and special characters
-      const specialPath = path.join(testHelper.getTestDir(), 'special dir', 'file-name.test');
-      
+      const specialPath = path.join(
+        testHelper.getTestDir(),
+        'special dir',
+        'file-name.test'
+      );
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'create', 'component', 'SpecialPath',
-        '--output', specialPath
+        'create',
+        'component',
+        'SpecialPath',
+        '--output',
+        specialPath,
       ]);
 
       expect([0, 1]).toContain(result.code);
@@ -94,7 +105,9 @@ describe('Cross-Platform Compatibility Tests', () => {
         // Unix-like systems support symlinks better
         const result = await testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          'plugins', 'link', testHelper.getTestDir()
+          'plugins',
+          'link',
+          testHelper.getTestDir(),
         ]);
 
         expect([0, 1]).toContain(result.code);
@@ -105,11 +118,12 @@ describe('Cross-Platform Compatibility Tests', () => {
   describe('Shell and Process Handling', () => {
     test('should handle different shells', async () => {
       const shell = process.env.SHELL || (isWindows ? 'cmd.exe' : '/bin/bash');
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'batch', 'run',
-        await testHelper.createBatchJob('shell-test', ['echo "shell test"'])
+        'batch',
+        'run',
+        await testHelper.createBatchJob('shell-test', ['echo "shell test"']),
       ]);
 
       expect(result.code).toBe(0);
@@ -117,18 +131,19 @@ describe('Cross-Platform Compatibility Tests', () => {
 
     test('should handle environment variables', async () => {
       const testEnv = { TEST_VAR: 'test-value' };
-      
-      const result = await testHelper.runCommand('node', [
-        path.join(__dirname, '../../dist/index.js'),
-        'init', 'project'
-      ], { env: { ...process.env, ...testEnv } });
+
+      const result = await testHelper.runCommand(
+        'node',
+        [path.join(__dirname, '../../dist/index.js'), 'init', 'project'],
+        { env: { ...process.env, ...testEnv } }
+      );
 
       expect(result.code).toBe(0);
     });
 
     test('should handle different line endings', async () => {
       const lineEnding = os.EOL;
-      
+
       expect(lineEnding).toBeDefined();
       if (isWindows) {
         expect(lineEnding).toBe('\r\n');
@@ -141,10 +156,10 @@ describe('Cross-Platform Compatibility Tests', () => {
   describe('Terminal and TTY Handling', () => {
     test('should detect TTY correctly', async () => {
       const isTTY = process.stdin.isTTY;
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'help'
+        'help',
       ]);
 
       expect(result.code).toBe(0);
@@ -154,13 +169,13 @@ describe('Cross-Platform Compatibility Tests', () => {
       // Test with and without color support
       const resultWithColor = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'help'
+        'help',
       ]);
 
       const resultNoColor = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
         '--no-color',
-        'help'
+        'help',
       ]);
 
       expect(resultWithColor.code).toBe(0);
@@ -169,7 +184,7 @@ describe('Cross-Platform Compatibility Tests', () => {
 
     test('should handle terminal width', async () => {
       const width = process.stdout.columns || 80;
-      
+
       expect(width).toBeGreaterThan(0);
     });
   });
@@ -180,7 +195,8 @@ describe('Cross-Platform Compatibility Tests', () => {
         // Unix-like permission testing
         const result = await testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          'init', 'project'
+          'init',
+          'project',
         ]);
 
         expect(result.code).toBe(0);
@@ -190,7 +206,8 @@ describe('Cross-Platform Compatibility Tests', () => {
     test('should handle directory creation permissions', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'project'
+        'init',
+        'project',
       ]);
 
       expect(result.code).toBe(0);
@@ -200,15 +217,16 @@ describe('Cross-Platform Compatibility Tests', () => {
   describe('Memory and Resource Usage', () => {
     test('should not exceed memory limits', async () => {
       const initialMemory = process.memoryUsage();
-      
+
       await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'deps'
+        'analyze',
+        'deps',
       ]);
 
       const finalMemory = process.memoryUsage();
       const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
-      
+
       // Should not increase memory by more than 100MB
       expect(memoryIncrease).toBeLessThan(100 * 1024 * 1024);
     });
@@ -218,12 +236,14 @@ describe('Cross-Platform Compatibility Tests', () => {
       const largeContent = 'x'.repeat(10000);
       const fs = await import('fs-extra');
       const largeFile = path.join(testHelper.getTestDir(), 'large-file.txt');
-      
+
       await fs.writeFile(largeFile, largeContent);
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'chat', 'file', largeFile
+        'chat',
+        'file',
+        largeFile,
       ]);
 
       expect([0, 1]).toContain(result.code);
@@ -236,7 +256,8 @@ describe('Cross-Platform Compatibility Tests', () => {
         // Test Windows-specific functionality
         const result = await testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          'init', 'project'
+          'init',
+          'project',
         ]);
 
         expect(result.code).toBe(0);
@@ -248,11 +269,17 @@ describe('Cross-Platform Compatibility Tests', () => {
     test('should handle macOS-specific features', async () => {
       if (isMac) {
         // Test macOS-specific functionality
-        const result = await testHelper.runCommand('node', [
-          path.join(__dirname, '../../dist/index.js'),
-          'dashboard', 'start',
-          '--port', '3002'
-        ], { timeout: 2000 });
+        const result = await testHelper.runCommand(
+          'node',
+          [
+            path.join(__dirname, '../../dist/index.js'),
+            'dashboard',
+            'start',
+            '--port',
+            '3002',
+          ],
+          { timeout: 2000 }
+        );
 
         expect([0, null]).toContain(result.code);
       } else {
@@ -263,11 +290,18 @@ describe('Cross-Platform Compatibility Tests', () => {
     test('should handle Linux-specific features', async () => {
       if (isLinux) {
         // Test Linux-specific functionality
-        const result = await testHelper.runCommand('node', [
-          path.join(__dirname, '../../dist/index.js'),
-          'watch', 'start', 'src/**/*',
-          '--command', 'echo "Linux watch test"'
-        ], { timeout: 1000 });
+        const result = await testHelper.runCommand(
+          'node',
+          [
+            path.join(__dirname, '../../dist/index.js'),
+            'watch',
+            'start',
+            'src/**/*',
+            '--command',
+            'echo "Linux watch test"',
+          ],
+          { timeout: 1000 }
+        );
 
         expect([0, null]).toContain(result.code);
       } else {
@@ -281,7 +315,7 @@ describe('Cross-Platform Compatibility Tests', () => {
       // Test behavior when optional dependencies are missing
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'help'
+        'help',
       ]);
 
       expect(result.code).toBe(0);
@@ -289,10 +323,11 @@ describe('Cross-Platform Compatibility Tests', () => {
 
     test('should provide fallbacks for platform-specific features', async () => {
       // Test fallback behavior
-      const result = await testHelper.runCommand('node', [
-        path.join(__dirname, '../../dist/index.js'),
-        'tui'
-      ], { timeout: 1000 });
+      const result = await testHelper.runCommand(
+        'node',
+        [path.join(__dirname, '../../dist/index.js'), 'tui'],
+        { timeout: 1000 }
+      );
 
       // TUI might not work in test environment
       expect([0, 1, null]).toContain(result.code);
@@ -303,7 +338,7 @@ describe('Cross-Platform Compatibility Tests', () => {
     test('should provide platform-appropriate error messages', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'invalid-command'
+        'invalid-command',
       ]);
 
       expect(result.code).not.toBe(0);
@@ -314,7 +349,9 @@ describe('Cross-Platform Compatibility Tests', () => {
       // Test error handling across platforms
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'install', '/nonexistent/path'
+        'plugins',
+        'install',
+        '/nonexistent/path',
       ]);
 
       expect(result.code).not.toBe(0);

@@ -13,7 +13,10 @@ export class TestBaselineHandler {
   private baselineDir: string;
 
   constructor() {
-    this.scriptPath = path.resolve(process.cwd(), 'scripts/testing/create-test-baseline.ts');
+    this.scriptPath = path.resolve(
+      process.cwd(),
+      'scripts/testing/create-test-baseline.ts'
+    );
     this.baselineDir = path.join(process.cwd(), '.testing/baselines');
   }
 
@@ -24,13 +27,13 @@ export class TestBaselineHandler {
       switch (action) {
         case 'create':
           return this.createBaseline(testType, threshold);
-        
+
         case 'compare':
           return this.compareWithBaseline(testType);
-        
+
         case 'update':
           return this.updateBaseline(testType, threshold);
-        
+
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -50,7 +53,7 @@ export class TestBaselineHandler {
 
     // Run tests and collect coverage
     const coverage = this.runTestsWithCoverage(testType);
-    
+
     // Create baseline object
     const baseline = {
       timestamp: new Date().toISOString(),
@@ -73,49 +76,61 @@ export class TestBaselineHandler {
     };
 
     // Save baseline
-    const baselineFile = path.join(this.baselineDir, `baseline-${testType}-latest.json`);
+    const baselineFile = path.join(
+      this.baselineDir,
+      `baseline-${testType}-latest.json`
+    );
     fs.writeFileSync(baselineFile, JSON.stringify(baseline, null, 2));
 
     // Also save with timestamp
     const timestampFile = path.join(
-      this.baselineDir, 
+      this.baselineDir,
       `baseline-${testType}-${Date.now()}.json`
     );
     fs.writeFileSync(timestampFile, JSON.stringify(baseline, null, 2));
 
-    return JSON.stringify({
-      success: true,
-      action: 'create',
-      testType,
-      baselineFile,
-      summary: {
-        coverage: coverage.overall,
-        tests: `${coverage.tests.passed}/${coverage.tests.total} passed`,
-        threshold: `${threshold}%`,
-        status: coverage.overall >= threshold ? 'PASSING' : 'FAILING',
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'create',
+        testType,
+        baselineFile,
+        summary: {
+          coverage: coverage.overall,
+          tests: `${coverage.tests.passed}/${coverage.tests.total} passed`,
+          threshold: `${threshold}%`,
+          status: coverage.overall >= threshold ? 'PASSING' : 'FAILING',
+        },
+        message: 'Test baseline created successfully',
+        nextSteps: [
+          'Run "compare" action to check against baseline',
+          'Use in CI/CD to enforce coverage standards',
+          'Update baseline after major refactoring',
+        ],
       },
-      message: 'Test baseline created successfully',
-      nextSteps: [
-        'Run "compare" action to check against baseline',
-        'Use in CI/CD to enforce coverage standards',
-        'Update baseline after major refactoring',
-      ],
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private compareWithBaseline(testType: string): string {
-    const baselineFile = path.join(this.baselineDir, `baseline-${testType}-latest.json`);
-    
+    const baselineFile = path.join(
+      this.baselineDir,
+      `baseline-${testType}-latest.json`
+    );
+
     if (!fs.existsSync(baselineFile)) {
-      throw new Error(`No baseline found for ${testType} tests. Create one first.`);
+      throw new Error(
+        `No baseline found for ${testType} tests. Create one first.`
+      );
     }
 
     // Load baseline
     const baseline = JSON.parse(fs.readFileSync(baselineFile, 'utf-8'));
-    
+
     // Run current tests
     const current = this.runTestsWithCoverage(testType);
-    
+
     // Compare results
     const comparison = {
       baseline: baseline.coverage,
@@ -137,53 +152,70 @@ export class TestBaselineHandler {
     };
 
     const hasRegression = comparison.delta.overall < -2; // Allow 2% variance
-    const status = hasRegression ? 'REGRESSION' : 
-                  comparison.delta.overall > 0 ? 'IMPROVED' : 'STABLE';
+    const status = hasRegression
+      ? 'REGRESSION'
+      : comparison.delta.overall > 0
+        ? 'IMPROVED'
+        : 'STABLE';
 
-    return JSON.stringify({
-      success: !hasRegression,
-      action: 'compare',
-      testType,
-      status,
-      comparison,
-      threshold: baseline.threshold,
-      meetsThreshold: current.overall >= baseline.threshold,
-      summary: {
-        coverageChange: `${comparison.delta.overall > 0 ? '+' : ''}${comparison.delta.overall.toFixed(1)}%`,
-        testChange: `${comparison.testsComparison.newTests > 0 ? '+' : ''}${comparison.testsComparison.newTests} tests`,
-        regressionCount: comparison.regressions.length,
-        improvementCount: comparison.improvements.length,
+    return JSON.stringify(
+      {
+        success: !hasRegression,
+        action: 'compare',
+        testType,
+        status,
+        comparison,
+        threshold: baseline.threshold,
+        meetsThreshold: current.overall >= baseline.threshold,
+        summary: {
+          coverageChange: `${comparison.delta.overall > 0 ? '+' : ''}${comparison.delta.overall.toFixed(1)}%`,
+          testChange: `${comparison.testsComparison.newTests > 0 ? '+' : ''}${comparison.testsComparison.newTests} tests`,
+          regressionCount: comparison.regressions.length,
+          improvementCount: comparison.improvements.length,
+        },
+        recommendations: this.generateTestRecommendations(
+          comparison,
+          baseline.threshold
+        ),
+        message: `Coverage ${status}: ${current.overall.toFixed(1)}% (${comparison.delta.overall > 0 ? '+' : ''}${comparison.delta.overall.toFixed(1)}%)`,
       },
-      recommendations: this.generateTestRecommendations(comparison, baseline.threshold),
-      message: `Coverage ${status}: ${current.overall.toFixed(1)}% (${comparison.delta.overall > 0 ? '+' : ''}${comparison.delta.overall.toFixed(1)}%)`,
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private updateBaseline(testType: string, threshold: number): string {
     // First create new baseline
     const createResult = this.createBaseline(testType, threshold);
-    
+
     // Archive old baseline
-    const currentBaseline = path.join(this.baselineDir, `baseline-${testType}-latest.json`);
+    const currentBaseline = path.join(
+      this.baselineDir,
+      `baseline-${testType}-latest.json`
+    );
     if (fs.existsSync(currentBaseline)) {
       const archivePath = path.join(
         this.baselineDir,
         'archive',
         `baseline-${testType}-${Date.now()}.json`
       );
-      
+
       fs.mkdirSync(path.dirname(archivePath), { recursive: true });
       fs.copyFileSync(currentBaseline, archivePath);
     }
 
-    return JSON.stringify({
-      success: true,
-      action: 'update',
-      testType,
-      result: JSON.parse(createResult),
-      archived: true,
-      message: 'Test baseline updated successfully',
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'update',
+        testType,
+        result: JSON.parse(createResult),
+        archived: true,
+        message: 'Test baseline updated successfully',
+      },
+      null,
+      2
+    );
   }
 
   private runTestsWithCoverage(testType: string): any {
@@ -195,7 +227,8 @@ export class TestBaselineHandler {
           testCommand = 'npm test -- --testPathPattern=\\.test\\.ts$';
           break;
         case 'integration':
-          testCommand = 'npm test -- --testPathPattern=\\.integration\\.test\\.ts$';
+          testCommand =
+            'npm test -- --testPathPattern=\\.integration\\.test\\.ts$';
           break;
         case 'e2e':
           testCommand = 'npm test -- --testPathPattern=\\.e2e\\.test\\.ts$';
@@ -221,8 +254,10 @@ export class TestBaselineHandler {
   private parseCoverageOutput(output: string): any {
     try {
       const lines = output.split('\n');
-      const jsonLine = lines.find(line => line.startsWith('{') && line.includes('numTotalTests'));
-      
+      const jsonLine = lines.find(
+        line => line.startsWith('{') && line.includes('numTotalTests')
+      );
+
       if (jsonLine) {
         const data = JSON.parse(jsonLine);
         return {
@@ -249,13 +284,38 @@ export class TestBaselineHandler {
 
   private getMockCoverage(testType: string): any {
     const baseCoverage = {
-      unit: { overall: 88.5, branches: 82.3, functions: 90.1, lines: 88.5, statements: 89.2 },
-      integration: { overall: 76.2, branches: 71.5, functions: 78.9, lines: 76.2, statements: 77.1 },
-      e2e: { overall: 65.8, branches: 58.2, functions: 68.5, lines: 65.8, statements: 66.3 },
-      all: { overall: 82.5, branches: 78.2, functions: 84.3, lines: 82.5, statements: 83.1 },
+      unit: {
+        overall: 88.5,
+        branches: 82.3,
+        functions: 90.1,
+        lines: 88.5,
+        statements: 89.2,
+      },
+      integration: {
+        overall: 76.2,
+        branches: 71.5,
+        functions: 78.9,
+        lines: 76.2,
+        statements: 77.1,
+      },
+      e2e: {
+        overall: 65.8,
+        branches: 58.2,
+        functions: 68.5,
+        lines: 65.8,
+        statements: 66.3,
+      },
+      all: {
+        overall: 82.5,
+        branches: 78.2,
+        functions: 84.3,
+        lines: 82.5,
+        statements: 83.1,
+      },
     };
 
-    const coverage = baseCoverage[testType as keyof typeof baseCoverage] || baseCoverage.all;
+    const coverage =
+      baseCoverage[testType as keyof typeof baseCoverage] || baseCoverage.all;
 
     return {
       ...coverage,
@@ -277,7 +337,7 @@ export class TestBaselineHandler {
     if (!coverageMap) return [];
 
     const files: any[] = [];
-    
+
     for (const [file, data] of Object.entries(coverageMap)) {
       if (file !== 'total' && typeof data === 'object') {
         files.push({
@@ -294,15 +354,21 @@ export class TestBaselineHandler {
     const regressions: string[] = [];
 
     if (current.overall < baseline.coverage.overall - 2) {
-      regressions.push(`Overall coverage decreased by ${(baseline.coverage.overall - current.overall).toFixed(1)}%`);
+      regressions.push(
+        `Overall coverage decreased by ${(baseline.coverage.overall - current.overall).toFixed(1)}%`
+      );
     }
 
     if (current.branches < baseline.coverage.branches - 2) {
-      regressions.push(`Branch coverage decreased by ${(baseline.coverage.branches - current.branches).toFixed(1)}%`);
+      regressions.push(
+        `Branch coverage decreased by ${(baseline.coverage.branches - current.branches).toFixed(1)}%`
+      );
     }
 
     if (current.tests.failed > baseline.tests.failed) {
-      regressions.push(`${current.tests.failed - baseline.tests.failed} tests are now failing`);
+      regressions.push(
+        `${current.tests.failed - baseline.tests.failed} tests are now failing`
+      );
     }
 
     return regressions;
@@ -312,21 +378,30 @@ export class TestBaselineHandler {
     const improvements: string[] = [];
 
     if (current.overall > baseline.coverage.overall + 2) {
-      improvements.push(`Overall coverage increased by ${(current.overall - baseline.coverage.overall).toFixed(1)}%`);
+      improvements.push(
+        `Overall coverage increased by ${(current.overall - baseline.coverage.overall).toFixed(1)}%`
+      );
     }
 
     if (current.tests.total > baseline.tests.total) {
-      improvements.push(`Added ${current.tests.total - baseline.tests.total} new tests`);
+      improvements.push(
+        `Added ${current.tests.total - baseline.tests.total} new tests`
+      );
     }
 
     if (current.functions > baseline.coverage.functions + 2) {
-      improvements.push(`Function coverage improved by ${(current.functions - baseline.coverage.functions).toFixed(1)}%`);
+      improvements.push(
+        `Function coverage improved by ${(current.functions - baseline.coverage.functions).toFixed(1)}%`
+      );
     }
 
     return improvements;
   }
 
-  private generateTestRecommendations(comparison: any, threshold: number): string[] {
+  private generateTestRecommendations(
+    comparison: any,
+    threshold: number
+  ): string[] {
     const recommendations: string[] = [];
 
     if (comparison.regressions.length > 0) {
@@ -335,19 +410,27 @@ export class TestBaselineHandler {
 
     if (comparison.current < threshold) {
       const gap = threshold - comparison.current;
-      recommendations.push(`Increase coverage by ${gap.toFixed(1)}% to meet threshold`);
+      recommendations.push(
+        `Increase coverage by ${gap.toFixed(1)}% to meet threshold`
+      );
     }
 
     if (comparison.delta.branches < -5) {
-      recommendations.push('Focus on branch coverage - add tests for conditional logic');
+      recommendations.push(
+        'Focus on branch coverage - add tests for conditional logic'
+      );
     }
 
     if (comparison.testsComparison.current.skipped > 10) {
-      recommendations.push(`Enable ${comparison.testsComparison.current.skipped} skipped tests`);
+      recommendations.push(
+        `Enable ${comparison.testsComparison.current.skipped} skipped tests`
+      );
     }
 
     if (comparison.improvements.length > 3) {
-      recommendations.push('Great work! Consider raising the coverage threshold');
+      recommendations.push(
+        'Great work! Consider raising the coverage threshold'
+      );
     }
 
     return recommendations;

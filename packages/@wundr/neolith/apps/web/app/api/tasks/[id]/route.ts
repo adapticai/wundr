@@ -16,7 +16,10 @@ import { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { validateTaskDependencies, canTransitionToStatus } from '@/lib/services/task-service';
+import {
+  validateTaskDependencies,
+  canTransitionToStatus,
+} from '@/lib/services/task-service';
 import {
   updateTaskSchema,
   taskIdParamSchema,
@@ -43,15 +46,18 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -61,8 +67,11 @@ export async function GET(
 
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid task ID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid task ID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -88,7 +97,7 @@ export async function GET(
     if (!task) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -103,7 +112,7 @@ export async function GET(
     if (!workspaceMember) {
       return NextResponse.json(
         createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -111,8 +120,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/tasks/[id]] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -153,15 +165,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -171,8 +186,11 @@ export async function PATCH(
 
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid task ID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid task ID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -192,7 +210,7 @@ export async function PATCH(
     if (!currentTask) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -207,7 +225,7 @@ export async function PATCH(
     if (!workspaceMember) {
       return NextResponse.json(
         createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -217,8 +235,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -229,9 +250,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -244,16 +265,20 @@ export async function PATCH(
         return NextResponse.json(
           createErrorResponse(
             canTransition.reason || 'Invalid status transition',
-            TASK_ERROR_CODES.INVALID_STATE_TRANSITION,
+            TASK_ERROR_CODES.INVALID_STATE_TRANSITION
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     // Validate dependencies if changing
     if (input.dependsOn && input.dependsOn !== currentTask.dependsOn) {
-      const depValidation = await validateTaskDependencies(id, input.dependsOn, currentTask.workspaceId);
+      const depValidation = await validateTaskDependencies(
+        id,
+        input.dependsOn,
+        currentTask.workspaceId
+      );
 
       if (!depValidation.isValid) {
         return NextResponse.json(
@@ -263,9 +288,9 @@ export async function PATCH(
             {
               circularDependencies: depValidation.circularDependencies,
               unresolvedDependencies: depValidation.unresolvedDependencies,
-            },
+            }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -279,8 +304,11 @@ export async function PATCH(
 
       if (!assignee) {
         return NextResponse.json(
-          createErrorResponse('Assignee not found', TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Assignee not found',
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -290,17 +318,25 @@ export async function PATCH(
       where: { id },
       data: {
         ...(input.title && { title: input.title }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.priority && { priority: input.priority }),
         ...(input.status && { status: input.status }),
-        ...(input.estimatedHours !== undefined && { estimatedHours: input.estimatedHours }),
+        ...(input.estimatedHours !== undefined && {
+          estimatedHours: input.estimatedHours,
+        }),
         ...(input.dueDate !== undefined && {
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
         }),
         ...(input.tags && { tags: input.tags }),
         ...(input.dependsOn && { dependsOn: input.dependsOn }),
-        ...(input.assignedToId !== undefined && { assignedToId: input.assignedToId }),
-        ...(input.metadata && { metadata: input.metadata as Prisma.InputJsonValue }),
+        ...(input.assignedToId !== undefined && {
+          assignedToId: input.assignedToId,
+        }),
+        ...(input.metadata && {
+          metadata: input.metadata as Prisma.InputJsonValue,
+        }),
       },
       include: {
         orchestrator: {
@@ -316,7 +352,10 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ data: updatedTask, message: 'Task updated successfully' });
+    return NextResponse.json({
+      data: updatedTask,
+      message: 'Task updated successfully',
+    });
   } catch (error) {
     console.error('[PATCH /api/tasks/[id]] Error:', error);
 
@@ -324,14 +363,17 @@ export async function PATCH(
       if (error.code === 'P2025') {
         return NextResponse.json(
           createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -353,15 +395,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -371,8 +416,11 @@ export async function DELETE(
 
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid task ID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid task ID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -387,7 +435,7 @@ export async function DELETE(
     if (!task) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -402,7 +450,7 @@ export async function DELETE(
     if (!workspaceMember) {
       return NextResponse.json(
         createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -411,7 +459,7 @@ export async function DELETE(
 
     return NextResponse.json(
       { data: null, message: 'Task deleted successfully' },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error('[DELETE /api/tasks/[id]] Error:', error);
@@ -420,14 +468,17 @@ export async function DELETE(
       if (error.code === 'P2025') {
         return NextResponse.json(
           createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -87,7 +87,10 @@ export function DMCallButton({
       toast({
         variant: 'destructive',
         title: 'Failed to start call',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       });
     } finally {
       setIsInitiating(false);
@@ -99,31 +102,31 @@ export function DMCallButton({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            size="icon"
+            variant='ghost'
+            size='icon'
             className={className}
             disabled={isInitiating}
           >
             {isInitiating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className='h-4 w-4 animate-spin' />
             ) : (
-              <Phone className="h-4 w-4" />
+              <Phone className='h-4 w-4' />
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align='end'>
           <DropdownMenuItem
             onClick={() => initiateCall('audio')}
             disabled={isInitiating}
           >
-            <Phone className="mr-2 h-4 w-4" />
+            <Phone className='mr-2 h-4 w-4' />
             Start audio call
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => initiateCall('video')}
             disabled={isInitiating}
           >
-            <Video className="mr-2 h-4 w-4" />
+            <Video className='mr-2 h-4 w-4' />
             Start video call
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -135,37 +138,33 @@ export function DMCallButton({
     <div className={className}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isInitiating}
-          >
+          <Button variant='outline' size='sm' disabled={isInitiating}>
             {isInitiating ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Starting call...
               </>
             ) : (
               <>
-                <Phone className="mr-2 h-4 w-4" />
+                <Phone className='mr-2 h-4 w-4' />
                 Call
               </>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align='end'>
           <DropdownMenuItem
             onClick={() => initiateCall('audio')}
             disabled={isInitiating}
           >
-            <Phone className="mr-2 h-4 w-4" />
+            <Phone className='mr-2 h-4 w-4' />
             Audio call
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => initiateCall('video')}
             disabled={isInitiating}
           >
-            <Video className="mr-2 h-4 w-4" />
+            <Video className='mr-2 h-4 w-4' />
             Video call
           </DropdownMenuItem>
         </DropdownMenuContent>

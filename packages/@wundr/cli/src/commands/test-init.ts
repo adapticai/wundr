@@ -71,7 +71,7 @@ export class TestInitCommand {
     await fs.writeFile(configPath, config);
 
     console.log(
-      chalk.green('\n✅ Test configuration created: wundr-test.config.js'),
+      chalk.green('\n✅ Test configuration created: wundr-test.config.js')
     );
 
     // Add package.json scripts
@@ -225,8 +225,8 @@ jobs:
 
     console.log(
       chalk.green(
-        '✅ Created GitHub Actions workflow: .github/workflows/wundr-tests.yml',
-      ),
+        '✅ Created GitHub Actions workflow: .github/workflows/wundr-tests.yml'
+      )
     );
   }
 }

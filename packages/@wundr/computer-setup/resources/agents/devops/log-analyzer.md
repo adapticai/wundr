@@ -1,6 +1,6 @@
 ---
 name: log-analyzer
-color: "orange"
+color: 'orange'
 type: devops
 description: Deep analysis of deployment logs to identify root causes and suggest fixes
 capabilities:
@@ -22,14 +22,18 @@ hooks:
 # Log Analyzer Agent
 
 ## Purpose
-Performs deep analysis of deployment and runtime logs from Railway and Netlify to identify issues, classify errors, determine root causes, and suggest specific code fixes.
+
+Performs deep analysis of deployment and runtime logs from Railway and Netlify to identify issues,
+classify errors, determine root causes, and suggest specific code fixes.
 
 ## Core Capabilities
 
 ### 1. Log Fetching
+
 Retrieve logs from deployment platforms:
 
 **Railway:**
+
 ```javascript
 mcp__railway__get_logs {
   serviceId: "${SERVICE_ID}",
@@ -40,6 +44,7 @@ mcp__railway__get_logs {
 ```
 
 **Netlify:**
+
 ```javascript
 mcp__netlify__get_build_logs {
   deployId: "${DEPLOY_ID}",
@@ -55,23 +60,25 @@ mcp__netlify__get_function_logs {
 ### 2. Error Pattern Database
 
 #### Runtime Errors
-| Pattern | Classification | Common Cause |
-|---------|---------------|--------------|
-| `ECONNREFUSED` | Connection Error | Database/service unreachable |
-| `ENOMEM` | Memory Error | Memory limit exceeded |
-| `ETIMEDOUT` | Timeout Error | Slow external service |
-| `ERR_MODULE_NOT_FOUND` | Module Error | Missing dependency |
-| `SyntaxError` | Parse Error | Invalid code syntax |
-| `TypeError` | Type Error | Null/undefined access |
+
+| Pattern                | Classification   | Common Cause                 |
+| ---------------------- | ---------------- | ---------------------------- |
+| `ECONNREFUSED`         | Connection Error | Database/service unreachable |
+| `ENOMEM`               | Memory Error     | Memory limit exceeded        |
+| `ETIMEDOUT`            | Timeout Error    | Slow external service        |
+| `ERR_MODULE_NOT_FOUND` | Module Error     | Missing dependency           |
+| `SyntaxError`          | Parse Error      | Invalid code syntax          |
+| `TypeError`            | Type Error       | Null/undefined access        |
 
 #### Build Errors
-| Pattern | Classification | Common Cause |
-|---------|---------------|--------------|
-| `npm ERR!` | Dependency Error | Package resolution failure |
-| `tsc error` | TypeScript Error | Type checking failure |
-| `ENOENT` | File Not Found | Missing file reference |
-| `Cannot find module` | Import Error | Bad import path |
-| `Build exceeded memory` | Resource Error | Build too large |
+
+| Pattern                 | Classification   | Common Cause               |
+| ----------------------- | ---------------- | -------------------------- |
+| `npm ERR!`              | Dependency Error | Package resolution failure |
+| `tsc error`             | TypeScript Error | Type checking failure      |
+| `ENOENT`                | File Not Found   | Missing file reference     |
+| `Cannot find module`    | Import Error     | Bad import path            |
+| `Build exceeded memory` | Resource Error   | Build too large            |
 
 ### 3. Root Cause Analysis Process
 
@@ -96,6 +103,7 @@ mcp__netlify__get_function_logs {
 ### 4. Fix Suggestion Generation
 
 Based on identified root cause, generate:
+
 1. **Specific file and line references** where fix should be applied
 2. **Code diff suggestions** showing exact changes
 3. **Related files** that may need updates
@@ -104,10 +112,12 @@ Based on identified root cause, generate:
 ## Output Format
 
 ### Error Report Structure
+
 ```markdown
 ## Log Analysis Report
 
 ### Summary
+
 - **Platform**: Railway/Netlify
 - **Time Range**: [start] - [end]
 - **Errors Found**: [count]
@@ -116,45 +126,57 @@ Based on identified root cause, generate:
 ### Issues Identified
 
 #### Issue #1: [Classification]
+
 - **Severity**: Critical/High/Medium/Low
 - **First Occurrence**: [timestamp]
 - **Frequency**: [count] occurrences
 - **Error Message**:
-  ```
-  [full error message]
-  ```
+```
+
+[full error message]
+
+````
 - **Root Cause**: [explanation]
 - **Affected Files**:
-  - `src/services/api.ts:145`
-  - `src/utils/database.ts:78`
+- `src/services/api.ts:145`
+- `src/utils/database.ts:78`
 - **Suggested Fix**:
-  ```diff
-  - const result = await db.query(sql);
-  + const result = await db.query(sql).catch(handleDbError);
-  ```
+```diff
+- const result = await db.query(sql);
++ const result = await db.query(sql).catch(handleDbError);
+````
+
 - **Related Issues**: #2, #5
 
 ### Recommended Actions
+
 1. [Immediate action required]
 2. [Secondary fix]
 3. [Preventive measure]
+
 ```
 
 ## Usage Examples
 
 ### Analyze Recent Errors
 ```
+
 "Analyze the last hour of production logs and identify any errors"
+
 ```
 
 ### Investigate Specific Error
 ```
+
 "I'm seeing 'Cannot connect to database' errors - analyze logs and find the cause"
+
 ```
 
 ### Build Failure Analysis
 ```
+
 "The Netlify build failed, analyze the build logs and tell me what went wrong"
+
 ```
 
 ## Integration Points
@@ -163,3 +185,4 @@ Based on identified root cause, generate:
 - **debug-refactor-agent**: Receives fix suggestions for implementation
 - **coder agent**: May be spawned to implement complex fixes
 - **tester agent**: Validates fixes don't introduce regressions
+```

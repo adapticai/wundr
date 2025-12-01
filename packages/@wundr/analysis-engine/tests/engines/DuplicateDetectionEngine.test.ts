@@ -4,7 +4,11 @@
 
 import { DuplicateDetectionEngine } from '../../src/engines/DuplicateDetectionEngine';
 import { EntityInfo, AnalysisConfig } from '../../src/types';
-import { createId, generateNormalizedHash, generateSemanticHash } from '../../src/utils';
+import {
+  createId,
+  generateNormalizedHash,
+  generateSemanticHash,
+} from '../../src/utils';
 
 describe('DuplicateDetectionEngine', () => {
   let engine: DuplicateDetectionEngine;
@@ -17,7 +21,7 @@ describe('DuplicateDetectionEngine', () => {
       enableStructuralAnalysis: true,
       enableFuzzyMatching: true,
       clusteringAlgorithm: 'hash',
-      maxClusterSize: 10
+      maxClusterSize: 10,
     });
 
     mockConfig = {
@@ -31,26 +35,38 @@ describe('DuplicateDetectionEngine', () => {
       performance: {
         maxConcurrency: 10,
         chunkSize: 100,
-        enableCaching: true
+        enableCaching: true,
       },
       thresholds: {
         complexity: { cyclomatic: 10, cognitive: 15 },
         duplicates: { minSimilarity: 0.8 },
-        fileSize: { maxLines: 500 }
-      }
+        fileSize: { maxLines: 500 },
+      },
     };
   });
 
   describe('Hash-based duplicate detection', () => {
     it('should detect exact duplicates using normalized hash', async () => {
       const entities: EntityInfo[] = [
-        createMockEntity('UserData', 'interface', { id: 'number', name: 'string' }),
-        createMockEntity('UserInfo', 'interface', { id: 'number', name: 'string' }),
-        createMockEntity('Product', 'interface', { id: 'number', title: 'string' })
+        createMockEntity('UserData', 'interface', {
+          id: 'number',
+          name: 'string',
+        }),
+        createMockEntity('UserInfo', 'interface', {
+          id: 'number',
+          name: 'string',
+        }),
+        createMockEntity('Product', 'interface', {
+          id: 'number',
+          title: 'string',
+        }),
       ];
 
       // Make first two entities have same normalized hash (exact duplicates)
-      const duplicateHash = generateNormalizedHash({ id: 'number', name: 'string' });
+      const duplicateHash = generateNormalizedHash({
+        id: 'number',
+        name: 'string',
+      });
       entities[0].normalizedHash = duplicateHash;
       entities[1].normalizedHash = duplicateHash;
 
@@ -58,7 +74,10 @@ describe('DuplicateDetectionEngine', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].entities).toHaveLength(2);
-      expect(result[0].entities.map(e => e.name)).toEqual(['UserData', 'UserInfo']);
+      expect(result[0].entities.map(e => e.name)).toEqual([
+        'UserData',
+        'UserInfo',
+      ]);
       expect(result[0].structuralMatch).toBe(true);
       expect(result[0].similarity).toBe(1.0);
     });
@@ -67,7 +86,7 @@ describe('DuplicateDetectionEngine', () => {
       const entities: EntityInfo[] = [
         createMockEntity('ServiceA', 'class'),
         createMockEntity('ServiceB', 'class'),
-        createMockEntity('UtilityA', 'function')
+        createMockEntity('UtilityA', 'function'),
       ];
 
       // Make first two have same semantic hash but different normalized hash
@@ -96,8 +115,17 @@ describe('DuplicateDetectionEngine', () => {
       for (let i = 0; i < 5; i++) {
         entities.push(createMockEntity(`Entity${i}`, 'class'));
         entities[i].normalizedHash = duplicateHash;
-        entities[i].complexity = { cyclomatic: 25, cognitive: 30, maintainability: 40, depth: 3, parameters: 6, lines: 150 };
-        entities[i].dependencies = Array(15).fill('').map((_, j) => `dep${j}.ts`);
+        entities[i].complexity = {
+          cyclomatic: 25,
+          cognitive: 30,
+          maintainability: 40,
+          depth: 3,
+          parameters: 6,
+          lines: 150,
+        };
+        entities[i].dependencies = Array(15)
+          .fill('')
+          .map((_, j) => `dep${j}.ts`);
       }
 
       const result = await engine.analyze(entities, mockConfig);
@@ -110,14 +138,28 @@ describe('DuplicateDetectionEngine', () => {
     it('should assign low severity to simple duplicate pairs', async () => {
       const entities: EntityInfo[] = [
         createMockEntity('SimpleA', 'function'),
-        createMockEntity('SimpleB', 'function')
+        createMockEntity('SimpleB', 'function'),
       ];
 
       const duplicateHash = 'simple-hash';
       entities[0].normalizedHash = duplicateHash;
       entities[1].normalizedHash = duplicateHash;
-      entities[0].complexity = { cyclomatic: 2, cognitive: 1, maintainability: 80, depth: 1, parameters: 1, lines: 10 };
-      entities[1].complexity = { cyclomatic: 2, cognitive: 1, maintainability: 80, depth: 1, parameters: 1, lines: 10 };
+      entities[0].complexity = {
+        cyclomatic: 2,
+        cognitive: 1,
+        maintainability: 80,
+        depth: 1,
+        parameters: 1,
+        lines: 10,
+      };
+      entities[1].complexity = {
+        cyclomatic: 2,
+        cognitive: 1,
+        maintainability: 80,
+        depth: 1,
+        parameters: 1,
+        lines: 10,
+      };
 
       const result = await engine.analyze(entities, mockConfig);
 
@@ -130,7 +172,7 @@ describe('DuplicateDetectionEngine', () => {
     it('should suggest merge strategy for interfaces', async () => {
       const entities: EntityInfo[] = [
         createMockEntity('IUserData', 'interface'),
-        createMockEntity('IUserInfo', 'interface')
+        createMockEntity('IUserInfo', 'interface'),
       ];
 
       const duplicateHash = 'interface-hash';
@@ -148,7 +190,7 @@ describe('DuplicateDetectionEngine', () => {
     it('should suggest extract strategy for classes', async () => {
       const entities: EntityInfo[] = [
         createMockEntity('UserService', 'class'),
-        createMockEntity('UserManager', 'class')
+        createMockEntity('UserManager', 'class'),
       ];
 
       const duplicateHash = 'class-hash';
@@ -168,7 +210,7 @@ describe('DuplicateDetectionEngine', () => {
     it('should detect similar entities with different implementations', async () => {
       const entities: EntityInfo[] = [
         createMockEntity('UserService', 'class'),
-        createMockEntity('UserService', 'class') // Same name, different implementation
+        createMockEntity('UserService', 'class'), // Same name, different implementation
       ];
 
       // Different hashes but similar structure
@@ -177,20 +219,26 @@ describe('DuplicateDetectionEngine', () => {
       entities[0].members = {
         methods: [
           { name: 'create', signature: 'create(user: User): Promise<User>' },
-          { name: 'update', signature: 'update(id: number, data: any): Promise<User>' }
+          {
+            name: 'update',
+            signature: 'update(id: number, data: any): Promise<User>',
+          },
         ],
-        properties: [
-          { name: 'users', type: 'User[]', optional: false }
-        ]
+        properties: [{ name: 'users', type: 'User[]', optional: false }],
       };
       entities[1].members = {
         methods: [
-          { name: 'create', signature: 'create(userData: UserData): Promise<UserData>' },
-          { name: 'update', signature: 'update(userId: number, updates: any): Promise<UserData>' }
+          {
+            name: 'create',
+            signature: 'create(userData: UserData): Promise<UserData>',
+          },
+          {
+            name: 'update',
+            signature:
+              'update(userId: number, updates: any): Promise<UserData>',
+          },
         ],
-        properties: [
-          { name: 'userList', type: 'UserData[]', optional: false }
-        ]
+        properties: [{ name: 'userList', type: 'UserData[]', optional: false }],
       };
 
       const result = await engine.analyze(entities, mockConfig);
@@ -204,17 +252,21 @@ describe('DuplicateDetectionEngine', () => {
     it('should respect minimum similarity threshold', async () => {
       const lowSimilarityEngine = new DuplicateDetectionEngine({
         minSimilarity: 0.9, // High threshold
-        enableFuzzyMatching: true
+        enableFuzzyMatching: true,
       });
 
       const entities: EntityInfo[] = [
         createMockEntity('Service1', 'class'),
-        createMockEntity('Service2', 'class')
+        createMockEntity('Service2', 'class'),
       ];
 
       // Make them somewhat similar but below threshold
-      entities[0].members = { methods: [{ name: 'method1', signature: 'sig1' }] };
-      entities[1].members = { methods: [{ name: 'method2', signature: 'sig2' }] };
+      entities[0].members = {
+        methods: [{ name: 'method1', signature: 'sig1' }],
+      };
+      entities[1].members = {
+        methods: [{ name: 'method2', signature: 'sig2' }],
+      };
 
       const result = await lowSimilarityEngine.analyze(entities, mockConfig);
 
@@ -224,7 +276,7 @@ describe('DuplicateDetectionEngine', () => {
 
     it('should limit cluster size according to maxClusterSize', async () => {
       const limitedEngine = new DuplicateDetectionEngine({
-        maxClusterSize: 3
+        maxClusterSize: 3,
       });
 
       const entities: EntityInfo[] = [];
@@ -245,8 +297,8 @@ describe('DuplicateDetectionEngine', () => {
 
   // Helper function to create mock entities
   function createMockEntity(
-    name: string, 
-    type: any, 
+    name: string,
+    type: any,
     members?: any
   ): EntityInfo {
     return {
@@ -268,8 +320,8 @@ describe('DuplicateDetectionEngine', () => {
         maintainability: 100,
         depth: 0,
         parameters: 0,
-        lines: 10
-      }
+        lines: 10,
+      },
     };
   }
 });

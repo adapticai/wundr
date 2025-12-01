@@ -4,7 +4,8 @@
 
 ### 🎯 Objective
 
-Ensure that the `@wundr.io/computer-setup` package can be used by **any developer** to set up Claude Code and Claude Flow on a fresh machine, with all agents and configurations bundled.
+Ensure that the `@wundr.io/computer-setup` package can be used by **any developer** to set up Claude
+Code and Claude Flow on a fresh machine, with all agents and configurations bundled.
 
 ---
 
@@ -13,17 +14,20 @@ Ensure that the `@wundr.io/computer-setup` package can be used by **any develope
 ### 1. Bundled Resources Instead of CWD Dependencies
 
 **Before:**
+
 - Agent `.md` files only existed in Wundr project's `.claude/` directory
 - Installer tried to copy from `process.cwd()/.claude/agents`
 - Failed when run from any other directory or as npm package
 
 **After:**
+
 - 65 agent `.md` files bundled in `resources/agents/` (728KB)
 - CLAUDE.md template bundled in `resources/templates/`
 - Installer uses `__dirname/../../resources` to find bundled files
 - Works from any installation location
 
 **Files Changed:**
+
 - `package.json`: Added `"files": ["dist", "resources"]`
 - `claude-installer.ts:11-24`: Added `resourcesDir`, `bundledAgentsDir`, `bundledTemplatesDir`
 - `claude-installer.ts:572-582`: Changed from CWD to bundled resources
@@ -31,21 +35,25 @@ Ensure that the `@wundr.io/computer-setup` package can be used by **any develope
 ### 2. Automatic Global Wrapper Installation
 
 **Before:**
+
 - Claude CLI only available when NVM loaded correct Node version
 - No persistent `claude` command across terminal sessions
 - Users manually had to add aliases
 
 **After:**
+
 - Creates `/usr/local/bin/claude` wrapper script
 - Wrapper auto-loads NVM and finds Claude binary
 - Falls back to npx if wrapper installation fails
 - Adds shell aliases as redundancy
 
 **Files Changed:**
+
 - `claude-installer.ts:231-307`: Added `installClaudeCLI()` with wrapper creation
 - `claude-installer.ts:295-323`: Added `addToShellConfig()` for aliases
 
 **Wrapper Script:**
+
 ```bash
 #!/bin/bash
 # Load NVM if available
@@ -70,24 +78,29 @@ exec npx @anthropic-ai/claude-code "$@"
 ### 3. Graceful Sudo Handling
 
 **Before:**
+
 - Wrapper installation silently failed without sudo
 - No feedback to user
 
 **After:**
+
 - Attempts regular `mv` first
 - Prompts for sudo if needed
 - Falls back to shell aliases if sudo fails
 - Provides clear instructions for manual installation
 
 **Files Changed:**
+
 - `claude-installer.ts:274-303`: Enhanced error handling and fallbacks
 
 ### 4. Comprehensive Verification Script
 
 **New File:**
+
 - `scripts/verify-installation.sh`: Checks all components
 
 **Verifies:**
+
 - ✅ Claude CLI installation and version
 - ✅ Global wrapper at `/usr/local/bin/claude`
 - ✅ `.claude` directory structure
@@ -100,6 +113,7 @@ exec npx @anthropic-ai/claude-code "$@"
 - ✅ Chrome browser (optional)
 
 **Usage:**
+
 ```bash
 ./packages/@wundr/computer-setup/scripts/verify-installation.sh
 ```
@@ -107,11 +121,13 @@ exec npx @anthropic-ai/claude-code "$@"
 ### 5. Enhanced Documentation
 
 **New Files:**
+
 - `docs/SETUP_INSTALLATION_GUIDE.md`: Complete user guide
 - `docs/COMPUTER_SETUP_CLAUDE_FIX.md`: Technical fix documentation
 - `packages/@wundr/computer-setup/CHANGES.md`: This file
 
 **Updated Files:**
+
 - `packages/@wundr/computer-setup/README.md`: Usage and architecture
 
 ---
@@ -218,6 +234,7 @@ claude --version  # Should show: 2.0.1 (Claude Code)
 **Problem:** Automated setups can't provide sudo password
 
 **Workaround:**
+
 - Setup falls back to shell aliases automatically
 - Wrapper can be installed manually later
 - Or use npx directly: `npx @anthropic-ai/claude-code`
@@ -227,6 +244,7 @@ claude --version  # Should show: 2.0.1 (Claude Code)
 **Problem:** Fresh terminal sessions before NVM loads
 
 **Workaround:**
+
 - Wrapper auto-loads NVM
 - Shell aliases use npx (no NVM needed)
 - Restart terminal after installation
@@ -236,6 +254,7 @@ claude --version  # Should show: 2.0.1 (Claude Code)
 **Problem:** Chrome download can fail on some networks
 
 **Workaround:**
+
 - Install Chrome manually if needed
 - Chrome only needed for Browser MCP (optional)
 - Setup continues without Chrome
@@ -244,14 +263,14 @@ claude --version  # Should show: 2.0.1 (Claude Code)
 
 ## 📊 Metrics
 
-| Metric | Value |
-|--------|-------|
-| Package size | 1.2MB |
-| Bundled resources | 728KB |
-| Agent files | 65 |
-| MCP servers | 7 |
-| Installation time | 2-5 min |
-| Disk space | ~10GB total |
+| Metric              | Value        |
+| ------------------- | ------------ |
+| Package size        | 1.2MB        |
+| Bundled resources   | 728KB        |
+| Agent files         | 65           |
+| MCP servers         | 7            |
+| Installation time   | 2-5 min      |
+| Disk space          | ~10GB total  |
 | Supported platforms | macOS, Linux |
 
 ---
@@ -285,6 +304,7 @@ claude --version  # Should show: 2.0.1 (Claude Code)
 ### For Existing Users
 
 No migration needed! The setup script:
+
 - Preserves existing `~/.claude/` if present
 - Skips existing installations with `--skip-existing`
 - Updates configs in-place
@@ -328,7 +348,8 @@ npm run build
 
 ## 🎉 Summary
 
-The `@wundr.io/computer-setup` package now provides a **fully automated, reproducible setup** for Claude Code and Claude Flow that works on **any developer machine**, with:
+The `@wundr.io/computer-setup` package now provides a **fully automated, reproducible setup** for
+Claude Code and Claude Flow that works on **any developer machine**, with:
 
 - ✅ No manual configuration required
 - ✅ All resources bundled with package
@@ -337,4 +358,5 @@ The `@wundr.io/computer-setup` package now provides a **fully automated, reprodu
 - ✅ Comprehensive verification
 - ✅ Clear documentation
 
-**Result:** Developers can run one command and have a complete Claude Code environment with 65 specialized agents, MCP servers, and quality tools configured and ready to use.
+**Result:** Developers can run one command and have a complete Claude Code environment with 65
+specialized agents, MCP servers, and quality tools configured and ready to use.

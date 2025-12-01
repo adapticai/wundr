@@ -5,9 +5,11 @@ Phase 5.3: Observability & Monitoring UI components for the Neolith platform.
 ## Components
 
 ### 1. SystemOverview
+
 Displays high-level system metrics in a 4-card grid layout.
 
 **Features:**
+
 - Orchestrator status (active/total)
 - Active session count
 - Token usage percentage
@@ -15,6 +17,7 @@ Displays high-level system metrics in a 4-card grid layout.
 - Color-coded status indicators (green/yellow/red)
 
 **Usage:**
+
 ```tsx
 import { SystemOverview, type SystemOverviewData } from '@/components/health';
 
@@ -22,16 +25,18 @@ const data: SystemOverviewData = {
   orchestrators: { total: 10, active: 9 },
   sessions: { total: 50, active: 32 },
   tokens: { used: 75000, total: 100000, percentage: 75 },
-  errorRate: { rate: 0.5, threshold: 2.0 }
+  errorRate: { rate: 0.5, threshold: 2.0 },
 };
 
-<SystemOverview data={data} />
+<SystemOverview data={data} />;
 ```
 
 ### 2. OrchestratorList
+
 Sortable table view of orchestrator status with expandable details.
 
 **Features:**
+
 - Sortable columns (name, status, sessions, budget, last activity)
 - Status badges with visual indicators
 - Token budget progress bars
@@ -39,6 +44,7 @@ Sortable table view of orchestrator status with expandable details.
 - Click to expand/collapse details
 
 **Usage:**
+
 ```tsx
 import { OrchestratorList, type OrchestratorData } from '@/components/health';
 
@@ -54,18 +60,20 @@ const orchestrators: OrchestratorData[] = [
       version: '1.2.0',
       uptime: '5d 3h',
       memoryUsage: 45.2,
-      cpuUsage: 32.1
-    }
-  }
+      cpuUsage: 32.1,
+    },
+  },
 ];
 
-<OrchestratorList orchestrators={orchestrators} />
+<OrchestratorList orchestrators={orchestrators} />;
 ```
 
 ### 3. MetricsChartsPanel
+
 Interactive charts displaying system metrics over time.
 
 **Features:**
+
 - 4 responsive charts (Token Usage, Sessions, Error Rate, Response Time)
 - Time range selector (1h, 24h, 7d, 30d)
 - Uses recharts for visualization
@@ -73,6 +81,7 @@ Interactive charts displaying system metrics over time.
 - Responsive grid layout
 
 **Usage:**
+
 ```tsx
 import { MetricsChartsPanel, type MetricsData, type TimeRange } from '@/components/health';
 
@@ -82,7 +91,7 @@ const data: MetricsData[] = [
     tokenUsage: 7500,
     sessionCount: 32,
     errorRate: 0.5,
-    responseTime: 145
+    responseTime: 145,
   },
   // ... more data points
 ];
@@ -91,16 +100,15 @@ const handleTimeRangeChange = (range: TimeRange) => {
   console.log('Time range changed to:', range);
 };
 
-<MetricsChartsPanel 
-  data={data} 
-  onTimeRangeChange={handleTimeRangeChange}
-/>
+<MetricsChartsPanel data={data} onTimeRangeChange={handleTimeRangeChange} />;
 ```
 
 ### 4. AlertsPanel
+
 Alert management with severity filtering and acknowledgment.
 
 **Features:**
+
 - Alert list with severity badges (critical, warning, info)
 - Severity-based filtering
 - Acknowledge button with confirmation dialog
@@ -108,6 +116,7 @@ Alert management with severity filtering and acknowledgment.
 - Visual severity indicators
 
 **Usage:**
+
 ```tsx
 import { AlertsPanel, type Alert } from '@/components/health';
 
@@ -119,18 +128,15 @@ const alerts: Alert[] = [
     timestamp: '2025-11-30T23:30:00Z',
     orchestratorId: '3',
     orchestratorName: 'ML Orchestrator',
-    acknowledged: false
-  }
+    acknowledged: false,
+  },
 ];
 
 const handleAcknowledge = (alertId: string) => {
   console.log('Acknowledged alert:', alertId);
 };
 
-<AlertsPanel 
-  alerts={alerts}
-  onAcknowledge={handleAcknowledge}
-/>
+<AlertsPanel alerts={alerts} onAcknowledge={handleAcknowledge} />;
 ```
 
 ## Types
@@ -145,7 +151,7 @@ import type {
   MetricsData,
   TimeRange,
   Alert,
-  AlertSeverity
+  AlertSeverity,
 } from '@/components/health';
 ```
 

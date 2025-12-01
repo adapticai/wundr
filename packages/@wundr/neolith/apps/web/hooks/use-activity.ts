@@ -12,7 +12,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * Activity type enumeration
  */
-export type ActivityType = 'message' | 'task' | 'workflow' | 'member' | 'file' | 'channel' | 'all';
+export type ActivityType =
+  | 'message'
+  | 'task'
+  | 'workflow'
+  | 'member'
+  | 'file'
+  | 'channel'
+  | 'all';
 
 /**
  * Actor information (user or Orchestrator)
@@ -136,7 +143,7 @@ interface UseActivityReturn {
  */
 export function useActivity(
   workspaceId: string,
-  options: UseActivityOptions = {},
+  options: UseActivityOptions = {}
 ): UseActivityReturn {
   const {
     type = 'all',
@@ -183,20 +190,24 @@ export function useActivity(
 
       return `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`;
     },
-    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId],
+    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId]
   );
 
   /**
    * Normalize activity timestamp to ISO string
    */
-  const normalizeActivity = useCallback((raw: RawActivityEntry): ActivityEntry => {
-    return {
-      ...raw,
-      timestamp: typeof raw.timestamp === 'string'
-        ? raw.timestamp
-        : raw.timestamp.toISOString(),
-    };
-  }, []);
+  const normalizeActivity = useCallback(
+    (raw: RawActivityEntry): ActivityEntry => {
+      return {
+        ...raw,
+        timestamp:
+          typeof raw.timestamp === 'string'
+            ? raw.timestamp
+            : raw.timestamp.toISOString(),
+      };
+    },
+    []
+  );
 
   /**
    * Fetch activities from API
@@ -230,7 +241,7 @@ export function useActivity(
 
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch activities: ${response.status} ${response.statusText}`,
+            `Failed to fetch activities: ${response.status} ${response.statusText}`
           );
         }
 
@@ -245,7 +256,7 @@ export function useActivity(
         const normalizedActivities = result.data.map(normalizeActivity);
 
         if (append) {
-          setActivities((prev) => [...prev, ...normalizedActivities]);
+          setActivities(prev => [...prev, ...normalizedActivities]);
         } else {
           setActivities(normalizedActivities);
         }
@@ -257,7 +268,8 @@ export function useActivity(
           return;
         }
 
-        const error = err instanceof Error ? err : new Error('Failed to fetch activities');
+        const error =
+          err instanceof Error ? err : new Error('Failed to fetch activities');
         setError(error);
         console.error('[useActivity] Error fetching activities:', error);
       } finally {
@@ -269,7 +281,7 @@ export function useActivity(
         }
       }
     },
-    [enabled, buildUrl, normalizeActivity],
+    [enabled, buildUrl, normalizeActivity]
   );
 
   /**

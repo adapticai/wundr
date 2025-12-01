@@ -80,11 +80,14 @@ describe('POST /api/workspaces/generate-org', () => {
     it('should return 401 if user is not authenticated', async () => {
       (auth as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -97,11 +100,14 @@ describe('POST /api/workspaces/generate-org', () => {
       (auth as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
       vi.mocked(prisma.organizationMember.findUnique).mockResolvedValue(null);
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -120,11 +126,14 @@ describe('POST /api/workspaces/generate-org', () => {
         joinedAt: new Date(),
       });
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -147,11 +156,14 @@ describe('POST /api/workspaces/generate-org', () => {
     });
 
     it('should return 400 for invalid JSON body', async () => {
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: 'invalid json',
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: 'invalid json',
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -166,11 +178,14 @@ describe('POST /api/workspaces/generate-org', () => {
         // Missing other required fields
       };
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(invalidInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(invalidInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -186,11 +201,14 @@ describe('POST /api/workspaces/generate-org', () => {
         workspaceSlug: 'Invalid Slug With Spaces',
       };
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(invalidInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(invalidInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -205,11 +223,14 @@ describe('POST /api/workspaces/generate-org', () => {
         description: 'Short',
       };
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(invalidInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(invalidInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -224,11 +245,14 @@ describe('POST /api/workspaces/generate-org', () => {
         targetAssets: [],
       };
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(invalidInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(invalidInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -264,11 +288,14 @@ describe('POST /api/workspaces/generate-org', () => {
         updatedAt: new Date(),
       });
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -298,11 +325,14 @@ describe('POST /api/workspaces/generate-org', () => {
       };
       vi.mocked(createGenesisEngine).mockReturnValue(mockEngine as any);
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -314,7 +344,8 @@ describe('POST /api/workspaces/generate-org', () => {
 
     it('should handle migration validation errors gracefully', async () => {
       const { createGenesisEngine } = await import('@wundr.io/org-genesis');
-      const { migrateOrgGenesisResult } = await import('@neolith/org-integration');
+      const { migrateOrgGenesisResult } =
+        await import('@neolith/org-integration');
 
       const mockGenesisResult = {
         manifest: {
@@ -343,13 +374,18 @@ describe('POST /api/workspaces/generate-org', () => {
       };
 
       vi.mocked(createGenesisEngine).mockReturnValue(mockEngine as any);
-      vi.mocked(migrateOrgGenesisResult).mockRejectedValue(new Error('Migration failed'));
+      vi.mocked(migrateOrgGenesisResult).mockRejectedValue(
+        new Error('Migration failed')
+      );
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -374,7 +410,8 @@ describe('POST /api/workspaces/generate-org', () => {
 
     it('should create workspace with full org structure successfully', async () => {
       const { createGenesisEngine } = await import('@wundr.io/org-genesis');
-      const { migrateOrgGenesisResult } = await import('@neolith/org-integration');
+      const { migrateOrgGenesisResult } =
+        await import('@neolith/org-integration');
 
       const mockGenesisResult = {
         manifest: {
@@ -472,11 +509,14 @@ describe('POST /api/workspaces/generate-org', () => {
       vi.mocked(migrateOrgGenesisResult).mockResolvedValue(mockMigrationResult);
       vi.mocked(prisma.$transaction).mockResolvedValue(mockWorkspace as any);
 
-      const request = new Request('http://localhost/api/workspaces/generate-org', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockInput),
-      });
+      const request = new Request(
+        'http://localhost/api/workspaces/generate-org',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockInput),
+        }
+      );
 
       const response = await POST(request as any);
       const data = await response.json();
@@ -488,7 +528,9 @@ describe('POST /api/workspaces/generate-org', () => {
       expect(data.genesis.disciplineCount).toBe(1);
       expect(data.migration).toBeDefined();
       expect(data.migration.status).toBe('complete');
-      expect(data.message).toBe('Workspace created successfully with organizational structure');
+      expect(data.message).toBe(
+        'Workspace created successfully with organizational structure'
+      );
     });
   });
 });

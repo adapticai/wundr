@@ -31,7 +31,7 @@ describe('Home Page', () => {
       render(<HomePage />);
 
       expect(
-        screen.getByRole('heading', { name: /welcome to genesis app/i }),
+        screen.getByRole('heading', { name: /welcome to genesis app/i })
       ).toBeInTheDocument();
     });
 
@@ -40,8 +40,8 @@ describe('Home Page', () => {
 
       expect(
         screen.getByText(
-          /ai-powered organizational structure generation platform/i,
-        ),
+          /ai-powered organizational structure generation platform/i
+        )
       ).toBeInTheDocument();
     });
 
@@ -49,10 +49,10 @@ describe('Home Page', () => {
       render(<HomePage />);
 
       expect(
-        screen.getByRole('link', { name: /go to dashboard/i }),
+        screen.getByRole('link', { name: /go to dashboard/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole('link', { name: /sign in/i }),
+        screen.getByRole('link', { name: /sign in/i })
       ).toBeInTheDocument();
     });
   });

@@ -101,7 +101,9 @@ export interface FileRecordService {
   /**
    * Create file record
    */
-  createRecord(record: Omit<FileRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<FileRecord>;
+  createRecord(
+    record: Omit<FileRecord, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<FileRecord>;
 
   /**
    * Get unprocessed files
@@ -260,7 +262,7 @@ export class ProcessingCoordinator {
     queue: ProcessingQueue,
     storage: StorageService,
     fileRecords: FileRecordService,
-    config: CoordinatorConfig = {},
+    config: CoordinatorConfig = {}
   ) {
     this.queue = queue;
     this.storage = storage;
@@ -292,7 +294,7 @@ export class ProcessingCoordinator {
       type?: ProcessingType;
       priority?: number;
       waitForCompletion?: boolean;
-    } = {},
+    } = {}
   ): Promise<ProcessingResult | string> {
     // Get file info from storage
     const file = await this.storage.getFile(fileId);
@@ -301,13 +303,24 @@ export class ProcessingCoordinator {
     }
 
     // Determine processing type
-    const processingType = options.type ?? this.determineProcessingType(file.mimeType);
+    const processingType =
+      options.type ?? this.determineProcessingType(file.mimeType);
 
     // Create job
     const job: ProcessingJob = {
       fileId,
       type: processingType,
-      priority: (options.priority ?? this.config.defaultPriority) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
+      priority: (options.priority ?? this.config.defaultPriority) as
+        | 1
+        | 2
+        | 3
+        | 4
+        | 5
+        | 6
+        | 7
+        | 8
+        | 9
+        | 10,
       metadata: {
         filename: file.name,
         mimeType: file.mimeType,
@@ -319,7 +332,10 @@ export class ProcessingCoordinator {
 
     // Add callback if enabled
     if (this.config.enableCallbacks && this.config.callbackUrlTemplate) {
-      job.callbackUrl = this.config.callbackUrlTemplate.replace('{fileId}', fileId);
+      job.callbackUrl = this.config.callbackUrlTemplate.replace(
+        '{fileId}',
+        fileId
+      );
     }
 
     // Add to queue
@@ -365,7 +381,17 @@ export class ProcessingCoordinator {
     const job: ProcessingJob = {
       fileId: record.id,
       type: processingType,
-      priority: this.config.defaultPriority as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
+      priority: this.config.defaultPriority as
+        | 1
+        | 2
+        | 3
+        | 4
+        | 5
+        | 6
+        | 7
+        | 8
+        | 9
+        | 10,
       workspaceId: file.workspaceId,
       channelId: file.channelId,
       userId: file.userId,
@@ -404,7 +430,7 @@ export class ProcessingCoordinator {
     options: {
       type?: ProcessingType;
       priority?: number;
-    } = {},
+    } = {}
   ): Promise<string> {
     // Get current record
     const record = await this.fileRecords.getRecord(fileId);
@@ -421,11 +447,11 @@ export class ProcessingCoordinator {
     }
 
     // Process the file
-    const jobId = await this.processFile(fileId, {
+    const jobId = (await this.processFile(fileId, {
       type: options.type,
       priority: options.priority ?? 7, // Higher priority for reprocessing
       waitForCompletion: false,
-    }) as string;
+    })) as string;
 
     return jobId;
   }
@@ -441,17 +467,17 @@ export class ProcessingCoordinator {
    */
   async processWorkspaceFiles(
     workspaceId: string,
-    options: BatchProcessOptions = {},
+    options: BatchProcessOptions = {}
   ): Promise<string[]> {
     // Get workspace files
     const files = await this.storage.getWorkspaceFiles(workspaceId);
 
     return this.processBatch(
-      files.map((f) => f.id),
+      files.map(f => f.id),
       {
         ...options,
         metadata: { workspaceId },
-      },
+      }
     );
   }
 
@@ -466,17 +492,17 @@ export class ProcessingCoordinator {
    */
   async processChannelFiles(
     channelId: string,
-    options: BatchProcessOptions = {},
+    options: BatchProcessOptions = {}
   ): Promise<string[]> {
     // Get channel files
     const files = await this.storage.getChannelFiles(channelId);
 
     return this.processBatch(
-      files.map((f) => f.id),
+      files.map(f => f.id),
       {
         ...options,
         metadata: { channelId },
-      },
+      }
     );
   }
 
@@ -489,11 +515,13 @@ export class ProcessingCoordinator {
    * @returns Array of job IDs
    */
   async processUnprocessedFiles(limit?: number): Promise<string[]> {
-    const files = await this.fileRecords.getUnprocessedFiles(limit ?? this.config.maxBatchSize);
+    const files = await this.fileRecords.getUnprocessedFiles(
+      limit ?? this.config.maxBatchSize
+    );
 
     return this.processBatch(
-      files.map((f) => f.fileId),
-      {},
+      files.map(f => f.fileId),
+      {}
     );
   }
 
@@ -506,11 +534,14 @@ export class ProcessingCoordinator {
   async getFileProcessingStatus(fileId: string): Promise<JobInfo | null> {
     const jobs = await this.queue.getJobsByFileId(fileId);
     if (jobs.length === 0) {
-return null;
-}
+      return null;
+    }
 
     // Return the most recent job
-    return jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ?? null;
+    return (
+      jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ??
+      null
+    );
   }
 
   /**
@@ -553,22 +584,33 @@ return null;
    */
   private async processBatch(
     fileIds: string[],
-    options: BatchProcessOptions & { metadata?: Record<string, unknown> },
+    options: BatchProcessOptions & { metadata?: Record<string, unknown> }
   ): Promise<string[]> {
     const jobs: ProcessingJob[] = [];
 
     for (const fileId of fileIds.slice(0, this.config.maxBatchSize)) {
       const file = await this.storage.getFile(fileId);
       if (!file) {
-continue;
-}
+        continue;
+      }
 
-      const processingType = options.processingType ?? this.determineProcessingType(file.mimeType);
+      const processingType =
+        options.processingType ?? this.determineProcessingType(file.mimeType);
 
       jobs.push({
         fileId,
         type: processingType,
-        priority: (options.priority ?? this.config.defaultPriority) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
+        priority: (options.priority ?? this.config.defaultPriority) as
+          | 1
+          | 2
+          | 3
+          | 4
+          | 5
+          | 6
+          | 7
+          | 8
+          | 9
+          | 10,
         delay: options.delayBetweenJobs,
         callbackUrl: options.callbackUrl,
         metadata: {
@@ -589,8 +631,8 @@ continue;
     // Update file records
     await Promise.all(
       jobIds.map((jobId, index) =>
-        this.fileRecords.markProcessing(fileIds[index]!, jobId),
-      ),
+        this.fileRecords.markProcessing(fileIds[index]!, jobId)
+      )
     );
 
     return jobIds;
@@ -601,8 +643,11 @@ continue;
    */
   private setupQueueHandlers(): void {
     // Handle job completion
-    this.queue.on(QueueEvent.JOB_COMPLETED, async (data) => {
-      const { jobId, result } = data as { jobId: string; result: ProcessingResult };
+    this.queue.on(QueueEvent.JOB_COMPLETED, async data => {
+      const { jobId, result } = data as {
+        jobId: string;
+        result: ProcessingResult;
+      };
 
       // Get job info to find file ID
       const job = await this.queue.getJob(jobId);
@@ -615,7 +660,7 @@ continue;
     });
 
     // Handle job failure
-    this.queue.on(QueueEvent.JOB_FAILED, async (data) => {
+    this.queue.on(QueueEvent.JOB_FAILED, async data => {
       const { jobId, error, willRetry } = data as {
         jobId: string;
         error: string;
@@ -638,8 +683,10 @@ continue;
   private determineProcessingType(mimeType: string): ProcessingType {
     const mimeTypeMap: Record<string, ProcessingType> = {
       'application/pdf': 'text-extraction',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'document-convert',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'spreadsheet-parse',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        'document-convert',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        'spreadsheet-parse',
       'application/vnd.ms-excel': 'spreadsheet-parse',
       'image/png': 'ocr',
       'image/jpeg': 'ocr',
@@ -694,7 +741,7 @@ export function createProcessingCoordinator(
   queue: ProcessingQueue,
   storage: StorageService,
   fileRecords: FileRecordService,
-  config?: CoordinatorConfig,
+  config?: CoordinatorConfig
 ): ProcessingCoordinator {
   return new ProcessingCoordinator(queue, storage, fileRecords, config);
 }

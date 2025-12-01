@@ -60,15 +60,18 @@ interface InvitationDetails {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const { inviteId: token } = await context.params;
 
     if (!token) {
       return NextResponse.json(
-        createAdminErrorResponse('Token is required', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Token is required',
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -105,8 +108,11 @@ export async function GET(
 
     if (!foundWorkspace || !foundInvite) {
       return NextResponse.json(
-        createAdminErrorResponse('Invitation not found', ADMIN_ERROR_CODES.INVITE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Invitation not found',
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -114,7 +120,8 @@ export async function GET(
     const isExpired = new Date(foundInvite.expiresAt) < new Date();
     if (isExpired && foundInvite.status === 'PENDING') {
       // Update status to expired
-      const settings = (foundWorkspace.settings as Record<string, unknown>) || {};
+      const settings =
+        (foundWorkspace.settings as Record<string, unknown>) || {};
       const invites = (settings.invites as Invite[]) || [];
       const updatedInvites = invites.map(i => {
         if (i.id === foundInvite!.id) {
@@ -153,8 +160,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/invites/:inviteId/validate] Error:', error);
     return NextResponse.json(
-      createAdminErrorResponse('Failed to validate invitation', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to validate invitation',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -172,7 +182,7 @@ export async function GET(
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -180,9 +190,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'You must be logged in to accept an invitation',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -190,14 +200,23 @@ export async function POST(
 
     if (!token) {
       return NextResponse.json(
-        createAdminErrorResponse('Token is required', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Token is required',
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Search for the invite across all workspaces
     const workspaces = await prisma.workspace.findMany({
-      select: { id: true, name: true, slug: true, settings: true, organizationId: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        settings: true,
+        organizationId: true,
+      },
     });
 
     let foundWorkspace: {
@@ -222,8 +241,11 @@ export async function POST(
 
     if (!foundWorkspace || !foundInvite) {
       return NextResponse.json(
-        createAdminErrorResponse('Invitation not found', ADMIN_ERROR_CODES.INVITE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Invitation not found',
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -232,9 +254,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation has already been accepted',
-          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED,
+          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -242,9 +264,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation has been revoked',
-          ADMIN_ERROR_CODES.INVITE_REVOKED,
+          ADMIN_ERROR_CODES.INVITE_REVOKED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -253,9 +275,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation has expired',
-          ADMIN_ERROR_CODES.INVITE_EXPIRED,
+          ADMIN_ERROR_CODES.INVITE_EXPIRED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -265,13 +287,16 @@ export async function POST(
       select: { email: true },
     });
 
-    if (user?.email && foundInvite.email.toLowerCase() !== user.email.toLowerCase()) {
+    if (
+      user?.email &&
+      foundInvite.email.toLowerCase() !== user.email.toLowerCase()
+    ) {
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation was sent to a different email address',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR,
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -284,15 +309,18 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'You are already a member of this workspace',
-          ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER,
+          ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     // Ensure user is a member of the organization
     const orgMembership = await prisma.organizationMember.findFirst({
-      where: { organizationId: foundWorkspace.organizationId, userId: session.user.id },
+      where: {
+        organizationId: foundWorkspace.organizationId,
+        userId: session.user.id,
+      },
     });
 
     if (!orgMembership) {
@@ -350,8 +378,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/invites/:inviteId/validate] Error:', error);
     return NextResponse.json(
-      createAdminErrorResponse('Failed to accept invitation', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to accept invitation',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

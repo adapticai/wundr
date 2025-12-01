@@ -92,7 +92,15 @@ interface PdfMetadata {
  */
 interface PdfPageData {
   pageIndex: number;
-  pageInfo: { num: number; scale: number; rotation: number; offsetX: number; offsetY: number; width: number; height: number };
+  pageInfo: {
+    num: number;
+    scale: number;
+    rotation: number;
+    offsetX: number;
+    offsetY: number;
+    width: number;
+    height: number;
+  };
   getTextContent: () => Promise<PdfTextContent>;
 }
 
@@ -101,7 +109,10 @@ interface PdfPageData {
  */
 interface PdfTextContent {
   items: Array<{ str: string; dir: string; transform: number[] }>;
-  styles: Record<string, { fontFamily: string; ascent: number; descent: number; vertical: boolean }>;
+  styles: Record<
+    string,
+    { fontFamily: string; ascent: number; descent: number; vertical: boolean }
+  >;
 }
 
 /**
@@ -131,7 +142,7 @@ export class PdfProcessor {
    */
   async process(
     filePath: string,
-    options: PdfProcessingOptions = {},
+    options: PdfProcessingOptions = {}
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -218,7 +229,7 @@ export class PdfProcessor {
    */
   private async parsePdf(
     buffer: Buffer,
-    options: PdfProcessingOptions,
+    options: PdfProcessingOptions
   ): Promise<{
     text: string;
     pageCount: number;
@@ -251,7 +262,7 @@ export class PdfProcessor {
     const filteredPages = options.pageRange
       ? pages.slice(
           (options.pageRange.start ?? 1) - 1,
-          options.pageRange.end ?? pages.length,
+          options.pageRange.end ?? pages.length
         )
       : pages;
 
@@ -290,7 +301,7 @@ export class PdfProcessor {
    */
   private async performOcr(
     _buffer: Buffer,
-    _options: PdfProcessingOptions,
+    _options: PdfProcessingOptions
   ): Promise<{ text: string; confidence: number }> {
     // TODO: Implement OCR with tesseract.js
     // This would convert PDF pages to images and run OCR
@@ -307,7 +318,7 @@ export class PdfProcessor {
    */
   private async extractTables(
     _buffer: Buffer,
-    _options: PdfProcessingOptions,
+    _options: PdfProcessingOptions
   ): Promise<TableData[]> {
     // TODO: Implement table extraction
     // This could use pdf-parse with custom render or specialized library

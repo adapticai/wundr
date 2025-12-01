@@ -59,7 +59,8 @@ function createMockDaemonCredential(overrides: Record<string, unknown> = {}) {
     vpId: 'vp_123',
     workspaceId: 'ws_456',
     apiKey: 'dk_test123abc',
-    apiSecretHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', // SHA-256 of empty string
+    apiSecretHash:
+      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', // SHA-256 of empty string
     hostname: 'daemon.test.local',
     version: '1.0.0',
     capabilities: ['messaging', 'presence'],
@@ -130,7 +131,9 @@ class MockDaemonAuthService {
         hostname: registration.hostname,
         version: registration.version,
         capabilities: registration.capabilities,
-        metadata: registration.metadata ? JSON.stringify(registration.metadata) : null,
+        metadata: registration.metadata
+          ? JSON.stringify(registration.metadata)
+          : null,
         isActive: true,
       },
     });
@@ -146,14 +149,21 @@ class MockDaemonAuthService {
     };
   }
 
-  async authenticate(request: { apiKey: string; apiSecret: string; scopes?: string[] }) {
+  async authenticate(request: {
+    apiKey: string;
+    apiSecret: string;
+    scopes?: string[];
+  }) {
     const daemon = await this.prisma.daemonCredential.findUnique({
       where: { apiKey: request.apiKey },
       include: { vp: true },
     });
 
     if (!daemon) {
-      throw new MockDaemonAuthError('Invalid credentials', 'INVALID_CREDENTIALS');
+      throw new MockDaemonAuthError(
+        'Invalid credentials',
+        'INVALID_CREDENTIALS'
+      );
     }
 
     if (!daemon.isActive) {
@@ -161,20 +171,40 @@ class MockDaemonAuthService {
     }
 
     if (daemon.expiresAt && daemon.expiresAt < new Date()) {
-      throw new MockDaemonAuthError('Credentials expired', 'CREDENTIALS_EXPIRED');
+      throw new MockDaemonAuthError(
+        'Credentials expired',
+        'CREDENTIALS_EXPIRED'
+      );
     }
 
     // Verify secret (simplified for testing)
     const expectedHash = this.hashSecret(request.apiSecret);
     if (daemon.apiSecretHash !== expectedHash) {
-      throw new MockDaemonAuthError('Invalid credentials', 'INVALID_CREDENTIALS');
+      throw new MockDaemonAuthError(
+        'Invalid credentials',
+        'INVALID_CREDENTIALS'
+      );
     }
 
     const scopes = request.scopes ?? this.getDefaultScopes();
-    const accessToken = this.generateMockToken('access', daemon.id, daemon.orchestratorId, daemon.workspaceId);
-    const refreshToken = this.generateMockToken('refresh', daemon.id, daemon.orchestratorId, daemon.workspaceId);
+    const accessToken = this.generateMockToken(
+      'access',
+      daemon.id,
+      daemon.orchestratorId,
+      daemon.workspaceId
+    );
+    const refreshToken = this.generateMockToken(
+      'refresh',
+      daemon.id,
+      daemon.orchestratorId,
+      daemon.workspaceId
+    );
 
-    await this.redis.setex(`daemon:refresh:${daemon.id}`, this.refreshTokenTtl, refreshToken);
+    await this.redis.setex(
+      `daemon:refresh:${daemon.id}`,
+      this.refreshTokenTtl,
+      refreshToken
+    );
 
     await this.prisma.daemonCredential.update({
       where: { id: daemon.id },
@@ -203,7 +233,9 @@ class MockDaemonAuthService {
       throw new MockDaemonAuthError('Invalid token type', 'INVALID_TOKEN');
     }
 
-    const storedToken = await this.redis.get(`daemon:refresh:${payload.daemonId}`);
+    const storedToken = await this.redis.get(
+      `daemon:refresh:${payload.daemonId}`
+    );
     if (!storedToken || storedToken !== refreshToken) {
       throw new MockDaemonAuthError('Refresh token revoked', 'TOKEN_REVOKED');
     }
@@ -213,14 +245,31 @@ class MockDaemonAuthService {
     });
 
     if (!daemon || !daemon.isActive) {
-      throw new MockDaemonAuthError('Daemon not found or disabled', 'DAEMON_DISABLED');
+      throw new MockDaemonAuthError(
+        'Daemon not found or disabled',
+        'DAEMON_DISABLED'
+      );
     }
 
     const scopes = this.getDefaultScopes();
-    const accessToken = this.generateMockToken('access', daemon.id, daemon.orchestratorId, daemon.workspaceId);
-    const newRefreshToken = this.generateMockToken('refresh', daemon.id, daemon.orchestratorId, daemon.workspaceId);
+    const accessToken = this.generateMockToken(
+      'access',
+      daemon.id,
+      daemon.orchestratorId,
+      daemon.workspaceId
+    );
+    const newRefreshToken = this.generateMockToken(
+      'refresh',
+      daemon.id,
+      daemon.orchestratorId,
+      daemon.workspaceId
+    );
 
-    await this.redis.setex(`daemon:refresh:${daemon.id}`, this.refreshTokenTtl, newRefreshToken);
+    await this.redis.setex(
+      `daemon:refresh:${daemon.id}`,
+      this.refreshTokenTtl,
+      newRefreshToken
+    );
 
     return {
       accessToken,
@@ -244,7 +293,9 @@ class MockDaemonAuthService {
       throw new MockDaemonAuthError('Invalid token type', 'INVALID_TOKEN');
     }
 
-    const isDisabled = await this.redis.get(`daemon:active:${payload.daemonId}`);
+    const isDisabled = await this.redis.get(
+      `daemon:active:${payload.daemonId}`
+    );
     if (isDisabled === 'false') {
       throw new MockDaemonAuthError('Daemon is disabled', 'DAEMON_DISABLED');
     }
@@ -277,7 +328,7 @@ class MockDaemonAuthService {
     workspaceId: string,
     hostname: string,
     version: string,
-    ipAddress?: string,
+    ipAddress?: string
   ) {
     const sessionId = generateId();
     const now = new Date();
@@ -298,7 +349,7 @@ class MockDaemonAuthService {
     await this.redis.setex(
       `${this.sessionPrefix}${sessionId}`,
       86400,
-      JSON.stringify(session),
+      JSON.stringify(session)
     );
 
     await this.redis.sadd(`daemon:sessions:${daemonId}`, sessionId);
@@ -306,7 +357,11 @@ class MockDaemonAuthService {
     return session;
   }
 
-  async updateHeartbeat(sessionId: string, status: string, metrics?: Record<string, unknown>) {
+  async updateHeartbeat(
+    sessionId: string,
+    status: string,
+    metrics?: Record<string, unknown>
+  ) {
     const sessionKey = `${this.sessionPrefix}${sessionId}`;
     const sessionData = await this.redis.get(sessionKey);
 
@@ -329,7 +384,9 @@ class MockDaemonAuthService {
     const sessions: Array<Record<string, unknown>> = [];
 
     for (const sessionId of sessionIds) {
-      const sessionData = await this.redis.get(`${this.sessionPrefix}${sessionId}`);
+      const sessionData = await this.redis.get(
+        `${this.sessionPrefix}${sessionId}`
+      );
       if (sessionData) {
         sessions.push(JSON.parse(sessionData));
       } else {
@@ -358,8 +415,8 @@ class MockDaemonAuthService {
     });
 
     if (!daemon) {
-return null;
-}
+      return null;
+    }
 
     return {
       daemonId: daemon.id,
@@ -399,7 +456,7 @@ return null;
     type: 'access' | 'refresh',
     daemonId: string,
     vpId: string,
-    workspaceId: string,
+    workspaceId: string
   ): string {
     const header = { alg: 'HS256', typ: 'JWT' };
     const payload = {
@@ -408,7 +465,9 @@ return null;
       workspaceId,
       scopes: this.getDefaultScopes(),
       type,
-      exp: Math.floor(Date.now() / 1000) + (type === 'access' ? this.accessTokenTtl : this.refreshTokenTtl),
+      exp:
+        Math.floor(Date.now() / 1000) +
+        (type === 'access' ? this.accessTokenTtl : this.refreshTokenTtl),
     };
     const headerStr = Buffer.from(JSON.stringify(header)).toString('base64');
     const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64');
@@ -498,7 +557,7 @@ describe('DaemonAuthService', () => {
           data: expect.objectContaining({
             apiSecretHash: expect.any(String),
           }),
-        }),
+        })
       );
     });
 
@@ -520,7 +579,7 @@ describe('DaemonAuthService', () => {
           data: expect.objectContaining({
             metadata: JSON.stringify({ environment: 'production' }),
           }),
-        }),
+        })
       );
     });
   });
@@ -555,7 +614,7 @@ describe('DaemonAuthService', () => {
       mockPrisma.daemonCredential.findUnique.mockResolvedValue(null);
 
       await expect(
-        authService.authenticate({ apiKey: 'invalid_key', apiSecret: 'secret' }),
+        authService.authenticate({ apiKey: 'invalid_key', apiSecret: 'secret' })
       ).rejects.toThrow('Invalid credentials');
     });
 
@@ -564,7 +623,10 @@ describe('DaemonAuthService', () => {
       mockPrisma.daemonCredential.findUnique.mockResolvedValue(mockDaemon);
 
       await expect(
-        authService.authenticate({ apiKey: mockDaemon.apiKey, apiSecret: 'secret' }),
+        authService.authenticate({
+          apiKey: mockDaemon.apiKey,
+          apiSecret: 'secret',
+        })
       ).rejects.toThrow('Daemon is disabled');
     });
 
@@ -575,7 +637,10 @@ describe('DaemonAuthService', () => {
       mockPrisma.daemonCredential.findUnique.mockResolvedValue(mockDaemon);
 
       await expect(
-        authService.authenticate({ apiKey: mockDaemon.apiKey, apiSecret: 'secret' }),
+        authService.authenticate({
+          apiKey: mockDaemon.apiKey,
+          apiSecret: 'secret',
+        })
       ).rejects.toThrow('Credentials expired');
     });
 
@@ -586,7 +651,10 @@ describe('DaemonAuthService', () => {
       mockPrisma.daemonCredential.findUnique.mockResolvedValue(mockDaemon);
 
       await expect(
-        authService.authenticate({ apiKey: mockDaemon.apiKey, apiSecret: 'wrong-secret' }),
+        authService.authenticate({
+          apiKey: mockDaemon.apiKey,
+          apiSecret: 'wrong-secret',
+        })
       ).rejects.toThrow('Invalid credentials');
     });
 
@@ -609,7 +677,7 @@ describe('DaemonAuthService', () => {
           data: expect.objectContaining({
             lastUsedAt: expect.any(Date),
           }),
-        }),
+        })
       );
     });
 
@@ -630,7 +698,7 @@ describe('DaemonAuthService', () => {
       expect(mockRedis.setex).toHaveBeenCalledWith(
         `daemon:refresh:${mockDaemon.id}`,
         expect.any(Number),
-        expect.any(String),
+        expect.any(String)
       );
     });
   });
@@ -641,7 +709,9 @@ describe('DaemonAuthService', () => {
 
   describe('verifyAccessToken', () => {
     it('should verify valid access token', async () => {
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString(
+        'base64'
+      );
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: 'daemon_123',
@@ -650,7 +720,7 @@ describe('DaemonAuthService', () => {
           scopes: ['messages:read'],
           type: 'access',
           exp: Math.floor(Date.now() / 1000) + 3600,
-        }),
+        })
       ).toString('base64');
       const token = `${header}.${payload}.signature`;
 
@@ -663,7 +733,9 @@ describe('DaemonAuthService', () => {
     });
 
     it('should reject disabled daemon token', async () => {
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString(
+        'base64'
+      );
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: 'daemon_123',
@@ -672,32 +744,40 @@ describe('DaemonAuthService', () => {
           scopes: ['messages:read'],
           type: 'access',
           exp: Math.floor(Date.now() / 1000) + 3600,
-        }),
+        })
       ).toString('base64');
       const token = `${header}.${payload}.signature`;
 
       // Mark daemon as disabled in Redis
       await mockRedis.set('daemon:active:daemon_123', 'false');
 
-      await expect(authService.verifyAccessToken(token)).rejects.toThrow('Daemon is disabled');
+      await expect(authService.verifyAccessToken(token)).rejects.toThrow(
+        'Daemon is disabled'
+      );
     });
 
     it('should reject invalid token format', async () => {
-      await expect(authService.verifyAccessToken('invalid-token')).rejects.toThrow('Invalid token');
+      await expect(
+        authService.verifyAccessToken('invalid-token')
+      ).rejects.toThrow('Invalid token');
     });
 
     it('should reject refresh token as access token', async () => {
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString(
+        'base64'
+      );
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: 'daemon_123',
           type: 'refresh',
           exp: Math.floor(Date.now() / 1000) + 3600,
-        }),
+        })
       ).toString('base64');
       const token = `${header}.${payload}.signature`;
 
-      await expect(authService.verifyAccessToken(token)).rejects.toThrow('Invalid token type');
+      await expect(authService.verifyAccessToken(token)).rejects.toThrow(
+        'Invalid token type'
+      );
     });
   });
 
@@ -708,7 +788,9 @@ describe('DaemonAuthService', () => {
   describe('refreshAccessToken', () => {
     it('should refresh with valid refresh token', async () => {
       const mockDaemon = createMockDaemonCredential();
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString(
+        'base64'
+      );
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: mockDaemon.id,
@@ -716,12 +798,16 @@ describe('DaemonAuthService', () => {
           workspaceId: mockDaemon.workspaceId,
           type: 'refresh',
           exp: Math.floor(Date.now() / 1000) + 86400,
-        }),
+        })
       ).toString('base64');
       const refreshToken = `${header}.${payload}.signature`;
 
       // Store the refresh token in Redis
-      await mockRedis.setex(`daemon:refresh:${mockDaemon.id}`, 86400, refreshToken);
+      await mockRedis.setex(
+        `daemon:refresh:${mockDaemon.id}`,
+        86400,
+        refreshToken
+      );
       mockPrisma.daemonCredential.findUnique.mockResolvedValue(mockDaemon);
 
       const result = await authService.refreshAccessToken(refreshToken);
@@ -732,41 +818,49 @@ describe('DaemonAuthService', () => {
     });
 
     it('should reject revoked refresh token', async () => {
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString(
+        'base64'
+      );
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: 'daemon_123',
           type: 'refresh',
           exp: Math.floor(Date.now() / 1000) + 86400,
-        }),
+        })
       ).toString('base64');
       const refreshToken = `${header}.${payload}.signature`;
 
       // Don't store the token in Redis (simulating revocation)
 
-      await expect(authService.refreshAccessToken(refreshToken)).rejects.toThrow(
-        'Refresh token revoked',
-      );
+      await expect(
+        authService.refreshAccessToken(refreshToken)
+      ).rejects.toThrow('Refresh token revoked');
     });
 
     it('should reject if daemon is disabled', async () => {
       const mockDaemon = createMockDaemonCredential({ isActive: false });
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');
+      const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString(
+        'base64'
+      );
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: mockDaemon.id,
           type: 'refresh',
           exp: Math.floor(Date.now() / 1000) + 86400,
-        }),
+        })
       ).toString('base64');
       const refreshToken = `${header}.${payload}.signature`;
 
-      await mockRedis.setex(`daemon:refresh:${mockDaemon.id}`, 86400, refreshToken);
+      await mockRedis.setex(
+        `daemon:refresh:${mockDaemon.id}`,
+        86400,
+        refreshToken
+      );
       mockPrisma.daemonCredential.findUnique.mockResolvedValue(mockDaemon);
 
-      await expect(authService.refreshAccessToken(refreshToken)).rejects.toThrow(
-        'Daemon not found or disabled',
-      );
+      await expect(
+        authService.refreshAccessToken(refreshToken)
+      ).rejects.toThrow('Daemon not found or disabled');
     });
   });
 
@@ -782,7 +876,7 @@ describe('DaemonAuthService', () => {
         'ws_789',
         'daemon.test.local',
         '1.0.0',
-        '127.0.0.1',
+        '127.0.0.1'
       );
 
       expect(session.id).toBeDefined();
@@ -799,13 +893,13 @@ describe('DaemonAuthService', () => {
         'vp_456',
         'ws_789',
         'daemon.test.local',
-        '1.0.0',
+        '1.0.0'
       );
 
       expect(mockRedis.setex).toHaveBeenCalledWith(
         expect.stringContaining('daemon:session:'),
         86400,
-        expect.any(String),
+        expect.any(String)
       );
     });
   });
@@ -818,14 +912,14 @@ describe('DaemonAuthService', () => {
         'vp_456',
         'ws_789',
         'daemon.test.local',
-        '1.0.0',
+        '1.0.0'
       );
 
       // Store the session data
       await mockRedis.setex(
         `daemon:session:${session.id}`,
         86400,
-        JSON.stringify(session),
+        JSON.stringify(session)
       );
 
       await authService.updateHeartbeat(session.id, 'active', { cpuUsage: 50 });
@@ -836,7 +930,7 @@ describe('DaemonAuthService', () => {
 
     it('should throw error for non-existent session', async () => {
       await expect(
-        authService.updateHeartbeat('non_existent_session', 'active'),
+        authService.updateHeartbeat('non_existent_session', 'active')
       ).rejects.toThrow('Session not found');
     });
   });
@@ -848,14 +942,14 @@ describe('DaemonAuthService', () => {
         'vp_456',
         'ws_789',
         'daemon.test.local',
-        '1.0.0',
+        '1.0.0'
       );
 
       // Store the session data
       await mockRedis.setex(
         `daemon:session:${session.id}`,
         86400,
-        JSON.stringify(session),
+        JSON.stringify(session)
       );
 
       const sessions = await authService.getActiveSessions('daemon_123');
@@ -869,7 +963,10 @@ describe('DaemonAuthService', () => {
 
       await authService.getActiveSessions('daemon_123');
 
-      expect(mockRedis.srem).toHaveBeenCalledWith('daemon:sessions:daemon_123', 'stale_session_id');
+      expect(mockRedis.srem).toHaveBeenCalledWith(
+        'daemon:sessions:daemon_123',
+        'stale_session_id'
+      );
     });
   });
 
@@ -880,14 +977,14 @@ describe('DaemonAuthService', () => {
         'vp_456',
         'ws_789',
         'daemon.test.local',
-        '1.0.0',
+        '1.0.0'
       );
 
       // Store the session data
       await mockRedis.setex(
         `daemon:session:${session.id}`,
         86400,
-        JSON.stringify(session),
+        JSON.stringify(session)
       );
 
       await authService.endSession(session.id);
@@ -915,7 +1012,7 @@ describe('DaemonAuthService', () => {
         'daemon:active:daemon_123',
         'false',
         'EX',
-        86400,
+        86400
       );
       expect(mockRedis.del).toHaveBeenCalledWith('daemon:refresh:daemon_123');
     });

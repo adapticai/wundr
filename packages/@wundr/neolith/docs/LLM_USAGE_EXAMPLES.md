@@ -77,9 +77,9 @@ async function extractPersonInfo(text: string) {
       name: { type: 'string' },
       age: { type: 'number' },
       email: { type: 'string' },
-      occupation: { type: 'string' }
+      occupation: { type: 'string' },
     },
-    required: ['name', 'age', 'email', 'occupation']
+    required: ['name', 'age', 'email', 'occupation'],
   };
 
   const result = await llm.chatStructured<Person>(
@@ -96,16 +96,10 @@ async function extractPersonInfo(text: string) {
 ```typescript
 import { getLLMService, type ChatMessage } from '@neolith/core/services';
 
-async function continueConversation(
-  history: ChatMessage[],
-  newMessage: string
-) {
+async function continueConversation(history: ChatMessage[], newMessage: string) {
   const llm = getLLMService();
 
-  const messages: ChatMessage[] = [
-    ...history,
-    { role: 'user', content: newMessage }
-  ];
+  const messages: ChatMessage[] = [...history, { role: 'user', content: newMessage }];
 
   const result = await llm.chatWithHistory(messages);
 
@@ -116,13 +110,10 @@ async function continueConversation(
 const conversation: ChatMessage[] = [
   { role: 'system', content: 'You are a helpful coding assistant.' },
   { role: 'user', content: 'How do I create a React component?' },
-  { role: 'assistant', content: 'To create a React component...' }
+  { role: 'assistant', content: 'To create a React component...' },
 ];
 
-const response = await continueConversation(
-  conversation,
-  'Can you show me an example?'
-);
+const response = await continueConversation(conversation, 'Can you show me an example?');
 ```
 
 ### Image Analysis
@@ -409,10 +400,7 @@ export async function POST(req: NextRequest) {
   const { text, maxLength } = await req.json();
 
   if (!text) {
-    return NextResponse.json(
-      { error: 'Text is required' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Text is required' }, { status: 400 });
   }
 
   const llm = getLLMService();
@@ -424,7 +412,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     summary: result.response,
-    usage: result.usage
+    usage: result.usage,
   });
 }
 ```
@@ -464,7 +452,7 @@ async function generateBlogPost(topic: string): Promise<BlogPost> {
   return {
     title: titleResult.response.title,
     outline: outlineResult.response.outline,
-    content: contentResult.response
+    content: contentResult.response,
   };
 }
 ```
@@ -478,10 +466,11 @@ async function processBatchSentiment(texts: string[]) {
   const llm = getLLMService();
 
   const results = await Promise.all(
-    texts.map(async (text) => {
-      const result = await llm.chatJSON<{ sentiment: 'positive' | 'negative' | 'neutral', score: number }>(
-        `Analyze the sentiment of this text: "${text}"`
-      );
+    texts.map(async text => {
+      const result = await llm.chatJSON<{
+        sentiment: 'positive' | 'negative' | 'neutral';
+        score: number;
+      }>(`Analyze the sentiment of this text: "${text}"`);
       return { text, ...result.response };
     })
   );
@@ -501,16 +490,11 @@ interface Document {
   relevance: number;
 }
 
-async function answerQuestionWithContext(
-  question: string,
-  documents: Document[]
-) {
+async function answerQuestionWithContext(question: string, documents: Document[]) {
   const llm = getLLMService();
 
   // Sort by relevance and take top 3
-  const topDocs = documents
-    .sort((a, b) => b.relevance - a.relevance)
-    .slice(0, 3);
+  const topDocs = documents.sort((a, b) => b.relevance - a.relevance).slice(0, 3);
 
   const context = topDocs.map(doc => doc.content).join('\n\n');
 
@@ -522,7 +506,7 @@ async function answerQuestionWithContext(
   return {
     answer: result.response,
     sources: topDocs.map(doc => doc.id),
-    usage: result.usage
+    usage: result.usage,
   };
 }
 ```
@@ -546,18 +530,18 @@ async function weatherAssistant(userMessage: string) {
           properties: {
             location: {
               type: 'string',
-              description: 'City name or coordinates'
+              description: 'City name or coordinates',
             },
             unit: {
               type: 'string',
               enum: ['celsius', 'fahrenheit'],
-              description: 'Temperature unit'
-            }
+              description: 'Temperature unit',
+            },
           },
-          required: ['location']
-        }
-      }
-    }
+          required: ['location'],
+        },
+      },
+    },
   ];
 
   // Call LLM with tools
@@ -568,9 +552,7 @@ async function weatherAssistant(userMessage: string) {
 
   if (result.tool_calls) {
     // Process tool calls
-    const weatherData = await getWeather(
-      result.tool_calls[0].function.arguments.location
-    );
+    const weatherData = await getWeather(result.tool_calls[0].function.arguments.location);
 
     // Send tool results back to LLM
     const finalResult = await lumic.llm.call(
@@ -583,9 +565,9 @@ async function weatherAssistant(userMessage: string) {
           {
             role: 'tool',
             content: JSON.stringify(weatherData),
-            tool_call_id: result.tool_calls[0].id
-          }
-        ]
+            tool_call_id: result.tool_calls[0].id,
+          },
+        ],
       }
     );
 
@@ -599,6 +581,7 @@ async function weatherAssistant(userMessage: string) {
 ## Best Practices
 
 1. **Error Handling**
+
 ```typescript
 try {
   const result = await llm.chat(prompt);
@@ -611,6 +594,7 @@ try {
 ```
 
 2. **Cost Optimization**
+
 ```typescript
 // Use cheaper model for simple tasks
 const llm = getLLMService({ defaultModel: 'gpt-5-mini' });
@@ -624,6 +608,7 @@ console.log(`Cost: $${result.usage.cost.toFixed(4)}`);
 ```
 
 3. **Temperature Guidelines**
+
 ```typescript
 // Creative tasks: higher temperature (0.7-1.0)
 await llm.chat('Write a creative story', { temperature: 0.9 });
@@ -636,6 +621,7 @@ await llm.chat('Summarize this article', { temperature: 0.5 });
 ```
 
 4. **Model Selection**
+
 ```typescript
 // Fast, cheap tasks: gpt-5-mini
 await llm.chat('Quick question', { model: 'gpt-5-mini' });

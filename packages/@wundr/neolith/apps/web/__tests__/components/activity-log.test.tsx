@@ -67,7 +67,7 @@ describe('ActivityLog', () => {
       json: async () => mockActivities,
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -81,12 +81,18 @@ describe('ActivityLog', () => {
       json: async () => mockActivities,
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       // Check for icons by color classes
-      const createIcon = screen.getByText('John Doe').closest('.space-y-3')?.querySelector('.bg-emerald-500');
-      const updateIcon = screen.getByText('Alice Johnson').closest('.space-y-3')?.querySelector('.bg-stone-500');
+      const createIcon = screen
+        .getByText('John Doe')
+        .closest('.space-y-3')
+        ?.querySelector('.bg-emerald-500');
+      const updateIcon = screen
+        .getByText('Alice Johnson')
+        .closest('.space-y-3')
+        ?.querySelector('.bg-stone-500');
 
       expect(createIcon).toBeInTheDocument();
       expect(updateIcon).toBeInTheDocument();
@@ -99,7 +105,7 @@ describe('ActivityLog', () => {
       json: async () => mockActivities,
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('1 minute ago')).toBeInTheDocument(); // Singular
@@ -113,19 +119,22 @@ describe('ActivityLog', () => {
       json: async () => mockActivities,
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       const actorLink = screen.getByText('John Doe');
       expect(actorLink.tagName).toBe('A');
-      expect(actorLink).toHaveAttribute('href', '/workspaces/workspace-1/members/user-1');
+      expect(actorLink).toHaveAttribute(
+        'href',
+        '/workspaces/workspace-1/members/user-1'
+      );
     });
   });
 
   it('shows loading state initially', () => {
     (global.fetch as jest.Mock).mockImplementation(() => new Promise(() => {})); // Never resolves
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     expect(screen.getByRole('img', { hidden: true })).toBeInTheDocument(); // Loading spinner
   });
@@ -136,7 +145,7 @@ describe('ActivityLog', () => {
       json: async () => ({ actions: [], total: 0 }),
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('No activity recorded')).toBeInTheDocument();
@@ -144,9 +153,11 @@ describe('ActivityLog', () => {
   });
 
   it('shows error state and retry button on fetch failure', async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    (global.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error('Network error')
+    );
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('Error loading activities')).toBeInTheDocument();
@@ -163,7 +174,7 @@ describe('ActivityLog', () => {
         json: async () => mockActivities,
       });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('Error loading activities')).toBeInTheDocument();
@@ -183,7 +194,7 @@ describe('ActivityLog', () => {
       json: async () => ({ ...mockActivities, total: 50 }),
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -203,7 +214,7 @@ describe('ActivityLog', () => {
       json: async () => ({ ...mockActivities, total: 50 }),
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
       expect(screen.getByText('Previous')).toBeInTheDocument();
@@ -218,10 +229,12 @@ describe('ActivityLog', () => {
       json: async () => mockActivities,
     });
 
-    render(<ActivityLog workspaceId="workspace-1" />);
+    render(<ActivityLog workspaceId='workspace-1' />);
 
     await waitFor(() => {
-      const filterSelect = screen.getByRole('combobox', { name: /all actions/i });
+      const filterSelect = screen.getByRole('combobox', {
+        name: /all actions/i,
+      });
       expect(filterSelect).toBeInTheDocument();
     });
   });

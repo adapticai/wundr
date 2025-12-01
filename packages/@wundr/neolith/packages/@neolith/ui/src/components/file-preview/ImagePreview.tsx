@@ -35,7 +35,7 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
       thumbnailClassName,
       maxThumbnailHeight = 300,
     },
-    ref,
+    ref
   ) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -67,24 +67,26 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
     return (
       <>
         <Card ref={ref} className={cn('overflow-hidden', className)}>
-          <CardContent className="p-0">
-            <div className="group relative">
+          <CardContent className='p-0'>
+            <div className='group relative'>
               {isLoading && !hasError && (
                 <div
-                  className="flex items-center justify-center bg-muted"
+                  className='flex items-center justify-center bg-muted'
                   style={{ height: maxThumbnailHeight }}
                 >
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
                 </div>
               )}
 
               {hasError && (
                 <div
-                  className="flex flex-col items-center justify-center bg-muted"
+                  className='flex flex-col items-center justify-center bg-muted'
                   style={{ height: maxThumbnailHeight }}
                 >
-                  <FileImageIcon className="h-12 w-12 text-muted-foreground" />
-                  <p className="mt-2 text-sm text-muted-foreground">Failed to load image</p>
+                  <FileImageIcon className='h-12 w-12 text-muted-foreground' />
+                  <p className='mt-2 text-sm text-muted-foreground'>
+                    Failed to load image
+                  </p>
                 </div>
               )}
 
@@ -94,7 +96,7 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
                 className={cn(
                   'w-full cursor-pointer object-contain transition-opacity',
                   isLoading || hasError ? 'hidden' : 'block',
-                  thumbnailClassName,
+                  thumbnailClassName
                 )}
                 style={{ maxHeight: maxThumbnailHeight }}
                 onClick={() => setIsOpen(true)}
@@ -104,14 +106,14 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
 
               {/* Overlay on hover */}
               {!isLoading && !hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+                <div className='absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100'>
                   <Button
-                    variant="secondary"
-                    size="sm"
-                    className="gap-2"
+                    variant='secondary'
+                    size='sm'
+                    className='gap-2'
                     onClick={() => setIsOpen(true)}
                   >
-                    <ZoomInIcon className="h-4 w-4" />
+                    <ZoomInIcon className='h-4 w-4' />
                     View full size
                   </Button>
                 </div>
@@ -119,23 +121,25 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
             </div>
 
             {/* File info footer */}
-            <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-2">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium" title={filename}>
+            <div className='flex items-center justify-between border-t bg-muted/30 px-3 py-2'>
+              <div className='min-w-0 flex-1'>
+                <p className='truncate text-sm font-medium' title={filename}>
                   {truncateFilename(filename)}
                 </p>
                 {fileSize !== undefined && (
-                  <p className="text-xs text-muted-foreground">{formatFileSize(fileSize)}</p>
+                  <p className='text-xs text-muted-foreground'>
+                    {formatFileSize(fileSize)}
+                  </p>
                 )}
               </div>
               <Button
-                variant="ghost"
-                size="icon"
+                variant='ghost'
+                size='icon'
                 onClick={handleDownload}
-                title="Download image"
+                title='Download image'
                 aria-label={`Download ${filename}`}
               >
-                <DownloadIcon className="h-4 w-4" />
+                <DownloadIcon className='h-4 w-4' />
               </Button>
             </div>
           </CardContent>
@@ -143,34 +147,36 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
 
         {/* Lightbox Modal */}
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogContent className="max-w-7xl p-0">
-            <div className="relative">
+          <DialogContent className='max-w-7xl p-0'>
+            <div className='relative'>
               <DialogClose asChild>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-2 z-10 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white"
-                  aria-label="Close"
+                  variant='ghost'
+                  size='icon'
+                  className='absolute right-2 top-2 z-10 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white'
+                  aria-label='Close'
                 >
-                  <XIcon className="h-4 w-4" />
+                  <XIcon className='h-4 w-4' />
                 </Button>
               </DialogClose>
 
               <img
                 src={fileUrl}
                 alt={alt || filename}
-                className="max-h-[90vh] w-full object-contain"
+                className='max-h-[90vh] w-full object-contain'
               />
 
-              <div className="flex items-center justify-between border-t bg-background p-4">
+              <div className='flex items-center justify-between border-t bg-background p-4'>
                 <div>
-                  <p className="font-medium">{filename}</p>
+                  <p className='font-medium'>{filename}</p>
                   {fileSize !== undefined && (
-                    <p className="text-sm text-muted-foreground">{formatFileSize(fileSize)}</p>
+                    <p className='text-sm text-muted-foreground'>
+                      {formatFileSize(fileSize)}
+                    </p>
                   )}
                 </div>
-                <Button onClick={handleDownload} className="gap-2">
-                  <DownloadIcon className="h-4 w-4" />
+                <Button onClick={handleDownload} className='gap-2'>
+                  <DownloadIcon className='h-4 w-4' />
                   Download
                 </Button>
               </div>
@@ -179,7 +185,7 @@ export const ImagePreview = React.forwardRef<HTMLDivElement, ImagePreviewProps>(
         </Dialog>
       </>
     );
-  },
+  }
 );
 
 ImagePreview.displayName = 'ImagePreview';
@@ -188,18 +194,18 @@ ImagePreview.displayName = 'ImagePreview';
 function FileImageIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-      <circle cx="9" cy="9" r="2" />
-      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+      <rect width='18' height='18' x='3' y='3' rx='2' ry='2' />
+      <circle cx='9' cy='9' r='2' />
+      <path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' />
     </svg>
   );
 }

@@ -6,10 +6,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 import { AuditServiceImpl } from '../audit-service';
 
-import type {
-  AuditDatabaseClient,
-  AuditRedisClient,
-} from '../audit-service';
+import type { AuditDatabaseClient, AuditRedisClient } from '../audit-service';
 
 // =============================================================================
 // MOCK FACTORIES
@@ -81,7 +78,9 @@ describe('AuditService', () => {
     });
 
     it('should flush batch when size limit reached', async () => {
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 10 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 10 });
 
       // Add 10 entries (batch size)
       for (let i = 0; i < 10; i++) {
@@ -112,12 +111,14 @@ describe('AuditService', () => {
 
       expect(mockRedis.publish).toHaveBeenCalledWith(
         'audit:critical:ws-1',
-        expect.any(String),
+        expect.any(String)
       );
     });
 
     it('should include context information', async () => {
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 });
 
       await auditService.log({
         action: 'user.login',
@@ -136,13 +137,17 @@ describe('AuditService', () => {
 
       await auditService.flush();
 
-      const createCall = (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const createCall = (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(createCall.data[0].ipAddress).toBe('192.168.1.1');
       expect(createCall.data[0].userAgent).toBe('Mozilla/5.0');
     });
 
     it('should correctly categorize actions', async () => {
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 });
 
       await auditService.log({
         action: 'user.login',
@@ -156,12 +161,16 @@ describe('AuditService', () => {
 
       await auditService.flush();
 
-      const createCall = (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const createCall = (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(createCall.data[0].category).toBe('authentication');
     });
 
     it('should correctly assign severity levels', async () => {
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 3 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 3 });
 
       // Info level
       await auditService.log({
@@ -198,14 +207,18 @@ describe('AuditService', () => {
 
       await auditService.flush();
 
-      const createCall = (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const createCall = (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(createCall.data[0].severity).toBe('info');
       expect(createCall.data[1].severity).toBe('warning');
       expect(createCall.data[2].severity).toBe('critical');
     });
 
     it('should handle changes tracking', async () => {
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 });
 
       await auditService.log({
         action: 'user.updated',
@@ -217,13 +230,19 @@ describe('AuditService', () => {
         workspaceId: 'ws-1',
         changes: [
           { field: 'name', oldValue: 'Old Name', newValue: 'New Name' },
-          { field: 'email', oldValue: 'old@test.com', newValue: 'new@test.com' },
+          {
+            field: 'email',
+            oldValue: 'old@test.com',
+            newValue: 'new@test.com',
+          },
         ],
       });
 
       await auditService.flush();
 
-      const createCall = (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const createCall = (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       const changes = JSON.parse(createCall.data[0].changes);
       expect(changes).toHaveLength(2);
       expect(changes[0].field).toBe('name');
@@ -232,8 +251,12 @@ describe('AuditService', () => {
 
   describe('query', () => {
     it('should query with filters', async () => {
-      (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+      (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
+      );
 
       await auditService.query({
         workspaceId: 'ws-1',
@@ -249,12 +272,16 @@ describe('AuditService', () => {
     });
 
     it('should support pagination', async () => {
-      (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(100);
+      (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        100
+      );
 
       const result = await auditService.query(
         { workspaceId: 'ws-1' },
-        { limit: 10, offset: 20 },
+        { limit: 10, offset: 20 }
       );
 
       expect(result.pagination.hasMore).toBe(true);
@@ -262,63 +289,89 @@ describe('AuditService', () => {
     });
 
     it('should support search', async () => {
-      (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+      (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
+      );
 
       await auditService.query({
         workspaceId: 'ws-1',
         search: 'john',
       });
 
-      const whereClause = (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].where;
+      const whereClause = (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0].where;
       expect(whereClause.OR).toBeDefined();
     });
 
     it('should filter by actor types', async () => {
-      (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+      (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
+      );
 
       await auditService.query({
         workspaceId: 'ws-1',
         actorTypes: ['user', 'vp'],
       });
 
-      const whereClause = (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].where;
+      const whereClause = (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0].where;
       expect(whereClause.actorType).toEqual({ in: ['user', 'vp'] });
     });
 
     it('should filter by resource types', async () => {
-      (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+      (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
+      );
 
       await auditService.query({
         workspaceId: 'ws-1',
         resourceTypes: ['message', 'channel'],
       });
 
-      const whereClause = (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].where;
+      const whereClause = (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0].where;
       expect(whereClause.resourceType).toEqual({ in: ['message', 'channel'] });
     });
 
     it('should support sorting', async () => {
-      (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
-
-      await auditService.query(
-        { workspaceId: 'ws-1' },
-        undefined,
-        { field: 'severity', direction: 'asc' },
+      (
+        mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
       );
 
-      const orderBy = (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].orderBy;
+      await auditService.query({ workspaceId: 'ws-1' }, undefined, {
+        field: 'severity',
+        direction: 'asc',
+      });
+
+      const orderBy = (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0].orderBy;
       expect(orderBy).toEqual({ severity: 'asc' });
     });
   });
 
   describe('getStats', () => {
     it('should return aggregated statistics', async () => {
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(100);
-      (mockPrisma.auditLog.groupBy as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        100
+      );
+      (
+        mockPrisma.auditLog.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       const stats = await auditService.getStats('ws-1');
@@ -328,8 +381,12 @@ describe('AuditService', () => {
     });
 
     it('should accept date range', async () => {
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(50);
-      (mockPrisma.auditLog.groupBy as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        50
+      );
+      (
+        mockPrisma.auditLog.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       const dateRange = {
@@ -339,13 +396,18 @@ describe('AuditService', () => {
 
       await auditService.getStats('ws-1', dateRange);
 
-      const countCall = (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const countCall = (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0];
       expect(countCall.where.timestamp).toBeDefined();
     });
 
     it('should include timeline data', async () => {
-      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(100);
-      (mockPrisma.auditLog.groupBy as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (mockPrisma.auditLog.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        100
+      );
+      (
+        mockPrisma.auditLog.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
         { date: '2024-01-01', count: BigInt(10) },
         { date: '2024-01-02', count: BigInt(15) },
@@ -360,7 +422,9 @@ describe('AuditService', () => {
 
   describe('requestExport', () => {
     it('should create export record and queue job', async () => {
-      (mockPrisma.auditLogExport.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.auditLogExport.create as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         id: 'export-1',
         workspaceId: 'ws-1',
         requestedBy: 'user-1',
@@ -370,24 +434,28 @@ describe('AuditService', () => {
         createdAt: new Date(),
         expiresAt: new Date(),
       });
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 });
 
       const result = await auditService.requestExport(
         'ws-1',
         'user-1',
         { workspaceId: 'ws-1' },
-        'csv',
+        'csv'
       );
 
       expect(result.status).toBe('pending');
       expect(mockRedis.lpush).toHaveBeenCalledWith(
         'audit:export:queue',
-        'export-1',
+        'export-1'
       );
     });
 
     it('should support different export formats', async () => {
-      (mockPrisma.auditLogExport.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.auditLogExport.create as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         id: 'export-2',
         workspaceId: 'ws-1',
         requestedBy: 'user-1',
@@ -397,13 +465,15 @@ describe('AuditService', () => {
         createdAt: new Date(),
         expiresAt: new Date(),
       });
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 });
 
       const result = await auditService.requestExport(
         'ws-1',
         'user-1',
         { workspaceId: 'ws-1' },
-        'pdf',
+        'pdf'
       );
 
       expect(result.format).toBe('pdf');
@@ -412,7 +482,9 @@ describe('AuditService', () => {
 
   describe('getExport', () => {
     it('should return export status', async () => {
-      (mockPrisma.auditLogExport.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.auditLogExport.findUnique as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         id: 'export-1',
         workspaceId: 'ws-1',
         requestedBy: 'user-1',
@@ -436,7 +508,9 @@ describe('AuditService', () => {
     });
 
     it('should return null for non-existent export', async () => {
-      (mockPrisma.auditLogExport.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (
+        mockPrisma.auditLogExport.findUnique as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(null);
 
       const result = await auditService.getExport('non-existent');
 
@@ -446,7 +520,9 @@ describe('AuditService', () => {
 
   describe('cleanup', () => {
     it('should delete old entries based on retention', async () => {
-      (mockPrisma.auditLog.deleteMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 500 });
+      (
+        mockPrisma.auditLog.deleteMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 500 });
 
       const count = await auditService.cleanup();
 
@@ -455,18 +531,24 @@ describe('AuditService', () => {
     });
 
     it('should use retention days from config', async () => {
-      (mockPrisma.auditLog.deleteMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 0 });
+      (
+        mockPrisma.auditLog.deleteMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 0 });
 
       await auditService.cleanup();
 
-      const deleteCall = (mockPrisma.auditLog.deleteMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const deleteCall = (
+        mockPrisma.auditLog.deleteMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(deleteCall.where.timestamp.lt).toBeInstanceOf(Date);
     });
   });
 
   describe('flush', () => {
     it('should force flush pending entries', async () => {
-      (mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 3 });
+      (
+        mockPrisma.auditLog.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 3 });
 
       // Add some entries
       await auditService.log({

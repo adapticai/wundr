@@ -220,23 +220,17 @@
     {
       "type": "Integration Tests",
       "description": "Add tests for API response parsing in all use-vp.ts hooks",
-      "files": [
-        "hooks/use-vp.test.ts"
-      ]
+      "files": ["hooks/use-vp.test.ts"]
     },
     {
       "type": "E2E Tests",
       "description": "Add Playwright tests for Orchestrator list, detail, creation, and status toggle flows",
-      "files": [
-        "__tests__/e2e/orchestrator-management.spec.ts"
-      ]
+      "files": ["__tests__/e2e/orchestrator-management.spec.ts"]
     },
     {
       "type": "API Tests",
       "description": "Expand API test coverage for edge cases in Orchestrator endpoints",
-      "files": [
-        "app/api/orchestrators/__tests__/vps.test.ts"
-      ]
+      "files": ["app/api/orchestrators/__tests__/vps.test.ts"]
     }
   ],
   "architecture_notes": [

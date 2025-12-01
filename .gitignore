@@ -164,3 +164,6 @@ yarn.lock
 .turbo/
 .package-json-backups/
 packages/@wundr/neolith/apps/web/.env.sh
+
+# Local Netlify folder
+.netlify

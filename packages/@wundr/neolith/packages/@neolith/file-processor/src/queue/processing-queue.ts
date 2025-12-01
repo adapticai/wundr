@@ -144,7 +144,11 @@ export interface ProcessingQueue {
    * @param progress - Progress percentage (0-100)
    * @param message - Optional progress message
    */
-  updateProgress(jobId: string, progress: number, message?: string): Promise<void>;
+  updateProgress(
+    jobId: string,
+    progress: number,
+    message?: string
+  ): Promise<void>;
 
   // =====================
   // Queue Operations
@@ -339,7 +343,11 @@ export abstract class BaseProcessingQueue implements ProcessingQueue {
   abstract getJob(jobId: string): Promise<JobInfo | null>;
   abstract cancelJob(jobId: string): Promise<boolean>;
   abstract retryJob(jobId: string): Promise<boolean>;
-  abstract updateProgress(jobId: string, progress: number, message?: string): Promise<void>;
+  abstract updateProgress(
+    jobId: string,
+    progress: number,
+    message?: string
+  ): Promise<void>;
   abstract pause(): Promise<void>;
   abstract resume(): Promise<void>;
   abstract isPaused(): Promise<boolean>;
@@ -402,7 +410,7 @@ export abstract class BaseProcessingQueue implements ProcessingQueue {
           const result = handler(data);
           // Handle async handlers
           if (result instanceof Promise) {
-            result.catch((error) => {
+            result.catch(error => {
               console.error(`Error in event handler for ${event}:`, error);
             });
           }

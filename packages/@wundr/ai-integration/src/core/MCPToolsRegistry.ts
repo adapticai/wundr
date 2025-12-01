@@ -412,7 +412,10 @@ export class MCPToolsRegistry extends EventEmitter {
       metadata: {
         version: toolConfig.version || '1.0.0',
         dependencies: toolConfig.dependencies || [],
-        configuration: { ...toolConfig, registeredAt: new Date().toISOString() },
+        configuration: {
+          ...toolConfig,
+          registeredAt: new Date().toISOString(),
+        },
         permissions: toolConfig.permissions || [],
         handler: toolConfig.handler,
       },
@@ -475,7 +478,10 @@ export class MCPToolsRegistry extends EventEmitter {
         metadata: {
           version: serverConfig.version || '1.0.0',
           dependencies: serverConfig.dependencies || [],
-          configuration: { ...serverConfig, discoveredAt: new Date().toISOString() },
+          configuration: {
+            ...serverConfig,
+            discoveredAt: new Date().toISOString(),
+          },
           permissions: serverConfig.permissions || [],
           server: serverName,
         },

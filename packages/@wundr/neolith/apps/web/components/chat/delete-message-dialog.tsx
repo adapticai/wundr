@@ -86,40 +86,49 @@ export function DeleteMessageDialog({
 
   // Shared content for both Dialog and Drawer
   const sharedContent = (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Warning text */}
-      <p className="text-sm text-muted-foreground">
+      <p className='text-sm text-muted-foreground'>
         Are you sure you want to delete this message? This cannot be undone.
       </p>
 
       {/* Message preview */}
-      <div className="rounded-lg border bg-muted/30 p-3">
-        <div className="flex gap-3">
+      <div className='rounded-lg border bg-muted/30 p-3'>
+        <div className='flex gap-3'>
           {/* Avatar */}
-          <div className="shrink-0">
+          <div className='shrink-0'>
             <ConnectedUserAvatar
-              user={{ id: author.id, name: author.name ?? 'Unknown', image: author.image }}
-              size="sm"
+              user={{
+                id: author.id,
+                name: author.name ?? 'Unknown',
+                image: author.image,
+              }}
+              size='sm'
             />
           </div>
 
           {/* Content */}
-          <div className="min-w-0 flex-1">
+          <div className='min-w-0 flex-1'>
             {/* Header */}
-            <div className="mb-1 flex items-baseline gap-2">
-              <span className="font-semibold text-foreground text-sm">{author.name}</span>
-              <span className="text-xs text-muted-foreground">{formattedTime}</span>
+            <div className='mb-1 flex items-baseline gap-2'>
+              <span className='font-semibold text-foreground text-sm'>
+                {author.name}
+              </span>
+              <span className='text-xs text-muted-foreground'>
+                {formattedTime}
+              </span>
             </div>
 
             {/* Message content (truncated if too long) */}
-            <div className="text-sm text-foreground line-clamp-3">
+            <div className='text-sm text-foreground line-clamp-3'>
               {message.content}
             </div>
 
             {/* Attachment indicator */}
             {message.attachments?.length > 0 && (
-              <div className="mt-1 text-xs text-muted-foreground">
-                {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+              <div className='mt-1 text-xs text-muted-foreground'>
+                {message.attachments.length} attachment
+                {message.attachments.length > 1 ? 's' : ''}
               </div>
             )}
           </div>
@@ -127,22 +136,22 @@ export function DeleteMessageDialog({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2">
+      <div className='flex items-center justify-end gap-2'>
         <Button
-          variant="outline"
+          variant='outline'
           onClick={() => onOpenChange(false)}
           disabled={isDeleting}
         >
           Cancel
         </Button>
         <Button
-          variant="destructive"
+          variant='destructive'
           onClick={handleDelete}
           disabled={isDeleting}
         >
           {isDeleting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
               Deleting...
             </>
           ) : (
@@ -157,7 +166,7 @@ export function DeleteMessageDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className='max-w-md'>
           <DialogHeader>
             <DialogTitle>Delete message</DialogTitle>
           </DialogHeader>
@@ -174,9 +183,7 @@ export function DeleteMessageDialog({
         <DrawerHeader>
           <DrawerTitle>Delete message</DrawerTitle>
         </DrawerHeader>
-        <div className="px-4 pb-4">
-          {sharedContent}
-        </div>
+        <div className='px-4 pb-4'>{sharedContent}</div>
       </DrawerContent>
     </Drawer>
   );

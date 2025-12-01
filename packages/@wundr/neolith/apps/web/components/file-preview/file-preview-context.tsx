@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from 'react';
 
 import { FilePreviewModal, type PreviewFile } from './file-preview-modal';
 
@@ -18,7 +24,9 @@ interface FilePreviewContextValue {
   currentFile: PreviewFile | null;
 }
 
-const FilePreviewContext = createContext<FilePreviewContextValue | undefined>(undefined);
+const FilePreviewContext = createContext<FilePreviewContextValue | undefined>(
+  undefined
+);
 
 /**
  * Hook to access file preview functionality
@@ -39,11 +47,14 @@ export function FilePreviewProvider({ children }: { children: ReactNode }) {
   const [currentFile, setCurrentFile] = useState<PreviewFile | null>(null);
   const [fileList, setFileList] = useState<PreviewFile[]>([]);
 
-  const openPreview = useCallback((file: PreviewFile, files: PreviewFile[] = []) => {
-    setCurrentFile(file);
-    setFileList(files.length > 0 ? files : [file]);
-    setIsOpen(true);
-  }, []);
+  const openPreview = useCallback(
+    (file: PreviewFile, files: PreviewFile[] = []) => {
+      setCurrentFile(file);
+      setFileList(files.length > 0 ? files : [file]);
+      setIsOpen(true);
+    },
+    []
+  );
 
   const closePreview = useCallback(() => {
     setIsOpen(false);
@@ -70,7 +81,7 @@ export function FilePreviewProvider({ children }: { children: ReactNode }) {
       {children}
       <FilePreviewModal
         open={isOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           if (!open) closePreview();
         }}
         file={currentFile}

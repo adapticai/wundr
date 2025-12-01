@@ -31,11 +31,11 @@ export class ClaudeInstaller implements BaseInstaller {
   private readonly bundledAgentsDir = path.join(this.resourcesDir, 'agents');
   private readonly bundledTemplatesDir = path.join(
     this.resourcesDir,
-    'templates',
+    'templates'
   );
   private readonly bundledCommandsDir = path.join(
     this.resourcesDir,
-    'commands',
+    'commands'
   );
   private readonly bundledScriptsDir = path.join(this.resourcesDir, 'scripts');
   private readonly mcpServers = [
@@ -99,8 +99,9 @@ export class ClaudeInstaller implements BaseInstaller {
     // Chrome is only needed on macOS and Linux (not in headless environments)
     // Check if browser MCP is in the list of MCP tools
     const mcpTools = profile.preferences?.aiTools?.mcpTools || [];
-    const needsChrome = ['darwin', 'linux'].includes(platform.os) &&
-                        mcpTools.some(tool => tool.toLowerCase().includes('browser'));
+    const needsChrome =
+      ['darwin', 'linux'].includes(platform.os) &&
+      mcpTools.some(tool => tool.toLowerCase().includes('browser'));
 
     steps.push({
       id: 'chrome-browser',
@@ -175,7 +176,7 @@ export class ClaudeInstaller implements BaseInstaller {
 
   async install(
     profile: DeveloperProfile,
-    platform: SetupPlatform,
+    platform: SetupPlatform
   ): Promise<void> {
     // Store profile and platform for use in execute
     this.currentProfile = profile;
@@ -189,7 +190,7 @@ export class ClaudeInstaller implements BaseInstaller {
 
   async configure(
     profile: DeveloperProfile,
-    platform: SetupPlatform,
+    platform: SetupPlatform
   ): Promise<void> {
     // Ensure directories exist before configuring
     await this.ensureDirectoriesExist();
@@ -199,7 +200,9 @@ export class ClaudeInstaller implements BaseInstaller {
     // Apply profile-specific configurations
     if (profile.preferences?.aiTools?.mcpTools) {
       // User has specific MCP tool preferences
-      logger.info(`Configuring MCP tools for ${profile.name} on ${platform.os}`);
+      logger.info(
+        `Configuring MCP tools for ${profile.name} on ${platform.os}`
+      );
     }
   }
 
@@ -369,7 +372,7 @@ exec npx @anthropic-ai/claude-code "$@"
         const mvErrorMessage =
           mvError instanceof Error ? mvError.message : String(mvError);
         logger.info(
-          `Regular move failed (${mvErrorMessage}), trying with sudo...`,
+          `Regular move failed (${mvErrorMessage}), trying with sudo...`
         );
         try {
           execSync(`sudo mv ${tempFile} ${wrapperPath}`, { stdio: 'inherit' });
@@ -378,10 +381,10 @@ exec npx @anthropic-ai/claude-code "$@"
           const sudoErrorMessage =
             sudoError instanceof Error ? sudoError.message : String(sudoError);
           logger.warn(
-            `Could not create /usr/local/bin/claude wrapper: ${sudoErrorMessage}`,
+            `Could not create /usr/local/bin/claude wrapper: ${sudoErrorMessage}`
           );
           logger.warn(
-            'Claude will use shell alias instead (requires terminal restart)',
+            'Claude will use shell alias instead (requires terminal restart)'
           );
           logger.warn('To install wrapper manually, run:');
           logger.warn(`sudo mv ${tempFile} ${wrapperPath}`);
@@ -392,7 +395,7 @@ exec npx @anthropic-ai/claude-code "$@"
         error instanceof Error ? error.message : String(error);
       logger.error('Failed to create wrapper script:', errorMessage);
       logger.warn(
-        'Claude will use shell alias instead (requires terminal restart)',
+        'Claude will use shell alias instead (requires terminal restart)'
       );
     }
 
@@ -449,11 +452,11 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           ) {
             await fs.appendFile(configFile, configBlock);
             logger.info(
-              `Added Claude hardware-adaptive config to ${path.basename(configFile)}`,
+              `Added Claude hardware-adaptive config to ${path.basename(configFile)}`
             );
           } else {
             logger.debug(
-              `Claude config already exists in ${path.basename(configFile)}, skipping`,
+              `Claude config already exists in ${path.basename(configFile)}, skipping`
             );
           }
         }
@@ -471,13 +474,13 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
 
       // Download Chrome DMG
       execSync(
-        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"',
+        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"'
       );
 
       // Mount and install Chrome
       execSync('hdiutil attach ~/Downloads/googlechrome.dmg');
       execSync(
-        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/',
+        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/'
       );
       execSync('hdiutil detach "/Volumes/Google Chrome"');
 
@@ -518,10 +521,10 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       execSync('which claude', { stdio: 'pipe' });
     } catch {
       logger.info(
-        'Claude CLI not found - MCP servers require Claude Code CLI to be installed first',
+        'Claude CLI not found - MCP servers require Claude Code CLI to be installed first'
       );
       logger.info(
-        'You can install MCP servers later using: claude mcp add <name> <command>',
+        'You can install MCP servers later using: claude mcp add <name> <command>'
       );
       return;
     }
@@ -555,13 +558,13 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     // Install Claude Flow
     installMCP(
       'claude-flow',
-      'claude mcp add claude-flow npx claude-flow@alpha mcp start',
+      'claude mcp add claude-flow npx claude-flow@alpha mcp start'
     );
 
     // Install Firecrawl MCP
     installMCP(
       'firecrawl',
-      'claude mcp add firecrawl npx @firecrawl/mcp-server',
+      'claude mcp add firecrawl npx @firecrawl/mcp-server'
     );
 
     // Install Context7 MCP
@@ -570,7 +573,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     // Install Playwright MCP
     installMCP(
       'playwright',
-      'claude mcp add playwright npx @playwright/mcp-server',
+      'claude mcp add playwright npx @playwright/mcp-server'
     );
 
     // Install Browser MCP
@@ -580,15 +583,15 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     try {
       execSync(
         'npm install -g @modelcontextprotocol/server-sequentialthinking',
-        { stdio: 'pipe' },
+        { stdio: 'pipe' }
       );
       installMCP(
         'sequentialthinking',
-        'claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js',
+        'claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js'
       );
     } catch {
       logger.warn(
-        'Sequential Thinking MCP not available in registry, skipping',
+        'Sequential Thinking MCP not available in registry, skipping'
       );
     }
 
@@ -755,7 +758,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     };
     await fs.writeFile(
       path.join(this.claudeDir, 'settings.json'),
-      JSON.stringify(settings, null, 2),
+      JSON.stringify(settings, null, 2)
     );
   }
 
@@ -777,12 +780,12 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         });
         const agentCount = execSync(
           `find "${this.agentsDir}" -name "*.md" | wc -l`,
-          { encoding: 'utf8' },
+          { encoding: 'utf8' }
         ).trim();
         logger.info(`Installed ${agentCount} agent definition files`);
       } catch {
         logger.warn(
-          'Could not copy bundled agent files, will generate configs instead',
+          'Could not copy bundled agent files, will generate configs instead'
         );
       }
     } else {
@@ -852,11 +855,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         'migration-planner',
         'swarm-init',
       ],
-      devops: [
-        'deployment-monitor',
-        'log-analyzer',
-        'debug-refactor',
-      ],
+      devops: ['deployment-monitor', 'log-analyzer', 'debug-refactor'],
     };
 
     // Create JSON configs for agents that don't have .md files
@@ -892,7 +891,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     // Copy bundled deployment agent .md files
     const bundledDeploymentAgentsDir = path.join(
       this.bundledAgentsDir,
-      'devops',
+      'devops'
     );
     const bundledExists = await fs
       .access(bundledDeploymentAgentsDir)
@@ -905,7 +904,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           stdio: 'pipe',
         });
         logger.info(
-          'Installed deployment agents: deployment-monitor, log-analyzer, debug-refactor',
+          'Installed deployment agents: deployment-monitor, log-analyzer, debug-refactor'
         );
       } catch {
         logger.warn('Could not copy deployment agent files');
@@ -928,11 +927,11 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         // Copy all command .md files from bundled resources to global .claude/commands
         execSync(
           `cp -R "${this.bundledCommandsDir}"/* "${this.commandsDir}"/`,
-          { stdio: 'pipe' },
+          { stdio: 'pipe' }
         );
         const commandCount = execSync(
           `find "${this.commandsDir}" -name "*.md" | wc -l`,
-          { encoding: 'utf8' },
+          { encoding: 'utf8' }
         ).trim();
         logger.info(`Installed ${commandCount} slash command files`);
         logger.info('Available commands: /hive-swarm, /hive-strategic');
@@ -941,7 +940,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       }
     } else {
       logger.warn(
-        `No bundled command files found at: ${this.bundledCommandsDir}`,
+        `No bundled command files found at: ${this.bundledCommandsDir}`
       );
     }
 
@@ -951,7 +950,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   private async createAgentConfig(
     dir: string,
     agentName: string,
-    category: string,
+    category: string
   ): Promise<void> {
     const agentConfig = {
       name: agentName,
@@ -975,7 +974,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
 
     await fs.writeFile(
       path.join(dir, `${agentName}.json`),
-      JSON.stringify(agentConfig, null, 2),
+      JSON.stringify(agentConfig, null, 2)
     );
   }
 
@@ -1036,7 +1035,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     const extensionDir = path.join(
       this.homeDir,
       '.claude',
-      'browser-extension',
+      'browser-extension'
     );
     await fs.mkdir(extensionDir, { recursive: true });
 
@@ -1063,7 +1062,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
 
     await fs.writeFile(
       path.join(extensionDir, 'manifest.json'),
-      JSON.stringify(manifest, null, 2),
+      JSON.stringify(manifest, null, 2)
     );
 
     // Create background script
@@ -1086,7 +1085,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     await fs.writeFile(
       path.join(extensionDir, 'background.js'),
-      backgroundScript,
+      backgroundScript
     );
 
     // Create content script
@@ -1122,7 +1121,7 @@ window.addEventListener('message', (event) => {
     await fs.writeFile(path.join(extensionDir, 'popup.html'), popupHtml);
 
     logger.info(
-      'Chrome extension created. Load it manually from chrome://extensions',
+      'Chrome extension created. Load it manually from chrome://extensions'
     );
   }
 
@@ -1161,7 +1160,7 @@ echo "✅ All quality checks passed!"`;
 
     await fs.writeFile(
       path.join(this.helpersDir, 'pre-commit-hook.sh'),
-      preCommitHook,
+      preCommitHook
     );
     execSync(`chmod +x ${path.join(this.helpersDir, 'pre-commit-hook.sh')}`);
   }
@@ -1172,7 +1171,7 @@ echo "✅ All quality checks passed!"`;
     // Copy bundled CLAUDE.md template from package resources
     const bundledTemplate = path.join(
       this.bundledTemplatesDir,
-      'CLAUDE.md.template',
+      'CLAUDE.md.template'
     );
     const bundledTemplateExists = await fs
       .access(bundledTemplate)
@@ -1287,18 +1286,20 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
 
     await fs.writeFile(
       path.join(this.helpersDir, 'generate-claude-md.js'),
-      generatorScript,
+      generatorScript
     );
     execSync(`chmod +x ${path.join(this.helpersDir, 'generate-claude-md.js')}`);
 
     // Create global command
     try {
       execSync(
-        `ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`,
+        `ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`
       );
       logger.info('Created global claude-init command');
     } catch {
-      logger.warn('Could not create /usr/local/bin/claude-init - may need sudo');
+      logger.warn(
+        'Could not create /usr/local/bin/claude-init - may need sudo'
+      );
     }
   }
 
@@ -1335,7 +1336,7 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
       } catch {
         logger.warn('Could not copy optimization scripts');
         logger.warn(
-          'Scripts can be manually installed from adapticai/engine/scripts',
+          'Scripts can be manually installed from adapticai/engine/scripts'
         );
       }
     } else {

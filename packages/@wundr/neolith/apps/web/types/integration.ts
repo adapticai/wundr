@@ -49,7 +49,11 @@ export type WebhookEventType =
 /**
  * Webhook delivery status tracking
  */
-export type WebhookDeliveryStatus = 'success' | 'failed' | 'pending' | 'retrying';
+export type WebhookDeliveryStatus =
+  | 'success'
+  | 'failed'
+  | 'pending'
+  | 'retrying';
 
 /**
  * Complete integration configuration including provider settings and mappings
@@ -293,51 +297,162 @@ export interface WebhookDelivery {
 /**
  * Integration provider metadata and display information
  */
-export const INTEGRATION_PROVIDERS: Record<IntegrationProvider, { name: string; description: string; icon: string }> = {
-  slack: { name: 'Slack', description: 'Connect with Slack workspaces', icon: 'SL' },
-  discord: { name: 'Discord', description: 'Connect with Discord servers', icon: 'DS' },
-  teams: { name: 'Microsoft Teams', description: 'Connect with Microsoft Teams', icon: 'MT' },
-  github: { name: 'GitHub', description: 'Connect with GitHub repositories', icon: 'GH' },
-  gitlab: { name: 'GitLab', description: 'Connect with GitLab projects', icon: 'GL' },
+export const INTEGRATION_PROVIDERS: Record<
+  IntegrationProvider,
+  { name: string; description: string; icon: string }
+> = {
+  slack: {
+    name: 'Slack',
+    description: 'Connect with Slack workspaces',
+    icon: 'SL',
+  },
+  discord: {
+    name: 'Discord',
+    description: 'Connect with Discord servers',
+    icon: 'DS',
+  },
+  teams: {
+    name: 'Microsoft Teams',
+    description: 'Connect with Microsoft Teams',
+    icon: 'MT',
+  },
+  github: {
+    name: 'GitHub',
+    description: 'Connect with GitHub repositories',
+    icon: 'GH',
+  },
+  gitlab: {
+    name: 'GitLab',
+    description: 'Connect with GitLab projects',
+    icon: 'GL',
+  },
   jira: { name: 'Jira', description: 'Connect with Jira projects', icon: 'JI' },
-  notion: { name: 'Notion', description: 'Connect with Notion workspaces', icon: 'NO' },
-  linear: { name: 'Linear', description: 'Connect with Linear teams', icon: 'LI' },
-  asana: { name: 'Asana', description: 'Connect with Asana workspaces', icon: 'AS' },
-  trello: { name: 'Trello', description: 'Connect with Trello boards', icon: 'TR' },
-  google_drive: { name: 'Google Drive', description: 'Connect with Google Drive', icon: 'GD' },
+  notion: {
+    name: 'Notion',
+    description: 'Connect with Notion workspaces',
+    icon: 'NO',
+  },
+  linear: {
+    name: 'Linear',
+    description: 'Connect with Linear teams',
+    icon: 'LI',
+  },
+  asana: {
+    name: 'Asana',
+    description: 'Connect with Asana workspaces',
+    icon: 'AS',
+  },
+  trello: {
+    name: 'Trello',
+    description: 'Connect with Trello boards',
+    icon: 'TR',
+  },
+  google_drive: {
+    name: 'Google Drive',
+    description: 'Connect with Google Drive',
+    icon: 'GD',
+  },
   dropbox: { name: 'Dropbox', description: 'Connect with Dropbox', icon: 'DB' },
-  zapier: { name: 'Zapier', description: 'Connect with Zapier automations', icon: 'ZA' },
-  custom: { name: 'Custom', description: 'Create a custom integration', icon: 'CU' },
+  zapier: {
+    name: 'Zapier',
+    description: 'Connect with Zapier automations',
+    icon: 'ZA',
+  },
+  custom: {
+    name: 'Custom',
+    description: 'Create a custom integration',
+    icon: 'CU',
+  },
 } as const;
 
 /**
  * Webhook event type metadata and descriptions
  */
-export const WEBHOOK_EVENTS: Record<WebhookEventType, { label: string; description: string }> = {
-  'message.created': { label: 'Message Created', description: 'Triggered when a new message is sent' },
-  'message.updated': { label: 'Message Updated', description: 'Triggered when a message is edited' },
-  'message.deleted': { label: 'Message Deleted', description: 'Triggered when a message is deleted' },
-  'channel.created': { label: 'Channel Created', description: 'Triggered when a new channel is created' },
-  'channel.updated': { label: 'Channel Updated', description: 'Triggered when a channel is updated' },
-  'channel.deleted': { label: 'Channel Deleted', description: 'Triggered when a channel is deleted' },
-  'member.joined': { label: 'Member Joined', description: 'Triggered when a member joins' },
-  'member.left': { label: 'Member Left', description: 'Triggered when a member leaves' },
-  'orchestrator.status_changed': { label: 'Orchestrator Status Changed', description: 'Triggered when an Orchestrator status changes' },
-  'orchestrator.message': { label: 'Orchestrator Message', description: 'Triggered when an Orchestrator sends a message' },
-  'task.created': { label: 'Task Created', description: 'Triggered when a task is created' },
-  'task.completed': { label: 'Task Completed', description: 'Triggered when a task is completed' },
-  'workflow.triggered': { label: 'Workflow Triggered', description: 'Triggered when a workflow starts' },
-  'workflow.completed': { label: 'Workflow Completed', description: 'Triggered when a workflow completes' },
+export const WEBHOOK_EVENTS: Record<
+  WebhookEventType,
+  { label: string; description: string }
+> = {
+  'message.created': {
+    label: 'Message Created',
+    description: 'Triggered when a new message is sent',
+  },
+  'message.updated': {
+    label: 'Message Updated',
+    description: 'Triggered when a message is edited',
+  },
+  'message.deleted': {
+    label: 'Message Deleted',
+    description: 'Triggered when a message is deleted',
+  },
+  'channel.created': {
+    label: 'Channel Created',
+    description: 'Triggered when a new channel is created',
+  },
+  'channel.updated': {
+    label: 'Channel Updated',
+    description: 'Triggered when a channel is updated',
+  },
+  'channel.deleted': {
+    label: 'Channel Deleted',
+    description: 'Triggered when a channel is deleted',
+  },
+  'member.joined': {
+    label: 'Member Joined',
+    description: 'Triggered when a member joins',
+  },
+  'member.left': {
+    label: 'Member Left',
+    description: 'Triggered when a member leaves',
+  },
+  'orchestrator.status_changed': {
+    label: 'Orchestrator Status Changed',
+    description: 'Triggered when an Orchestrator status changes',
+  },
+  'orchestrator.message': {
+    label: 'Orchestrator Message',
+    description: 'Triggered when an Orchestrator sends a message',
+  },
+  'task.created': {
+    label: 'Task Created',
+    description: 'Triggered when a task is created',
+  },
+  'task.completed': {
+    label: 'Task Completed',
+    description: 'Triggered when a task is completed',
+  },
+  'workflow.triggered': {
+    label: 'Workflow Triggered',
+    description: 'Triggered when a workflow starts',
+  },
+  'workflow.completed': {
+    label: 'Workflow Completed',
+    description: 'Triggered when a workflow completes',
+  },
 } as const;
 
 /**
  * Integration status display configuration with Tailwind CSS classes
  */
-export const INTEGRATION_STATUS_CONFIG: Record<IntegrationStatus, { label: string; color: string; bgColor: string }> = {
-  active: { label: 'Active', color: 'text-green-600', bgColor: 'bg-green-500/10' },
-  inactive: { label: 'Inactive', color: 'text-gray-600', bgColor: 'bg-gray-500/10' },
+export const INTEGRATION_STATUS_CONFIG: Record<
+  IntegrationStatus,
+  { label: string; color: string; bgColor: string }
+> = {
+  active: {
+    label: 'Active',
+    color: 'text-green-600',
+    bgColor: 'bg-green-500/10',
+  },
+  inactive: {
+    label: 'Inactive',
+    color: 'text-gray-600',
+    bgColor: 'bg-gray-500/10',
+  },
   error: { label: 'Error', color: 'text-red-600', bgColor: 'bg-red-500/10' },
-  pending: { label: 'Pending', color: 'text-yellow-600', bgColor: 'bg-yellow-500/10' },
+  pending: {
+    label: 'Pending',
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-500/10',
+  },
 } as const;
 
 /**

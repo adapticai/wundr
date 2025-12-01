@@ -53,7 +53,10 @@ let testDir: string;
 
 beforeEach(async () => {
   // Create a unique temporary directory for each test
-  testDir = path.join(os.tmpdir(), `wundr-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  testDir = path.join(
+    os.tmpdir(),
+    `wundr-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   await fs.ensureDir(testDir);
 });
 
@@ -139,11 +142,20 @@ describe('Version Manager', () => {
     });
 
     test('should stringify version with prerelease', () => {
-      expect(stringifyVersion({ major: 1, minor: 2, patch: 3, prerelease: 'beta' })).toBe('1.2.3-beta');
+      expect(
+        stringifyVersion({ major: 1, minor: 2, patch: 3, prerelease: 'beta' })
+      ).toBe('1.2.3-beta');
     });
 
     test('should stringify version with build metadata', () => {
-      expect(stringifyVersion({ major: 1, minor: 2, patch: 3, buildMetadata: '20231201' })).toBe('1.2.3+20231201');
+      expect(
+        stringifyVersion({
+          major: 1,
+          minor: 2,
+          patch: 3,
+          buildMetadata: '20231201',
+        })
+      ).toBe('1.2.3+20231201');
     });
 
     test('should stringify full version', () => {
@@ -161,34 +173,58 @@ describe('Version Manager', () => {
 
   describe('compareVersions', () => {
     test('should return EQUAL for same versions', () => {
-      expect(compareVersions('1.0.0', '1.0.0')).toBe(VersionComparisonResult.EQUAL);
-      expect(compareVersions('2.5.10', '2.5.10')).toBe(VersionComparisonResult.EQUAL);
+      expect(compareVersions('1.0.0', '1.0.0')).toBe(
+        VersionComparisonResult.EQUAL
+      );
+      expect(compareVersions('2.5.10', '2.5.10')).toBe(
+        VersionComparisonResult.EQUAL
+      );
     });
 
     test('should compare major versions', () => {
-      expect(compareVersions('1.0.0', '2.0.0')).toBe(VersionComparisonResult.OLDER);
-      expect(compareVersions('3.0.0', '2.0.0')).toBe(VersionComparisonResult.NEWER);
+      expect(compareVersions('1.0.0', '2.0.0')).toBe(
+        VersionComparisonResult.OLDER
+      );
+      expect(compareVersions('3.0.0', '2.0.0')).toBe(
+        VersionComparisonResult.NEWER
+      );
     });
 
     test('should compare minor versions', () => {
-      expect(compareVersions('1.2.0', '1.3.0')).toBe(VersionComparisonResult.OLDER);
-      expect(compareVersions('1.5.0', '1.3.0')).toBe(VersionComparisonResult.NEWER);
+      expect(compareVersions('1.2.0', '1.3.0')).toBe(
+        VersionComparisonResult.OLDER
+      );
+      expect(compareVersions('1.5.0', '1.3.0')).toBe(
+        VersionComparisonResult.NEWER
+      );
     });
 
     test('should compare patch versions', () => {
-      expect(compareVersions('1.2.3', '1.2.4')).toBe(VersionComparisonResult.OLDER);
-      expect(compareVersions('1.2.5', '1.2.4')).toBe(VersionComparisonResult.NEWER);
+      expect(compareVersions('1.2.3', '1.2.4')).toBe(
+        VersionComparisonResult.OLDER
+      );
+      expect(compareVersions('1.2.5', '1.2.4')).toBe(
+        VersionComparisonResult.NEWER
+      );
     });
 
     test('should handle prerelease versions correctly', () => {
       // Prerelease has lower precedence than release
-      expect(compareVersions('1.0.0-alpha', '1.0.0')).toBe(VersionComparisonResult.OLDER);
-      expect(compareVersions('1.0.0', '1.0.0-alpha')).toBe(VersionComparisonResult.NEWER);
+      expect(compareVersions('1.0.0-alpha', '1.0.0')).toBe(
+        VersionComparisonResult.OLDER
+      );
+      expect(compareVersions('1.0.0', '1.0.0-alpha')).toBe(
+        VersionComparisonResult.NEWER
+      );
     });
 
     test('should compare prerelease identifiers', () => {
-      expect(compareVersions('1.0.0-alpha', '1.0.0-beta')).toBe(VersionComparisonResult.OLDER);
-      expect(compareVersions('1.0.0-alpha.1', '1.0.0-alpha.2')).toBe(VersionComparisonResult.OLDER);
+      expect(compareVersions('1.0.0-alpha', '1.0.0-beta')).toBe(
+        VersionComparisonResult.OLDER
+      );
+      expect(compareVersions('1.0.0-alpha.1', '1.0.0-alpha.2')).toBe(
+        VersionComparisonResult.OLDER
+      );
     });
 
     test('should return null for invalid versions', () => {
@@ -290,15 +326,26 @@ describe('Version Manager', () => {
 
   describe('sortVersions', () => {
     test('should sort versions ascending', () => {
-      expect(sortVersions(['2.0.0', '1.0.0', '1.5.0'])).toEqual(['1.0.0', '1.5.0', '2.0.0']);
+      expect(sortVersions(['2.0.0', '1.0.0', '1.5.0'])).toEqual([
+        '1.0.0',
+        '1.5.0',
+        '2.0.0',
+      ]);
     });
 
     test('should sort versions descending', () => {
-      expect(sortVersions(['2.0.0', '1.0.0', '1.5.0'], true)).toEqual(['2.0.0', '1.5.0', '1.0.0']);
+      expect(sortVersions(['2.0.0', '1.0.0', '1.5.0'], true)).toEqual([
+        '2.0.0',
+        '1.5.0',
+        '1.0.0',
+      ]);
     });
 
     test('should filter invalid versions', () => {
-      expect(sortVersions(['invalid', '2.0.0', '1.0.0'])).toEqual(['1.0.0', '2.0.0']);
+      expect(sortVersions(['invalid', '2.0.0', '1.0.0'])).toEqual([
+        '1.0.0',
+        '2.0.0',
+      ]);
     });
   });
 
@@ -390,7 +437,9 @@ describe('State Detection', () => {
     });
 
     test('should return null for non-existent file', async () => {
-      const checksum = await computeFileChecksum(path.join(testDir, 'non-existent.txt'));
+      const checksum = await computeFileChecksum(
+        path.join(testDir, 'non-existent.txt')
+      );
       expect(checksum).toBeNull();
     });
   });
@@ -400,7 +449,10 @@ describe('State Detection', () => {
       await fs.writeFile(path.join(testDir, 'file1.txt'), 'content 1');
       await fs.writeFile(path.join(testDir, 'file2.txt'), 'content 2');
 
-      const checksums = await computeChecksums(testDir, ['file1.txt', 'file2.txt']);
+      const checksums = await computeChecksums(testDir, [
+        'file1.txt',
+        'file2.txt',
+      ]);
 
       expect(checksums.size).toBe(2);
       expect(checksums.has('file1.txt')).toBe(true);
@@ -410,7 +462,10 @@ describe('State Detection', () => {
     test('should skip non-existent files', async () => {
       await fs.writeFile(path.join(testDir, 'existing.txt'), 'content');
 
-      const checksums = await computeChecksums(testDir, ['existing.txt', 'non-existent.txt']);
+      const checksums = await computeChecksums(testDir, [
+        'existing.txt',
+        'non-existent.txt',
+      ]);
 
       expect(checksums.size).toBe(1);
       expect(checksums.has('existing.txt')).toBe(true);
@@ -427,9 +482,15 @@ describe('State Detection', () => {
     test('should detect git repository', async () => {
       // Create a fake .git directory
       await fs.ensureDir(path.join(testDir, '.git'));
-      await fs.writeFile(path.join(testDir, '.git', 'HEAD'), 'ref: refs/heads/main\n');
+      await fs.writeFile(
+        path.join(testDir, '.git', 'HEAD'),
+        'ref: refs/heads/main\n'
+      );
       await fs.ensureDir(path.join(testDir, '.git', 'refs', 'heads'));
-      await fs.writeFile(path.join(testDir, '.git', 'refs', 'heads', 'main'), 'abc1234567890\n');
+      await fs.writeFile(
+        path.join(testDir, '.git', 'refs', 'heads', 'main'),
+        'abc1234567890\n'
+      );
 
       const status = await detectGitStatus(testDir);
       expect(status.isRepository).toBe(true);
@@ -454,7 +515,10 @@ describe('State Detection', () => {
 
     test('should detect CLAUDE.md in .claude directory', async () => {
       await fs.ensureDir(path.join(testDir, '.claude'));
-      await fs.writeFile(path.join(testDir, '.claude', 'CLAUDE.md'), '# Claude Config');
+      await fs.writeFile(
+        path.join(testDir, '.claude', 'CLAUDE.md'),
+        '# Claude Config'
+      );
 
       const result = await detectClaudeConfig(testDir);
       expect(result.exists).toBe(true);
@@ -525,10 +589,13 @@ describe('State Detection', () => {
 
     test('should detect agents in .claude/agents', async () => {
       await fs.ensureDir(path.join(testDir, '.claude', 'agents'));
-      await fs.writeJson(path.join(testDir, '.claude', 'agents', 'coder.json'), {
-        name: 'coder',
-        type: 'development',
-      });
+      await fs.writeJson(
+        path.join(testDir, '.claude', 'agents', 'coder.json'),
+        {
+          name: 'coder',
+          type: 'development',
+        }
+      );
 
       const result = await detectAgents(testDir);
       expect(result.hasAgents).toBe(true);
@@ -539,8 +606,14 @@ describe('State Detection', () => {
 
     test('should detect multiple agents', async () => {
       await fs.ensureDir(path.join(testDir, '.wundr', 'agents'));
-      await fs.writeJson(path.join(testDir, '.wundr', 'agents', 'agent1.json'), { name: 'agent1' });
-      await fs.writeJson(path.join(testDir, '.wundr', 'agents', 'agent2.json'), { name: 'agent2' });
+      await fs.writeJson(
+        path.join(testDir, '.wundr', 'agents', 'agent1.json'),
+        { name: 'agent1' }
+      );
+      await fs.writeJson(
+        path.join(testDir, '.wundr', 'agents', 'agent2.json'),
+        { name: 'agent2' }
+      );
 
       const result = await detectAgents(testDir);
       expect(result.hasAgents).toBe(true);
@@ -557,7 +630,10 @@ describe('State Detection', () => {
 
     test('should detect hooks in .husky', async () => {
       await fs.ensureDir(path.join(testDir, '.husky'));
-      await fs.writeFile(path.join(testDir, '.husky', 'pre-commit'), '#!/bin/sh\nnpm test');
+      await fs.writeFile(
+        path.join(testDir, '.husky', 'pre-commit'),
+        '#!/bin/sh\nnpm test'
+      );
 
       const result = await detectHooks(testDir);
       expect(result.hasHooks).toBe(true);
@@ -566,7 +642,10 @@ describe('State Detection', () => {
 
     test('should detect disabled hooks (.sample)', async () => {
       await fs.ensureDir(path.join(testDir, '.claude', 'hooks'));
-      await fs.writeFile(path.join(testDir, '.claude', 'hooks', 'pre-push.sample'), '# sample');
+      await fs.writeFile(
+        path.join(testDir, '.claude', 'hooks', 'pre-push.sample'),
+        '# sample'
+      );
 
       const result = await detectHooks(testDir);
       expect(result.hasHooks).toBe(true);
@@ -582,7 +661,10 @@ describe('State Detection', () => {
 
     test('should detect added files', async () => {
       await fs.ensureDir(path.join(testDir, '.claude'));
-      await fs.writeFile(path.join(testDir, '.claude', 'custom-config.json'), '{}');
+      await fs.writeFile(
+        path.join(testDir, '.claude', 'custom-config.json'),
+        '{}'
+      );
 
       const result = await detectCustomizations(testDir);
       expect(result.hasCustomizations).toBe(true);
@@ -592,7 +674,9 @@ describe('State Detection', () => {
     test('should detect checksum mismatches', async () => {
       await fs.writeFile(path.join(testDir, 'CLAUDE.md'), 'custom content');
 
-      const baseline = new Map([['CLAUDE.md', 'expected-checksum-that-wont-match']]);
+      const baseline = new Map([
+        ['CLAUDE.md', 'expected-checksum-that-wont-match'],
+      ]);
       const result = await detectCustomizations(testDir, baseline);
 
       expect(result.hasCustomizations).toBe(true);
@@ -622,7 +706,7 @@ describe('State Detection', () => {
 
       const result = await detectConflicts(testDir, state);
       expect(result.hasConflicts).toBe(true);
-      expect(result.conflicts.some((c) => c.type === 'version')).toBe(true);
+      expect(result.conflicts.some(c => c.type === 'version')).toBe(true);
     });
 
     test('should detect multiple config file conflicts', async () => {
@@ -631,7 +715,7 @@ describe('State Detection', () => {
 
       const result = await detectConflicts(testDir, {});
       expect(result.hasConflicts).toBe(true);
-      expect(result.conflicts.some((c) => c.type === 'config')).toBe(true);
+      expect(result.conflicts.some(c => c.type === 'config')).toBe(true);
     });
 
     test('should detect git dirty state', async () => {
@@ -646,7 +730,7 @@ describe('State Detection', () => {
 
       const result = await detectConflicts(testDir, state);
       expect(result.hasConflicts).toBe(true);
-      expect(result.conflicts.some((c) => c.type === 'file')).toBe(true);
+      expect(result.conflicts.some(c => c.type === 'file')).toBe(true);
     });
   });
 
@@ -690,8 +774,12 @@ describe('State Detection', () => {
       await fs.writeJson(path.join(testDir, 'package.json'), { name: 'test' });
       await fs.writeFile(path.join(testDir, 'CLAUDE.md'), '# Claude Config');
       await fs.ensureDir(path.join(testDir, '.mcp'));
-      await fs.writeJson(path.join(testDir, '.mcp', 'config.json'), { servers: {} });
-      await fs.writeJson(path.join(testDir, 'wundr.config.json'), { version: '1.0.0' });
+      await fs.writeJson(path.join(testDir, '.mcp', 'config.json'), {
+        servers: {},
+      });
+      await fs.writeJson(path.join(testDir, 'wundr.config.json'), {
+        version: '1.0.0',
+      });
 
       const state = await detectProjectState(testDir);
       expect(state.hasClaudeConfig).toBe(true);
@@ -702,10 +790,15 @@ describe('State Detection', () => {
     test('should detect partial installation', async () => {
       // Only CLAUDE.md, missing other components
       await fs.writeFile(path.join(testDir, 'CLAUDE.md'), '# Claude');
-      await fs.ensureDir(path.join(testDir, 'node_modules', '@wundr.io', 'cli'));
-      await fs.writeJson(path.join(testDir, 'node_modules', '@wundr.io', 'cli', 'package.json'), {
-        version: '1.0.0',
-      });
+      await fs.ensureDir(
+        path.join(testDir, 'node_modules', '@wundr.io', 'cli')
+      );
+      await fs.writeJson(
+        path.join(testDir, 'node_modules', '@wundr.io', 'cli', 'package.json'),
+        {
+          version: '1.0.0',
+        }
+      );
 
       const state = await detectProjectState(testDir);
       expect(state.isPartialInstallation).toBe(true);
@@ -726,12 +819,19 @@ describe('State Detection', () => {
     });
 
     test('should handle version comparison with latest', async () => {
-      await fs.ensureDir(path.join(testDir, 'node_modules', '@wundr.io', 'cli'));
-      await fs.writeJson(path.join(testDir, 'node_modules', '@wundr.io', 'cli', 'package.json'), {
-        version: '1.0.0',
-      });
+      await fs.ensureDir(
+        path.join(testDir, 'node_modules', '@wundr.io', 'cli')
+      );
+      await fs.writeJson(
+        path.join(testDir, 'node_modules', '@wundr.io', 'cli', 'package.json'),
+        {
+          version: '1.0.0',
+        }
+      );
 
-      const state = await detectProjectState(testDir, { latestVersion: '2.0.0' });
+      const state = await detectProjectState(testDir, {
+        latestVersion: '2.0.0',
+      });
       expect(state.isWundrOutdated).toBe(true);
     });
   });
@@ -759,7 +859,9 @@ describe('State Detection', () => {
 
   describe('getStateSummary', () => {
     test('should generate summary string', async () => {
-      await fs.writeJson(path.join(testDir, 'package.json'), { name: 'test-project' });
+      await fs.writeJson(path.join(testDir, 'package.json'), {
+        name: 'test-project',
+      });
       const state = await detectProjectState(testDir);
       const summary = getStateSummary(state);
 
@@ -784,7 +886,10 @@ describe('State Detection', () => {
 describe('Edge Cases', () => {
   describe('Partial Installations', () => {
     test('should handle corrupted package.json', async () => {
-      await fs.writeFile(path.join(testDir, 'package.json'), 'invalid json content');
+      await fs.writeFile(
+        path.join(testDir, 'package.json'),
+        'invalid json content'
+      );
 
       const state = await detectProjectState(testDir);
       expect(state.hasPackageJson).toBe(true);
@@ -794,7 +899,9 @@ describe('Edge Cases', () => {
     test('should handle permission-denied scenarios gracefully', async () => {
       // This test verifies the system doesn't crash on errors
       // Actual permission denied would require special setup
-      const state = await detectProjectState('/nonexistent/path/that/does/not/exist');
+      const state = await detectProjectState(
+        '/nonexistent/path/that/does/not/exist'
+      );
       expect(state.hasWundr).toBe(false);
     });
   });
@@ -823,7 +930,9 @@ describe('Edge Cases', () => {
 
     test('should compare numeric vs alphanumeric prereleases', () => {
       // Numeric identifiers have lower precedence than alphanumeric
-      expect(compareVersions('1.0.0-1', '1.0.0-alpha')).toBe(VersionComparisonResult.OLDER);
+      expect(compareVersions('1.0.0-1', '1.0.0-alpha')).toBe(
+        VersionComparisonResult.OLDER
+      );
     });
   });
 
@@ -859,7 +968,10 @@ describe('Integration Tests', () => {
       workspaces: ['packages/*'],
     });
 
-    await fs.writeFile(path.join(testDir, 'CLAUDE.md'), '# Claude Code Configuration\n\nProject setup complete.');
+    await fs.writeFile(
+      path.join(testDir, 'CLAUDE.md'),
+      '# Claude Code Configuration\n\nProject setup complete.'
+    );
 
     await fs.ensureDir(path.join(testDir, '.mcp'));
     await fs.writeJson(path.join(testDir, '.mcp', 'config.json'), {
@@ -879,18 +991,30 @@ describe('Integration Tests', () => {
       name: 'coder',
       type: 'development',
     });
-    await fs.writeJson(path.join(testDir, '.claude', 'agents', 'reviewer.json'), {
-      name: 'reviewer',
-      type: 'code-review',
-    });
+    await fs.writeJson(
+      path.join(testDir, '.claude', 'agents', 'reviewer.json'),
+      {
+        name: 'reviewer',
+        type: 'code-review',
+      }
+    );
 
     await fs.ensureDir(path.join(testDir, '.husky'));
-    await fs.writeFile(path.join(testDir, '.husky', 'pre-commit'), '#!/bin/sh\nnpm test');
-    await fs.writeFile(path.join(testDir, '.husky', 'pre-push'), '#!/bin/sh\nnpm run lint');
+    await fs.writeFile(
+      path.join(testDir, '.husky', 'pre-commit'),
+      '#!/bin/sh\nnpm test'
+    );
+    await fs.writeFile(
+      path.join(testDir, '.husky', 'pre-push'),
+      '#!/bin/sh\nnpm run lint'
+    );
 
     // Initialize git
     await fs.ensureDir(path.join(testDir, '.git'));
-    await fs.writeFile(path.join(testDir, '.git', 'HEAD'), 'ref: refs/heads/main\n');
+    await fs.writeFile(
+      path.join(testDir, '.git', 'HEAD'),
+      'ref: refs/heads/main\n'
+    );
 
     // Run detection
     const state = await detectProjectState(testDir, { latestVersion: '1.0.0' });

@@ -1,26 +1,23 @@
 # Neolith Web App Custom Hooks - Code Review Report
 
-**Date:** 2025-11-26
-**Reviewer:** Code Quality Analyzer
-**Scope:** /Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/
+**Date:** 2025-11-26 **Reviewer:** Code Quality Analyzer **Scope:**
+/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/
 
 ---
 
 ## Executive Summary
 
-**Total Hooks Reviewed:** 17
-**Hooks with Issues:** 8
-**Critical Issues:** 4
-**Medium Issues:** 12
-**Low Issues:** 6
-**TODO/FIXME Comments:** 1
-**Overall Quality Score:** 7/10
+**Total Hooks Reviewed:** 17 **Hooks with Issues:** 8 **Critical Issues:** 4 **Medium Issues:** 12
+**Low Issues:** 6 **TODO/FIXME Comments:** 1 **Overall Quality Score:** 7/10
 
 ---
 
 ## Summary of Findings
 
-The custom hooks in the Neolith web app are generally well-structured with comprehensive TypeScript typing and good documentation. However, several hooks have **incomplete functionality**, **missing API integrations**, and **inconsistent error handling**. The most critical issues involve API endpoints that are called but likely don't exist, and missing implementations for core features.
+The custom hooks in the Neolith web app are generally well-structured with comprehensive TypeScript
+typing and good documentation. However, several hooks have **incomplete functionality**, **missing
+API integrations**, and **inconsistent error handling**. The most critical issues involve API
+endpoints that are called but likely don't exist, and missing implementations for core features.
 
 ---
 
@@ -31,6 +28,7 @@ The custom hooks in the Neolith web app are generally well-structured with compr
 Multiple hooks call API endpoints that are not verified to exist:
 
 #### use-notifications.ts
+
 - `/api/notifications` (GET) - Line 148
 - `/api/notifications/:id/read` (POST) - Line 200
 - `/api/notifications/read-all` (POST) - Line 219
@@ -45,10 +43,12 @@ Multiple hooks call API endpoints that are not verified to exist:
 **Impact:** These hooks will fail at runtime if the API endpoints don't exist.
 
 **Recommendation:**
+
 - Verify all API endpoints exist in `/apps/web/app/api/`
 - Create missing endpoints or update hook code to use existing endpoints
 
 #### use-presence.ts
+
 - `/api/presence/:userId` (GET) - Line 103
 - `/api/presence/batch` (POST) - Line 142
 - `/api/channels/:channelId/presence` (GET) - Line 191
@@ -60,6 +60,7 @@ Multiple hooks call API endpoints that are not verified to exist:
 - `/api/channels/:channelId/presence/subscribe` (SSE) - Line 409
 
 #### use-workflows.ts
+
 - `/api/workspaces/:workspaceId/workflows` (GET/POST) - Lines 135, 171
 - `/api/workflows/:workflowId` (GET/PATCH/DELETE) - Lines 276, 304, 327
 - `/api/workflows/:workflowId/activate` (POST) - Line 345
@@ -71,6 +72,7 @@ Multiple hooks call API endpoints that are not verified to exist:
 - `/api/workspaces/:workspaceId/workflows/from-template` (POST) - Line 682
 
 #### use-call.ts
+
 - `/api/workspaces/:workspaceId/huddles` (GET/POST) - Lines 624, 772
 - `/api/workspaces/:workspaceId/huddles/subscribe` (SSE) - Line 656
 - `/api/workspaces/:workspaceId/huddles/:huddleId/join` (POST) - Line 722
@@ -87,6 +89,7 @@ const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://localhost:7880'
 **Issue:** Hard-coded localhost URL as fallback is not production-safe.
 
 **Recommendation:**
+
 - Require `NEXT_PUBLIC_LIVEKIT_URL` to be set
 - Throw error if not configured rather than using unsafe default
 
@@ -95,17 +98,21 @@ const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://localhost:7880'
 Several hooks use Server-Sent Events (SSE) or WebSocket connections without proper error recovery:
 
 **use-chat.ts** (Lines 221-264):
+
 - EventSource reconnection logic implemented but may not handle all edge cases
 - No exponential backoff for retries
 
 **use-presence.ts** (Lines 407-448):
+
 - Fixed 5-second retry delay, should use exponential backoff
 - No maximum retry limit
 
 **use-call.ts** (Lines 656-709):
+
 - Similar SSE reconnection issues
 
 **Recommendation:**
+
 - Implement exponential backoff strategy
 - Add maximum retry limits
 - Add connection state tracking
@@ -116,6 +123,7 @@ Several hooks use Server-Sent Events (SSE) or WebSocket connections without prop
 Many hooks silently fail and don't propagate errors properly:
 
 **use-analytics.ts** (Lines 98-100):
+
 ```typescript
 } catch {
   // Silently fail analytics tracking to avoid disrupting user experience
@@ -123,6 +131,7 @@ Many hooks silently fail and don't propagate errors properly:
 ```
 
 **use-presence.ts** (Lines 112-114):
+
 ```typescript
 } catch {
   // Silently fail - presence is non-critical
@@ -130,6 +139,7 @@ Many hooks silently fail and don't propagate errors properly:
 ```
 
 **Recommendation:**
+
 - Add optional error callbacks for non-critical operations
 - Use error reporting service (Sentry, etc.) for silent failures
 - Provide error state even for non-critical features
@@ -152,6 +162,7 @@ Different hooks use different pagination strategies:
 ### 6. **Type Safety Issues** (Severity: MEDIUM)
 
 **use-performance.ts** (Line 619-620):
+
 ```typescript
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ThrottledFunction = (...args: never[]) => void;
@@ -160,6 +171,7 @@ type ThrottledFunction = (...args: never[]) => void;
 Using `never[]` for function arguments defeats the purpose of TypeScript's type system.
 
 **Recommendation:** Use proper generic typing:
+
 ```typescript
 type ThrottledFunction<T extends unknown[]> = (...args: T) => void;
 ```
@@ -169,6 +181,7 @@ type ThrottledFunction<T extends unknown[]> = (...args: T) => void;
 Most hooks don't validate input parameters before making API calls:
 
 **use-vp.ts** (Lines 99-102):
+
 ```typescript
 const fetchVP = useCallback(async (): Promise<void> => {
   if (!id) {
@@ -179,6 +192,7 @@ const fetchVP = useCallback(async (): Promise<void> => {
 Only checks for existence, not validity.
 
 **Recommendation:**
+
 - Add input validation using Zod or similar
 - Validate IDs match expected format
 - Validate required fields before API calls
@@ -188,15 +202,17 @@ Only checks for existence, not validity.
 Several hooks have potential memory leaks:
 
 **use-notifications.ts** (Lines 543-560):
+
 ```typescript
 const handleOnline = () => {
   setIsOnline(true);
   // Auto-sync when coming back online
-  forceSync();  // ⚠️ Calls function before it's defined in deps
+  forceSync(); // ⚠️ Calls function before it's defined in deps
 };
 ```
 
 **Recommendation:**
+
 - Add exhaustive-deps rule enforcement
 - Use `useCallback` for all event handlers
 - Ensure cleanup functions properly remove listeners
@@ -204,6 +220,7 @@ const handleOnline = () => {
 ### 9. **FormData Usage Without Type Safety** (Severity: MEDIUM)
 
 **use-chat.ts** (Lines 403-416):
+
 ```typescript
 const formData = new FormData();
 formData.append('content', input.content);
@@ -215,21 +232,24 @@ if (input.mentions) formData.append('mentions', JSON.stringify(input.mentions));
 **Issue:** No type checking for FormData construction.
 
 **Recommendation:**
+
 - Create a helper function with type safety
 - Consider using JSON instead of FormData for complex objects
 
 ### 10. **Race Conditions in Optimistic Updates** (Severity: MEDIUM)
 
 **use-chat.ts** (Lines 283-297):
+
 ```typescript
 const addOptimisticMessage = useCallback((message: Message) => {
-  setMessages((prev) => [...prev, message]);
+  setMessages(prev => [...prev, message]);
 }, []);
 ```
 
 **Issue:** No handling for when actual API response conflicts with optimistic update.
 
 **Recommendation:**
+
 - Implement conflict resolution strategy
 - Track optimistic updates separately
 - Handle rollback on error
@@ -239,6 +259,7 @@ const addOptimisticMessage = useCallback((message: Message) => {
 Many magic numbers throughout the codebase:
 
 **use-presence.ts** (Lines 84-86):
+
 ```typescript
 const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const PRESENCE_POLL_INTERVAL = 10000; // 10 seconds
@@ -246,6 +267,7 @@ const VP_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
 ```
 
 **Recommendation:**
+
 - Move to configuration file
 - Make configurable via environment variables
 - Document why specific intervals were chosen
@@ -257,6 +279,7 @@ const VP_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
 **use-admin.ts**, **use-channel.ts**, **use-vp.ts** - No retry logic for failed API calls.
 
 **Recommendation:**
+
 - Implement exponential backoff retry for transient failures
 - Use a library like `axios-retry` or implement custom retry logic
 
@@ -265,6 +288,7 @@ const VP_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
 Most hooks don't cancel in-flight requests on unmount:
 
 **use-vp.ts** (Lines 121-123):
+
 ```typescript
 useEffect(() => {
   fetchVP();
@@ -272,6 +296,7 @@ useEffect(() => {
 ```
 
 **Recommendation:**
+
 - Use AbortController for all fetch requests
 - Cancel requests on component unmount
 - Cancel previous request when new one is triggered
@@ -279,6 +304,7 @@ useEffect(() => {
 ### 14. **Inefficient Re-renders** (Severity: LOW)
 
 **use-channel.ts** (Lines 183-193):
+
 ```typescript
 const { publicChannels, privateChannels, starredChannels } = useMemo(() => {
   const starred = channels.filter((c) => c.isStarred);
@@ -288,6 +314,7 @@ const { publicChannels, privateChannels, starredChannels } = useMemo(() => {
 ```
 
 **Recommendation:**
+
 - Combine filters into single pass
 - Consider server-side categorization
 
@@ -295,9 +322,11 @@ const { publicChannels, privateChannels, starredChannels } = useMemo(() => {
 
 Some hooks don't expose loading states for mutations:
 
-**use-channel.ts** - `toggleStar` doesn't expose loading state separately from the main loading state.
+**use-channel.ts** - `toggleStar` doesn't expose loading state separately from the main loading
+state.
 
 **Recommendation:**
+
 - Add separate loading states for mutations
 - Allow UI to show inline loading indicators
 
@@ -306,6 +335,7 @@ Some hooks don't expose loading states for mutations:
 None of the hooks include performance monitoring or error tracking.
 
 **Recommendation:**
+
 - Add performance marks for slow operations
 - Integrate error reporting (Sentry, etc.)
 - Add usage analytics for feature adoption
@@ -396,7 +426,8 @@ Multiple hooks reference WebSocket/SSE but implementation is incomplete:
 
 ### 2. **Service Worker Integration**
 
-**use-notifications.ts** references service workers for push notifications but doesn't verify they're registered:
+**use-notifications.ts** references service workers for push notifications but doesn't verify
+they're registered:
 
 ```typescript
 const registration = await navigator.serviceWorker.ready;
@@ -409,6 +440,7 @@ No check if service worker is actually installed.
 No hooks implement client-side caching strategies. All data is re-fetched on mount.
 
 **Recommendation:**
+
 - Implement SWR or React Query for caching
 - Add stale-while-revalidate pattern
 - Consider IndexedDB for offline support
@@ -419,7 +451,8 @@ No hooks implement client-side caching strategies. All data is re-fetched on mou
 
 **Total:** 1
 
-1. **use-chat.ts:399** - `// Note: The optimistic message is created in the calling component for more control`
+1. **use-chat.ts:399** -
+   `// Note: The optimistic message is created in the calling component for more control`
    - Not a TODO, but indicates design decision worth documenting
 
 ---
@@ -512,24 +545,28 @@ POST   /api/webhooks/:webhookId/deliveries/:deliveryId/retry
 ## Recommendations by Priority
 
 ### Immediate (P0)
+
 1. ✅ Audit and verify all API endpoints exist
 2. ✅ Implement missing critical endpoints
 3. ✅ Add AbortController for request cancellation
 4. ✅ Fix memory leaks in useEffect dependencies
 
 ### High Priority (P1)
+
 5. ✅ Standardize error handling across all hooks
 6. ✅ Implement retry logic with exponential backoff
 7. ✅ Add input validation for all API calls
 8. ✅ Fix SSE/WebSocket reconnection logic
 
 ### Medium Priority (P2)
+
 9. ✅ Standardize pagination patterns
 10. ✅ Add telemetry and error reporting
 11. ✅ Implement request caching strategy
 12. ✅ Complete screen sharing implementation
 
 ### Low Priority (P3)
+
 13. ✅ Optimize re-render performance
 14. ✅ Add configuration for hardcoded values
 15. ✅ Improve TypeScript type safety
@@ -539,12 +576,16 @@ POST   /api/webhooks/:webhookId/deliveries/:deliveryId/retry
 
 ## Conclusion
 
-The Neolith web app hooks are well-architected with strong TypeScript typing and good separation of concerns. However, **the primary concern is the large number of API endpoints referenced but potentially not implemented**. Before deploying to production, a comprehensive audit of API routes is essential.
+The Neolith web app hooks are well-architected with strong TypeScript typing and good separation of
+concerns. However, **the primary concern is the large number of API endpoints referenced but
+potentially not implemented**. Before deploying to production, a comprehensive audit of API routes
+is essential.
 
-The secondary concerns around error handling, memory leaks, and incomplete features should be addressed systematically to ensure a robust production application.
+The secondary concerns around error handling, memory leaks, and incomplete features should be
+addressed systematically to ensure a robust production application.
 
-**Overall Risk Assessment:** MEDIUM-HIGH
-**Deployment Readiness:** NOT READY (API verification required)
+**Overall Risk Assessment:** MEDIUM-HIGH **Deployment Readiness:** NOT READY (API verification
+required)
 
 ---
 
@@ -555,4 +596,3 @@ The secondary concerns around error handling, memory leaks, and incomplete featu
 3. **Error Handling Standardization** - Create reusable error handling utilities
 4. **Performance Testing** - Measure real-world performance under load
 5. **Documentation Update** - Document all incomplete features and workarounds
-

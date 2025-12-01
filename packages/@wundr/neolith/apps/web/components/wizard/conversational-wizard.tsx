@@ -76,9 +76,9 @@ export function ConversationalWizard({
 }: ConversationalWizardProps) {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [extractedData, setExtractedData] = React.useState<EntityData | undefined>(
-    initialData
-  );
+  const [extractedData, setExtractedData] = React.useState<
+    EntityData | undefined
+  >(initialData);
   const [activeTab, setActiveTab] = React.useState<'chat' | 'form'>('chat');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -116,14 +116,18 @@ export function ConversationalWizard({
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
       // Call LLM API or use provided handler
       const result = onSendMessage
         ? await onSendMessage(content, [...messages, userMessage])
-        : await defaultMessageHandler(content, [...messages, userMessage], entityType);
+        : await defaultMessageHandler(
+            content,
+            [...messages, userMessage],
+            entityType
+          );
 
       // Add assistant response
       const assistantMessage: Message = {
@@ -133,7 +137,7 @@ export function ConversationalWizard({
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
 
       // Update extracted data if provided
       if (result.extractedData) {
@@ -150,7 +154,7 @@ export function ConversationalWizard({
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -171,34 +175,37 @@ export function ConversationalWizard({
   };
 
   return (
-    <Card className="flex h-[70vh] flex-col overflow-hidden">
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'chat' | 'form')}>
-        <div className="border-b px-6 py-4">
-          <div className="flex items-center justify-between">
+    <Card className='flex h-[70vh] flex-col overflow-hidden'>
+      <Tabs
+        value={activeTab}
+        onValueChange={v => setActiveTab(v as 'chat' | 'form')}
+      >
+        <div className='border-b px-6 py-4'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h2 className="text-lg font-semibold">
+              <h2 className='text-lg font-semibold'>
                 Create {getEntityDisplayName(entityType)}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 {activeTab === 'chat'
                   ? 'Chat with AI to define your requirements'
                   : 'Review and edit the details'}
               </p>
             </div>
-            <TabsList className="grid w-[300px] grid-cols-2">
-              <TabsTrigger value="chat">Conversation</TabsTrigger>
-              <TabsTrigger value="form" disabled={!extractedData}>
+            <TabsList className='grid w-[300px] grid-cols-2'>
+              <TabsTrigger value='chat'>Conversation</TabsTrigger>
+              <TabsTrigger value='form' disabled={!extractedData}>
                 Review Details
               </TabsTrigger>
             </TabsList>
           </div>
         </div>
 
-        <TabsContent value="chat" className="m-0 flex h-full flex-col">
+        <TabsContent value='chat' className='m-0 flex h-full flex-col'>
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="space-y-4">
-              {messages.map((message) => (
+          <div className='flex-1 overflow-y-auto px-6 py-4'>
+            <div className='space-y-4'>
+              {messages.map(message => (
                 <ChatMessage
                   key={message.id}
                   role={message.role}
@@ -209,8 +216,8 @@ export function ConversationalWizard({
 
               {isLoading && (
                 <ChatMessage
-                  role="assistant"
-                  content="Thinking..."
+                  role='assistant'
+                  content='Thinking...'
                   isStreaming={true}
                 />
               )}
@@ -228,11 +235,15 @@ export function ConversationalWizard({
           />
         </TabsContent>
 
-        <TabsContent value="form" className="m-0 h-full">
+        <TabsContent value='form' className='m-0 h-full'>
           {extractedData && (
             <EntityReviewForm
               entityType={entityType}
-              extractedData={extractedData as Parameters<typeof EntityReviewForm>[0]['extractedData']}
+              extractedData={
+                extractedData as Parameters<
+                  typeof EntityReviewForm
+                >[0]['extractedData']
+              }
               onSubmit={handleFormSubmit}
               onCancel={onCancel}
             />
@@ -261,7 +272,10 @@ function getEntityDisplayName(entityType: EntityType): string {
 /**
  * Get greeting message based on entity type
  */
-function getGreetingMessage(entityType: EntityType, initialContext?: string): string {
+function getGreetingMessage(
+  entityType: EntityType,
+  initialContext?: string
+): string {
   if (initialContext) {
     return initialContext;
   }
@@ -281,7 +295,9 @@ function getGreetingMessage(entityType: EntityType, initialContext?: string): st
       "Hi! I'll help you create a new Channel. What kind of channel do you need? (e.g., public, private, direct message)",
   };
 
-  return greetings[entityType] || `Hi! I'll help you create a new ${entityType}.`;
+  return (
+    greetings[entityType] || `Hi! I'll help you create a new ${entityType}.`
+  );
 }
 
 /**
@@ -294,10 +310,10 @@ async function defaultMessageHandler(
   entityType: EntityType
 ): Promise<{ response: string; extractedData?: EntityData }> {
   // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
   // Simple mock response
-  const userMessages = history.filter((m) => m.role === 'user');
+  const userMessages = history.filter(m => m.role === 'user');
   const messageCount = userMessages.length;
 
   if (messageCount === 1) {
@@ -310,16 +326,17 @@ async function defaultMessageHandler(
         "Excellent! I've gathered enough information to generate a draft. Click 'Review Details' to see what I've prepared for you.",
       extractedData: {
         name: message.slice(0, 50),
-        description: userMessages.map((m) => m.content).join('. '),
+        description: userMessages.map(m => m.content).join('. '),
       },
     };
   }
 
   return {
-    response: "Thanks for the additional information. I've updated the details accordingly.",
+    response:
+      "Thanks for the additional information. I've updated the details accordingly.",
     extractedData: {
       name: userMessages[0].content.slice(0, 50),
-      description: userMessages.map((m) => m.content).join('. '),
+      description: userMessages.map(m => m.content).join('. '),
     },
   };
 }

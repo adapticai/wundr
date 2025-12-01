@@ -39,8 +39,10 @@ interface RouteContext {
  */
 async function listUploadedParts(
   uploadId: string,
-  s3Key: string,
-): Promise<{ partNumber: number; eTag: string; size: number; lastModified: Date }[]> {
+  s3Key: string
+): Promise<
+  { partNumber: number; eTag: string; size: number; lastModified: Date }[]
+> {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
   const region = process.env.AWS_REGION ?? 'us-east-1';
 
@@ -60,10 +62,10 @@ async function listUploadedParts(
         Bucket: s3Bucket,
         Key: s3Key,
         UploadId: uploadId,
-      }),
+      })
     );
 
-    return (response.Parts ?? []).map((part) => ({
+    return (response.Parts ?? []).map(part => ({
       partNumber: part.PartNumber ?? 0,
       eTag: part.ETag ?? '',
       size: part.Size ?? 0,
@@ -81,11 +83,15 @@ async function listUploadedParts(
  * @param uploadId - Multipart upload ID
  * @param s3Key - S3 object key
  */
-async function abortMultipartUpload(uploadId: string, s3Key: string): Promise<void> {
+async function abortMultipartUpload(
+  uploadId: string,
+  s3Key: string
+): Promise<void> {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
   const region = process.env.AWS_REGION ?? 'us-east-1';
 
-  const { S3Client, AbortMultipartUploadCommand } = await import('@aws-sdk/client-s3');
+  const { S3Client, AbortMultipartUploadCommand } =
+    await import('@aws-sdk/client-s3');
 
   const client = new S3Client({
     region,
@@ -100,7 +106,7 @@ async function abortMultipartUpload(uploadId: string, s3Key: string): Promise<vo
       Bucket: s3Bucket,
       Key: s3Key,
       UploadId: uploadId,
-    }),
+    })
   );
 }
 
@@ -116,15 +122,18 @@ async function abortMultipartUpload(uploadId: string, s3Key: string): Promise<vo
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -133,8 +142,11 @@ export async function GET(
     const paramResult = uploadIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid upload ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid upload ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -151,8 +163,11 @@ export async function GET(
 
     if (!file) {
       return NextResponse.json(
-        createErrorResponse('Upload not found', UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Upload not found',
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -160,7 +175,7 @@ export async function GET(
     if (file.uploadedById !== session.user.id) {
       return NextResponse.json(
         createErrorResponse('Access denied', UPLOAD_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -181,9 +196,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -200,15 +215,18 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -217,8 +235,11 @@ export async function DELETE(
     const paramResult = uploadIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid upload ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid upload ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -235,8 +256,11 @@ export async function DELETE(
 
     if (!file) {
       return NextResponse.json(
-        createErrorResponse('Upload not found', UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Upload not found',
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -244,7 +268,7 @@ export async function DELETE(
     if (file.uploadedById !== session.user.id) {
       return NextResponse.json(
         createErrorResponse('Access denied', UPLOAD_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -272,9 +296,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

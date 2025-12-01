@@ -24,7 +24,7 @@ import {
 } from '@/lib/validations/orchestrator';
 
 import type { UpdateOrchestratorInput } from '@/lib/validations/orchestrator';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with OrchestratorID parameter
@@ -44,7 +44,7 @@ async function getVPWithAccessCheck(orchestratorId: string, userId: string) {
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   // Fetch Orchestrator and verify organization access
   const orchestrator = await prisma.orchestrator.findUnique({
@@ -72,13 +72,16 @@ async function getVPWithAccessCheck(orchestratorId: string, userId: string) {
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
   // Find user's role in the Orchestrator's organization
   const membership = userOrganizations.find(
-    (m) => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -96,15 +99,18 @@ async function getVPWithAccessCheck(orchestratorId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -113,18 +119,27 @@ export async function GET(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID format', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID format',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Get Orchestrator with access check
-    const result = await getVPWithAccessCheck(params.orchestratorId, session.user.id);
+    const result = await getVPWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -134,9 +149,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -153,15 +168,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -170,8 +188,11 @@ export async function PATCH(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID format', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID format',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -181,8 +202,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -193,21 +217,27 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: UpdateOrchestratorInput = parseResult.data;
 
     // Get Orchestrator with access check
-    const result = await getVPWithAccessCheck(params.orchestratorId, session.user.id);
+    const result = await getVPWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -216,14 +246,14 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Update Orchestrator and user in a transaction
-    const updatedOrchestrator = await prisma.$transaction(async (tx) => {
+    const updatedOrchestrator = await prisma.$transaction(async tx => {
       // Update user profile if provided
       if (input.user) {
         await tx.user.update({
@@ -245,10 +275,13 @@ export async function PATCH(
       return tx.orchestrator.update({
         where: { id: params.orchestratorId },
         data: {
-          ...(input.discipline !== undefined && { discipline: input.discipline }),
+          ...(input.discipline !== undefined && {
+            discipline: input.discipline,
+          }),
           ...(input.role !== undefined && { role: input.role }),
           ...(input.capabilities !== undefined && {
-            capabilities: input.capabilities as unknown as Prisma.InputJsonValue,
+            capabilities:
+              input.capabilities as unknown as Prisma.InputJsonValue,
           }),
           ...(input.daemonEndpoint !== undefined && {
             daemonEndpoint: input.daemonEndpoint,
@@ -287,9 +320,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -306,15 +339,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -323,18 +359,27 @@ export async function DELETE(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID format', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID format',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Get Orchestrator with access check
-    const result = await getVPWithAccessCheck(params.orchestratorId, session.user.id);
+    const result = await getVPWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -343,15 +388,15 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to delete this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Delete Orchestrator and associated user in a transaction
     // The cascade delete on Orchestrator->User relation will handle cleanup
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       // Delete the Orchestrator first
       await tx.orchestrator.delete({
         where: { id: params.orchestratorId },
@@ -378,18 +423,18 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Cannot delete Orchestrator: it has dependent records',
-          ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+          ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

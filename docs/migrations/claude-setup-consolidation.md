@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document describes the consolidation of two duplicate `claude-setup.ts` implementations into a single, unified version.
+This document describes the consolidation of two duplicate `claude-setup.ts` implementations into a
+single, unified version.
 
 ## Migration Date
 
@@ -23,6 +24,7 @@ The codebase contained two separate implementations of the Claude setup command:
    - Features: Claude CLI, Chrome, MCP tools, agents, validation, hardware optimization
 
 This duplication caused:
+
 - Maintenance burden (changes needed in two places)
 - Feature inconsistency between the two versions
 - Confusion about which command to use
@@ -31,6 +33,7 @@ This duplication caused:
 ## Solution
 
 Consolidated both implementations into a single file at:
+
 ```
 /packages/@wundr/cli/src/commands/claude-setup.ts
 ```
@@ -40,39 +43,42 @@ The consolidated version (1280 lines) preserves ALL functionality from both impl
 ## Changes Made
 
 ### Files Removed
+
 - `/src/cli/commands/claude-setup.ts` - Duplicate removed
 
 ### Files Modified
+
 - `/packages/@wundr/cli/src/commands/claude-setup.ts` - Consolidated version
 - `/src/cli/wundr-claude.ts` - Updated import path
 
 ### Files Created
+
 - `/docs/migrations/claude-setup-consolidation.md` - This documentation
 - `/tests/commands/claude-setup.test.ts` - Regression tests
 
 ## Feature Comparison
 
-| Feature | Old `/src/cli/` | Old `/@wundr/cli/` | Consolidated |
-|---------|-----------------|--------------------| -------------|
-| Project setup with templates | Yes | No | Yes (`project` subcommand) |
-| Git repository init | Yes | No | Yes |
-| Claude Flow setup | Yes | Yes | Yes |
-| MCP tools directory | Yes | No | Yes |
-| CLAUDE.md generation | Yes | No | Yes (`config` subcommand) |
-| TypeScript template | Yes | No | Yes |
-| React template | Yes | No | Yes |
-| Node.js template | Yes | No | Yes |
-| Monorepo template | Yes | No | Yes |
-| Swarm initialization | Yes | No | Yes |
-| Claude CLI installation | No | Yes | Yes |
-| Chrome installation | No | Yes | Yes |
-| Agent configuration | No | Yes | Yes (`agents` subcommand) |
-| Hardware optimization | No | Yes | Yes (`optimize` subcommand) |
-| Validation with fix | No | Yes | Yes (`validate` subcommand) |
-| Chrome extension setup | No | Yes | Yes (`extension` subcommand) |
-| Shell configuration | No | Yes | Yes |
-| Profile-based agents | No | Yes | Yes |
-| Complete 54 agents list | No | Yes | Yes |
+| Feature                      | Old `/src/cli/` | Old `/@wundr/cli/` | Consolidated                 |
+| ---------------------------- | --------------- | ------------------ | ---------------------------- |
+| Project setup with templates | Yes             | No                 | Yes (`project` subcommand)   |
+| Git repository init          | Yes             | No                 | Yes                          |
+| Claude Flow setup            | Yes             | Yes                | Yes                          |
+| MCP tools directory          | Yes             | No                 | Yes                          |
+| CLAUDE.md generation         | Yes             | No                 | Yes (`config` subcommand)    |
+| TypeScript template          | Yes             | No                 | Yes                          |
+| React template               | Yes             | No                 | Yes                          |
+| Node.js template             | Yes             | No                 | Yes                          |
+| Monorepo template            | Yes             | No                 | Yes                          |
+| Swarm initialization         | Yes             | No                 | Yes                          |
+| Claude CLI installation      | No              | Yes                | Yes                          |
+| Chrome installation          | No              | Yes                | Yes                          |
+| Agent configuration          | No              | Yes                | Yes (`agents` subcommand)    |
+| Hardware optimization        | No              | Yes                | Yes (`optimize` subcommand)  |
+| Validation with fix          | No              | Yes                | Yes (`validate` subcommand)  |
+| Chrome extension setup       | No              | Yes                | Yes (`extension` subcommand) |
+| Shell configuration          | No              | Yes                | Yes                          |
+| Profile-based agents         | No              | Yes                | Yes                          |
+| Complete 54 agents list      | No              | Yes                | Yes                          |
 
 ## New Command Structure
 
@@ -91,6 +97,7 @@ wundr claude-setup config [path]      # Generate CLAUDE.md
 ### Options
 
 **`install` command:**
+
 - `--skip-chrome` - Skip Chrome installation
 - `--skip-mcp` - Skip MCP tools installation
 - `--skip-agents` - Skip agent configuration
@@ -98,28 +105,34 @@ wundr claude-setup config [path]      # Generate CLAUDE.md
 - `-g, --global` - Install tools globally
 
 **`project` command:**
+
 - `-g, --global` - Install tools globally
 - `--skip-mcp` - Skip MCP tools installation
 - `--skip-flow` - Skip Claude Flow setup
 - `-t, --template <name>` - Use template (typescript, react, nodejs, monorepo)
 
 **`mcp` command:**
+
 - `--tool <tool>` - Install specific tool
 
 **`agents` command:**
+
 - `--list` - List available agents
 - `--enable <agents>` - Enable specific agents (comma-separated)
 - `--profile <profile>` - Use profile (frontend, backend, fullstack, devops, ml)
 
 **`validate` command:**
+
 - `--fix` - Attempt to fix issues
 
 **`optimize` command:**
+
 - `--force` - Force reinstallation
 
 ## Import Changes
 
 ### Before
+
 ```typescript
 // In /src/cli/wundr-claude.ts
 import { createClaudeSetupCommand } from './commands/claude-setup.js';
@@ -129,6 +142,7 @@ import claudeSetupCommand from './commands/claude-setup';
 ```
 
 ### After
+
 ```typescript
 // In /src/cli/wundr-claude.ts
 import { createClaudeSetupCommand } from '../../packages/@wundr/cli/src/commands/claude-setup.js';
@@ -192,6 +206,7 @@ git checkout HEAD~1 -- packages/@wundr/cli/src/commands/claude-setup.ts
 ## Diff Summary
 
 ### What Was Kept from `/src/cli/commands/claude-setup.ts`
+
 - Git repository initialization with prompt
 - Claude Flow local/global installation logic
 - MCP tools directory creation with install.sh script
@@ -202,6 +217,7 @@ git checkout HEAD~1 -- packages/@wundr/cli/src/commands/claude-setup.ts
 - Final instructions display
 
 ### What Was Kept from `/@wundr/cli/src/commands/claude-setup.ts`
+
 - ClaudeSetupCommands class structure
 - Subcommand architecture (install, mcp, agents, validate, extension, optimize)
 - Claude CLI installation
@@ -215,10 +231,12 @@ git checkout HEAD~1 -- packages/@wundr/cli/src/commands/claude-setup.ts
 - Settings.json configuration
 
 ### What Was Merged
+
 - Both implementations' MCP tool installation (script-based + specific tool)
 - Combined option sets from both versions
 - Unified error handling and spinner usage
 
 ### What Was Removed
+
 - Duplicate file at `/src/cli/commands/claude-setup.ts`
 - Redundant code patterns

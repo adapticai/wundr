@@ -10,7 +10,13 @@
 /**
  * Categorized file types supported by the system
  */
-export type FileType = 'image' | 'document' | 'video' | 'audio' | 'archive' | 'other';
+export type FileType =
+  | 'image'
+  | 'document'
+  | 'video'
+  | 'audio'
+  | 'archive'
+  | 'other';
 
 /**
  * Metadata associated with an uploaded file
@@ -65,7 +71,12 @@ export interface FileRecord {
 /**
  * Upload status types representing the lifecycle of a file upload
  */
-export type UploadStatus = 'pending' | 'uploading' | 'completed' | 'error' | 'cancelled';
+export type UploadStatus =
+  | 'pending'
+  | 'uploading'
+  | 'completed'
+  | 'error'
+  | 'cancelled';
 
 /**
  * Represents the current state of a file upload in progress
@@ -161,11 +172,14 @@ export const MIME_TYPE_MAP = {
   // Documents
   'application/pdf': 'document',
   'application/msword': 'document',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'document',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+    'document',
   'application/vnd.ms-excel': 'document',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+    'document',
   'application/vnd.ms-powerpoint': 'document',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+    'document',
   'text/plain': 'document',
   'text/csv': 'document',
   'text/markdown': 'document',
@@ -192,7 +206,13 @@ export const MIME_TYPE_MAP = {
  * Used to generate the accept attribute for file inputs
  */
 export const FILE_TYPE_ACCEPT = {
-  images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+  images: [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
+  ],
   documents: [
     'application/pdf',
     'application/msword',
@@ -204,7 +224,11 @@ export const FILE_TYPE_ACCEPT = {
   ],
   videos: ['video/mp4', 'video/webm', 'video/ogg'],
   audio: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
-  archives: ['application/zip', 'application/x-rar-compressed', 'application/gzip'],
+  archives: [
+    'application/zip',
+    'application/x-rar-compressed',
+    'application/gzip',
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 /**

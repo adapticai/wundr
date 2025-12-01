@@ -5,6 +5,7 @@ This guide explains how to set up authentication for Playwright E2E tests.
 ## Overview
 
 The dashboard tests use **storage state** authentication, which means:
+
 - Login happens once in a setup script
 - Session cookies are saved to a file
 - All tests reuse the saved session
@@ -17,6 +18,7 @@ The dashboard tests use **storage state** authentication, which means:
 You need a valid user account in your development database. You can:
 
 **Option A: Create via signup flow**
+
 ```bash
 # Start dev server
 npm run dev
@@ -26,6 +28,7 @@ npm run dev
 ```
 
 **Option B: Create via database seed**
+
 ```bash
 # Add test user to your seed script
 npx prisma db seed
@@ -35,6 +38,7 @@ npx prisma studio
 ```
 
 **Option C: Use existing account**
+
 - Use your own development account credentials
 
 ### 2. Configure Environment Variables
@@ -66,6 +70,7 @@ npx playwright test auth.setup.ts --project=setup
 ```
 
 This will:
+
 1. Navigate to login page
 2. Fill in credentials from `.env.test`
 3. Submit login form
@@ -137,7 +142,7 @@ import * as path from 'path';
 
 // Use saved authentication state
 test.use({
-  storageState: path.join(__dirname, '../playwright/.auth/user.json')
+  storageState: path.join(__dirname, '../playwright/.auth/user.json'),
 });
 
 test.describe('Dashboard', () => {
@@ -177,12 +182,14 @@ export default defineConfig({
 ### What Gets Saved?
 
 The `user.json` file contains:
+
 - Session cookies (NextAuth session token)
 - Local storage data
 - Session storage data
 - Browser state
 
 Example `user.json`:
+
 ```json
 {
   "cookies": [
@@ -215,6 +222,7 @@ Example `user.json`:
 **Problem**: `auth.setup.ts` fails with "Navigation timeout"
 
 **Solution**:
+
 1. Verify dev server is running: `npm run dev`
 2. Check login URL: http://localhost:3000/login
 3. Verify `PLAYWRIGHT_BASE_URL` in `.env.test`
@@ -232,6 +240,7 @@ npx playwright test auth.setup.ts --project=setup --debug
 **Problem**: Login fails with "Invalid credentials"
 
 **Solution**:
+
 1. Verify credentials in `.env.test` are correct
 2. Check user exists in database
 3. Verify password is correct (check if hashed correctly)
@@ -249,12 +258,14 @@ npx prisma studio
 **Solutions**:
 
 **A. Session Expired**
+
 ```bash
 # Regenerate auth state
 npx playwright test auth.setup.ts --project=setup
 ```
 
 **B. Auth File Not Found**
+
 ```bash
 # Check file exists
 ls -la playwright/.auth/user.json
@@ -264,10 +275,11 @@ npx playwright test auth.setup.ts --project=setup
 ```
 
 **C. Wrong Storage State Path**
+
 ```typescript
 // Verify path in dashboard.spec.ts
 test.use({
-  storageState: path.join(__dirname, '../playwright/.auth/user.json')
+  storageState: path.join(__dirname, '../playwright/.auth/user.json'),
   // Should resolve to: apps/web/playwright/.auth/user.json
 });
 ```
@@ -279,6 +291,7 @@ test.use({
 **Solutions**:
 
 **A. Missing Environment Variables**
+
 ```yaml
 # GitHub Actions example
 - name: Run tests
@@ -289,6 +302,7 @@ test.use({
 ```
 
 **B. Database Not Seeded**
+
 ```yaml
 # Seed database before tests
 - name: Setup database
@@ -298,6 +312,7 @@ test.use({
 ```
 
 **C. Server Not Ready**
+
 ```yaml
 # Wait for server to be ready
 - name: Wait for server
@@ -353,6 +368,7 @@ test('viewer has read-only access', async ({ page }) => {
 ### Handle Expired Sessions
 
 **Option 1: Regenerate Before Each Test Run**
+
 ```bash
 # In package.json
 {
@@ -363,6 +379,7 @@ test('viewer has read-only access', async ({ page }) => {
 ```
 
 **Option 2: Set Longer Session Duration**
+
 ```typescript
 // lib/auth.ts
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -373,6 +390,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 ```
 
 **Option 3: Check and Refresh in Tests**
+
 ```typescript
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -417,22 +435,16 @@ setup('get API token', async ({ request }) => {
   const { token } = await response.json();
 
   // Save token to file
-  await fs.promises.writeFile(
-    'playwright/.auth/token.txt',
-    token
-  );
+  await fs.promises.writeFile('playwright/.auth/token.txt', token);
 });
 
 // dashboard.spec.ts
 test.beforeEach(async ({ page }) => {
-  const token = await fs.promises.readFile(
-    'playwright/.auth/token.txt',
-    'utf-8'
-  );
+  const token = await fs.promises.readFile('playwright/.auth/token.txt', 'utf-8');
 
   // Set Authorization header
   await page.setExtraHTTPHeaders({
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
   });
 });
 ```
@@ -471,6 +483,7 @@ setup('authenticate with OAuth', async ({ page }) => {
 - **Debug**: Use `--debug` flag to troubleshoot auth issues
 
 For more information, see:
+
 - [Playwright Authentication Guide](https://playwright.dev/docs/auth)
 - [NextAuth.js Documentation](https://next-auth.js.org/)
 - [Dashboard Test README](./README.md)

@@ -2,7 +2,8 @@
 
 ## Running Computer Setup in Development Mode
 
-The computer setup feature can be tested without building the entire project. Here are several ways to run it:
+The computer setup feature can be tested without building the entire project. Here are several ways
+to run it:
 
 ### Method 1: Using Dev Scripts (Recommended)
 

@@ -349,8 +349,11 @@ export class GitHubIntegration extends EventEmitter {
     const findings: ReviewFinding[] = [];
 
     // Analyze logic based on PR complexity
-    const isHighComplexity = swarm.metadata.additions > 200 || swarm.metadata.changedFiles > 5;
-    const hasLogicIssue = isHighComplexity ? Math.random() < 0.5 : Math.random() < 0.3;
+    const isHighComplexity =
+      swarm.metadata.additions > 200 || swarm.metadata.changedFiles > 5;
+    const hasLogicIssue = isHighComplexity
+      ? Math.random() < 0.5
+      : Math.random() < 0.3;
 
     if (hasLogicIssue) {
       findings.push({
@@ -375,7 +378,9 @@ export class GitHubIntegration extends EventEmitter {
 
     // Analyze performance based on code changes size
     const isLargeChange = swarm.metadata.additions > 300;
-    const hasPerformanceIssue = isLargeChange ? Math.random() < 0.4 : Math.random() < 0.2;
+    const hasPerformanceIssue = isLargeChange
+      ? Math.random() < 0.4
+      : Math.random() < 0.2;
 
     if (hasPerformanceIssue) {
       findings.push({
@@ -411,8 +416,11 @@ export class GitHubIntegration extends EventEmitter {
     const findings: ReviewFinding[] = [];
 
     // Analyze security based on PR scope
-    const isHighRiskChange = swarm.metadata.changedFiles > 10 || swarm.metadata.additions > 400;
-    const hasSecurityIssue = isHighRiskChange ? Math.random() < 0.3 : Math.random() < 0.15;
+    const isHighRiskChange =
+      swarm.metadata.changedFiles > 10 || swarm.metadata.additions > 400;
+    const hasSecurityIssue = isHighRiskChange
+      ? Math.random() < 0.3
+      : Math.random() < 0.15;
 
     if (hasSecurityIssue) {
       findings.push({
@@ -686,7 +694,9 @@ export class GitHubIntegration extends EventEmitter {
     }
   }
 
-  private async selectReviewAgents(prDetails: PullRequestDetails): Promise<Agent[]> {
+  private async selectReviewAgents(
+    prDetails: PullRequestDetails
+  ): Promise<Agent[]> {
     // Select agents based on PR characteristics
     const agents: Agent[] = [];
     const prSize = prDetails.additions + prDetails.deletions;
@@ -711,7 +721,8 @@ export class GitHubIntegration extends EventEmitter {
 
     // Add security agent for larger PRs or if security-related changes detected
     const prTitle = (prDetails.title || '').toLowerCase();
-    const needsSecurityReview = isLargePR ||
+    const needsSecurityReview =
+      isLargePR ||
       prTitle.includes('auth') ||
       prTitle.includes('security') ||
       prTitle.includes('password');
@@ -789,7 +800,10 @@ export class GitHubIntegration extends EventEmitter {
       combinedText.includes('data loss')
     ) {
       priority = 'high';
-      if (combinedText.includes('security') || combinedText.includes('vulnerability')) {
+      if (
+        combinedText.includes('security') ||
+        combinedText.includes('vulnerability')
+      ) {
         labels.push('security');
       }
     } else if (
@@ -804,10 +818,18 @@ export class GitHubIntegration extends EventEmitter {
     }
 
     // Detect issue type from body content
-    if (body.includes('error') || body.includes('exception') || body.includes('crash')) {
+    if (
+      body.includes('error') ||
+      body.includes('exception') ||
+      body.includes('crash')
+    ) {
       labels.push('bug');
     }
-    if (body.includes('feature') || body.includes('enhancement') || body.includes('request')) {
+    if (
+      body.includes('feature') ||
+      body.includes('enhancement') ||
+      body.includes('request')
+    ) {
       labels.push('enhancement');
     }
 
@@ -815,7 +837,10 @@ export class GitHubIntegration extends EventEmitter {
       priority,
       labels,
       analysis: `Automated issue analysis - Priority: ${priority}`,
-      hasStackTrace: body.includes('stack trace') || body.includes('at ') || body.includes('Error:'),
+      hasStackTrace:
+        body.includes('stack trace') ||
+        body.includes('at ') ||
+        body.includes('Error:'),
     };
   }
 

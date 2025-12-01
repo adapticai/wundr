@@ -93,18 +93,26 @@ const MAX_FILE_SIZES: Record<FileType, number> = {
  */
 function getFileType(mimeType: string): FileType {
   if (mimeType.startsWith('image/')) {
-return 'IMAGE';
-}
+    return 'IMAGE';
+  }
   if (mimeType.startsWith('video/')) {
-return 'VIDEO';
-}
+    return 'VIDEO';
+  }
   if (mimeType.startsWith('audio/')) {
-return 'AUDIO';
-}
-  if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.startsWith('text/')) {
+    return 'AUDIO';
+  }
+  if (
+    mimeType.includes('pdf') ||
+    mimeType.includes('document') ||
+    mimeType.startsWith('text/')
+  ) {
     return 'DOCUMENT';
   }
-  if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('gzip')) {
+  if (
+    mimeType.includes('zip') ||
+    mimeType.includes('tar') ||
+    mimeType.includes('gzip')
+  ) {
     return 'ARCHIVE';
   }
   return 'OTHER';
@@ -144,9 +152,11 @@ function createMockStorageService() {
       fields: { 'Content-Type': 'application/pdf' },
       expiresAt: new Date(Date.now() + 3600000),
     }),
-    getSignedDownloadUrl: vi.fn().mockResolvedValue(
-      'https://bucket.s3.amazonaws.com/download?signature=mock',
-    ),
+    getSignedDownloadUrl: vi
+      .fn()
+      .mockResolvedValue(
+        'https://bucket.s3.amazonaws.com/download?signature=mock'
+      ),
   };
 }
 
@@ -160,9 +170,9 @@ function createMockImageService() {
       height: 1080,
       format: 'jpeg',
     }),
-    generateThumbnail: vi.fn().mockResolvedValue(
-      'https://cdn.example.com/thumb.webp',
-    ),
+    generateThumbnail: vi
+      .fn()
+      .mockResolvedValue('https://cdn.example.com/thumb.webp'),
   };
 }
 
@@ -179,18 +189,25 @@ function createUploadHandler(deps: {
     /**
      * POST /api/upload - Request presigned upload URL
      */
-    requestUpload: async (input: UploadRequestInput): Promise<ApiResponse<{
-      url: string;
-      key: string;
-      fields: Record<string, string>;
-      expiresAt: Date;
-    }>> => {
+    requestUpload: async (
+      input: UploadRequestInput
+    ): Promise<
+      ApiResponse<{
+        url: string;
+        key: string;
+        fields: Record<string, string>;
+        expiresAt: Date;
+      }>
+    > => {
       // Check authentication
       if (!deps.currentUser) {
         return {
           status: 401,
           data: null,
-          error: { code: 'UNAUTHENTICATED', message: 'Authentication required' },
+          error: {
+            code: 'UNAUTHENTICATED',
+            message: 'Authentication required',
+          },
         };
       }
 
@@ -199,7 +216,10 @@ function createUploadHandler(deps: {
         return {
           status: 400,
           data: null,
-          error: { code: 'INVALID_FILE_TYPE', message: `File type ${input.contentType} is not allowed` },
+          error: {
+            code: 'INVALID_FILE_TYPE',
+            message: `File type ${input.contentType} is not allowed`,
+          },
         };
       }
 
@@ -231,14 +251,17 @@ function createUploadHandler(deps: {
         return {
           status: 403,
           data: null,
-          error: { code: 'FORBIDDEN', message: 'You must be a member of this channel to upload files' },
+          error: {
+            code: 'FORBIDDEN',
+            message: 'You must be a member of this channel to upload files',
+          },
         };
       }
 
       // Generate signed URL
       const result = await deps.storageService.getSignedUploadUrl(
         `channels/${input.channelId}/files/${deps.currentUser.id}/${Date.now()}-${input.filename}`,
-        input.contentType,
+        input.contentType
       );
 
       return {
@@ -256,20 +279,27 @@ function createUploadHandler(deps: {
     /**
      * POST /api/upload/complete - Complete upload and create file record
      */
-    completeUpload: async (input: CompleteUploadInput): Promise<ApiResponse<{
-      file: {
-        id: string;
-        name: string;
-        url: string;
-        thumbnailUrl: string | null;
-      };
-    }>> => {
+    completeUpload: async (
+      input: CompleteUploadInput
+    ): Promise<
+      ApiResponse<{
+        file: {
+          id: string;
+          name: string;
+          url: string;
+          thumbnailUrl: string | null;
+        };
+      }>
+    > => {
       // Check authentication
       if (!deps.currentUser) {
         return {
           status: 401,
           data: null,
-          error: { code: 'UNAUTHENTICATED', message: 'Authentication required' },
+          error: {
+            code: 'UNAUTHENTICATED',
+            message: 'Authentication required',
+          },
         };
       }
 
@@ -340,7 +370,9 @@ function createUploadHandler(deps: {
         }
       }
 
-      const downloadUrl = await deps.storageService.getSignedDownloadUrl(input.key);
+      const downloadUrl = await deps.storageService.getSignedDownloadUrl(
+        input.key
+      );
 
       return {
         status: 200,
@@ -467,7 +499,12 @@ describe('Upload API', () => {
         role: 'MEMBER',
       });
 
-      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain'];
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'application/pdf',
+        'text/plain',
+      ];
 
       for (const contentType of allowedTypes) {
         const input: UploadRequestInput = {
@@ -695,8 +732,12 @@ describe('Upload API', () => {
 
       expect(response.status).toBe(200);
       expect(mockImageService.processImage).toHaveBeenCalledWith(input.key);
-      expect(mockImageService.generateThumbnail).toHaveBeenCalledWith(input.key);
-      expect(response.data!.file.thumbnailUrl).toBe('https://cdn.example.com/thumb.webp');
+      expect(mockImageService.generateThumbnail).toHaveBeenCalledWith(
+        input.key
+      );
+      expect(response.data!.file.thumbnailUrl).toBe(
+        'https://cdn.example.com/thumb.webp'
+      );
     });
 
     it('does not trigger image processing for non-images', async () => {
@@ -736,10 +777,12 @@ describe('Upload API', () => {
         role: 'MEMBER',
       });
 
-      mockPrisma.file.create.mockImplementation(async (args: { data: Record<string, unknown> }) => ({
-        id: 'file_123',
-        ...args.data,
-      }));
+      mockPrisma.file.create.mockImplementation(
+        async (args: { data: Record<string, unknown> }) => ({
+          id: 'file_123',
+          ...args.data,
+        })
+      );
 
       const input: CompleteUploadInput = {
         key: 'channels/ch_456/files/user_123/123-document.pdf',
@@ -753,7 +796,7 @@ describe('Upload API', () => {
           data: expect.objectContaining({
             channelId: 'ch_456',
           }),
-        }),
+        })
       );
     });
 
@@ -809,10 +852,12 @@ describe('Upload API', () => {
         role: 'MEMBER',
       });
 
-      mockPrisma.file.create.mockImplementation(async (args: { data: Record<string, unknown> }) => ({
-        id: 'file_123',
-        ...args.data,
-      }));
+      mockPrisma.file.create.mockImplementation(
+        async (args: { data: Record<string, unknown> }) => ({
+          id: 'file_123',
+          ...args.data,
+        })
+      );
 
       const input: CompleteUploadInput = {
         key: 'channels/ch_123/files/user_123/123-document.pdf',
@@ -833,7 +878,7 @@ describe('Upload API', () => {
               tags: ['finance', 'quarterly'],
             },
           }),
-        }),
+        })
       );
     });
   });
@@ -877,7 +922,7 @@ describe('Upload API Error Handling', () => {
     });
 
     mockStorageService.getSignedUploadUrl.mockRejectedValue(
-      new Error('S3 Service Unavailable'),
+      new Error('S3 Service Unavailable')
     );
 
     const input: UploadRequestInput = {
@@ -887,12 +932,14 @@ describe('Upload API Error Handling', () => {
       channelId: 'ch_123',
     };
 
-    await expect(handler.requestUpload(input)).rejects.toThrow('S3 Service Unavailable');
+    await expect(handler.requestUpload(input)).rejects.toThrow(
+      'S3 Service Unavailable'
+    );
   });
 
   it('handles database errors gracefully', async () => {
     mockPrisma.channelMember.findUnique.mockRejectedValue(
-      new Error('Database connection lost'),
+      new Error('Database connection lost')
     );
 
     const input: UploadRequestInput = {
@@ -902,7 +949,9 @@ describe('Upload API Error Handling', () => {
       channelId: 'ch_123',
     };
 
-    await expect(handler.requestUpload(input)).rejects.toThrow('Database connection lost');
+    await expect(handler.requestUpload(input)).rejects.toThrow(
+      'Database connection lost'
+    );
   });
 
   it('handles image processing failures without failing upload', async () => {
@@ -926,7 +975,7 @@ describe('Upload API Error Handling', () => {
 
     // Image processing fails
     mockImageService.processImage.mockRejectedValue(
-      new Error('Image processing failed'),
+      new Error('Image processing failed')
     );
 
     const input: CompleteUploadInput = {

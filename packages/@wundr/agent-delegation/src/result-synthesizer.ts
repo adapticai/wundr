@@ -109,7 +109,7 @@ export class ResultSynthesizer {
   async synthesize(
     results: DelegationResult[],
     strategy?: SynthesisStrategy,
-    context: Record<string, unknown> = {},
+    context: Record<string, unknown> = {}
   ): Promise<SynthesisResult> {
     const startTime = Date.now();
     const synthesisStrategy = strategy ?? this.options.defaultStrategy;
@@ -121,7 +121,7 @@ export class ResultSynthesizer {
       throw new DelegationError(
         DelegationErrorCode.SYNTHESIS_FAILED,
         'No valid results to synthesize',
-        { totalResults: results.length },
+        { totalResults: results.length }
       );
     }
 
@@ -151,7 +151,7 @@ export class ResultSynthesizer {
       case 'best_pick':
         ({ output: synthesizedOutput, confidence } = this.bestPickSynthesis(
           validResults,
-          context,
+          context
         ));
         break;
       case 'weighted_average':
@@ -165,7 +165,7 @@ export class ResultSynthesizer {
       default:
         throw new DelegationError(
           DelegationErrorCode.SYNTHESIS_FAILED,
-          `Unknown synthesis strategy: ${synthesisStrategy}`,
+          `Unknown synthesis strategy: ${synthesisStrategy}`
         );
     }
 
@@ -228,7 +228,7 @@ export class ResultSynthesizer {
     if (results.every(r => this.isPlainObject(r.output))) {
       const merged = this.deepMerge(
         results.map(r => r.output as Record<string, unknown>),
-        conflicts,
+        conflicts
       );
       const confidence = this.calculateMergeConfidence(results, conflicts);
       return { output: merged, conflicts, confidence };
@@ -362,7 +362,7 @@ export class ResultSynthesizer {
    */
   private bestPickSynthesis(
     results: DelegationResult[],
-    context: Record<string, unknown>,
+    context: Record<string, unknown>
   ): {
     output: unknown;
     confidence: number;
@@ -457,7 +457,7 @@ export class ResultSynthesizer {
   } {
     // Sort by completion time
     const sorted = [...results].sort(
-      (a, b) => a.completedAt.getTime() - b.completedAt.getTime(),
+      (a, b) => a.completedAt.getTime() - b.completedAt.getTime()
     );
 
     // Return the last result (final in chain)
@@ -485,7 +485,7 @@ export class ResultSynthesizer {
       return results;
     }
     return results.filter(
-      r => r.status === 'completed' && r.output !== undefined,
+      r => r.status === 'completed' && r.output !== undefined
     );
   }
 
@@ -506,7 +506,7 @@ export class ResultSynthesizer {
    */
   private deepMerge(
     objects: Record<string, unknown>[],
-    conflicts: SynthesisConflict[],
+    conflicts: SynthesisConflict[]
   ): Record<string, unknown> {
     const merged: Record<string, unknown> = {};
 
@@ -535,7 +535,7 @@ export class ResultSynthesizer {
       if (values.every(v => this.isPlainObject(v))) {
         merged[key] = this.deepMerge(
           values as Record<string, unknown>[],
-          conflicts,
+          conflicts
         );
         continue;
       }
@@ -549,7 +549,7 @@ export class ResultSynthesizer {
       // Custom merge function
       if (this.options.customMerge) {
         merged[key] = values.reduce((acc, val) =>
-          this.options.customMerge!(acc, val),
+          this.options.customMerge!(acc, val)
         );
         continue;
       }
@@ -627,7 +627,7 @@ export class ResultSynthesizer {
    */
   private calculateMergeConfidence(
     results: DelegationResult[],
-    conflicts: SynthesisConflict[],
+    conflicts: SynthesisConflict[]
   ): number {
     const baseConfidence = 1 - conflicts.length * 0.1;
     const successRate =
@@ -640,7 +640,7 @@ export class ResultSynthesizer {
    */
   private scoreResult(
     result: DelegationResult,
-    context: Record<string, unknown>,
+    context: Record<string, unknown>
   ): number {
     let score = 0;
 
@@ -667,7 +667,7 @@ export class ResultSynthesizer {
     } else {
       score -= Math.min(
         0.1,
-        ((result.duration - targetDuration) / targetDuration) * 0.1,
+        ((result.duration - targetDuration) / targetDuration) * 0.1
       );
     }
 
@@ -706,7 +706,7 @@ export function createMergeSynthesizer(): ResultSynthesizer {
  * @returns Consensus-strategy ResultSynthesizer instance
  */
 export function createConsensusSynthesizer(
-  threshold: number = 0.6,
+  threshold: number = 0.6
 ): ResultSynthesizer {
   return new ResultSynthesizer({
     defaultStrategy: 'consensus',

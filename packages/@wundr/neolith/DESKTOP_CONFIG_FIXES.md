@@ -1,61 +1,72 @@
 # Desktop App Configuration Fixes - Summary
 
 ## Overview
-Fixed critical configuration issues in the Neolith Desktop application to enable proper production builds and packaging with the Next.js web app integration.
+
+Fixed critical configuration issues in the Neolith Desktop application to enable proper production
+builds and packaging with the Next.js web app integration.
 
 ## Critical Issues Fixed
 
 ### 1. Production Renderer Path (main.ts)
+
 **Problem:** The desktop app's production path was incorrectly set to `../renderer/index.html`
 **Solution:** Updated to properly start a Next.js server in production mode
+
 - Dev mode: Loads from `http://localhost:3000` (Next.js dev server)
 - Production mode: Spawns a `next start` process and loads from the local server
 - Added fallback to load static HTML if server fails
 
-**File:** `/apps/desktop/electron/main.ts`
-**Changes:**
+**File:** `/apps/desktop/electron/main.ts` **Changes:**
+
 - Lines 117-154: Complete rewrite of production server startup logic
 - Added proper server startup with stdio capture
 - Added error handling and timeout mechanisms
 - Lines 49, 683-705: Added server process management
 
 ### 2. Build Output Directory Configuration (electron-builder.yml)
-**Problem:** Output directory conflicts between electron-builder and web app
-**Solution:** Changed output directory from `out` to `dist/out`
+
+**Problem:** Output directory conflicts between electron-builder and web app **Solution:** Changed
+output directory from `out` to `dist/out`
+
 - Prevents conflict with web app's `out/` directory
 - Properly separates build artifacts
 
-**File:** `/apps/desktop/electron-builder.yml`
-**Changes:**
+**File:** `/apps/desktop/electron-builder.yml` **Changes:**
+
 - Line 10: Changed `output: out` to `output: dist/out`
-- Lines 14-18: Updated files configuration to include both `dist/preload.js`, `dist/main.js`, and `out/**/*`
+- Lines 14-18: Updated files configuration to include both `dist/preload.js`, `dist/main.js`, and
+  `out/**/*`
 - Line 172: Removed missing icon reference (`file-icon.icns`)
 - Line 177: Commented out missing notarize.js hook
 
 ### 3. Build Process Automation (package.json)
-**Problem:** No automated process to include web app files in desktop package
-**Solution:** Added build script to copy web app output before packaging
 
-**File:** `/apps/desktop/package.json`
-**Changes:**
+**Problem:** No automated process to include web app files in desktop package **Solution:** Added
+build script to copy web app output before packaging
+
+**File:** `/apps/desktop/package.json` **Changes:**
+
 - Added `prebuild:app` script that runs build preparation
 - Updated `package`, `package:mac`, `package:win`, `package:linux` scripts to run prebuild
 - Added new `build:all` script for complete workflow
 
 ### 4. Web App Build Preparation Script
+
 **New File:** `/apps/desktop/scripts/build.js`
 
 This Node.js script handles:
+
 1. Checks if web app is built (builds if needed)
 2. Copies entire web app `out/` directory to desktop `out/` directory
 3. Enables desktop app packaging with all necessary web app files
 
 ### 5. Next.js Standalone Mode Configuration
-**Problem:** Web app needs to be bundled with desktop app for production
-**Solution:** Enabled `standalone: true` option in Next.js config
 
-**File:** `/apps/web/next.config.js`
-**Changes:**
+**Problem:** Web app needs to be bundled with desktop app for production **Solution:** Enabled
+`standalone: true` option in Next.js config
+
+**File:** `/apps/web/next.config.js` **Changes:**
+
 - Line 6: Added `output: 'export'` comment explaining approach
 - Line 80: Added `standalone: true` for Electron/desktop bundling
 - Preserves API routes and server functionality for desktop app's internal server
@@ -78,6 +89,7 @@ Result: dist/out/*.dmg and dist/out/*.zip
 ## File Structure
 
 ### Desktop App Package Contents
+
 ```
 Resources/app.asar/
 ├── dist/
@@ -95,6 +107,7 @@ Resources/app.asar/
 ```
 
 ### Production App Startup
+
 ```
 Electron Main Process
 ├── Starts Next.js server: next start -p 3000
@@ -119,6 +132,7 @@ Electron Main Process
 ## Testing
 
 ### Build Test
+
 ```bash
 cd packages/@wundr/neolith/apps/desktop
 npm run build      # TypeScript compilation
@@ -127,6 +141,7 @@ npm run package    # Full packaging (runs both above)
 ```
 
 ### Output
+
 - `dist/out/Neolith-0.1.0.dmg` - macOS DMG installer
 - `dist/out/Neolith-0.1.0-mac.zip` - macOS ZIP distribution
 - `dist/out/Neolith-0.1.0-arm64.dmg` - ARM64 DMG installer
@@ -180,4 +195,5 @@ If the app fails to start in production mode:
 
 ## Contact & Support
 
-For issues or questions about the desktop app configuration, contact the engineering team at engineering@adaptic.ai
+For issues or questions about the desktop app configuration, contact the engineering team at
+engineering@adaptic.ai

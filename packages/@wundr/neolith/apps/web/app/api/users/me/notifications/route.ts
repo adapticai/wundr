@@ -49,7 +49,7 @@ const DEFAULT_PREFERENCES: NotificationPreferencesInput = {
  * Extract notification preferences from user preferences JSON
  */
 function extractNotificationPreferences(
-  preferences: Prisma.JsonValue,
+  preferences: Prisma.JsonValue
 ): NotificationPreferencesInput {
   if (
     typeof preferences === 'object' &&
@@ -117,8 +117,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -130,8 +133,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
     if (!user) {
       return NextResponse.json(
-        createNotificationErrorResponse('User not found', NOTIFICATION_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createNotificationErrorResponse(
+          'User not found',
+          NOTIFICATION_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -143,9 +149,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -198,8 +204,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -209,8 +218,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createNotificationErrorResponse('Invalid JSON body', NOTIFICATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createNotificationErrorResponse(
+          'Invalid JSON body',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -221,9 +233,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -237,8 +249,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     if (!user) {
       return NextResponse.json(
-        createNotificationErrorResponse('User not found', NOTIFICATION_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createNotificationErrorResponse(
+          'User not found',
+          NOTIFICATION_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -250,7 +265,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         ? (user.preferences as Record<string, unknown>)
         : {};
 
-    const currentNotificationPrefs = extractNotificationPreferences(user.preferences);
+    const currentNotificationPrefs = extractNotificationPreferences(
+      user.preferences
+    );
 
     // Merge preferences
     const updatedNotificationPrefs: NotificationPreferencesInput = {
@@ -291,9 +308,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

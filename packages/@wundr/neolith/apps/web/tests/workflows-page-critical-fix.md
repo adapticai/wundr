@@ -2,16 +2,17 @@
 
 ## Bug Summary
 
-**Severity:** CRITICAL (P0)
-**File:** `/app/(workspace)/[workspaceId]/workflows/page.tsx`
-**Line:** 608
-**Impact:** Users cannot properly configure workflow actions
+**Severity:** CRITICAL (P0) **File:** `/app/(workspace)/[workspaceId]/workflows/page.tsx` **Line:**
+608 **Impact:** Users cannot properly configure workflow actions
 
 ## The Problem
 
-The action type selector in the WorkflowBuilderModal is using `TRIGGER_TYPE_CONFIG` instead of `ACTION_TYPE_CONFIG`. This causes the dropdown to display trigger types (Schedule, New Message, Keyword, etc.) instead of action types (Send Message, Send DM, Create Channel, etc.).
+The action type selector in the WorkflowBuilderModal is using `TRIGGER_TYPE_CONFIG` instead of
+`ACTION_TYPE_CONFIG`. This causes the dropdown to display trigger types (Schedule, New Message,
+Keyword, etc.) instead of action types (Send Message, Send DM, Create Channel, etc.).
 
 ### Current Code (WRONG)
+
 ```typescript
 // Line 608 in page.tsx
 <select value={action.type}>
@@ -24,7 +25,9 @@ The action type selector in the WorkflowBuilderModal is using `TRIGGER_TYPE_CONF
 ```
 
 ### What Users See (WRONG)
+
 When trying to add an action to a workflow, the dropdown shows:
+
 - Schedule
 - New Message
 - Keyword
@@ -36,6 +39,7 @@ When trying to add an action to a workflow, the dropdown shows:
 - Webhook
 
 ### What Users Should See (CORRECT)
+
 - Send Message
 - Send DM
 - Create Channel
@@ -51,8 +55,7 @@ When trying to add an action to a workflow, the dropdown shows:
 
 ### Step 1: Update Import Statement
 
-**File:** `/app/(workspace)/[workspaceId]/workflows/page.tsx`
-**Line:** 16-19
+**File:** `/app/(workspace)/[workspaceId]/workflows/page.tsx` **Line:** 16-19
 
 ```typescript
 // CURRENT (missing ACTION_TYPE_CONFIG):
@@ -67,7 +70,7 @@ import {
 import {
   WORKFLOW_STATUS_CONFIG,
   TRIGGER_TYPE_CONFIG,
-  ACTION_TYPE_CONFIG,      // ADD THIS LINE
+  ACTION_TYPE_CONFIG, // ADD THIS LINE
   EXECUTION_STATUS_CONFIG,
   TEMPLATE_CATEGORY_CONFIG,
 } from '@/types/workflow';
@@ -75,8 +78,7 @@ import {
 
 ### Step 2: Update Action Selector
 
-**File:** `/app/(workspace)/[workspaceId]/workflows/page.tsx`
-**Line:** 608
+**File:** `/app/(workspace)/[workspaceId]/workflows/page.tsx` **Line:** 608
 
 ```typescript
 // CURRENT (WRONG):
@@ -99,10 +101,12 @@ import {
 After applying the fix:
 
 1. **Build Test**
+
    ```bash
    cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
    npm run build
    ```
+
    Expected: Build succeeds with no errors
 
 2. **Runtime Test**
@@ -122,12 +126,14 @@ After applying the fix:
 ## Impact Assessment
 
 ### Before Fix
+
 - Users cannot create workflows with proper actions
 - Action type selection is completely broken
 - Workflow creation will fail at runtime when invalid action types are submitted to API
 - User confusion when they see trigger types in action dropdown
 
 ### After Fix
+
 - Users can properly select action types
 - Workflow creation works as intended
 - UI matches backend expectations
@@ -136,6 +142,7 @@ After applying the fix:
 ## Root Cause Analysis
 
 The bug was introduced because:
+
 1. `ACTION_TYPE_CONFIG` was not imported from `@/types/workflow`
 2. The action selector code copied from trigger selector but not updated
 3. No type checking caught this because both configs have the same structure
@@ -150,6 +157,7 @@ To prevent similar bugs:
    - Use const assertions for config keys
 
 2. **Add Component Tests**
+
    ```typescript
    // tests/components/workflow-builder-modal.test.tsx
    it('should show action types in action selector', () => {
@@ -158,6 +166,7 @@ To prevent similar bugs:
    ```
 
 3. **Add E2E Tests**
+
    ```typescript
    // tests/e2e/workflows.spec.ts
    test('action selector shows correct options', async ({ page }) => {
@@ -180,6 +189,7 @@ All files verified to be correct:
 - `/components/workflows/workflow-card.tsx` - No issues found ✅
 
 Only issue is in:
+
 - `/app/(workspace)/[workspaceId]/workflows/page.tsx` - Line 608 ❌
 
 ## Estimated Fix Time
@@ -192,6 +202,7 @@ Only issue is in:
 ## Priority Justification
 
 **Why P0/Critical:**
+
 1. Core functionality completely broken
 2. Affects all users trying to create workflows
 3. No workaround available
@@ -200,7 +211,6 @@ Only issue is in:
 
 ## Sign-off
 
-**Tested By:** Agent 5 - Workflows Page Tester (Code Analysis)
-**Status:** READY FOR FIX
-**Confidence:** 100% (verified via code inspection)
-**Recommendation:** Apply fix immediately before production deployment
+**Tested By:** Agent 5 - Workflows Page Tester (Code Analysis) **Status:** READY FOR FIX
+**Confidence:** 100% (verified via code inspection) **Recommendation:** Apply fix immediately before
+production deployment

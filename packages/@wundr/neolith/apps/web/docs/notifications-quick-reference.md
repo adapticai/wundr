@@ -23,13 +23,7 @@ await NotificationService.notifyNewMessage(
 ### 2. Notify User They Were Mentioned
 
 ```typescript
-await NotificationService.notifyMention(
-  userId,
-  messageId,
-  channelId,
-  mentionedBy,
-  messagePreview
-);
+await NotificationService.notifyMention(userId, messageId, channelId, mentionedBy, messagePreview);
 ```
 
 ### 3. Notify User About Thread Reply
@@ -48,23 +42,13 @@ await NotificationService.notifyThreadReply(
 ### 4. Notify User About Task Assignment
 
 ```typescript
-await NotificationService.notifyTaskAssigned(
-  userId,
-  taskId,
-  taskTitle,
-  assignedByName
-);
+await NotificationService.notifyTaskAssigned(userId, taskId, taskTitle, assignedByName);
 ```
 
 ### 5. Notify User About Task Completion
 
 ```typescript
-await NotificationService.notifyTaskCompleted(
-  userId,
-  taskId,
-  taskTitle,
-  completedByName
-);
+await NotificationService.notifyTaskCompleted(userId, taskId, taskTitle, completedByName);
 ```
 
 ### 6. Notify User About Workflow Status
@@ -81,12 +65,7 @@ await NotificationService.notifyWorkflowCompleted(
 ### 7. Notify User About Channel Invite
 
 ```typescript
-await NotificationService.notifyChannelInvite(
-  userId,
-  channelId,
-  channelName,
-  invitedBy
-);
+await NotificationService.notifyChannelInvite(userId, channelId, channelName, invitedBy);
 ```
 
 ### 8. Notify Multiple Users About New Member
@@ -132,21 +111,25 @@ await NotificationService.createNotification({
 ## REST API Endpoints
 
 ### Get All Notifications
+
 ```bash
 GET /api/notifications?page=1&limit=20&read=false&type=MESSAGE
 ```
 
 ### Get Unread Count
+
 ```bash
 GET /api/notifications/count?breakdown=true
 ```
 
 ### Get Single Notification
+
 ```bash
 GET /api/notifications/[id]
 ```
 
 ### Mark as Read
+
 ```bash
 PATCH /api/notifications/[id]
 Content-Type: application/json
@@ -157,6 +140,7 @@ Content-Type: application/json
 ```
 
 ### Mark All as Read
+
 ```bash
 POST /api/notifications/read-all
 Content-Type: application/json
@@ -167,11 +151,13 @@ Content-Type: application/json
 ```
 
 ### Delete Notification
+
 ```bash
 DELETE /api/notifications/[id]
 ```
 
 ### Bulk Mark as Read
+
 ```bash
 PATCH /api/notifications
 Content-Type: application/json
@@ -182,6 +168,7 @@ Content-Type: application/json
 ```
 
 ### Bulk Delete
+
 ```bash
 DELETE /api/notifications
 Content-Type: application/json
@@ -195,43 +182,47 @@ Content-Type: application/json
 
 ```typescript
 type NotificationType =
-  | 'MESSAGE'           // New message in channel
-  | 'MENTION'           // User was mentioned
-  | 'THREAD_REPLY'      // Reply to thread
-  | 'CALL'              // Incoming call
-  | 'CHANNEL_INVITE'    // Channel invitation
+  | 'MESSAGE' // New message in channel
+  | 'MENTION' // User was mentioned
+  | 'THREAD_REPLY' // Reply to thread
+  | 'CALL' // Incoming call
+  | 'CHANNEL_INVITE' // Channel invitation
   | 'ORGANIZATION_UPDATE' // Org-level update
-  | 'SYSTEM';           // System notification
+  | 'SYSTEM'; // System notification
 ```
 
 ## Priority Levels
 
 ```typescript
 type NotificationPriority =
-  | 'LOW'     // Gray badge, no sound
-  | 'NORMAL'  // Default behavior
-  | 'HIGH'    // Red badge, sound
+  | 'LOW' // Gray badge, no sound
+  | 'NORMAL' // Default behavior
+  | 'HIGH' // Red badge, sound
   | 'URGENT'; // Full screen, sound
 ```
 
 ## Utility Methods
 
 ### Get Unread Count
+
 ```typescript
 const count = await NotificationService.getUnreadCount(userId);
 ```
 
 ### Mark Notification as Read
+
 ```typescript
 await NotificationService.markAsRead(notificationId, userId);
 ```
 
 ### Mark All as Read
+
 ```typescript
 const count = await NotificationService.markAllAsRead(userId);
 ```
 
 ### Delete Notification
+
 ```typescript
 await NotificationService.deleteNotification(notificationId, userId);
 ```
@@ -239,6 +230,7 @@ await NotificationService.deleteNotification(notificationId, userId);
 ## Cleanup Jobs (Cron)
 
 ### Delete Expired Notifications
+
 ```typescript
 // Run daily
 const deletedCount = await NotificationService.deleteExpiredNotifications();
@@ -246,6 +238,7 @@ console.log(`Deleted ${deletedCount} expired notifications`);
 ```
 
 ### Archive Old Notifications
+
 ```typescript
 // Run weekly
 const archivedCount = await NotificationService.archiveOldNotifications(30);
@@ -287,10 +280,7 @@ for (const userId of mentionedUserIds) {
 
 // 5. Notify other channel members (NORMAL priority)
 for (const member of members) {
-  if (
-    member.userId !== message.authorId &&
-    !mentionedUserIds.includes(member.userId)
-  ) {
+  if (member.userId !== message.authorId && !mentionedUserIds.includes(member.userId)) {
     await NotificationService.notifyNewMessage(
       member.userId,
       message.id,

@@ -26,7 +26,7 @@ export interface SessionManagerWorktreeConfig {
   enabled: boolean;
   basePath?: string;
   pattern?: string;
-  fractionalMode?: boolean;  // Read-only vs write-access separation
+  fractionalMode?: boolean; // Read-only vs write-access separation
 }
 
 export interface SessionManager {
@@ -115,8 +115,8 @@ export interface PaginatedSessionManagerResult {
 
 export function isSessionManager(obj: unknown): obj is SessionManager {
   if (!obj || typeof obj !== 'object') {
-return false;
-}
+    return false;
+  }
   const sm = obj as Partial<SessionManager>;
 
   return (

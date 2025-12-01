@@ -3,21 +3,25 @@
 ## Critical Fixes Applied
 
 ### 1. Main.ts Production Path
+
 - **Before:** `mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))`
 - **After:** Spawns Next.js server and loads from `http://localhost:3000`
 - **Location:** `/apps/desktop/electron/main.ts` lines 117-154
 
 ### 2. Build Output Directory
+
 - **Before:** `directories.output: out` (conflicts with web app)
 - **After:** `directories.output: dist/out`
 - **Location:** `/apps/desktop/electron-builder.yml` line 10
 
 ### 3. Web App Integration
+
 - **Added:** Build script that copies web app output to desktop
 - **File:** `/apps/desktop/scripts/build.js`
 - **Runs:** Automatically before packaging
 
 ### 4. Package Scripts
+
 - **New:** `npm run prebuild:app` - Prepares web app files
 - **Updated:** `npm run package` - Now includes prebuild step
 - **Location:** `/apps/desktop/package.json` lines 8-20
@@ -46,6 +50,7 @@ npm run clean           # Remove build artifacts
 ## Packaging Output
 
 Success produces:
+
 ```
 dist/out/
 ├── Neolith-0.1.0.dmg              (Intel macOS)
@@ -57,16 +62,16 @@ dist/out/
 
 ## Configuration Details
 
-| File | Change | Reason |
-|------|--------|--------|
-| `electron/main.ts` | Added server startup logic | Enable production server |
-| `electron-builder.yml` | `out` → `dist/out` | Prevent directory conflicts |
-| `electron-builder.yml` | Removed `file-icon.icns` | File didn't exist |
-| `electron-builder.yml` | Commented `afterSign` hook | Certificate not available |
-| `package.json` | Added `prebuild:app` script | Automate file copying |
-| `package.json` | Updated package scripts | Include prebuild step |
-| `scripts/build.js` | New file | Prepare web app for packaging |
-| `next.config.js` | Added `standalone: true` | Enable server bundling |
+| File                   | Change                      | Reason                        |
+| ---------------------- | --------------------------- | ----------------------------- |
+| `electron/main.ts`     | Added server startup logic  | Enable production server      |
+| `electron-builder.yml` | `out` → `dist/out`          | Prevent directory conflicts   |
+| `electron-builder.yml` | Removed `file-icon.icns`    | File didn't exist             |
+| `electron-builder.yml` | Commented `afterSign` hook  | Certificate not available     |
+| `package.json`         | Added `prebuild:app` script | Automate file copying         |
+| `package.json`         | Updated package scripts     | Include prebuild step         |
+| `scripts/build.js`     | New file                    | Prepare web app for packaging |
+| `next.config.js`       | Added `standalone: true`    | Enable server bundling        |
 
 ## How It Works
 
@@ -82,15 +87,13 @@ dist/out/
 
 ## Files Included in Package
 
-✓ Electron main process (dist/main.js, dist/preload.js)
-✓ Next.js app (out/ directory)
-✓ Static assets (CSS, JS, images)
-✓ App icons
-✓ Configuration files
+✓ Electron main process (dist/main.js, dist/preload.js) ✓ Next.js app (out/ directory) ✓ Static
+assets (CSS, JS, images) ✓ App icons ✓ Configuration files
 
 ## Verification
 
 After packaging, verify contents:
+
 ```bash
 # List app.asar contents
 npx asar list dist/out/mac/Neolith.app/Contents/Resources/app.asar
@@ -115,13 +118,13 @@ open dist/out/mac/Neolith.app
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| App won't start | Check if port 3000 is available |
-| Build fails | Run `npm run clean` then retry |
-| Missing web files | Ensure `npm run prebuild:app` completes successfully |
-| Server not starting | Check `/out` directory exists with web app files |
-| Icon errors | Run `npm run clean` to regenerate |
+| Issue               | Solution                                             |
+| ------------------- | ---------------------------------------------------- |
+| App won't start     | Check if port 3000 is available                      |
+| Build fails         | Run `npm run clean` then retry                       |
+| Missing web files   | Ensure `npm run prebuild:app` completes successfully |
+| Server not starting | Check `/out` directory exists with web app files     |
+| Icon errors         | Run `npm run clean` to regenerate                    |
 
 ## Environment Requirements
 
@@ -133,13 +136,9 @@ open dist/out/mac/Neolith.app
 
 ## Key Improvements
 
-✓ Fixed production renderer path
-✓ Proper server lifecycle management
-✓ Automated web app integration
-✓ Clean build artifact organization
-✓ Error handling and fallbacks
-✓ Support for both dev and production modes
-✓ Proper resource bundling
+✓ Fixed production renderer path ✓ Proper server lifecycle management ✓ Automated web app
+integration ✓ Clean build artifact organization ✓ Error handling and fallbacks ✓ Support for both
+dev and production modes ✓ Proper resource bundling
 
 ## Next Steps
 

@@ -20,10 +20,26 @@ declare module 'child_process' {
 
   interface ExecSyncOptions extends ExecOptions {
     input?: string | Buffer | Uint8Array;
-    stdio?: 'pipe' | 'ignore' | 'inherit' | Array<'pipe' | 'ipc' | 'ignore' | 'inherit' | NodeJS.WriteStream | NodeJS.ReadStream | null | undefined>;
+    stdio?:
+      | 'pipe'
+      | 'ignore'
+      | 'inherit'
+      | Array<
+          | 'pipe'
+          | 'ipc'
+          | 'ignore'
+          | 'inherit'
+          | NodeJS.WriteStream
+          | NodeJS.ReadStream
+          | null
+          | undefined
+        >;
   }
 
-  function execSync(command: string, options?: ExecSyncOptions): Buffer | string;
+  function execSync(
+    command: string,
+    options?: ExecSyncOptions
+  ): Buffer | string;
 }
 
 // Enhanced fs types for promises
@@ -31,55 +47,150 @@ declare module 'fs/promises' {
   import { Stats, BigIntStats } from 'fs';
 
   interface FileHandle {
-    appendFile(data: string | Uint8Array, options?: { encoding?: BufferEncoding; mode?: number; flag?: string }): Promise<void>;
+    appendFile(
+      data: string | Uint8Array,
+      options?: { encoding?: BufferEncoding; mode?: number; flag?: string }
+    ): Promise<void>;
     chmod(mode: number): Promise<void>;
     chown(uid: number, gid: number): Promise<void>;
     close(): Promise<void>;
     datasync(): Promise<void>;
     fd: number;
-    read<T extends ArrayBufferView>(buffer: T, offset?: number, length?: number, position?: number): Promise<{ bytesRead: number; buffer: T }>;
-    readFile(options?: { encoding?: BufferEncoding; flag?: string } | BufferEncoding): Promise<string | Buffer>;
-    readv(buffers: ArrayBufferView[], position?: number): Promise<{ bytesRead: number; buffers: ArrayBufferView[] }>;
+    read<T extends ArrayBufferView>(
+      buffer: T,
+      offset?: number,
+      length?: number,
+      position?: number
+    ): Promise<{ bytesRead: number; buffer: T }>;
+    readFile(
+      options?: { encoding?: BufferEncoding; flag?: string } | BufferEncoding
+    ): Promise<string | Buffer>;
+    readv(
+      buffers: ArrayBufferView[],
+      position?: number
+    ): Promise<{ bytesRead: number; buffers: ArrayBufferView[] }>;
     stat(options?: { bigint?: false }): Promise<Stats>;
     stat(options: { bigint: true }): Promise<BigIntStats>;
     sync(): Promise<void>;
     truncate(len?: number): Promise<void>;
-    utimes(atime: string | number | Date, mtime: string | number | Date): Promise<void>;
-    write(buffer: Uint8Array | string, offset?: number, length?: number, position?: number): Promise<{ bytesWritten: number; buffer: string | Uint8Array }>;
-    writeFile(data: string | Uint8Array, options?: { encoding?: BufferEncoding; mode?: number; flag?: string } | BufferEncoding): Promise<void>;
-    writev(buffers: ArrayBufferView[], position?: number): Promise<{ bytesWritten: number; buffers: ArrayBufferView[] }>;
+    utimes(
+      atime: string | number | Date,
+      mtime: string | number | Date
+    ): Promise<void>;
+    write(
+      buffer: Uint8Array | string,
+      offset?: number,
+      length?: number,
+      position?: number
+    ): Promise<{ bytesWritten: number; buffer: string | Uint8Array }>;
+    writeFile(
+      data: string | Uint8Array,
+      options?:
+        | { encoding?: BufferEncoding; mode?: number; flag?: string }
+        | BufferEncoding
+    ): Promise<void>;
+    writev(
+      buffers: ArrayBufferView[],
+      position?: number
+    ): Promise<{ bytesWritten: number; buffers: ArrayBufferView[] }>;
   }
 
   function access(path: string, mode?: number): Promise<void>;
-  function appendFile(path: string, data: string | Uint8Array, options?: { encoding?: BufferEncoding; mode?: number; flag?: string } | BufferEncoding): Promise<void>;
+  function appendFile(
+    path: string,
+    data: string | Uint8Array,
+    options?:
+      | { encoding?: BufferEncoding; mode?: number; flag?: string }
+      | BufferEncoding
+  ): Promise<void>;
   function chmod(path: string, mode: number): Promise<void>;
   function chown(path: string, uid: number, gid: number): Promise<void>;
   function copyFile(src: string, dest: string, flags?: number): Promise<void>;
-  function cp(source: string, destination: string, opts?: { dereference?: boolean; errorOnExist?: boolean; filter?: (source: string, destination: string) => boolean; force?: boolean; preserveTimestamps?: boolean; recursive?: boolean }): Promise<void>;
+  function cp(
+    source: string,
+    destination: string,
+    opts?: {
+      dereference?: boolean;
+      errorOnExist?: boolean;
+      filter?: (source: string, destination: string) => boolean;
+      force?: boolean;
+      preserveTimestamps?: boolean;
+      recursive?: boolean;
+    }
+  ): Promise<void>;
   function lchmod(path: string, mode: number): Promise<void>;
   function lchown(path: string, uid: number, gid: number): Promise<void>;
-  function lutimes(path: string, atime: string | number | Date, mtime: string | number | Date): Promise<void>;
+  function lutimes(
+    path: string,
+    atime: string | number | Date,
+    mtime: string | number | Date
+  ): Promise<void>;
   function link(existingPath: string, newPath: string): Promise<void>;
   function lstat(path: string, options?: { bigint?: false }): Promise<Stats>;
   function lstat(path: string, options: { bigint: true }): Promise<BigIntStats>;
-  function mkdir(path: string, options?: { recursive?: boolean; mode?: number } | number): Promise<string | undefined>;
-  function mkdtemp(prefix: string, options?: { encoding?: BufferEncoding } | BufferEncoding): Promise<string>;
-  function open(path: string, flags?: string | number, mode?: number): Promise<FileHandle>;
+  function mkdir(
+    path: string,
+    options?: { recursive?: boolean; mode?: number } | number
+  ): Promise<string | undefined>;
+  function mkdtemp(
+    prefix: string,
+    options?: { encoding?: BufferEncoding } | BufferEncoding
+  ): Promise<string>;
+  function open(
+    path: string,
+    flags?: string | number,
+    mode?: number
+  ): Promise<FileHandle>;
   function opendir(path: string): Promise<any>;
-  function readdir(path: string, options?: { encoding?: BufferEncoding; withFileTypes?: false } | BufferEncoding): Promise<string[]>;
-  function readFile(path: string, options?: { encoding?: BufferEncoding; flag?: string } | BufferEncoding): Promise<string | Buffer>;
-  function readlink(path: string, options?: { encoding?: BufferEncoding } | BufferEncoding): Promise<string>;
-  function realpath(path: string, options?: { encoding?: BufferEncoding } | BufferEncoding): Promise<string>;
+  function readdir(
+    path: string,
+    options?:
+      | { encoding?: BufferEncoding; withFileTypes?: false }
+      | BufferEncoding
+  ): Promise<string[]>;
+  function readFile(
+    path: string,
+    options?: { encoding?: BufferEncoding; flag?: string } | BufferEncoding
+  ): Promise<string | Buffer>;
+  function readlink(
+    path: string,
+    options?: { encoding?: BufferEncoding } | BufferEncoding
+  ): Promise<string>;
+  function realpath(
+    path: string,
+    options?: { encoding?: BufferEncoding } | BufferEncoding
+  ): Promise<string>;
   function rename(oldPath: string, newPath: string): Promise<void>;
-  function rmdir(path: string, options?: { maxRetries?: number; recursive?: boolean; retryDelay?: number }): Promise<void>;
-  function rm(path: string, options?: { force?: boolean; maxRetries?: number; recursive?: boolean; retryDelay?: number }): Promise<void>;
+  function rmdir(
+    path: string,
+    options?: { maxRetries?: number; recursive?: boolean; retryDelay?: number }
+  ): Promise<void>;
+  function rm(
+    path: string,
+    options?: {
+      force?: boolean;
+      maxRetries?: number;
+      recursive?: boolean;
+      retryDelay?: number;
+    }
+  ): Promise<void>;
   function stat(path: string, options?: { bigint?: false }): Promise<Stats>;
   function stat(path: string, options: { bigint: true }): Promise<BigIntStats>;
   function symlink(target: string, path: string, type?: string): Promise<void>;
   function truncate(path: string, len?: number): Promise<void>;
   function unlink(path: string): Promise<void>;
-  function utimes(path: string, atime: string | number | Date, mtime: string | number | Date): Promise<void>;
-  function writeFile(file: string, data: string | Uint8Array, options?: { encoding?: BufferEncoding; mode?: number; flag?: string } | BufferEncoding): Promise<void>;
+  function utimes(
+    path: string,
+    atime: string | number | Date,
+    mtime: string | number | Date
+  ): Promise<void>;
+  function writeFile(
+    file: string,
+    data: string | Uint8Array,
+    options?:
+      | { encoding?: BufferEncoding; mode?: number; flag?: string }
+      | BufferEncoding
+  ): Promise<void>;
 }
 
 // Enhanced path utilities
@@ -124,7 +235,7 @@ declare module 'path' {
   function extname(path: string): string;
   function format(pathObject: Partial<path.ParsedPath>): string;
   function parse(path: string): path.ParsedPath;
-  
+
   export = path;
 }
 
@@ -148,8 +259,14 @@ declare module 'util' {
   function format(f: any, ...args: any[]): string;
   function debuglog(section: string): (data: string, ...args: any[]) => void;
   function isDeepStrictEqual(val1: any, val2: any): boolean;
-  function callbackify<TReturn>(fn: () => Promise<TReturn>): (callback: (err: NodeJS.ErrnoException | null, result: TReturn) => void) => void;
-  function promisify<TCustom extends Function>(fn: CustomPromisify<TCustom>): TCustom;
+  function callbackify<TReturn>(
+    fn: () => Promise<TReturn>
+  ): (
+    callback: (err: NodeJS.ErrnoException | null, result: TReturn) => void
+  ) => void;
+  function promisify<TCustom extends Function>(
+    fn: CustomPromisify<TCustom>
+  ): TCustom;
 
   interface CustomPromisify<TCustom extends Function> extends Function {
     __promisify__: TCustom;
@@ -161,7 +278,9 @@ declare module 'util' {
     function isArrayBuffer(object: any): object is ArrayBuffer;
     function isAsyncFunction(object: any): boolean;
     function isBooleanObject(object: any): object is Boolean;
-    function isBoxedPrimitive(object: any): object is String | Number | BigInt | Boolean | Symbol;
+    function isBoxedPrimitive(
+      object: any
+    ): object is String | Number | BigInt | Boolean | Symbol;
     function isDataView(object: any): object is DataView;
     function isDate(object: any): object is Date;
     function isExternal(object: any): boolean;
@@ -237,9 +356,15 @@ declare module 'os' {
   function totalmem(): number;
   function type(): string;
   function uptime(): number;
-  function userInfo(options?: { encoding: BufferEncoding }): { username: string; uid: number; gid: number; shell: string; homedir: string };
+  function userInfo(options?: { encoding: BufferEncoding }): {
+    username: string;
+    uid: number;
+    gid: number;
+    shell: string;
+    homedir: string;
+  };
   function version(): string;
-  
+
   const EOL: string;
   const constants: {
     UV_UDP_REUSEADDR: number;

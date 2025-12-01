@@ -2,11 +2,14 @@
 
 ## Overview
 
-This document describes the integration of the orchestrator daemon into the Neolith application. Orchestrators function as special users who can run background automation daemons within their Neolith instance.
+This document describes the integration of the orchestrator daemon into the Neolith application.
+Orchestrators function as special users who can run background automation daemons within their
+Neolith instance.
 
 ## Executive Summary
 
 **Key Design Decisions:**
+
 - Orchestrators are regular users with `isOrchestrator: true` flag
 - Daemons run within the Neolith app (not as separate services)
 - Auto-start on user login for seamless experience
@@ -18,7 +21,9 @@ This document describes the integration of the orchestrator daemon into the Neol
 ### Components
 
 #### 1. OrchestratorDaemon (`daemon.ts`)
+
 Core daemon class responsible for:
+
 - Message processing and automation
 - AI response generation (using orchestrator charter)
 - Background task execution
@@ -28,7 +33,9 @@ Core daemon class responsible for:
 **Location:** `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/daemon.ts`
 
 #### 2. OrchestratorDaemonManager (`daemon-manager.ts`)
+
 Singleton manager responsible for:
+
 - Managing multiple daemon instances
 - Auto-start on orchestrator login
 - Auto-stop on orchestrator logout
@@ -38,7 +45,9 @@ Singleton manager responsible for:
 **Location:** `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/daemon-manager.ts`
 
 #### 3. Configuration (`config.ts`)
+
 Environment-based configuration:
+
 - Environment variable parsing
 - Default configuration values
 - Configuration builders
@@ -72,6 +81,7 @@ Update metrics & emit events
 ## Database Schema
 
 ### User Model
+
 ```prisma
 model user {
   id                   String    @id @default(cuid())
@@ -86,6 +96,7 @@ model user {
 ```
 
 ### Orchestrator Model
+
 ```prisma
 model orchestrator {
   id              String            @id @default(cuid())
@@ -103,6 +114,7 @@ model orchestrator {
 ```
 
 **Key Points:**
+
 - `isOrchestrator` flag on user enables daemon functionality
 - `orchestratorConfig` stores charter, personality, and daemon settings
 - Orchestrator record links to user via `userId`
@@ -111,6 +123,7 @@ model orchestrator {
 ## Environment Configuration
 
 ### Required Variables
+
 ```bash
 # Enable orchestrator mode
 ORCHESTRATOR_MODE=true
@@ -225,22 +238,26 @@ manager.on('daemon:health', ({ orchestratorId, health }) => {
 ## Key Features
 
 ### 1. Auto-start on Login
+
 - Detects orchestrator flag on user
 - Automatically starts daemon
 - No manual intervention required
 
 ### 2. Health Monitoring
+
 - Periodic heartbeat (default: 30s)
 - Health checks (default: 60s)
 - Auto-restart on error (configurable attempts)
 
 ### 3. Message Processing
+
 - Mention detection (@orchestrator)
 - Concurrent conversation limits
 - Message queue for busy periods
 - AI response generation
 
 ### 4. Metrics Tracking
+
 ```typescript
 {
   status: 'running',
@@ -253,16 +270,17 @@ manager.on('daemon:health', ({ orchestratorId, health }) => {
 ```
 
 ### 5. Event System
+
 ```typescript
 // Daemon Events
 daemon.on('started', () => {});
 daemon.on('stopped', () => {});
-daemon.on('error', (error) => {});
-daemon.on('message:processed', (message) => {});
-daemon.on('message:send', (response) => {});
-daemon.on('action:execute', (action) => {});
-daemon.on('status:changed', (status) => {});
-daemon.on('heartbeat', (health) => {});
+daemon.on('error', error => {});
+daemon.on('message:processed', message => {});
+daemon.on('message:send', response => {});
+daemon.on('action:execute', action => {});
+daemon.on('status:changed', status => {});
+daemon.on('heartbeat', health => {});
 
 // Manager Events
 manager.on('daemon:started', ({ orchestratorId, orchestrator }) => {});
@@ -357,6 +375,7 @@ const isRunning = daemon.isRunning();
 ## Future Enhancements
 
 ### Phase 2
+
 1. **Web Workers**: Move processing to web workers
 2. **Service Workers**: Offline support
 3. **AI Integration**: Direct Claude API integration
@@ -364,6 +383,7 @@ const isRunning = daemon.isRunning();
 5. **Session Management**: Context preservation
 
 ### Phase 3
+
 1. **WebSocket Server**: Direct WebSocket connections
 2. **Task Queue**: Redis-backed job queue
 3. **Distributed Daemons**: Run on separate servers
@@ -371,6 +391,7 @@ const isRunning = daemon.isRunning();
 5. **Horizontal Scaling**: Multiple daemon instances
 
 ### Phase 4
+
 1. **Advanced AI**: Multi-model support
 2. **Workflow Engine**: Complex automation workflows
 3. **Analytics**: Deep insights and metrics
@@ -380,18 +401,21 @@ const isRunning = daemon.isRunning();
 ## Testing Strategy
 
 ### Unit Tests
+
 - Daemon lifecycle (start/stop/restart)
 - Message processing
 - Health monitoring
 - Event emission
 
 ### Integration Tests
+
 - Login/logout flow
 - Multi-daemon management
 - Auto-restart scenarios
 - Error handling
 
 ### E2E Tests
+
 - Full authentication flow
 - Message round-trip
 - Health monitoring
@@ -400,13 +424,17 @@ const isRunning = daemon.isRunning();
 ## Migration Path
 
 ### Existing Orchestrator-Daemon Package
+
 The standalone `@wundr/orchestrator-daemon` package remains available for:
+
 - Standalone daemon deployments
 - CLI usage
 - External integrations
 
 ### Neolith Integration
+
 New in-app integration:
+
 - Embedded within Neolith
 - Tightly coupled with auth
 - Seamless user experience
@@ -416,24 +444,29 @@ New in-app integration:
 ## Files Created
 
 ### Core Implementation
+
 - `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/daemon.ts`
 - `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/daemon-manager.ts`
 - `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/config.ts`
 - `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/index.ts`
 
 ### Documentation
+
 - `/packages/@wundr/neolith/packages/@neolith/core/src/orchestrator/README.md`
 - `/Users/iroselli/wundr/docs/orchestrator-daemon-integration.md` (this file)
 
 ### Configuration
+
 - `/packages/@wundr/neolith/.env.orchestrator.example`
 
 ### Exports
+
 - Updated `/packages/@wundr/neolith/packages/@neolith/core/src/index.ts`
 
 ## Verification
 
 **Typecheck Status:** ✅ PASSED
+
 ```bash
 cd packages/@wundr/neolith/packages/@neolith/core
 npx tsc --noEmit src/orchestrator/*.ts
@@ -442,15 +475,14 @@ npx tsc --noEmit src/orchestrator/*.ts
 
 ## Summary
 
-The orchestrator daemon integration successfully embeds daemon functionality within the Neolith app, providing:
+The orchestrator daemon integration successfully embeds daemon functionality within the Neolith app,
+providing:
 
-✅ **Seamless Integration**: Orchestrators log in like normal users
-✅ **Auto-start**: Daemon starts automatically on login
-✅ **Health Monitoring**: Continuous monitoring with auto-restart
-✅ **Message Processing**: Automated AI responses in channels
-✅ **Type Safety**: Full TypeScript support
-✅ **Event System**: Rich event system for integrations
-✅ **Configuration**: Environment-based configuration
-✅ **Documentation**: Comprehensive docs and examples
+✅ **Seamless Integration**: Orchestrators log in like normal users ✅ **Auto-start**: Daemon starts
+automatically on login ✅ **Health Monitoring**: Continuous monitoring with auto-restart ✅
+**Message Processing**: Automated AI responses in channels ✅ **Type Safety**: Full TypeScript
+support ✅ **Event System**: Rich event system for integrations ✅ **Configuration**:
+Environment-based configuration ✅ **Documentation**: Comprehensive docs and examples
 
-The implementation is production-ready and can be extended with additional features as outlined in the future enhancements section.
+The implementation is production-ready and can be extended with additional features as outlined in
+the future enhancements section.

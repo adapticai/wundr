@@ -10,7 +10,6 @@
  * @module @genesis/core/services/__tests__/orchestrator-service.test
  */
 
-
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -20,7 +19,10 @@ import {
   OrchestratorValidationError,
   OrganizationNotFoundError,
 } from '../../errors';
-import { createVPService, OrchestratorServiceImpl } from '../orchestrator-service';
+import {
+  createVPService,
+  OrchestratorServiceImpl,
+} from '../orchestrator-service';
 
 import type { PrismaClient } from '@prisma/client';
 
@@ -109,7 +111,7 @@ function createMockVP(overrides: Record<string, unknown> = {}) {
 // Mock Orchestrator with user
 function createMockOrchestratorWithUser(
   vpOverrides: Record<string, unknown> = {},
-  userOverrides: Record<string, unknown> = {},
+  userOverrides: Record<string, unknown> = {}
 ) {
   const orchestrator = createMockVP(vpOverrides);
   const user = createMockUser({ id: vp.userId, ...userOverrides });
@@ -188,7 +190,9 @@ describe('VPService', () => {
   beforeEach(() => {
     idCounter = 0;
     mockPrisma = createMockPrismaClient();
-    vpService = new OrchestratorServiceImpl(mockPrisma as unknown as PrismaClient);
+    vpService = new OrchestratorServiceImpl(
+      mockPrisma as unknown as PrismaClient
+    );
   });
 
   afterEach(() => {
@@ -213,13 +217,13 @@ describe('VPService', () => {
       const createdUser = createMockUser({ name: input.name });
       const createdOrchestrator = createMockOrchestratorWithUser(
         { organizationId: orgId, userId: createdUser.id },
-        createdUser,
+        createdUser
       );
 
       mockPrisma.organization.findUnique.mockResolvedValue(mockOrg);
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
+      mockPrisma.$transaction.mockImplementation(async callback => {
         const tx = {
           user: { create: vi.fn().mockResolvedValue(createdUser) },
           vP: { create: vi.fn().mockResolvedValue(createdVP) },
@@ -248,12 +252,15 @@ describe('VPService', () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
       const createdUser = createMockUser({ name: input.name });
-      const createdOrchestrator = createMockOrchestratorWithUser({}, createdUser);
+      const createdOrchestrator = createMockOrchestratorWithUser(
+        {},
+        createdUser
+      );
 
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
+      mockPrisma.$transaction.mockImplementation(async callback => {
         const tx = {
           user: {
-            create: vi.fn().mockImplementation(async (args) => {
+            create: vi.fn().mockImplementation(async args => {
               expect(args.data.email).toMatch(/alex-chen/i);
               return createdUser;
             }),
@@ -273,7 +280,7 @@ describe('VPService', () => {
           discipline: 'Engineering',
           role: 'Orchestrator',
           organizationId: generateCuid(),
-        }),
+        })
       ).rejects.toThrow(VPValidationError);
 
       await expect(
@@ -282,7 +289,7 @@ describe('VPService', () => {
           discipline: '',
           role: 'Orchestrator',
           organizationId: generateCuid(),
-        }),
+        })
       ).rejects.toThrow(VPValidationError);
 
       await expect(
@@ -291,7 +298,7 @@ describe('VPService', () => {
           discipline: 'Eng',
           role: '',
           organizationId: generateCuid(),
-        }),
+        })
       ).rejects.toThrow(VPValidationError);
     });
 
@@ -310,7 +317,7 @@ describe('VPService', () => {
           role: 'Orchestrator',
           organizationId: orgId,
           email: existingUser.email,
-        }),
+        })
       ).rejects.toThrow(VPAlreadyExistsError);
     });
 
@@ -323,7 +330,7 @@ describe('VPService', () => {
           discipline: 'Engineering',
           role: 'Orchestrator',
           organizationId: generateCuid(),
-        }),
+        })
       ).rejects.toThrow(OrganizationNotFoundError);
     });
   });
@@ -370,7 +377,7 @@ describe('VPService', () => {
         user: { ...existingVP.user, name: updateInput.name },
       };
 
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
+      mockPrisma.$transaction.mockImplementation(async callback => {
         const tx = {
           user: { update: vi.fn().mockResolvedValue(updatedVP.user) },
           vP: { update: vi.fn().mockResolvedValue(updatedVP) },
@@ -388,7 +395,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(
-        vpService.updateVP('non-existent-id', { name: 'New Name' }),
+        vpService.updateVP('non-existent-id', { name: 'New Name' })
       ).rejects.toThrow(VPNotFoundError);
     });
   });
@@ -399,7 +406,9 @@ describe('VPService', () => {
 
   describe('activateOrchestrator', () => {
     it('sets status to ONLINE', async () => {
-      const existingOrchestrator = createMockOrchestratorWithUser({ status: 'OFFLINE' });
+      const existingOrchestrator = createMockOrchestratorWithUser({
+        status: 'OFFLINE',
+      });
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
 
       const activatedOrchestrator = { ...existingVP, status: 'ONLINE' };
@@ -412,7 +421,9 @@ describe('VPService', () => {
     });
 
     it('emits status change event', async () => {
-      const existingOrchestrator = createMockOrchestratorWithUser({ status: 'OFFLINE' });
+      const existingOrchestrator = createMockOrchestratorWithUser({
+        status: 'OFFLINE',
+      });
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
 
       const activatedOrchestrator = { ...existingVP, status: 'ONLINE' };
@@ -425,7 +436,7 @@ describe('VPService', () => {
       expect(mockPrisma.vP.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: 'ONLINE' }),
-        }),
+        })
       );
     });
 
@@ -433,7 +444,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(vpService.activateVP('non-existent-id')).rejects.toThrow(
-        OrchestratorNotFoundError,
+        OrchestratorNotFoundError
       );
     });
   });
@@ -447,7 +458,7 @@ describe('VPService', () => {
       const existingOrchestrator = createMockOrchestratorWithUser();
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
 
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
+      mockPrisma.$transaction.mockImplementation(async callback => {
         const tx = {
           vP: { delete: vi.fn().mockResolvedValue(existingVP) },
           user: { delete: vi.fn().mockResolvedValue(existingVP.user) },
@@ -462,7 +473,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(vpService.deleteVP('non-existent-id')).rejects.toThrow(
-        OrchestratorNotFoundError,
+        OrchestratorNotFoundError
       );
     });
   });
@@ -501,7 +512,7 @@ describe('VPService', () => {
             apiKeyRevoked: true,
             charter: createMockCharter(),
           },
-        },
+        }
       );
 
       mockPrisma.user.findMany.mockResolvedValue([
@@ -522,7 +533,7 @@ describe('VPService', () => {
     it('generates new API key for Orchestrator', async () => {
       const existingOrchestrator = createMockOrchestratorWithUser(
         {},
-        { vpConfig: { charter: createMockCharter() } },
+        { vpConfig: { charter: createMockCharter() } }
       );
 
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
@@ -539,7 +550,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(vpService.generateAPIKey('non-existent-id')).rejects.toThrow(
-        OrchestratorNotFoundError,
+        OrchestratorNotFoundError
       );
     });
 
@@ -552,13 +563,13 @@ describe('VPService', () => {
             apiKeyRevoked: false,
             charter: createMockCharter(),
           },
-        },
+        }
       );
 
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
 
       await expect(vpService.generateAPIKey(existingVP.id)).rejects.toThrow(
-        APIKeyGenerationError,
+        APIKeyGenerationError
       );
     });
   });
@@ -609,7 +620,7 @@ describe('VPService', () => {
     it('paginates results correctly', async () => {
       const orgId = generateCuid();
       const mockVPs = Array.from({ length: 10 }, () =>
-        createMockOrchestratorWithUser({ organizationId: orgId }),
+        createMockOrchestratorWithUser({ organizationId: orgId })
       );
 
       mockPrisma.vP.count.mockResolvedValue(25);

@@ -16,14 +16,26 @@ import {
   Eye,
   Code,
   RotateCcw,
-  Sidebar
+  Sidebar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -87,7 +99,7 @@ export function AppearanceSettings() {
     key: K,
     value: AppearancePreferences[K]
   ) => {
-    setPreferences((prev) => {
+    setPreferences(prev => {
       const updated = { ...prev, [key]: value };
       // Save to localStorage
       localStorage.setItem('appearance-preferences', JSON.stringify(updated));
@@ -115,7 +127,8 @@ export function AppearanceSettings() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save preferences',
+        description:
+          error instanceof Error ? error.message : 'Failed to save preferences',
         variant: 'destructive',
       });
     } finally {
@@ -155,14 +168,19 @@ export function AppearanceSettings() {
   const themes = [
     { value: 'light', label: 'Light', icon: Sun, description: 'Light theme' },
     { value: 'dark', label: 'Dark', icon: Moon, description: 'Dark theme' },
-    { value: 'system', label: 'System', icon: Monitor, description: 'Match system' },
+    {
+      value: 'system',
+      label: 'System',
+      icon: Monitor,
+      description: 'Match system',
+    },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h2 className="text-2xl font-bold">Appearance</h2>
-        <p className="text-muted-foreground">
+        <h2 className='text-2xl font-bold'>Appearance</h2>
+        <p className='text-muted-foreground'>
           Customize how the application looks and feels on your device.
         </p>
       </div>
@@ -170,19 +188,19 @@ export function AppearanceSettings() {
       {/* Theme Selection */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+          <div className='flex items-center gap-2'>
+            <Palette className='h-5 w-5' />
             <CardTitle>Theme</CardTitle>
           </div>
           <CardDescription>
             Select your preferred color theme for the interface.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className='space-y-4'>
           <RadioGroup
             value={theme}
             onValueChange={setTheme}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            className='grid grid-cols-1 md:grid-cols-3 gap-4'
           >
             {themes.map(({ value, label, icon: Icon, description }) => (
               <Label
@@ -192,21 +210,23 @@ export function AppearanceSettings() {
                   theme === value && 'border-primary bg-primary/5'
                 )}
               >
-                <RadioGroupItem value={value} className="sr-only" />
-                <Icon className="mb-3 h-8 w-8" />
-                <span className="font-medium">{label}</span>
-                <span className="text-xs text-muted-foreground text-center">{description}</span>
+                <RadioGroupItem value={value} className='sr-only' />
+                <Icon className='mb-3 h-8 w-8' />
+                <span className='font-medium'>{label}</span>
+                <span className='text-xs text-muted-foreground text-center'>
+                  {description}
+                </span>
                 {theme === value && (
-                  <Check className="mt-2 h-4 w-4 text-primary" />
+                  <Check className='mt-2 h-4 w-4 text-primary' />
                 )}
               </Label>
             ))}
           </RadioGroup>
 
-          <Separator className="my-4" />
+          <Separator className='my-4' />
 
           <div>
-            <h4 className="text-sm font-medium mb-3">Theme Preview</h4>
+            <h4 className='text-sm font-medium mb-3'>Theme Preview</h4>
             <ThemePreview />
           </div>
         </CardContent>
@@ -215,19 +235,19 @@ export function AppearanceSettings() {
       {/* Sidebar Settings */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sidebar className="h-5 w-5" />
+          <div className='flex items-center gap-2'>
+            <Sidebar className='h-5 w-5' />
             <CardTitle>Sidebar</CardTitle>
           </div>
           <CardDescription>
             Configure how the sidebar appears and behaves.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="sidebar-position">Sidebar Position</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='sidebar-position'>Sidebar Position</Label>
+              <p className='text-sm text-muted-foreground'>
                 Choose which side the sidebar appears on
               </p>
             </div>
@@ -237,45 +257,45 @@ export function AppearanceSettings() {
                 updatePreference('sidebarPosition', value)
               }
             >
-              <SelectTrigger id="sidebar-position" className="w-32">
+              <SelectTrigger id='sidebar-position' className='w-32'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="left">Left</SelectItem>
-                <SelectItem value="right">Right</SelectItem>
+                <SelectItem value='left'>Left</SelectItem>
+                <SelectItem value='right'>Right</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="compact-sidebar">Compact Mode</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='compact-sidebar'>Compact Mode</Label>
+              <p className='text-sm text-muted-foreground'>
                 Use a more compact sidebar layout
               </p>
             </div>
             <Switch
-              id="compact-sidebar"
+              id='compact-sidebar'
               checked={preferences.compactSidebar}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 updatePreference('compactSidebar', checked)
               }
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="sidebar-icons">Show Icons</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='sidebar-icons'>Show Icons</Label>
+              <p className='text-sm text-muted-foreground'>
                 Display icons next to sidebar items
               </p>
             </div>
             <Switch
-              id="sidebar-icons"
+              id='sidebar-icons'
               checked={preferences.showSidebarIcons}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 updatePreference('showSidebarIcons', checked)
               }
             />
@@ -286,19 +306,19 @@ export function AppearanceSettings() {
       {/* Message Settings */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+          <div className='flex items-center gap-2'>
+            <MessageSquare className='h-5 w-5' />
             <CardTitle>Messages</CardTitle>
           </div>
           <CardDescription>
             Customize how messages are displayed in conversations.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="message-density">Message Density</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='message-density'>Message Density</Label>
+              <p className='text-sm text-muted-foreground'>
                 Control spacing between messages
               </p>
             </div>
@@ -308,23 +328,23 @@ export function AppearanceSettings() {
                 updatePreference('messageDensity', value)
               }
             >
-              <SelectTrigger id="message-density" className="w-40">
+              <SelectTrigger id='message-density' className='w-40'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="compact">Compact</SelectItem>
-                <SelectItem value="cozy">Cozy</SelectItem>
-                <SelectItem value="comfortable">Comfortable</SelectItem>
+                <SelectItem value='compact'>Compact</SelectItem>
+                <SelectItem value='cozy'>Cozy</SelectItem>
+                <SelectItem value='comfortable'>Comfortable</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="show-timestamps">Show Timestamps</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='show-timestamps'>Show Timestamps</Label>
+              <p className='text-sm text-muted-foreground'>
                 When to display message timestamps
               </p>
             </div>
@@ -334,46 +354,46 @@ export function AppearanceSettings() {
                 updatePreference('showTimestamps', value)
               }
             >
-              <SelectTrigger id="show-timestamps" className="w-32">
+              <SelectTrigger id='show-timestamps' className='w-32'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="always">Always</SelectItem>
-                <SelectItem value="hover">On Hover</SelectItem>
-                <SelectItem value="never">Never</SelectItem>
+                <SelectItem value='always'>Always</SelectItem>
+                <SelectItem value='hover'>On Hover</SelectItem>
+                <SelectItem value='never'>Never</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="show-avatars">Show User Avatars</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='show-avatars'>Show User Avatars</Label>
+              <p className='text-sm text-muted-foreground'>
                 Display profile pictures in messages
               </p>
             </div>
             <Switch
-              id="show-avatars"
+              id='show-avatars'
               checked={preferences.showUserAvatars}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 updatePreference('showUserAvatars', checked)
               }
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="link-previews">Show Link Previews</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='link-previews'>Show Link Previews</Label>
+              <p className='text-sm text-muted-foreground'>
                 Display previews for shared links
               </p>
             </div>
             <Switch
-              id="link-previews"
+              id='link-previews'
               checked={preferences.showLinkPreviews}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 updatePreference('showLinkPreviews', checked)
               }
             />
@@ -384,19 +404,19 @@ export function AppearanceSettings() {
       {/* Display Settings */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
+          <div className='flex items-center gap-2'>
+            <Eye className='h-5 w-5' />
             <CardTitle>Display</CardTitle>
           </div>
           <CardDescription>
             Adjust visual display settings for optimal viewing.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="font-size">Font Size</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='font-size'>Font Size</Label>
+              <p className='text-sm text-muted-foreground'>
                 Adjust the base font size
               </p>
             </div>
@@ -406,46 +426,46 @@ export function AppearanceSettings() {
                 updatePreference('fontSize', value)
               }
             >
-              <SelectTrigger id="font-size" className="w-32">
+              <SelectTrigger id='font-size' className='w-32'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="small">Small</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="large">Large</SelectItem>
+                <SelectItem value='small'>Small</SelectItem>
+                <SelectItem value='medium'>Medium</SelectItem>
+                <SelectItem value='large'>Large</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="enable-animations">Enable Animations</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='enable-animations'>Enable Animations</Label>
+              <p className='text-sm text-muted-foreground'>
                 Show smooth transitions and animations
               </p>
             </div>
             <Switch
-              id="enable-animations"
+              id='enable-animations'
               checked={preferences.enableAnimations}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 updatePreference('enableAnimations', checked)
               }
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="show-hints">Show Helpful Hints</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='show-hints'>Show Helpful Hints</Label>
+              <p className='text-sm text-muted-foreground'>
                 Display tooltips and onboarding hints
               </p>
             </div>
             <Switch
-              id="show-hints"
+              id='show-hints'
               checked={preferences.showHelpfulHints}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 updatePreference('showHelpfulHints', checked)
               }
             />
@@ -456,45 +476,45 @@ export function AppearanceSettings() {
       {/* Advanced Settings */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Code className="h-5 w-5" />
+          <div className='flex items-center gap-2'>
+            <Code className='h-5 w-5' />
             <CardTitle>Advanced</CardTitle>
           </div>
           <CardDescription>
             Advanced customization options for power users.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="custom-css">Custom CSS</Label>
-            <p className="text-sm text-muted-foreground mb-2">
+        <CardContent className='space-y-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='custom-css'>Custom CSS</Label>
+            <p className='text-sm text-muted-foreground mb-2'>
               Add custom CSS to personalize your experience (use with caution)
             </p>
             <Textarea
-              id="custom-css"
-              placeholder="/* Your custom CSS here */&#10;.my-class {&#10;  color: blue;&#10;}"
+              id='custom-css'
+              placeholder='/* Your custom CSS here */&#10;.my-class {&#10;  color: blue;&#10;}'
               value={preferences.customCSS}
-              onChange={(e) => updatePreference('customCSS', e.target.value)}
-              className="font-mono text-sm min-h-[120px]"
+              onChange={e => updatePreference('customCSS', e.target.value)}
+              className='font-mono text-sm min-h-[120px]'
             />
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
               <Label>Reset to Defaults</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Restore all appearance settings to their default values
               </p>
             </div>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={handleResetToDefaults}
-              className="gap-2"
+              className='gap-2'
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw className='h-4 w-4' />
               Reset
             </Button>
           </div>
@@ -502,11 +522,8 @@ export function AppearanceSettings() {
       </Card>
 
       {/* Save Button */}
-      <div className="flex justify-end gap-3">
-        <Button
-          variant="outline"
-          onClick={() => window.location.reload()}
-        >
+      <div className='flex justify-end gap-3'>
+        <Button variant='outline' onClick={() => window.location.reload()}>
           Cancel
         </Button>
         <Button onClick={handleSavePreferences} disabled={isSaving}>
@@ -519,32 +536,32 @@ export function AppearanceSettings() {
 
 function ThemePreview() {
   return (
-    <div className="rounded-lg border p-6 space-y-4 bg-background">
+    <div className='rounded-lg border p-6 space-y-4 bg-background'>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-3'>
+          <div className='h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold'>
             A
           </div>
-          <div className="space-y-1">
-            <div className="h-4 w-24 rounded bg-foreground" />
-            <div className="h-3 w-32 rounded bg-muted-foreground/50" />
+          <div className='space-y-1'>
+            <div className='h-4 w-24 rounded bg-foreground' />
+            <div className='h-3 w-32 rounded bg-muted-foreground/50' />
           </div>
         </div>
-        <div className="h-8 w-8 rounded bg-muted" />
+        <div className='h-8 w-8 rounded bg-muted' />
       </div>
 
       {/* Content */}
-      <div className="space-y-2">
-        <div className="h-3 w-full rounded bg-muted" />
-        <div className="h-3 w-5/6 rounded bg-muted" />
-        <div className="h-3 w-4/6 rounded bg-muted" />
+      <div className='space-y-2'>
+        <div className='h-3 w-full rounded bg-muted' />
+        <div className='h-3 w-5/6 rounded bg-muted' />
+        <div className='h-3 w-4/6 rounded bg-muted' />
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-2">
-        <div className="h-9 w-24 rounded bg-primary" />
-        <div className="h-9 w-24 rounded border border-input" />
+      <div className='flex gap-2 pt-2'>
+        <div className='h-9 w-24 rounded bg-primary' />
+        <div className='h-9 w-24 rounded border border-input' />
       </div>
     </div>
   );

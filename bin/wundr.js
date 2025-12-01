@@ -22,35 +22,41 @@ async function main() {
           module: 'commonjs',
         },
       });
-      
+
       // Import TypeScript files
-      const { createCLIProgram } = require('../src/integration/cli/DashboardCLI');
-      const { createInitCommand } = require('../src/integration/cli/InitCommand');
-      
+      const {
+        createCLIProgram,
+      } = require('../src/integration/cli/DashboardCLI');
+      const {
+        createInitCommand,
+      } = require('../src/integration/cli/InitCommand');
+
       const program = createCLIProgram();
-      
+
       // Add init-dashboard command
       const initCommand = createInitCommand();
       program.addCommand(initCommand);
-      
+
       // Parse arguments
       await program.parseAsync(process.argv);
-      
     } else {
       // Production mode - use compiled JavaScript
-      const { createCLIProgram } = require('../dist/integration/cli/DashboardCLI');
-      const { createInitCommand } = require('../dist/integration/cli/InitCommand');
-      
+      const {
+        createCLIProgram,
+      } = require('../dist/integration/cli/DashboardCLI');
+      const {
+        createInitCommand,
+      } = require('../dist/integration/cli/InitCommand');
+
       const program = createCLIProgram();
-      
+
       // Add init-dashboard command
       const initCommand = createInitCommand();
       program.addCommand(initCommand);
-      
+
       // Parse arguments
       await program.parseAsync(process.argv);
     }
-    
   } catch (error) {
     console.error('Error:', error.message);
     process.exit(1);

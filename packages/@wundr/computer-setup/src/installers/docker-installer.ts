@@ -41,7 +41,10 @@ export class DockerInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     if (!profile.tools?.containers?.docker) {
       return;
     }
@@ -66,22 +69,25 @@ export class DockerInstaller implements BaseInstaller {
     }
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     // Configure Docker daemon settings
     await this.configureDockerDaemon();
-    
+
     // Setup Docker context
     await this.setupDockerContext();
-    
+
     // Configure resource limits
     await this.configureResourceLimits(platform);
-    
+
     // Install additional Docker tools
     await this.installDockerTools();
-    
+
     // Setup Docker aliases
     await this.setupDockerAliases();
-    
+
     // Create Docker templates
     await this.createDockerTemplates();
   }
@@ -95,15 +101,17 @@ export class DockerInstaller implements BaseInstaller {
         logger.info('Docker command not found in PATH');
         return false;
       }
-      
+
       // Check if Docker daemon is running with a shorter timeout
       try {
-        const { stdout } = await execa('docker', ['version'], { timeout: 5000 });
-        
+        const { stdout } = await execa('docker', ['version'], {
+          timeout: 5000,
+        });
+
         // Check for both client and server
         const hasClient = stdout.includes('Client:');
         const hasServer = stdout.includes('Server:');
-        
+
         if (!hasClient) {
           logger.info('Docker client not properly installed');
           return false;
@@ -111,20 +119,25 @@ export class DockerInstaller implements BaseInstaller {
 
         if (!hasServer) {
           logger.warn('Docker daemon is not running');
-          logger.info('Tip: Start Docker Desktop from your Applications folder');
+          logger.info(
+            'Tip: Start Docker Desktop from your Applications folder'
+          );
           return false;
         }
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         if (errorMessage.includes('Cannot connect to the Docker daemon')) {
           logger.warn('Docker is installed but the daemon is not running');
-          logger.info('Tip: Start Docker Desktop from your Applications folder');
+          logger.info(
+            'Tip: Start Docker Desktop from your Applications folder'
+          );
         } else {
           logger.info('Docker validation error:', errorMessage);
         }
         return false;
       }
-      
+
       // Verify Docker can actually run containers
       try {
         await execa('docker', ['ps'], { timeout: 5000 });
@@ -141,8 +154,8 @@ export class DockerInstaller implements BaseInstaller {
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     if (!profile.tools?.containers?.docker) {
-return [];
-}
+      return [];
+    }
 
     const steps: SetupStep[] = [
       {
@@ -217,21 +230,25 @@ return [];
         await execa('brew', ['install', '--cask', 'docker']);
       } catch {
         // Fallback to direct DMG installation
-        logger.info('Homebrew not available, installing Docker Desktop via DMG...');
+        logger.info(
+          'Homebrew not available, installing Docker Desktop via DMG...'
+        );
         await this.installDockerDesktopDMG(platform);
       }
-      
+
       // Start Docker Desktop
       await this.startDockerDesktop();
-      
+
       // Wait for Docker daemon to be ready
       await this.waitForDockerDaemon();
-      
+
       // Verify installation
       await this.verifyDockerInstallation();
     } catch (error) {
       logger.error('Docker installation failed:', error);
-      throw new Error(`Docker installation failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Docker installation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -260,7 +277,9 @@ return [];
       try {
         const { stdout } = await execa('pgrep', ['-f', 'Docker Desktop']);
         if (stdout) {
-          logger.info('Docker Desktop process detected but daemon not ready yet...');
+          logger.info(
+            'Docker Desktop process detected but daemon not ready yet...'
+          );
           return; // Let waitForDockerDaemon handle the waiting
         }
       } catch {
@@ -271,9 +290,9 @@ return [];
       const dockerPaths = [
         '/Applications/Docker.app',
         `${process.env.HOME}/Applications/Docker.app`,
-        'Docker',  // Let macOS find it
+        'Docker', // Let macOS find it
       ];
-      
+
       let started = false;
       for (const dockerPath of dockerPaths) {
         try {
@@ -291,9 +310,11 @@ return [];
         await execa('open', ['-a', 'Docker']);
       }
 
-      logger.info('Note: First launch may take 2-4 minutes to complete initial setup.');
+      logger.info(
+        'Note: First launch may take 2-4 minutes to complete initial setup.'
+      );
       logger.info('The setup will wait for Docker to be ready...');
-      
+
       // Give it more time to start launching
       await new Promise(resolve => setTimeout(resolve, 5000));
     } catch (error) {
@@ -302,16 +323,20 @@ return [];
       logger.info('  1. Open Docker Desktop from your Applications folder');
       logger.info('  2. Wait for the whale icon to appear in your menu bar');
       logger.info('  3. Run the setup command again');
-      throw new Error('Please start Docker Desktop manually and run setup again.');
+      throw new Error(
+        'Please start Docker Desktop manually and run setup again.'
+      );
     }
   }
 
   private async waitForDockerDaemon(maxAttempts: number = 120): Promise<void> {
-    logger.info('Waiting for Docker daemon to start (this may take up to 4 minutes on first launch)...');
+    logger.info(
+      'Waiting for Docker daemon to start (this may take up to 4 minutes on first launch)...'
+    );
 
     let dockerDesktopRunning = false;
     let lastError: Error | unknown;
-    
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       // First check if Docker Desktop app is running
       if (!dockerDesktopRunning) {
@@ -330,45 +355,56 @@ return [];
       try {
         await execa('docker', ['version'], { timeout: 5000 });
         logger.info('Docker daemon is ready!');
-        
+
         // Give it a moment to fully initialize
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
+
         // Verify it's really working
         await execa('docker', ['ps'], { timeout: 5000 });
         return;
       } catch (error) {
         lastError = error;
-        
+
         // Show progress every 10 seconds
         if (attempt % 5 === 0 && attempt > 0) {
           const elapsed = Math.round(attempt * 2);
           const remaining = Math.round((maxAttempts - attempt) * 2);
-          logger.info(`Still waiting for Docker daemon... (${elapsed}s elapsed, max ${remaining}s remaining)`);
+          logger.info(
+            `Still waiting for Docker daemon... (${elapsed}s elapsed, max ${remaining}s remaining)`
+          );
 
           // After 60 seconds, give helpful hint
           if (attempt === 30) {
-            logger.info('Tip: If Docker Desktop is not starting automatically:');
+            logger.info(
+              'Tip: If Docker Desktop is not starting automatically:'
+            );
             logger.info('  1. Open Docker Desktop manually from Applications');
-            logger.info('  2. Wait for the whale icon to appear in your menu bar');
-            logger.info('  3. The setup will continue automatically once Docker is ready');
+            logger.info(
+              '  2. Wait for the whale icon to appear in your menu bar'
+            );
+            logger.info(
+              '  3. The setup will continue automatically once Docker is ready'
+            );
           }
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
-    
+
     logger.error('Docker daemon did not start within the expected time.');
-    const errorMessage = lastError instanceof Error ? lastError.message : 'Unknown error';
+    const errorMessage =
+      lastError instanceof Error ? lastError.message : 'Unknown error';
     logger.error('Last error:', errorMessage);
-    throw new Error('Docker daemon failed to start. Please ensure Docker Desktop is running and try again.');
+    throw new Error(
+      'Docker daemon failed to start. Please ensure Docker Desktop is running and try again.'
+    );
   }
 
   private async installOnLinux(platform: SetupPlatform): Promise<void> {
     // Detect Linux distribution
-    const distro = platform.distro || await this.detectLinuxDistro();
-    
+    const distro = platform.distro || (await this.detectLinuxDistro());
+
     switch (distro) {
       case 'ubuntu':
       case 'debian':
@@ -424,7 +460,9 @@ return [];
   }
 
   private async installOnWindows(_platform: SetupPlatform): Promise<void> {
-    throw new Error('Docker installation on Windows requires manual download from docker.com and WSL2 setup');
+    throw new Error(
+      'Docker installation on Windows requires manual download from docker.com and WSL2 setup'
+    );
   }
 
   private async installDockerCompose(platform: SetupPlatform): Promise<void> {
@@ -432,18 +470,26 @@ return [];
       // Modern Docker installations include Compose plugin
       const { stdout } = await execa('docker', ['compose', 'version']);
       if (stdout) {
-return;
-} // Already installed
+        return;
+      } // Already installed
     } catch {
       // Install standalone Docker Compose
       if (platform.os === 'linux') {
         const arch = platform.arch === 'arm64' ? 'aarch64' : 'x86_64';
         const url = `https://github.com/docker/compose/releases/latest/download/docker-compose-linux-${arch}`;
-        
-        await execa('sudo', ['curl', '-L', url, '-o', '/usr/local/bin/docker-compose']);
+
+        await execa('sudo', [
+          'curl',
+          '-L',
+          url,
+          '-o',
+          '/usr/local/bin/docker-compose',
+        ]);
         await execa('sudo', ['chmod', '+x', '/usr/local/bin/docker-compose']);
       } else {
-        throw new Error('Docker Compose installation failed - please install manually');
+        throw new Error(
+          'Docker Compose installation failed - please install manually'
+        );
       }
     }
   }
@@ -451,10 +497,10 @@ return;
   private async configureDockerDaemon(): Promise<void> {
     const homeDir = os.homedir();
     const dockerDir = `${homeDir}/.docker`;
-    
+
     // Ensure .docker directory exists
     await execa('mkdir', ['-p', dockerDir]);
-    
+
     // Docker config
     const config = {
       credsStore: os.platform() === 'darwin' ? 'osxkeychain' : 'desktop',
@@ -465,39 +511,48 @@ return;
         buildkit: true,
       },
     };
-    
+
     // Daemon config for macOS
-    const daemonConfig = os.platform() === 'darwin' ? {
-      builder: {
-        gc: {
-          defaultKeepStorage: '20GB',
-          enabled: true,
-        },
-      },
-      experimental: true,
-      features: {
-        buildkit: true,
-      },
-      'log-driver': 'json-file',
-      'log-opts': {
-        'max-size': '10m',
-        'max-file': '3',
-      },
-    } : {
-      'log-driver': 'json-file',
-      'log-opts': {
-        'max-size': '10m',
-        'max-file': '3',
-      },
-      'storage-driver': 'overlay2',
-    };
+    const daemonConfig =
+      os.platform() === 'darwin'
+        ? {
+            builder: {
+              gc: {
+                defaultKeepStorage: '20GB',
+                enabled: true,
+              },
+            },
+            experimental: true,
+            features: {
+              buildkit: true,
+            },
+            'log-driver': 'json-file',
+            'log-opts': {
+              'max-size': '10m',
+              'max-file': '3',
+            },
+          }
+        : {
+            'log-driver': 'json-file',
+            'log-opts': {
+              'max-size': '10m',
+              'max-file': '3',
+            },
+            'storage-driver': 'overlay2',
+          };
 
     // Write config files
     const fsModule = await import('fs').then(m => m.promises);
-    await fsModule.writeFile(`${dockerDir}/config.json`, JSON.stringify(config, null, 2));
+    await fsModule.writeFile(
+      `${dockerDir}/config.json`,
+      JSON.stringify(config, null, 2)
+    );
 
     if (os.platform() === 'darwin') {
-      await fsModule.writeFile(`${dockerDir}/daemon.json`, JSON.stringify(daemonConfig, null, 2));
+      await fsModule.writeFile(
+        `${dockerDir}/daemon.json`,
+        JSON.stringify(daemonConfig, null, 2)
+      );
     }
 
     logger.info('Docker configuration files created');
@@ -506,13 +561,21 @@ return;
   private async setupDockerContext(): Promise<void> {
     try {
       // Create default context if it doesn't exist
-      await execa('docker', ['context', 'create', 'default', '--docker', 'host=unix:///var/run/docker.sock']);
+      await execa('docker', [
+        'context',
+        'create',
+        'default',
+        '--docker',
+        'host=unix:///var/run/docker.sock',
+      ]);
     } catch {
       // Context might already exist
     }
   }
 
-  private async configureResourceLimits(platform: SetupPlatform): Promise<void> {
+  private async configureResourceLimits(
+    platform: SetupPlatform
+  ): Promise<void> {
     // Platform-specific resource configuration
     if (platform.os === 'darwin') {
       // macOS Docker Desktop resource limits
@@ -553,50 +616,62 @@ return;
    * Install Docker Desktop directly from DMG for macOS
    * Handles both Intel and Apple Silicon architectures
    */
-  private async installDockerDesktopDMG(platform: SetupPlatform): Promise<void> {
+  private async installDockerDesktopDMG(
+    platform: SetupPlatform
+  ): Promise<void> {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'docker-install-'));
     const dmgPath = path.join(tempDir, 'Docker.dmg');
-    
+
     try {
       // Determine download URL based on architecture
       const isAppleSilicon = platform.arch === 'arm64';
       const downloadUrl = isAppleSilicon
         ? 'https://desktop.docker.com/mac/main/arm64/Docker.dmg'
         : 'https://desktop.docker.com/mac/main/amd64/Docker.dmg';
-      
-      logger.info(`Downloading Docker Desktop for ${isAppleSilicon ? 'Apple Silicon' : 'Intel'} Mac...`);
-      
+
+      logger.info(
+        `Downloading Docker Desktop for ${isAppleSilicon ? 'Apple Silicon' : 'Intel'} Mac...`
+      );
+
       // Download DMG
       await execa('curl', ['-L', '-o', dmgPath, downloadUrl]);
-      
+
       // Verify download
       const stats = await fs.stat(dmgPath);
-      if (stats.size < 1000000) { // Less than 1MB indicates failed download
+      if (stats.size < 1000000) {
+        // Less than 1MB indicates failed download
         throw new Error('Download failed or incomplete');
       }
-      
+
       logger.info('Mounting Docker Desktop DMG...');
-      
+
       // Mount the DMG
-      const { stdout: mountOutput } = await execa('hdiutil', ['attach', dmgPath, '-nobrowse']);
+      const { stdout: mountOutput } = await execa('hdiutil', [
+        'attach',
+        dmgPath,
+        '-nobrowse',
+      ]);
       const mountPoint = this.extractMountPoint(mountOutput);
-      
+
       if (!mountPoint) {
         throw new Error('Failed to determine mount point');
       }
-      
+
       logger.info(`DMG mounted at: ${mountPoint}`);
-      
+
       // Copy Docker.app to Applications
       logger.info('Installing Docker Desktop...');
-      await execa('cp', ['-R', path.join(mountPoint, 'Docker.app'), '/Applications/']);
+      await execa('cp', [
+        '-R',
+        path.join(mountPoint, 'Docker.app'),
+        '/Applications/',
+      ]);
 
       // Unmount the DMG
       logger.info('Cleaning up...');
       await execa('hdiutil', ['detach', mountPoint]);
 
       logger.info('Docker Desktop installation completed successfully');
-      
     } finally {
       // Clean up temporary files
       try {
@@ -648,14 +723,17 @@ return;
         await execa('docker', ['compose', 'version']);
         logger.info('Docker Compose is available');
       } catch {
-        logger.warn('Docker Compose plugin not available, but Docker is working');
+        logger.warn(
+          'Docker Compose plugin not available, but Docker is working'
+        );
       }
 
       logger.info('Docker installation verified successfully');
-
     } catch (error) {
       logger.error('Docker verification failed:', error);
-      throw new Error(`Docker verification failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Docker verification failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -666,12 +744,7 @@ return;
     try {
       await which('brew');
 
-      const tools = [
-        'dive',
-        'lazydocker',
-        'ctop',
-        'docker-slim',
-      ];
+      const tools = ['dive', 'lazydocker', 'ctop', 'docker-slim'];
 
       for (const tool of tools) {
         try {
@@ -694,7 +767,7 @@ return;
 
   private async setupDockerAliases(): Promise<void> {
     const homeDir = os.homedir();
-    
+
     const aliases = `
 # Docker aliases
 alias d='docker'
@@ -745,10 +818,10 @@ docker-ip() {
 `;
 
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     for (const shellFile of shellFiles) {
       const shellPath = path.join(homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -765,19 +838,22 @@ docker-ip() {
         await fs.writeFile(shellPath, shellContent + aliases, 'utf-8');
         logger.info(`Added Docker aliases to ${shellFile}`);
       } catch (error) {
-        logger.warn(`Failed to update ${shellFile} with Docker aliases:`, error);
+        logger.warn(
+          `Failed to update ${shellFile} with Docker aliases:`,
+          error
+        );
       }
     }
   }
 
   private async createDockerTemplates(): Promise<void> {
     logger.info('Creating Docker templates...');
-    
+
     const templatesDir = path.join(os.homedir(), '.docker-templates');
-    
+
     try {
       await fs.mkdir(templatesDir, { recursive: true });
-      
+
       // Node.js Dockerfile template
       const nodeDockerfile = `FROM node:lts-alpine AS base
 
@@ -807,8 +883,11 @@ EXPOSE 3000
 CMD ["node", "dist/index.js"]
 `;
 
-      await fs.writeFile(path.join(templatesDir, 'Dockerfile.node'), nodeDockerfile);
-      
+      await fs.writeFile(
+        path.join(templatesDir, 'Dockerfile.node'),
+        nodeDockerfile
+      );
+
       // Docker Compose template
       const dockerCompose = `version: '3'
 
@@ -853,8 +932,11 @@ networks:
     driver: bridge
 `;
 
-      await fs.writeFile(path.join(templatesDir, 'docker-compose.yml'), dockerCompose);
-      
+      await fs.writeFile(
+        path.join(templatesDir, 'docker-compose.yml'),
+        dockerCompose
+      );
+
       // .dockerignore template
       const dockerignore = `node_modules
 npm-debug.log
@@ -874,7 +956,10 @@ build
 .DS_Store
 `;
 
-      await fs.writeFile(path.join(templatesDir, '.dockerignore'), dockerignore);
+      await fs.writeFile(
+        path.join(templatesDir, '.dockerignore'),
+        dockerignore
+      );
 
       logger.info(`Docker templates created in ${templatesDir}`);
     } catch (error) {

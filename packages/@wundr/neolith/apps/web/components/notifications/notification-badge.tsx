@@ -43,19 +43,19 @@ export function NotificationBadge({
       className={cn(
         'relative inline-flex items-center justify-center rounded-full bg-destructive px-1.5 font-medium text-destructive-foreground',
         sizeClasses[size],
-        className,
+        className
       )}
-      role="status"
+      role='status'
       aria-label={`${count} unread notifications`}
     >
       {isNew && (
         <span
           className={cn(
-            'absolute inset-0 rounded-full bg-destructive opacity-75 animate-ping',
+            'absolute inset-0 rounded-full bg-destructive opacity-75 animate-ping'
           )}
         />
       )}
-      <span className="relative">{displayCount}</span>
+      <span className='relative'>{displayCount}</span>
     </span>
   );
 }
@@ -93,20 +93,20 @@ export function NotificationDot({
   return (
     <span
       className={cn('relative inline-flex', dotSizeClasses[size], className)}
-      role="status"
-      aria-label="New notification"
+      role='status'
+      aria-label='New notification'
     >
       {showPulse && (
         <span
           className={cn(
-            'absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75 animate-ping',
+            'absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75 animate-ping'
           )}
         />
       )}
       <span
         className={cn(
           'relative inline-flex rounded-full bg-destructive',
-          dotSizeClasses[size],
+          dotSizeClasses[size]
         )}
       />
     </span>

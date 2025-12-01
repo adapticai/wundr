@@ -7,7 +7,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CapabilityToggle } from './CapabilityToggle';
 
@@ -83,7 +89,9 @@ export function CapabilitySettings({
   disabled,
   isAdmin,
 }: CapabilitySettingsProps) {
-  const [capabilities, setCapabilities] = useState<Record<string, CapabilityConfig>>({});
+  const [capabilities, setCapabilities] = useState<
+    Record<string, CapabilityConfig>
+  >({});
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -93,10 +101,17 @@ export function CapabilitySettings({
 
   const fetchCapabilities = async () => {
     try {
-      const response = await fetch(`/api/orchestrators/${orchestratorId}/capabilities`);
+      const response = await fetch(
+        `/api/orchestrators/${orchestratorId}/capabilities`
+      );
       if (response.ok) {
         const data = await response.json();
-        setCapabilities((data.data?.enabledCapabilities as Record<string, CapabilityConfig>) || {});
+        setCapabilities(
+          (data.data?.enabledCapabilities as Record<
+            string,
+            CapabilityConfig
+          >) || {}
+        );
       }
     } catch (error) {
       console.error('Failed to fetch capabilities:', error);
@@ -106,7 +121,7 @@ export function CapabilitySettings({
   };
 
   const handleToggle = (type: string, enabled: boolean) => {
-    setCapabilities((prev) => ({
+    setCapabilities(prev => ({
       ...prev,
       [type]: {
         ...prev[type],
@@ -118,7 +133,7 @@ export function CapabilitySettings({
   };
 
   const handlePermissionChange = (type: string, permissionLevel: string) => {
-    setCapabilities((prev) => ({
+    setCapabilities(prev => ({
       ...prev,
       [type]: {
         ...prev[type],
@@ -128,8 +143,12 @@ export function CapabilitySettings({
     }));
   };
 
-  const handleRateLimitChange = (type: string, field: string, value: string) => {
-    setCapabilities((prev) => ({
+  const handleRateLimitChange = (
+    type: string,
+    field: string,
+    value: string
+  ) => {
+    setCapabilities(prev => ({
       ...prev,
       [type]: {
         ...prev[type],
@@ -146,13 +165,16 @@ export function CapabilitySettings({
     e.preventDefault();
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/orchestrators/${orchestratorId}/capabilities`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ capabilities }),
-      });
+      const response = await fetch(
+        `/api/orchestrators/${orchestratorId}/capabilities`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ capabilities }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to update capabilities');
@@ -169,7 +191,7 @@ export function CapabilitySettings({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className='space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle>Capabilities</CardTitle>
@@ -177,8 +199,8 @@ export function CapabilitySettings({
             Enable and configure what actions your orchestrator can perform
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {CAPABILITY_DEFINITIONS.map((def) => {
+        <CardContent className='space-y-4'>
+          {CAPABILITY_DEFINITIONS.map(def => {
             const capability = capabilities[def.type];
             return (
               <CapabilityToggle
@@ -190,9 +212,13 @@ export function CapabilitySettings({
                   icon: def.icon,
                 }}
                 config={capability}
-                onToggle={(enabled) => handleToggle(def.type, enabled)}
-                onPermissionChange={(level) => handlePermissionChange(def.type, level)}
-                onRateLimitChange={(field, value) => handleRateLimitChange(def.type, field, value)}
+                onToggle={enabled => handleToggle(def.type, enabled)}
+                onPermissionChange={level =>
+                  handlePermissionChange(def.type, level)
+                }
+                onRateLimitChange={(field, value) =>
+                  handleRateLimitChange(def.type, field, value)
+                }
                 disabled={disabled}
                 isAdmin={isAdmin}
               />
@@ -201,8 +227,8 @@ export function CapabilitySettings({
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={disabled || isSaving}>
+      <div className='flex justify-end'>
+        <Button type='submit' disabled={disabled || isSaving}>
           {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>

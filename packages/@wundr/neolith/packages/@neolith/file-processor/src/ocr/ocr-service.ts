@@ -330,7 +330,9 @@ export interface OCRServiceInfo {
 /**
  * Factory function type for creating OCR services
  */
-export type OCRServiceFactory = (config?: OCRServiceFactoryConfig) => OCRService;
+export type OCRServiceFactory = (
+  config?: OCRServiceFactoryConfig
+) => OCRService;
 
 /**
  * Configuration for OCR service factory
@@ -441,7 +443,11 @@ export abstract class BaseOCRService implements OCRService {
   /**
    * Update statistics after processing
    */
-  protected updateStats(processingTime: number, confidence: number, success: boolean): void {
+  protected updateStats(
+    processingTime: number,
+    confidence: number,
+    success: boolean
+  ): void {
     if (success) {
       const prevTotal = this._stats.totalProcessed;
       const prevAvg = this._stats.averageConfidence;
@@ -455,4 +461,3 @@ export abstract class BaseOCRService implements OCRService {
     }
   }
 }
-

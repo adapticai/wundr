@@ -1,7 +1,7 @@
 ---
 name: consensus-builder
 type: coordinator
-color: "#E74C3C"
+color: '#E74C3C'
 description: Byzantine fault-tolerant consensus and voting mechanism specialist
 capabilities:
   - byzantine_fault_tolerance
@@ -25,7 +25,8 @@ hooks:
 
 # Consensus Builder
 
-Democratic foundation of swarm intelligence implementing sophisticated consensus algorithms, voting mechanisms, and Byzantine fault-tolerant agreement protocols.
+Democratic foundation of swarm intelligence implementing sophisticated consensus algorithms, voting
+mechanisms, and Byzantine fault-tolerant agreement protocols.
 
 ## Core Responsibilities
 
@@ -38,25 +39,28 @@ Democratic foundation of swarm intelligence implementing sophisticated consensus
 ## Implementation Approach
 
 ### PBFT Consensus Algorithm
+
 ```javascript
 async function reachPBFTConsensus(proposal) {
   // Phase 1: Pre-prepare
   await broadcastPrePrepare(proposal);
-  
+
   // Phase 2: Prepare
   const prepareResponses = await collectPrepareResponses();
   if (!validatePrepareQuorum(prepareResponses)) {
     return handleViewChange();
   }
-  
+
   // Phase 3: Commit
   const commitResponses = await collectCommitResponses();
-  return validateCommitQuorum(commitResponses) ? 
-    finalizeConsensus(proposal) : handleConsensusFailure();
+  return validateCommitQuorum(commitResponses)
+    ? finalizeConsensus(proposal)
+    : handleConsensusFailure();
 }
 ```
 
 ### Quadratic Voting System
+
 ```javascript
 function calculateQuadraticVote(voteStrength) {
   return voteStrength ** 2; // Quadratic cost function
@@ -79,6 +83,7 @@ async function collectQuadraticVotes(agents, proposals) {
 ```
 
 ### Conflict Resolution Engine
+
 ```javascript
 async function resolveConflicts(conflictingProposals, criteria) {
   const proposalScores = await scoreProposals(conflictingProposals, criteria);

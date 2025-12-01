@@ -44,7 +44,9 @@ describe('OrgGenesisWizard', () => {
     fireEvent.click(nextButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Organization name is required/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Organization name is required/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -61,7 +63,9 @@ describe('OrgGenesisWizard', () => {
     fireEvent.click(nextButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Describe Your Organization/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Describe Your Organization/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -78,7 +82,9 @@ describe('OrgGenesisWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Next Step/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Describe Your Organization/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Describe Your Organization/i)
+      ).toBeInTheDocument();
     });
 
     // Go back
@@ -103,7 +109,9 @@ describe('OrgGenesisWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Next Step/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Describe Your Organization/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Describe Your Organization/i)
+      ).toBeInTheDocument();
     });
 
     // Try to submit with short description
@@ -115,7 +123,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Please provide a more detailed description/i),
+        screen.getByText(/Please provide a more detailed description/i)
       ).toBeInTheDocument();
     });
   });
@@ -133,11 +141,16 @@ describe('OrgGenesisWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Next Step/i }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/Organization Description/i)).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/Organization Description/i)
+      ).toBeInTheDocument();
     });
 
     fireEvent.change(screen.getByLabelText(/Organization Description/i), {
-      target: { value: 'A detailed description of the organization that meets the minimum length requirement' },
+      target: {
+        value:
+          'A detailed description of the organization that meets the minimum length requirement',
+      },
     });
     fireEvent.change(screen.getByLabelText(/Strategy & Focus/i), {
       target: { value: 'Quantitative trading strategy' },
@@ -145,8 +158,12 @@ describe('OrgGenesisWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Next Step/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Configure Your Organization/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Target Assets \/ Markets/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Configure Your Organization/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/Target Assets \/ Markets/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -206,7 +223,7 @@ describe('OrgGenesisWizard', () => {
             },
           },
         }),
-      }),
+      })
     );
 
     render(<OrgGenesisWizard />);
@@ -214,12 +231,16 @@ describe('OrgGenesisWizard', () => {
     // Navigate to config step and submit
     // (simplified - in real test you'd fill all steps)
 
-    const submitButton = screen.queryByRole('button', { name: /Generate Organization/i });
+    const submitButton = screen.queryByRole('button', {
+      name: /Generate Organization/i,
+    });
     if (submitButton) {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Generating Organization.../i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Generating Organization.../i)
+        ).toBeInTheDocument();
       });
     }
   });
@@ -231,18 +252,22 @@ describe('OrgGenesisWizard', () => {
         json: async () => ({
           error: 'Failed to generate organization',
         }),
-      }),
+      })
     );
 
     render(<OrgGenesisWizard />);
 
     // Trigger generation (simplified)
-    const submitButton = screen.queryByRole('button', { name: /Generate Organization/i });
+    const submitButton = screen.queryByRole('button', {
+      name: /Generate Organization/i,
+    });
     if (submitButton) {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Failed to generate organization/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Failed to generate organization/i)
+        ).toBeInTheDocument();
       });
     }
   });

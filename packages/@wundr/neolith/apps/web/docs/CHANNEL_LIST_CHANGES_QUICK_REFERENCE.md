@@ -1,6 +1,7 @@
 # Channel List Component - Quick Reference
 
 ## Component Location
+
 `/components/channel/channel-list.tsx`
 
 ## New Props Added
@@ -8,8 +9,8 @@
 ```typescript
 interface ChannelListProps {
   // ... existing props
-  error?: Error | null;          // NEW: Error state from hooks
-  onRetry?: () => void;          // NEW: Retry callback for failed loads
+  error?: Error | null; // NEW: Error state from hooks
+  onRetry?: () => void; // NEW: Retry callback for failed loads
 }
 ```
 
@@ -55,15 +56,18 @@ function Sidebar() {
 ## Features Overview
 
 ### 1. Loading State
+
 - Shows `ChannelListSkeleton` when `isLoading={true}`
 - Matches structure of actual component
 
 ### 2. Error State
+
 - Shows when `error` prop is provided AND both channels and DMs are empty
 - Displays error message and "Try Again" button
 - Only renders retry button if `onRetry` callback provided
 
 ### 3. Empty States
+
 - **No Search Query:**
   - Channels: "No channels yet" + "Create your first channel" link
   - DMs: "No direct messages yet" + helper text
@@ -72,6 +76,7 @@ function Sidebar() {
   - DMs: "No conversations match your search"
 
 ### 4. Unread Badges
+
 - Only show when:
   - `unreadCount != null` (null-safe check)
   - `unreadCount > 0`
@@ -80,6 +85,7 @@ function Sidebar() {
 - Styled with primary color background
 
 ### 5. Safe Fallbacks
+
 - Channel/DM names: Safe string operations
 - User avatars: Shows "?" if name missing
 - Participant names: "Unknown" if name missing

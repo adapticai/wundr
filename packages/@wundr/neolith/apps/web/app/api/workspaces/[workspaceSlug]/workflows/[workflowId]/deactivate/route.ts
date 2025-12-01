@@ -38,15 +38,18 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -61,8 +64,11 @@ export async function POST(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -77,8 +83,11 @@ export async function POST(
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found or access denied',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -94,8 +103,11 @@ export async function POST(
 
     if (!workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('You must be a workspace member to deactivate workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You must be a workspace member to deactivate workflows',
+          WORKFLOW_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -109,21 +121,30 @@ export async function POST(
 
     if (!workflow) {
       return NextResponse.json(
-        createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workflow not found',
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Check if workflow is already inactive
     if (workflow.status === 'INACTIVE') {
-      return NextResponse.json({ workflow, message: 'Workflow is already inactive' });
+      return NextResponse.json({
+        workflow,
+        message: 'Workflow is already inactive',
+      });
     }
 
     // Check if workflow is archived
     if (workflow.status === 'ARCHIVED') {
       return NextResponse.json(
-        createErrorResponse('Cannot deactivate an archived workflow', WORKFLOW_ERROR_CODES.WORKFLOW_INACTIVE),
-        { status: 400 },
+        createErrorResponse(
+          'Cannot deactivate an archived workflow',
+          WORKFLOW_ERROR_CODES.WORKFLOW_INACTIVE
+        ),
+        { status: 400 }
       );
     }
 
@@ -140,12 +161,21 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({ workflow: updatedWorkflow, message: 'Workflow deactivated successfully' });
+    return NextResponse.json({
+      workflow: updatedWorkflow,
+      message: 'Workflow deactivated successfully',
+    });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/workflows/:workflowId/deactivate] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/workflows/:workflowId/deactivate] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

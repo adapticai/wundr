@@ -98,7 +98,7 @@ export class AnalysisEngine {
 export async function analyzeProjectWithProgress(
   targetDir: string,
   progressCallback: AnalysisProgressCallback,
-  config?: Partial<AnalysisConfig>,
+  config?: Partial<AnalysisConfig>
 ): Promise<AnalysisReport> {
   console.log('Starting analysis with progress tracking...');
   progressCallback({ type: 'phase', message: 'Initializing analysis...' });

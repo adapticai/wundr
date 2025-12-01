@@ -3,20 +3,26 @@
 ## Endpoints
 
 ### GET /api/messages/:id
+
 **Get message with thread replies**
+
 - Auth: Required
 - Access: Channel member
 - Returns: Message + reactions + attachments + reply count
 
 ### PATCH /api/messages/:id
+
 **Edit message (author only)**
+
 - Auth: Required
 - Access: Message author only
 - Body: `{ content: string, metadata?: object }`
 - Feature: Auto-tracks edit history in metadata
 
 ### DELETE /api/messages/:id
+
 **Delete message (soft delete)**
+
 - Auth: Required
 - Access: Message author OR channel admin/owner
 - Behavior: Sets isDeleted=true, content="[Message deleted]"
@@ -54,6 +60,7 @@
 ## Implementation Status
 
 ✅ All requirements complete:
+
 - ✅ GET with thread replies
 - ✅ PATCH with author-only access
 - ✅ DELETE with admin support

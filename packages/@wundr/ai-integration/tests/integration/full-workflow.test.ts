@@ -19,35 +19,43 @@ describe('Full AI Integration Workflow', () => {
           preTask: true,
           postTask: true,
           sessionRestore: true,
-          exportMetrics: true
+          exportMetrics: true,
         },
         sparc: {
           enabledPhases: ['specification', 'architecture', 'refinement'],
           parallelExecution: true,
-          autoOptimization: true
-        }
+          autoOptimization: true,
+        },
       },
       mcpTools: {
         registryPath: './test-registry',
-        enabledTools: ['drift_detection', 'pattern_standardize', 'governance_report'],
+        enabledTools: [
+          'drift_detection',
+          'pattern_standardize',
+          'governance_report',
+        ],
         autoDiscovery: true,
         cacheResults: true,
-        timeout: 30000
+        timeout: 30000,
       },
       neural: {
         modelsPath: './test-models',
-        enabledModels: ['pattern-recognition', 'performance-prediction', 'task-classification'],
+        enabledModels: [
+          'pattern-recognition',
+          'performance-prediction',
+          'task-classification',
+        ],
         trainingInterval: 30000,
         patternRecognition: true,
         crossSessionLearning: true,
-        maxMemorySize: 1000
+        maxMemorySize: 1000,
       },
       swarm: {
         defaultTopology: 'mesh',
         maxSwarmSize: 15,
         consensusThreshold: 0.7,
         faultTolerance: 'high',
-        adaptiveScaling: true
+        adaptiveScaling: true,
       },
       memory: {
         persistencePath: './test-memory',
@@ -57,15 +65,15 @@ describe('Full AI Integration Workflow', () => {
         retentionPolicy: {
           shortTerm: 24,
           longTerm: 7,
-          permanent: ['critical-patterns']
-        }
+          permanent: ['critical-patterns'],
+        },
       },
       agents: {
         maxConcurrentAgents: 20,
         spawningStrategy: 'adaptive',
         healthCheckInterval: 10000,
         autoRecovery: true,
-        loadBalancing: true
+        loadBalancing: true,
       },
       performance: {
         metricsCollection: true,
@@ -74,15 +82,15 @@ describe('Full AI Integration Workflow', () => {
         alertThresholds: {
           responseTime: 5000,
           errorRate: 0.05,
-          memoryUsage: 80
-        }
+          memoryUsage: 80,
+        },
       },
       github: {
         token: process.env.GITHUB_TOKEN,
         autoReview: false, // Disabled for testing
         swarmReview: false, // Disabled for testing
-        integrationBranches: ['main']
-      }
+        integrationBranches: ['main'],
+      },
     };
 
     hive = new AIIntegrationHive(config);
@@ -100,39 +108,35 @@ describe('Full AI Integration Workflow', () => {
       const task: Task = {
         id: 'e2e-coding-task',
         title: 'Implement User Authentication',
-        description: 'Implement a complete user authentication system with login, registration, and password reset functionality',
+        description:
+          'Implement a complete user authentication system with login, registration, and password reset functionality',
         type: 'coding',
         priority: 'high',
         status: 'pending',
         assignedAgents: [],
-        requiredCapabilities: [
-          'coding',
-          'security',
-          'testing',
-          'code-review'
-        ],
+        requiredCapabilities: ['coding', 'security', 'testing', 'code-review'],
         context: {
           technology: 'Node.js',
           database: 'PostgreSQL',
-          framework: 'Express'
+          framework: 'Express',
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // Execute the task
       const result = await hive.executeTask(task);
-      
+
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.data.swarmId).toBeDefined();
       expect(result.data.agentCount).toBeGreaterThan(0);
       expect(result.data.qualityScore).toBeGreaterThan(0);
-      
+
       // Verify neural learning occurred
       const metrics = await hive.getMetrics();
       expect(metrics.neural.totalPatterns).toBeGreaterThan(0);
-      
+
       // Verify memory was created and stored
       expect(metrics.memory.cacheSize).toBeGreaterThan(0);
     }, 30000);
@@ -141,28 +145,25 @@ describe('Full AI Integration Workflow', () => {
       const reviewTask: Task = {
         id: 'e2e-review-task',
         title: 'Review Authentication Implementation',
-        description: 'Comprehensive review of the authentication system implementation',
+        description:
+          'Comprehensive review of the authentication system implementation',
         type: 'review',
         priority: 'high',
         status: 'pending',
         assignedAgents: [],
-        requiredCapabilities: [
-          'code-review',
-          'security',
-          'quality-assurance'
-        ],
+        requiredCapabilities: ['code-review', 'security', 'quality-assurance'],
         context: {
           pullRequestUrl: 'https://github.com/example/repo/pull/123',
           changedFiles: 15,
           linesAdded: 500,
-          linesRemoved: 50
+          linesRemoved: 50,
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const result = await hive.executeTask(reviewTask);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.consensus).toBeDefined();
       expect(result.data.consensus.agreement).toBeGreaterThan(0.5);
@@ -172,27 +173,24 @@ describe('Full AI Integration Workflow', () => {
       const testTask: Task = {
         id: 'e2e-test-task',
         title: 'Create Comprehensive Test Suite',
-        description: 'Create unit, integration, and end-to-end tests for authentication system',
+        description:
+          'Create unit, integration, and end-to-end tests for authentication system',
         type: 'testing',
         priority: 'medium',
         status: 'pending',
         assignedAgents: [],
-        requiredCapabilities: [
-          'testing',
-          'quality-assurance',
-          'automation'
-        ],
+        requiredCapabilities: ['testing', 'quality-assurance', 'automation'],
         context: {
           testFramework: 'Jest',
           coverageTarget: 90,
-          testTypes: ['unit', 'integration', 'e2e']
+          testTypes: ['unit', 'integration', 'e2e'],
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const result = await hive.executeTask(testTask);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.qualityScore).toBeGreaterThan(0.7);
     }, 15000);
@@ -203,7 +201,8 @@ describe('Full AI Integration Workflow', () => {
       const complexTask: Task = {
         id: 'multi-agent-task',
         title: 'Full Stack Feature Implementation',
-        description: 'Implement a complete feature including backend API, frontend UI, tests, and documentation',
+        description:
+          'Implement a complete feature including backend API, frontend UI, tests, and documentation',
         type: 'coding',
         priority: 'critical',
         status: 'pending',
@@ -214,15 +213,15 @@ describe('Full AI Integration Workflow', () => {
           'api-design',
           'testing',
           'documentation',
-          'code-review'
+          'code-review',
         ],
         context: {
           complexity: 'high',
           estimatedHours: 40,
-          technologies: ['React', 'Node.js', 'GraphQL']
+          technologies: ['React', 'Node.js', 'GraphQL'],
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // Spawn agents for the task
@@ -230,13 +229,13 @@ describe('Full AI Integration Workflow', () => {
         ['backend-dev', 'coder', 'reviewer', 'tester', 'api-docs'],
         complexTask.description
       );
-      
+
       expect(spawnResult.success).toBe(true);
       expect(spawnResult.data.agents.length).toBe(5);
 
       // Execute the task
       const result = await hive.executeTask(complexTask);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.agentCount).toBe(5);
       expect(result.data.topology).toBeDefined();
@@ -248,7 +247,8 @@ describe('Full AI Integration Workflow', () => {
       const sparcTask: Task = {
         id: 'sparc-workflow-task',
         title: 'Design Microservices Architecture',
-        description: 'Design and implement a microservices architecture using SPARC methodology',
+        description:
+          'Design and implement a microservices architecture using SPARC methodology',
         type: 'analysis',
         priority: 'high',
         status: 'pending',
@@ -257,15 +257,15 @@ describe('Full AI Integration Workflow', () => {
           'architecture',
           'system-design',
           'specification',
-          'pseudocode'
+          'pseudocode',
         ],
         context: {
           methodology: 'SPARC',
           phases: ['specification', 'pseudocode', 'architecture', 'refinement'],
-          scale: 'enterprise'
+          scale: 'enterprise',
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // Spawn SPARC-specific agents
@@ -273,11 +273,11 @@ describe('Full AI Integration Workflow', () => {
         ['sparc-coord', 'specification', 'architecture', 'system-architect'],
         sparcTask.description
       );
-      
+
       expect(spawnResult.success).toBe(true);
 
       const result = await hive.executeTask(sparcTask);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.insights).toContain('methodology');
     }, 35000);
@@ -297,7 +297,7 @@ describe('Full AI Integration Workflow', () => {
         requiredCapabilities: ['coding'],
         context: {},
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }));
 
       // Execute tasks in parallel
@@ -312,7 +312,7 @@ describe('Full AI Integration Workflow', () => {
       // Check performance metrics
       const metrics = await hive.getMetrics();
       expect(metrics.performance).toBeDefined();
-      
+
       // Allow time for performance analysis
       await new Promise(resolve => setTimeout(resolve, 2000));
     }, 30000);
@@ -323,7 +323,8 @@ describe('Full AI Integration Workflow', () => {
       const learningTask: Task = {
         id: 'learning-task',
         title: 'Pattern Recognition Task',
-        description: 'Task designed to test pattern recognition and learning capabilities',
+        description:
+          'Task designed to test pattern recognition and learning capabilities',
         type: 'optimization',
         priority: 'medium',
         status: 'pending',
@@ -331,26 +332,26 @@ describe('Full AI Integration Workflow', () => {
         requiredCapabilities: [
           'pattern-recognition',
           'machine-learning',
-          'optimization'
+          'optimization',
         ],
         context: {
           learningObjective: 'pattern-recognition',
-          dataPoints: 100
+          dataPoints: 100,
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // Execute the task
       const result = await hive.executeTask(learningTask);
-      
+
       expect(result.success).toBe(true);
 
       // Check that learning occurred
       const metricsAfter = await hive.getMetrics();
       expect(metricsAfter.neural.patterns).toBeGreaterThan(0);
       expect(metricsAfter.neural.totalModels).toBeGreaterThan(0);
-      
+
       // Verify memory persistence
       expect(metricsAfter.memory.cacheSize).toBeGreaterThan(0);
     }, 25000);
@@ -368,18 +369,18 @@ describe('Full AI Integration Workflow', () => {
         assignedAgents: [],
         requiredCapabilities: ['testing'],
         context: {
-          errorSimulation: true
+          errorSimulation: true,
         },
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // Execute task that might encounter errors
       const result = await hive.executeTask(resilientTask);
-      
+
       // System should handle errors gracefully
       expect(result).toBeDefined();
-      
+
       // Check system health
       const status = hive.getStatus();
       expect(status).not.toBe('error');
@@ -389,7 +390,7 @@ describe('Full AI Integration Workflow', () => {
   describe('Integration Metrics', () => {
     it('should provide comprehensive system metrics', async () => {
       const metrics = await hive.getMetrics();
-      
+
       // Verify all subsystem metrics are available
       expect(metrics.hive).toBeDefined();
       expect(metrics.claudeFlow).toBeDefined();
@@ -400,7 +401,7 @@ describe('Full AI Integration Workflow', () => {
       expect(metrics.agents).toBeDefined();
       expect(metrics.performance).toBeDefined();
       expect(metrics.github).toBeDefined();
-      
+
       // Verify metric data quality
       expect(typeof metrics.agents.totalAgents).toBe('number');
       expect(typeof metrics.swarm.activeSwarms).toBe('number');
@@ -410,7 +411,7 @@ describe('Full AI Integration Workflow', () => {
 
     it('should show activity and learning progression', async () => {
       const initialMetrics = await hive.getMetrics();
-      
+
       // Execute a learning task
       const task: Task = {
         id: 'metrics-progression-task',
@@ -423,16 +424,20 @@ describe('Full AI Integration Workflow', () => {
         requiredCapabilities: ['analysis'],
         context: {},
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       await hive.executeTask(task);
-      
+
       const finalMetrics = await hive.getMetrics();
-      
+
       // Verify progression
-      expect(finalMetrics.memory.cacheSize).toBeGreaterThanOrEqual(initialMetrics.memory.cacheSize);
-      expect(finalMetrics.neural.patterns).toBeGreaterThanOrEqual(initialMetrics.neural.patterns);
+      expect(finalMetrics.memory.cacheSize).toBeGreaterThanOrEqual(
+        initialMetrics.memory.cacheSize
+      );
+      expect(finalMetrics.neural.patterns).toBeGreaterThanOrEqual(
+        initialMetrics.neural.patterns
+      );
     });
   });
 });

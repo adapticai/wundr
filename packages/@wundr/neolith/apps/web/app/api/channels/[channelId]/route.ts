@@ -44,8 +44,8 @@ async function checkChannelAccess(channelId: string, userId: string) {
   });
 
   if (!channel) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -57,8 +57,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   const channelMembership = await prisma.channelMember.findUnique({
     where: {
@@ -87,15 +87,18 @@ return null;
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -104,8 +107,11 @@ export async function GET(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -115,9 +121,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -126,9 +132,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to private channel',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -169,7 +175,7 @@ export async function GET(
     });
 
     // Transform channelMembers to a simpler members array for the client
-    const members = channel?.channelMembers?.map((cm) => ({
+    const members = channel?.channelMembers?.map(cm => ({
       userId: cm.userId,
       role: cm.role,
       joinedAt: cm.joinedAt,
@@ -178,7 +184,7 @@ export async function GET(
 
     // Get the current user's starred status
     const currentUserMembership = channel?.channelMembers?.find(
-      (cm) => cm.userId === session.user.id
+      cm => cm.userId === session.user.id
     );
 
     return NextResponse.json({
@@ -200,9 +206,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -218,15 +224,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -235,8 +244,11 @@ export async function PATCH(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -246,9 +258,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -260,9 +272,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Channel Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -272,8 +284,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -284,9 +299,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -297,7 +312,9 @@ export async function PATCH(
       where: { id: params.channelId },
       data: {
         ...(input.name && { name: input.name }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.topic !== undefined && { topic: input.topic }),
         ...(input.isArchived !== undefined && { isArchived: input.isArchived }),
       },
@@ -327,9 +344,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -345,15 +362,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -362,8 +382,11 @@ export async function DELETE(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -373,9 +396,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -384,9 +407,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only organization administrators can delete channels',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -403,9 +426,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

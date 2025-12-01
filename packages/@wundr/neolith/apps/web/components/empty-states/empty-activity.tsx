@@ -12,8 +12,8 @@ export function EmptyActivity() {
   return (
     <EmptyState
       icon={Activity}
-      title="No activity yet"
-      description="Activity from your team and Orchestrators will appear here once you start working."
+      title='No activity yet'
+      description='Activity from your team and Orchestrators will appear here once you start working.'
     />
   );
 }

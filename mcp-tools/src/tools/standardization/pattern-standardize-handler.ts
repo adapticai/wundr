@@ -22,14 +22,19 @@ export class PatternStandardizeHandler {
   ];
 
   constructor() {
-    this.scriptPath = path.resolve(process.cwd(), 'scripts/standardization/pattern-standardizer.ts');
+    this.scriptPath = path.resolve(
+      process.cwd(),
+      'scripts/standardization/pattern-standardizer.ts'
+    );
   }
 
   async execute(args: PatternStandardizeArgs): Promise<string> {
     const { action, rules, dryRun } = args;
 
     if (!fs.existsSync(this.scriptPath)) {
-      throw new Error(`Pattern standardizer script not found at: ${this.scriptPath}`);
+      throw new Error(
+        `Pattern standardizer script not found at: ${this.scriptPath}`
+      );
     }
 
     try {
@@ -106,15 +111,19 @@ export class PatternStandardizeHandler {
       }
     }
 
-    return JSON.stringify({
-      success: true,
-      action: 'run',
-      totalFilesModified: totalFiles,
-      changesByRule: changes,
-      summary: `Standardization complete! Modified ${totalFiles} files total.`,
-      availableRules: this.availableRules,
-      details: output,
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'run',
+        totalFilesModified: totalFiles,
+        changesByRule: changes,
+        summary: `Standardization complete! Modified ${totalFiles} files total.`,
+        availableRules: this.availableRules,
+        details: output,
+      },
+      null,
+      2
+    );
   }
 
   private formatReviewOutput(output: string): string {
@@ -134,68 +143,91 @@ export class PatternStandardizeHandler {
     const complexMatch = output.match(/Complex Promise Chains \((\d+)\)/);
     const servicesMatch = output.match(/Non-Standard Services \((\d+)\)/);
 
-    if (complexMatch) issues.complexPromiseChains = parseInt(complexMatch[1], 10);
-    if (servicesMatch) issues.nonStandardServices = parseInt(servicesMatch[1], 10);
+    if (complexMatch)
+      issues.complexPromiseChains = parseInt(complexMatch[1], 10);
+    if (servicesMatch)
+      issues.nonStandardServices = parseInt(servicesMatch[1], 10);
 
-    const totalIssues = Object.values(issues).reduce((sum, count) => sum + count, 0);
+    const totalIssues = Object.values(issues).reduce(
+      (sum, count) => sum + count,
+      0
+    );
 
-    return JSON.stringify({
-      success: true,
-      action: 'review',
-      totalIssues,
-      issuesByCategory: issues,
-      reportPath: 'manual-review-required.md',
-      message: totalIssues > 0 
-        ? `Found ${totalIssues} patterns requiring manual review`
-        : 'No patterns require manual review',
-      nextSteps: [
-        'Review each item in the report',
-        'Apply manual refactoring where needed',
-        'Re-run standardization after manual fixes',
-      ],
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'review',
+        totalIssues,
+        issuesByCategory: issues,
+        reportPath: 'manual-review-required.md',
+        message:
+          totalIssues > 0
+            ? `Found ${totalIssues} patterns requiring manual review`
+            : 'No patterns require manual review',
+        nextSteps: [
+          'Review each item in the report',
+          'Apply manual refactoring where needed',
+          'Re-run standardization after manual fixes',
+        ],
+      },
+      null,
+      2
+    );
   }
 
   private simulateDryRun(rules?: string[]): string {
-    const selectedRules = rules && rules.length > 0 ? rules : this.availableRules;
-    
-    return JSON.stringify({
-      success: true,
-      action: 'dry-run',
-      mode: 'preview',
-      selectedRules,
-      message: 'Dry run mode - no changes will be applied',
-      previewSummary: {
-        'consistent-error-handling': 'Would replace string throws with AppError instances',
-        'async-await-pattern': 'Would convert promise chains to async/await',
-        'enum-standardization': 'Would convert const objects to proper enums',
-        'service-lifecycle': 'Would ensure services extend BaseService',
-        'import-ordering': 'Would standardize import order and grouping',
-        'naming-conventions': 'Would fix naming convention violations',
-        'optional-chaining': 'Would use optional chaining where appropriate',
-        'type-assertions': 'Would replace angle bracket assertions with as keyword',
+    const selectedRules =
+      rules && rules.length > 0 ? rules : this.availableRules;
+
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'dry-run',
+        mode: 'preview',
+        selectedRules,
+        message: 'Dry run mode - no changes will be applied',
+        previewSummary: {
+          'consistent-error-handling':
+            'Would replace string throws with AppError instances',
+          'async-await-pattern': 'Would convert promise chains to async/await',
+          'enum-standardization': 'Would convert const objects to proper enums',
+          'service-lifecycle': 'Would ensure services extend BaseService',
+          'import-ordering': 'Would standardize import order and grouping',
+          'naming-conventions': 'Would fix naming convention violations',
+          'optional-chaining': 'Would use optional chaining where appropriate',
+          'type-assertions':
+            'Would replace angle bracket assertions with as keyword',
+        },
+        recommendation:
+          'Run with action:"run" and dryRun:false to apply changes',
       },
-      recommendation: 'Run with action:"run" and dryRun:false to apply changes',
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private checkPatterns(rules?: string[]): string {
-    const selectedRules = rules && rules.length > 0 ? rules : this.availableRules;
+    const selectedRules =
+      rules && rules.length > 0 ? rules : this.availableRules;
 
-    return JSON.stringify({
-      success: true,
-      action: 'check',
-      availableRules: this.availableRules,
-      selectedRules,
-      checkResults: {
-        status: 'ready',
-        message: 'Pattern check completed',
-        recommendations: [
-          'Run with action:"review" to see patterns needing manual attention',
-          'Run with action:"run" to automatically fix patterns',
-          'Use dryRun:true to preview changes without applying',
-        ],
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'check',
+        availableRules: this.availableRules,
+        selectedRules,
+        checkResults: {
+          status: 'ready',
+          message: 'Pattern check completed',
+          recommendations: [
+            'Run with action:"review" to see patterns needing manual attention',
+            'Run with action:"run" to automatically fix patterns',
+            'Use dryRun:true to preview changes without applying',
+          ],
+        },
       },
-    }, null, 2);
+      null,
+      2
+    );
   }
 }

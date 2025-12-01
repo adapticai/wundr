@@ -38,7 +38,9 @@ interface RouteContext {
  */
 const addChannelMembersSchema = z.object({
   /** Array of user IDs to add as members */
-  userIds: z.array(z.string().min(1, 'User ID is required')).min(1, 'At least one user ID is required'),
+  userIds: z
+    .array(z.string().min(1, 'User ID is required'))
+    .min(1, 'At least one user ID is required'),
 
   /** Role to assign to the members */
   role: channelRoleEnum.optional().default('MEMBER'),
@@ -62,7 +64,7 @@ type RemoveChannelMemberInput = z.infer<typeof removeChannelMemberSchema>;
 async function checkChannelManagementAccess(
   workspaceId: string,
   channelId: string,
-  userId: string,
+  userId: string
 ) {
   // Get channel with workspace information
   const channel = await prisma.channel.findUnique({
@@ -138,28 +140,38 @@ async function checkChannelManagementAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Validate parameters
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
-    const workspaceParamResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    const channelParamResult = channelIdParamSchema.safeParse({ channelId: params.channelId });
+    const workspaceParamResult = workspaceIdParamSchema.safeParse({
+      id: workspaceId,
+    });
+    const channelParamResult = channelIdParamSchema.safeParse({
+      channelId: params.channelId,
+    });
 
     if (!workspaceParamResult.success || !channelParamResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameter format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameter format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -167,16 +179,16 @@ export async function GET(
     const access = await checkChannelManagementAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -185,9 +197,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to private channel',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -195,7 +207,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
       Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
-      100,
+      100
     );
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
@@ -220,10 +232,7 @@ export async function GET(
           },
         },
       },
-      orderBy: [
-        { role: 'asc' },
-        { joinedAt: 'asc' },
-      ],
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
       skip: offset,
       take: limit,
     });
@@ -238,13 +247,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/channels/:channelId/members] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/channels/:channelId/members] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -262,28 +274,38 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Validate parameters
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
-    const workspaceParamResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    const channelParamResult = channelIdParamSchema.safeParse({ channelId: params.channelId });
+    const workspaceParamResult = workspaceIdParamSchema.safeParse({
+      id: workspaceId,
+    });
+    const channelParamResult = channelIdParamSchema.safeParse({
+      channelId: params.channelId,
+    });
 
     if (!workspaceParamResult.success || !channelParamResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameter format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameter format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -291,16 +313,16 @@ export async function POST(
     const access = await checkChannelManagementAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -313,9 +335,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Channel Admin required to manage members.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -325,8 +347,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -337,9 +362,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -347,7 +372,7 @@ export async function POST(
 
     // Validate all users are workspace members and not already in channel
     const validationResults = await Promise.all(
-      input.userIds.map(async (userId) => {
+      input.userIds.map(async userId => {
         // Check if user is a workspace member
         const workspaceMembership = await prisma.workspaceMember.findUnique({
           where: {
@@ -392,27 +417,32 @@ export async function POST(
           valid: true,
           user: workspaceMembership.user,
         };
-      }),
+      })
     );
 
     // Check if any validations failed
-    const failures = validationResults.filter((r) => !r.valid);
+    const failures = validationResults.filter(r => !r.valid);
     if (failures.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           'Some users could not be added',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { failures: failures.map((f) => ({ userId: f.userId, reason: f.reason })) },
+          {
+            failures: failures.map(f => ({
+              userId: f.userId,
+              reason: f.reason,
+            })),
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Add all valid members
     const newMemberships = await Promise.all(
       validationResults
-        .filter((r) => r.valid)
-        .map(async (result) => {
+        .filter(r => r.valid)
+        .map(async result => {
           return await prisma.channelMember.create({
             data: {
               channelId: params.channelId,
@@ -433,7 +463,7 @@ export async function POST(
               },
             },
           });
-        }),
+        })
     );
 
     return NextResponse.json(
@@ -441,16 +471,19 @@ export async function POST(
         data: newMemberships,
         message: `${newMemberships.length} member(s) added to channel successfully`,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/channels/:channelId/members] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/channels/:channelId/members] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -467,28 +500,38 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Validate parameters
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
-    const workspaceParamResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
-    const channelParamResult = channelIdParamSchema.safeParse({ channelId: params.channelId });
+    const workspaceParamResult = workspaceIdParamSchema.safeParse({
+      id: workspaceId,
+    });
+    const channelParamResult = channelIdParamSchema.safeParse({
+      channelId: params.channelId,
+    });
 
     if (!workspaceParamResult.success || !channelParamResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameter format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameter format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -496,16 +539,16 @@ export async function DELETE(
     const access = await checkChannelManagementAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -515,8 +558,11 @@ export async function DELETE(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -527,9 +573,9 @@ export async function DELETE(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -545,9 +591,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -565,9 +611,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Member not found in this channel',
-          ORG_ERROR_CODES.MEMBER_NOT_FOUND,
+          ORG_ERROR_CODES.MEMBER_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -584,9 +630,9 @@ export async function DELETE(
         return NextResponse.json(
           createErrorResponse(
             'Cannot remove the last channel admin. Promote another member first.',
-            ORG_ERROR_CODES.CANNOT_LEAVE_LAST_ADMIN,
+            ORG_ERROR_CODES.CANNOT_LEAVE_LAST_ADMIN
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -605,13 +651,16 @@ export async function DELETE(
       message: 'Member removed from channel successfully',
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/channels/:channelId/members] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/channels/:channelId/members] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

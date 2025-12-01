@@ -1,4 +1,8 @@
-import type { TemplateContext, ProjectInfo, PlatformInfo } from './template-manager.js';
+import type {
+  TemplateContext,
+  ProjectInfo,
+  PlatformInfo,
+} from './template-manager.js';
 import type { DeveloperProfile } from '../types/index.js';
 
 /**
@@ -26,7 +30,9 @@ export type TemplateVariables = Record<string, TemplateValue>;
  * Helper to validate project type
  */
 function isValidProjectType(type: string): type is ProjectType {
-  return ['node', 'react', 'vue', 'python', 'go', 'rust', 'java'].includes(type);
+  return ['node', 'react', 'vue', 'python', 'go', 'rust', 'java'].includes(
+    type
+  );
 }
 
 /**
@@ -57,7 +63,7 @@ function mapPlatformArch(arch: NodeJS.Architecture): PlatformInfo['arch'] {
  */
 export function getDefaultTemplateVariables(
   profile: DeveloperProfile,
-  projectType: string = 'node',
+  projectType: string = 'node'
 ): TemplateVariables {
   return {
     // Common project defaults
@@ -67,7 +73,7 @@ export function getDefaultTemplateVariables(
     PORT: 3000,
     BUILD_OUTPUT_DIR: 'dist',
     ENTRY_POINT: 'index.js',
-    
+
     // TypeScript defaults
     TARGET: 'ES2022',
     MODULE: 'NodeNext',
@@ -104,7 +110,7 @@ export function getDefaultTemplateVariables(
     REMOVE_COMMENTS: false,
     PRESERVE_CONST_ENUMS: true,
     BASE_URL: '.',
-    
+
     // ESLint defaults
     ECMA_VERSION: 2022,
     BROWSER_ENVIRONMENT: projectType === 'react' || projectType === 'vue',
@@ -133,7 +139,7 @@ export function getDefaultTemplateVariables(
     PREVENT_ABBREVIATIONS: 'off',
     NO_NULL_RULE: 'off',
     NO_ARRAY_REDUCE: 'off',
-    
+
     // Jest defaults
     JEST_PRESET: 'ts-jest',
     TEST_ENVIRONMENT: projectType === 'react' ? 'jsdom' : 'node',
@@ -151,7 +157,7 @@ export function getDefaultTemplateVariables(
     CLEAR_MOCKS: true,
     RESTORE_MOCKS: true,
     VERBOSE: true,
-    
+
     // Prettier defaults
     PRINT_WIDTH: 100,
     TAB_WIDTH: 2,
@@ -176,7 +182,7 @@ export function getDefaultTemplateVariables(
     YAML_FORMATTING: true,
     YAML_TAB_WIDTH: 2,
     YAML_SINGLE_QUOTES: false,
-    
+
     // Docker defaults
     HOST_PORT: 3000,
     CONTAINER_PORT: 3000,
@@ -190,7 +196,7 @@ export function getDefaultTemplateVariables(
     POSTGRES_DB: 'devdb',
     POSTGRES_HOST_PORT: '5432',
     REDIS_HOST_PORT: '6379',
-    
+
     // GitHub defaults
     ASSIGNEES: profile.team ? `@${profile.team}` : '',
     ORGANIZATION: profile.team || 'Your Organization',
@@ -205,7 +211,7 @@ export function getDefaultTemplateVariables(
     DATABASE_CHANGES: profile.tools?.databases ? true : false,
     DEPLOYMENT_NOTES: '',
     BREAKING_CHANGES: '',
-    
+
     // Slack defaults
     BOT_NAME: 'Development Bot',
     BOT_DESCRIPTION: 'Bot for development team notifications',
@@ -224,7 +230,7 @@ export function getDefaultTemplateVariables(
     ALLOWED_USERS: [],
     VALID_ENVIRONMENTS: 'staging,production',
     AVAILABLE_SERVICES: 'api,web,worker',
-    
+
     // Claude Flow defaults
     CLAUDE_MODEL: 'claude-sonnet-4-20250514',
     TEMPERATURE: 0.7,
@@ -239,7 +245,7 @@ export function getDefaultTemplateVariables(
     DYNAMIC_SCALING: true,
     RESOURCE_POOLING: true,
     MODEL_OPTIMIZATION: 'quality-over-speed',
-    
+
     // Path mappings (common patterns)
     PATH_MAPPINGS: [
       { ALIAS: '@', PATH: 'src' },
@@ -250,7 +256,7 @@ export function getDefaultTemplateVariables(
       { ALIAS: '@types', PATH: 'src/types' },
       { ALIAS: '@config', PATH: 'src/config' },
     ],
-    
+
     // Include patterns
     INCLUDE_PATTERNS: ['src/**/*'],
     EXCLUDE_PATTERNS: [
@@ -261,7 +267,7 @@ export function getDefaultTemplateVariables(
       '*.config.js',
       '*.config.ts',
     ],
-    
+
     // Node-specific TypeScript config
     NODE_MODULE: 'NodeNext',
     NODE_MODULE_RESOLUTION: 'NodeNext',
@@ -270,7 +276,7 @@ export function getDefaultTemplateVariables(
     NODE_TYPES: ['node', 'jest'],
     NODE_INCLUDE: ['src/**/*'],
     NODE_EXCLUDE: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
-    
+
     // React-specific TypeScript config
     REACT_TARGET: 'ES2020',
     REACT_LIBS: ['ES2020', 'DOM', 'DOM.Iterable'],
@@ -288,11 +294,13 @@ export function getDefaultTemplateVariables(
 export function createDefaultTemplateContext(
   profile: DeveloperProfile,
   projectName: string,
-  projectType: string = 'node',
+  projectType: string = 'node'
 ): TemplateContext {
   const defaultVars = getDefaultTemplateVariables(profile, projectType);
-  
-  const validatedProjectType: ProjectType = isValidProjectType(projectType) ? projectType : 'node';
+
+  const validatedProjectType: ProjectType = isValidProjectType(projectType)
+    ? projectType
+    : 'node';
 
   const projectInfo: ProjectInfo = {
     name: projectName,
@@ -311,7 +319,7 @@ export function createDefaultTemplateContext(
     nodeVersion: process.version.replace('v', ''),
     shell: profile.preferences?.shell || 'zsh',
   };
-  
+
   return {
     profile,
     project: projectInfo,
@@ -323,13 +331,15 @@ export function createDefaultTemplateContext(
 /**
  * Get preferred package manager from profile
  */
-function getPreferredPackageManager(profile: DeveloperProfile): 'npm' | 'pnpm' | 'yarn' {
+function getPreferredPackageManager(
+  profile: DeveloperProfile
+): 'npm' | 'pnpm' | 'yarn' {
   if (profile.tools.packageManagers?.pnpm) {
-return 'pnpm';
-}
+    return 'pnpm';
+  }
   if (profile.tools.packageManagers?.yarn) {
-return 'yarn';
-}
+    return 'yarn';
+  }
   return 'npm';
 }
 
@@ -339,10 +349,10 @@ return 'yarn';
 export function getConfigTemplateVariables(
   configType: string,
   profile: DeveloperProfile,
-  projectType: string = 'node',
+  projectType: string = 'node'
 ): TemplateVariables {
   const baseVars = getDefaultTemplateVariables(profile, projectType);
-  
+
   switch (configType) {
     case 'strict-typescript':
       return {
@@ -353,7 +363,7 @@ export function getConfigTemplateVariables(
         NO_NON_NULL_ASSERTION: 'error',
         STRICT_TYPE_CHECKING: true,
       };
-      
+
     case 'relaxed-typescript':
       return {
         ...baseVars,
@@ -363,7 +373,7 @@ export function getConfigTemplateVariables(
         NO_NON_NULL_ASSERTION: 'warn',
         STRICT_TYPE_CHECKING: false,
       };
-      
+
     case 'production-ready':
       return {
         ...baseVars,
@@ -375,7 +385,7 @@ export function getConfigTemplateVariables(
         LINES_THRESHOLD: 90,
         STATEMENTS_THRESHOLD: 90,
       };
-      
+
     case 'development':
       return {
         ...baseVars,
@@ -386,7 +396,7 @@ export function getConfigTemplateVariables(
         LINES_THRESHOLD: 70,
         STATEMENTS_THRESHOLD: 70,
       };
-      
+
     default:
       return baseVars;
   }

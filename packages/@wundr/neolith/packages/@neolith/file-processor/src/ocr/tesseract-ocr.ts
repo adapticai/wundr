@@ -7,10 +7,7 @@
  * @packageDocumentation
  */
 
-import {
-  createWorker,
-  createScheduler,
-} from 'tesseract.js';
+import { createWorker, createScheduler } from 'tesseract.js';
 
 import { BaseOCRService } from './ocr-service';
 import {
@@ -37,10 +34,7 @@ import type {
   SupportedLanguage,
 } from '../types/ocr';
 import type Tesseract from 'tesseract.js';
-import type {
-  Worker,
-  Scheduler,
-  RecognizeResult} from 'tesseract.js';
+import type { Worker, Scheduler, RecognizeResult } from 'tesseract.js';
 
 /**
  * Default configuration for Tesseract OCR service
@@ -127,7 +121,10 @@ export class TesseractOCRService extends BaseOCRService {
 
       this._isReady = true;
       this._stats.activeWorkers = this.workers.length;
-      this.log('info', `Tesseract OCR service initialized with ${this.workers.length} workers`);
+      this.log(
+        'info',
+        `Tesseract OCR service initialized with ${this.workers.length} workers`
+      );
     } catch (error) {
       this.log('error', 'Failed to initialize Tesseract OCR service', error);
       await this.terminate();
@@ -169,7 +166,7 @@ export class TesseractOCRService extends BaseOCRService {
   async recognizeText(
     image: Buffer | Blob | string,
     options: OCROptions = {},
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<OCRResult> {
     this.ensureReady();
 
@@ -185,7 +182,12 @@ export class TesseractOCRService extends BaseOCRService {
       this.reportProgress(onProgress, OCRProcessingStage.RECOGNIZING, 20);
 
       // Perform recognition
-      const result = await this.performRecognition(image, languages, options, onProgress);
+      const result = await this.performRecognition(
+        image,
+        languages,
+        options,
+        onProgress
+      );
 
       // Parse result
       const ocrResult = this.parseRecognitionResult(result, startTime);
@@ -196,7 +198,12 @@ export class TesseractOCRService extends BaseOCRService {
       return ocrResult;
     } catch (error) {
       this.updateStats(Date.now() - startTime, 0, false);
-      this.reportProgress(onProgress, OCRProcessingStage.FAILED, 0, String(error));
+      this.reportProgress(
+        onProgress,
+        OCRProcessingStage.FAILED,
+        0,
+        String(error)
+      );
       throw error;
     }
   }
@@ -206,7 +213,7 @@ export class TesseractOCRService extends BaseOCRService {
    */
   async recognizeDocument(
     image: Buffer | Blob | string,
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<DocumentOCRResult> {
     // First, perform basic recognition
     const basicResult = await this.recognizeText(
@@ -216,7 +223,7 @@ export class TesseractOCRService extends BaseOCRService {
         includeLineDetails: true,
         includeWordDetails: true,
       },
-      onProgress,
+      onProgress
     );
 
     // Perform document-level analysis
@@ -240,7 +247,7 @@ export class TesseractOCRService extends BaseOCRService {
   async recognizeMultiple(
     images: Array<Buffer | Blob | string>,
     options: OCROptions = {},
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<OCRResult[]> {
     this.ensureReady();
 
@@ -263,7 +270,7 @@ export class TesseractOCRService extends BaseOCRService {
         onProgress,
         OCRProcessingStage.RECOGNIZING,
         Math.round((processedCount / totalImages) * 100),
-        `Processing image ${index + 1} of ${totalImages}`,
+        `Processing image ${index + 1} of ${totalImages}`
       );
 
       return result;
@@ -278,7 +285,7 @@ export class TesseractOCRService extends BaseOCRService {
   async recognizePDFPages(
     _pdf: Buffer,
     _options: PDFOCROptions = {},
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<OCRResult[]> {
     this.ensureReady();
 
@@ -286,9 +293,17 @@ export class TesseractOCRService extends BaseOCRService {
     // This is a placeholder implementation that would need to be completed
     // with actual PDF rendering capability
 
-    this.log('warn', 'PDF processing requires additional setup. Converting pages to images...');
+    this.log(
+      'warn',
+      'PDF processing requires additional setup. Converting pages to images...'
+    );
 
-    this.reportProgress(onProgress, OCRProcessingStage.PREPROCESSING, 0, 'Converting PDF pages');
+    this.reportProgress(
+      onProgress,
+      OCRProcessingStage.PREPROCESSING,
+      0,
+      'Converting PDF pages'
+    );
 
     // For now, throw an informative error
     // In a full implementation, we would:
@@ -297,7 +312,7 @@ export class TesseractOCRService extends BaseOCRService {
     // 3. Return combined results
 
     throw new Error(
-      'PDF processing not yet implemented. Please convert PDF pages to images first and use recognizeMultiple.',
+      'PDF processing not yet implemented. Please convert PDF pages to images first and use recognizeMultiple.'
     );
   }
 
@@ -314,10 +329,10 @@ export class TesseractOCRService extends BaseOCRService {
    */
   async loadLanguage(
     lang: string | string[],
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<void> {
     const languages = Array.isArray(lang) ? lang : [lang];
-    const toLoad = languages.filter((l) => !this.loadedLanguages.has(l));
+    const toLoad = languages.filter(l => !this.loadedLanguages.has(l));
 
     if (toLoad.length === 0) {
       return;
@@ -327,7 +342,7 @@ export class TesseractOCRService extends BaseOCRService {
       onProgress,
       OCRProcessingStage.LOADING_LANGUAGE,
       0,
-      `Loading languages: ${toLoad.join(', ')}`,
+      `Loading languages: ${toLoad.join(', ')}`
     );
 
     // Load language data in each worker using setParameters
@@ -344,7 +359,7 @@ export class TesseractOCRService extends BaseOCRService {
       onProgress,
       OCRProcessingStage.LOADING_LANGUAGE,
       100,
-      `Loaded languages: ${toLoad.join(', ')}`,
+      `Loaded languages: ${toLoad.join(', ')}`
     );
   }
 
@@ -404,7 +419,9 @@ export class TesseractOCRService extends BaseOCRService {
    */
   private ensureReady(): void {
     if (!this._isReady || !this.scheduler) {
-      throw new Error('Tesseract OCR service not initialized. Call initialize() first.');
+      throw new Error(
+        'Tesseract OCR service not initialized. Call initialize() first.'
+      );
     }
   }
 
@@ -423,9 +440,9 @@ export class TesseractOCRService extends BaseOCRService {
    */
   private async ensureLanguagesLoaded(
     languages: string[],
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<void> {
-    const unloaded = languages.filter((l) => !this.loadedLanguages.has(l));
+    const unloaded = languages.filter(l => !this.loadedLanguages.has(l));
     if (unloaded.length > 0) {
       await this.loadLanguage(unloaded, onProgress);
     }
@@ -438,7 +455,7 @@ export class TesseractOCRService extends BaseOCRService {
     image: Buffer | Blob | string,
     languages: string[],
     options: OCROptions,
-    onProgress?: OCRProgressCallback,
+    onProgress?: OCRProgressCallback
   ): Promise<RecognizeResult> {
     if (!this.scheduler) {
       throw new Error('Scheduler not initialized');
@@ -451,17 +468,21 @@ export class TesseractOCRService extends BaseOCRService {
 
     // Set page segmentation mode if provided
     if (options.pageSegmentationMode !== undefined) {
-      (recognizeOptions as Record<string, string>)['tessedit_pageseg_mode'] = String(options.pageSegmentationMode);
+      (recognizeOptions as Record<string, string>)['tessedit_pageseg_mode'] =
+        String(options.pageSegmentationMode);
     }
 
     // Set OCR engine mode if provided
     if (options.ocrEngineMode !== undefined) {
-      (recognizeOptions as Record<string, string>)['tessedit_ocr_engine_mode'] = String(options.ocrEngineMode);
+      (recognizeOptions as Record<string, string>)['tessedit_ocr_engine_mode'] =
+        String(options.ocrEngineMode);
     }
 
     // Set preserve interword spaces if requested
     if (options.preserveInterwordSpaces) {
-      (recognizeOptions as Record<string, string>)['preserve_interword_spaces'] = '1';
+      (recognizeOptions as Record<string, string>)[
+        'preserve_interword_spaces'
+      ] = '1';
     }
 
     // Perform recognition using scheduler
@@ -473,7 +494,10 @@ export class TesseractOCRService extends BaseOCRService {
       }
     }
 
-    const result = await this.scheduler.addJob('recognize', image) as RecognizeResult;
+    const result = (await this.scheduler.addJob(
+      'recognize',
+      image
+    )) as RecognizeResult;
 
     this.reportProgress(onProgress, OCRProcessingStage.POSTPROCESSING, 80);
 
@@ -483,11 +507,14 @@ export class TesseractOCRService extends BaseOCRService {
   /**
    * Parse Tesseract recognition result into OCRResult
    */
-  private parseRecognitionResult(result: RecognizeResult, startTime: number): OCRResult {
+  private parseRecognitionResult(
+    result: RecognizeResult,
+    startTime: number
+  ): OCRResult {
     const data = result.data;
 
     // Parse words
-    const words: OCRWord[] = (data.words || []).map((word) => ({
+    const words: OCRWord[] = (data.words || []).map(word => ({
       text: word.text,
       confidence: word.confidence,
       bbox: this.parseBbox(word.bbox),
@@ -500,11 +527,11 @@ export class TesseractOCRService extends BaseOCRService {
     }));
 
     // Parse lines
-    const lines: OCRLine[] = (data.lines || []).map((line) => ({
+    const lines: OCRLine[] = (data.lines || []).map(line => ({
       text: line.text,
       confidence: line.confidence,
       bbox: this.parseBbox(line.bbox),
-      words: (line.words || []).map((word) => ({
+      words: (line.words || []).map(word => ({
         text: word.text,
         confidence: word.confidence,
         bbox: this.parseBbox(word.bbox),
@@ -512,20 +539,20 @@ export class TesseractOCRService extends BaseOCRService {
     }));
 
     // Parse blocks
-    const blocks: OCRBlock[] = (data.blocks || []).map((block) => ({
+    const blocks: OCRBlock[] = (data.blocks || []).map(block => ({
       text: block.text,
       confidence: block.confidence,
       bbox: this.parseBbox(block.bbox),
       blockType: BlockType.TEXT,
-      paragraphs: (block.paragraphs || []).map((para) => ({
+      paragraphs: (block.paragraphs || []).map(para => ({
         text: para.text,
         confidence: para.confidence,
         bbox: this.parseBbox(para.bbox),
-        lines: (para.lines || []).map((line) => ({
+        lines: (para.lines || []).map(line => ({
           text: line.text,
           confidence: line.confidence,
           bbox: this.parseBbox(line.bbox),
-          words: (line.words || []).map((word) => ({
+          words: (line.words || []).map(word => ({
             text: word.text,
             confidence: word.confidence,
             bbox: this.parseBbox(word.bbox),
@@ -568,16 +595,27 @@ export class TesseractOCRService extends BaseOCRService {
     const text = result.text.toLowerCase();
 
     // Simple heuristic-based classification
-    if (text.includes('invoice') || text.includes('bill to') || text.includes('amount due')) {
+    if (
+      text.includes('invoice') ||
+      text.includes('bill to') ||
+      text.includes('amount due')
+    ) {
       return DocumentType.INVOICE;
     }
-    if (text.includes('receipt') || (text.includes('total') && text.includes('thank you'))) {
+    if (
+      text.includes('receipt') ||
+      (text.includes('total') && text.includes('thank you'))
+    ) {
       return DocumentType.RECEIPT;
     }
     if (text.includes('dear') && text.includes('sincerely')) {
       return DocumentType.LETTER;
     }
-    if (text.includes('contract') || text.includes('agreement') || text.includes('parties')) {
+    if (
+      text.includes('contract') ||
+      text.includes('agreement') ||
+      text.includes('parties')
+    ) {
       return DocumentType.CONTRACT;
     }
 
@@ -600,7 +638,7 @@ export class TesseractOCRService extends BaseOCRService {
       return a.block.bbox.x0 - b.block.bbox.x0;
     });
 
-    return indexed.map((item) => item.index);
+    return indexed.map(item => item.index);
   }
 
   /**
@@ -615,7 +653,7 @@ export class TesseractOCRService extends BaseOCRService {
    * Extract form fields from recognition result
    */
   private extractFormFields(
-    _result: OCRResult,
+    _result: OCRResult
   ): Array<{ key: string; value: string; confidence: number }> {
     // Basic form field extraction - looks for "label: value" patterns
     // This is a simplified implementation; production would use more sophisticated NLP
@@ -626,9 +664,7 @@ export class TesseractOCRService extends BaseOCRService {
   /**
    * Extract tables from recognition result
    */
-  private extractTables(
-    _result: OCRResult,
-  ): Array<{
+  private extractTables(_result: OCRResult): Array<{
     headers: string[];
     rows: string[][];
     columnCount: number;
@@ -648,7 +684,7 @@ export class TesseractOCRService extends BaseOCRService {
     callback: OCRProgressCallback | undefined,
     stage: OCRProcessingStage,
     progress: number,
-    message?: string,
+    message?: string
   ): void {
     if (callback) {
       const progressInfo: OCRProgress = {
@@ -663,7 +699,11 @@ export class TesseractOCRService extends BaseOCRService {
   /**
    * Log message based on configuration
    */
-  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, data?: unknown): void {
+  private log(
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    data?: unknown
+  ): void {
     if (!this.config.enableLogging) {
       return;
     }
@@ -692,7 +732,7 @@ export class TesseractOCRService extends BaseOCRService {
  * @returns New TesseractOCRService instance
  */
 export function createTesseractOCRService(
-  config?: Partial<OCRServiceConfig>,
+  config?: Partial<OCRServiceConfig>
 ): TesseractOCRService {
   return new TesseractOCRService(config);
 }

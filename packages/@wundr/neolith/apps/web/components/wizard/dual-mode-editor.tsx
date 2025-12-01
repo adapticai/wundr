@@ -23,7 +23,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { ConversationalWizard, type Message, type EntityData } from './conversational-wizard';
+import {
+  ConversationalWizard,
+  type Message,
+  type EntityData,
+} from './conversational-wizard';
 
 /**
  * Field configuration for dynamic form rendering
@@ -59,7 +63,11 @@ export interface DualModeEditorProps {
     history: Message[]
   ) => Promise<{ response: string; extractedData?: EntityData }>;
   /** Optional callback when AI assistance is requested for a field */
-  onAskAI?: (field: string, currentValue: string, context: EntityData) => Promise<string>;
+  onAskAI?: (
+    field: string,
+    currentValue: string,
+    context: EntityData
+  ) => Promise<string>;
   /** Enable auto-save to localStorage */
   autoSave?: boolean;
   /** LocalStorage key for auto-save (default: 'dual-mode-editor-draft') */
@@ -92,11 +100,19 @@ export function DualModeEditor({
   autoSave = true,
   storageKey = 'dual-mode-editor-draft',
 }: DualModeEditorProps) {
-  const [activeMode, setActiveMode] = React.useState<'chat' | 'edit'>(initialMode);
+  const [activeMode, setActiveMode] = React.useState<'chat' | 'edit'>(
+    initialMode
+  );
   const [data, setData] = React.useState<EntityData>(initialData as EntityData);
-  const [conversationHistory, setConversationHistory] = React.useState<Message[]>([]);
-  const [isAILoading, setIsAILoading] = React.useState<Record<string, boolean>>({});
-  const [aiSuggestions, setAISuggestions] = React.useState<Record<string, string>>({});
+  const [conversationHistory, setConversationHistory] = React.useState<
+    Message[]
+  >([]);
+  const [isAILoading, setIsAILoading] = React.useState<Record<string, boolean>>(
+    {}
+  );
+  const [aiSuggestions, setAISuggestions] = React.useState<
+    Record<string, string>
+  >({});
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null);
 
@@ -152,7 +168,10 @@ export function DualModeEditor({
         conversationHistory,
         timestamp: new Date().toISOString(),
       };
-      localStorage.setItem(`${storageKey}-${entityType}`, JSON.stringify(draft));
+      localStorage.setItem(
+        `${storageKey}-${entityType}`,
+        JSON.stringify(draft)
+      );
       setLastSaved(new Date());
     }
   }, [data, conversationHistory, autoSave, storageKey, entityType]);
@@ -174,7 +193,7 @@ export function DualModeEditor({
 
     // Clear error for this field
     if (errors[field]) {
-      setErrors((prev) => {
+      setErrors(prev => {
         const next = { ...prev };
         delete next[field];
         return next;
@@ -183,7 +202,7 @@ export function DualModeEditor({
 
     // Clear AI suggestion when user edits
     if (aiSuggestions[field]) {
-      setAISuggestions((prev) => {
+      setAISuggestions(prev => {
         const next = { ...prev };
         delete next[field];
         return next;
@@ -197,21 +216,21 @@ export function DualModeEditor({
   const handleAskAI = async (field: string) => {
     if (!onAskAI) return;
 
-    setIsAILoading((prev) => ({ ...prev, [field]: true }));
+    setIsAILoading(prev => ({ ...prev, [field]: true }));
 
     try {
       const currentValue = (data[field] as string) || '';
       const suggestion = await onAskAI(field, currentValue, data);
 
-      setAISuggestions((prev) => ({ ...prev, [field]: suggestion }));
+      setAISuggestions(prev => ({ ...prev, [field]: suggestion }));
     } catch (error) {
       console.error('AI assistance failed:', error);
-      setAISuggestions((prev) => ({
+      setAISuggestions(prev => ({
         ...prev,
         [field]: 'Sorry, I could not generate a suggestion. Please try again.',
       }));
     } finally {
-      setIsAILoading((prev) => ({ ...prev, [field]: false }));
+      setIsAILoading(prev => ({ ...prev, [field]: false }));
     }
   };
 
@@ -222,7 +241,7 @@ export function DualModeEditor({
     const suggestion = aiSuggestions[field];
     if (suggestion) {
       handleFieldChange(field, suggestion);
-      setAISuggestions((prev) => {
+      setAISuggestions(prev => {
         const next = { ...prev };
         delete next[field];
         return next;
@@ -234,10 +253,10 @@ export function DualModeEditor({
    * Ask AI to explain a field
    */
   const handleExplainField = async (field: string) => {
-    const fieldConfig = defaultFieldConfigs.find((f) => f.key === field);
+    const fieldConfig = defaultFieldConfigs.find(f => f.key === field);
     if (!onAskAI) return;
 
-    setIsAILoading((prev) => ({ ...prev, [`explain-${field}`]: true }));
+    setIsAILoading(prev => ({ ...prev, [`explain-${field}`]: true }));
 
     try {
       const explanation = await onAskAI(
@@ -246,11 +265,14 @@ export function DualModeEditor({
         data
       );
 
-      setAISuggestions((prev) => ({ ...prev, [`explain-${field}`]: explanation }));
+      setAISuggestions(prev => ({
+        ...prev,
+        [`explain-${field}`]: explanation,
+      }));
     } catch (error) {
       console.error('Explanation failed:', error);
     } finally {
-      setIsAILoading((prev) => ({ ...prev, [`explain-${field}`]: false }));
+      setIsAILoading(prev => ({ ...prev, [`explain-${field}`]: false }));
     }
   };
 
@@ -260,7 +282,7 @@ export function DualModeEditor({
   const handleSuggestImprovements = async () => {
     if (!onAskAI) return;
 
-    setIsAILoading((prev) => ({ ...prev, improvements: true }));
+    setIsAILoading(prev => ({ ...prev, improvements: true }));
 
     try {
       const currentData = JSON.stringify(data, null, 2);
@@ -270,11 +292,11 @@ export function DualModeEditor({
         data
       );
 
-      setAISuggestions((prev) => ({ ...prev, improvements }));
+      setAISuggestions(prev => ({ ...prev, improvements }));
     } catch (error) {
       console.error('Improvement suggestions failed:', error);
     } finally {
-      setIsAILoading((prev) => ({ ...prev, improvements: false }));
+      setIsAILoading(prev => ({ ...prev, improvements: false }));
     }
   };
 
@@ -284,7 +306,7 @@ export function DualModeEditor({
   const validateData = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    defaultFieldConfigs.forEach((field) => {
+    defaultFieldConfigs.forEach(field => {
       if (field.required && !data[field.key]) {
         newErrors[field.key] = `${field.label} is required`;
       }
@@ -308,35 +330,38 @@ export function DualModeEditor({
   };
 
   return (
-    <Card className="flex h-[80vh] flex-col overflow-hidden">
-      <Tabs value={activeMode} onValueChange={(v) => handleModeChange(v as 'chat' | 'edit')}>
+    <Card className='flex h-[80vh] flex-col overflow-hidden'>
+      <Tabs
+        value={activeMode}
+        onValueChange={v => handleModeChange(v as 'chat' | 'edit')}
+      >
         {/* Header with mode switcher */}
-        <CardHeader className="border-b pb-4">
-          <div className="flex items-center justify-between">
+        <CardHeader className='border-b pb-4'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h2 className="text-xl font-semibold">
+              <h2 className='text-xl font-semibold'>
                 {initialData?.name ? 'Edit' : 'Create'} {entityType}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 {activeMode === 'chat'
                   ? 'Describe what you want in natural language'
                   : 'Edit fields directly or get AI assistance'}
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className='flex items-center gap-4'>
               {autoSave && lastSaved && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Save className="h-3 w-3" />
+                <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                  <Save className='h-3 w-3' />
                   <span>Saved {lastSaved.toLocaleTimeString()}</span>
                 </div>
               )}
-              <TabsList className="grid w-[240px] grid-cols-2">
-                <TabsTrigger value="chat" className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
+              <TabsList className='grid w-[240px] grid-cols-2'>
+                <TabsTrigger value='chat' className='flex items-center gap-2'>
+                  <MessageSquare className='h-4 w-4' />
                   Chat
                 </TabsTrigger>
-                <TabsTrigger value="edit" className="flex items-center gap-2">
-                  <Edit3 className="h-4 w-4" />
+                <TabsTrigger value='edit' className='flex items-center gap-2'>
+                  <Edit3 className='h-4 w-4' />
                   Edit
                 </TabsTrigger>
               </TabsList>
@@ -345,7 +370,7 @@ export function DualModeEditor({
         </CardHeader>
 
         {/* Chat Mode */}
-        <TabsContent value="chat" className="m-0 h-full">
+        <TabsContent value='chat' className='m-0 h-full'>
           <ConversationalWizard
             entityType={entityType as any}
             onComplete={handleSave}
@@ -356,14 +381,14 @@ export function DualModeEditor({
         </TabsContent>
 
         {/* Edit Mode */}
-        <TabsContent value="edit" className="m-0 h-full overflow-hidden">
-          <div className="flex h-full flex-col">
+        <TabsContent value='edit' className='m-0 h-full overflow-hidden'>
+          <div className='flex h-full flex-col'>
             {/* AI Improvements Panel */}
             {aiSuggestions.improvements && (
-              <div className="border-b bg-muted/50 px-6 py-3">
+              <div className='border-b bg-muted/50 px-6 py-3'>
                 <Alert>
-                  <Lightbulb className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
+                  <Lightbulb className='h-4 w-4' />
+                  <AlertDescription className='text-sm'>
                     {aiSuggestions.improvements}
                   </AlertDescription>
                 </Alert>
@@ -371,41 +396,47 @@ export function DualModeEditor({
             )}
 
             {/* Form Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="mx-auto max-w-3xl space-y-6">
+            <div className='flex-1 overflow-y-auto px-6 py-4'>
+              <div className='mx-auto max-w-3xl space-y-6'>
                 {/* AI Assistance Info */}
                 <Alert>
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className='h-4 w-4' />
                   <AlertDescription>
-                    Click the AI button next to any field to get suggestions or explanations.
+                    Click the AI button next to any field to get suggestions or
+                    explanations.
                   </AlertDescription>
                 </Alert>
 
                 {/* Dynamic Form Fields */}
-                {defaultFieldConfigs.map((field) => (
-                  <div key={field.key} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor={field.key} className={cn(field.required && 'required')}>
+                {defaultFieldConfigs.map(field => (
+                  <div key={field.key} className='space-y-2'>
+                    <div className='flex items-center justify-between'>
+                      <Label
+                        htmlFor={field.key}
+                        className={cn(field.required && 'required')}
+                      >
                         {field.label}
-                        {field.required && <span className="ml-1 text-destructive">*</span>}
+                        {field.required && (
+                          <span className='ml-1 text-destructive'>*</span>
+                        )}
                       </Label>
-                      <div className="flex gap-2">
+                      <div className='flex gap-2'>
                         {onAskAI && (
                           <>
                             <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
+                              type='button'
+                              variant='ghost'
+                              size='sm'
                               onClick={() => handleExplainField(field.key)}
                               disabled={isAILoading[`explain-${field.key}`]}
-                              title="Explain this field"
+                              title='Explain this field'
                             >
-                              <HelpCircle className="h-4 w-4" />
+                              <HelpCircle className='h-4 w-4' />
                             </Button>
                             <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
+                              type='button'
+                              variant='outline'
+                              size='sm'
                               onClick={() => handleAskAI(field.key)}
                               disabled={isAILoading[field.key]}
                             >
@@ -413,7 +444,7 @@ export function DualModeEditor({
                                 <>Loading...</>
                               ) : (
                                 <>
-                                  <Sparkles className="mr-1 h-3 w-3" />
+                                  <Sparkles className='mr-1 h-3 w-3' />
                                   Ask AI
                                 </>
                               )}
@@ -425,9 +456,9 @@ export function DualModeEditor({
 
                     {/* Explanation */}
                     {aiSuggestions[`explain-${field.key}`] && (
-                      <Alert className="mt-2">
-                        <HelpCircle className="h-4 w-4" />
-                        <AlertDescription className="text-xs">
+                      <Alert className='mt-2'>
+                        <HelpCircle className='h-4 w-4' />
+                        <AlertDescription className='text-xs'>
                           {aiSuggestions[`explain-${field.key}`]}
                         </AlertDescription>
                       </Alert>
@@ -438,9 +469,13 @@ export function DualModeEditor({
                       <Textarea
                         id={field.key}
                         value={(data[field.key] as string) || ''}
-                        onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                        onChange={e =>
+                          handleFieldChange(field.key, e.target.value)
+                        }
                         placeholder={field.placeholder}
-                        className={cn(errors[field.key] && 'border-destructive')}
+                        className={cn(
+                          errors[field.key] && 'border-destructive'
+                        )}
                         rows={4}
                       />
                     ) : (
@@ -448,42 +483,50 @@ export function DualModeEditor({
                         id={field.key}
                         type={field.type}
                         value={(data[field.key] as string) || ''}
-                        onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                        onChange={e =>
+                          handleFieldChange(field.key, e.target.value)
+                        }
                         placeholder={field.placeholder}
-                        className={cn(errors[field.key] && 'border-destructive')}
+                        className={cn(
+                          errors[field.key] && 'border-destructive'
+                        )}
                       />
                     )}
 
                     {/* Help Text */}
                     {field.helpText && (
-                      <p className="text-xs text-muted-foreground">{field.helpText}</p>
+                      <p className='text-xs text-muted-foreground'>
+                        {field.helpText}
+                      </p>
                     )}
 
                     {/* Error */}
                     {errors[field.key] && (
-                      <p className="flex items-center gap-1 text-xs text-destructive">
-                        <AlertCircle className="h-3 w-3" />
+                      <p className='flex items-center gap-1 text-xs text-destructive'>
+                        <AlertCircle className='h-3 w-3' />
                         {errors[field.key]}
                       </p>
                     )}
 
                     {/* AI Suggestion */}
                     {aiSuggestions[field.key] && (
-                      <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="mb-1 flex items-center gap-2">
-                              <Sparkles className="h-3 w-3 text-primary" />
-                              <span className="text-xs font-medium text-primary">
+                      <div className='mt-2 rounded-md border border-primary/20 bg-primary/5 p-3'>
+                        <div className='flex items-start justify-between gap-2'>
+                          <div className='flex-1'>
+                            <div className='mb-1 flex items-center gap-2'>
+                              <Sparkles className='h-3 w-3 text-primary' />
+                              <span className='text-xs font-medium text-primary'>
                                 AI Suggestion
                               </span>
                             </div>
-                            <p className="text-sm">{aiSuggestions[field.key]}</p>
+                            <p className='text-sm'>
+                              {aiSuggestions[field.key]}
+                            </p>
                           </div>
                           <Button
-                            type="button"
-                            variant="default"
-                            size="sm"
+                            type='button'
+                            variant='default'
+                            size='sm'
                             onClick={() => handleApplySuggestion(field.key)}
                           >
                             Apply
@@ -497,19 +540,20 @@ export function DualModeEditor({
                 {/* Additional Dynamic Fields */}
                 {Object.keys(data)
                   .filter(
-                    (key) =>
-                      !defaultFieldConfigs.find((f) => f.key === key) &&
+                    key =>
+                      !defaultFieldConfigs.find(f => f.key === key) &&
                       typeof data[key] === 'string'
                   )
-                  .map((key) => (
-                    <div key={key} className="space-y-2">
+                  .map(key => (
+                    <div key={key} className='space-y-2'>
                       <Label htmlFor={key}>
-                        {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                        {key.charAt(0).toUpperCase() +
+                          key.slice(1).replace(/([A-Z])/g, ' $1')}
                       </Label>
                       <Input
                         id={key}
                         value={(data[key] as string) || ''}
-                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        onChange={e => handleFieldChange(key, e.target.value)}
                       />
                     </div>
                   ))}
@@ -517,13 +561,13 @@ export function DualModeEditor({
             </div>
 
             {/* Footer Actions */}
-            <div className="border-t px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2">
+            <div className='border-t px-6 py-4'>
+              <div className='flex items-center justify-between'>
+                <div className='flex gap-2'>
                   {onAskAI && (
                     <Button
-                      type="button"
-                      variant="outline"
+                      type='button'
+                      variant='outline'
                       onClick={handleSuggestImprovements}
                       disabled={isAILoading.improvements}
                     >
@@ -531,23 +575,23 @@ export function DualModeEditor({
                         <>Analyzing...</>
                       ) : (
                         <>
-                          <Lightbulb className="mr-2 h-4 w-4" />
+                          <Lightbulb className='mr-2 h-4 w-4' />
                           Suggest Improvements
                         </>
                       )}
                     </Button>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className='flex gap-2'>
                   <Button
-                    type="button"
-                    variant="outline"
+                    type='button'
+                    variant='outline'
                     onClick={() => handleModeChange('chat')}
                   >
                     Switch to Chat
                   </Button>
-                  <Button type="button" onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" />
+                  <Button type='button' onClick={handleSave}>
+                    <Save className='mr-2 h-4 w-4' />
                     Save {entityType}
                   </Button>
                 </div>

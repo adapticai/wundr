@@ -1,11 +1,14 @@
 # Skeleton Loading Components
 
-Comprehensive skeleton loading components for Phase 3 Task 3.2.2, providing realistic loading states that match the actual component layouts.
+Comprehensive skeleton loading components for Phase 3 Task 3.2.2, providing realistic loading states
+that match the actual component layouts.
 
 ## Components
 
 ### DashboardSkeleton
-Full-page skeleton for the dashboard view, including workspace cards, recent activity, quick stats, and quick actions.
+
+Full-page skeleton for the dashboard view, including workspace cards, recent activity, quick stats,
+and quick actions.
 
 ```tsx
 import { DashboardSkeleton } from '@/components/skeletons';
@@ -20,7 +23,9 @@ export default function DashboardPage() {
 ```
 
 ### ChannelListSkeleton
-Sidebar skeleton for channel navigation, including starred channels, regular channels, and direct messages.
+
+Sidebar skeleton for channel navigation, including starred channels, regular channels, and direct
+messages.
 
 ```tsx
 import { ChannelListSkeleton } from '@/components/skeletons';
@@ -29,7 +34,7 @@ export function Sidebar() {
   const { channels, isLoading } = useChannels();
 
   if (isLoading) {
-    return <ChannelListSkeleton className="w-64" />;
+    return <ChannelListSkeleton className='w-64' />;
   }
 
   return <ChannelList channels={channels} />;
@@ -37,6 +42,7 @@ export function Sidebar() {
 ```
 
 ### MessageListSkeleton
+
 Chat message list skeleton with configurable message count and alternating message styles.
 
 ```tsx
@@ -59,6 +65,7 @@ export function ChatView() {
 ```
 
 ### TableSkeleton
+
 Generic table skeleton with customizable columns, rows, filters, and pagination.
 
 ```tsx
@@ -145,7 +152,7 @@ export function ChatMessages() {
 All skeleton components accept a `className` prop for custom styling:
 
 ```tsx
-<DashboardSkeleton className="custom-padding custom-background" />
+<DashboardSkeleton className='custom-padding custom-background' />
 ```
 
 ## Implementation Details

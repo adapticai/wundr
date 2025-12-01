@@ -12,7 +12,11 @@
 import { MemoryProcessingQueue } from './memory-queue';
 import { RedisProcessingQueue } from './redis-queue';
 
-import type { RedisQueueConfig, MemoryQueueConfig, ProcessorRegistry } from './types';
+import type {
+  RedisQueueConfig,
+  MemoryQueueConfig,
+  ProcessorRegistry,
+} from './types';
 
 export {
   // Processing types
@@ -53,10 +57,7 @@ export {
 } from './types';
 
 // Processing Queue Interface
-export {
-  ProcessingQueue,
-  BaseProcessingQueue,
-} from './processing-queue';
+export { ProcessingQueue, BaseProcessingQueue } from './processing-queue';
 
 // Redis Queue Implementation
 export {
@@ -141,12 +142,17 @@ export interface QueueFactoryOptions {
  * });
  * ```
  */
-export function createQueue(options: QueueFactoryOptions): RedisProcessingQueue | MemoryProcessingQueue {
+export function createQueue(
+  options: QueueFactoryOptions
+): RedisProcessingQueue | MemoryProcessingQueue {
   switch (options.type) {
     case 'redis':
       return new RedisProcessingQueue(options.redis, options.processorRegistry);
     case 'memory':
-      return new MemoryProcessingQueue(options.memory, options.processorRegistry);
+      return new MemoryProcessingQueue(
+        options.memory,
+        options.processorRegistry
+      );
     default:
       throw new Error(`Unknown queue type: ${options.type}`);
   }
@@ -176,7 +182,7 @@ export function createQueue(options: QueueFactoryOptions): RedisProcessingQueue 
  * ```
  */
 export function createQueueFromEnv(
-  processorRegistry?: ProcessorRegistry,
+  processorRegistry?: ProcessorRegistry
 ): RedisProcessingQueue | MemoryProcessingQueue {
   const queueType = (process.env.QUEUE_TYPE ?? 'memory') as QueueType;
 
@@ -194,7 +200,7 @@ export function createQueueFromEnv(
           concurrency: parseInt(process.env.QUEUE_CONCURRENCY ?? '3', 10),
         },
       },
-      processorRegistry,
+      processorRegistry
     );
   }
 
@@ -204,6 +210,6 @@ export function createQueueFromEnv(
         concurrency: parseInt(process.env.QUEUE_CONCURRENCY ?? '2', 10),
       },
     },
-    processorRegistry,
+    processorRegistry
   );
 }

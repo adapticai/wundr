@@ -2,9 +2,13 @@
 
 ## Executive Summary
 
-This document provides comprehensive best practices for using git worktrees in automated multi-agent scenarios, based on research conducted in 2024 and analysis of the Wundr codebase. Git worktrees enable true parallel execution by providing isolated filesystem contexts for concurrent agent operations.
+This document provides comprehensive best practices for using git worktrees in automated multi-agent
+scenarios, based on research conducted in 2024 and analysis of the Wundr codebase. Git worktrees
+enable true parallel execution by providing isolated filesystem contexts for concurrent agent
+operations.
 
 **Key Findings:**
+
 - Worktrees have minimal performance overhead when properly configured
 - Cleanup automation is critical for long-running agent systems
 - Filesystem choice significantly impacts performance in multi-agent scenarios
@@ -32,11 +36,13 @@ This document provides comprehensive best practices for using git worktrees in a
 ### 1.1 Core Performance Characteristics
 
 **Shared Repository Architecture:**
+
 - All worktrees share the same `.git` directory containing objects and references
 - History is NOT duplicated, so additional worktrees consume minimal storage
 - Each worktree only adds working directory files, not repository metadata
 
 **Performance Metrics (from 2024 research):**
+
 ```
 Storage Overhead: ~5-10% per worktree (working files only)
 Memory Impact: Minimal (shared object database)
@@ -47,13 +53,16 @@ Status Checks: Potential cache eviction in concurrent scenarios
 ### 1.2 Known Performance Issues and Mitigations
 
 #### Cache Metadata Eviction
+
 **Problem:** Running `git status` in one worktree evicts cached metadata about other worktrees.
 
 **Impact:**
+
 - Slower `git status` when working across multiple worktrees simultaneously
 - More pronounced with 10+ concurrent worktrees
 
 **Mitigation:**
+
 ```bash
 # Enable fsmonitor to reduce stat() calls
 git config core.fsmonitor true
@@ -64,14 +73,18 @@ git config --worktree status.showUntrackedFiles no
 ```
 
 #### Git Fetch Performance (Pre-Git 2.37)
+
 **Problem:** `git fetch` was mysteriously slower proportionate to the number of worktrees.
 
 **Solution:**
+
 - Upgrade to Git 2.37+ (fixed in June 2022)
 - Verify version: `git --version` should show 2.37.0 or higher
 
 #### Large Working Tree Optimization (Git 2.5+)
+
 **Features Available:**
+
 ```bash
 # Enable untracked cache (speeds up git status significantly)
 git config core.untrackedCache true
@@ -87,6 +100,7 @@ git config checkout.thresholdForParallelism 100
 ### 1.3 Performance Best Practices
 
 **Optimal Configuration for Multi-Agent Scenarios:**
+
 ```bash
 #!/bin/bash
 # Apply these settings to main repository before creating worktrees
@@ -112,6 +126,7 @@ git config advice.statusHints false
 ```
 
 **Agent Worktree Creation Pattern:**
+
 ```bash
 # Create worktree with optimal settings
 create_agent_worktree() {
@@ -141,20 +156,23 @@ create_agent_worktree() {
 ### 1.4 Scalability Limits
 
 **Tested Limits (2024 research):**
+
 - **1-5 worktrees:** No noticeable performance impact
 - **6-20 worktrees:** Minimal impact (~5-10% slower status checks)
 - **21-50 worktrees:** Moderate impact (~15-25% slower operations)
 - **51+ worktrees:** Significant impact, consider alternative architectures
 
 **Recommended Maximums:**
+
 ```
 Single Machine: 20 concurrent worktrees
 Network Storage: 10 concurrent worktrees
 CI/CD Runners: 5 concurrent worktrees per job
 ```
 
-**When to Scale Horizontally Instead:**
-If your multi-agent system requires more than 20 concurrent worktrees, consider:
+**When to Scale Horizontally Instead:** If your multi-agent system requires more than 20 concurrent
+worktrees, consider:
+
 - Multiple repository clones on different machines
 - Distributed agent coordination with separate repos
 - Ephemeral containers with full clones
@@ -166,25 +184,25 @@ If your multi-agent system requires more than 20 concurrent worktrees, consider:
 
 ### 2.1 Filesystem Performance Characteristics
 
-**Recommended Filesystems:**
-| Filesystem | Performance | Notes | Multi-Agent Suitability |
-|------------|-------------|-------|-------------------------|
-| **APFS** (macOS) | Excellent | Native cloning support, fast metadata | ⭐⭐⭐⭐⭐ Ideal |
-| **ext4** (Linux) | Excellent | Mature, well-tested, fast I/O | ⭐⭐⭐⭐⭐ Ideal |
-| **XFS** (Linux) | Excellent | Great for large files and parallel I/O | ⭐⭐⭐⭐⭐ Ideal |
-| **Btrfs** (Linux) | Good | Copy-on-write, snapshots, but slower metadata | ⭐⭐⭐⭐ Good |
-| **NTFS** (Windows) | Moderate | Slower than Linux/macOS options | ⭐⭐⭐ Acceptable |
-| **NFS** (Network) | Poor-Fair | High latency, caching issues | ⭐⭐ Use with caution |
-| **CIFS/SMB** (Network) | Poor | Not recommended for git operations | ⭐ Avoid |
+**Recommended Filesystems:** | Filesystem | Performance | Notes | Multi-Agent Suitability |
+|------------|-------------|-------|-------------------------| | **APFS** (macOS) | Excellent |
+Native cloning support, fast metadata | ⭐⭐⭐⭐⭐ Ideal | | **ext4** (Linux) | Excellent | Mature,
+well-tested, fast I/O | ⭐⭐⭐⭐⭐ Ideal | | **XFS** (Linux) | Excellent | Great for large files and
+parallel I/O | ⭐⭐⭐⭐⭐ Ideal | | **Btrfs** (Linux) | Good | Copy-on-write, snapshots, but slower
+metadata | ⭐⭐⭐⭐ Good | | **NTFS** (Windows) | Moderate | Slower than Linux/macOS options |
+⭐⭐⭐ Acceptable | | **NFS** (Network) | Poor-Fair | High latency, caching issues | ⭐⭐ Use with
+caution | | **CIFS/SMB** (Network) | Poor | Not recommended for git operations | ⭐ Avoid |
 
 ### 2.2 APFS-Specific Considerations (macOS)
 
 **Advantages:**
+
 - Fast directory creation (important for worktree creation)
 - Copy-on-write reduces duplicate file overhead
 - Native time machine integration for backups
 
 **Configuration:**
+
 ```bash
 # Verify APFS
 diskutil info / | grep "File System Personality"
@@ -197,10 +215,12 @@ df -h /Users/iroselli/wundr
 ```
 
 **Known Issues:**
+
 - Cloud-synced folders (iCloud, Dropbox) can corrupt git repositories
 - Solution: **ALWAYS** place worktrees outside cloud-synced directories
 
 **Recommended Directory Structure:**
+
 ```
 /Users/iroselli/wundr/              # Main repo (can be in cloud sync)
 /Users/iroselli/worktrees/          # Worktrees (MUST be outside cloud sync)
@@ -214,6 +234,7 @@ df -h /Users/iroselli/wundr
 **WARNING:** NFS has significant performance implications for git operations.
 
 **Performance Issues:**
+
 - High latency on metadata operations (git status is slow)
 - File locking can be unreliable
 - Stat() calls are expensive over network
@@ -240,6 +261,7 @@ server:/export/worktrees /mnt/worktrees nfs \
 ```
 
 **NFS Best Practices:**
+
 ```bash
 # 1. Keep .git directory on LOCAL filesystem
 # 2. Only place working directories on NFS
@@ -259,6 +281,7 @@ mkdir -p $TMPDIR
 ```
 
 **When to Avoid NFS:**
+
 - Real-time agent coordination (latency too high)
 - High-frequency git operations (status, add, commit)
 - CI/CD pipelines (use local storage instead)
@@ -266,6 +289,7 @@ mkdir -p $TMPDIR
 ### 2.4 Filesystem Space Management
 
 **Calculate Space Requirements:**
+
 ```bash
 #!/bin/bash
 # Estimate space needed for N worktrees
@@ -282,6 +306,7 @@ echo "  = $REPO_SIZE + ($NUM_WORKTREES * $WORKING_TREE_SIZE)"
 ```
 
 **Monitoring Disk Usage:**
+
 ```bash
 # Monitor worktree disk usage
 worktree_disk_usage() {
@@ -299,6 +324,7 @@ worktree_disk_usage() {
 ### 2.5 Inode Considerations
 
 **Linux Systems:**
+
 ```bash
 # Check inode usage (worktrees create many files)
 df -i /Users/iroselli/worktrees
@@ -314,6 +340,7 @@ inode_usage() {
 ```
 
 **macOS (APFS):**
+
 - APFS does not have fixed inode limits
 - Inodes allocated dynamically
 - No special configuration needed
@@ -325,6 +352,7 @@ inode_usage() {
 ### 3.1 Manual Cleanup Commands
 
 **Basic Cleanup:**
+
 ```bash
 # Remove a specific worktree
 git worktree remove /Users/iroselli/worktrees/agent-coder-123
@@ -341,6 +369,7 @@ git worktree list
 ```
 
 **Force Cleanup (when worktree directory is manually deleted):**
+
 ```bash
 # Error: fatal: 'remove' cannot be used on locked working tree
 # Solution:
@@ -356,6 +385,7 @@ git worktree prune
 **Scenario:** Agent crashes or times out, leaving orphaned worktree.
 
 **Detection Script:**
+
 ```bash
 #!/bin/bash
 # detect-stale-worktrees.sh
@@ -407,6 +437,7 @@ done
 ```
 
 **Automated Cleanup Script:**
+
 ```bash
 #!/bin/bash
 # cleanup-stale-worktrees.sh
@@ -505,6 +536,7 @@ fi
 ```
 
 **Schedule Automated Cleanup:**
+
 ```bash
 # Add to crontab (every 6 hours)
 # 0 */6 * * * cd /Users/iroselli/wundr && /path/to/cleanup-stale-worktrees.sh --max-age 24
@@ -516,6 +548,7 @@ fi
 ### 3.3 Git GC Integration
 
 **Automatic Cleanup via Git GC:**
+
 ```bash
 # Git gc automatically calls git worktree prune
 # Default: prune worktrees not accessed in 3 months
@@ -533,6 +566,7 @@ git gc --aggressive --prune=now
 ```
 
 **Production-Safe GC Configuration:**
+
 ```bash
 # Conservative settings for multi-agent scenarios
 git config gc.auto 1000                        # Run gc after 1000 loose objects
@@ -596,6 +630,7 @@ echo "   Freed space: $(df -h /Users/iroselli/worktrees | tail -1 | awk '{print 
 ### 3.5 Graceful Agent Shutdown with Cleanup
 
 **Agent Wrapper Script:**
+
 ```bash
 #!/bin/bash
 # agent-wrapper.sh
@@ -670,6 +705,7 @@ npx claude-flow sparc run "${AGENT_TYPE}" "${TASK_ID}"
 ### 4.2 Preventing Branch Conflicts
 
 **Problem:**
+
 ```bash
 # ❌ ERROR: Not allowed
 git worktree add ../worktree-1 -b feature-auth
@@ -678,6 +714,7 @@ git worktree add ../worktree-2 -b feature-auth
 ```
 
 **Solution: Unique Branch Per Worktree**
+
 ```bash
 # ✅ CORRECT: Each worktree gets unique branch
 git worktree add -b "worktree/coder/auth-$(date +%s)" ../worktree-1 master
@@ -685,6 +722,7 @@ git worktree add -b "worktree/tester/auth-$(date +%s)" ../worktree-2 master
 ```
 
 **Agent Naming Convention:**
+
 ```bash
 # Pattern: worktree/{agent-type}/{task-id}-{timestamp}
 create_unique_branch() {
@@ -702,6 +740,7 @@ git worktree add -b "$BRANCH" ../worktree-1 master
 ### 4.3 Detecting File Conflicts Early
 
 **Pre-Merge Conflict Detection:**
+
 ```bash
 #!/bin/bash
 # check-merge-conflicts.sh
@@ -740,6 +779,7 @@ fi
 ```
 
 **Use in Agent Pipeline:**
+
 ```bash
 # Before merging agent changes
 if ! ./check-merge-conflicts.sh "worktree/coder/task-123"; then
@@ -752,6 +792,7 @@ fi
 ### 4.4 Automated Conflict Resolution Strategies
 
 **Strategy 1: Last-Writer-Wins (Simple)**
+
 ```bash
 # Automatically accept changes from agent worktree
 merge_with_theirs() {
@@ -770,6 +811,7 @@ merge_with_theirs() {
 ```
 
 **Strategy 2: Semantic Merge (Advanced)**
+
 ```bash
 # Use semantic merge tools for specific file types
 merge_with_semantic_resolution() {
@@ -806,6 +848,7 @@ merge_with_semantic_resolution() {
 ```
 
 **Strategy 3: Multi-Agent Consensus (Sophisticated)**
+
 ```bash
 # When multiple agents modified same file, take consensus
 merge_with_consensus() {
@@ -833,6 +876,7 @@ merge_with_consensus() {
 ### 4.5 Conflict Resolution Workflows
 
 **Workflow 1: Sequential Integration (Safest)**
+
 ```bash
 #!/bin/bash
 # sequential-merge.sh
@@ -883,6 +927,7 @@ echo "✅ All worktrees merged successfully"
 ```
 
 **Workflow 2: Parallel Integration with Conflict Detection**
+
 ```bash
 #!/bin/bash
 # parallel-merge.sh
@@ -933,6 +978,7 @@ fi
 ### 4.6 Merge Conflict Monitoring
 
 **Track Conflict Frequency:**
+
 ```bash
 #!/bin/bash
 # conflict-metrics.sh
@@ -970,6 +1016,7 @@ log_conflict "worktree/coder/task-123" "$conflicted_files" "$resolution_time"
 ```
 
 **Generate Conflict Report:**
+
 ```bash
 #!/bin/bash
 # conflict-report.sh
@@ -1000,16 +1047,19 @@ jq -s '
 ### 5.1 Single Agent Scenarios
 
 **DON'T use worktrees when:**
+
 - Only one agent is active
 - Agent tasks are strictly sequential
 - No parallelism required
 
 **Why:** Overhead without benefit
+
 - Worktree creation/deletion adds latency
 - Simple branch switching is faster
 - Less complexity in error handling
 
 **Alternative:**
+
 ```bash
 # Simple branch workflow (no worktrees)
 git checkout -b feature-branch
@@ -1023,16 +1073,19 @@ git branch -d feature-branch
 ### 5.2 Read-Only Operations
 
 **DON'T use worktrees when:**
+
 - Agents only read/analyze code
 - No file modifications occur
 - No commits needed
 
 **Why:** Unnecessary isolation
+
 - Read operations don't conflict
 - Shared workspace is sufficient
 - Wastes disk space
 
 **Alternative:**
+
 ```bash
 # All agents read from main workspace
 cd /Users/iroselli/wundr
@@ -1044,16 +1097,19 @@ npx claude-flow sparc run reviewer "review architecture"
 ### 5.3 Completely Isolated Directories
 
 **DON'T use worktrees when:**
+
 - Agent works in `/tmp` or isolated directory
 - No git integration required
 - Ephemeral work (deleted after completion)
 
 **Why:** Git overhead for non-git use case
+
 - Worktrees are for git-tracked work
 - Simpler to use plain directories
 - Faster creation/deletion
 
 **Alternative:**
+
 ```bash
 # Use temporary directory
 WORK_DIR=$(mktemp -d)
@@ -1065,16 +1121,19 @@ rm -rf "$WORK_DIR"
 ### 5.4 Short-Lived Tasks (< 5 minutes)
 
 **DON'T use worktrees when:**
+
 - Task completes in seconds/minutes
 - Overhead of worktree creation exceeds task duration
 - Simple file edits
 
 **Why:** Performance overhead
+
 - Worktree creation: ~1-2 seconds
 - Cleanup: ~1-2 seconds
 - Total overhead: 2-4 seconds per task
 
 **Threshold Analysis:**
+
 ```
 Task Duration    Worktree Overhead    Overhead %    Recommendation
 < 10 seconds     3 seconds           30%+          ❌ Don't use
@@ -1084,6 +1143,7 @@ Task Duration    Worktree Overhead    Overhead %    Recommendation
 ```
 
 **Alternative:**
+
 ```bash
 # Quick edits without worktrees
 git stash  # Save current work
@@ -1099,6 +1159,7 @@ git stash pop  # Restore work
 ### 5.5 Cloud-Synced Directories
 
 **NEVER use worktrees in:**
+
 - iCloud Drive
 - Dropbox
 - Google Drive
@@ -1106,12 +1167,14 @@ git stash pop  # Restore work
 - Any cloud-synced folder
 
 **Why:** Git repository corruption
+
 - Cloud sync interferes with `.git` operations
 - File locks cause conflicts
 - Partial syncs break repository
 - Data loss risk
 
 **Symptoms of corruption:**
+
 ```
 fatal: bad object HEAD
 error: object file .git/objects/... is empty
@@ -1119,6 +1182,7 @@ fatal: loose object ... is corrupt
 ```
 
 **Safe Configuration:**
+
 ```bash
 # ✅ CORRECT
 Main Repo: /Users/iroselli/wundr        # Can be in cloud sync
@@ -1132,16 +1196,19 @@ Worktrees: ~/iCloud/worktrees           # Extremely dangerous
 ### 5.6 Network-Mounted Git Repositories
 
 **DON'T use worktrees when:**
+
 - Main repository is on NFS/CIFS
 - High network latency (>50ms)
 - Unreliable network connection
 
 **Why:** Performance and reliability issues
+
 - Slow metadata operations
 - File locking problems
 - Network failures cause corruption
 
 **Alternative:**
+
 ```bash
 # Clone repository locally, use worktrees on local disk
 git clone user@server:/repo.git /local/path/repo
@@ -1152,28 +1219,34 @@ git worktree add /local/path/worktrees/agent-1 -b branch-1
 ### 5.7 Very Large Repositories (Monorepos)
 
 **Consider alternatives when:**
+
 - Repository > 10GB
 - > 100k files in working tree
 - Worktree creation takes > 30 seconds
 
 **Why:** Resource constraints
+
 - Large disk space per worktree
 - Slow checkout operations
 - Memory pressure
 
 **Alternatives:**
+
 1. **Sparse Checkout:**
+
 ```bash
 git sparse-checkout init --cone
 git sparse-checkout set src/module-A
 ```
 
 2. **Partial Clone:**
+
 ```bash
 git clone --filter=blob:none --depth=1 url repo
 ```
 
 3. **Multiple Smaller Repos:**
+
 ```bash
 # Split monorepo into multiple repos
 # Use git submodules or separate clones
@@ -1182,6 +1255,7 @@ git clone --filter=blob:none --depth=1 url repo
 ### 5.8 Edge Cases and Known Limitations
 
 **1. Submodules:**
+
 ```bash
 # ⚠️  WARNING: Submodules are NOT copied to worktrees
 # Each worktree needs separate submodule init
@@ -1192,6 +1266,7 @@ git submodule update --init --recursive  # Required in each worktree
 ```
 
 **2. Git LFS (Large File Storage):**
+
 ```bash
 # ⚠️  WARNING: LFS files are downloaded per worktree
 # Can consume significant bandwidth and disk space
@@ -1201,6 +1276,7 @@ git clone --reference /path/to/main/repo url worktree-1
 ```
 
 **3. Detached HEAD State:**
+
 ```bash
 # ❌ AVOID: Worktrees with detached HEAD
 git worktree add ../worktree-1 abc123  # Detached HEAD
@@ -1210,6 +1286,7 @@ git worktree add -b temp-branch ../worktree-1 abc123
 ```
 
 **4. Nested Worktrees:**
+
 ```bash
 # ❌ NOT SUPPORTED: Worktree inside another worktree
 cd /worktree-1
@@ -1222,6 +1299,7 @@ git worktree add ./nested  # Error: not allowed
 ```
 
 **5. Cross-Platform Worktrees:**
+
 ```bash
 # ⚠️  WARNING: Moving worktrees between Windows/Linux/macOS breaks paths
 # Absolute paths are stored in .git/worktrees/*/gitdir
@@ -1238,12 +1316,13 @@ git worktree add /new/path/worktree-1 -b branch-1
 ### 6.1 GitHub Actions Integration
 
 **Basic Workflow with Worktrees:**
+
 ```yaml
 name: Multi-Agent Testing with Worktrees
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   parallel-agent-tests:
@@ -1257,7 +1336,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for worktrees
+          fetch-depth: 0 # Full history for worktrees
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -1303,49 +1382,50 @@ jobs:
 ```
 
 **Advanced: Merge Agent Results**
+
 ```yaml
-  merge-agent-results:
-    needs: parallel-agent-tests
-    runs-on: ubuntu-latest
-    if: success()
+merge-agent-results:
+  needs: parallel-agent-tests
+  runs-on: ubuntu-latest
+  if: success()
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Fetch all agent branches
-        run: |
-          git fetch origin "refs/heads/worktree/*:refs/remotes/origin/worktree/*"
+    - name: Fetch all agent branches
+      run: |
+        git fetch origin "refs/heads/worktree/*:refs/remotes/origin/worktree/*"
 
-      - name: Merge agent results
-        run: |
-          AGENT_BRANCHES=$(git branch -r | grep "worktree.*${{ github.run_id }}")
+    - name: Merge agent results
+      run: |
+        AGENT_BRANCHES=$(git branch -r | grep "worktree.*${{ github.run_id }}")
 
-          for branch in $AGENT_BRANCHES; do
-            echo "Merging: $branch"
+        for branch in $AGENT_BRANCHES; do
+          echo "Merging: $branch"
 
-            if git merge --no-ff "$branch" -m "Merge agent results: $branch"; then
-              echo "✅ Merged: $branch"
-            else
-              echo "❌ Conflict in: $branch"
-              # Resolve conflicts automatically
-              git diff --name-only --diff-filter=U | while read file; do
-                git checkout --theirs "$file"
-                git add "$file"
-              done
-              git commit -m "Merge $branch (auto-resolved conflicts)"
-            fi
-          done
+          if git merge --no-ff "$branch" -m "Merge agent results: $branch"; then
+            echo "✅ Merged: $branch"
+          else
+            echo "❌ Conflict in: $branch"
+            # Resolve conflicts automatically
+            git diff --name-only --diff-filter=U | while read file; do
+              git checkout --theirs "$file"
+              git add "$file"
+            done
+            git commit -m "Merge $branch (auto-resolved conflicts)"
+          fi
+        done
 
-      - name: Run integration tests
-        run: npm run test:integration
+    - name: Run integration tests
+      run: npm run test:integration
 
-      - name: Push merged results
-        if: success()
-        run: |
-          git push origin HEAD:${{ github.head_ref }}
+    - name: Push merged results
+      if: success()
+      run: |
+        git push origin HEAD:${{ github.head_ref }}
 ```
 
 ### 6.2 GitLab CI Integration
@@ -1359,7 +1439,7 @@ stages:
   - cleanup
 
 variables:
-  WORKTREE_BASE: "${CI_PROJECT_DIR}/../worktrees"
+  WORKTREE_BASE: '${CI_PROJECT_DIR}/../worktrees'
 
 setup-worktrees:
   stage: setup
@@ -1514,6 +1594,7 @@ def runAgent(agentType) {
 ### 6.4 CI/CD Best Practices
 
 **1. Always Cleanup Worktrees**
+
 ```yaml
 # Use always() or after_script to ensure cleanup
 after_script:
@@ -1522,19 +1603,21 @@ after_script:
 ```
 
 **2. Use Shallow Clones When Possible**
+
 ```yaml
 # Faster checkout, less disk usage
 - uses: actions/checkout@v4
   with:
-    fetch-depth: 1  # Only latest commit
+    fetch-depth: 1 # Only latest commit
 
 # But for worktrees, need more history:
 - uses: actions/checkout@v4
   with:
-    fetch-depth: 0  # Full history (required for worktrees)
+    fetch-depth: 0 # Full history (required for worktrees)
 ```
 
 **3. Cache Dependencies Per Worktree**
+
 ```yaml
 # Don't share node_modules between worktrees
 - name: Cache dependencies
@@ -1546,15 +1629,17 @@ after_script:
 ```
 
 **4. Limit Concurrent Worktrees**
+
 ```yaml
 # Prevent resource exhaustion
 strategy:
   matrix:
     agent: [coder, tester, reviewer]
-  max-parallel: 3  # Limit concurrent jobs
+  max-parallel: 3 # Limit concurrent jobs
 ```
 
 **5. Handle Merge Conflicts Gracefully**
+
 ```yaml
 - name: Merge with conflict handling
   run: |
@@ -1571,6 +1656,7 @@ strategy:
 ### 6.5 Performance Optimization for CI/CD
 
 **1. Reuse Worktrees Across Jobs (Advanced)**
+
 ```yaml
 # Cache worktree directories between runs
 - name: Restore worktree cache
@@ -1593,6 +1679,7 @@ strategy:
 ```
 
 **2. Parallel Git Operations**
+
 ```bash
 # Enable parallel fetch/checkout (Git 2.36+)
 git config --global fetch.parallel 4
@@ -1600,6 +1687,7 @@ git config --global checkout.workers 4
 ```
 
 **3. Minimize Git History**
+
 ```yaml
 # For CI, don't need full history in worktrees
 - name: Create shallow worktree
@@ -1616,6 +1704,7 @@ git config --global checkout.workers 4
 ### 7.1 Monitoring Active Worktrees
 
 **Real-Time Dashboard Script:**
+
 ```bash
 #!/bin/bash
 # worktree-dashboard.sh
@@ -1647,6 +1736,7 @@ git log --oneline --all -5 | sed "s/^/📝 /"
 ```
 
 **Structured Monitoring Data:**
+
 ```bash
 #!/bin/bash
 # collect-worktree-metrics.sh
@@ -1695,6 +1785,7 @@ EOF
 ### 7.2 Debugging Worktree Issues
 
 **Diagnostic Script:**
+
 ```bash
 #!/bin/bash
 # diagnose-worktree.sh
@@ -1842,6 +1933,7 @@ echo "✅ All fixes applied"
 ### 7.3 Logging and Tracing
 
 **Enable Git Tracing for Worktrees:**
+
 ```bash
 # Enable detailed git tracing
 export GIT_TRACE=1
@@ -1856,6 +1948,7 @@ grep -E "performance:|trace:" worktree-trace.log
 ```
 
 **Structured Logging:**
+
 ```bash
 #!/bin/bash
 # log-worktree-operation.sh
@@ -1881,6 +1974,7 @@ log_operation "PRUNE" "N/A" "SUCCESS" "Removed 3 stale references"
 ### 7.4 Performance Profiling
 
 **Benchmark Worktree Operations:**
+
 ```bash
 #!/bin/bash
 # benchmark-worktrees.sh
@@ -1927,6 +2021,7 @@ benchmark "git worktree prune >/dev/null 2>&1"
 ### 7.5 Alert System
 
 **Automated Alerts for Worktree Issues:**
+
 ```bash
 #!/bin/bash
 # worktree-alerts.sh
@@ -2389,22 +2484,27 @@ echo "✅ Competitive workflow complete"
 ## 10. References and Resources
 
 ### Official Documentation
+
 - [Git Worktree Documentation](https://git-scm.com/docs/git-worktree)
 - [Git 2.5 Release Notes (Worktree Introduction)](https://github.blog/open-source/git/git-2-5-including-multiple-worktrees-and-triangular-workflows/)
 
 ### Performance Research (2024)
+
 - [Git Worktree Performance Impact - Stack Overflow](https://stackoverflow.com/questions/71339338/git-worktree-performance-impact)
 - [Parallel Git Checkout Optimization](https://matheustavares.dev/posts/parallel-checkout)
 
 ### Best Practices Guides
+
 - [Git Worktree Best Practices and Tools](https://gist.github.com/ChristopherA/4643b2f5e024578606b9cd5d2e6815cc)
 - [Mastering Git Worktree (2024)](https://mskadu.medium.com/mastering-git-worktree-a-developers-guide-to-multiple-working-directories-c30f834f79a5)
 
 ### Wundr-Specific Documentation
+
 - `/Users/iroselli/wundr/docs/git-worktree-section.md` - Original worktree integration guide
 - `/Users/iroselli/wundr/CLAUDE.md` - SPARC development environment configuration
 
 ### Tools and Utilities
+
 - [gwq - Git Worktree Manager with Fuzzy Finder](https://github.com/d-kuro/gwq)
 - [agenttools/worktree - CLI tool for managing Git worktrees](https://github.com/agenttools/worktree)
 
@@ -2412,7 +2512,8 @@ echo "✅ Competitive workflow complete"
 
 ## Conclusion
 
-Git worktrees provide a robust foundation for multi-agent automation when properly configured and managed. Key takeaways:
+Git worktrees provide a robust foundation for multi-agent automation when properly configured and
+managed. Key takeaways:
 
 1. **Performance:** Minimal overhead with proper configuration (Git 2.37+, optimized settings)
 2. **Cleanup:** Automated cleanup is critical for long-running systems
@@ -2422,12 +2523,14 @@ Git worktrees provide a robust foundation for multi-agent automation when proper
 6. **Monitoring:** Essential for production deployments, prevents resource exhaustion
 
 **Recommended Limits:**
+
 - Maximum concurrent worktrees: 20 per machine
 - Cleanup frequency: Every 6 hours
 - Stale worktree threshold: 24 hours
 - Disk usage alert threshold: 90%
 
 **Next Steps:**
+
 1. Implement automated cleanup scripts
 2. Configure monitoring and alerting
 3. Test with small number of agents (1-5)
@@ -2438,7 +2541,5 @@ For questions or issues, refer to the troubleshooting section or consult the Wun
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-11-21
-**Maintained By:** Wundr Research Team
+**Document Version:** 1.0 **Last Updated:** 2025-11-21 **Maintained By:** Wundr Research Team
 **Status:** Production Ready

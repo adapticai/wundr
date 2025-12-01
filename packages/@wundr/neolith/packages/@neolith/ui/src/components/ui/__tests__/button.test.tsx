@@ -134,7 +134,7 @@ describe('Button', () => {
       render(
         <Button onClick={handleClick} disabled>
           Disabled
-        </Button>,
+        </Button>
       );
 
       const button = screen.getByRole('button');
@@ -179,7 +179,7 @@ describe('Button', () => {
       render(
         <Button aria-label='Close dialog' aria-pressed='true'>
           X
-        </Button>,
+        </Button>
       );
 
       const button = screen.getByRole('button');
@@ -205,7 +205,7 @@ describe('Button', () => {
         <Button>
           <span>Icon</span>
           <span>Text</span>
-        </Button>,
+        </Button>
       );
 
       expect(screen.getByText('Icon')).toBeInTheDocument();

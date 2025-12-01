@@ -27,7 +27,10 @@ import {
   supportsConversion,
 } from '@/lib/validations/processing';
 
-import type { CreateJobInput, JobListInput } from '@/lib/validations/processing';
+import type {
+  CreateJobInput,
+  JobListInput,
+} from '@/lib/validations/processing';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -85,9 +88,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -99,9 +102,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Invalid JSON body',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -111,9 +114,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createProcessingErrorResponse(
           'Invalid request body',
           PROCESSING_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -136,9 +139,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'File not found',
-          PROCESSING_ERROR_CODES.FILE_NOT_FOUND,
+          PROCESSING_ERROR_CODES.FILE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -156,9 +159,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Not a member of this workspace',
-          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -167,9 +170,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           `Processing type '${input.type}' is not supported for file type '${file.mimeType}'`,
-          PROCESSING_ERROR_CODES.UNSUPPORTED_FILE_TYPE,
+          PROCESSING_ERROR_CODES.UNSUPPORTED_FILE_TYPE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -221,16 +224,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         message: 'Processing job created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (_error) {
     // Error handling - details in response
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -257,9 +260,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -272,9 +275,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createProcessingErrorResponse(
           'Invalid query parameters',
           PROCESSING_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -286,22 +289,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       select: { workspaceId: true },
     });
 
-    const accessibleWorkspaceIds = new Set(userWorkspaces.map((w) => w.workspaceId));
+    const accessibleWorkspaceIds = new Set(
+      userWorkspaces.map(w => w.workspaceId)
+    );
 
     // Filter jobs from in-memory store
-    let jobs = Array.from(processingJobs.values()).filter(
-      (job) => accessibleWorkspaceIds.has(job.workspaceId),
+    let jobs = Array.from(processingJobs.values()).filter(job =>
+      accessibleWorkspaceIds.has(job.workspaceId)
     );
 
     // Apply filters
     if (filters.status) {
-      jobs = jobs.filter((job) => job.status === filters.status);
+      jobs = jobs.filter(job => job.status === filters.status);
     }
     if (filters.type) {
-      jobs = jobs.filter((job) => job.type === filters.type);
+      jobs = jobs.filter(job => job.type === filters.type);
     }
     if (filters.fileId) {
-      jobs = jobs.filter((job) => job.fileId === filters.fileId);
+      jobs = jobs.filter(job => job.fileId === filters.fileId);
     }
 
     // Sort jobs
@@ -318,19 +323,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Apply cursor pagination
     let startIndex = 0;
     if (filters.cursor) {
-      const cursorIndex = jobs.findIndex((job) => job.id === filters.cursor);
+      const cursorIndex = jobs.findIndex(job => job.id === filters.cursor);
       if (cursorIndex !== -1) {
         startIndex = cursorIndex + 1;
       }
     }
 
-    const paginatedJobs = jobs.slice(startIndex, startIndex + filters.limit + 1);
+    const paginatedJobs = jobs.slice(
+      startIndex,
+      startIndex + filters.limit + 1
+    );
     const hasMore = paginatedJobs.length > filters.limit;
-    const resultJobs = hasMore ? paginatedJobs.slice(0, filters.limit) : paginatedJobs;
-    const nextCursor = hasMore ? resultJobs[resultJobs.length - 1]?.id ?? null : null;
+    const resultJobs = hasMore
+      ? paginatedJobs.slice(0, filters.limit)
+      : paginatedJobs;
+    const nextCursor = hasMore
+      ? (resultJobs[resultJobs.length - 1]?.id ?? null)
+      : null;
 
     // Transform jobs for response
-    const transformedJobs = resultJobs.map((job) => ({
+    const transformedJobs = resultJobs.map(job => ({
       id: job.id,
       fileId: job.fileId,
       type: job.type,
@@ -356,10 +368,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
-

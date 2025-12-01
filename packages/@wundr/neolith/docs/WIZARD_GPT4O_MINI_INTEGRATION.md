@@ -2,11 +2,14 @@
 
 ## Overview
 
-This document describes the integration of OpenAI's `gpt-4o-mini` model into the Neolith conversational wizard system. The wizards provide LLM-powered conversational interfaces for creating and modifying organizational entities.
+This document describes the integration of OpenAI's `gpt-4o-mini` model into the Neolith
+conversational wizard system. The wizards provide LLM-powered conversational interfaces for creating
+and modifying organizational entities.
 
 ## Implementation Summary
 
 ### Date: 2025-11-30
+
 ### Status: Complete ✅
 
 ## Changes Made
@@ -16,21 +19,25 @@ This document describes the integration of OpenAI's `gpt-4o-mini` model into the
 All wizard API routes now support `gpt-4o-mini` as the default OpenAI model:
 
 #### `/app/api/wizard/chat/route.ts`
+
 - Updated `callOpenAI()` function to use `process.env.OPENAI_MODEL || 'gpt-4o-mini'`
 - Supports conversational entity creation with natural language
 - Implements function calling for structured data extraction
 
 #### `/app/api/wizard/extract/route.ts`
+
 - Updated `extractWithOpenAI()` function to use `process.env.OPENAI_MODEL || 'gpt-4o-mini'`
 - Analyzes conversation history and extracts structured entity data
 - Uses JSON mode for reliable structured output
 
 #### `/app/api/wizard/modify/route.ts`
+
 - Updated `callOpenAI()` function to use `process.env.OPENAI_MODEL || 'gpt-4o-mini'`
 - Processes modification requests for existing entities
 - Generates structured diffs with reasoning
 
 #### `/app/api/creation/conversation/route.ts`
+
 - Updated `callOpenAIStreaming()` function to use `process.env.OPENAI_MODEL || 'gpt-4o-mini'`
 - Provides streaming conversational interface for entity creation
 - Supports real-time AI responses
@@ -40,6 +47,7 @@ All wizard API routes now support `gpt-4o-mini` as the default OpenAI model:
 Added new environment variable `OPENAI_MODEL` for configuring the OpenAI model:
 
 #### `.env.example`
+
 ```bash
 # OpenAI Model (when using OpenAI as provider)
 # Default: gpt-4o-mini for cost-effective conversational wizards
@@ -47,6 +55,7 @@ OPENAI_MODEL=gpt-4o-mini
 ```
 
 #### `.env.production.template`
+
 ```bash
 # OpenAI Model (when using OpenAI as provider)
 # Default: gpt-4o-mini for cost-effective conversational wizards
@@ -56,11 +65,13 @@ OPENAI_MODEL=gpt-4o-mini
 ## Supported Wizards
 
 ### 1. Workspace Creation Wizard
+
 - **Path**: `/components/org-genesis/org-genesis-wizard.tsx`
 - **API**: `/api/workspaces/generate-org`
 - **Features**: Multi-step organization setup with conversational guidance
 
 ### 2. Entity Creation Wizard
+
 - **Component**: `/components/wizard/conversational-wizard.tsx`
 - **API**: `/api/wizard/chat`, `/api/wizard/extract`
 - **Supported Entities**:
@@ -72,6 +83,7 @@ OPENAI_MODEL=gpt-4o-mini
   - Channel (communication space)
 
 ### 3. Entity Modification Wizard
+
 - **Component**: `/components/wizard/entity-modifier.tsx`
 - **API**: `/api/wizard/modify`
 - **Features**: Conversational entity editing with structured diffs
@@ -79,26 +91,31 @@ OPENAI_MODEL=gpt-4o-mini
 ## Wizard Features
 
 ### Context-Aware Suggestions
+
 - LLM analyzes user input and conversation history
 - Provides intelligent suggestions based on context
 - Asks clarifying questions when needed
 
 ### Natural Language Processing
+
 - Understands conversational requests
 - Extracts structured data from natural language
 - Handles ambiguous or incomplete input gracefully
 
 ### Intelligent Form Filling
+
 - Auto-populates form fields from conversation
 - Validates extracted data against schemas
 - Allows manual editing in form view
 
 ### Conversational Guidance
+
 - Guides users through entity creation step-by-step
 - Explains requirements and options
 - Adapts to user's expertise level
 
 ### Help/FAQ Responses
+
 - Answers questions about entity types
 - Provides examples and best practices
 - Suggests related features
@@ -106,11 +123,13 @@ OPENAI_MODEL=gpt-4o-mini
 ## Wizard Architecture
 
 ### State Management
+
 The wizard uses a centralized context for state management:
 
 **Location**: `/contexts/wizard-context.tsx`
 
 **Features**:
+
 - Tracks conversation history
 - Manages extracted data
 - Handles mode switching (chat ↔ form)
@@ -118,6 +137,7 @@ The wizard uses a centralized context for state management:
 - Validates completion status
 
 **State Structure**:
+
 ```typescript
 interface WizardState {
   entityType: 'agent' | 'deployment' | 'channel' | 'workflow' | null;
@@ -134,7 +154,9 @@ interface WizardState {
 ### Hooks
 
 #### `useWizardChat()` - `/hooks/use-wizard-chat.ts`
+
 Manages chat communication with LLM API:
+
 - Sends messages to `/api/wizard/chat`
 - Handles streaming responses
 - Updates extracted data
@@ -142,19 +164,24 @@ Manages chat communication with LLM API:
 - Provides retry and cancel functionality
 
 **Features**:
+
 - Request cancellation (AbortController)
 - Streaming support
 - Error handling
 - Automatic data extraction
 
 #### `useWizardSuggestions()`
+
 Fetches contextual suggestions from `/api/wizard/suggestions`:
+
 - Based on current entity type
 - Considers extracted data
 - Updates as conversation progresses
 
 #### `useWizardValidation()`
+
 Validates extracted data:
+
 - Calls `/api/wizard/validate`
 - Returns validation errors
 - Checks schema compliance
@@ -162,28 +189,36 @@ Validates extracted data:
 ## UI Components
 
 ### Wizard Chat Interface
+
 **Component**: `/components/wizard/chat-container.tsx`
+
 - Message bubbles (user/assistant/system)
 - Auto-scrolling
 - Loading indicators
 - Typing indicators
 
 ### Wizard Input
+
 **Component**: `/components/wizard/chat-input.tsx`
+
 - Text input with send button
 - Keyboard shortcuts (Enter, Shift+Enter)
 - Character counter
 - File attachment support (future)
 
 ### Dual Mode Editor
+
 **Component**: `/components/wizard/dual-mode-editor.tsx`
+
 - Toggle between chat and form views
 - Synchronized data between modes
 - Visual mode indicator
 - Smooth transitions
 
 ### Entity Review Form
+
 **Component**: `/components/wizard/entity-review-form.tsx`
+
 - Dynamic form generation based on entity type
 - Field validation
 - Error display
@@ -226,6 +261,7 @@ DEFAULT_LLM_MODEL=claude-sonnet-4-20250514
 ### Fallback Behavior
 
 If `DEFAULT_LLM_PROVIDER` is not set, the system will:
+
 1. Try Anthropic if `ANTHROPIC_API_KEY` is set
 2. Fall back to OpenAI if `OPENAI_API_KEY` is set
 3. Return error if neither API key is configured
@@ -233,6 +269,7 @@ If `DEFAULT_LLM_PROVIDER` is not set, the system will:
 ## System Prompts
 
 Each entity type has a specialized system prompt that:
+
 - Defines the entity's purpose and characteristics
 - Lists required and optional fields
 - Provides examples and guidelines
@@ -280,6 +317,7 @@ The wizards use structured tool calling for data extraction:
 ## Response Format
 
 ### Chat API Response
+
 ```json
 {
   "message": "Great! Let's create a workspace...",
@@ -294,6 +332,7 @@ The wizards use structured tool calling for data extraction:
 ```
 
 ### Extract API Response
+
 ```json
 {
   "data": {
@@ -310,6 +349,7 @@ The wizards use structured tool calling for data extraction:
 ```
 
 ### Modify API Response
+
 ```json
 {
   "message": "I'll rename the orchestrator for you.",
@@ -350,6 +390,7 @@ The wizards use structured tool calling for data extraction:
 ### Manual Testing
 
 1. Set environment variables:
+
    ```bash
    DEFAULT_LLM_PROVIDER=openai
    OPENAI_API_KEY=your-key
@@ -357,6 +398,7 @@ The wizards use structured tool calling for data extraction:
    ```
 
 2. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -370,6 +412,7 @@ The wizards use structured tool calling for data extraction:
 ### Integration Tests
 
 Test files located in:
+
 - `/apps/web/tests/full-flow-integration.spec.ts`
 - `/apps/web/tests/workflows.spec.ts`
 
@@ -378,6 +421,7 @@ Test files located in:
 To migrate from Claude to GPT-4o-mini:
 
 1. **Update environment**:
+
    ```bash
    DEFAULT_LLM_PROVIDER=openai
    OPENAI_MODEL=gpt-4o-mini
@@ -391,7 +435,8 @@ To migrate from Claude to GPT-4o-mini:
 
 ## Limitations
 
-1. **Function Calling**: gpt-4o-mini supports function calling, but may be less reliable than GPT-4 for complex schemas
+1. **Function Calling**: gpt-4o-mini supports function calling, but may be less reliable than GPT-4
+   for complex schemas
 2. **Context Window**: 128k tokens (same as Claude Sonnet 4)
 3. **Rate Limits**: Standard OpenAI rate limits apply
 
@@ -419,20 +464,25 @@ To migrate from Claude to GPT-4o-mini:
 ### Common Issues
 
 **Issue**: "No LLM API key configured"
+
 - **Solution**: Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
 
 **Issue**: Slow responses
+
 - **Solution**: Switch to `gpt-4o-mini` or enable streaming
 
 **Issue**: Extraction failures
+
 - **Solution**: Check schema definitions, use temperature=0
 
 **Issue**: Invalid JSON in function calls
+
 - **Solution**: Update prompts to be more specific
 
 ### Debug Mode
 
 Enable debug logging:
+
 ```bash
 LOG_LEVEL=debug
 ```
@@ -449,6 +499,7 @@ Check API responses in browser console and server logs.
 ## Support
 
 For issues or questions:
+
 1. Check this documentation
 2. Review component README files
 3. Check API route documentation
@@ -456,6 +507,4 @@ For issues or questions:
 
 ---
 
-**Last Updated**: 2025-11-30
-**Version**: 1.0.0
-**Status**: Production Ready ✅
+**Last Updated**: 2025-11-30 **Version**: 1.0.0 **Status**: Production Ready ✅

@@ -5,9 +5,11 @@ This guide covers the comprehensive authentication test suite for the Neolith we
 ## Test Files
 
 ### Main Test Suite
+
 - **`auth.spec.ts`** - Complete authentication flow tests (600+ lines, 50+ test cases)
 
 ### Test Utilities
+
 - **`fixtures/auth.ts`** - Authentication fixtures, helpers, and mock data
 
 ## Test Coverage
@@ -15,6 +17,7 @@ This guide covers the comprehensive authentication test suite for the Neolith we
 The authentication test suite covers:
 
 ### Login Page (12 tests)
+
 - ✅ Page loads correctly with all elements
 - ✅ OAuth provider buttons with icons
 - ✅ Form validation (empty fields, invalid email)
@@ -25,6 +28,7 @@ The authentication test suite covers:
 - ✅ Error message clearing
 
 ### Register Page (10 tests)
+
 - ✅ Page loads with all required fields
 - ✅ Required field validation
 - ✅ Email format validation
@@ -36,6 +40,7 @@ The authentication test suite covers:
 - ✅ Autocomplete attributes
 
 ### Forgot Password Page (9 tests)
+
 - ✅ Page loads correctly
 - ✅ Email field validation
 - ✅ Email format validation
@@ -46,6 +51,7 @@ The authentication test suite covers:
 - ✅ Autofocus on email input
 
 ### Reset Password Page (8 tests)
+
 - ✅ Page loads with token
 - ✅ Error when no token provided
 - ✅ Password strength indicator
@@ -56,9 +62,11 @@ The authentication test suite covers:
 - ✅ Navigation to login
 
 ### Logout Functionality (1 test)
+
 - ✅ Logout redirects to login page
 
 ### Protected Routes (6 tests)
+
 - ✅ Dashboard requires authentication
 - ✅ Workspace routes require authentication
 - ✅ Settings require authentication
@@ -67,15 +75,18 @@ The authentication test suite covers:
 - ✅ Workflows require authentication
 
 ### OAuth Flows (3 tests)
+
 - ✅ GitHub OAuth initialization
 - ✅ Google OAuth initialization
 - ✅ OAuth button disabled states
 
 ### Session Management (2 tests)
+
 - ✅ Session persistence across refreshes
 - ✅ Expired session handling
 
 ### Accessibility & UX (5 tests)
+
 - ✅ Keyboard navigation
 - ✅ Enter key form submission
 - ✅ ARIA labels and roles
@@ -83,10 +94,12 @@ The authentication test suite covers:
 - ✅ Focus management
 
 ### Error Handling (2 tests)
+
 - ✅ Network error handling
 - ✅ API error messages
 
 ### Mobile Responsiveness (3 tests)
+
 - ✅ Mobile layout rendering
 - ✅ Touch target sizes
 - ✅ No horizontal scroll
@@ -94,11 +107,13 @@ The authentication test suite covers:
 ## Running the Tests
 
 ### Run all auth tests
+
 ```bash
 npx playwright test auth.spec.ts
 ```
 
 ### Run specific test suite
+
 ```bash
 npx playwright test auth.spec.ts -g "Login Page"
 npx playwright test auth.spec.ts -g "Register Page"
@@ -106,16 +121,19 @@ npx playwright test auth.spec.ts -g "Protected Routes"
 ```
 
 ### Run in headed mode (see browser)
+
 ```bash
 npx playwright test auth.spec.ts --headed
 ```
 
 ### Run in debug mode
+
 ```bash
 npx playwright test auth.spec.ts --debug
 ```
 
 ### Run with specific browser
+
 ```bash
 npx playwright test auth.spec.ts --project=chromium
 npx playwright test auth.spec.ts --project=firefox
@@ -123,6 +141,7 @@ npx playwright test auth.spec.ts --project=webkit
 ```
 
 ### Generate HTML report
+
 ```bash
 npx playwright test auth.spec.ts --reporter=html
 npx playwright show-report
@@ -216,7 +235,7 @@ TEST_USER = {
   password: 'TestPassword123!',
   name: 'Test User',
   role: 'MEMBER',
-}
+};
 
 // Admin user
 ADMIN_USER = {
@@ -224,7 +243,7 @@ ADMIN_USER = {
   password: 'AdminPassword123!',
   name: 'Admin User',
   role: 'ADMIN',
-}
+};
 
 // Orchestrator
 VP_USER = {
@@ -234,7 +253,7 @@ VP_USER = {
   role: 'MEMBER',
   isVP: true,
   vpId: 'test-orchestrator-123',
-}
+};
 ```
 
 ## Configuration
@@ -282,6 +301,7 @@ export default defineConfig({
 ## Best Practices
 
 ### 1. Use Fixtures for Authentication
+
 ```typescript
 // ✅ Good - Uses fixture
 test('protected route', async ({ authenticatedPage }) => {
@@ -297,6 +317,7 @@ test('protected route', async ({ page }) => {
 ```
 
 ### 2. Clear Cookies Between Tests
+
 ```typescript
 test.beforeEach(async ({ page }) => {
   // Clear any existing session
@@ -305,6 +326,7 @@ test.beforeEach(async ({ page }) => {
 ```
 
 ### 3. Wait for Navigation
+
 ```typescript
 // ✅ Good - Wait for URL
 await page.getByRole('button', { name: /sign in/i }).click();
@@ -316,6 +338,7 @@ await page.getByRole('button', { name: /sign in/i }).click();
 ```
 
 ### 4. Use Role Selectors
+
 ```typescript
 // ✅ Good - Semantic selectors
 await page.getByRole('button', { name: /sign in/i }).click();
@@ -329,13 +352,17 @@ await page.fill('.email-input', 'test@example.com');
 ## Troubleshooting
 
 ### Tests fail with "No such file or directory"
+
 Make sure the dev server is running:
+
 ```bash
 npm run dev
 ```
 
 ### Tests timeout
+
 Increase timeout in test or globally:
+
 ```typescript
 test('slow test', async ({ page }) => {
   test.setTimeout(60000); // 60 seconds
@@ -344,13 +371,17 @@ test('slow test', async ({ page }) => {
 ```
 
 ### OAuth tests fail in CI
+
 OAuth tests may need to be skipped or mocked in CI:
+
 ```typescript
 test.skip(process.env.CI, 'OAuth test - requires real credentials');
 ```
 
 ### Session not persisting
+
 Check that cookies are being set correctly:
+
 ```typescript
 const cookies = await page.context().cookies();
 console.log('Current cookies:', cookies);
@@ -426,6 +457,7 @@ jobs:
 ## Support
 
 For issues or questions about the auth tests:
+
 1. Check this README
 2. Review existing test cases in `auth.spec.ts`
 3. Check Playwright documentation

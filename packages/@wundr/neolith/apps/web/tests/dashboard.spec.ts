@@ -25,7 +25,9 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
 // Use authenticated state for all tests
 // To generate auth state, run: npx playwright test auth.setup.ts --project=setup
-test.use({ storageState: path.join(__dirname, '../playwright/.auth/user.json') });
+test.use({
+  storageState: path.join(__dirname, '../playwright/.auth/user.json'),
+});
 
 test.describe('Dashboard Page - Full Test Suite', () => {
   test.beforeEach(async ({ page }) => {
@@ -40,7 +42,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     test('should load dashboard when authenticated', async ({ page }) => {
       // Should already be on dashboard due to beforeEach
       await expect(page).toHaveURL(/\/.*\/dashboard/);
-      await expect(page.locator('h1:has-text("Welcome")')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('h1:has-text("Welcome")')).toBeVisible({
+        timeout: 5000,
+      });
     });
 
     test('should display authenticated user information', async ({ page }) => {
@@ -58,7 +62,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // Check for NextAuth session cookie
       const cookies = await page.context().cookies();
       const hasSessionCookie = cookies.some(
-        (cookie) =>
+        cookie =>
           cookie.name.includes('next-auth') ||
           cookie.name.includes('session') ||
           cookie.name.includes('authjs')
@@ -81,13 +85,19 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   });
 
   test.describe('Page Load & Routing', () => {
-    test('should redirect root URL to workspace dashboard', async ({ page }) => {
+    test('should redirect root URL to workspace dashboard', async ({
+      page,
+    }) => {
       await page.goto(BASE_URL);
       await expect(page).toHaveURL(/\/.*\/dashboard/);
-      await expect(page.locator('h1:has-text("Welcome")')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('h1:has-text("Welcome")')).toBeVisible({
+        timeout: 5000,
+      });
     });
 
-    test('should preserve workspace ID in URL across navigation', async ({ page }) => {
+    test('should preserve workspace ID in URL across navigation', async ({
+      page,
+    }) => {
       const currentUrl = page.url();
       const workspaceId = currentUrl.match(/\/([^\/]+)\/dashboard/)?.[1];
 
@@ -119,7 +129,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should display all four stat items', async ({ page }) => {
-      const statsWidget = page.locator('h3:has-text("Quick Stats")').locator('..');
+      const statsWidget = page
+        .locator('h3:has-text("Quick Stats")')
+        .locator('..');
 
       await expect(statsWidget.locator('text=Team Members')).toBeVisible();
       await expect(statsWidget.locator('text=Channels')).toBeVisible();
@@ -128,7 +140,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should display numeric values for all stats', async ({ page }) => {
-      const statsWidget = page.locator('h3:has-text("Quick Stats")').locator('..');
+      const statsWidget = page
+        .locator('h3:has-text("Quick Stats")')
+        .locator('..');
       const values = statsWidget.locator('.text-2xl.font-bold');
 
       // Should have 4 stat values
@@ -149,20 +163,36 @@ test.describe('Dashboard Page - Full Test Suite', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             data: {
-              members: { total: 0, activeToday: 0, orchestratorCount: 0, humanCount: 0 },
+              members: {
+                total: 0,
+                activeToday: 0,
+                orchestratorCount: 0,
+                humanCount: 0,
+              },
               channels: { total: 0, publicCount: 0, privateCount: 0 },
-              workflows: { total: 0, active: 0, draft: 0, inactive: 0, archived: 0 },
-              messages: { today: 0, week: 0, month: 0, total: 0 }
+              workflows: {
+                total: 0,
+                active: 0,
+                draft: 0,
+                inactive: 0,
+                archived: 0,
+              },
+              messages: { today: 0, week: 0, month: 0, total: 0 },
             },
-            metadata: { timeRange: 'all', generatedAt: new Date().toISOString() }
-          })
+            metadata: {
+              timeRange: 'all',
+              generatedAt: new Date().toISOString(),
+            },
+          }),
         });
       });
 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      const values = await page.locator('.text-2xl.font-bold').allTextContents();
+      const values = await page
+        .locator('.text-2xl.font-bold')
+        .allTextContents();
       values.forEach(value => {
         expect(value.trim()).toBe('0');
       });
@@ -179,7 +209,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
       // Should show skeleton during loading
       // Note: Specific selector depends on DashboardSkeleton implementation
-      const skeleton = page.locator('[class*="skeleton"], [data-testid="dashboard-skeleton"]');
+      const skeleton = page.locator(
+        '[class*="skeleton"], [data-testid="dashboard-skeleton"]'
+      );
       await expect(skeleton).toBeVisible({ timeout: 1000 });
     });
 
@@ -188,7 +220,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
-          body: JSON.stringify({ error: 'Internal server error' })
+          body: JSON.stringify({ error: 'Internal server error' }),
         });
       });
 
@@ -196,17 +228,23 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       // Should show error message
-      await expect(page.locator('text=/Error loading statistics/i')).toBeVisible();
+      await expect(
+        page.locator('text=/Error loading statistics/i')
+      ).toBeVisible();
 
       // Should still show fallback zeros
-      const values = await page.locator('.text-2xl.font-bold').allTextContents();
+      const values = await page
+        .locator('.text-2xl.font-bold')
+        .allTextContents();
       values.forEach(value => {
         expect(value.trim()).toBe('0');
       });
     });
 
     test('should display stats in correct order', async ({ page }) => {
-      const statsWidget = page.locator('h3:has-text("Quick Stats")').locator('..');
+      const statsWidget = page
+        .locator('h3:has-text("Quick Stats")')
+        .locator('..');
       const labels = statsWidget.locator('.text-sm.text-muted-foreground');
 
       const labelTexts = await labels.allTextContents();
@@ -214,142 +252,195 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         'Team Members',
         'Channels',
         'Workflows',
-        'Orchestrators'
+        'Orchestrators',
       ]);
     });
   });
 
   test.describe('Recent Activity Widget', () => {
     test('should display Recent Activity heading', async ({ page }) => {
-      await expect(page.locator('h3:has-text("Recent Activity")')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Recent Activity")')
+      ).toBeVisible();
     });
 
     test('should show activity items when data exists', async ({ page }) => {
       // Mock activity data
-      await page.route('**/api/workspaces/**/dashboard/activity*', async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [
-              {
-                id: 'msg_1',
-                type: 'message.posted',
-                actor: { name: 'John Doe', displayName: 'johnd' },
-                resourceName: 'Test message',
-                timestamp: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
+      await page.route(
+        '**/api/workspaces/**/dashboard/activity*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [
+                {
+                  id: 'msg_1',
+                  type: 'message.posted',
+                  actor: { name: 'John Doe', displayName: 'johnd' },
+                  resourceName: 'Test message',
+                  timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+                },
+                {
+                  id: 'task_2',
+                  type: 'task.created',
+                  actor: { name: 'Jane Smith', displayName: 'janes' },
+                  resourceName: 'New task',
+                  timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+                },
+              ],
+              pagination: {
+                limit: 5,
+                cursor: null,
+                nextCursor: null,
+                hasMore: false,
               },
-              {
-                id: 'task_2',
-                type: 'task.created',
-                actor: { name: 'Jane Smith', displayName: 'janes' },
-                resourceName: 'New task',
-                timestamp: new Date(Date.now() - 7200000).toISOString() // 2 hours ago
-              }
-            ],
-            pagination: { limit: 5, cursor: null, nextCursor: null, hasMore: false }
-          })
-        });
-      });
+            }),
+          });
+        }
+      );
 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      const activityWidget = page.locator('h3:has-text("Recent Activity")').locator('..');
-      const activityItems = activityWidget.locator('[class*="space-y-3"] > div');
+      const activityWidget = page
+        .locator('h3:has-text("Recent Activity")')
+        .locator('..');
+      const activityItems = activityWidget.locator(
+        '[class*="space-y-3"] > div'
+      );
 
       await expect(activityItems).toHaveCount(2);
     });
 
     test('should show empty state when no activity', async ({ page }) => {
-      await page.route('**/api/workspaces/**/dashboard/activity*', async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [],
-            pagination: { limit: 5, cursor: null, nextCursor: null, hasMore: false }
-          })
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/dashboard/activity*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [],
+              pagination: {
+                limit: 5,
+                cursor: null,
+                nextCursor: null,
+                hasMore: false,
+              },
+            }),
+          });
+        }
+      );
 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
       await expect(page.locator('text=/No recent activity/i')).toBeVisible();
-      await expect(page.locator('text=/Activity will appear here/i')).toBeVisible();
+      await expect(
+        page.locator('text=/Activity will appear here/i')
+      ).toBeVisible();
     });
 
     test('should display formatted relative timestamps', async ({ page }) => {
-      const activityWidget = page.locator('h3:has-text("Recent Activity")').locator('..');
-      const timestamps = activityWidget.locator('.text-xs.text-muted-foreground.whitespace-nowrap');
+      const activityWidget = page
+        .locator('h3:has-text("Recent Activity")')
+        .locator('..');
+      const timestamps = activityWidget.locator(
+        '.text-xs.text-muted-foreground.whitespace-nowrap'
+      );
 
-      if (await timestamps.count() > 0) {
+      if ((await timestamps.count()) > 0) {
         const firstTimestamp = await timestamps.first().textContent();
 
         // Should match patterns like "2 hours ago", "Just now", "3 days ago"
-        expect(firstTimestamp?.toLowerCase()).toMatch(/just now|minute|hour|day|ago/i);
+        expect(firstTimestamp?.toLowerCase()).toMatch(
+          /just now|minute|hour|day|ago/i
+        );
       }
     });
 
     test('should limit displayed activity items to 4', async ({ page }) => {
       // Mock more than 4 activities
-      await page.route('**/api/workspaces/**/dashboard/activity*', async route => {
-        const activities = Array.from({ length: 10 }, (_, i) => ({
-          id: `act_${i}`,
-          type: 'message.posted',
-          actor: { name: `User ${i}`, displayName: `user${i}` },
-          resourceName: `Activity ${i}`,
-          timestamp: new Date(Date.now() - i * 3600000).toISOString()
-        }));
+      await page.route(
+        '**/api/workspaces/**/dashboard/activity*',
+        async route => {
+          const activities = Array.from({ length: 10 }, (_, i) => ({
+            id: `act_${i}`,
+            type: 'message.posted',
+            actor: { name: `User ${i}`, displayName: `user${i}` },
+            resourceName: `Activity ${i}`,
+            timestamp: new Date(Date.now() - i * 3600000).toISOString(),
+          }));
 
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: activities,
-            pagination: { limit: 5, cursor: null, nextCursor: null, hasMore: true }
-          })
-        });
-      });
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: activities,
+              pagination: {
+                limit: 5,
+                cursor: null,
+                nextCursor: null,
+                hasMore: true,
+              },
+            }),
+          });
+        }
+      );
 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      const activityWidget = page.locator('h3:has-text("Recent Activity")').locator('..');
-      const activityItems = activityWidget.locator('[class*="space-y-3"] > div');
+      const activityWidget = page
+        .locator('h3:has-text("Recent Activity")')
+        .locator('..');
+      const activityItems = activityWidget.locator(
+        '[class*="space-y-3"] > div'
+      );
 
       const count = await activityItems.count();
       expect(count).toBeLessThanOrEqual(4);
     });
 
     test('should handle activity API errors', async ({ page }) => {
-      await page.route('**/api/workspaces/**/dashboard/activity*', async route => {
-        await route.fulfill({
-          status: 500,
-          contentType: 'application/json',
-          body: JSON.stringify({ error: 'Failed to fetch activities' })
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/dashboard/activity*',
+        async route => {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'Failed to fetch activities' }),
+          });
+        }
+      );
 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=/Error loading activity/i')).toBeVisible();
+      await expect(
+        page.locator('text=/Error loading activity/i')
+      ).toBeVisible();
     });
 
     test('should display activity type and user info', async ({ page }) => {
-      const activityWidget = page.locator('h3:has-text("Recent Activity")').locator('..');
-      const activityItems = activityWidget.locator('[class*="space-y-3"] > div');
+      const activityWidget = page
+        .locator('h3:has-text("Recent Activity")')
+        .locator('..');
+      const activityItems = activityWidget.locator(
+        '[class*="space-y-3"] > div'
+      );
 
-      if (await activityItems.count() > 0) {
+      if ((await activityItems.count()) > 0) {
         const firstItem = activityItems.first();
 
         // Should have activity title
         await expect(firstItem.locator('.text-sm.font-medium')).toBeVisible();
 
         // Should have description with user name
-        await expect(firstItem.locator('.text-xs.text-muted-foreground').first()).toBeVisible();
+        await expect(
+          firstItem.locator('.text-xs.text-muted-foreground').first()
+        ).toBeVisible();
       }
     });
   });
@@ -360,16 +451,24 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should display all four action buttons', async ({ page }) => {
-      const actionsWidget = page.locator('h3:has-text("Quick Actions")').locator('..');
+      const actionsWidget = page
+        .locator('h3:has-text("Quick Actions")')
+        .locator('..');
 
-      await expect(actionsWidget.locator('text=Invite Team Member')).toBeVisible();
+      await expect(
+        actionsWidget.locator('text=Invite Team Member')
+      ).toBeVisible();
       await expect(actionsWidget.locator('text=Create Channel')).toBeVisible();
       await expect(actionsWidget.locator('text=New Workflow')).toBeVisible();
       await expect(actionsWidget.locator('text=View Activity')).toBeVisible();
     });
 
-    test('should have chevron icons on all action buttons', async ({ page }) => {
-      const actionsWidget = page.locator('h3:has-text("Quick Actions")').locator('..');
+    test('should have chevron icons on all action buttons', async ({
+      page,
+    }) => {
+      const actionsWidget = page
+        .locator('h3:has-text("Quick Actions")')
+        .locator('..');
       const actionButtons = actionsWidget.locator('a');
 
       const count = await actionButtons.count();
@@ -382,28 +481,36 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       }
     });
 
-    test('should navigate to admin/members on Invite Team Member click', async ({ page }) => {
+    test('should navigate to admin/members on Invite Team Member click', async ({
+      page,
+    }) => {
       const inviteButton = page.locator('text=Invite Team Member');
       await inviteButton.click();
 
       await expect(page).toHaveURL(/\/admin\/members/);
     });
 
-    test('should navigate to channels on Create Channel click', async ({ page }) => {
+    test('should navigate to channels on Create Channel click', async ({
+      page,
+    }) => {
       const createChannelBtn = page.locator('text=Create Channel');
       await createChannelBtn.click();
 
       await expect(page).toHaveURL(/\/channels/);
     });
 
-    test('should navigate to workflows on New Workflow click', async ({ page }) => {
+    test('should navigate to workflows on New Workflow click', async ({
+      page,
+    }) => {
       const newWorkflowBtn = page.locator('text=New Workflow');
       await newWorkflowBtn.click();
 
       await expect(page).toHaveURL(/\/workflows/);
     });
 
-    test('should navigate to admin/activity on View Activity click', async ({ page }) => {
+    test('should navigate to admin/activity on View Activity click', async ({
+      page,
+    }) => {
       const viewActivityBtn = page.locator('text=View Activity');
       await viewActivityBtn.click();
 
@@ -411,7 +518,11 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should show hover effect on action buttons', async ({ page }) => {
-      const firstAction = page.locator('h3:has-text("Quick Actions")').locator('..').locator('a').first();
+      const firstAction = page
+        .locator('h3:has-text("Quick Actions")')
+        .locator('..')
+        .locator('a')
+        .first();
 
       // Hover over button
       await firstAction.hover();
@@ -434,8 +545,12 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       await expect(sidebar.locator('text=Settings')).toBeVisible();
     });
 
-    test('should highlight active navigation item (Dashboard)', async ({ page }) => {
-      const dashboardLink = page.locator('aside').locator('a:has-text("Dashboard")');
+    test('should highlight active navigation item (Dashboard)', async ({
+      page,
+    }) => {
+      const dashboardLink = page
+        .locator('aside')
+        .locator('a:has-text("Dashboard")');
 
       const classes = await dashboardLink.getAttribute('class');
       expect(classes).toContain('bg-stone-900');
@@ -453,7 +568,10 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should display workspace name', async ({ page }) => {
-      const workspaceName = page.locator('aside').locator('.font-semibold.text-stone-100').first();
+      const workspaceName = page
+        .locator('aside')
+        .locator('.font-semibold.text-stone-100')
+        .first();
       await expect(workspaceName).toBeVisible();
 
       const text = await workspaceName.textContent();
@@ -462,12 +580,17 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should show user section at bottom', async ({ page }) => {
-      const userSection = page.locator('aside').locator('.border-t.border-stone-800').last();
+      const userSection = page
+        .locator('aside')
+        .locator('.border-t.border-stone-800')
+        .last();
       await expect(userSection).toBeVisible();
 
       // Should show user name and email
       await expect(userSection.locator('.text-sm.font-medium')).toBeVisible();
-      await expect(userSection.locator('.text-xs.text-stone-400')).toBeVisible();
+      await expect(
+        userSection.locator('.text-xs.text-stone-400')
+      ).toBeVisible();
     });
 
     test('should show online status indicator', async ({ page }) => {
@@ -502,7 +625,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
-          body: JSON.stringify({ error: 'Failed to load channels' })
+          body: JSON.stringify({ error: 'Failed to load channels' }),
         });
       });
 
@@ -517,14 +640,20 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   test.describe('Theme Toggle', () => {
     test('should display theme toggle button', async ({ page }) => {
       // Look for theme toggle button (usually in header or user menu)
-      const themeToggle = page.locator('button[aria-label*="theme"], button[aria-label*="Theme"]');
+      const themeToggle = page.locator(
+        'button[aria-label*="theme"], button[aria-label*="Theme"]'
+      );
 
       // Theme toggle might be in a dropdown or directly visible
       const isVisible = await themeToggle.isVisible().catch(() => false);
 
       if (!isVisible) {
         // Try to open settings/user menu first
-        const settingsButton = page.locator('button[aria-label*="settings"], button[aria-label*="Settings"]').first();
+        const settingsButton = page
+          .locator(
+            'button[aria-label*="settings"], button[aria-label*="Settings"]'
+          )
+          .first();
         if (await settingsButton.isVisible().catch(() => false)) {
           await settingsButton.click();
         }
@@ -538,11 +667,15 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       const isDarkInitially = initialClass?.includes('dark') ?? false;
 
       // Find and click theme toggle
-      const themeToggle = page.locator('button[aria-label*="theme"], button[aria-label*="Theme"]').first();
+      const themeToggle = page
+        .locator('button[aria-label*="theme"], button[aria-label*="Theme"]')
+        .first();
 
       // May need to open menu first
-      if (!await themeToggle.isVisible().catch(() => false)) {
-        const menuButton = page.locator('button[aria-label*="menu"], button[aria-label*="Menu"]').first();
+      if (!(await themeToggle.isVisible().catch(() => false))) {
+        const menuButton = page
+          .locator('button[aria-label*="menu"], button[aria-label*="Menu"]')
+          .first();
         if (await menuButton.isVisible().catch(() => false)) {
           await menuButton.click();
           await page.waitForTimeout(300);
@@ -561,7 +694,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       }
     });
 
-    test('should persist theme preference across page reloads', async ({ page }) => {
+    test('should persist theme preference across page reloads', async ({
+      page,
+    }) => {
       // This test assumes theme is stored in localStorage or cookies
       const html = page.locator('html');
       const initialClass = await html.getAttribute('class');
@@ -579,24 +714,32 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   test.describe('User Menu', () => {
     test('should display user menu button', async ({ page }) => {
       // User menu is typically in header or sidebar
-      const userMenuButton = page.locator(
-        'button:has-text("User"), button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
-      ).first();
+      const userMenuButton = page
+        .locator(
+          'button:has-text("User"), button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+        )
+        .first();
 
       // May be in sidebar footer
-      const sidebarUserSection = page.locator('aside .border-t.border-stone-800').last();
+      const sidebarUserSection = page
+        .locator('aside .border-t.border-stone-800')
+        .last();
 
       const hasUserButton = await userMenuButton.isVisible().catch(() => false);
-      const hasSidebarUser = await sidebarUserSection.isVisible().catch(() => false);
+      const hasSidebarUser = await sidebarUserSection
+        .isVisible()
+        .catch(() => false);
 
       expect(hasUserButton || hasSidebarUser).toBe(true);
     });
 
     test('should open user menu on click', async ({ page }) => {
       // Find user menu button
-      const userMenuButton = page.locator(
-        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"], button[aria-label*="profile"]'
-      ).first();
+      const userMenuButton = page
+        .locator(
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"], button[aria-label*="profile"]'
+        )
+        .first();
 
       if (await userMenuButton.isVisible().catch(() => false)) {
         await userMenuButton.click();
@@ -610,9 +753,11 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
     test('should display user information in menu', async ({ page }) => {
       // Try to open user menu
-      const userMenuButton = page.locator(
-        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
-      ).first();
+      const userMenuButton = page
+        .locator(
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+        )
+        .first();
 
       if (await userMenuButton.isVisible().catch(() => false)) {
         await userMenuButton.click();
@@ -629,9 +774,11 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should have sign out option in user menu', async ({ page }) => {
-      const userMenuButton = page.locator(
-        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
-      ).first();
+      const userMenuButton = page
+        .locator(
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+        )
+        .first();
 
       if (await userMenuButton.isVisible().catch(() => false)) {
         await userMenuButton.click();
@@ -644,16 +791,20 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should navigate to settings from user menu', async ({ page }) => {
-      const userMenuButton = page.locator(
-        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
-      ).first();
+      const userMenuButton = page
+        .locator(
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+        )
+        .first();
 
       if (await userMenuButton.isVisible().catch(() => false)) {
         await userMenuButton.click();
         await page.waitForTimeout(300);
 
         // Look for settings option
-        const settingsOption = page.locator('text=/Settings|Preferences/i').first();
+        const settingsOption = page
+          .locator('text=/Settings|Preferences/i')
+          .first();
         if (await settingsOption.isVisible().catch(() => false)) {
           await settingsOption.click();
           await expect(page).toHaveURL(/\/settings/, { timeout: 5000 });
@@ -663,17 +814,23 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   });
 
   test.describe('Workspace Switcher', () => {
-    test('should display workspace switcher if multiple workspaces exist', async ({ page }) => {
+    test('should display workspace switcher if multiple workspaces exist', async ({
+      page,
+    }) => {
       // Workspace switcher is typically in sidebar header
-      const workspaceSwitcher = page.locator(
-        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
-      ).first();
+      const workspaceSwitcher = page
+        .locator(
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+        )
+        .first();
 
       // Or look for workspace name button that's clickable
       const workspaceNameButton = page.locator('aside .font-semibold').first();
 
       // Either workspace switcher exists or workspace name is clickable
-      const hasSwitcher = await workspaceSwitcher.isVisible().catch(() => false);
+      const hasSwitcher = await workspaceSwitcher
+        .isVisible()
+        .catch(() => false);
 
       // This is optional - only if user has multiple workspaces
       if (hasSwitcher) {
@@ -685,7 +842,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     });
 
     test('should display current workspace name', async ({ page }) => {
-      const workspaceName = page.locator('aside .font-semibold.text-stone-100').first();
+      const workspaceName = page
+        .locator('aside .font-semibold.text-stone-100')
+        .first();
       await expect(workspaceName).toBeVisible();
 
       const nameText = await workspaceName.textContent();
@@ -693,32 +852,42 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       expect(nameText?.trim().length).toBeGreaterThan(0);
     });
 
-    test('should open workspace switcher dropdown on click', async ({ page }) => {
-      const workspaceSwitcher = page.locator(
-        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
-      ).first();
+    test('should open workspace switcher dropdown on click', async ({
+      page,
+    }) => {
+      const workspaceSwitcher = page
+        .locator(
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+        )
+        .first();
 
       if (await workspaceSwitcher.isVisible().catch(() => false)) {
         await workspaceSwitcher.click();
         await page.waitForTimeout(300);
 
         // Should show dropdown with workspace list
-        const dropdown = page.locator('[role="menu"], [role="listbox"], [role="dialog"]');
+        const dropdown = page.locator(
+          '[role="menu"], [role="listbox"], [role="dialog"]'
+        );
         await expect(dropdown).toBeVisible({ timeout: 2000 });
       }
     });
 
     test('should list available workspaces in switcher', async ({ page }) => {
-      const workspaceSwitcher = page.locator(
-        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
-      ).first();
+      const workspaceSwitcher = page
+        .locator(
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+        )
+        .first();
 
       if (await workspaceSwitcher.isVisible().catch(() => false)) {
         await workspaceSwitcher.click();
         await page.waitForTimeout(300);
 
         // Look for workspace items in dropdown
-        const workspaceItems = page.locator('[role="menuitem"], [role="option"]');
+        const workspaceItems = page.locator(
+          '[role="menuitem"], [role="option"]'
+        );
         const count = await workspaceItems.count();
 
         // Should have at least the current workspace
@@ -726,19 +895,25 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       }
     });
 
-    test('should switch workspace when selecting from list', async ({ page }) => {
+    test('should switch workspace when selecting from list', async ({
+      page,
+    }) => {
       const currentUrl = page.url();
       const currentWorkspaceId = currentUrl.match(/\/([^\/]+)\/dashboard/)?.[1];
 
-      const workspaceSwitcher = page.locator(
-        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
-      ).first();
+      const workspaceSwitcher = page
+        .locator(
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+        )
+        .first();
 
       if (await workspaceSwitcher.isVisible().catch(() => false)) {
         await workspaceSwitcher.click();
         await page.waitForTimeout(300);
 
-        const workspaceItems = page.locator('[role="menuitem"], [role="option"]');
+        const workspaceItems = page.locator(
+          '[role="menuitem"], [role="option"]'
+        );
         const count = await workspaceItems.count();
 
         if (count > 1) {
@@ -757,7 +932,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   });
 
   test.describe('Console Errors & Network', () => {
-    test('should not have critical console errors on page load', async ({ page }) => {
+    test('should not have critical console errors on page load', async ({
+      page,
+    }) => {
       const errors: string[] = [];
 
       page.on('console', msg => {
@@ -770,10 +947,11 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       // Filter out known/acceptable errors (favicon, browser extensions)
-      const criticalErrors = errors.filter(err =>
-        !err.includes('favicon') &&
-        !err.includes('Extension') &&
-        !err.includes('chrome-extension')
+      const criticalErrors = errors.filter(
+        err =>
+          !err.includes('favicon') &&
+          !err.includes('Extension') &&
+          !err.includes('chrome-extension')
       );
 
       expect(criticalErrors).toHaveLength(0);
@@ -799,7 +977,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         if (response.url().includes('/api/')) {
           apiResponses.push({
             url: response.url(),
-            status: response.status()
+            status: response.status(),
           });
         }
       });
@@ -846,7 +1024,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     test('should adapt stats grid on tablet', async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
 
-      const statsWidget = page.locator('h3:has-text("Quick Stats")').locator('..');
+      const statsWidget = page
+        .locator('h3:has-text("Quick Stats")')
+        .locator('..');
       await expect(statsWidget).toBeVisible();
 
       // Stats should still be readable
@@ -854,22 +1034,30 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       await expect(statValues).toHaveCount(4);
     });
 
-    test('should not have horizontal scroll on any screen size', async ({ page }) => {
+    test('should not have horizontal scroll on any screen size', async ({
+      page,
+    }) => {
       const viewports = [
-        { width: 375, height: 667 },   // Mobile
-        { width: 768, height: 1024 },  // Tablet
-        { width: 1280, height: 720 },  // Desktop
-        { width: 1920, height: 1080 }  // Large desktop
+        { width: 375, height: 667 }, // Mobile
+        { width: 768, height: 1024 }, // Tablet
+        { width: 1280, height: 720 }, // Desktop
+        { width: 1920, height: 1080 }, // Large desktop
       ];
 
       for (const viewport of viewports) {
         await page.setViewportSize(viewport);
 
         const hasHorizontalScroll = await page.evaluate(() => {
-          return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+          return (
+            document.documentElement.scrollWidth >
+            document.documentElement.clientWidth
+          );
         });
 
-        expect(hasHorizontalScroll, `Horizontal scroll at ${viewport.width}x${viewport.height}`).toBe(false);
+        expect(
+          hasHorizontalScroll,
+          `Horizontal scroll at ${viewport.width}x${viewport.height}`
+        ).toBe(false);
       }
     });
   });
@@ -905,10 +1093,10 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
     test('should have no layout shift (CLS)', async ({ page }) => {
       const cls = await page.evaluate(() => {
-        return new Promise<number>((resolve) => {
+        return new Promise<number>(resolve => {
           let clsValue = 0;
 
-          const observer = new PerformanceObserver((list) => {
+          const observer = new PerformanceObserver(list => {
             for (const entry of list.getEntries()) {
               if ((entry as any).hadRecentInput) continue;
               clsValue += (entry as any).value;
@@ -930,7 +1118,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   });
 
   test.describe('Accessibility', () => {
-    test('should support keyboard navigation through quick actions', async ({ page }) => {
+    test('should support keyboard navigation through quick actions', async ({
+      page,
+    }) => {
       // Focus on first quick action
       await page.keyboard.press('Tab');
       await page.keyboard.press('Tab');
@@ -978,7 +1168,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         const styles = window.getComputedStyle(el);
         return {
           color: styles.color,
-          backgroundColor: styles.backgroundColor
+          backgroundColor: styles.backgroundColor,
         };
       });
 

@@ -8,7 +8,13 @@ import { z } from 'zod';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
@@ -40,7 +46,12 @@ interface Message {
 }
 
 // Wizard phases
-type WizardPhase = 'conversation' | 'review' | 'generating' | 'preview' | 'creating';
+type WizardPhase =
+  | 'conversation'
+  | 'review'
+  | 'generating'
+  | 'preview'
+  | 'creating';
 
 // Extracted workspace data schema
 const workspaceDataSchema = z.object({
@@ -51,7 +62,9 @@ const workspaceDataSchema = z.object({
   organizationType: z.string().min(1, 'Organization type is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   strategy: z.string().min(10, 'Strategy must be at least 10 characters'),
-  targetAssets: z.array(z.string()).min(1, 'At least one target asset required'),
+  targetAssets: z
+    .array(z.string())
+    .min(1, 'At least one target asset required'),
   riskTolerance: z.enum(['conservative', 'moderate', 'aggressive']),
   teamSize: z.enum(['small', 'medium', 'large']),
 });
@@ -78,8 +91,11 @@ Feel free to describe it in your own words - I'll help extract the details we ne
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [extractedData, setExtractedData] = useState<Partial<WorkspaceData>>({});
-  const [generatedOrg, setGeneratedOrg] = useState<OrgGenerationResponse | null>(null);
+  const [extractedData, setExtractedData] = useState<Partial<WorkspaceData>>(
+    {}
+  );
+  const [generatedOrg, setGeneratedOrg] =
+    useState<OrgGenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -116,23 +132,24 @@ Feel free to describe it in your own words - I'll help extract the details we ne
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsProcessing(true);
 
     try {
       // Simulate AI conversation processing
       // In a real implementation, this would call /api/wizard/chat
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Mock AI response that extracts information
       const conversationHistory = [...messages, userMessage]
-        .filter((m) => m.role === 'user')
-        .map((m) => m.content)
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
         .join('\n');
 
       const aiResponse = generateAIResponse(conversationHistory, extractedData);
-      const newExtractedData = extractInformationFromConversation(conversationHistory);
+      const newExtractedData =
+        extractInformationFromConversation(conversationHistory);
 
       setExtractedData(newExtractedData);
 
@@ -143,7 +160,7 @@ Feel free to describe it in your own words - I'll help extract the details we ne
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
 
       // If we have enough information, suggest moving to review
       if (isDataComplete(newExtractedData)) {
@@ -153,7 +170,7 @@ Feel free to describe it in your own words - I'll help extract the details we ne
           content: `Great! I think I have all the information I need. Would you like to review what we've gathered and generate your organization structure?`,
           timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, suggestionMessage]);
+        setMessages(prev => [...prev, suggestionMessage]);
       }
     } catch (err) {
       console.error('Error processing message:', err);
@@ -199,7 +216,8 @@ Feel free to describe it in your own words - I'll help extract the details we ne
       setGeneratedOrg(result.data as any);
       setPhase('preview');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       setPhase('review');
       console.error('Failed to generate organization:', err);
@@ -232,7 +250,8 @@ Feel free to describe it in your own words - I'll help extract the details we ne
     if (!generatedOrg) return;
 
     // The workspace was already created by generate-org endpoint
-    const workspaceId = 'id' in generatedOrg ? generatedOrg.id : generatedOrg.workspaceId;
+    const workspaceId =
+      'id' in generatedOrg ? generatedOrg.id : generatedOrg.workspaceId;
     if (workspaceId) {
       router.push(`/${workspaceId}/dashboard`);
     } else {
@@ -242,26 +261,27 @@ Feel free to describe it in your own words - I'll help extract the details we ne
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 py-8">
+    <div className='mx-auto max-w-5xl space-y-6 py-8'>
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Create New Workspace</h1>
-        <p className="text-muted-foreground">
-          Let's have a conversation about your workspace and I'll help you set it up
+      <div className='space-y-2'>
+        <h1 className='text-3xl font-bold'>Create New Workspace</h1>
+        <p className='text-muted-foreground'>
+          Let's have a conversation about your workspace and I'll help you set
+          it up
         </p>
       </div>
 
       {/* Progress Indicator */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">
+      <div className='space-y-2'>
+        <div className='flex items-center justify-between text-sm'>
+          <span className='font-medium'>
             {phase === 'conversation' && 'Gathering Information'}
             {phase === 'review' && 'Review Details'}
             {phase === 'generating' && 'Generating Organization'}
             {phase === 'preview' && 'Preview & Confirm'}
             {phase === 'creating' && 'Creating Workspace'}
           </span>
-          <Badge variant="outline">
+          <Badge variant='outline'>
             {phase === 'conversation' && 'Step 1 of 4'}
             {phase === 'review' && 'Step 2 of 4'}
             {phase === 'generating' && 'Step 3 of 4'}
@@ -271,24 +291,27 @@ Feel free to describe it in your own words - I'll help extract the details we ne
         </div>
         <Progress
           value={
-            phase === 'conversation' ? 25 :
-            phase === 'review' ? 50 :
-            phase === 'generating' ? 75 :
-            100
+            phase === 'conversation'
+              ? 25
+              : phase === 'review'
+                ? 50
+                : phase === 'generating'
+                  ? 75
+                  : 100
           }
-          className="h-2"
+          className='h-2'
         />
       </div>
 
       {/* Error Display */}
       {error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          <p className="font-medium">Error</p>
-          <p className="mt-1">{error}</p>
+        <div className='rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
+          <p className='font-medium'>Error</p>
+          <p className='mt-1'>{error}</p>
           <Button
-            variant="outline"
-            size="sm"
-            className="mt-2"
+            variant='outline'
+            size='sm'
+            className='mt-2'
             onClick={() => setError(null)}
           >
             Dismiss
@@ -298,18 +321,18 @@ Feel free to describe it in your own words - I'll help extract the details we ne
 
       {/* Phase: Conversation */}
       {phase === 'conversation' && (
-        <div className="space-y-4">
-          <Card className="h-[500px] flex flex-col">
+        <div className='space-y-4'>
+          <Card className='h-[500px] flex flex-col'>
             <CardHeader>
               <CardTitle>Conversation</CardTitle>
               <CardDescription>
                 Tell me about your workspace in natural language
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col overflow-hidden">
+            <CardContent className='flex-1 flex flex-col overflow-hidden'>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-4">
-                {messages.map((message) => (
+              <div className='flex-1 overflow-y-auto space-y-4 mb-4 pr-4'>
+                {messages.map(message => (
                   <div
                     key={message.id}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -321,8 +344,10 @@ Feel free to describe it in your own words - I'll help extract the details we ne
                           : 'bg-muted'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-1">
+                      <p className='text-sm whitespace-pre-wrap'>
+                        {message.content}
+                      </p>
+                      <p className='text-xs opacity-70 mt-1'>
                         {message.timestamp.toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -332,12 +357,12 @@ Feel free to describe it in your own words - I'll help extract the details we ne
                   </div>
                 ))}
                 {isProcessing && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[80%] rounded-lg bg-muted px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse" />
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse delay-75" />
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse delay-150" />
+                  <div className='flex justify-start'>
+                    <div className='max-w-[80%] rounded-lg bg-muted px-4 py-3'>
+                      <div className='flex items-center gap-2'>
+                        <div className='h-2 w-2 rounded-full bg-muted-foreground animate-pulse' />
+                        <div className='h-2 w-2 rounded-full bg-muted-foreground animate-pulse delay-75' />
+                        <div className='h-2 w-2 rounded-full bg-muted-foreground animate-pulse delay-150' />
                       </div>
                     </div>
                   </div>
@@ -346,25 +371,25 @@ Feel free to describe it in your own words - I'll help extract the details we ne
               </div>
 
               {/* Input */}
-              <div className="border-t pt-4">
-                <div className="flex gap-2">
+              <div className='border-t pt-4'>
+                <div className='flex gap-2'>
                   <Textarea
                     value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={(e) => {
+                    onChange={e => setInputMessage(e.target.value)}
+                    onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleSendMessage();
                       }
                     }}
-                    placeholder="Type your message... (Shift+Enter for new line)"
-                    className="min-h-[60px] resize-none"
+                    placeholder='Type your message... (Shift+Enter for new line)'
+                    className='min-h-[60px] resize-none'
                     disabled={isProcessing}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={!inputMessage.trim() || isProcessing}
-                    className="self-end"
+                    className='self-end'
                   >
                     Send
                   </Button>
@@ -383,42 +408,51 @@ Feel free to describe it in your own words - I'll help extract the details we ne
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className='grid grid-cols-2 gap-4 text-sm'>
                   {extractedData.workspaceName && (
                     <div>
-                      <span className="font-medium">Workspace Name:</span>{' '}
-                      <span className="text-muted-foreground">{extractedData.workspaceName}</span>
+                      <span className='font-medium'>Workspace Name:</span>{' '}
+                      <span className='text-muted-foreground'>
+                        {extractedData.workspaceName}
+                      </span>
                     </div>
                   )}
                   {extractedData.organizationType && (
                     <div>
-                      <span className="font-medium">Type:</span>{' '}
-                      <span className="text-muted-foreground">{extractedData.organizationType}</span>
+                      <span className='font-medium'>Type:</span>{' '}
+                      <span className='text-muted-foreground'>
+                        {extractedData.organizationType}
+                      </span>
                     </div>
                   )}
                   {extractedData.riskTolerance && (
                     <div>
-                      <span className="font-medium">Risk Tolerance:</span>{' '}
-                      <span className="text-muted-foreground capitalize">{extractedData.riskTolerance}</span>
+                      <span className='font-medium'>Risk Tolerance:</span>{' '}
+                      <span className='text-muted-foreground capitalize'>
+                        {extractedData.riskTolerance}
+                      </span>
                     </div>
                   )}
                   {extractedData.teamSize && (
                     <div>
-                      <span className="font-medium">Team Size:</span>{' '}
-                      <span className="text-muted-foreground capitalize">{extractedData.teamSize}</span>
-                    </div>
-                  )}
-                  {extractedData.targetAssets && extractedData.targetAssets.length > 0 && (
-                    <div className="col-span-2">
-                      <span className="font-medium">Target Assets:</span>{' '}
-                      <span className="text-muted-foreground">
-                        {extractedData.targetAssets.join(', ')}
+                      <span className='font-medium'>Team Size:</span>{' '}
+                      <span className='text-muted-foreground capitalize'>
+                        {extractedData.teamSize}
                       </span>
                     </div>
                   )}
+                  {extractedData.targetAssets &&
+                    extractedData.targetAssets.length > 0 && (
+                      <div className='col-span-2'>
+                        <span className='font-medium'>Target Assets:</span>{' '}
+                        <span className='text-muted-foreground'>
+                          {extractedData.targetAssets.join(', ')}
+                        </span>
+                      </div>
+                    )}
                 </div>
 
-                <div className="mt-4 flex justify-end">
+                <div className='mt-4 flex justify-end'>
                   <Button
                     onClick={handleReviewData}
                     disabled={!isDataComplete(extractedData)}
@@ -500,7 +534,7 @@ function ReviewForm({
   const handleRemoveAsset = (asset: string) => {
     form.setValue(
       'targetAssets',
-      assets.filter((a) => a !== asset),
+      assets.filter(a => a !== asset)
     );
   };
 
@@ -509,128 +543,133 @@ function ReviewForm({
       <CardHeader>
         <CardTitle>Review & Edit Details</CardTitle>
         <CardDescription>
-          Verify and modify the extracted information before generating your organization
+          Verify and modify the extracted information before generating your
+          organization
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="workspaceName">Workspace Name</Label>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='workspaceName'>Workspace Name</Label>
               <Input
-                id="workspaceName"
+                id='workspaceName'
                 {...form.register('workspaceName')}
-                placeholder="e.g., Engineering Team"
+                placeholder='e.g., Engineering Team'
               />
               {form.formState.errors.workspaceName && (
-                <p className="text-sm text-destructive">
+                <p className='text-sm text-destructive'>
                   {form.formState.errors.workspaceName.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="workspaceSlug">Workspace Slug</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='workspaceSlug'>Workspace Slug</Label>
               <Input
-                id="workspaceSlug"
+                id='workspaceSlug'
                 {...form.register('workspaceSlug')}
-                placeholder="e.g., engineering-team"
+                placeholder='e.g., engineering-team'
               />
               {form.formState.errors.workspaceSlug && (
-                <p className="text-sm text-destructive">
+                <p className='text-sm text-destructive'>
                   {form.formState.errors.workspaceSlug.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="organizationName">Organization Name</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='organizationName'>Organization Name</Label>
               <Input
-                id="organizationName"
+                id='organizationName'
                 {...form.register('organizationName')}
-                placeholder="e.g., Acme Corp"
+                placeholder='e.g., Acme Corp'
               />
               {form.formState.errors.organizationName && (
-                <p className="text-sm text-destructive">
+                <p className='text-sm text-destructive'>
                   {form.formState.errors.organizationName.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="organizationType">Organization Type</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='organizationType'>Organization Type</Label>
               <Input
-                id="organizationType"
+                id='organizationType'
                 {...form.register('organizationType')}
-                placeholder="e.g., Technology, Finance"
+                placeholder='e.g., Technology, Finance'
               />
               {form.formState.errors.organizationType && (
-                <p className="text-sm text-destructive">
+                <p className='text-sm text-destructive'>
                   {form.formState.errors.organizationType.message}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='description'>Description</Label>
             <Textarea
-              id="description"
+              id='description'
               {...form.register('description')}
               placeholder="Describe your organization's purpose and focus..."
               rows={4}
             />
             {form.formState.errors.description && (
-              <p className="text-sm text-destructive">
+              <p className='text-sm text-destructive'>
                 {form.formState.errors.description.message}
               </p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="strategy">Strategy</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='strategy'>Strategy</Label>
             <Textarea
-              id="strategy"
+              id='strategy'
               {...form.register('strategy')}
-              placeholder="Describe your business strategy..."
+              placeholder='Describe your business strategy...'
               rows={3}
             />
             {form.formState.errors.strategy && (
-              <p className="text-sm text-destructive">
+              <p className='text-sm text-destructive'>
                 {form.formState.errors.strategy.message}
               </p>
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className='space-y-2'>
             <Label>Target Assets / Markets</Label>
-            <div className="space-y-3">
-              <div className="flex gap-2">
+            <div className='space-y-3'>
+              <div className='flex gap-2'>
                 <Input
-                  placeholder="e.g., US Equities, Crypto"
+                  placeholder='e.g., US Equities, Crypto'
                   value={assetInput}
-                  onChange={(e) => setAssetInput(e.target.value)}
-                  onKeyDown={(e) => {
+                  onChange={e => setAssetInput(e.target.value)}
+                  onKeyDown={e => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       handleAddAsset();
                     }
                   }}
                 />
-                <Button type="button" variant="outline" onClick={handleAddAsset}>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleAddAsset}
+                >
                   Add
                 </Button>
               </div>
 
               {assets.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {assets.map((asset) => (
-                    <Badge key={asset} variant="secondary" className="gap-1">
+                <div className='flex flex-wrap gap-2'>
+                  {assets.map(asset => (
+                    <Badge key={asset} variant='secondary' className='gap-1'>
                       {asset}
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => handleRemoveAsset(asset)}
-                        className="ml-1 rounded-full hover:bg-muted-foreground/20"
+                        className='ml-1 rounded-full hover:bg-muted-foreground/20'
                       >
                         ×
                       </button>
@@ -640,40 +679,42 @@ function ReviewForm({
               )}
             </div>
             {form.formState.errors.targetAssets && (
-              <p className="text-sm text-destructive">
+              <p className='text-sm text-destructive'>
                 {form.formState.errors.targetAssets.message}
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
               <Label>Risk Tolerance</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['conservative', 'moderate', 'aggressive'] as const).map((level) => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => form.setValue('riskTolerance', level)}
-                    className={`rounded-lg border-2 p-3 text-center transition-all text-sm ${
-                      form.watch('riskTolerance') === level
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="font-medium capitalize">{level}</div>
-                  </button>
-                ))}
+              <div className='grid grid-cols-3 gap-2'>
+                {(['conservative', 'moderate', 'aggressive'] as const).map(
+                  level => (
+                    <button
+                      key={level}
+                      type='button'
+                      onClick={() => form.setValue('riskTolerance', level)}
+                      className={`rounded-lg border-2 p-3 text-center transition-all text-sm ${
+                        form.watch('riskTolerance') === level
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className='font-medium capitalize'>{level}</div>
+                    </button>
+                  )
+                )}
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Team Size</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['small', 'medium', 'large'] as const).map((size) => (
+              <div className='grid grid-cols-3 gap-2'>
+                {(['small', 'medium', 'large'] as const).map(size => (
                   <button
                     key={size}
-                    type="button"
+                    type='button'
                     onClick={() => form.setValue('teamSize', size)}
                     className={`rounded-lg border-2 p-3 text-center transition-all text-sm ${
                       form.watch('teamSize') === size
@@ -681,8 +722,8 @@ function ReviewForm({
                         : 'border-border hover:border-primary/50'
                     }`}
                   >
-                    <div className="font-medium capitalize">{size}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='font-medium capitalize'>{size}</div>
+                    <div className='text-xs text-muted-foreground'>
                       {size === 'small' && '1-10'}
                       {size === 'medium' && '10-50'}
                       {size === 'large' && '50+'}
@@ -693,13 +734,11 @@ function ReviewForm({
             </div>
           </div>
 
-          <div className="flex justify-between pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onBack}>
+          <div className='flex justify-between pt-4 border-t'>
+            <Button type='button' variant='outline' onClick={onBack}>
               Back to Conversation
             </Button>
-            <Button type="submit">
-              Generate Organization
-            </Button>
+            <Button type='submit'>Generate Organization</Button>
           </div>
         </form>
       </CardContent>
@@ -707,13 +746,15 @@ function ReviewForm({
   );
 }
 
-
 /**
  * Helper Functions
  */
 
 // Mock AI response generator
-function generateAIResponse(_conversationHistory: string, currentData: Partial<WorkspaceData>): string {
+function generateAIResponse(
+  _conversationHistory: string,
+  currentData: Partial<WorkspaceData>
+): string {
   const missingFields: string[] = [];
 
   if (!currentData.workspaceName) missingFields.push('workspace name');
@@ -741,13 +782,15 @@ Ready to generate your organization structure!`;
     'workspace name': 'What would you like to name this workspace?',
     'organization type':
       'What type of organization is this? (e.g., hedge fund, startup, enterprise)',
-    'detailed description': 'Can you tell me more about what this organization does?',
+    'detailed description':
+      'Can you tell me more about what this organization does?',
     strategy: 'What is your business or investment strategy?',
     'target assets or markets':
       'What markets or asset classes will you focus on? (e.g., crypto, equities, bonds)',
     'risk tolerance':
       'What is your risk tolerance? (conservative, moderate, or aggressive)',
-    'expected team size': 'How large do you expect your team to be? (small, medium, or large)',
+    'expected team size':
+      'How large do you expect your team to be? (small, medium, or large)',
   };
 
   return `Thanks for sharing that! ${questions[nextField] || `Can you tell me about ${nextField}?`}`;
@@ -755,14 +798,14 @@ Ready to generate your organization structure!`;
 
 // Extract information from conversation
 function extractInformationFromConversation(
-  conversationHistory: string,
+  conversationHistory: string
 ): Partial<WorkspaceData> {
   const data: Partial<WorkspaceData> = {};
   const lower = conversationHistory.toLowerCase();
 
   // Extract workspace name (look for "workspace" or "called" or "named")
   const nameMatch = conversationHistory.match(
-    /(?:workspace|called|named)\s+(?:is\s+)?["']?([A-Za-z0-9\s-]+)["']?/i,
+    /(?:workspace|called|named)\s+(?:is\s+)?["']?([A-Za-z0-9\s-]+)["']?/i
   );
   if (nameMatch) {
     const name = nameMatch[1].trim();
@@ -824,8 +867,10 @@ function extractInformationFromConversation(
   else if (lower.includes('moderate')) data.riskTolerance = 'moderate';
 
   // Extract team size
-  if (lower.includes('small') || lower.match(/\b[1-9]\b/)) data.teamSize = 'small';
-  else if (lower.includes('large') || lower.match(/\b(50|100)\b/)) data.teamSize = 'large';
+  if (lower.includes('small') || lower.match(/\b[1-9]\b/))
+    data.teamSize = 'small';
+  else if (lower.includes('large') || lower.match(/\b(50|100)\b/))
+    data.teamSize = 'large';
   else if (lower.includes('medium') || lower.match(/\b(10|20|30)\b/))
     data.teamSize = 'medium';
 

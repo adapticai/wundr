@@ -23,16 +23,8 @@ export {
   getInitials,
   type AvatarProps,
 } from './components/ui/avatar';
-export {
-  Input,
-  inputVariants,
-  type InputProps,
-} from './components/ui/input';
-export {
-  Label,
-  labelVariants,
-  type LabelProps,
-} from './components/ui/label';
+export { Input, inputVariants, type InputProps } from './components/ui/input';
+export { Label, labelVariants, type LabelProps } from './components/ui/label';
 export {
   Card,
   CardHeader,
@@ -41,10 +33,7 @@ export {
   CardDescription,
   CardContent,
 } from './components/ui/card';
-export {
-  Separator,
-  type SeparatorProps,
-} from './components/ui/separator';
+export { Separator, type SeparatorProps } from './components/ui/separator';
 export {
   Dialog,
   DialogPortal,
@@ -57,10 +46,7 @@ export {
   DialogTitle,
   DialogDescription,
 } from './components/ui/dialog';
-export {
-  Progress,
-  type ProgressProps,
-} from './components/ui/progress';
+export { Progress, type ProgressProps } from './components/ui/progress';
 
 // File Preview Components
 export {

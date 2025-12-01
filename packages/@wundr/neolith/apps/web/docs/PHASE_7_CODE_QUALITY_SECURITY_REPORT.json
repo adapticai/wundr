@@ -440,13 +440,21 @@
         "task": "Replace console statements with structured logger",
         "priority": "HIGH",
         "effort": "8-12 hours",
-        "dependencies": ["Install pino", "Update logger.ts", "Search-replace script"]
+        "dependencies": [
+          "Install pino",
+          "Update logger.ts",
+          "Search-replace script"
+        ]
       },
       {
         "task": "Complete 2FA implementation",
         "priority": "HIGH",
         "effort": "15-20 hours",
-        "dependencies": ["Choose TOTP library", "Enrollment flow", "Recovery codes"]
+        "dependencies": [
+          "Choose TOTP library",
+          "Enrollment flow",
+          "Recovery codes"
+        ]
       },
       {
         "task": "Add global error boundaries",

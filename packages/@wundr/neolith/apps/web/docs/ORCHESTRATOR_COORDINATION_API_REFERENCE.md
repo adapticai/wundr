@@ -19,18 +19,17 @@ Transfer task ownership from one Orchestrator to another.
 **Endpoint**: `POST /api/orchestrators/:id/delegate`
 
 **Parameters**:
+
 - `:id` - Source Orchestrator ID (path parameter)
 
-**Request Body**:
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| toVpId | string | Yes | Target Orchestrator ID (cuid) |
-| taskId | string | Yes | Task ID to delegate (cuid) |
-| note | string | No | Delegation note (max 1000 chars) |
-| priority | enum | No | Priority override (LOW, MEDIUM, HIGH, CRITICAL) |
-| dueDate | string | No | Due date override (ISO 8601) |
+**Request Body**: | Field | Type | Required | Description |
+|-------|------|----------|-------------| | toVpId | string | Yes | Target Orchestrator ID (cuid) |
+| taskId | string | Yes | Task ID to delegate (cuid) | | note | string | No | Delegation note (max
+1000 chars) | | priority | enum | No | Priority override (LOW, MEDIUM, HIGH, CRITICAL) | | dueDate |
+string | No | Due date override (ISO 8601) |
 
 **Example**:
+
 ```bash
 curl -X POST /api/orchestrators/vp_123/delegate \
   -H "Content-Type: application/json" \
@@ -43,6 +42,7 @@ curl -X POST /api/orchestrators/vp_123/delegate \
 ```
 
 **Success Response** (200):
+
 ```json
 {
   "data": {
@@ -58,6 +58,7 @@ curl -X POST /api/orchestrators/vp_123/delegate \
 ```
 
 **Error Responses**:
+
 - `400` - Validation error, invalid input
 - `401` - Unauthorized
 - `403` - Forbidden, insufficient permissions
@@ -73,17 +74,17 @@ Request collaboration from other Orchestrators on a task.
 **Endpoint**: `POST /api/orchestrators/:id/collaborate`
 
 **Parameters**:
+
 - `:id` - Primary Orchestrator ID (path parameter)
 
-**Request Body**:
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| taskId | string | Yes | Task ID requiring collaboration (cuid) |
-| requiredVpIds | string[] | Yes | Array of Orchestrator IDs (1-10, cuid) |
-| roles | object | No | Map of Orchestrator ID to role name |
-| note | string | No | Collaboration note (max 1000 chars) |
+**Request Body**: | Field | Type | Required | Description |
+|-------|------|----------|-------------| | taskId | string | Yes | Task ID requiring collaboration
+(cuid) | | requiredVpIds | string[] | Yes | Array of Orchestrator IDs (1-10, cuid) | | roles |
+object | No | Map of Orchestrator ID to role name | | note | string | No | Collaboration note (max
+1000 chars) |
 
 **Example**:
+
 ```bash
 curl -X POST /api/orchestrators/vp_123/collaborate \
   -H "Content-Type: application/json" \
@@ -99,6 +100,7 @@ curl -X POST /api/orchestrators/vp_123/collaborate \
 ```
 
 **Success Response** (200):
+
 ```json
 {
   "data": {
@@ -122,17 +124,16 @@ Handoff a task to another Orchestrator with context transfer.
 **Endpoint**: `POST /api/orchestrators/:id/handoff`
 
 **Parameters**:
+
 - `:id` - Source Orchestrator ID (path parameter)
 
-**Request Body**:
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| toVpId | string | Yes | Target Orchestrator ID (cuid) |
-| taskId | string | Yes | Task ID to handoff (cuid) |
-| context | object | No | Handoff context data |
-| notes | string | No | Handoff notes (max 2000 chars) |
+**Request Body**: | Field | Type | Required | Description |
+|-------|------|----------|-------------| | toVpId | string | Yes | Target Orchestrator ID (cuid) |
+| taskId | string | Yes | Task ID to handoff (cuid) | | context | object | No | Handoff context data
+| | notes | string | No | Handoff notes (max 2000 chars) |
 
 **Example**:
+
 ```bash
 curl -X POST /api/orchestrators/vp_123/handoff \
   -H "Content-Type: application/json" \
@@ -150,6 +151,7 @@ curl -X POST /api/orchestrators/vp_123/handoff \
 ```
 
 **Success Response** (200):
+
 ```json
 {
   "data": {
@@ -173,17 +175,14 @@ Resolve conflicts between multiple VPs.
 
 **Endpoint**: `POST /api/orchestrators/conflicts`
 
-**Request Body**:
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| vpIds | string[] | Yes | Orchestrator IDs involved (2-10, cuid) |
-| conflictType | enum | Yes | Conflict type (see below) |
-| resolution | object | Yes | Resolution details |
-| taskId | string | No | Related task ID (cuid) |
-| workspaceId | string | No | Related workspace ID (cuid) |
-| note | string | No | Resolution note (max 2000 chars) |
+**Request Body**: | Field | Type | Required | Description |
+|-------|------|----------|-------------| | vpIds | string[] | Yes | Orchestrator IDs involved
+(2-10, cuid) | | conflictType | enum | Yes | Conflict type (see below) | | resolution | object | Yes
+| Resolution details | | taskId | string | No | Related task ID (cuid) | | workspaceId | string | No
+| Related workspace ID (cuid) | | note | string | No | Resolution note (max 2000 chars) |
 
 **Conflict Types**:
+
 - `resource_conflict`
 - `priority_conflict`
 - `dependency_conflict`
@@ -192,6 +191,7 @@ Resolve conflicts between multiple VPs.
 - `other`
 
 **Example**:
+
 ```bash
 curl -X POST /api/orchestrators/conflicts \
   -H "Content-Type: application/json" \
@@ -209,6 +209,7 @@ curl -X POST /api/orchestrators/conflicts \
 ```
 
 **Success Response** (200):
+
 ```json
 {
   "data": {
@@ -243,21 +244,22 @@ All errors follow this structure:
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| VP_COORDINATION_NOT_FOUND | Orchestrator or task not found |
-| UNAUTHORIZED | Authentication required |
-| FORBIDDEN | Insufficient permissions |
-| VALIDATION_ERROR | Invalid input data |
-| VP_NOT_FOUND | Specified Orchestrator doesn't exist |
-| TASK_NOT_FOUND | Specified task doesn't exist |
-| DIFFERENT_ORGANIZATION | Orchestrators in different organizations |
-| INVALID_OWNERSHIP | Task doesn't belong to Orchestrator |
-| INTERNAL_ERROR | Server error |
+| Code                      | Description                              |
+| ------------------------- | ---------------------------------------- |
+| VP_COORDINATION_NOT_FOUND | Orchestrator or task not found           |
+| UNAUTHORIZED              | Authentication required                  |
+| FORBIDDEN                 | Insufficient permissions                 |
+| VALIDATION_ERROR          | Invalid input data                       |
+| VP_NOT_FOUND              | Specified Orchestrator doesn't exist     |
+| TASK_NOT_FOUND            | Specified task doesn't exist             |
+| DIFFERENT_ORGANIZATION    | Orchestrators in different organizations |
+| INVALID_OWNERSHIP         | Task doesn't belong to Orchestrator      |
+| INTERNAL_ERROR            | Server error                             |
 
 ## Rate Limiting
 
 Standard rate limits apply:
+
 - 100 requests per minute per user
 - 1000 requests per hour per organization
 
@@ -312,7 +314,7 @@ await client.delegate({
   fromVpId: 'vp_123',
   toVpId: 'vp_456',
   taskId: 'task_789',
-  note: 'Better fit for your skills'
+  note: 'Better fit for your skills',
 });
 
 // Collaborate
@@ -320,7 +322,7 @@ await client.collaborate({
   vpId: 'vp_123',
   taskId: 'task_789',
   requiredVpIds: ['vp_456', 'vp_789'],
-  roles: { 'vp_456': 'reviewer' }
+  roles: { vp_456: 'reviewer' },
 });
 
 // Handoff
@@ -328,20 +330,21 @@ await client.handoff({
   fromVpId: 'vp_123',
   toVpId: 'vp_456',
   taskId: 'task_789',
-  context: { progress: '50%' }
+  context: { progress: '50%' },
 });
 
 // Resolve conflict
 await client.resolveConflict({
   vpIds: ['vp_123', 'vp_456'],
   conflictType: 'priority_conflict',
-  resolution: { decision: 'split_tasks' }
+  resolution: { decision: 'split_tasks' },
 });
 ```
 
 ## Support
 
 For issues or questions:
+
 - Documentation: `/docs/VP_COORDINATION_IMPLEMENTATION.md`
 - API Issues: Create ticket in issue tracker
 - Security: Report via security@neolith.ai

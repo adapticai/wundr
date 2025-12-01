@@ -176,8 +176,8 @@ export function createMockRedis(): MockRedis {
   const isExpired = (key: string): boolean => {
     const expiry = store.ttls.get(key);
     if (expiry === undefined) {
-return false;
-}
+      return false;
+    }
     return Date.now() >= expiry;
   };
 
@@ -212,14 +212,14 @@ return false;
       async (
         key: string,
         value: string,
-        options?: { EX?: number; PX?: number; NX?: boolean; XX?: boolean },
+        options?: { EX?: number; PX?: number; NX?: boolean; XX?: boolean }
       ): Promise<'OK' | null> => {
         if (options?.NX && store.strings.has(key)) {
-return null;
-}
+          return null;
+        }
         if (options?.XX && !store.strings.has(key)) {
-return null;
-}
+          return null;
+        }
 
         store.strings.set(key, value);
 
@@ -231,7 +231,7 @@ return null;
         }
 
         return 'OK';
-      },
+      }
     ),
 
     del: vi.fn(async (...keys: string[]): Promise<number> => {
@@ -251,20 +251,18 @@ return null;
     }),
 
     mget: vi.fn(async (...keys: string[]): Promise<RedisValue[]> => {
-      return keys.map((key) => {
+      return keys.map(key => {
         cleanExpired(key);
         return store.strings.get(key) ?? null;
       });
     }),
 
-    mset: vi.fn(
-      async (keyValues: Record<string, string>): Promise<'OK'> => {
-        for (const [key, value] of Object.entries(keyValues)) {
-          store.strings.set(key, value);
-        }
-        return 'OK';
-      },
-    ),
+    mset: vi.fn(async (keyValues: Record<string, string>): Promise<'OK'> => {
+      for (const [key, value] of Object.entries(keyValues)) {
+        store.strings.set(key, value);
+      }
+      return 'OK';
+    }),
 
     incr: vi.fn(async (key: string): Promise<number> => {
       cleanExpired(key);
@@ -287,13 +285,13 @@ return null;
         store.strings.set(key, value);
         store.ttls.set(key, Date.now() + seconds * 1000);
         return 'OK';
-      },
+      }
     ),
 
     setnx: vi.fn(async (key: string, value: string): Promise<number> => {
       if (store.strings.has(key)) {
-return 0;
-}
+        return 0;
+      }
       store.strings.set(key, value);
       return 1;
     }),
@@ -309,11 +307,7 @@ return 0;
     }),
 
     hset: vi.fn(
-      async (
-        key: string,
-        field: string,
-        value: string,
-      ): Promise<number> => {
+      async (key: string, field: string, value: string): Promise<number> => {
         cleanExpired(key);
         let hash = store.hashes.get(key);
         if (!hash) {
@@ -323,20 +317,20 @@ return 0;
         const isNew = !hash.has(field);
         hash.set(field, value);
         return isNew ? 1 : 0;
-      },
+      }
     ),
 
     hdel: vi.fn(async (key: string, ...fields: string[]): Promise<number> => {
       cleanExpired(key);
       const hash = store.hashes.get(key);
       if (!hash) {
-return 0;
-}
+        return 0;
+      }
       let count = 0;
       for (const field of fields) {
         if (hash.delete(field)) {
-count++;
-}
+          count++;
+        }
       }
       return count;
     }),
@@ -346,10 +340,10 @@ count++;
         cleanExpired(key);
         const hash = store.hashes.get(key);
         if (!hash || hash.size === 0) {
-return null;
-}
+          return null;
+        }
         return Object.fromEntries(hash);
-      },
+      }
     ),
 
     hmset: vi.fn(
@@ -364,19 +358,23 @@ return null;
           hash.set(field, value);
         }
         return 'OK';
-      },
+      }
     ),
 
     hmget: vi.fn(
       async (key: string, ...fields: string[]): Promise<RedisValue[]> => {
         cleanExpired(key);
         const hash = store.hashes.get(key);
-        return fields.map((field) => hash?.get(field) ?? null);
-      },
+        return fields.map(field => hash?.get(field) ?? null);
+      }
     ),
 
     hincrby: vi.fn(
-      async (key: string, field: string, increment: number): Promise<number> => {
+      async (
+        key: string,
+        field: string,
+        increment: number
+      ): Promise<number> => {
         cleanExpired(key);
         let hash = store.hashes.get(key);
         if (!hash) {
@@ -387,7 +385,7 @@ return null;
         const newValue = current + increment;
         hash.set(field, String(newValue));
         return newValue;
-      },
+      }
     ),
 
     hexists: vi.fn(async (key: string, field: string): Promise<number> => {
@@ -439,13 +437,13 @@ return null;
       cleanExpired(key);
       const set = store.sets.get(key);
       if (!set) {
-return 0;
-}
+        return 0;
+      }
       let removed = 0;
       for (const member of members) {
         if (set.delete(member)) {
-removed++;
-}
+          removed++;
+        }
       }
       return removed;
     }),
@@ -470,8 +468,8 @@ removed++;
 
     sdiff: vi.fn(async (...keys: string[]): Promise<string[]> => {
       if (keys.length === 0) {
-return [];
-}
+        return [];
+      }
       const firstSet = store.sets.get(keys[0]) ?? new Set();
       const result = new Set(firstSet);
 
@@ -487,8 +485,8 @@ return [];
 
     sinter: vi.fn(async (...keys: string[]): Promise<string[]> => {
       if (keys.length === 0) {
-return [];
-}
+        return [];
+      }
       const firstSet = store.sets.get(keys[0]) ?? new Set();
       const result = new Set(firstSet);
 
@@ -538,26 +536,26 @@ return [];
           const score = scoreMembers[i] as number;
           const member = scoreMembers[i + 1] as string;
           if (!sortedSet.has(member)) {
-added++;
-}
+            added++;
+          }
           sortedSet.set(member, score);
         }
 
         return added;
-      },
+      }
     ),
 
     zrem: vi.fn(async (key: string, ...members: string[]): Promise<number> => {
       cleanExpired(key);
       const sortedSet = store.sortedSets.get(key);
       if (!sortedSet) {
-return 0;
-}
+        return 0;
+      }
       let removed = 0;
       for (const member of members) {
         if (sortedSet.delete(member)) {
-removed++;
-}
+          removed++;
+        }
       }
       return removed;
     }),
@@ -567,15 +565,15 @@ removed++;
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
         if (!sortedSet) {
-return [];
-}
+          return [];
+        }
 
         const sorted = Array.from(sortedSet.entries()).sort(
-          (a, b) => a[1] - b[1],
+          (a, b) => a[1] - b[1]
         );
         const actualStop = stop < 0 ? sorted.length + stop + 1 : stop + 1;
         return sorted.slice(start, actualStop).map(([member]) => member);
-      },
+      }
     ),
 
     zrangebyscore: vi.fn(
@@ -583,14 +581,14 @@ return [];
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
         if (!sortedSet) {
-return [];
-}
+          return [];
+        }
 
         return Array.from(sortedSet.entries())
           .filter(([, score]) => score >= min && score <= max)
           .sort((a, b) => a[1] - b[1])
           .map(([member]) => member);
-      },
+      }
     ),
 
     zrevrange: vi.fn(
@@ -598,15 +596,15 @@ return [];
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
         if (!sortedSet) {
-return [];
-}
+          return [];
+        }
 
         const sorted = Array.from(sortedSet.entries()).sort(
-          (a, b) => b[1] - a[1],
+          (a, b) => b[1] - a[1]
         );
         const actualStop = stop < 0 ? sorted.length + stop + 1 : stop + 1;
         return sorted.slice(start, actualStop).map(([member]) => member);
-      },
+      }
     ),
 
     zscore: vi.fn(
@@ -615,7 +613,7 @@ return [];
         const sortedSet = store.sortedSets.get(key);
         const score = sortedSet?.get(member);
         return score !== undefined ? String(score) : null;
-      },
+      }
     ),
 
     zcard: vi.fn(async (key: string): Promise<number> => {
@@ -629,55 +627,60 @@ return [];
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
         if (!sortedSet || !sortedSet.has(member)) {
-return null;
-}
+          return null;
+        }
 
         const sorted = Array.from(sortedSet.entries()).sort(
-          (a, b) => a[1] - b[1],
+          (a, b) => a[1] - b[1]
         );
         return sorted.findIndex(([m]) => m === member);
-      },
+      }
     ),
 
     // ==========================================================================
     // PUB/SUB OPERATIONS
     // ==========================================================================
 
-    publish: vi.fn(async (channel: string, message: string): Promise<number> => {
-      publishedMessages.push({ channel, message });
+    publish: vi.fn(
+      async (channel: string, message: string): Promise<number> => {
+        publishedMessages.push({ channel, message });
 
-      // Notify direct subscribers
-      const channelSubs = subscriptions.get(channel);
-      if (channelSubs) {
-        for (const callback of channelSubs) {
-          callback(channel, message);
-        }
-      }
-
-      // Notify pattern subscribers
-      for (const [pattern, callbacks] of patternSubscriptions) {
-        const regex = new RegExp(
-          '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
-        );
-        if (regex.test(channel)) {
-          for (const callback of callbacks) {
-            callback(pattern, channel, message);
+        // Notify direct subscribers
+        const channelSubs = subscriptions.get(channel);
+        if (channelSubs) {
+          for (const callback of channelSubs) {
+            callback(channel, message);
           }
         }
-      }
 
-      return (channelSubs?.size ?? 0) + patternSubscriptions.size;
-    }),
+        // Notify pattern subscribers
+        for (const [pattern, callbacks] of patternSubscriptions) {
+          const regex = new RegExp(
+            '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$'
+          );
+          if (regex.test(channel)) {
+            for (const callback of callbacks) {
+              callback(pattern, channel, message);
+            }
+          }
+        }
+
+        return (channelSubs?.size ?? 0) + patternSubscriptions.size;
+      }
+    ),
 
     subscribe: vi.fn(
-      async (channel: string, callback: SubscriptionCallback): Promise<void> => {
+      async (
+        channel: string,
+        callback: SubscriptionCallback
+      ): Promise<void> => {
         let subs = subscriptions.get(channel);
         if (!subs) {
           subs = new Set();
           subscriptions.set(channel, subs);
         }
         subs.add(callback);
-      },
+      }
     ),
 
     unsubscribe: vi.fn(async (channel: string): Promise<void> => {
@@ -687,7 +690,7 @@ return null;
     psubscribe: vi.fn(
       async (
         pattern: string,
-        callback: PatternSubscriptionCallback,
+        callback: PatternSubscriptionCallback
       ): Promise<void> => {
         let subs = patternSubscriptions.get(pattern);
         if (!subs) {
@@ -695,7 +698,7 @@ return null;
           patternSubscriptions.set(pattern, subs);
         }
         subs.add(callback);
-      },
+      }
     ),
 
     punsubscribe: vi.fn(async (pattern: string): Promise<void> => {
@@ -714,8 +717,8 @@ return null;
         store.sortedSets.has(key);
 
       if (!keyExists) {
-return 0;
-}
+        return 0;
+      }
       store.ttls.set(key, Date.now() + seconds * 1000);
       return 1;
     }),
@@ -728,45 +731,47 @@ return 0;
         store.sortedSets.has(key);
 
       if (!keyExists) {
-return 0;
-}
+        return 0;
+      }
       store.ttls.set(key, timestamp * 1000);
       return 1;
     }),
 
-    pexpire: vi.fn(async (key: string, milliseconds: number): Promise<number> => {
-      const keyExists =
-        store.strings.has(key) ||
-        store.hashes.has(key) ||
-        store.sets.has(key) ||
-        store.sortedSets.has(key);
+    pexpire: vi.fn(
+      async (key: string, milliseconds: number): Promise<number> => {
+        const keyExists =
+          store.strings.has(key) ||
+          store.hashes.has(key) ||
+          store.sets.has(key) ||
+          store.sortedSets.has(key);
 
-      if (!keyExists) {
-return 0;
-}
-      store.ttls.set(key, Date.now() + milliseconds);
-      return 1;
-    }),
+        if (!keyExists) {
+          return 0;
+        }
+        store.ttls.set(key, Date.now() + milliseconds);
+        return 1;
+      }
+    ),
 
     ttl: vi.fn(async (key: string): Promise<number> => {
       const expiry = store.ttls.get(key);
       if (expiry === undefined) {
-return -1;
-}
+        return -1;
+      }
       if (Date.now() >= expiry) {
-return -2;
-}
+        return -2;
+      }
       return Math.ceil((expiry - Date.now()) / 1000);
     }),
 
     pttl: vi.fn(async (key: string): Promise<number> => {
       const expiry = store.ttls.get(key);
       if (expiry === undefined) {
-return -1;
-}
+        return -1;
+      }
       if (Date.now() >= expiry) {
-return -2;
-}
+        return -2;
+      }
       return expiry - Date.now();
     }),
 
@@ -800,7 +805,7 @@ return -2;
 
     keys: vi.fn(async (pattern: string): Promise<string[]> => {
       const regex = new RegExp(
-        '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
+        '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$'
       );
 
       const allKeys = new Set([
@@ -810,7 +815,7 @@ return -2;
         ...store.sortedSets.keys(),
       ]);
 
-      return Array.from(allKeys).filter((key) => {
+      return Array.from(allKeys).filter(key => {
         cleanExpired(key);
         return regex.test(key) && !isExpired(key);
       });
@@ -819,7 +824,7 @@ return -2;
     scan: vi.fn(
       async (
         cursor: number,
-        options?: { MATCH?: string; COUNT?: number },
+        options?: { MATCH?: string; COUNT?: number }
       ): Promise<{ cursor: number; keys: string[] }> => {
         const pattern = options?.MATCH ?? '*';
         const count = options?.COUNT ?? 10;
@@ -833,23 +838,23 @@ return -2;
           cursor: nextCursor,
           keys: matchingKeys.slice(start, end),
         };
-      },
+      }
     ),
 
     type: vi.fn(async (key: string): Promise<string> => {
       cleanExpired(key);
       if (store.strings.has(key)) {
-return 'string';
-}
+        return 'string';
+      }
       if (store.hashes.has(key)) {
-return 'hash';
-}
+        return 'hash';
+      }
       if (store.sets.has(key)) {
-return 'set';
-}
+        return 'set';
+      }
       if (store.sortedSets.has(key)) {
-return 'zset';
-}
+        return 'zset';
+      }
       return 'none';
     }),
 

@@ -363,7 +363,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
         // Silently fail analytics tracking to avoid disrupting user experience
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   const trackPageView = useCallback(
@@ -373,7 +373,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
         eventData: { page, url: window.location.href },
       });
     },
-    [track],
+    [track]
   );
 
   const trackClick = useCallback(
@@ -383,7 +383,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
         eventData: { element, ...metadata },
       });
     },
-    [track],
+    [track]
   );
 
   return { track, trackPageView, trackClick, sessionId: sessionId.current };
@@ -440,7 +440,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
  */
 export function useWorkspaceAnalytics(
   workspaceId: string,
-  initialParams: AnalyticsQueryParams = {},
+  initialParams: AnalyticsQueryParams = {}
 ): UseWorkspaceAnalyticsReturn {
   const [data, setData] = useState<WorkspaceAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -471,13 +471,16 @@ export function useWorkspaceAnalytics(
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to fetch analytics: ${response.statusText}`);
+        throw new Error(
+          errorData.error || `Failed to fetch analytics: ${response.statusText}`
+        );
       }
 
       const analyticsData: WorkspaceAnalytics = await response.json();
       setData(analyticsData);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('[useWorkspaceAnalytics] Fetch error:', err);
     } finally {
@@ -515,7 +518,8 @@ export function useWorkspaceAnalytics(
         // Handle file download
         const contentDisposition = response.headers.get('Content-Disposition');
         const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
-        const filename = filenameMatch?.[1] || `analytics-${workspaceId}.${options.format}`;
+        const filename =
+          filenameMatch?.[1] || `analytics-${workspaceId}.${options.format}`;
 
         const blob = await response.blob();
         const downloadUrl = URL.createObjectURL(blob);
@@ -527,7 +531,8 @@ export function useWorkspaceAnalytics(
         document.body.removeChild(link);
         URL.revokeObjectURL(downloadUrl);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Export failed';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Export failed';
         setError(errorMessage);
         console.error('[useWorkspaceAnalytics] Export error:', err);
         throw err;
@@ -535,12 +540,15 @@ export function useWorkspaceAnalytics(
         setIsExporting(false);
       }
     },
-    [workspaceId, params],
+    [workspaceId, params]
   );
 
-  const updateParams = useCallback((newParams: Partial<AnalyticsQueryParams>): void => {
-    setParams((prev) => ({ ...prev, ...newParams }));
-  }, []);
+  const updateParams = useCallback(
+    (newParams: Partial<AnalyticsQueryParams>): void => {
+      setParams(prev => ({ ...prev, ...newParams }));
+    },
+    []
+  );
 
   useEffect(() => {
     fetchAnalytics();
@@ -588,7 +596,10 @@ export function useWorkspaceAnalytics(
  * }
  * ```
  */
-export function useMetrics(workspaceId: string, period: string = 'month'): UseMetricsReturn {
+export function useMetrics(
+  workspaceId: string,
+  period: string = 'month'
+): UseMetricsReturn {
   const [metrics, setMetrics] = useState<UsageMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -599,18 +610,21 @@ export function useMetrics(workspaceId: string, period: string = 'month'): UseMe
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`,
+        `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to fetch metrics: ${response.statusText}`);
+        throw new Error(
+          errorData.error || `Failed to fetch metrics: ${response.statusText}`
+        );
       }
 
       const data: UsageMetrics = await response.json();
       setMetrics(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('[useMetrics] Fetch error:', err);
     } finally {
@@ -654,7 +668,7 @@ export function useMetrics(workspaceId: string, period: string = 'month'): UseMe
  */
 export function useRealTimeStats(
   workspaceId: string,
-  refreshInterval = 10000,
+  refreshInterval = 10000
 ): UseRealTimeStatsReturn {
   const [stats, setStats] = useState<RealTimeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -662,7 +676,9 @@ export function useRealTimeStats(
   useEffect(() => {
     const fetchStats = async (): Promise<void> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/analytics/realtime`);
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/analytics/realtime`
+        );
         if (response.ok) {
           const data: RealTimeStats = await response.json();
           setStats(data);

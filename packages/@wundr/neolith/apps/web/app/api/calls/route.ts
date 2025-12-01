@@ -23,7 +23,10 @@ import {
   CALL_ERROR_CODES,
   type CallResponse,
 } from '@/lib/validations/call';
-import { createErrorResponse, ORG_ERROR_CODES } from '@/lib/validations/organization';
+import {
+  createErrorResponse,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
 
 import type { NextRequest } from 'next/server';
 
@@ -46,7 +49,9 @@ interface SendCallInviteParams {
  *
  * @param params - Call invite parameters
  */
-async function sendCallInviteNotifications(params: SendCallInviteParams): Promise<void> {
+async function sendCallInviteNotifications(
+  params: SendCallInviteParams
+): Promise<void> {
   const {
     callId,
     channelId,
@@ -70,8 +75,8 @@ async function sendCallInviteNotifications(params: SendCallInviteParams): Promis
 
   // Send notifications to each invited user (exclude the inviter)
   const notificationPromises = invitedUserIds
-    .filter((userId) => userId !== inviterUserId)
-    .map(async (userId) => {
+    .filter(userId => userId !== inviterUserId)
+    .map(async userId => {
       try {
         await notificationService.createNotification({
           userId,
@@ -92,7 +97,10 @@ async function sendCallInviteNotifications(params: SendCallInviteParams): Promis
         });
       } catch (error) {
         // Log error but don't fail the entire operation
-        console.error(`[sendCallInviteNotifications] Failed to notify user ${userId}:`, error);
+        console.error(
+          `[sendCallInviteNotifications] Failed to notify user ${userId}:`,
+          error
+        );
       }
     });
 
@@ -217,8 +225,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -228,8 +239,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -239,9 +253,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -251,8 +265,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const access = await verifyChannelAccess(channelId, session.user.id);
     if (!access) {
       return NextResponse.json(
-        createErrorResponse('Channel not found or access denied', CALL_ERROR_CODES.CHANNEL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Channel not found or access denied',
+          CALL_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -274,9 +291,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'An active call already exists in this channel',
-          CALL_ERROR_CODES.ALREADY_IN_CALL,
+          CALL_ERROR_CODES.ALREADY_IN_CALL
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -301,7 +318,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         VALUES (${callId}, ${channelId}, ${type}, 'pending', ${roomName}, ${session.user.id}, ${now}, ${now})
       `;
     } catch (callsTableError) {
-      console.error('[POST /api/calls] Calls table not available, using channel settings:', callsTableError);
+      console.error(
+        '[POST /api/calls] Calls table not available, using channel settings:',
+        callsTableError
+      );
       // If calls table doesn't exist, store in channel settings temporarily
       await prisma.channel.update({
         where: { id: channelId },
@@ -327,7 +347,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         VALUES (${`part_${Date.now().toString(36)}`}, ${callId}, ${session.user.id}, ${now}, true, ${type === 'video'})
       `;
     } catch (participantError) {
-      console.error('[POST /api/calls] Participant tracking not available:', participantError);
+      console.error(
+        '[POST /api/calls] Participant tracking not available:',
+        participantError
+      );
       // Table may not exist yet
     }
 
@@ -360,15 +383,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    return NextResponse.json({
-      data: response,
-      message: 'Call created successfully',
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        data: response,
+        message: 'Call created successfully',
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[POST /api/calls] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -387,8 +416,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -400,13 +432,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { channelId, status, type, activeOnly, page, limit, sortBy, sortOrder } = parseResult.data;
+    const {
+      channelId,
+      status,
+      type,
+      activeOnly,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    } = parseResult.data;
     const offset = (page - 1) * limit;
 
     // Build where clause
@@ -435,7 +476,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where: { userId: session.user.id },
       select: { channelId: true },
     });
-    const channelIds = userChannels.map((m) => m.channelId);
+    const channelIds = userChannels.map(m => m.channelId);
 
     if (channelIds.length === 0) {
       return NextResponse.json({
@@ -457,23 +498,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     try {
       // Build ORDER BY clause based on sortBy and sortOrder
-      const sortColumn = sortBy === 'startedAt' ? 'c.started_at' : 'c.created_at';
+      const sortColumn =
+        sortBy === 'startedAt' ? 'c.started_at' : 'c.created_at';
       const sortDirection = sortOrder === 'asc' ? 'ASC' : 'DESC';
 
       // Attempt to get calls from dedicated table
-      const callResults = await prisma.$queryRaw<Array<{
-        id: string;
-        channel_id: string;
-        type: string;
-        status: string;
-        room_name: string;
-        started_at: Date | null;
-        ended_at: Date | null;
-        created_at: Date;
-        created_by_id: string;
-        creator_name: string | null;
-        participant_count: number;
-      }>>`
+      const callResults = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          channel_id: string;
+          type: string;
+          status: string;
+          room_name: string;
+          started_at: Date | null;
+          ended_at: Date | null;
+          created_at: Date;
+          created_by_id: string;
+          creator_name: string | null;
+          participant_count: number;
+        }>
+      >`
         SELECT
           c.id,
           c.channel_id,
@@ -495,7 +539,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         OFFSET ${offset}
       `;
 
-      calls = callResults.map((row) => ({
+      calls = callResults.map(row => ({
         id: row.id,
         channelId: row.channel_id,
         type: row.type as 'audio' | 'video',
@@ -528,7 +572,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       for (const channel of channels) {
-        const settings = channel.settings as { activeCall?: CallResponse } | null;
+        const settings = channel.settings as {
+          activeCall?: CallResponse;
+        } | null;
         if (settings?.activeCall) {
           calls.push({
             ...settings.activeCall,
@@ -555,8 +601,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/calls] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

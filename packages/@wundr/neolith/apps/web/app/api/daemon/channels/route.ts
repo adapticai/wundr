@@ -11,13 +11,14 @@
 
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
  * Error codes for channel operations
@@ -42,7 +43,9 @@ interface AccessTokenPayload {
 /**
  * Verify daemon token from Authorization header
  */
-async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+async function verifyDaemonToken(
+  request: NextRequest
+): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid authorization header');
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -97,7 +100,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -128,12 +131,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Format response
-    const channels = memberships.map((membership) => ({
+    const channels = memberships.map(membership => ({
       id: membership.channel.id,
       name: membership.channel.name,
       description: membership.channel.description,
       type: membership.channel.type,
-      isPrivate: membership.channel.type === 'PRIVATE' || membership.channel.type === 'DM',
+      isPrivate:
+        membership.channel.type === 'PRIVATE' ||
+        membership.channel.type === 'DM',
       workspace: membership.channel.workspace,
       memberCount: membership.channel._count.channelMembers,
       messageCount: membership.channel._count.messages,
@@ -148,8 +153,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/daemon/channels] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to get channels', code: CHANNEL_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Failed to get channels',
+        code: CHANNEL_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }

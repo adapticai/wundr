@@ -13,7 +13,12 @@ export type DeploymentType = 'service' | 'agent' | 'workflow' | 'integration';
 /**
  * Deployment status states
  */
-export type DeploymentStatus = 'deploying' | 'running' | 'stopped' | 'failed' | 'updating';
+export type DeploymentStatus =
+  | 'deploying'
+  | 'running'
+  | 'stopped'
+  | 'failed'
+  | 'updating';
 
 /**
  * Deployment environment targets

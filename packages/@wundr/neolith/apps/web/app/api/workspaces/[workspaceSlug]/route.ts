@@ -91,15 +91,18 @@ async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -112,9 +115,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -154,9 +157,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -172,15 +175,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -193,9 +199,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -209,9 +215,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Workspace Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -221,8 +227,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -233,9 +242,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -246,9 +255,13 @@ export async function PATCH(
       where: { id: workspaceId },
       data: {
         ...(input.name && { name: input.name }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.iconUrl !== undefined && { iconUrl: input.iconUrl }),
-        ...(input.settings && { settings: input.settings as Prisma.InputJsonValue }),
+        ...(input.settings && {
+          settings: input.settings as Prisma.InputJsonValue,
+        }),
       },
       include: {
         organization: {
@@ -276,9 +289,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -294,15 +307,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -315,9 +331,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -328,9 +344,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only organization administrators can delete workspaces',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -347,9 +363,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

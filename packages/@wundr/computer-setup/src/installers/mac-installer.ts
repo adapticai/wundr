@@ -45,24 +45,30 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    _platform: SetupPlatform
+  ): Promise<void> {
     // Install Xcode Command Line Tools
     await this.installXcodeCommandLineTools();
-    
+
     // Install Homebrew
     await this.installHomebrew();
-    
+
     // Install essential development packages
     await this.installEssentialPackages(profile);
-    
+
     // Install applications
     await this.installApplications(profile);
-    
+
     // Configure macOS settings
     await this.configureMacOS(profile);
   }
 
-  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+  async configure(
+    profile: DeveloperProfile,
+    _platform: SetupPlatform
+  ): Promise<void> {
     await this.configureMacOS(profile);
     await this.configureShell(profile);
     await this.setupDotfiles(profile);
@@ -162,8 +168,12 @@ export class MacInstaller implements BaseInstaller {
       await execa('xcode-select', ['--install']);
 
       // Wait for installation to complete
-      this.logger.info('Please complete the Xcode Command Line Tools installation in the popup dialog.');
-      this.logger.info('The setup will continue once installation is complete...');
+      this.logger.info(
+        'Please complete the Xcode Command Line Tools installation in the popup dialog.'
+      );
+      this.logger.info(
+        'The setup will continue once installation is complete...'
+      );
 
       // Poll until installation is complete
       let installed = false;
@@ -184,11 +194,13 @@ export class MacInstaller implements BaseInstaller {
       this.logger.info('Homebrew already installed');
     } catch {
       this.logger.info('Installing Homebrew...');
-      const installScript = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
+      const installScript =
+        '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
       await execa('bash', ['-c', installScript]);
-      
+
       // Add Homebrew to PATH for Apple Silicon Macs
-      const homebrewPath = process.arch === 'arm64' ? '/opt/homebrew/bin' : '/usr/local/bin';
+      const homebrewPath =
+        process.arch === 'arm64' ? '/opt/homebrew/bin' : '/usr/local/bin';
       const currentPath = process.env.PATH || '';
       if (!currentPath.includes(homebrewPath)) {
         process.env.PATH = `${homebrewPath}:${currentPath}`;
@@ -196,7 +208,9 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
-  private async installEssentialPackages(profile: DeveloperProfile): Promise<void> {
+  private async installEssentialPackages(
+    profile: DeveloperProfile
+  ): Promise<void> {
     const essentialPackages = [
       'curl',
       'wget',
@@ -226,7 +240,8 @@ export class MacInstaller implements BaseInstaller {
       try {
         await execa('brew', ['install', pkg]);
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.warn(`Failed to install ${pkg}: ${errorMessage}`);
       }
     }
@@ -244,7 +259,9 @@ export class MacInstaller implements BaseInstaller {
 
         // Check if already installed first
         try {
-          const { stdout } = await execa('brew', ['list', '--cask', app], { timeout: 10000 });
+          const { stdout } = await execa('brew', ['list', '--cask', app], {
+            timeout: 10000,
+          });
           if (stdout) {
             this.logger.info(`${app} already installed, skipping`);
             continue;
@@ -258,12 +275,18 @@ export class MacInstaller implements BaseInstaller {
         this.logger.info(`Installed ${app}`);
       } catch (error: unknown) {
         const execaErr = error as ExecaError;
-        if (execaErr.stderr?.includes('already an App at') || execaErr.stderr?.includes('is already installed')) {
+        if (
+          execaErr.stderr?.includes('already an App at') ||
+          execaErr.stderr?.includes('is already installed')
+        ) {
           this.logger.info(`${app} already installed, skipping`);
         } else if (execaErr.timedOut) {
-          this.logger.warn(`${app} installation timed out after 5 minutes, skipping`);
+          this.logger.warn(
+            `${app} installation timed out after 5 minutes, skipping`
+          );
         } else {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           this.logger.warn(`Failed to install ${app}: ${errorMessage}`);
         }
       }
@@ -274,7 +297,8 @@ export class MacInstaller implements BaseInstaller {
       try {
         await execa('mas', ['install', app.id]);
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.warn(`Failed to install ${app.name}: ${errorMessage}`);
       }
     }
@@ -286,7 +310,7 @@ export class MacInstaller implements BaseInstaller {
   } {
     const casks: string[] = [];
     const masApps: Array<{ id: string; name: string }> = [];
-    
+
     // Editor-specific applications
     const editor = profile.preferences?.editor || 'vscode';
     switch (editor) {
@@ -300,7 +324,7 @@ export class MacInstaller implements BaseInstaller {
         casks.push('intellij-idea-ce');
         break;
     }
-    
+
     // Role-specific applications
     switch (profile.role) {
       case 'frontend':
@@ -319,7 +343,7 @@ export class MacInstaller implements BaseInstaller {
         casks.push('anaconda', 'jupyter-notebook-viewer');
         break;
     }
-    
+
     // Communication tools
     if (profile.tools?.communication?.slack) {
       casks.push('slack');
@@ -333,16 +357,16 @@ export class MacInstaller implements BaseInstaller {
     if (profile.tools?.communication?.zoom) {
       casks.push('zoom');
     }
-    
+
     // Common development tools
     casks.push(
       'iterm2',
       'rectangle', // Window manager
       'raycast', // Spotlight replacement
       'obsidian', // Note-taking
-      'the-unarchiver',
+      'the-unarchiver'
     );
-    
+
     return { casks, masApps };
   }
 
@@ -350,46 +374,46 @@ export class MacInstaller implements BaseInstaller {
     const commands = [
       // Show hidden files in Finder
       'defaults write com.apple.finder AppleShowAllFiles -bool true',
-      
+
       // Show all filename extensions
       'defaults write NSGlobalDomain AppleShowAllExtensions -bool true',
-      
+
       // Disable the warning when changing a file extension
       'defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false',
-      
+
       // Show path bar in Finder
       'defaults write com.apple.finder ShowPathbar -bool true',
-      
+
       // Show status bar in Finder
       'defaults write com.apple.finder ShowStatusBar -bool true',
-      
+
       // Faster key repeat
       'defaults write NSGlobalDomain KeyRepeat -int 2',
       'defaults write NSGlobalDomain InitialKeyRepeat -int 15',
-      
+
       // Disable automatic capitalization
       'defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false',
-      
+
       // Disable smart quotes
       'defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false',
-      
+
       // Disable smart dashes
       'defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false',
-      
+
       // Enable tap to click
       'defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true',
       'defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1',
-      
+
       // Three-finger drag
       'defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true',
       'defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true',
-      
+
       // Hot corners - disable screensaver
       'defaults write com.apple.dock wvous-tl-corner -int 0',
       'defaults write com.apple.dock wvous-tr-corner -int 0',
       'defaults write com.apple.dock wvous-bl-corner -int 0',
       'defaults write com.apple.dock wvous-br-corner -int 0',
-      
+
       // Dock settings
       'defaults write com.apple.dock autohide -bool true',
       'defaults write com.apple.dock autohide-delay -float 0',
@@ -397,21 +421,22 @@ export class MacInstaller implements BaseInstaller {
       'defaults write com.apple.dock magnification -bool false',
       'defaults write com.apple.dock tilesize -int 48',
       'defaults write com.apple.dock orientation -string "bottom"',
-      
+
       // Menu bar
       'defaults write com.apple.menuextra.clock DateFormat -string "EEE MMM d  h:mm:ss a"',
       'defaults write com.apple.menuextra.battery ShowPercent -string "YES"',
     ];
-    
+
     for (const cmd of commands) {
       try {
         await execa('bash', ['-c', cmd]);
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.warn(`Failed to execute: ${cmd} - ${errorMessage}`);
       }
     }
-    
+
     // Restart affected services
     await execa('killall', ['Finder']);
     await execa('killall', ['Dock']);
@@ -436,14 +461,15 @@ export class MacInstaller implements BaseInstaller {
   private async configureZsh(_profile: DeveloperProfile): Promise<void> {
     const homeDir = os.homedir();
     const zshrcPath = path.join(homeDir, '.zshrc');
-    
+
     // Install Oh My Zsh if not present
     const ohmyzshDir = path.join(homeDir, '.oh-my-zsh');
-    if (!await fs.pathExists(ohmyzshDir)) {
-      const installScript = 'sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"';
+    if (!(await fs.pathExists(ohmyzshDir))) {
+      const installScript =
+        'sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"';
       await execa('bash', ['-c', installScript]);
     }
-    
+
     // Configure .zshrc
     const zshrcContent = `
 # Oh My Zsh configuration
@@ -479,9 +505,9 @@ function cleanup() {
   find . -type f -name "*.DS_Store" -delete
 }
 `;
-    
+
     await fs.writeFile(zshrcPath, zshrcContent.trim());
-    
+
     // Set zsh as default shell
     await execa('chsh', ['-s', '/bin/zsh']);
   }
@@ -489,7 +515,7 @@ function cleanup() {
   private async configureFish(_profile: DeveloperProfile): Promise<void> {
     const configDir = path.join(os.homedir(), '.config', 'fish');
     await fs.ensureDir(configDir);
-    
+
     const configPath = path.join(configDir, 'config.fish');
     const fishConfig = `
 # Fish configuration
@@ -510,9 +536,9 @@ function cleanup
     find . -type f -name "*.DS_Store" -delete
 end
 `;
-    
+
     await fs.writeFile(configPath, fishConfig.trim());
-    
+
     // Set fish as default shell
     await execa('chsh', ['-s', '/opt/homebrew/bin/fish']);
   }
@@ -543,9 +569,9 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 `;
-    
+
     await fs.writeFile(bashrcPath, bashrcContent.trim());
-    
+
     // Source in .bash_profile
     const bashProfilePath = path.join(os.homedir(), '.bash_profile');
     const bashProfileContent = `
@@ -553,7 +579,7 @@ if [ -f ~/.bashrc ]; then
   source ~/.bashrc
 fi
 `;
-    
+
     await fs.writeFile(bashProfilePath, bashProfileContent.trim());
   }
 
@@ -561,7 +587,7 @@ fi
     // This could set up a dotfiles repository
     // For now, just ensure basic dotfiles exist
     const homeDir = os.homedir();
-    
+
     // Create .gitignore_global
     const gitignoreGlobal = path.join(homeDir, '.gitignore_global');
     const gitignoreContent = `
@@ -580,9 +606,14 @@ node_modules/
 *.swo
 *~
 `;
-    
+
     await fs.writeFile(gitignoreGlobal, gitignoreContent.trim());
-    await execa('git', ['config', '--global', 'core.excludesfile', gitignoreGlobal]);
+    await execa('git', [
+      'config',
+      '--global',
+      'core.excludesfile',
+      gitignoreGlobal,
+    ]);
   }
 
   // Validation methods
@@ -606,7 +637,7 @@ node_modules/
 
   private async validateEssentialPackages(): Promise<boolean> {
     const essentialTools = ['curl', 'wget', 'jq', 'tree', 'gh'];
-    
+
     for (const tool of essentialTools) {
       try {
         await which(tool);
@@ -614,14 +645,16 @@ node_modules/
         return false;
       }
     }
-    
+
     return true;
   }
 
-  private async validateApplications(profile: DeveloperProfile): Promise<boolean> {
+  private async validateApplications(
+    profile: DeveloperProfile
+  ): Promise<boolean> {
     // Basic validation - check if key applications are installed
     const applications = this.getApplicationsForProfile(profile);
-    
+
     // This is a simplified check
     return applications.casks.length > 0;
   }
@@ -629,18 +662,28 @@ node_modules/
   private async validateMacOSConfig(): Promise<boolean> {
     try {
       // Check if some key settings are applied
-      const { stdout } = await execa('defaults', ['read', 'com.apple.finder', 'ShowPathbar']);
+      const { stdout } = await execa('defaults', [
+        'read',
+        'com.apple.finder',
+        'ShowPathbar',
+      ]);
       return stdout.trim() === '1';
     } catch {
       return false;
     }
   }
 
-  private async validateShellConfig(profile: DeveloperProfile): Promise<boolean> {
+  private async validateShellConfig(
+    profile: DeveloperProfile
+  ): Promise<boolean> {
     try {
       const { stdout } = await execa('echo', ['$SHELL']);
-      const expectedShell = profile.preferences?.shell === 'zsh' ? 'zsh' :
-                          profile.preferences?.shell === 'fish' ? 'fish' : 'bash';
+      const expectedShell =
+        profile.preferences?.shell === 'zsh'
+          ? 'zsh'
+          : profile.preferences?.shell === 'fish'
+            ? 'fish'
+            : 'bash';
       return stdout.includes(expectedShell);
     } catch {
       return false;

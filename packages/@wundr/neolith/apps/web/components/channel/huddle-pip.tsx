@@ -91,7 +91,7 @@ export function HuddlePip({
         'transition-shadow',
         isHovered && 'shadow-3xl',
         isDragging && 'cursor-grabbing',
-        className,
+        className
       )}
       style={{
         left: `${position.x}px`,
@@ -105,112 +105,121 @@ export function HuddlePip({
         className={cn(
           'flex items-center justify-between gap-2 px-3 py-2',
           'border-b bg-muted/50 rounded-t-lg',
-          'cursor-grab active:cursor-grabbing',
+          'cursor-grab active:cursor-grabbing'
         )}
         onMouseDown={handleMouseDown}
       >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-sm font-medium truncate">Huddle • #{channelName}</span>
+        <div className='flex items-center gap-2 flex-1 min-w-0'>
+          <div className='h-2 w-2 bg-green-500 rounded-full animate-pulse' />
+          <span className='text-sm font-medium truncate'>
+            Huddle • #{channelName}
+          </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className='flex items-center gap-1'>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={onExpand}
-            className="h-6 w-6 p-0"
-            title="Expand"
+            className='h-6 w-6 p-0'
+            title='Expand'
           >
-            <Maximize2 className="h-3 w-3" />
+            <Maximize2 className='h-3 w-3' />
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={onLeave}
-            className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
-            title="Leave huddle"
+            className='h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground'
+            title='Leave huddle'
           >
-            <X className="h-3 w-3" />
+            <X className='h-3 w-3' />
           </Button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-3">
+      <div className='p-3'>
         {/* Participants grid */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {activeParticipants.slice(0, 6).map((participant) => (
+        <div className='grid grid-cols-3 gap-2 mb-3'>
+          {activeParticipants.slice(0, 6).map(participant => (
             <div
               key={participant.id}
-              className="relative aspect-square rounded-lg bg-muted overflow-hidden"
+              className='relative aspect-square rounded-lg bg-muted overflow-hidden'
             >
               {participant.isVideoEnabled ? (
-                <div className="flex items-center justify-center h-full bg-muted">
-                  <Video className="h-6 w-6 text-muted-foreground" />
+                <div className='flex items-center justify-center h-full bg-muted'>
+                  <Video className='h-6 w-6 text-muted-foreground' />
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-2xl font-medium">
+                <div className='flex items-center justify-center h-full text-2xl font-medium'>
                   {participant.user?.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={participant.user.avatarUrl}
                       alt={participant.displayName ?? ''}
-                      className="h-full w-full object-cover"
+                      className='h-full w-full object-cover'
                     />
                   ) : (
-                    getInitials(participant.displayName ?? participant.user?.name ?? '?')
+                    getInitials(
+                      participant.displayName ?? participant.user?.name ?? '?'
+                    )
                   )}
                 </div>
               )}
               {!participant.isAudioEnabled && (
-                <div className="absolute bottom-1 right-1 rounded-full bg-background/90 p-1">
-                  <MicOff className="h-3 w-3 text-red-500" />
+                <div className='absolute bottom-1 right-1 rounded-full bg-background/90 p-1'>
+                  <MicOff className='h-3 w-3 text-red-500' />
                 </div>
               )}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1">
-                <p className="text-xs text-white font-medium truncate">
-                  {participant.displayName ?? participant.user?.name ?? 'Unknown'}
+              <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1'>
+                <p className='text-xs text-white font-medium truncate'>
+                  {participant.displayName ??
+                    participant.user?.name ??
+                    'Unknown'}
                 </p>
               </div>
             </div>
           ))}
           {activeParticipants.length > 6 && (
-            <div className="aspect-square rounded-lg bg-muted flex items-center justify-center">
-              <span className="text-sm font-medium">+{activeParticipants.length - 6}</span>
+            <div className='aspect-square rounded-lg bg-muted flex items-center justify-center'>
+              <span className='text-sm font-medium'>
+                +{activeParticipants.length - 6}
+              </span>
             </div>
           )}
         </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-center gap-2">
+        <div className='flex items-center justify-center gap-2'>
           <Button
             variant={isAudioEnabled ? 'outline' : 'destructive'}
-            size="sm"
+            size='sm'
             onClick={onToggleAudio}
-            className="flex-1"
+            className='flex-1'
             title={isAudioEnabled ? 'Mute' : 'Unmute'}
           >
             {isAudioEnabled ? (
-              <Mic className="h-4 w-4" />
+              <Mic className='h-4 w-4' />
             ) : (
-              <MicOff className="h-4 w-4" />
+              <MicOff className='h-4 w-4' />
             )}
           </Button>
           <Button
             variant={isVideoEnabled ? 'outline' : 'destructive'}
-            size="sm"
+            size='sm'
             onClick={onToggleVideo}
-            className="flex-1"
+            className='flex-1'
             title={isVideoEnabled ? 'Stop video' : 'Start video'}
           >
-            <Video className="h-4 w-4" />
+            <Video className='h-4 w-4' />
           </Button>
         </div>
 
         {/* Participant count */}
-        <div className="mt-2 text-center">
-          <p className="text-xs text-muted-foreground">
-            {activeParticipants.length} {activeParticipants.length === 1 ? 'person' : 'people'} in huddle
+        <div className='mt-2 text-center'>
+          <p className='text-xs text-muted-foreground'>
+            {activeParticipants.length}{' '}
+            {activeParticipants.length === 1 ? 'person' : 'people'} in huddle
           </p>
         </div>
       </div>

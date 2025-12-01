@@ -53,7 +53,11 @@ function formatSSEMessage(event: string, data: unknown): string {
 /**
  * Create an SSE error response
  */
-function createSSEErrorResponse(error: string, code: string, status: number): Response {
+function createSSEErrorResponse(
+  error: string,
+  code: string,
+  status: number
+): Response {
   const encoder = new TextEncoder();
   const errorMessage = formatSSEMessage('error', { error, code, status });
 
@@ -70,18 +74,21 @@ function createSSEErrorResponse(error: string, code: string, status: number): Re
 /**
  * Transform channel for SSE response
  */
-function transformChannel(channel: {
-  id: string;
-  name: string;
-  slug: string;
-  type: string;
-  description: string | null;
-  isArchived: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  _count?: { messages: number };
-  channelMembers?: Array<{ isStarred: boolean }>;
-}, isStarred?: boolean) {
+function transformChannel(
+  channel: {
+    id: string;
+    name: string;
+    slug: string;
+    type: string;
+    description: string | null;
+    isArchived: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    _count?: { messages: number };
+    channelMembers?: Array<{ isStarred: boolean }>;
+  },
+  isStarred?: boolean
+) {
   return {
     id: channel.id,
     name: channel.name,
@@ -99,35 +106,39 @@ function transformChannel(channel: {
 /**
  * Transform DM for SSE response
  */
-function transformDM(dm: {
-  id: string;
-  name: string;
-  updatedAt: Date;
-  createdAt: Date;
-  channelMembers: Array<{
-    userId: string;
-    isStarred?: boolean;
-    user: {
-      id: string;
-      name: string | null;
-      displayName: string | null;
-      avatarUrl: string | null;
-      status: string;
-      isOrchestrator: boolean;
-    };
-  }>;
-  messages: Array<{
+function transformDM(
+  dm: {
     id: string;
-    content: string;
+    name: string;
+    updatedAt: Date;
     createdAt: Date;
-    author: {
+    channelMembers: Array<{
+      userId: string;
+      isStarred?: boolean;
+      user: {
+        id: string;
+        name: string | null;
+        displayName: string | null;
+        avatarUrl: string | null;
+        status: string;
+        isOrchestrator: boolean;
+      };
+    }>;
+    messages: Array<{
       id: string;
-      name: string | null;
-      displayName: string | null;
-    };
-  }>;
-}, currentUserId: string, isStarred?: boolean) {
-  const participants = dm.channelMembers.map((m) => ({
+      content: string;
+      createdAt: Date;
+      author: {
+        id: string;
+        name: string | null;
+        displayName: string | null;
+      };
+    }>;
+  },
+  currentUserId: string,
+  isStarred?: boolean
+) {
+  const participants = dm.channelMembers.map(m => ({
     id: m.userId,
     user: {
       id: m.user.id,
@@ -144,18 +155,23 @@ function transformDM(dm: {
         createdAt: dm.messages[0].createdAt.toISOString(),
         author: {
           id: dm.messages[0].author.id,
-          name: dm.messages[0].author.displayName || dm.messages[0].author.name || 'Unknown',
+          name:
+            dm.messages[0].author.displayName ||
+            dm.messages[0].author.name ||
+            'Unknown',
         },
       }
     : null;
 
   // Check if this is a self-DM
-  const otherParticipants = participants.filter((p) => p.id !== currentUserId);
+  const otherParticipants = participants.filter(p => p.id !== currentUserId);
   const isSelfDM = otherParticipants.length === 0;
   const isGroupDM = otherParticipants.length >= 2;
 
   // Get isStarred from current user's membership
-  const currentUserMembership = dm.channelMembers.find((m) => m.userId === currentUserId);
+  const currentUserMembership = dm.channelMembers.find(
+    m => m.userId === currentUserId
+  );
   const starred = isStarred ?? currentUserMembership?.isStarred ?? false;
 
   return {
@@ -182,13 +198,17 @@ function transformDM(dm: {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<Response> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return createSSEErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED, 401);
+      return createSSEErrorResponse(
+        'Authentication required',
+        ORG_ERROR_CODES.UNAUTHORIZED,
+        401
+      );
     }
 
     const userId = session.user.id;
@@ -198,7 +218,11 @@ export async function GET(
     const { workspaceSlug } = params;
 
     if (!workspaceSlug) {
-      return createSSEErrorResponse('Workspace slug is required', ORG_ERROR_CODES.VALIDATION_ERROR, 400);
+      return createSSEErrorResponse(
+        'Workspace slug is required',
+        ORG_ERROR_CODES.VALIDATION_ERROR,
+        400
+      );
     }
 
     // Get workspace - support both ID and slug for lookup
@@ -209,7 +233,11 @@ export async function GET(
     });
 
     if (!workspace) {
-      return createSSEErrorResponse('Workspace not found', ORG_ERROR_CODES.WORKSPACE_NOT_FOUND, 404);
+      return createSSEErrorResponse(
+        'Workspace not found',
+        ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+        404
+      );
     }
 
     // Check if user is a workspace member
@@ -223,12 +251,22 @@ export async function GET(
     });
 
     if (!membership) {
-      return createSSEErrorResponse('Access denied', ORG_ERROR_CODES.FORBIDDEN, 403);
+      return createSSEErrorResponse(
+        'Access denied',
+        ORG_ERROR_CODES.FORBIDDEN,
+        403
+      );
     }
 
     // Track previous state for change detection
-    const previousChannelState = new Map<string, { updatedAt: string; unreadCount: number; isStarred: boolean }>();
-    const previousDMState = new Map<string, { updatedAt: string; lastMessageId: string | null; isStarred: boolean }>();
+    const previousChannelState = new Map<
+      string,
+      { updatedAt: string; unreadCount: number; isStarred: boolean }
+    >();
+    const previousDMState = new Map<
+      string,
+      { updatedAt: string; lastMessageId: string | null; isStarred: boolean }
+    >();
 
     // Create readable stream for SSE
     const stream = new ReadableStream({
@@ -242,8 +280,8 @@ export async function GET(
               workspaceId: workspace.id,
               workspaceSlug,
               timestamp: new Date().toISOString(),
-            }),
-          ),
+            })
+          )
         );
 
         // Fetch and send initial sidebar state
@@ -268,7 +306,7 @@ export async function GET(
 
         // Get unread counts for channels
         const channelUnreadCounts = await Promise.all(
-          initialChannels.map(async (channel) => {
+          initialChannels.map(async channel => {
             const lastRead = await prisma.channelMember.findUnique({
               where: {
                 channelId_userId: {
@@ -283,20 +321,24 @@ export async function GET(
               where: {
                 channelId: channel.id,
                 isDeleted: false,
-                createdAt: lastRead?.lastReadAt ? { gt: lastRead.lastReadAt } : undefined,
+                createdAt: lastRead?.lastReadAt
+                  ? { gt: lastRead.lastReadAt }
+                  : undefined,
                 authorId: { not: userId },
               },
             });
 
             return { channelId: channel.id, unreadCount };
-          }),
+          })
         );
 
         // Create unread count map
-        const unreadMap = new Map(channelUnreadCounts.map((c) => [c.channelId, c.unreadCount]));
+        const unreadMap = new Map(
+          channelUnreadCounts.map(c => [c.channelId, c.unreadCount])
+        );
 
         // Send initial channels with unread counts
-        const channelsWithUnread = initialChannels.map((channel) => ({
+        const channelsWithUnread = initialChannels.map(channel => ({
           ...transformChannel(channel),
           unreadCount: unreadMap.get(channel.id) ?? 0,
         }));
@@ -305,8 +347,8 @@ export async function GET(
           encoder.encode(
             formatSSEMessage('sidebar:init', {
               channels: channelsWithUnread,
-            }),
-          ),
+            })
+          )
         );
 
         // Store initial channel state
@@ -362,7 +404,7 @@ export async function GET(
 
         // Get unread counts for DMs
         const dmUnreadCounts = await Promise.all(
-          initialDMs.map(async (dm) => {
+          initialDMs.map(async dm => {
             const lastRead = await prisma.channelMember.findUnique({
               where: {
                 channelId_userId: {
@@ -377,18 +419,22 @@ export async function GET(
               where: {
                 channelId: dm.id,
                 isDeleted: false,
-                createdAt: lastRead?.lastReadAt ? { gt: lastRead.lastReadAt } : undefined,
+                createdAt: lastRead?.lastReadAt
+                  ? { gt: lastRead.lastReadAt }
+                  : undefined,
                 authorId: { not: userId },
               },
             });
 
             return { dmId: dm.id, unreadCount };
-          }),
+          })
         );
 
-        const dmUnreadMap = new Map(dmUnreadCounts.map((d) => [d.dmId, d.unreadCount]));
+        const dmUnreadMap = new Map(
+          dmUnreadCounts.map(d => [d.dmId, d.unreadCount])
+        );
 
-        const dmsWithUnread = initialDMs.map((dm) => ({
+        const dmsWithUnread = initialDMs.map(dm => ({
           ...transformDM(dm, userId),
           unreadCount: dmUnreadMap.get(dm.id) ?? 0,
         }));
@@ -397,30 +443,32 @@ export async function GET(
           encoder.encode(
             formatSSEMessage('dms:init', {
               directMessages: dmsWithUnread,
-            }),
-          ),
+            })
+          )
         );
 
         // Store initial DM state
         for (const dm of dmsWithUnread) {
           previousDMState.set(dm.id, {
             updatedAt: dm.updatedAt,
-            lastMessageId: dm.lastMessage ? (initialDMs.find(d => d.id === dm.id)?.messages[0]?.id ?? null) : null,
+            lastMessageId: dm.lastMessage
+              ? (initialDMs.find(d => d.id === dm.id)?.messages[0]?.id ?? null)
+              : null,
             isStarred: dm.isStarred,
           });
         }
 
         // Send starred:init event with all starred channels and DMs
-        const starredChannels = channelsWithUnread.filter((c) => c.isStarred);
-        const starredDMs = dmsWithUnread.filter((d) => d.isStarred);
+        const starredChannels = channelsWithUnread.filter(c => c.isStarred);
+        const starredDMs = dmsWithUnread.filter(d => d.isStarred);
 
         controller.enqueue(
           encoder.encode(
             formatSSEMessage('starred:init', {
               starredChannels,
               starredDMs,
-            }),
-          ),
+            })
+          )
         );
 
         // Set up polling interval for sidebar changes
@@ -447,7 +495,7 @@ export async function GET(
 
             // Get current unread counts
             const currentUnreadCounts = await Promise.all(
-              currentChannels.map(async (channel) => {
+              currentChannels.map(async channel => {
                 const lastRead = await prisma.channelMember.findUnique({
                   where: {
                     channelId_userId: {
@@ -462,22 +510,27 @@ export async function GET(
                   where: {
                     channelId: channel.id,
                     isDeleted: false,
-                    createdAt: lastRead?.lastReadAt ? { gt: lastRead.lastReadAt } : undefined,
+                    createdAt: lastRead?.lastReadAt
+                      ? { gt: lastRead.lastReadAt }
+                      : undefined,
                     authorId: { not: userId },
                   },
                 });
 
                 return { channelId: channel.id, unreadCount };
-              }),
+              })
             );
 
-            const currentUnreadMap = new Map(currentUnreadCounts.map((c) => [c.channelId, c.unreadCount]));
+            const currentUnreadMap = new Map(
+              currentUnreadCounts.map(c => [c.channelId, c.unreadCount])
+            );
 
             // Check for new channels and starred changes
             for (const channel of currentChannels) {
               const prevState = previousChannelState.get(channel.id);
               const currentUnread = currentUnreadMap.get(channel.id) ?? 0;
-              const currentIsStarred = channel.channelMembers?.[0]?.isStarred ?? false;
+              const currentIsStarred =
+                channel.channelMembers?.[0]?.isStarred ?? false;
 
               if (!prevState) {
                 // New channel
@@ -488,8 +541,8 @@ export async function GET(
                         ...transformChannel(channel),
                         unreadCount: currentUnread,
                       },
-                    }),
-                  ),
+                    })
+                  )
                 );
                 previousChannelState.set(channel.id, {
                   updatedAt: channel.updatedAt.toISOString(),
@@ -511,8 +564,8 @@ export async function GET(
                           ...transformChannel(channel),
                           unreadCount: currentUnread,
                         },
-                      }),
-                    ),
+                      })
+                    )
                   );
 
                   // Also emit starred:update if starred status changed
@@ -527,8 +580,8 @@ export async function GET(
                             ...transformChannel(channel),
                             unreadCount: currentUnread,
                           },
-                        }),
-                      ),
+                        })
+                      )
                     );
                   }
 
@@ -542,13 +595,13 @@ export async function GET(
             }
 
             // Check for deleted channels
-            const currentChannelIds = new Set(currentChannels.map((c) => c.id));
+            const currentChannelIds = new Set(currentChannels.map(c => c.id));
             for (const [channelId] of previousChannelState) {
               if (!currentChannelIds.has(channelId)) {
                 controller.enqueue(
                   encoder.encode(
-                    formatSSEMessage('channel:deleted', { channelId }),
-                  ),
+                    formatSSEMessage('channel:deleted', { channelId })
+                  )
                 );
                 previousChannelState.delete(channelId);
               }
@@ -597,7 +650,7 @@ export async function GET(
 
             // Get current DM unread counts
             const currentDMUnreadCounts = await Promise.all(
-              currentDMs.map(async (dm) => {
+              currentDMs.map(async dm => {
                 const lastRead = await prisma.channelMember.findUnique({
                   where: {
                     channelId_userId: {
@@ -612,23 +665,30 @@ export async function GET(
                   where: {
                     channelId: dm.id,
                     isDeleted: false,
-                    createdAt: lastRead?.lastReadAt ? { gt: lastRead.lastReadAt } : undefined,
+                    createdAt: lastRead?.lastReadAt
+                      ? { gt: lastRead.lastReadAt }
+                      : undefined,
                     authorId: { not: userId },
                   },
                 });
 
                 return { dmId: dm.id, unreadCount };
-              }),
+              })
             );
 
-            const currentDMUnreadMap = new Map(currentDMUnreadCounts.map((d) => [d.dmId, d.unreadCount]));
+            const currentDMUnreadMap = new Map(
+              currentDMUnreadCounts.map(d => [d.dmId, d.unreadCount])
+            );
 
             for (const dm of currentDMs) {
               const prevState = previousDMState.get(dm.id);
               const currentLastMessageId = dm.messages[0]?.id ?? null;
               const currentUnread = currentDMUnreadMap.get(dm.id) ?? 0;
-              const currentUserMembership = dm.channelMembers.find((m) => m.userId === userId);
-              const currentIsStarred = currentUserMembership?.isStarred ?? false;
+              const currentUserMembership = dm.channelMembers.find(
+                m => m.userId === userId
+              );
+              const currentIsStarred =
+                currentUserMembership?.isStarred ?? false;
 
               if (!prevState) {
                 // New DM
@@ -639,8 +699,8 @@ export async function GET(
                         ...transformDM(dm, userId),
                         unreadCount: currentUnread,
                       },
-                    }),
-                  ),
+                    })
+                  )
                 );
                 previousDMState.set(dm.id, {
                   updatedAt: dm.updatedAt.toISOString(),
@@ -662,8 +722,8 @@ export async function GET(
                           ...transformDM(dm, userId),
                           unreadCount: currentUnread,
                         },
-                      }),
-                    ),
+                      })
+                    )
                   );
 
                   // Also emit starred:update if starred status changed
@@ -678,8 +738,8 @@ export async function GET(
                             ...transformDM(dm, userId),
                             unreadCount: currentUnread,
                           },
-                        }),
-                      ),
+                        })
+                      )
                     );
                   }
 
@@ -703,8 +763,8 @@ export async function GET(
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                }),
-              ),
+                })
+              )
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -730,11 +790,14 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/sidebar/stream] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/sidebar/stream] Error:',
+      error
+    );
     return createSSEErrorResponse(
       'An internal error occurred',
       ORG_ERROR_CODES.INTERNAL_ERROR,
-      500,
+      500
     );
   }
 }

@@ -38,30 +38,48 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
     test('should load login page correctly', async ({ page }) => {
       // Check page title/heading
-      await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /welcome back/i })
+      ).toBeVisible();
 
       // Check description text
-      await expect(page.getByText(/sign in to your account to continue/i)).toBeVisible();
+      await expect(
+        page.getByText(/sign in to your account to continue/i)
+      ).toBeVisible();
 
       // Check OAuth buttons are visible
-      await expect(page.getByRole('button', { name: /continue with github/i })).toBeVisible();
-      await expect(page.getByRole('button', { name: /continue with google/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /continue with github/i })
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /continue with google/i })
+      ).toBeVisible();
 
       // Check email/password form is visible
       await expect(page.getByPlaceholder(/email address/i)).toBeVisible();
       await expect(page.getByPlaceholder(/^password$/i)).toBeVisible();
 
       // Check submit button
-      await expect(page.getByRole('button', { name: /^sign in$/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /^sign in$/i })
+      ).toBeVisible();
 
       // Check links
-      await expect(page.getByRole('link', { name: /forgot your password/i })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /forgot your password/i })
+      ).toBeVisible();
       await expect(page.getByRole('link', { name: /sign up/i })).toBeVisible();
     });
 
-    test('should display OAuth provider buttons with icons', async ({ page }) => {
-      const githubBtn = page.getByRole('button', { name: /continue with github/i });
-      const googleBtn = page.getByRole('button', { name: /continue with google/i });
+    test('should display OAuth provider buttons with icons', async ({
+      page,
+    }) => {
+      const githubBtn = page.getByRole('button', {
+        name: /continue with github/i,
+      });
+      const googleBtn = page.getByRole('button', {
+        name: /continue with google/i,
+      });
 
       await expect(githubBtn).toBeVisible();
       await expect(googleBtn).toBeVisible();
@@ -71,7 +89,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(googleBtn.locator('svg')).toBeVisible();
     });
 
-    test('should show divider with "Or continue with email" text', async ({ page }) => {
+    test('should show divider with "Or continue with email" text', async ({
+      page,
+    }) => {
       await expect(page.getByText(/or continue with email/i)).toBeVisible();
     });
 
@@ -84,7 +104,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       // HTML5 validation should prevent submission
       const emailInput = page.getByPlaceholder(/email address/i);
-      const validationMessage = await emailInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await emailInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toBeTruthy();
     });
 
@@ -97,7 +119,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       // HTML5 validation should prevent submission
       const passwordInput = page.getByPlaceholder(/^password$/i);
-      const validationMessage = await passwordInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await passwordInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toBeTruthy();
     });
 
@@ -106,11 +130,15 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       await emailInput.fill('invalid-email');
 
-      const validationMessage = await emailInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await emailInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toContain('email');
     });
 
-    test('should show error message for invalid credentials', async ({ page }) => {
+    test('should show error message for invalid credentials', async ({
+      page,
+    }) => {
       const emailInput = page.getByPlaceholder(/email address/i);
       const passwordInput = page.getByPlaceholder(/^password$/i);
       const submitBtn = page.getByRole('button', { name: /^sign in$/i });
@@ -120,7 +148,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Wait for error message
-      await expect(page.getByText(/invalid email or password/i)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/invalid email or password/i)).toBeVisible({
+        timeout: 5000,
+      });
     });
 
     test('should disable form inputs while submitting', async ({ page }) => {
@@ -135,7 +165,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show loading state
-      await expect(page.getByRole('button', { name: /signing in/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /signing in/i })
+      ).toBeVisible();
 
       // Inputs should be disabled
       await expect(emailInput).toBeDisabled();
@@ -159,13 +191,16 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       const passwordInput = page.getByPlaceholder(/^password$/i);
 
       const emailAutocomplete = await emailInput.getAttribute('autocomplete');
-      const passwordAutocomplete = await passwordInput.getAttribute('autocomplete');
+      const passwordAutocomplete =
+        await passwordInput.getAttribute('autocomplete');
 
       expect(emailAutocomplete).toBe('email');
       expect(passwordAutocomplete).toBe('current-password');
     });
 
-    test('should clear error message when user starts typing', async ({ page }) => {
+    test('should clear error message when user starts typing', async ({
+      page,
+    }) => {
       const emailInput = page.getByPlaceholder(/email address/i);
       const passwordInput = page.getByPlaceholder(/^password$/i);
       const submitBtn = page.getByRole('button', { name: /^sign in$/i });
@@ -174,7 +209,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await emailInput.fill(INVALID_USER.email);
       await passwordInput.fill(INVALID_USER.password);
       await submitBtn.click();
-      await expect(page.getByText(/invalid email or password/i)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/invalid email or password/i)).toBeVisible({
+        timeout: 5000,
+      });
 
       // Start typing in email field
       await emailInput.fill('');
@@ -192,14 +229,22 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
     test('should load register page correctly', async ({ page }) => {
       // Check page title/heading
-      await expect(page.getByRole('heading', { name: /create an account/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /create an account/i })
+      ).toBeVisible();
 
       // Check description
-      await expect(page.getByText(/get started with neolith today/i)).toBeVisible();
+      await expect(
+        page.getByText(/get started with neolith today/i)
+      ).toBeVisible();
 
       // Check OAuth buttons
-      await expect(page.getByRole('button', { name: /sign up with github/i })).toBeVisible();
-      await expect(page.getByRole('button', { name: /sign up with google/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /sign up with github/i })
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /sign up with google/i })
+      ).toBeVisible();
 
       // Check form fields
       await expect(page.getByPlaceholder(/full name/i)).toBeVisible();
@@ -208,7 +253,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page.getByPlaceholder(/confirm password/i)).toBeVisible();
 
       // Check submit button
-      await expect(page.getByRole('button', { name: /^create account$/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /^create account$/i })
+      ).toBeVisible();
 
       // Check login link
       await expect(page.getByRole('link', { name: /sign in/i })).toBeVisible();
@@ -221,7 +268,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       // HTML5 validation should prevent submission
       const nameInput = page.getByPlaceholder(/full name/i);
-      const validationMessage = await nameInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await nameInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toBeTruthy();
     });
 
@@ -230,11 +279,15 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       await emailInput.fill('not-a-valid-email');
 
-      const validationMessage = await emailInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await emailInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toContain('email');
     });
 
-    test('should validate password length (minimum 8 characters)', async ({ page }) => {
+    test('should validate password length (minimum 8 characters)', async ({
+      page,
+    }) => {
       const nameInput = page.getByPlaceholder(/full name/i);
       const emailInput = page.getByPlaceholder(/email address/i);
       const passwordInput = page.getByPlaceholder(/^password$/i);
@@ -248,7 +301,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show error about password length
-      await expect(page.getByText(/password must be at least 8 characters/i)).toBeVisible({ timeout: 3000 });
+      await expect(
+        page.getByText(/password must be at least 8 characters/i)
+      ).toBeVisible({ timeout: 3000 });
     });
 
     test('should validate passwords match', async ({ page }) => {
@@ -265,7 +320,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show error about passwords not matching
-      await expect(page.getByText(/passwords do not match/i)).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText(/passwords do not match/i)).toBeVisible({
+        timeout: 3000,
+      });
     });
 
     test('should show error for existing email', async ({ page }) => {
@@ -293,7 +350,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       // If there's an error, verify it's about registration failure
       if (errorCount > 0) {
         const errorText = await errorMessages.first().textContent();
-        expect(errorText?.toLowerCase()).toMatch(/registration|failed|exists|already/i);
+        expect(errorText?.toLowerCase()).toMatch(
+          /registration|failed|exists|already/i
+        );
       }
     });
 
@@ -312,7 +371,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show loading state
-      await expect(page.getByRole('button', { name: /creating account/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /creating account/i })
+      ).toBeVisible();
 
       // Form inputs should be disabled
       await expect(nameInput).toBeDisabled();
@@ -335,8 +396,12 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       expect(await nameInput.getAttribute('autocomplete')).toBe('name');
       expect(await emailInput.getAttribute('autocomplete')).toBe('email');
-      expect(await passwordInput.getAttribute('autocomplete')).toBe('new-password');
-      expect(await confirmPasswordInput.getAttribute('autocomplete')).toBe('new-password');
+      expect(await passwordInput.getAttribute('autocomplete')).toBe(
+        'new-password'
+      );
+      expect(await confirmPasswordInput.getAttribute('autocomplete')).toBe(
+        'new-password'
+      );
     });
   });
 
@@ -347,19 +412,27 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
     test('should load forgot password page correctly', async ({ page }) => {
       // Check heading
-      await expect(page.getByRole('heading', { name: /reset your password/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /reset your password/i })
+      ).toBeVisible();
 
       // Check description
-      await expect(page.getByText(/enter your email address.*send you a link/i)).toBeVisible();
+      await expect(
+        page.getByText(/enter your email address.*send you a link/i)
+      ).toBeVisible();
 
       // Check email input
       await expect(page.getByPlaceholder(/email address/i)).toBeVisible();
 
       // Check submit button
-      await expect(page.getByRole('button', { name: /send reset link/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /send reset link/i })
+      ).toBeVisible();
 
       // Check back to login link
-      await expect(page.getByRole('link', { name: /back to login/i })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /back to login/i })
+      ).toBeVisible();
 
       // Check register link
       await expect(page.getByRole('link', { name: /sign up/i })).toBeVisible();
@@ -371,7 +444,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       const emailInput = page.getByPlaceholder(/email address/i);
-      const validationMessage = await emailInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await emailInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toBeTruthy();
     });
 
@@ -380,7 +455,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       await emailInput.fill('invalid-email-format');
 
-      const validationMessage = await emailInput.evaluate((input: HTMLInputElement) => input.validationMessage);
+      const validationMessage = await emailInput.evaluate(
+        (input: HTMLInputElement) => input.validationMessage
+      );
       expect(validationMessage).toContain('email');
     });
 
@@ -392,8 +469,12 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show success message (security best practice - always show success)
-      await expect(page.getByText(/check your email/i)).toBeVisible({ timeout: 5000 });
-      await expect(page.getByText(/sent password reset instructions/i)).toBeVisible();
+      await expect(page.getByText(/check your email/i)).toBeVisible({
+        timeout: 5000,
+      });
+      await expect(
+        page.getByText(/sent password reset instructions/i)
+      ).toBeVisible();
     });
 
     test('should hide form after successful submission', async ({ page }) => {
@@ -404,7 +485,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Wait for success
-      await expect(page.getByText(/check your email/i)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/check your email/i)).toBeVisible({
+        timeout: 5000,
+      });
 
       // Form should be hidden
       await expect(emailInput).not.toBeVisible();
@@ -419,7 +502,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show loading state
-      await expect(page.getByRole('button', { name: /sending/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /sending/i })
+      ).toBeVisible();
     });
 
     test('should navigate back to login', async ({ page }) => {
@@ -450,27 +535,39 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
     test('should load reset password page correctly', async ({ page }) => {
       // Check heading
-      await expect(page.getByRole('heading', { name: /set new password/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /set new password/i })
+      ).toBeVisible();
 
       // Check description
-      await expect(page.getByText(/enter your new password below/i)).toBeVisible();
+      await expect(
+        page.getByText(/enter your new password below/i)
+      ).toBeVisible();
 
       // Check password inputs
       await expect(page.getByPlaceholder(/^new password$/i)).toBeVisible();
-      await expect(page.getByPlaceholder(/confirm new password/i)).toBeVisible();
+      await expect(
+        page.getByPlaceholder(/confirm new password/i)
+      ).toBeVisible();
 
       // Check submit button
-      await expect(page.getByRole('button', { name: /reset password/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /reset password/i })
+      ).toBeVisible();
 
       // Check back to login link
-      await expect(page.getByRole('link', { name: /back to login/i })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /back to login/i })
+      ).toBeVisible();
     });
 
     test('should show error when no token is provided', async ({ page }) => {
       await page.goto(`${BASE_URL}/reset-password`);
 
       // Should show error about missing token
-      await expect(page.getByText(/no reset token provided/i)).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText(/no reset token provided/i)).toBeVisible({
+        timeout: 3000,
+      });
     });
 
     test('should show password strength indicator', async ({ page }) => {
@@ -501,7 +598,8 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
     test('should validate passwords match', async ({ page }) => {
       const passwordInput = page.getByPlaceholder(/^new password$/i);
-      const confirmPasswordInput = page.getByPlaceholder(/confirm new password/i);
+      const confirmPasswordInput =
+        page.getByPlaceholder(/confirm new password/i);
 
       await passwordInput.fill('Password123!');
       await confirmPasswordInput.fill('DifferentPassword123!');
@@ -510,9 +608,12 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page.getByText(/passwords do not match/i)).toBeVisible();
     });
 
-    test('should disable submit button when passwords do not match', async ({ page }) => {
+    test('should disable submit button when passwords do not match', async ({
+      page,
+    }) => {
       const passwordInput = page.getByPlaceholder(/^new password$/i);
-      const confirmPasswordInput = page.getByPlaceholder(/confirm new password/i);
+      const confirmPasswordInput =
+        page.getByPlaceholder(/confirm new password/i);
       const submitBtn = page.getByRole('button', { name: /reset password/i });
 
       await passwordInput.fill('Password123!');
@@ -524,7 +625,8 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
     test('should validate minimum password length', async ({ page }) => {
       const passwordInput = page.getByPlaceholder(/^new password$/i);
-      const confirmPasswordInput = page.getByPlaceholder(/confirm new password/i);
+      const confirmPasswordInput =
+        page.getByPlaceholder(/confirm new password/i);
       const submitBtn = page.getByRole('button', { name: /reset password/i });
 
       await passwordInput.fill('Short1!');
@@ -532,12 +634,15 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show error about password length
-      await expect(page.getByText(/password must be at least 8 characters/i)).toBeVisible({ timeout: 3000 });
+      await expect(
+        page.getByText(/password must be at least 8 characters/i)
+      ).toBeVisible({ timeout: 3000 });
     });
 
     test('should validate password complexity', async ({ page }) => {
       const passwordInput = page.getByPlaceholder(/^new password$/i);
-      const confirmPasswordInput = page.getByPlaceholder(/confirm new password/i);
+      const confirmPasswordInput =
+        page.getByPlaceholder(/confirm new password/i);
       const submitBtn = page.getByRole('button', { name: /reset password/i });
 
       await passwordInput.fill('alllowercase');
@@ -545,7 +650,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show error about password requirements
-      await expect(page.getByText(/uppercase.*lowercase.*number/i)).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText(/uppercase.*lowercase.*number/i)).toBeVisible(
+        { timeout: 3000 }
+      );
     });
 
     test('should navigate back to login', async ({ page }) => {
@@ -566,7 +673,11 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
 
       // Find and click logout button (adjust selector based on actual implementation)
       // Common locations: user menu, sidebar, header
-      const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign out"), a:has-text("Logout"), a:has-text("Sign out")').first();
+      const logoutButton = page
+        .locator(
+          'button:has-text("Logout"), button:has-text("Sign out"), a:has-text("Logout"), a:has-text("Sign out")'
+        )
+        .first();
 
       if (await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await logoutButton.click();
@@ -581,7 +692,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
   });
 
   test.describe('Protected Routes', () => {
-    test('should redirect to login when accessing dashboard unauthenticated', async ({ page }) => {
+    test('should redirect to login when accessing dashboard unauthenticated', async ({
+      page,
+    }) => {
       // Clear any existing session/cookies
       await page.context().clearCookies();
 
@@ -592,7 +705,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
     });
 
-    test('should redirect to login when accessing workspace routes unauthenticated', async ({ page }) => {
+    test('should redirect to login when accessing workspace routes unauthenticated', async ({
+      page,
+    }) => {
       await page.context().clearCookies();
 
       await page.goto(`${BASE_URL}/workspace-123/channels`);
@@ -601,7 +716,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
     });
 
-    test('should redirect to login when accessing settings unauthenticated', async ({ page }) => {
+    test('should redirect to login when accessing settings unauthenticated', async ({
+      page,
+    }) => {
       await page.context().clearCookies();
 
       await page.goto(`${BASE_URL}/workspace-123/settings`);
@@ -610,7 +727,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
     });
 
-    test('should redirect to login when accessing admin routes unauthenticated', async ({ page }) => {
+    test('should redirect to login when accessing admin routes unauthenticated', async ({
+      page,
+    }) => {
       await page.context().clearCookies();
 
       await page.goto(`${BASE_URL}/workspace-123/admin/members`);
@@ -619,7 +738,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
     });
 
-    test('should redirect to login when accessing VPs unauthenticated', async ({ page }) => {
+    test('should redirect to login when accessing VPs unauthenticated', async ({
+      page,
+    }) => {
       await page.context().clearCookies();
 
       await page.goto(`${BASE_URL}/workspace-123/orchestrators`);
@@ -628,7 +749,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
     });
 
-    test('should redirect to login when accessing workflows unauthenticated', async ({ page }) => {
+    test('should redirect to login when accessing workflows unauthenticated', async ({
+      page,
+    }) => {
       await page.context().clearCookies();
 
       await page.goto(`${BASE_URL}/workspace-123/workflows`);
@@ -639,7 +762,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
   });
 
   test.describe('OAuth Provider Flows', () => {
-    test('should initiate GitHub OAuth when clicking GitHub button', async ({ page }) => {
+    test('should initiate GitHub OAuth when clicking GitHub button', async ({
+      page,
+    }) => {
       await page.goto(`${BASE_URL}/login`);
 
       // Listen for navigation to GitHub
@@ -659,7 +784,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       }
     });
 
-    test('should initiate Google OAuth when clicking Google button', async ({ page }) => {
+    test('should initiate Google OAuth when clicking Google button', async ({
+      page,
+    }) => {
       await page.goto(`${BASE_URL}/login`);
 
       // Listen for navigation to Google
@@ -681,8 +808,12 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
     test('should disable OAuth buttons during OAuth flow', async ({ page }) => {
       await page.goto(`${BASE_URL}/login`);
 
-      const githubBtn = page.getByRole('button', { name: /continue with github/i });
-      const googleBtn = page.getByRole('button', { name: /continue with google/i });
+      const githubBtn = page.getByRole('button', {
+        name: /continue with github/i,
+      });
+      const googleBtn = page.getByRole('button', {
+        name: /continue with google/i,
+      });
 
       // Click GitHub button
       await githubBtn.click();
@@ -727,7 +858,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
   });
 
   test.describe('Accessibility & UX', () => {
-    test('should support keyboard navigation on login form', async ({ page }) => {
+    test('should support keyboard navigation on login form', async ({
+      page,
+    }) => {
       await page.goto(`${BASE_URL}/login`);
 
       // Tab through form elements
@@ -759,7 +892,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await passwordInput.press('Enter');
 
       // Should show error (form was submitted)
-      await expect(page.getByText(/invalid email or password/i)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/invalid email or password/i)).toBeVisible({
+        timeout: 5000,
+      });
     });
 
     test('should have proper ARIA labels and roles', async ({ page }) => {
@@ -774,11 +909,15 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await expect(submitBtn).toBeVisible();
 
       // Check links have proper roles
-      const forgotPasswordLink = page.getByRole('link', { name: /forgot your password/i });
+      const forgotPasswordLink = page.getByRole('link', {
+        name: /forgot your password/i,
+      });
       await expect(forgotPasswordLink).toBeVisible();
     });
 
-    test('should show password visibility toggle (if implemented)', async ({ page }) => {
+    test('should show password visibility toggle (if implemented)', async ({
+      page,
+    }) => {
       await page.goto(`${BASE_URL}/login`);
 
       const passwordInput = page.getByPlaceholder(/^password$/i);
@@ -788,7 +927,9 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       expect(initialType).toBe('password');
 
       // Look for visibility toggle button (if implemented)
-      const toggleBtn = page.locator('button:has([aria-label*="password"]), button:has([aria-label*="visibility"])');
+      const toggleBtn = page.locator(
+        'button:has([aria-label*="password"]), button:has([aria-label*="visibility"])'
+      );
 
       if (await toggleBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
         await toggleBtn.click();
@@ -816,13 +957,17 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show error message
-      await expect(page.getByText(/error|failed|try again/i)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/error|failed|try again/i)).toBeVisible({
+        timeout: 5000,
+      });
 
       // Restore online mode
       await page.context().setOffline(false);
     });
 
-    test('should handle API errors with appropriate messages', async ({ page }) => {
+    test('should handle API errors with appropriate messages', async ({
+      page,
+    }) => {
       await page.goto(`${BASE_URL}/login`);
 
       // Attempt login with invalid credentials
@@ -835,11 +980,15 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await submitBtn.click();
 
       // Should show specific error message
-      const errorMessage = page.locator('.text-destructive, [class*="error"]').first();
+      const errorMessage = page
+        .locator('.text-destructive, [class*="error"]')
+        .first();
       await expect(errorMessage).toBeVisible({ timeout: 5000 });
 
       const errorText = await errorMessage.textContent();
-      expect(errorText?.toLowerCase()).toMatch(/invalid|incorrect|wrong|failed/);
+      expect(errorText?.toLowerCase()).toMatch(
+        /invalid|incorrect|wrong|failed/
+      );
     });
   });
 
@@ -849,10 +998,14 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await page.goto(`${BASE_URL}/login`);
 
       // All elements should be visible
-      await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /welcome back/i })
+      ).toBeVisible();
       await expect(page.getByPlaceholder(/email address/i)).toBeVisible();
       await expect(page.getByPlaceholder(/^password$/i)).toBeVisible();
-      await expect(page.getByRole('button', { name: /^sign in$/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /^sign in$/i })
+      ).toBeVisible();
     });
 
     test('should have proper touch targets on mobile', async ({ page }) => {
@@ -871,7 +1024,10 @@ test.describe('Authentication Flows - Complete Test Suite', () => {
       await page.goto(`${BASE_URL}/login`);
 
       const hasHorizontalScroll = await page.evaluate(() => {
-        return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+        return (
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth
+        );
       });
 
       expect(hasHorizontalScroll).toBe(false);

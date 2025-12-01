@@ -72,7 +72,12 @@ export type TimeUnit = 'seconds' | 'minutes' | 'hours' | 'days';
 /**
  * Comparison operators for conditional logic
  */
-export type ComparisonOperator = 'equals' | 'contains' | 'greater_than' | 'less_than' | 'exists';
+export type ComparisonOperator =
+  | 'equals'
+  | 'contains'
+  | 'greater_than'
+  | 'less_than'
+  | 'exists';
 
 /**
  * Keyword match strategies
@@ -383,7 +388,12 @@ export interface WorkflowVariable {
   readonly name: string;
   readonly type: VariableType;
   readonly description?: string;
-  readonly defaultValue?: string | number | boolean | readonly unknown[] | Readonly<Record<string, unknown>>;
+  readonly defaultValue?:
+    | string
+    | number
+    | boolean
+    | readonly unknown[]
+    | Readonly<Record<string, unknown>>;
   readonly source: VariableSource;
 }
 
@@ -410,12 +420,22 @@ export interface Workflow {
 /**
  * Execution status for workflows and actions
  */
-export type ExecutionStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+export type ExecutionStatus =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
 
 /**
  * Action result status
  */
-export type ActionResultStatus = 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
+export type ActionResultStatus =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'skipped';
 
 /**
  * Result of a single action execution
@@ -812,20 +832,26 @@ export function isExecutionId(value: unknown): value is ExecutionId {
 /**
  * Type guard to check if a trigger config is a schedule trigger
  */
-export function isScheduleTrigger(trigger: TriggerConfig): trigger is ScheduleTrigger {
+export function isScheduleTrigger(
+  trigger: TriggerConfig
+): trigger is ScheduleTrigger {
   return trigger.type === 'schedule';
 }
 
 /**
  * Type guard to check if an action is a send message action
  */
-export function isSendMessageAction(action: ActionConfig): action is SendMessageAction {
+export function isSendMessageAction(
+  action: ActionConfig
+): action is SendMessageAction {
   return action.type === 'send_message';
 }
 
 /**
  * Type guard to check if an action is a condition action
  */
-export function isConditionAction(action: ActionConfig): action is ConditionAction {
+export function isConditionAction(
+  action: ActionConfig
+): action is ConditionAction {
   return action.type === 'condition';
 }

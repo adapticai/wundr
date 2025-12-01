@@ -3,10 +3,7 @@
   "build": {
     "builder": "NIXPACKS",
     "buildCommand": "pnpm install && pnpm run build",
-    "watchPatterns": [
-      "apps/web/**",
-      "packages/**"
-    ]
+    "watchPatterns": ["apps/web/**", "packages/**"]
   },
   "deploy": {
     "startCommand": "pnpm --filter @neolith/web start",

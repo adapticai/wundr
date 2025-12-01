@@ -1,7 +1,11 @@
 import { InteractiveMode } from '../../src/interactive/interactive-mode';
 import { ConfigManager } from '../../src/utils/config-manager';
 import { PluginManager } from '../../src/plugins/plugin-manager';
-import { TestHelper, mockLogger, createMockConfig } from '../helpers/test-utils';
+import {
+  TestHelper,
+  mockLogger,
+  createMockConfig,
+} from '../helpers/test-utils';
 import inquirer from 'inquirer';
 import blessed from 'blessed';
 
@@ -23,11 +27,11 @@ describe('InteractiveMode', () => {
     mockConfigManager = {
       getConfig: jest.fn().mockReturnValue(createMockConfig()),
       loadConfig: jest.fn(),
-      saveConfig: jest.fn()
+      saveConfig: jest.fn(),
     } as any;
 
     mockPluginManager = {
-      loadPlugins: jest.fn()
+      loadPlugins: jest.fn(),
     } as any;
 
     mockInquirer = inquirer as jest.Mocked<typeof inquirer>;
@@ -45,7 +49,7 @@ describe('InteractiveMode', () => {
       mockInquirer.prompt = jest.fn().mockResolvedValue({
         initialize: true,
         projectType: 'single',
-        features: ['analysis', 'governance']
+        features: ['analysis', 'governance'],
       });
 
       await interactiveMode.launchWizard('setup');
@@ -61,27 +65,30 @@ describe('InteractiveMode', () => {
       mockInquirer.prompt = jest.fn().mockResolvedValue({
         analysisTypes: ['deps', 'quality'],
         outputFormat: 'table',
-        autoFix: false
+        autoFix: false,
       });
 
       await interactiveMode.launchWizard('analyze');
 
       expect(mockInquirer.prompt).toHaveBeenCalled();
       const promptCall = mockInquirer.prompt.mock.calls[0][0] as any[];
-      expect(promptCall.some((q: any) => q.name === 'analysisTypes')).toBe(true);
+      expect(promptCall.some((q: any) => q.name === 'analysisTypes')).toBe(
+        true
+      );
       expect(promptCall.some((q: any) => q.name === 'outputFormat')).toBe(true);
     });
 
     test('should launch create wizard', async () => {
-      mockInquirer.prompt = jest.fn()
+      mockInquirer.prompt = jest
+        .fn()
         .mockResolvedValueOnce({
           createType: 'component',
-          name: 'TestComponent'
+          name: 'TestComponent',
         })
         .mockResolvedValueOnce({
           type: 'react',
           withTests: true,
-          withStories: false
+          withStories: false,
         });
 
       await interactiveMode.launchWizard('create');
@@ -93,20 +100,22 @@ describe('InteractiveMode', () => {
       mockInquirer.prompt = jest.fn().mockResolvedValue({
         ruleCategories: ['quality', 'security'],
         severity: 'warning',
-        createQualityGate: true
+        createQualityGate: true,
       });
 
       await interactiveMode.launchWizard('govern');
 
       expect(mockInquirer.prompt).toHaveBeenCalled();
       const promptCall = mockInquirer.prompt.mock.calls[0][0] as any[];
-      expect(promptCall.some((q: any) => q.name === 'ruleCategories')).toBe(true);
+      expect(promptCall.some((q: any) => q.name === 'ruleCategories')).toBe(
+        true
+      );
       expect(promptCall.some((q: any) => q.name === 'severity')).toBe(true);
     });
 
     test('should handle wizard cancellation', async () => {
       mockInquirer.prompt = jest.fn().mockResolvedValue({
-        initialize: false
+        initialize: false,
       });
 
       await interactiveMode.launchWizard('setup');
@@ -122,9 +131,9 @@ describe('InteractiveMode', () => {
       mockScreen = {
         append: jest.fn(),
         key: jest.fn(),
-        render: jest.fn()
+        render: jest.fn(),
       };
-      
+
       mockBlessed.screen = jest.fn().mockReturnValue(mockScreen);
       mockBlessed.box = jest.fn().mockReturnValue({});
       mockBlessed.log = jest.fn().mockReturnValue({});
@@ -135,7 +144,7 @@ describe('InteractiveMode', () => {
 
       expect(mockBlessed.screen).toHaveBeenCalledWith({
         smartCSR: true,
-        title: 'Wundr CLI Dashboard'
+        title: 'Wundr CLI Dashboard',
       });
       expect(mockScreen.render).toHaveBeenCalled();
     });
@@ -168,16 +177,16 @@ describe('InteractiveMode', () => {
     test('should launch chat interface with options', async () => {
       const options = {
         model: 'claude-3',
-        context: './src'
+        context: './src',
       };
 
       // Mock child_process.spawn
       const mockSpawn = jest.fn().mockReturnValue({
-        on: jest.fn()
+        on: jest.fn(),
       });
-      
+
       jest.doMock('child_process', () => ({
-        spawn: mockSpawn
+        spawn: mockSpawn,
       }));
 
       await interactiveMode.launchChat(options);
@@ -194,9 +203,9 @@ describe('InteractiveMode', () => {
       const mockSpawn = jest.fn().mockImplementation(() => {
         throw new Error('Failed to spawn');
       });
-      
+
       jest.doMock('child_process', () => ({
-        spawn: mockSpawn
+        spawn: mockSpawn,
       }));
 
       await expect(interactiveMode.launchChat({})).rejects.toThrow();
@@ -209,7 +218,7 @@ describe('InteractiveMode', () => {
         provider: 'claude',
         model: 'claude-3',
         apiKey: 'test-key',
-        features: ['generate', 'review']
+        features: ['generate', 'review'],
       });
 
       // Access private method through instance casting
@@ -228,7 +237,7 @@ describe('InteractiveMode', () => {
         mockInquirer.prompt = jest.fn().mockResolvedValue({
           provider,
           model: 'test-model',
-          features: ['generate']
+          features: ['generate'],
         });
 
         await (interactiveMode as any).aiConfigWizard();
@@ -242,7 +251,7 @@ describe('InteractiveMode', () => {
       mockInquirer.prompt = jest.fn().mockResolvedValue({
         type: 'react',
         withTests: true,
-        withStories: true
+        withStories: true,
       });
 
       const options = await (interactiveMode as any).getComponentOptions();
@@ -257,7 +266,7 @@ describe('InteractiveMode', () => {
         type: 'api',
         framework: 'express',
         withTests: true,
-        withDocs: true
+        withDocs: true,
       });
 
       const options = await (interactiveMode as any).getServiceOptions();
@@ -269,7 +278,7 @@ describe('InteractiveMode', () => {
     test('should get package options', async () => {
       mockInquirer.prompt = jest.fn().mockResolvedValue({
         type: 'library',
-        public: false
+        public: false,
       });
 
       const options = await (interactiveMode as any).getPackageOptions();
@@ -282,9 +291,9 @@ describe('InteractiveMode', () => {
   describe('Session Management', () => {
     test('should track active sessions', async () => {
       const sessionsBefore = (interactiveMode as any).activeSessions.size;
-      
+
       mockInquirer.prompt = jest.fn().mockResolvedValue({
-        initialize: false
+        initialize: false,
       });
 
       await interactiveMode.launchWizard('setup');
@@ -296,7 +305,9 @@ describe('InteractiveMode', () => {
 
   describe('Error Handling', () => {
     test('should handle inquirer errors gracefully', async () => {
-      mockInquirer.prompt = jest.fn().mockRejectedValue(new Error('Inquirer error'));
+      mockInquirer.prompt = jest
+        .fn()
+        .mockRejectedValue(new Error('Inquirer error'));
 
       await expect(interactiveMode.launchWizard('setup')).rejects.toThrow();
     });
@@ -310,7 +321,9 @@ describe('InteractiveMode', () => {
     });
 
     test('should create error with proper context', async () => {
-      mockInquirer.prompt = jest.fn().mockRejectedValue(new Error('Test error'));
+      mockInquirer.prompt = jest
+        .fn()
+        .mockRejectedValue(new Error('Test error'));
 
       try {
         await interactiveMode.launchWizard('setup');

@@ -63,20 +63,18 @@ export function SplitView({
       <div className={cn('h-full flex flex-col', className)}>
         {/* Mobile: Toggle between views */}
         {!showDetail || !hasSelection ? (
-          <div className="flex-1 overflow-auto">
-            {leftPanel}
-          </div>
+          <div className='flex-1 overflow-auto'>{leftPanel}</div>
         ) : (
-          <div className="flex-1 overflow-auto">
+          <div className='flex-1 overflow-auto'>
             {/* Back button for mobile */}
-            <div className="sticky top-0 z-10 bg-background border-b border-border">
+            <div className='sticky top-0 z-10 bg-background border-b border-border'>
               <button
                 onClick={() => setShowDetail(false)}
-                className="flex items-center gap-2 px-4 py-3 w-full text-left hover:bg-muted/50 transition-colors min-h-[44px]"
-                aria-label="Back to list"
+                className='flex items-center gap-2 px-4 py-3 w-full text-left hover:bg-muted/50 transition-colors min-h-[44px]'
+                aria-label='Back to list'
               >
-                <ChevronLeftIcon className="w-5 h-5" />
-                <span className="font-medium">Back</span>
+                <ChevronLeftIcon className='w-5 h-5' />
+                <span className='font-medium'>Back</span>
               </button>
             </div>
             {rightPanel}
@@ -96,7 +94,7 @@ export function SplitView({
       <div
         className={cn(
           'flex-shrink-0 border-r border-border overflow-y-auto transition-all duration-300',
-          'bg-background',
+          'bg-background'
         )}
         style={{ width: `${leftWidth}%` }}
       >
@@ -105,14 +103,10 @@ export function SplitView({
 
       {/* Right Panel (Detail View) */}
       <div
-        className="flex-1 overflow-y-auto transition-all duration-300 bg-muted/30"
+        className='flex-1 overflow-y-auto transition-all duration-300 bg-muted/30'
         style={{ width: `${rightWidth}%` }}
       >
-        {hasSelection ? (
-          rightPanel
-        ) : (
-          <EmptyDetailView />
-        )}
+        {hasSelection ? rightPanel : <EmptyDetailView />}
       </div>
     </div>
   );
@@ -123,15 +117,15 @@ export function SplitView({
  */
 function EmptyDetailView() {
   return (
-    <div className="h-full flex items-center justify-center p-8">
-      <div className="text-center max-w-sm">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-          <DocumentIcon className="w-8 h-8 text-muted-foreground" />
+    <div className='h-full flex items-center justify-center p-8'>
+      <div className='text-center max-w-sm'>
+        <div className='w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center'>
+          <DocumentIcon className='w-8 h-8 text-muted-foreground' />
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">
+        <h3 className='text-lg font-semibold text-foreground mb-2'>
           No Selection
         </h3>
-        <p className="text-sm text-muted-foreground">
+        <p className='text-sm text-muted-foreground'>
           Select an item from the list to view details
         </p>
       </div>
@@ -162,7 +156,7 @@ export function SplitViewListItem({
         selected
           ? 'bg-primary/10 border-l-4 border-l-primary'
           : 'hover:bg-muted/50',
-        className,
+        className
       )}
     >
       {children}
@@ -181,11 +175,13 @@ export function SplitViewHeader({
   className?: string;
 }) {
   return (
-    <div className={cn(
-      'sticky top-0 z-10 bg-background border-b border-border px-4 py-3',
-      'min-h-[56px] flex items-center',
-      className,
-    )}>
+    <div
+      className={cn(
+        'sticky top-0 z-10 bg-background border-b border-border px-4 py-3',
+        'min-h-[56px] flex items-center',
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -195,16 +191,16 @@ export function SplitViewHeader({
 function ChevronLeftIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="m15 18-6-6 6-6" />
+      <path d='m15 18-6-6 6-6' />
     </svg>
   );
 }
@@ -212,17 +208,17 @@ function ChevronLeftIcon({ className }: { className?: string }) {
 function DocumentIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-      <polyline points="14 2 14 8 20 8" />
+      <path d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z' />
+      <polyline points='14 2 14 8 20 8' />
     </svg>
   );
 }

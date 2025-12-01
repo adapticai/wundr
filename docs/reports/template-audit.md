@@ -1,17 +1,17 @@
 # Template Audit & Consistency Report
 
-**Date**: 2025-11-21
-**Auditor**: Agent 11 - Template Audit & Consistency Check
-**Status**: Complete
+**Date**: 2025-11-21 **Auditor**: Agent 11 - Template Audit & Consistency Check **Status**: Complete
 
 ## Executive Summary
 
 This audit examines template consistency across three locations:
+
 1. `/packages/@wundr/computer-setup/resources/templates/` - Computer setup templates
 2. `/templates/.claude/` - Claude Code configuration templates
 3. `/packages/@wundr/computer-setup/resources/conventions/` - Conventions directory (not found)
 
-**Overall Assessment**: Templates are well-structured with standardized agent frontmatter. Minor inconsistencies identified and documented below.
+**Overall Assessment**: Templates are well-structured with standardized agent frontmatter. Minor
+inconsistencies identified and documented below.
 
 ---
 
@@ -21,11 +21,12 @@ This audit examines template consistency across three locations:
 
 **Path**: `/packages/@wundr/computer-setup/resources/templates/`
 
-| File | Status | Notes |
-|------|--------|-------|
-| `CLAUDE.md.template` | PASS | Comprehensive, 656 lines, includes MCP tools documentation |
+| File                 | Status | Notes                                                      |
+| -------------------- | ------ | ---------------------------------------------------------- |
+| `CLAUDE.md.template` | PASS   | Comprehensive, 656 lines, includes MCP tools documentation |
 
 **Findings**:
+
 - Single template file covering all CLAUDE.md configuration
 - Well-documented with clear sections
 - Includes Wundr MCP tools integration guide
@@ -37,48 +38,48 @@ This audit examines template consistency across three locations:
 
 #### Root Configuration Files
 
-| File | Status | Lines | Notes |
-|------|--------|-------|-------|
-| `README.md` | PASS | 238 | Directory structure documentation |
-| `SETUP_GUIDE.md` | PASS | 756 | Comprehensive setup instructions |
-| `CLAUDE.md` | PASS | 507 | Project template configuration |
-| `conventions.md` | PASS | 755 | Coding conventions documentation |
+| File             | Status | Lines | Notes                             |
+| ---------------- | ------ | ----- | --------------------------------- |
+| `README.md`      | PASS   | 238   | Directory structure documentation |
+| `SETUP_GUIDE.md` | PASS   | 756   | Comprehensive setup instructions  |
+| `CLAUDE.md`      | PASS   | 507   | Project template configuration    |
+| `conventions.md` | PASS   | 755   | Coding conventions documentation  |
 
 #### Agent Files (13 total)
 
-| Agent | Path | Frontmatter | Tools | Model | Permission |
-|-------|------|-------------|-------|-------|------------|
-| coder | `agents/core/coder.md` | VALID | 8 tools | claude-sonnet-4-5 | auto |
-| planner | `agents/core/planner.md` | VALID | 5 tools | claude-sonnet-4-5 | auto |
-| researcher | `agents/core/researcher.md` | VALID | 6 tools | claude-sonnet-4-5 | auto |
-| reviewer | `agents/core/reviewer.md` | VALID | 6 tools | claude-sonnet-4-5 | auto |
-| tester | `agents/core/tester.md` | VALID | 7 tools | claude-sonnet-4-5 | auto |
-| issue-tracker | `agents/github/issue-tracker.md` | VALID | 5 tools | claude-sonnet-4-5 | require |
-| pr-manager | `agents/github/pr-manager.md` | VALID | 5 tools | claude-sonnet-4-5 | require |
-| architecture | `agents/sparc/architecture.md` | VALID | 6 tools | claude-sonnet-4-5 | auto |
-| specification | `agents/sparc/specification.md` | VALID | 5 tools | claude-sonnet-4-5 | auto |
-| backend-dev | `agents/specialized/backend-dev.md` | VALID | 8 tools | claude-sonnet-4-5 | auto |
-| coordinator | `agents/swarm/coordinator.md` | VALID | 5 tools | claude-sonnet-4-5 | auto |
-| memory-manager | `agents/swarm/memory-manager.md` | VALID | 4 tools | claude-sonnet-4-5 | auto |
+| Agent          | Path                                | Frontmatter | Tools   | Model             | Permission |
+| -------------- | ----------------------------------- | ----------- | ------- | ----------------- | ---------- |
+| coder          | `agents/core/coder.md`              | VALID       | 8 tools | claude-sonnet-4-5 | auto       |
+| planner        | `agents/core/planner.md`            | VALID       | 5 tools | claude-sonnet-4-5 | auto       |
+| researcher     | `agents/core/researcher.md`         | VALID       | 6 tools | claude-sonnet-4-5 | auto       |
+| reviewer       | `agents/core/reviewer.md`           | VALID       | 6 tools | claude-sonnet-4-5 | auto       |
+| tester         | `agents/core/tester.md`             | VALID       | 7 tools | claude-sonnet-4-5 | auto       |
+| issue-tracker  | `agents/github/issue-tracker.md`    | VALID       | 5 tools | claude-sonnet-4-5 | require    |
+| pr-manager     | `agents/github/pr-manager.md`       | VALID       | 5 tools | claude-sonnet-4-5 | require    |
+| architecture   | `agents/sparc/architecture.md`      | VALID       | 6 tools | claude-sonnet-4-5 | auto       |
+| specification  | `agents/sparc/specification.md`     | VALID       | 5 tools | claude-sonnet-4-5 | auto       |
+| backend-dev    | `agents/specialized/backend-dev.md` | VALID       | 8 tools | claude-sonnet-4-5 | auto       |
+| coordinator    | `agents/swarm/coordinator.md`       | VALID       | 5 tools | claude-sonnet-4-5 | auto       |
+| memory-manager | `agents/swarm/memory-manager.md`    | VALID       | 4 tools | claude-sonnet-4-5 | auto       |
 
 #### Hook Files (6 total)
 
-| Hook | Status | Lines | Executable |
-|------|--------|-------|------------|
-| `pre-task.sh` | PASS | 89 | Yes |
-| `post-task.sh` | PASS | 110 | Yes |
-| `pre-edit.sh` | PASS | 289 | Yes (MCP integrated) |
-| `post-edit.sh` | PASS | 126 | Yes |
-| `session-start.sh` | PASS | 358 | Yes (MCP integrated) |
-| `session-end.sh` | PASS | 164 | Yes |
+| Hook               | Status | Lines | Executable           |
+| ------------------ | ------ | ----- | -------------------- |
+| `pre-task.sh`      | PASS   | 89    | Yes                  |
+| `post-task.sh`     | PASS   | 110   | Yes                  |
+| `pre-edit.sh`      | PASS   | 289   | Yes (MCP integrated) |
+| `post-edit.sh`     | PASS   | 126   | Yes                  |
+| `session-start.sh` | PASS   | 358   | Yes (MCP integrated) |
+| `session-end.sh`   | PASS   | 164   | Yes                  |
 
 #### Command Files (3 total)
 
-| Command | Status | Lines | Notes |
-|---------|--------|-------|-------|
-| `review-changes.md` | PASS | 251 | Quality checks and suggestions |
-| `setup-project.md` | PASS | 346 | Project initialization |
-| `test-suite.md` | PASS | 197 | Test execution command |
+| Command             | Status | Lines | Notes                          |
+| ------------------- | ------ | ----- | ------------------------------ |
+| `review-changes.md` | PASS   | 251   | Quality checks and suggestions |
+| `setup-project.md`  | PASS   | 346   | Project initialization         |
+| `test-suite.md`     | PASS   | 197   | Test execution command         |
 
 ### 1.3 Conventions Directory
 
@@ -86,7 +87,8 @@ This audit examines template consistency across three locations:
 
 **Status**: DIRECTORY NOT FOUND
 
-This directory does not exist. Conventions are stored in `/templates/.claude/conventions.md` instead.
+This directory does not exist. Conventions are stored in `/templates/.claude/conventions.md`
+instead.
 
 ---
 
@@ -113,15 +115,16 @@ skills:
 
 ### 2.2 Model Version Consistency
 
-| Model Version | Count | Agents |
-|---------------|-------|--------|
-| `claude-sonnet-4-5` | 12 | All agents |
+| Model Version       | Count | Agents     |
+| ------------------- | ----- | ---------- |
+| `claude-sonnet-4-5` | 12    | All agents |
 
 **Status**: CONSISTENT - All agents use the same model version.
 
 ### 2.3 MCP Tool References
 
 **Referenced MCP Tools**:
+
 - `drift_detection` - Used by: coder, reviewer, backend-dev
 - `pattern_standardize` - Used by: coder, reviewer
 - `dependency_analyze` - Used by: researcher, reviewer, architecture, backend-dev
@@ -133,10 +136,10 @@ skills:
 
 ### 2.4 Permission Mode Distribution
 
-| Permission Mode | Count | Agents |
-|-----------------|-------|--------|
-| `auto` | 10 | Core, SPARC, Specialized, Swarm agents |
-| `require` | 2 | GitHub agents (issue-tracker, pr-manager) |
+| Permission Mode | Count | Agents                                    |
+| --------------- | ----- | ----------------------------------------- |
+| `auto`          | 10    | Core, SPARC, Specialized, Swarm agents    |
+| `require`       | 2     | GitHub agents (issue-tracker, pr-manager) |
 
 **Status**: APPROPRIATE - GitHub agents require explicit permission for sensitive operations.
 
@@ -170,31 +173,31 @@ None identified.
 
 ### 3.2 Medium Priority Issues
 
-| ID | Issue | Location | Recommendation |
-|----|-------|----------|----------------|
-| M1 | Missing conventions directory | `/packages/@wundr/computer-setup/resources/conventions/` | Create directory or update references |
-| M2 | Duplicate CLAUDE.md templates | Root and templates/.claude/ | Consider consolidating or clarifying purpose |
+| ID  | Issue                         | Location                                                 | Recommendation                               |
+| --- | ----------------------------- | -------------------------------------------------------- | -------------------------------------------- |
+| M1  | Missing conventions directory | `/packages/@wundr/computer-setup/resources/conventions/` | Create directory or update references        |
+| M2  | Duplicate CLAUDE.md templates | Root and templates/.claude/                              | Consider consolidating or clarifying purpose |
 
 ### 3.3 Low Priority Issues
 
-| ID | Issue | Location | Recommendation |
-|----|-------|----------|----------------|
-| L1 | Version not specified in template files | All templates | Add version metadata |
-| L2 | Last updated date uses placeholder | CLAUDE.md, conventions.md | Add actual dates |
-| L3 | Some agent files contain placeholder links | specification.md, issue-tracker.md | Update or remove placeholder [link] references |
-| L4 | 10 warnings from validation script | Various files | Resolve placeholder text and link references |
+| ID  | Issue                                      | Location                           | Recommendation                                 |
+| --- | ------------------------------------------ | ---------------------------------- | ---------------------------------------------- |
+| L1  | Version not specified in template files    | All templates                      | Add version metadata                           |
+| L2  | Last updated date uses placeholder         | CLAUDE.md, conventions.md          | Add actual dates                               |
+| L3  | Some agent files contain placeholder links | specification.md, issue-tracker.md | Update or remove placeholder [link] references |
+| L4  | 10 warnings from validation script         | Various files                      | Resolve placeholder text and link references   |
 
 ---
 
 ## 4. Version Consistency Matrix
 
-| Component | Current Version | Expected | Status |
-|-----------|----------------|----------|--------|
-| Model (claude-sonnet-4-5) | Consistent | claude-sonnet-4-5 | PASS |
-| Frontmatter schema | v1.0 | v1.0 | PASS |
-| MCP tool names | Consistent | Wundr tools | PASS |
-| Hook script format | Consistent | bash | PASS |
-| Command format | Consistent | markdown | PASS |
+| Component                 | Current Version | Expected          | Status |
+| ------------------------- | --------------- | ----------------- | ------ |
+| Model (claude-sonnet-4-5) | Consistent      | claude-sonnet-4-5 | PASS   |
+| Frontmatter schema        | v1.0            | v1.0              | PASS   |
+| MCP tool names            | Consistent      | Wundr tools       | PASS   |
+| Hook script format        | Consistent      | bash              | PASS   |
+| Command format            | Consistent      | markdown          | PASS   |
 
 ---
 
@@ -204,20 +207,20 @@ None identified.
 
 All 12 agent files have valid YAML frontmatter:
 
-| Agent | YAML Valid | Structure Valid |
-|-------|------------|-----------------|
-| coder | PASS | PASS |
-| planner | PASS | PASS |
-| researcher | PASS | PASS |
-| reviewer | PASS | PASS |
-| tester | PASS | PASS |
-| issue-tracker | PASS | PASS |
-| pr-manager | PASS | PASS |
-| architecture | PASS | PASS |
-| specification | PASS | PASS |
-| backend-dev | PASS | PASS |
-| coordinator | PASS | PASS |
-| memory-manager | PASS | PASS |
+| Agent          | YAML Valid | Structure Valid |
+| -------------- | ---------- | --------------- |
+| coder          | PASS       | PASS            |
+| planner        | PASS       | PASS            |
+| researcher     | PASS       | PASS            |
+| reviewer       | PASS       | PASS            |
+| tester         | PASS       | PASS            |
+| issue-tracker  | PASS       | PASS            |
+| pr-manager     | PASS       | PASS            |
+| architecture   | PASS       | PASS            |
+| specification  | PASS       | PASS            |
+| backend-dev    | PASS       | PASS            |
+| coordinator    | PASS       | PASS            |
+| memory-manager | PASS       | PASS            |
 
 ### 5.2 JSON Examples in Templates
 
@@ -229,20 +232,20 @@ All JSON examples in documentation are valid.
 
 ### 6.1 Internal References
 
-| Reference | Source | Status |
-|-----------|--------|--------|
-| `conventions.md` | CLAUDE.md | VALID |
-| `docs/architecture/` | coder.md | NOT VERIFIED |
-| `docs/security/` | reviewer.md | NOT VERIFIED |
-| `docs/api/` | coder.md | NOT VERIFIED |
+| Reference            | Source      | Status       |
+| -------------------- | ----------- | ------------ |
+| `conventions.md`     | CLAUDE.md   | VALID        |
+| `docs/architecture/` | coder.md    | NOT VERIFIED |
+| `docs/security/`     | reviewer.md | NOT VERIFIED |
+| `docs/api/`          | coder.md    | NOT VERIFIED |
 
 ### 6.2 External Links
 
-| URL | Source | Status |
-|-----|--------|--------|
+| URL                                    | Source                    | Status   |
+| -------------------------------------- | ------------------------- | -------- |
 | https://docs.anthropic.com/claude-code | README.md, SETUP_GUIDE.md | External |
-| https://github.com/ruvnet/claude-flow | README.md, SETUP_GUIDE.md | External |
-| https://github.com/ruvnet/wundr | README.md | External |
+| https://github.com/ruvnet/claude-flow  | README.md, SETUP_GUIDE.md | External |
+| https://github.com/ruvnet/wundr        | README.md                 | External |
 
 ---
 
@@ -256,7 +259,8 @@ All JSON examples in documentation are valid.
 
 ### Future Improvements
 
-1. **Consolidate CLAUDE.md templates** - Clarify the relationship between root CLAUDE.md and template versions
+1. **Consolidate CLAUDE.md templates** - Clarify the relationship between root CLAUDE.md and
+   template versions
 2. **Add template testing** - Create automated validation for template syntax
 3. **Version tracking** - Implement changelog for template updates
 4. **Documentation links** - Create docs directories referenced in agent files
@@ -265,15 +269,15 @@ All JSON examples in documentation are valid.
 
 ## 8. Compliance Summary
 
-| Category | Items Checked | Passed | Failed | Compliance |
-|----------|---------------|--------|--------|------------|
-| Version Consistency | 12 | 12 | 0 | 100% |
-| MCP Tool References | 6 | 6 | 0 | 100% |
-| Agent Frontmatter | 12 | 12 | 0 | 100% |
-| YAML Syntax | 12 | 12 | 0 | 100% |
-| File Organization | 23 | 23 | 0 | 100% |
-| Hook Scripts | 6 | 6 | 0 | 100% |
-| Command Files | 3 | 3 | 0 | 100% |
+| Category            | Items Checked | Passed | Failed | Compliance |
+| ------------------- | ------------- | ------ | ------ | ---------- |
+| Version Consistency | 12            | 12     | 0      | 100%       |
+| MCP Tool References | 6             | 6      | 0      | 100%       |
+| Agent Frontmatter   | 12            | 12     | 0      | 100%       |
+| YAML Syntax         | 12            | 12     | 0      | 100%       |
+| File Organization   | 23            | 23     | 0      | 100%       |
+| Hook Scripts        | 6             | 6      | 0      | 100%       |
+| Command Files       | 3             | 3      | 0      | 100%       |
 
 **Overall Compliance**: 100%
 
@@ -282,6 +286,7 @@ All JSON examples in documentation are valid.
 ## Appendix A: Full File Inventory
 
 ### Templates Directory
+
 ```
 /packages/@wundr/computer-setup/resources/templates/
 └── CLAUDE.md.template (656 lines)
@@ -323,6 +328,7 @@ All JSON examples in documentation are valid.
 ```
 
 ### Total Statistics
+
 - **Total Files**: 26
 - **Total Lines**: ~9,200
 - **Agent Templates**: 12
@@ -352,19 +358,19 @@ All templates are valid!
 
 ### Warnings Identified (Non-Critical)
 
-| File | Warning Type |
-|------|--------------|
-| planner.md | Unresolved placeholder text |
-| researcher.md | Unresolved placeholder text |
-| issue-tracker.md | Potentially broken link |
+| File             | Warning Type                              |
+| ---------------- | ----------------------------------------- |
+| planner.md       | Unresolved placeholder text               |
+| researcher.md    | Unresolved placeholder text               |
+| issue-tracker.md | Potentially broken link                   |
 | specification.md | Unresolved placeholder text, broken links |
-| coordinator.md | Unresolved placeholder text |
-| CLAUDE.md | Unresolved placeholder text |
-| conventions.md | Unresolved placeholder text |
+| coordinator.md   | Unresolved placeholder text               |
+| CLAUDE.md        | Unresolved placeholder text               |
+| conventions.md   | Unresolved placeholder text               |
 
-These warnings are informational and do not affect functionality. They indicate areas where template customization placeholders have not been filled in.
+These warnings are informational and do not affect functionality. They indicate areas where template
+customization placeholders have not been filled in.
 
 ---
 
-**Report Generated**: 2025-11-21
-**Validation Script**: `/scripts/validate-templates.ts`
+**Report Generated**: 2025-11-21 **Validation Script**: `/scripts/validate-templates.ts`

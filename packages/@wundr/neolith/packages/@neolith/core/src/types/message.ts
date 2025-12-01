@@ -286,17 +286,27 @@ export type OnMessageUpdatedCallback = (message: MessageWithRelations) => void;
 /**
  * Callback for message deleted events.
  */
-export type OnMessageDeletedCallback = (messageId: string, softDelete: boolean) => void;
+export type OnMessageDeletedCallback = (
+  messageId: string,
+  softDelete: boolean
+) => void;
 
 /**
  * Callback for reaction added events.
  */
-export type OnReactionAddedCallback = (messageId: string, reaction: Reaction) => void;
+export type OnReactionAddedCallback = (
+  messageId: string,
+  reaction: Reaction
+) => void;
 
 /**
  * Callback for reaction removed events.
  */
-export type OnReactionRemovedCallback = (messageId: string, emoji: string, userId: string) => void;
+export type OnReactionRemovedCallback = (
+  messageId: string,
+  emoji: string,
+  userId: string
+) => void;
 
 // =============================================================================
 // Type Guards
@@ -305,7 +315,9 @@ export type OnReactionRemovedCallback = (messageId: string, emoji: string, userI
 /**
  * Type guard to check if a message has author information.
  */
-export function isMessageWithAuthor(message: unknown): message is MessageWithAuthor {
+export function isMessageWithAuthor(
+  message: unknown
+): message is MessageWithAuthor {
   return (
     typeof message === 'object' &&
     message !== null &&
@@ -319,7 +331,9 @@ export function isMessageWithAuthor(message: unknown): message is MessageWithAut
 /**
  * Type guard to check if a message has full relations.
  */
-export function isMessageWithRelations(message: unknown): message is MessageWithRelations {
+export function isMessageWithRelations(
+  message: unknown
+): message is MessageWithRelations {
   return (
     isMessageWithAuthor(message) &&
     'reactions' in message &&
@@ -330,7 +344,9 @@ export function isMessageWithRelations(message: unknown): message is MessageWith
 /**
  * Type guard to validate SendMessageInput.
  */
-export function isValidSendMessageInput(input: unknown): input is SendMessageInput {
+export function isValidSendMessageInput(
+  input: unknown
+): input is SendMessageInput {
   if (typeof input !== 'object' || input === null) {
     return false;
   }
@@ -354,7 +370,10 @@ export function isValidSendMessageInput(input: unknown): input is SendMessageInp
  * Default message query options.
  */
 export const DEFAULT_MESSAGE_QUERY_OPTIONS: Required<
-  Pick<MessageQueryOptions, 'limit' | 'includeDeleted' | 'includeReactions' | 'includeAuthor'>
+  Pick<
+    MessageQueryOptions,
+    'limit' | 'includeDeleted' | 'includeReactions' | 'includeAuthor'
+  >
 > = {
   limit: 50,
   includeDeleted: false,

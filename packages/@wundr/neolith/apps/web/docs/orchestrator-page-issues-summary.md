@@ -12,6 +12,7 @@ LOW      ████ 1 issue (12.5%)
 ## Critical Path Blockers
 
 ### Issue #1: Create Orchestrator Fails (404)
+
 ```
 User clicks "Create VP" → Fills form → Submits
                                          ↓
@@ -21,12 +22,14 @@ User clicks "Create VP" → Fills form → Submits
 ```
 
 **Fix:**
+
 ```diff
 - const response = await fetch('/api/orchestrators', {
 + const response = await fetch(`/api/workspaces/${input.workspaceId}/orchestrators`, {
 ```
 
 ### Issue #2: Missing workspaceId Parameter
+
 ```
 Page Component                    Hook
      ↓                             ↓
@@ -37,6 +40,7 @@ workspace context
 ```
 
 **Fix:**
+
 ```diff
 - await createVP(input);
 + await createVP({ ...input, workspaceId });
@@ -46,13 +50,13 @@ workspace context
 
 ## API Endpoint Mapping (Current vs Expected)
 
-| Feature | Current Endpoint | Expected Endpoint | Status |
-|---------|-----------------|-------------------|--------|
-| List Orchestrators | `/api/workspaces/{id}/orchestrators` | Same | ✅ Correct |
-| Create Orchestrator | `/api/orchestrators` | `/api/workspaces/{id}/orchestrators` | ❌ Wrong |
-| Update Orchestrator | `/api/orchestrators/{id}` | `/api/workspaces/{id}/orchestrators/{vpId}` | ⚠️ Works but not workspace-scoped |
-| Delete Orchestrator | `/api/orchestrators/{id}` | `/api/workspaces/{id}/orchestrators/{vpId}` | ⚠️ Works but not workspace-scoped |
-| Toggle Status | `/api/orchestrators/{id}` (PATCH) | `/api/workspaces/{id}/orchestrators/{vpId}/status` | ❌ Wrong |
+| Feature             | Current Endpoint                     | Expected Endpoint                                  | Status                            |
+| ------------------- | ------------------------------------ | -------------------------------------------------- | --------------------------------- |
+| List Orchestrators  | `/api/workspaces/{id}/orchestrators` | Same                                               | ✅ Correct                        |
+| Create Orchestrator | `/api/orchestrators`                 | `/api/workspaces/{id}/orchestrators`               | ❌ Wrong                          |
+| Update Orchestrator | `/api/orchestrators/{id}`            | `/api/workspaces/{id}/orchestrators/{vpId}`        | ⚠️ Works but not workspace-scoped |
+| Delete Orchestrator | `/api/orchestrators/{id}`            | `/api/workspaces/{id}/orchestrators/{vpId}`        | ⚠️ Works but not workspace-scoped |
+| Toggle Status       | `/api/orchestrators/{id}` (PATCH)    | `/api/workspaces/{id}/orchestrators/{vpId}/status` | ❌ Wrong                          |
 
 ---
 
@@ -79,6 +83,7 @@ workspace context
 ## Code Quality Observations
 
 ### Strengths
+
 - Clean component structure
 - Comprehensive error handling
 - Good TypeScript types
@@ -86,6 +91,7 @@ workspace context
 - Accessible UI (ARIA labels)
 
 ### Weaknesses
+
 - Code duplication (data transformation)
 - Missing error boundaries
 - Hard-coded skeleton count
@@ -111,15 +117,15 @@ workspace context
 
 ## Testing Status
 
-| Test Category | Status | Notes |
-|--------------|--------|-------|
-| Static Analysis | ✅ Complete | All code reviewed |
-| Type Checking | ✅ Complete | Types verified |
-| API Structure | ✅ Complete | Routes analyzed |
-| Unit Tests | ❌ Not Found | No test files exist |
-| Integration Tests | ❌ Not Found | No API tests |
-| E2E Tests | ❌ Blocked | Playwright MCP unavailable |
-| Manual Testing | ❌ Blocked | Requires authentication |
+| Test Category     | Status       | Notes                      |
+| ----------------- | ------------ | -------------------------- |
+| Static Analysis   | ✅ Complete  | All code reviewed          |
+| Type Checking     | ✅ Complete  | Types verified             |
+| API Structure     | ✅ Complete  | Routes analyzed            |
+| Unit Tests        | ❌ Not Found | No test files exist        |
+| Integration Tests | ❌ Not Found | No API tests               |
+| E2E Tests         | ❌ Blocked   | Playwright MCP unavailable |
+| Manual Testing    | ❌ Blocked   | Requires authentication    |
 
 ---
 
@@ -138,11 +144,13 @@ workspace context
 **Release Risk:** HIGH
 
 **User Impact:** SEVERE
+
 - 100% of Orchestrator creation attempts will fail
 - Status toggles non-functional
 - Core workflow completely broken
 
 **Business Impact:**
+
 - Cannot onboard new Orchestrators
 - Cannot manage existing Orchestrators effectively
 - Loss of platform core functionality
@@ -158,8 +166,7 @@ workspace context
 - Add Tests: 4 hours
 - Code Review: 1 hour
 
-**Total:** 10 hours for complete resolution
-**Minimum Viable:** 2 hours (Critical issues only)
+**Total:** 10 hours for complete resolution **Minimum Viable:** 2 hours (Critical issues only)
 
 ---
 

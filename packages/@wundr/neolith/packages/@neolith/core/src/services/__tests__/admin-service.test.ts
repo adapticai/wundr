@@ -53,16 +53,39 @@ function generateId(): string {
   return `test_${Date.now()}_${idCounter}`;
 }
 
-function createTestWorkspaceSettings(workspaceId: string, overrides: Partial<WorkspaceSettings> = {}): WorkspaceSettings {
+function createTestWorkspaceSettings(
+  workspaceId: string,
+  overrides: Partial<WorkspaceSettings> = {}
+): WorkspaceSettings {
   return {
     id: generateId(),
     workspaceId,
     general: { ...DEFAULT_GENERAL_SETTINGS },
-    security: { ...DEFAULT_SECURITY_SETTINGS, passwordPolicy: { ...DEFAULT_SECURITY_SETTINGS.passwordPolicy } },
+    security: {
+      ...DEFAULT_SECURITY_SETTINGS,
+      passwordPolicy: { ...DEFAULT_SECURITY_SETTINGS.passwordPolicy },
+    },
     messaging: { ...DEFAULT_MESSAGING_SETTINGS },
-    notifications: { defaultDesktop: true, defaultMobile: true, defaultEmail: false, quietHoursEnabled: false, digestFrequency: 'never' },
-    integrations: { allowThirdPartyApps: true, approvedProviders: [], webhooksEnabled: true, apiRateLimitPerMinute: 60 },
-    compliance: { dataRetentionDays: 365, exportEnabled: true, dlpEnabled: false, eDiscoveryEnabled: false, legalHoldEnabled: false },
+    notifications: {
+      defaultDesktop: true,
+      defaultMobile: true,
+      defaultEmail: false,
+      quietHoursEnabled: false,
+      digestFrequency: 'never',
+    },
+    integrations: {
+      allowThirdPartyApps: true,
+      approvedProviders: [],
+      webhooksEnabled: true,
+      apiRateLimitPerMinute: 60,
+    },
+    compliance: {
+      dataRetentionDays: 365,
+      exportEnabled: true,
+      dlpEnabled: false,
+      eDiscoveryEnabled: false,
+      legalHoldEnabled: false,
+    },
     branding: {},
     updatedAt: new Date(),
     updatedBy: 'test_user',
@@ -70,7 +93,10 @@ function createTestWorkspaceSettings(workspaceId: string, overrides: Partial<Wor
   };
 }
 
-function createTestRole(workspaceId: string, overrides: Partial<Role> = {}): Role {
+function createTestRole(
+  workspaceId: string,
+  overrides: Partial<Role> = {}
+): Role {
   return {
     id: generateId(),
     workspaceId,
@@ -86,7 +112,11 @@ function createTestRole(workspaceId: string, overrides: Partial<Role> = {}): Rol
   };
 }
 
-function createTestMember(workspaceId: string, userId: string, overrides: Partial<MemberInfo> = {}): MemberInfo {
+function createTestMember(
+  workspaceId: string,
+  userId: string,
+  overrides: Partial<MemberInfo> = {}
+): MemberInfo {
   return {
     id: generateId(),
     userId,
@@ -99,7 +129,10 @@ function createTestMember(workspaceId: string, userId: string, overrides: Partia
   };
 }
 
-function createTestInvite(workspaceId: string, overrides: Partial<Invite> = {}): Invite {
+function createTestInvite(
+  workspaceId: string,
+  overrides: Partial<Invite> = {}
+): Invite {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -116,7 +149,10 @@ function createTestInvite(workspaceId: string, overrides: Partial<Invite> = {}):
   };
 }
 
-function createTestBillingInfo(workspaceId: string, overrides: Partial<BillingInfo> = {}): BillingInfo {
+function createTestBillingInfo(
+  workspaceId: string,
+  overrides: Partial<BillingInfo> = {}
+): BillingInfo {
   const now = new Date();
   const periodEnd = new Date();
   periodEnd.setMonth(periodEnd.getMonth() + 1);
@@ -176,7 +212,9 @@ describe('AdminService', () => {
         // This test demonstrates how SettingsNotFoundError can be used
         // when strict settings retrieval is needed (e.g., in APIs that
         // require settings to already exist)
-        const strictGetSettings = async (workspaceId: string): Promise<WorkspaceSettings> => {
+        const strictGetSettings = async (
+          workspaceId: string
+        ): Promise<WorkspaceSettings> => {
           const settings = await storage.getSettings(workspaceId);
           if (!settings) {
             throw new SettingsNotFoundError(workspaceId);
@@ -186,7 +224,7 @@ describe('AdminService', () => {
 
         // Throws when settings don't exist
         await expect(
-          strictGetSettings('nonexistent_workspace'),
+          strictGetSettings('nonexistent_workspace')
         ).rejects.toThrow(SettingsNotFoundError);
 
         // Returns settings when they exist
@@ -233,83 +271,128 @@ describe('AdminService', () => {
 
     describe('updateSettings', () => {
       it('updates general settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'My Workspace', timezone: 'America/New_York' },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            general: {
+              displayName: 'My Workspace',
+              timezone: 'America/New_York',
+            },
+          },
+          userId
+        );
 
         expect(result.general.displayName).toBe('My Workspace');
         expect(result.general.timezone).toBe('America/New_York');
       });
 
       it('updates security settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          security: { mfaRequired: true, sessionTimeout: 120 },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            security: { mfaRequired: true, sessionTimeout: 120 },
+          },
+          userId
+        );
 
         expect(result.security.mfaRequired).toBe(true);
         expect(result.security.sessionTimeout).toBe(120);
       });
 
       it('updates password policy within security', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          security: { passwordPolicy: { minLength: 12 } },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            security: { passwordPolicy: { minLength: 12 } },
+          },
+          userId
+        );
 
         expect(result.security.passwordPolicy.minLength).toBe(12);
         expect(result.security.passwordPolicy.requireUppercase).toBe(true); // Preserved
       });
 
       it('updates messaging settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          messaging: { maxMessageLength: 10000, enableThreads: false },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            messaging: { maxMessageLength: 10000, enableThreads: false },
+          },
+          userId
+        );
 
         expect(result.messaging.maxMessageLength).toBe(10000);
         expect(result.messaging.enableThreads).toBe(false);
       });
 
       it('updates notification settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          notifications: { defaultEmail: true, digestFrequency: 'daily' },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            notifications: { defaultEmail: true, digestFrequency: 'daily' },
+          },
+          userId
+        );
 
         expect(result.notifications.defaultEmail).toBe(true);
         expect(result.notifications.digestFrequency).toBe('daily');
       });
 
       it('updates integration settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          integrations: { allowThirdPartyApps: false, apiRateLimitPerMinute: 30 },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            integrations: {
+              allowThirdPartyApps: false,
+              apiRateLimitPerMinute: 30,
+            },
+          },
+          userId
+        );
 
         expect(result.integrations.allowThirdPartyApps).toBe(false);
         expect(result.integrations.apiRateLimitPerMinute).toBe(30);
       });
 
       it('updates compliance settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          compliance: { dlpEnabled: true, dataRetentionDays: 90 },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            compliance: { dlpEnabled: true, dataRetentionDays: 90 },
+          },
+          userId
+        );
 
         expect(result.compliance.dlpEnabled).toBe(true);
         expect(result.compliance.dataRetentionDays).toBe(90);
       });
 
       it('updates branding settings', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          branding: { primaryColor: '#FF0000', logoUrl: 'https://example.com/logo.png' },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            branding: {
+              primaryColor: '#FF0000',
+              logoUrl: 'https://example.com/logo.png',
+            },
+          },
+          userId
+        );
 
         expect(result.branding.primaryColor).toBe('#FF0000');
         expect(result.branding.logoUrl).toBe('https://example.com/logo.png');
       });
 
       it('updates multiple sections at once', async () => {
-        const result = await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Updated' },
-          security: { mfaRequired: true },
-          messaging: { maxMessageLength: 5000 },
-        }, userId);
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            general: { displayName: 'Updated' },
+            security: { mfaRequired: true },
+            messaging: { maxMessageLength: 5000 },
+          },
+          userId
+        );
 
         expect(result.general.displayName).toBe('Updated');
         expect(result.security.mfaRequired).toBe(true);
@@ -317,9 +400,13 @@ describe('AdminService', () => {
       });
 
       it('logs admin action on update', async () => {
-        await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Test' },
-        }, userId);
+        await adminService.updateSettings(
+          workspaceId,
+          {
+            general: { displayName: 'Test' },
+          },
+          userId
+        );
 
         const actions = await adminService.getAdminActions(workspaceId);
         expect(actions.data.length).toBe(1);
@@ -328,20 +415,30 @@ describe('AdminService', () => {
 
       it('updates updatedAt and updatedBy', async () => {
         const before = new Date();
-        const result = await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Test' },
-        }, 'user_456');
+        const result = await adminService.updateSettings(
+          workspaceId,
+          {
+            general: { displayName: 'Test' },
+          },
+          'user_456'
+        );
 
-        expect(result.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+        expect(result.updatedAt.getTime()).toBeGreaterThanOrEqual(
+          before.getTime()
+        );
         expect(result.updatedBy).toBe('user_456');
       });
     });
 
     describe('resetSettings', () => {
       it('resets specific section to defaults', async () => {
-        await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Custom', timezone: 'Asia/Tokyo' },
-        }, userId);
+        await adminService.updateSettings(
+          workspaceId,
+          {
+            general: { displayName: 'Custom', timezone: 'Asia/Tokyo' },
+          },
+          userId
+        );
 
         const result = await adminService.resetSettings(workspaceId, 'general');
 
@@ -350,10 +447,14 @@ describe('AdminService', () => {
       });
 
       it('resets all sections to defaults', async () => {
-        await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Custom' },
-          security: { mfaRequired: true },
-        }, userId);
+        await adminService.updateSettings(
+          workspaceId,
+          {
+            general: { displayName: 'Custom' },
+            security: { mfaRequired: true },
+          },
+          userId
+        );
 
         const result = await adminService.resetSettings(workspaceId);
 
@@ -362,11 +463,18 @@ describe('AdminService', () => {
       });
 
       it('resets security section including password policy', async () => {
-        await adminService.updateSettings(workspaceId, {
-          security: { passwordPolicy: { minLength: 20 } },
-        }, userId);
+        await adminService.updateSettings(
+          workspaceId,
+          {
+            security: { passwordPolicy: { minLength: 20 } },
+          },
+          userId
+        );
 
-        const result = await adminService.resetSettings(workspaceId, 'security');
+        const result = await adminService.resetSettings(
+          workspaceId,
+          'security'
+        );
 
         expect(result.security.passwordPolicy.minLength).toBe(8);
       });
@@ -386,7 +494,11 @@ describe('AdminService', () => {
           permissions: [{ resource: 'messages', actions: ['read', 'delete'] }],
         };
 
-        const result = await adminService.createRole(workspaceId, input, userId);
+        const result = await adminService.createRole(
+          workspaceId,
+          input,
+          userId
+        );
 
         expect(result.name).toBe('Moderator');
         expect(result.description).toBe('Can moderate content');
@@ -400,7 +512,11 @@ describe('AdminService', () => {
           permissions: [{ resource: 'channels', actions: ['read'] }],
         };
 
-        const result = await adminService.createRole(workspaceId, input, userId);
+        const result = await adminService.createRole(
+          workspaceId,
+          input,
+          userId
+        );
 
         expect(result.priority).toBe(50);
       });
@@ -412,7 +528,11 @@ describe('AdminService', () => {
           priority: 200,
         };
 
-        const result = await adminService.createRole(workspaceId, input, userId);
+        const result = await adminService.createRole(
+          workspaceId,
+          input,
+          userId
+        );
 
         expect(result.priority).toBe(200);
       });
@@ -426,7 +546,7 @@ describe('AdminService', () => {
         await adminService.createRole(workspaceId, input, userId);
 
         await expect(
-          adminService.createRole(workspaceId, input, userId),
+          adminService.createRole(workspaceId, input, userId)
         ).rejects.toThrow(RoleAlreadyExistsError);
       });
 
@@ -437,7 +557,7 @@ describe('AdminService', () => {
         };
 
         await expect(
-          adminService.createRole(workspaceId, input, userId),
+          adminService.createRole(workspaceId, input, userId)
         ).rejects.toThrow(RoleValidationError);
       });
 
@@ -448,7 +568,7 @@ describe('AdminService', () => {
         };
 
         await expect(
-          adminService.createRole(workspaceId, input, userId),
+          adminService.createRole(workspaceId, input, userId)
         ).rejects.toThrow(RoleValidationError);
       });
 
@@ -459,7 +579,7 @@ describe('AdminService', () => {
         };
 
         await expect(
-          adminService.createRole(workspaceId, input, userId),
+          adminService.createRole(workspaceId, input, userId)
         ).rejects.toThrow(RoleValidationError);
       });
 
@@ -478,10 +598,14 @@ describe('AdminService', () => {
 
     describe('getRole', () => {
       it('returns role by ID', async () => {
-        const created = await adminService.createRole(workspaceId, {
-          name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const created = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Test',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
         const result = await adminService.getRole(created.id);
 
@@ -498,14 +622,22 @@ describe('AdminService', () => {
 
     describe('listRoles', () => {
       it('lists all roles in workspace', async () => {
-        await adminService.createRole(workspaceId, {
-          name: 'Role 1',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
-        await adminService.createRole(workspaceId, {
-          name: 'Role 2',
-          permissions: [{ resource: 'channels', actions: ['read'] }],
-        }, userId);
+        await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Role 1',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
+        await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Role 2',
+            permissions: [{ resource: 'channels', actions: ['read'] }],
+          },
+          userId
+        );
 
         const result = await adminService.listRoles(workspaceId);
 
@@ -519,16 +651,24 @@ describe('AdminService', () => {
       });
 
       it('sorts roles by priority descending', async () => {
-        await adminService.createRole(workspaceId, {
-          name: 'Low',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-          priority: 10,
-        }, userId);
-        await adminService.createRole(workspaceId, {
-          name: 'High',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-          priority: 100,
-        }, userId);
+        await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Low',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+            priority: 10,
+          },
+          userId
+        );
+        await adminService.createRole(
+          workspaceId,
+          {
+            name: 'High',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+            priority: 100,
+          },
+          userId
+        );
 
         const result = await adminService.listRoles(workspaceId);
 
@@ -539,51 +679,75 @@ describe('AdminService', () => {
 
     describe('updateRole', () => {
       it('updates role name', async () => {
-        const role = await adminService.createRole(workspaceId, {
-          name: 'Original',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Original',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
-        const result = await adminService.updateRole(role.id, {
-          name: 'Updated',
-        }, userId);
+        const result = await adminService.updateRole(
+          role.id,
+          {
+            name: 'Updated',
+          },
+          userId
+        );
 
         expect(result.name).toBe('Updated');
       });
 
       it('updates role permissions', async () => {
-        const role = await adminService.createRole(workspaceId, {
-          name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Test',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
         const newPermissions: Permission[] = [
           { resource: 'messages', actions: ['read', 'create', 'delete'] },
         ];
 
-        const result = await adminService.updateRole(role.id, {
-          permissions: newPermissions,
-        }, userId);
+        const result = await adminService.updateRole(
+          role.id,
+          {
+            permissions: newPermissions,
+          },
+          userId
+        );
 
         expect(result.permissions[0].actions).toContain('delete');
       });
 
       it('updates role priority', async () => {
-        const role = await adminService.createRole(workspaceId, {
-          name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Test',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
-        const result = await adminService.updateRole(role.id, {
-          priority: 150,
-        }, userId);
+        const result = await adminService.updateRole(
+          role.id,
+          {
+            priority: 150,
+          },
+          userId
+        );
 
         expect(result.priority).toBe(150);
       });
 
       it('throws error for non-existent role', async () => {
         await expect(
-          adminService.updateRole('non_existent', { name: 'New' }, userId),
+          adminService.updateRole('non_existent', { name: 'New' }, userId)
         ).rejects.toThrow(RoleNotFoundError);
       });
 
@@ -592,30 +756,42 @@ describe('AdminService', () => {
         await storage.saveRole(systemRole);
 
         await expect(
-          adminService.updateRole(systemRole.id, { name: 'New' }, userId),
+          adminService.updateRole(systemRole.id, { name: 'New' }, userId)
         ).rejects.toThrow(SystemRoleError);
       });
 
       it('throws error for duplicate name when updating', async () => {
-        await adminService.createRole(workspaceId, {
-          name: 'Existing',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
-        const role = await adminService.createRole(workspaceId, {
-          name: 'Another',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Existing',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Another',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
         await expect(
-          adminService.updateRole(role.id, { name: 'Existing' }, userId),
+          adminService.updateRole(role.id, { name: 'Existing' }, userId)
         ).rejects.toThrow(RoleAlreadyExistsError);
       });
 
       it('logs admin action on update', async () => {
-        const role = await adminService.createRole(workspaceId, {
-          name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'Test',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
         await adminService.updateRole(role.id, { name: 'Updated' }, userId);
 
@@ -626,10 +802,14 @@ describe('AdminService', () => {
 
     describe('deleteRole', () => {
       it('deletes a custom role', async () => {
-        const role = await adminService.createRole(workspaceId, {
-          name: 'ToDelete',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'ToDelete',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
         await adminService.deleteRole(role.id, userId);
 
@@ -639,7 +819,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent role', async () => {
         await expect(
-          adminService.deleteRole('non_existent', userId),
+          adminService.deleteRole('non_existent', userId)
         ).rejects.toThrow(RoleNotFoundError);
       });
 
@@ -648,15 +828,19 @@ describe('AdminService', () => {
         await storage.saveRole(systemRole);
 
         await expect(
-          adminService.deleteRole(systemRole.id, userId),
+          adminService.deleteRole(systemRole.id, userId)
         ).rejects.toThrow(SystemRoleError);
       });
 
       it('logs admin action on delete', async () => {
-        const role = await adminService.createRole(workspaceId, {
-          name: 'ToDelete',
-          permissions: [{ resource: 'messages', actions: ['read'] }],
-        }, userId);
+        const role = await adminService.createRole(
+          workspaceId,
+          {
+            name: 'ToDelete',
+            permissions: [{ resource: 'messages', actions: ['read'] }],
+          },
+          userId
+        );
 
         await adminService.deleteRole(role.id, userId);
 
@@ -760,7 +944,10 @@ describe('AdminService', () => {
   describe('Members', () => {
     beforeEach(async () => {
       // Create a default role for members
-      const role = createTestRole(workspaceId, { id: 'role_123', isDefault: true });
+      const role = createTestRole(workspaceId, {
+        id: 'role_123',
+        isDefault: true,
+      });
       await storage.saveRole(role);
     });
 
@@ -778,36 +965,54 @@ describe('AdminService', () => {
       });
 
       it('filters by status', async () => {
-        const active = createTestMember(workspaceId, 'user_1', { status: 'active' });
-        const suspended = createTestMember(workspaceId, 'user_2', { status: 'suspended' });
+        const active = createTestMember(workspaceId, 'user_1', {
+          status: 'active',
+        });
+        const suspended = createTestMember(workspaceId, 'user_2', {
+          status: 'suspended',
+        });
         await storage.saveMember(active);
         await storage.saveMember(suspended);
 
-        const result = await adminService.listMembers(workspaceId, { status: 'active' });
+        const result = await adminService.listMembers(workspaceId, {
+          status: 'active',
+        });
 
         expect(result.data).toHaveLength(1);
         expect(result.data[0].status).toBe('active');
       });
 
       it('filters by role', async () => {
-        const member1 = createTestMember(workspaceId, 'user_1', { roleId: 'role_1' });
-        const member2 = createTestMember(workspaceId, 'user_2', { roleId: 'role_2' });
+        const member1 = createTestMember(workspaceId, 'user_1', {
+          roleId: 'role_1',
+        });
+        const member2 = createTestMember(workspaceId, 'user_2', {
+          roleId: 'role_2',
+        });
         await storage.saveMember(member1);
         await storage.saveMember(member2);
 
-        const result = await adminService.listMembers(workspaceId, { roleId: 'role_1' });
+        const result = await adminService.listMembers(workspaceId, {
+          roleId: 'role_1',
+        });
 
         expect(result.data).toHaveLength(1);
         expect(result.data[0].roleId).toBe('role_1');
       });
 
       it('searches by name and email', async () => {
-        const john = createTestMember(workspaceId, 'user_1', { user: { id: 'user_1', name: 'John Doe', email: 'john@example.com' } });
-        const jane = createTestMember(workspaceId, 'user_2', { user: { id: 'user_2', name: 'Jane Smith', email: 'jane@example.com' } });
+        const john = createTestMember(workspaceId, 'user_1', {
+          user: { id: 'user_1', name: 'John Doe', email: 'john@example.com' },
+        });
+        const jane = createTestMember(workspaceId, 'user_2', {
+          user: { id: 'user_2', name: 'Jane Smith', email: 'jane@example.com' },
+        });
         await storage.saveMember(john);
         await storage.saveMember(jane);
 
-        const result = await adminService.listMembers(workspaceId, { search: 'john' });
+        const result = await adminService.listMembers(workspaceId, {
+          search: 'john',
+        });
 
         expect(result.data).toHaveLength(1);
         expect(result.data[0].user?.name).toBe('John Doe');
@@ -818,8 +1023,14 @@ describe('AdminService', () => {
           await storage.saveMember(createTestMember(workspaceId, `user_${i}`));
         }
 
-        const page1 = await adminService.listMembers(workspaceId, { skip: 0, take: 5 });
-        const page2 = await adminService.listMembers(workspaceId, { skip: 5, take: 5 });
+        const page1 = await adminService.listMembers(workspaceId, {
+          skip: 0,
+          take: 5,
+        });
+        const page2 = await adminService.listMembers(workspaceId, {
+          skip: 5,
+          take: 5,
+        });
 
         expect(page1.data).toHaveLength(5);
         expect(page2.data).toHaveLength(5);
@@ -832,7 +1043,10 @@ describe('AdminService', () => {
           await storage.saveMember(createTestMember(workspaceId, `user_${i}`));
         }
 
-        const result = await adminService.listMembers(workspaceId, { skip: 0, take: 5 });
+        const result = await adminService.listMembers(workspaceId, {
+          skip: 0,
+          take: 5,
+        });
 
         expect(result.hasMore).toBe(false);
         expect(result.total).toBe(3);
@@ -851,7 +1065,10 @@ describe('AdminService', () => {
       });
 
       it('returns null for non-existent member', async () => {
-        const result = await adminService.getMember(workspaceId, 'non_existent');
+        const result = await adminService.getMember(
+          workspaceId,
+          'non_existent'
+        );
 
         expect(result).toBeNull();
       });
@@ -864,20 +1081,32 @@ describe('AdminService', () => {
         const member = createTestMember(workspaceId, userId);
         await storage.saveMember(member);
 
-        const result = await adminService.updateMember(workspaceId, userId, {
-          roleId: 'new_role',
-        }, 'admin_user');
+        const result = await adminService.updateMember(
+          workspaceId,
+          userId,
+          {
+            roleId: 'new_role',
+          },
+          'admin_user'
+        );
 
         expect(result.roleId).toBe('new_role');
       });
 
       it('updates member status', async () => {
-        const member = createTestMember(workspaceId, userId, { status: 'active' });
+        const member = createTestMember(workspaceId, userId, {
+          status: 'active',
+        });
         await storage.saveMember(member);
 
-        const result = await adminService.updateMember(workspaceId, userId, {
-          status: 'suspended',
-        }, 'admin_user');
+        const result = await adminService.updateMember(
+          workspaceId,
+          userId,
+          {
+            status: 'suspended',
+          },
+          'admin_user'
+        );
 
         expect(result.status).toBe('suspended');
       });
@@ -886,16 +1115,26 @@ describe('AdminService', () => {
         const member = createTestMember(workspaceId, userId);
         await storage.saveMember(member);
 
-        const result = await adminService.updateMember(workspaceId, userId, {
-          customFields: { department: 'Engineering' },
-        }, 'admin_user');
+        const result = await adminService.updateMember(
+          workspaceId,
+          userId,
+          {
+            customFields: { department: 'Engineering' },
+          },
+          'admin_user'
+        );
 
         expect(result.customFields?.department).toBe('Engineering');
       });
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.updateMember(workspaceId, 'non_existent', { status: 'active' }, userId),
+          adminService.updateMember(
+            workspaceId,
+            'non_existent',
+            { status: 'active' },
+            userId
+          )
         ).rejects.toThrow(MemberNotFoundError);
       });
 
@@ -904,37 +1143,61 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         await expect(
-          adminService.updateMember(workspaceId, userId, { roleId: 'non_existent' }, 'admin'),
+          adminService.updateMember(
+            workspaceId,
+            userId,
+            { roleId: 'non_existent' },
+            'admin'
+          )
         ).rejects.toThrow(RoleNotFoundError);
       });
     });
 
     describe('suspendMember', () => {
       it('suspends a member with reason', async () => {
-        const member = createTestMember(workspaceId, userId, { status: 'active' });
+        const member = createTestMember(workspaceId, userId, {
+          status: 'active',
+        });
         await storage.saveMember(member);
 
         const result = await adminService.suspendMember(
-          workspaceId, userId, 'Violation of terms', 'admin_user',
+          workspaceId,
+          userId,
+          'Violation of terms',
+          'admin_user'
         );
 
         expect(result.status).toBe('suspended');
-        expect(result.customFields?.suspensionReason).toBe('Violation of terms');
+        expect(result.customFields?.suspensionReason).toBe(
+          'Violation of terms'
+        );
       });
 
       it('logs admin action on suspend', async () => {
         const member = createTestMember(workspaceId, userId);
         await storage.saveMember(member);
 
-        await adminService.suspendMember(workspaceId, userId, 'Test reason', 'admin_user');
+        await adminService.suspendMember(
+          workspaceId,
+          userId,
+          'Test reason',
+          'admin_user'
+        );
 
         const actions = await adminService.getAdminActions(workspaceId);
-        expect(actions.data.some(a => a.action === 'member.suspended')).toBe(true);
+        expect(actions.data.some(a => a.action === 'member.suspended')).toBe(
+          true
+        );
       });
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.suspendMember(workspaceId, 'non_existent', 'Test', userId),
+          adminService.suspendMember(
+            workspaceId,
+            'non_existent',
+            'Test',
+            userId
+          )
         ).rejects.toThrow(MemberNotFoundError);
       });
     });
@@ -957,25 +1220,33 @@ describe('AdminService', () => {
         await adminService.removeMember(workspaceId, userId, 'admin_user');
 
         const actions = await adminService.getAdminActions(workspaceId);
-        expect(actions.data.some(a => a.action === 'member.removed')).toBe(true);
+        expect(actions.data.some(a => a.action === 'member.removed')).toBe(
+          true
+        );
       });
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.removeMember(workspaceId, 'non_existent', userId),
+          adminService.removeMember(workspaceId, 'non_existent', userId)
         ).rejects.toThrow(MemberNotFoundError);
       });
     });
 
     describe('changeMemberRole', () => {
       it('changes member role', async () => {
-        const newRole = createTestRole(workspaceId, { id: 'admin_role', name: 'Admin' });
+        const newRole = createTestRole(workspaceId, {
+          id: 'admin_role',
+          name: 'Admin',
+        });
         await storage.saveRole(newRole);
         const member = createTestMember(workspaceId, userId);
         await storage.saveMember(member);
 
         const result = await adminService.changeMemberRole(
-          workspaceId, userId, 'admin_role', 'owner_user',
+          workspaceId,
+          userId,
+          'admin_role',
+          'owner_user'
         );
 
         expect(result.roleId).toBe('admin_role');
@@ -985,20 +1256,34 @@ describe('AdminService', () => {
       it('logs admin action with previous and new role', async () => {
         const newRole = createTestRole(workspaceId, { id: 'new_role' });
         await storage.saveRole(newRole);
-        const member = createTestMember(workspaceId, userId, { roleId: 'old_role' });
+        const member = createTestMember(workspaceId, userId, {
+          roleId: 'old_role',
+        });
         await storage.saveMember(member);
 
-        await adminService.changeMemberRole(workspaceId, userId, 'new_role', 'admin_user');
+        await adminService.changeMemberRole(
+          workspaceId,
+          userId,
+          'new_role',
+          'admin_user'
+        );
 
         const actions = await adminService.getAdminActions(workspaceId);
-        const action = actions.data.find(a => a.action === 'member.role_changed');
+        const action = actions.data.find(
+          a => a.action === 'member.role_changed'
+        );
         expect(action?.details.previousRoleId).toBe('old_role');
         expect(action?.details.newRoleId).toBe('new_role');
       });
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.changeMemberRole(workspaceId, 'non_existent', 'role_123', userId),
+          adminService.changeMemberRole(
+            workspaceId,
+            'non_existent',
+            'role_123',
+            userId
+          )
         ).rejects.toThrow(MemberNotFoundError);
       });
 
@@ -1007,7 +1292,12 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         await expect(
-          adminService.changeMemberRole(workspaceId, userId, 'non_existent', 'admin'),
+          adminService.changeMemberRole(
+            workspaceId,
+            userId,
+            'non_existent',
+            'admin'
+          )
         ).rejects.toThrow(RoleNotFoundError);
       });
     });
@@ -1019,15 +1309,22 @@ describe('AdminService', () => {
 
   describe('Invites', () => {
     beforeEach(async () => {
-      const role = createTestRole(workspaceId, { id: 'role_123', isDefault: true });
+      const role = createTestRole(workspaceId, {
+        id: 'role_123',
+        isDefault: true,
+      });
       await storage.saveRole(role);
     });
 
     describe('createInvite', () => {
       it('creates a new invite', async () => {
-        const result = await adminService.createInvite(workspaceId, {
-          email: 'newuser@example.com',
-        }, userId);
+        const result = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'newuser@example.com',
+          },
+          userId
+        );
 
         expect(result.email).toBe('newuser@example.com');
         expect(result.status).toBe('pending');
@@ -1035,17 +1332,25 @@ describe('AdminService', () => {
       });
 
       it('normalizes email to lowercase', async () => {
-        const result = await adminService.createInvite(workspaceId, {
-          email: 'User@Example.COM',
-        }, userId);
+        const result = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'User@Example.COM',
+          },
+          userId
+        );
 
         expect(result.email).toBe('user@example.com');
       });
 
       it('uses default role when not specified', async () => {
-        const result = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const result = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         expect(result.roleId).toBe('role_123');
       });
@@ -1054,48 +1359,78 @@ describe('AdminService', () => {
         const customRole = createTestRole(workspaceId, { id: 'custom_role' });
         await storage.saveRole(customRole);
 
-        const result = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-          roleId: 'custom_role',
-        }, userId);
+        const result = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+            roleId: 'custom_role',
+          },
+          userId
+        );
 
         expect(result.roleId).toBe('custom_role');
       });
 
       it('returns existing pending invite for same email', async () => {
-        const first = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
-        const second = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const first = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
+        const second = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         expect(second.id).toBe(first.id);
       });
 
       it('sets expiration date', async () => {
         const before = new Date();
-        const result = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const result = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         expect(result.expiresAt.getTime()).toBeGreaterThan(before.getTime());
       });
 
       it('logs admin action', async () => {
-        await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         const actions = await adminService.getAdminActions(workspaceId);
-        expect(actions.data.some(a => a.action === 'member.invited')).toBe(true);
+        expect(actions.data.some(a => a.action === 'member.invited')).toBe(
+          true
+        );
       });
     });
 
     describe('listInvites', () => {
       it('lists pending invites', async () => {
-        await adminService.createInvite(workspaceId, { email: 'user1@example.com' }, userId);
-        await adminService.createInvite(workspaceId, { email: 'user2@example.com' }, userId);
+        await adminService.createInvite(
+          workspaceId,
+          { email: 'user1@example.com' },
+          userId
+        );
+        await adminService.createInvite(
+          workspaceId,
+          { email: 'user2@example.com' },
+          userId
+        );
 
         const result = await adminService.listInvites(workspaceId);
 
@@ -1103,7 +1438,11 @@ describe('AdminService', () => {
       });
 
       it('excludes non-pending invites', async () => {
-        const invite = await adminService.createInvite(workspaceId, { email: 'user@example.com' }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          { email: 'user@example.com' },
+          userId
+        );
         await adminService.revokeInvite(invite.id, userId);
 
         const result = await adminService.listInvites(workspaceId);
@@ -1112,9 +1451,17 @@ describe('AdminService', () => {
       });
 
       it('sorts by creation date descending', async () => {
-        await adminService.createInvite(workspaceId, { email: 'user1@example.com' }, userId);
+        await adminService.createInvite(
+          workspaceId,
+          { email: 'user1@example.com' },
+          userId
+        );
         await new Promise(resolve => setTimeout(resolve, 10));
-        await adminService.createInvite(workspaceId, { email: 'user2@example.com' }, userId);
+        await adminService.createInvite(
+          workspaceId,
+          { email: 'user2@example.com' },
+          userId
+        );
 
         const result = await adminService.listInvites(workspaceId);
 
@@ -1124,9 +1471,13 @@ describe('AdminService', () => {
 
     describe('revokeInvite', () => {
       it('revokes a pending invite', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         await adminService.revokeInvite(invite.id, userId);
 
@@ -1135,30 +1486,43 @@ describe('AdminService', () => {
       });
 
       it('logs admin action', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         await adminService.revokeInvite(invite.id, userId);
 
         const actions = await adminService.getAdminActions(workspaceId);
-        expect(actions.data.some(a => a.action === 'invite.revoked')).toBe(true);
+        expect(actions.data.some(a => a.action === 'invite.revoked')).toBe(
+          true
+        );
       });
 
       it('throws error for non-existent invite', async () => {
         await expect(
-          adminService.revokeInvite('non_existent', userId),
+          adminService.revokeInvite('non_existent', userId)
         ).rejects.toThrow(InviteNotFoundError);
       });
     });
 
     describe('acceptInvite', () => {
       it('accepts invite and creates member', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
-        const result = await adminService.acceptInvite(invite.id, 'new_user_123');
+        const result = await adminService.acceptInvite(
+          invite.id,
+          'new_user_123'
+        );
 
         expect(result.userId).toBe('new_user_123');
         expect(result.workspaceId).toBe(workspaceId);
@@ -1166,9 +1530,13 @@ describe('AdminService', () => {
       });
 
       it('marks invite as accepted', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
 
         await adminService.acceptInvite(invite.id, 'new_user_123');
 
@@ -1178,73 +1546,99 @@ describe('AdminService', () => {
       });
 
       it('assigns role from invite', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-          roleId: 'role_123',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+            roleId: 'role_123',
+          },
+          userId
+        );
 
-        const result = await adminService.acceptInvite(invite.id, 'new_user_123');
+        const result = await adminService.acceptInvite(
+          invite.id,
+          'new_user_123'
+        );
 
         expect(result.roleId).toBe('role_123');
       });
 
       it('records inviter', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, 'inviter_user');
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          'inviter_user'
+        );
 
-        const result = await adminService.acceptInvite(invite.id, 'new_user_123');
+        const result = await adminService.acceptInvite(
+          invite.id,
+          'new_user_123'
+        );
 
         expect(result.invitedBy).toBe('inviter_user');
       });
 
       it('throws error for non-existent invite', async () => {
         await expect(
-          adminService.acceptInvite('non_existent', userId),
+          adminService.acceptInvite('non_existent', userId)
         ).rejects.toThrow(InviteNotFoundError);
       });
 
       it('throws error for revoked invite', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
         await adminService.revokeInvite(invite.id, userId);
 
         await expect(
-          adminService.acceptInvite(invite.id, 'new_user'),
+          adminService.acceptInvite(invite.id, 'new_user')
         ).rejects.toThrow(InviteInvalidError);
       });
 
       it('throws error for already accepted invite', async () => {
-        const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com',
-        }, userId);
+        const invite = await adminService.createInvite(
+          workspaceId,
+          {
+            email: 'user@example.com',
+          },
+          userId
+        );
         await adminService.acceptInvite(invite.id, 'first_user');
 
         await expect(
-          adminService.acceptInvite(invite.id, 'second_user'),
+          adminService.acceptInvite(invite.id, 'second_user')
         ).rejects.toThrow(InviteInvalidError);
       });
 
       it('throws error for expired invite', async () => {
         const expiredDate = new Date();
         expiredDate.setDate(expiredDate.getDate() - 1);
-        const invite = createTestInvite(workspaceId, { expiresAt: expiredDate });
+        const invite = createTestInvite(workspaceId, {
+          expiresAt: expiredDate,
+        });
         await storage.saveInvite(invite);
 
         await expect(
-          adminService.acceptInvite(invite.id, 'new_user'),
+          adminService.acceptInvite(invite.id, 'new_user')
         ).rejects.toThrow(InviteExpiredError);
       });
 
       it('marks invite as expired when accepting an expired invite', async () => {
         const expiredDate = new Date();
         expiredDate.setDate(expiredDate.getDate() - 1);
-        const invite = createTestInvite(workspaceId, { expiresAt: expiredDate });
+        const invite = createTestInvite(workspaceId, {
+          expiresAt: expiredDate,
+        });
         await storage.saveInvite(invite);
 
         await expect(
-          adminService.acceptInvite(invite.id, 'new_user'),
+          adminService.acceptInvite(invite.id, 'new_user')
         ).rejects.toThrow(InviteExpiredError);
 
         const updated = await storage.getInvite(invite.id);
@@ -1270,7 +1664,9 @@ describe('AdminService', () => {
       });
 
       it('returns null when no billing info exists', async () => {
-        const result = await adminService.getBillingInfo('no_billing_workspace');
+        const result = await adminService.getBillingInfo(
+          'no_billing_workspace'
+        );
 
         expect(result).toBeNull();
       });
@@ -1278,7 +1674,11 @@ describe('AdminService', () => {
 
     describe('updatePlan', () => {
       it('creates billing info when updating plan', async () => {
-        const result = await adminService.updatePlan(workspaceId, 'professional', userId);
+        const result = await adminService.updatePlan(
+          workspaceId,
+          'professional',
+          userId
+        );
 
         expect(result.plan).toBe('professional');
         expect(result.features).toEqual(PLAN_FEATURES.professional);
@@ -1288,13 +1688,21 @@ describe('AdminService', () => {
         const billing = createTestBillingInfo(workspaceId, { plan: 'free' });
         await storage.saveBillingInfo(billing);
 
-        const result = await adminService.updatePlan(workspaceId, 'enterprise', userId);
+        const result = await adminService.updatePlan(
+          workspaceId,
+          'enterprise',
+          userId
+        );
 
         expect(result.plan).toBe('enterprise');
       });
 
       it('updates features based on plan', async () => {
-        const result = await adminService.updatePlan(workspaceId, 'enterprise', userId);
+        const result = await adminService.updatePlan(
+          workspaceId,
+          'enterprise',
+          userId
+        );
 
         expect(result.features.maxMembers).toBe(-1); // unlimited
         expect(result.features.sso).toBe(true);
@@ -1304,15 +1712,25 @@ describe('AdminService', () => {
         await adminService.updatePlan(workspaceId, 'professional', userId);
 
         const actions = await adminService.getAdminActions(workspaceId);
-        expect(actions.data.some(a => a.action === 'billing.plan_changed')).toBe(true);
+        expect(
+          actions.data.some(a => a.action === 'billing.plan_changed')
+        ).toBe(true);
       });
 
       it('updates period dates', async () => {
         const before = new Date();
-        const result = await adminService.updatePlan(workspaceId, 'starter', userId);
+        const result = await adminService.updatePlan(
+          workspaceId,
+          'starter',
+          userId
+        );
 
-        expect(result.currentPeriodStart.getTime()).toBeGreaterThanOrEqual(before.getTime());
-        expect(result.currentPeriodEnd.getTime()).toBeGreaterThan(result.currentPeriodStart.getTime());
+        expect(result.currentPeriodStart.getTime()).toBeGreaterThanOrEqual(
+          before.getTime()
+        );
+        expect(result.currentPeriodEnd.getTime()).toBeGreaterThan(
+          result.currentPeriodStart.getTime()
+        );
       });
     });
   });
@@ -1496,8 +1914,14 @@ describe('AdminService', () => {
           });
         }
 
-        const page1 = await adminService.getAdminActions(workspaceId, { skip: 0, take: 5 });
-        const page2 = await adminService.getAdminActions(workspaceId, { skip: 5, take: 5 });
+        const page1 = await adminService.getAdminActions(workspaceId, {
+          skip: 0,
+          take: 5,
+        });
+        const page2 = await adminService.getAdminActions(workspaceId, {
+          skip: 5,
+          take: 5,
+        });
 
         expect(page1.data).toHaveLength(5);
         expect(page2.data).toHaveLength(5);

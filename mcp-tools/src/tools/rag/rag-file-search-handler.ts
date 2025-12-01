@@ -99,7 +99,13 @@ export class RagFileSearchHandler {
    */
   private collectFiles(dir: string): string[] {
     const files: string[] = [];
-    const excludePatterns = ['node_modules', '.git', 'dist', 'coverage', '.next'];
+    const excludePatterns = [
+      'node_modules',
+      '.git',
+      'dist',
+      'coverage',
+      '.next',
+    ];
 
     try {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -129,9 +135,27 @@ export class RagFileSearchHandler {
    */
   private isSearchableFile(filename: string): boolean {
     const searchableExtensions = [
-      '.ts', '.tsx', '.js', '.jsx', '.md', '.json', '.yaml', '.yml',
-      '.py', '.go', '.rs', '.java', '.c', '.cpp', '.h', '.hpp',
-      '.css', '.scss', '.html', '.xml', '.txt',
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.md',
+      '.json',
+      '.yaml',
+      '.yml',
+      '.py',
+      '.go',
+      '.rs',
+      '.java',
+      '.c',
+      '.cpp',
+      '.h',
+      '.hpp',
+      '.css',
+      '.scss',
+      '.html',
+      '.xml',
+      '.txt',
     ];
     const ext = path.extname(filename).toLowerCase();
     return searchableExtensions.includes(ext);
@@ -143,7 +167,7 @@ export class RagFileSearchHandler {
   private calculateScore(
     content: string,
     queryTerms: string[],
-    _mode: string,
+    _mode: string
   ): number {
     const lowerContent = content.toLowerCase();
     let matchCount = 0;
@@ -167,7 +191,7 @@ export class RagFileSearchHandler {
   private extractSnippets(
     content: string,
     queryTerms: string[],
-    maxLength: number,
+    maxLength: number
   ): string[] {
     const lines = content.split('\n');
     const snippets: string[] = [];

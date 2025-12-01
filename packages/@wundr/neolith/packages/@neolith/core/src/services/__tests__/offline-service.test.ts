@@ -53,7 +53,7 @@ function createMockPrismaClient() {
     channel: {
       findMany: vi.fn(),
     },
-    $transaction: vi.fn().mockImplementation(async (callback) => {
+    $transaction: vi.fn().mockImplementation(async callback => {
       const tx = {
         offlineQueueAction: createMockPrismaOfflineQueueActionModel(),
         syncState: createMockPrismaSyncStateModel(),
@@ -148,7 +148,7 @@ describe('OfflineQueueService', () => {
       // Verify FIFO order (oldest first)
       for (let i = 1; i < queued.length; i++) {
         expect(queued[i]!.createdAt.getTime()).toBeGreaterThanOrEqual(
-          queued[i - 1]!.createdAt.getTime(),
+          queued[i - 1]!.createdAt.getTime()
         );
       }
     });
@@ -207,14 +207,16 @@ describe('OfflineQueueService', () => {
       const processedOrder: string[] = [];
 
       mockPrisma.offlineQueueAction.findMany.mockResolvedValue(actions);
-      mockPrisma.offlineQueueAction.update.mockImplementation(async ({ where, data }) => {
-        processedOrder.push(where.id);
-        return {
-          ...actions.find((a) => a.id === where.id)!,
-          ...data,
-          processedAt: new Date(),
-        };
-      });
+      mockPrisma.offlineQueueAction.update.mockImplementation(
+        async ({ where, data }) => {
+          processedOrder.push(where.id);
+          return {
+            ...actions.find(a => a.id === where.id)!,
+            ...data,
+            processedAt: new Date(),
+          };
+        }
+      );
 
       // Fetch pending actions in order
       const pending = await mockPrisma.offlineQueueAction.findMany({
@@ -234,7 +236,7 @@ describe('OfflineQueueService', () => {
       }
 
       expect(processedOrder).toHaveLength(3);
-      expect(processedOrder).toEqual(actions.map((a) => a.id));
+      expect(processedOrder).toEqual(actions.map(a => a.id));
     });
 
     it('retries on failure', async () => {
@@ -330,7 +332,7 @@ describe('OfflineQueueService', () => {
 
       // Process concurrently
       const results = await Promise.all(
-        pending.map(async (action) => {
+        pending.map(async action => {
           mockPrisma.offlineQueueAction.update.mockResolvedValueOnce({
             ...action,
             status: 'COMPLETED',
@@ -344,11 +346,11 @@ describe('OfflineQueueService', () => {
               processedAt: new Date(),
             },
           });
-        }),
+        })
       );
 
       expect(results).toHaveLength(5);
-      expect(results.every((r) => r.status === 'COMPLETED')).toBe(true);
+      expect(results.every(r => r.status === 'COMPLETED')).toBe(true);
     });
 
     it('tracks processing statistics', async () => {
@@ -425,7 +427,9 @@ describe('OfflineQueueService', () => {
       expect(failedActions).toHaveLength(1);
       expect(failedActions[0]!.status).toBe('FAILED');
       expect(failedActions[0]!.error).toContain('Network timeout');
-      expect(failedActions[0]!.retryCount).toBeLessThan(failedActions[0]!.maxRetries);
+      expect(failedActions[0]!.retryCount).toBeLessThan(
+        failedActions[0]!.maxRetries
+      );
     });
 
     it('retries failed action and resets status to pending', async () => {
@@ -508,7 +512,9 @@ describe('OfflineQueueService', () => {
 
       expect(retryableActions).toHaveLength(3);
       // Should be sorted by retry count (fewest first)
-      expect(retryableActions[0]!.retryCount).toBeLessThanOrEqual(retryableActions[1]!.retryCount);
+      expect(retryableActions[0]!.retryCount).toBeLessThanOrEqual(
+        retryableActions[1]!.retryCount
+      );
     });
   });
 
@@ -779,7 +785,7 @@ describe('SyncService', () => {
 
       // First page
       mockPrisma.notification.findMany.mockResolvedValueOnce(
-        createMockNotificationList(pageSize, { userId }),
+        createMockNotificationList(pageSize, { userId })
       );
       mockPrisma.notification.count.mockResolvedValue(totalChanges);
 
@@ -943,8 +949,10 @@ describe('SyncService', () => {
       });
 
       // Auto-resolve: if content is same, server wins (newer timestamp)
-      const serverContent = (conflict.serverVersion as Record<string, unknown>).content;
-      const clientContent = (conflict.clientVersion as Record<string, unknown>).content;
+      const serverContent = (conflict.serverVersion as Record<string, unknown>)
+        .content;
+      const clientContent = (conflict.clientVersion as Record<string, unknown>)
+        .content;
       const canAutoResolve = serverContent === clientContent;
 
       expect(canAutoResolve).toBe(true);
@@ -984,11 +992,11 @@ describe('SyncService', () => {
       const userId = generateUserId();
 
       mockPrisma.syncState.findUnique.mockRejectedValue(
-        new Error('Database connection lost'),
+        new Error('Database connection lost')
       );
 
       await expect(
-        mockPrisma.syncState.findUnique({ where: { userId } }),
+        mockPrisma.syncState.findUnique({ where: { userId } })
       ).rejects.toThrow('Database connection lost');
     });
 
@@ -1065,12 +1073,12 @@ describe('SyncService', () => {
       mockPrisma.notification.findMany.mockImplementation(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Request timeout')), 100),
-          ),
+            setTimeout(() => reject(new Error('Request timeout')), 100)
+          )
       );
 
       await expect(
-        mockPrisma.notification.findMany({ where: { userId } }),
+        mockPrisma.notification.findMany({ where: { userId } })
       ).rejects.toThrow('Request timeout');
     });
   });
@@ -1160,7 +1168,7 @@ describe('SyncService', () => {
       const syncData = createMockSyncDataWithNotifications(10);
 
       // All notifications should have isRead property
-      syncData.changes.notifications.forEach((notification) => {
+      syncData.changes.notifications.forEach(notification => {
         expect(notification).toHaveProperty('isRead');
       });
     });
@@ -1197,7 +1205,7 @@ describe('SyncService', () => {
     it('provides conflict data with server and client versions', () => {
       const syncData = createMockSyncDataWithConflicts(2);
 
-      syncData.conflicts.forEach((conflict) => {
+      syncData.conflicts.forEach(conflict => {
         expect(conflict).toHaveProperty('serverVersion');
         expect(conflict).toHaveProperty('clientVersion');
         expect(conflict).toHaveProperty('entityType');
@@ -1224,7 +1232,7 @@ describe('SyncService', () => {
 
       // All conflicts should be unresolved (resolvedAt is null)
       const unresolvedConflicts = syncData.conflicts.filter(
-        (c) => c.resolvedAt === null,
+        c => c.resolvedAt === null
       );
 
       expect(unresolvedConflicts.length).toBe(4);
@@ -1233,7 +1241,7 @@ describe('SyncService', () => {
     it('creates conflicts with unique IDs', () => {
       const syncData = createMockSyncDataWithConflicts(5);
 
-      const conflictIds = syncData.conflicts.map((c) => c.id);
+      const conflictIds = syncData.conflicts.map(c => c.id);
       const uniqueIds = new Set(conflictIds);
 
       expect(uniqueIds.size).toBe(5);
@@ -1284,9 +1292,15 @@ describe('SyncService', () => {
       });
       mockService.resolveConflict.mockResolvedValue(resolvedConflict);
 
-      const result = await mockService.resolveConflict(conflictId, 'SERVER_WINS');
+      const result = await mockService.resolveConflict(
+        conflictId,
+        'SERVER_WINS'
+      );
 
-      expect(mockService.resolveConflict).toHaveBeenCalledWith(conflictId, 'SERVER_WINS');
+      expect(mockService.resolveConflict).toHaveBeenCalledWith(
+        conflictId,
+        'SERVER_WINS'
+      );
       expect(result.resolution).toBe('SERVER_WINS');
       expect(result.resolvedAt).toBeDefined();
     });
@@ -1296,7 +1310,9 @@ describe('SyncService', () => {
       const userId = generateUserId();
 
       const syncDataWithConflicts = createMockSyncDataWithConflicts(5);
-      mockService.detectConflicts.mockResolvedValue(syncDataWithConflicts.conflicts);
+      mockService.detectConflicts.mockResolvedValue(
+        syncDataWithConflicts.conflicts
+      );
 
       const result = await mockService.detectConflicts(userId);
 
@@ -1335,7 +1351,9 @@ describe('SyncService', () => {
 
       const result = await mockService.updateSyncState(userId, { version: 11 });
 
-      expect(mockService.updateSyncState).toHaveBeenCalledWith(userId, { version: 11 });
+      expect(mockService.updateSyncState).toHaveBeenCalledWith(userId, {
+        version: 11,
+      });
       expect(result.version).toBe(11);
     });
 
@@ -1345,7 +1363,9 @@ describe('SyncService', () => {
 
       mockService.performSync.mockRejectedValue(new Error('Sync failed'));
 
-      await expect(mockService.performSync(userId)).rejects.toThrow('Sync failed');
+      await expect(mockService.performSync(userId)).rejects.toThrow(
+        'Sync failed'
+      );
     });
   });
 });

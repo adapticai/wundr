@@ -51,15 +51,17 @@ import {
  */
 export function useUserStatus() {
   const statusService = useMemo(() => getStatusService(), []);
-  const [status, setStatus] = useState<PresenceStatusType>(statusService.getCurrentStatus());
+  const [status, setStatus] = useState<PresenceStatusType>(
+    statusService.getCurrentStatus()
+  );
   const [customStatus, setCustomStatus] = useState<string | null>(
-    statusService.getCustomStatus(),
+    statusService.getCustomStatus()
   );
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Subscribe to status changes
   useEffect(() => {
-    const unsubscribe = statusService.subscribe((updatedStatus) => {
+    const unsubscribe = statusService.subscribe(updatedStatus => {
       setStatus(updatedStatus.status);
       setCustomStatus(updatedStatus.customStatus ?? null);
     });
@@ -71,7 +73,10 @@ export function useUserStatus() {
 
   // Update status
   const updateStatus = useCallback(
-    async (newStatus: PresenceStatusType, options?: StatusUpdateOptions): Promise<boolean> => {
+    async (
+      newStatus: PresenceStatusType,
+      options?: StatusUpdateOptions
+    ): Promise<boolean> => {
       setIsUpdating(true);
       try {
         const success = await statusService.updateStatus(newStatus, options);
@@ -80,7 +85,7 @@ export function useUserStatus() {
         setIsUpdating(false);
       }
     },
-    [statusService],
+    [statusService]
   );
 
   // Update custom status
@@ -94,7 +99,7 @@ export function useUserStatus() {
         setIsUpdating(false);
       }
     },
-    [statusService],
+    [statusService]
   );
 
   // Clear custom status
@@ -165,7 +170,7 @@ export function useAutoAway(initialConfig?: Partial<AutoAwayConfig>) {
       setConfig(updatedConfig);
       statusService.configureAutoAway(updatedConfig);
     },
-    [config, statusService],
+    [config, statusService]
   );
 
   // Update time since activity every second
@@ -227,19 +232,21 @@ export function useAutoAway(initialConfig?: Partial<AutoAwayConfig>) {
  */
 export function useDNDSchedule(initialSchedule?: DNDSchedule | null) {
   const statusService = useMemo(() => getStatusService(), []);
-  const [schedule, setSchedule] = useState<DNDSchedule | null>(initialSchedule ?? null);
+  const [schedule, setSchedule] = useState<DNDSchedule | null>(
+    initialSchedule ?? null
+  );
   const [isInDNDWindow, setIsInDNDWindow] = useState(false);
 
   // Update schedule
   const updateSchedule = useCallback(
     (newSchedule: Partial<DNDSchedule> | null) => {
       const updatedSchedule = newSchedule
-        ? { ...schedule, ...newSchedule } as DNDSchedule
+        ? ({ ...schedule, ...newSchedule } as DNDSchedule)
         : null;
       setSchedule(updatedSchedule);
       statusService.configureDNDSchedule(updatedSchedule);
     },
-    [schedule, statusService],
+    [schedule, statusService]
   );
 
   // Check DND window status every minute
@@ -349,12 +356,12 @@ export function useStatusStream(options: {
       };
 
       // Handle presence updates
-      eventSource.addEventListener('presence:update', (event) => {
+      eventSource.addEventListener('presence:update', event => {
         if (!isMounted) return;
 
         try {
           const data = JSON.parse(event.data);
-          setStatuses((prev) => {
+          setStatuses(prev => {
             const newMap = new Map(prev);
             newMap.set(data.userId, {
               userId: data.userId,
@@ -371,14 +378,14 @@ export function useStatusStream(options: {
       });
 
       // Handle channel presence
-      eventSource.addEventListener('channel:presence', (event) => {
+      eventSource.addEventListener('channel:presence', event => {
         if (!isMounted) return;
 
         try {
           const data = JSON.parse(event.data);
           const { onlineUsers } = data;
 
-          setStatuses((prev) => {
+          setStatuses(prev => {
             const newMap = new Map(prev);
             onlineUsers.forEach((user: UserStatus) => {
               newMap.set(user.userId, {

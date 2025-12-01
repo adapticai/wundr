@@ -1,6 +1,7 @@
 # Contributing to Wundr
 
-Welcome! We're thrilled that you're interested in contributing to Wundr. This guide will help you get started with contributing to our AI-powered development platform.
+Welcome! We're thrilled that you're interested in contributing to Wundr. This guide will help you
+get started with contributing to our AI-powered development platform.
 
 ## 🎯 Ways to Contribute
 
@@ -27,6 +28,7 @@ There are many ways to contribute to Wundr:
 ### Development Setup
 
 1. **Fork and Clone**
+
    ```bash
    # Fork the repository on GitHub first
    git clone https://github.com/YOUR_USERNAME/wundr.git
@@ -34,28 +36,32 @@ There are many ways to contribute to Wundr:
    ```
 
 2. **Install Dependencies**
+
    ```bash
    # Use pnpm for consistent dependency management
    pnpm install
    ```
 
 3. **Build All Packages**
+
    ```bash
    # Build the entire monorepo
    pnpm build
    ```
 
 4. **Run Tests**
+
    ```bash
    # Verify everything works
    pnpm test
    ```
 
 5. **Start Development**
+
    ```bash
    # Start development servers
    pnpm dev
-   
+
    # Or start specific components
    pnpm --filter @wundr/dashboard dev
    ```
@@ -82,12 +88,12 @@ wundr/
 
 ### Package Overview
 
-| Package | Purpose | Technologies |
-|---------|---------|-------------|
-| `@wundr/cli` | Command-line interface | TypeScript, Commander.js |
-| `@wundr/analysis-engine` | Code analysis core | TypeScript, ts-morph, AST |
-| `@wundr/dashboard` | Web interface | Next.js 15, React 19, D3.js |
-| `@wundr/ai-integration` | AI services | Claude API, OpenAI API |
+| Package                  | Purpose                | Technologies                |
+| ------------------------ | ---------------------- | --------------------------- |
+| `@wundr/cli`             | Command-line interface | TypeScript, Commander.js    |
+| `@wundr/analysis-engine` | Code analysis core     | TypeScript, ts-morph, AST   |
+| `@wundr/dashboard`       | Web interface          | Next.js 15, React 19, D3.js |
+| `@wundr/ai-integration`  | AI services            | Claude API, OpenAI API      |
 
 ## 💻 Development Workflow
 
@@ -148,13 +154,14 @@ We follow the [Conventional Commits](https://conventionalcommits.org/) specifica
 type(scope): description
 
 feat(cli): add natural language command processing
-fix(dashboard): resolve WebSocket connection issues  
+fix(dashboard): resolve WebSocket connection issues
 docs(api): update plugin development guide
 test(engine): add complexity analysis tests
 chore(deps): update dependencies to latest versions
 ```
 
 **Types:**
+
 - `feat` - New features
 - `fix` - Bug fixes
 - `docs` - Documentation changes
@@ -202,7 +209,7 @@ describe('AnalysisEngine', () => {
     it('should detect duplicate code clusters', async () => {
       const engine = new AnalysisEngine({ targetDir: './test-fixtures' });
       const report = await engine.analyze();
-      
+
       expect(report.duplicates).toHaveLength(2);
       expect(report.duplicates[0].similarity).toBeGreaterThan(0.8);
     });
@@ -265,12 +272,12 @@ export const sampleProject = {
   files: [
     {
       path: 'src/utils/helper.ts',
-      content: 'export function helper() { return "test"; }'
+      content: 'export function helper() { return "test"; }',
     },
     // ... more files
   ],
   expectedDuplicates: 3,
-  expectedComplexity: 2.5
+  expectedComplexity: 2.5,
 };
 ```
 
@@ -279,11 +286,13 @@ export const sampleProject = {
 ### Creating a Plugin
 
 1. **Generate Plugin Template**
+
    ```bash
    pnpm create-plugin my-awesome-plugin
    ```
 
 2. **Plugin Structure**
+
    ```typescript
    // plugins/my-plugin/src/index.ts
    import { Plugin, PluginContext } from '@wundr/core';
@@ -300,10 +309,11 @@ export const sampleProject = {
    ```
 
 3. **Testing Plugins**
+
    ```bash
    # Test plugin locally
    pnpm plugin:test my-awesome-plugin
-   
+
    # Install plugin for development
    pnpm plugin:link ./plugins/my-awesome-plugin
    ```
@@ -343,6 +353,7 @@ open http://localhost:3001
 ### Creating New Dashboard Components
 
 1. **Component Structure**
+
    ```typescript
    // components/my-component/MyComponent.tsx
    import { FC } from 'react';
@@ -363,6 +374,7 @@ open http://localhost:3001
    ```
 
 2. **Add Tests**
+
    ```typescript
    // components/my-component/MyComponent.test.tsx
    import { render, screen } from '@testing-library/react';
@@ -446,10 +458,11 @@ export class ClaudeProvider implements AIProvider {
 ### Submitting a Pull Request
 
 1. **Create the PR**
+
    ```bash
    # Push your branch
    git push origin feature/your-feature-name
-   
+
    # Create PR on GitHub
    # Use the PR template and fill out all sections
    ```
@@ -568,10 +581,13 @@ Before submitting your contribution:
 
 ## 📄 License
 
-By contributing to Wundr, you agree that your contributions will be licensed under the same MIT License that covers the project.
+By contributing to Wundr, you agree that your contributions will be licensed under the same MIT
+License that covers the project.
 
 ---
 
-Thank you for contributing to Wundr! Your contributions help make development better for everyone. 🚀
+Thank you for contributing to Wundr! Your contributions help make development better for everyone.
+🚀
 
-If you have any questions, don't hesitate to reach out to our community or maintainers. We're here to help!
+If you have any questions, don't hesitate to reach out to our community or maintainers. We're here
+to help!

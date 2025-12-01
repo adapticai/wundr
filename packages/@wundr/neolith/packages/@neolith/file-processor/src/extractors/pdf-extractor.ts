@@ -28,7 +28,11 @@ import type {
 } from '../types/extraction';
 
 // Re-export aliased types for external use
-export type { _PageDimensions as PageDimensions, _TextBlock as TextBlock, _BoundingBox as BoundingBox };
+export type {
+  _PageDimensions as PageDimensions,
+  _TextBlock as TextBlock,
+  _BoundingBox as BoundingBox,
+};
 
 // ============================================================================
 // PDF Extractor Interface
@@ -171,14 +175,20 @@ export interface PDFExtractorConfig {
 /**
  * Type for pdf-parse function.
  */
-type PDFParseFunction = (dataBuffer: Buffer, options?: Record<string, unknown>) => Promise<PDFParseResult>;
+type PDFParseFunction = (
+  dataBuffer: Buffer,
+  options?: Record<string, unknown>
+) => Promise<PDFParseResult>;
 
 /**
  * Type for pdf-parse module.
  */
 interface PDFParseModule {
   default?: PDFParseFunction;
-  (dataBuffer: Buffer, options?: Record<string, unknown>): Promise<PDFParseResult>;
+  (
+    dataBuffer: Buffer,
+    options?: Record<string, unknown>
+  ): Promise<PDFParseResult>;
 }
 
 export class PDFExtractorImpl implements PDFExtractor {
@@ -202,14 +212,17 @@ export class PDFExtractorImpl implements PDFExtractor {
   private async getPdfParse(): Promise<PDFParseFunction> {
     if (!this.pdfParse) {
       try {
-        const module = await import('pdf-parse') as PDFParseModule;
+        const module = (await import('pdf-parse')) as PDFParseModule;
         // Handle both ESM and CommonJS exports
-        this.pdfParse = typeof module.default === 'function' ? module.default : module as unknown as PDFParseFunction;
+        this.pdfParse =
+          typeof module.default === 'function'
+            ? module.default
+            : (module as unknown as PDFParseFunction);
       } catch (error) {
         throw new ExtractionError(
           'pdf-parse library not available. Please install: npm install pdf-parse',
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
     }
@@ -219,7 +232,10 @@ export class PDFExtractorImpl implements PDFExtractor {
   /**
    * Extract content from a PDF buffer.
    */
-  async extract(buffer: Buffer, options?: PDFOptions): Promise<PDFExtractionResult> {
+  async extract(
+    buffer: Buffer,
+    options?: PDFOptions
+  ): Promise<PDFExtractionResult> {
     const startTime = Date.now();
     const pages: PDFPage[] = [];
     const warnings: string[] = [];
@@ -229,7 +245,7 @@ export class PDFExtractorImpl implements PDFExtractor {
       if (!this.isPDFBuffer(buffer)) {
         throw new PDFExtractionError(
           'Invalid PDF: Buffer does not start with PDF signature',
-          'INVALID_FILE',
+          'INVALID_FILE'
         );
       }
 
@@ -241,9 +257,11 @@ export class PDFExtractorImpl implements PDFExtractor {
       let _currentPageIndex = 0;
 
       // Custom page render function to capture per-page content
-      const pageRender = (pageData: { getTextContent: () => Promise<{ items: Array<{ str: string }> }> }) => {
-        return pageData.getTextContent().then((textContent) => {
-          const pageText = textContent.items.map((item) => item.str).join(' ');
+      const pageRender = (pageData: {
+        getTextContent: () => Promise<{ items: Array<{ str: string }> }>;
+      }) => {
+        return pageData.getTextContent().then(textContent => {
+          const pageText = textContent.items.map(item => item.str).join(' ');
           currentPageText.push(pageText);
           _currentPageIndex++;
           return pageText;
@@ -266,13 +284,17 @@ export class PDFExtractorImpl implements PDFExtractor {
       try {
         pdfData = await pdfParse(buffer, parseOptions);
       } catch (parseError) {
-        const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown error';
+        const errorMessage =
+          parseError instanceof Error ? parseError.message : 'Unknown error';
 
         // Check for password-related errors
-        if (errorMessage.includes('password') || errorMessage.includes('encrypted')) {
+        if (
+          errorMessage.includes('password') ||
+          errorMessage.includes('encrypted')
+        ) {
           throw new PDFExtractionError(
             'PDF is password protected. Please provide the password.',
-            'PASSWORD_REQUIRED',
+            'PASSWORD_REQUIRED'
           );
         }
 
@@ -280,7 +302,7 @@ export class PDFExtractorImpl implements PDFExtractor {
           `Failed to parse PDF: ${errorMessage}`,
           'EXTRACTION_FAILED',
           undefined,
-          parseError instanceof Error ? parseError : undefined,
+          parseError instanceof Error ? parseError : undefined
         );
       }
 
@@ -290,7 +312,10 @@ export class PDFExtractorImpl implements PDFExtractor {
 
       // If page render didn't capture individual pages, split by common patterns
       if (currentPageText.length === 0) {
-        currentPageText = this.splitTextIntoPages(pdfData.text, processedPageCount);
+        currentPageText = this.splitTextIntoPages(
+          pdfData.text,
+          processedPageCount
+        );
       }
 
       for (let i = 0; i < processedPageCount; i++) {
@@ -298,7 +323,9 @@ export class PDFExtractorImpl implements PDFExtractor {
         const page: PDFPage = {
           pageNumber: i + 1,
           text: pageText.trim(),
-          tables: options?.extractTables ? this.extractTablesFromText(pageText) : undefined,
+          tables: options?.extractTables
+            ? this.extractTablesFromText(pageText)
+            : undefined,
         };
 
         pages.push(page);
@@ -308,8 +335,13 @@ export class PDFExtractorImpl implements PDFExtractor {
       const totalText = pages.map(p => p.text).join(' ');
       let ocrProcessed = false;
 
-      if (this.isTextScanLike(totalText) && (options?.ocrFallback ?? options?.enableOcr)) {
-        warnings.push('Document appears to be scanned. OCR processing recommended.');
+      if (
+        this.isTextScanLike(totalText) &&
+        (options?.ocrFallback ?? options?.enableOcr)
+      ) {
+        warnings.push(
+          'Document appears to be scanned. OCR processing recommended.'
+        );
         ocrProcessed = true;
         // Note: Actual OCR would require additional implementation with tesseract.js
       }
@@ -348,8 +380,12 @@ export class PDFExtractorImpl implements PDFExtractor {
         pages,
         metadata,
         pdfMetadata,
-        tables: options?.extractTables ? this.aggregateTables(pages) : undefined,
-        images: options?.extractImages ? await this.extractImages(buffer, options) : undefined,
+        tables: options?.extractTables
+          ? this.aggregateTables(pages)
+          : undefined,
+        images: options?.extractImages
+          ? await this.extractImages(buffer, options)
+          : undefined,
         outlines,
         annotations,
         formFields,
@@ -367,7 +403,10 @@ export class PDFExtractorImpl implements PDFExtractor {
 
       return result;
     } catch (error) {
-      if (error instanceof PDFExtractionError || error instanceof ExtractionError) {
+      if (
+        error instanceof PDFExtractionError ||
+        error instanceof ExtractionError
+      ) {
         throw error;
       }
 
@@ -375,7 +414,7 @@ export class PDFExtractorImpl implements PDFExtractor {
         `PDF extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'EXTRACTION_FAILED',
         undefined,
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -387,7 +426,7 @@ export class PDFExtractorImpl implements PDFExtractor {
     buffer: Buffer,
     startPage: number,
     endPage: number,
-    options?: PDFOptions,
+    options?: PDFOptions
   ): Promise<PDFPage[]> {
     const result = await this.extract(buffer, {
       ...options,
@@ -395,7 +434,7 @@ export class PDFExtractorImpl implements PDFExtractor {
     });
 
     return result.pages.filter(
-      (page) => page.pageNumber >= startPage && page.pageNumber <= endPage,
+      page => page.pageNumber >= startPage && page.pageNumber <= endPage
     );
   }
 
@@ -419,7 +458,9 @@ export class PDFExtractorImpl implements PDFExtractor {
       return false;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '';
-      return errorMessage.includes('password') || errorMessage.includes('encrypted');
+      return (
+        errorMessage.includes('password') || errorMessage.includes('encrypted')
+      );
     }
   }
 
@@ -513,9 +554,10 @@ export class PDFExtractorImpl implements PDFExtractor {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      const hasDelimiters = (line.match(/\t/g)?.length ?? 0) >= 2 ||
-                          (line.match(/\|/g)?.length ?? 0) >= 2 ||
-                          (line.match(/\s{3,}/g)?.length ?? 0) >= 2;
+      const hasDelimiters =
+        (line.match(/\t/g)?.length ?? 0) >= 2 ||
+        (line.match(/\|/g)?.length ?? 0) >= 2 ||
+        (line.match(/\s{3,}/g)?.length ?? 0) >= 2;
 
       if (hasDelimiters) {
         if (tableStart === -1) {
@@ -550,7 +592,10 @@ export class PDFExtractorImpl implements PDFExtractor {
   /**
    * Parse table lines into ExtractedTable.
    */
-  private parseTableLines(lines: string[], startRow: number): ExtractedTable | null {
+  private parseTableLines(
+    lines: string[],
+    startRow: number
+  ): ExtractedTable | null {
     if (lines.length < 2) {
       return null;
     }
@@ -568,7 +613,10 @@ export class PDFExtractorImpl implements PDFExtractor {
     }
 
     const rows = lines.map(line =>
-      line.split(delimiter).map(cell => cell.trim()).filter(cell => cell.length > 0),
+      line
+        .split(delimiter)
+        .map(cell => cell.trim())
+        .filter(cell => cell.length > 0)
     );
 
     // Ensure consistent column count
@@ -617,17 +665,24 @@ export class PDFExtractorImpl implements PDFExtractor {
   /**
    * Build document metadata from PDF data.
    */
-  private buildMetadata(pdfData: PDFParseResult, text: string): DocumentMetadata {
+  private buildMetadata(
+    pdfData: PDFParseResult,
+    text: string
+  ): DocumentMetadata {
     const info = pdfData.info;
 
     return {
       title: info.Title ?? undefined,
       author: info.Author ?? undefined,
       subject: info.Subject ?? undefined,
-      keywords: info.Keywords ? info.Keywords.split(/[,;]/).map(k => k.trim()) : undefined,
+      keywords: info.Keywords
+        ? info.Keywords.split(/[,;]/).map(k => k.trim())
+        : undefined,
       creator: info.Creator ?? undefined,
       producer: info.Producer ?? undefined,
-      createdAt: info.CreationDate ? this.parsePDFDate(info.CreationDate) : undefined,
+      createdAt: info.CreationDate
+        ? this.parsePDFDate(info.CreationDate)
+        : undefined,
       modifiedAt: info.ModDate ? this.parsePDFDate(info.ModDate) : undefined,
       pageCount: pdfData.numpages,
       wordCount: this.countWords(text),
@@ -647,10 +702,14 @@ export class PDFExtractorImpl implements PDFExtractor {
       title: info.Title ?? undefined,
       author: info.Author ?? undefined,
       subject: info.Subject ?? undefined,
-      keywords: info.Keywords ? info.Keywords.split(/[,;]/).map(k => k.trim()) : undefined,
+      keywords: info.Keywords
+        ? info.Keywords.split(/[,;]/).map(k => k.trim())
+        : undefined,
       creator: info.Creator ?? undefined,
       producer: info.Producer ?? undefined,
-      createdAt: info.CreationDate ? this.parsePDFDate(info.CreationDate) : undefined,
+      createdAt: info.CreationDate
+        ? this.parsePDFDate(info.CreationDate)
+        : undefined,
       modifiedAt: info.ModDate ? this.parsePDFDate(info.ModDate) : undefined,
       pageCount: pdfData.numpages,
       hasJavaScript: false, // Would need deeper analysis
@@ -685,7 +744,10 @@ export class PDFExtractorImpl implements PDFExtractor {
    * Count words in text.
    */
   private countWords(text: string): number {
-    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+    return text
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0).length;
   }
 
   /**
@@ -721,7 +783,7 @@ export class PDFExtractorImpl implements PDFExtractor {
    */
   private async extractImages(
     _buffer: Buffer,
-    _options?: PDFOptions,
+    _options?: PDFOptions
   ): Promise<ExtractedImage[]> {
     // TODO: Implement with pdfjs-dist for full image extraction
     return [];

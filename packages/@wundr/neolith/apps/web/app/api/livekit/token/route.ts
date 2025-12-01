@@ -39,8 +39,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -55,16 +58,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Validate required parameters
     if (!roomName) {
       return NextResponse.json(
-        createErrorResponse('roomName query parameter is required', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'roomName query parameter is required',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate role
     if (!['host', 'guest', 'viewer'].includes(role)) {
       return NextResponse.json(
-        createErrorResponse('role must be one of: host, guest, viewer', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'role must be one of: host, guest, viewer',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -74,14 +83,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     switch (role) {
       case 'host':
-        tokenResult = await liveKitService.generateHostToken(identity, roomName);
+        tokenResult = await liveKitService.generateHostToken(
+          identity,
+          roomName
+        );
         break;
       case 'viewer':
-        tokenResult = await liveKitService.generateViewerToken(identity, roomName);
+        tokenResult = await liveKitService.generateViewerToken(
+          identity,
+          roomName
+        );
         break;
       case 'guest':
       default:
-        tokenResult = await liveKitService.generateGuestToken(identity, roomName);
+        tokenResult = await liveKitService.generateGuestToken(
+          identity,
+          roomName
+        );
         break;
     }
 
@@ -112,21 +130,30 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Error) {
       if (error.name === 'TokenGenerationError') {
         return NextResponse.json(
-          createErrorResponse(error.message, CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR),
-          { status: 500 },
+          createErrorResponse(
+            error.message,
+            CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR
+          ),
+          { status: 500 }
         );
       }
       if (error.name === 'LiveKitConfigError') {
         return NextResponse.json(
-          createErrorResponse('LiveKit not configured', CALL_ERROR_CODES.LIVEKIT_CONFIG_ERROR),
-          { status: 500 },
+          createErrorResponse(
+            'LiveKit not configured',
+            CALL_ERROR_CODES.LIVEKIT_CONFIG_ERROR
+          ),
+          { status: 500 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

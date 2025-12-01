@@ -10,8 +10,14 @@
         "file": "src/types.ts",
         "purpose": "Type definitions, Zod schemas, and error handling",
         "exports": [
-          "AgentDefinition", "DelegationTask", "DelegationResult", "SynthesisResult",
-          "AuditLogEntry", "ModelConfig", "DelegationError", "DelegationErrorCode"
+          "AgentDefinition",
+          "DelegationTask",
+          "DelegationResult",
+          "SynthesisResult",
+          "AuditLogEntry",
+          "ModelConfig",
+          "DelegationError",
+          "DelegationErrorCode"
         ],
         "keyFeatures": [
           "Comprehensive Zod schemas for runtime validation",
@@ -25,7 +31,9 @@
         "file": "src/coordinator.ts",
         "purpose": "Hub coordinator for task delegation and agent management",
         "exports": [
-          "HubCoordinator", "createHubCoordinator", "createHubCoordinatorWithExecutor",
+          "HubCoordinator",
+          "createHubCoordinator",
+          "createHubCoordinatorWithExecutor",
           "createParallelCoordinator"
         ],
         "keyFeatures": [
@@ -43,8 +51,11 @@
         "file": "src/model-selector.ts",
         "purpose": "Intelligent AI model selection based on task requirements",
         "exports": [
-          "ModelSelector", "createModelSelector", "createCostOptimizedSelector",
-          "createSpeedOptimizedSelector", "createCapabilityOptimizedSelector"
+          "ModelSelector",
+          "createModelSelector",
+          "createCostOptimizedSelector",
+          "createSpeedOptimizedSelector",
+          "createCapabilityOptimizedSelector"
         ],
         "keyFeatures": [
           "4 selection strategies: capability_match, cost_optimize, speed_optimize, balanced",
@@ -60,8 +71,11 @@
         "file": "src/result-synthesizer.ts",
         "purpose": "Multi-agent result synthesis with conflict resolution",
         "exports": [
-          "ResultSynthesizer", "createResultSynthesizer", "createMergeSynthesizer",
-          "createConsensusSynthesizer", "createVotingSynthesizer"
+          "ResultSynthesizer",
+          "createResultSynthesizer",
+          "createMergeSynthesizer",
+          "createConsensusSynthesizer",
+          "createVotingSynthesizer"
         ],
         "keyFeatures": [
           "6 synthesis strategies: merge, vote, consensus, best_pick, weighted_average, chain",
@@ -77,7 +91,9 @@
         "file": "src/audit-log.ts",
         "purpose": "Comprehensive audit logging for delegation activities",
         "exports": [
-          "AuditLogManager", "createAuditLog", "createAuditLogWithHandler"
+          "AuditLogManager",
+          "createAuditLog",
+          "createAuditLogWithHandler"
         ],
         "keyFeatures": [
           "13 event types covering full delegation lifecycle",
@@ -109,11 +125,7 @@
         "uuid@^11.0.3 - ID generation",
         "zod@^3.25.76 - Schema validation"
       ],
-      "development": [
-        "typescript@^5.2.2",
-        "jest@^29.7.0",
-        "eslint@^8.57.1"
-      ]
+      "development": ["typescript@^5.2.2", "jest@^29.7.0", "eslint@^8.57.1"]
     }
   },
 

@@ -57,46 +57,50 @@ export function HuddleBar({
         'fixed bottom-0 left-0 right-0 z-50',
         'bg-background/95 backdrop-blur-sm border-t shadow-lg',
         'flex items-center justify-between gap-4 px-4 py-3',
-        className,
+        className
       )}
     >
       {/* Left: Huddle info and participants */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+      <div className='flex items-center gap-3 flex-1 min-w-0'>
         <button
           onClick={onExpand}
-          className="flex flex-col items-start hover:bg-accent rounded-md px-2 py-1 transition-colors"
+          className='flex flex-col items-start hover:bg-accent rounded-md px-2 py-1 transition-colors'
         >
-          <span className="text-xs text-muted-foreground">Huddle in</span>
-          <span className="text-sm font-medium truncate">#{channelName}</span>
+          <span className='text-xs text-muted-foreground'>Huddle in</span>
+          <span className='text-sm font-medium truncate'>#{channelName}</span>
         </button>
 
         {/* Participants */}
-        <div className="flex items-center gap-2">
-          <div className="flex -space-x-2">
+        <div className='flex items-center gap-2'>
+          <div className='flex -space-x-2'>
             {activeParticipants.slice(0, 5).map((participant, index) => (
               <div
                 key={participant.id}
                 className={cn(
                   'relative flex h-8 w-8 items-center justify-center',
                   'rounded-full border-2 border-background bg-muted',
-                  'text-xs font-medium',
+                  'text-xs font-medium'
                 )}
                 style={{ zIndex: 5 - index }}
-                title={participant.displayName ?? participant.user?.name ?? 'Unknown'}
+                title={
+                  participant.displayName ?? participant.user?.name ?? 'Unknown'
+                }
               >
                 {participant.user?.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={participant.user.avatarUrl}
                     alt={participant.displayName ?? ''}
-                    className="h-full w-full rounded-full object-cover"
+                    className='h-full w-full rounded-full object-cover'
                   />
                 ) : (
-                  getInitials(participant.displayName ?? participant.user?.name ?? '?')
+                  getInitials(
+                    participant.displayName ?? participant.user?.name ?? '?'
+                  )
                 )}
                 {!participant.isAudioEnabled && (
-                  <div className="absolute -bottom-1 -right-1 rounded-full bg-background p-0.5">
-                    <MicOff className="h-3 w-3 text-red-500" />
+                  <div className='absolute -bottom-1 -right-1 rounded-full bg-background p-0.5'>
+                    <MicOff className='h-3 w-3 text-red-500' />
                   </div>
                 )}
               </div>
@@ -106,76 +110,71 @@ export function HuddleBar({
                 className={cn(
                   'flex h-8 w-8 items-center justify-center',
                   'rounded-full border-2 border-background bg-muted',
-                  'text-xs font-medium',
+                  'text-xs font-medium'
                 )}
               >
                 +{activeParticipants.length - 5}
               </div>
             )}
           </div>
-          <span className="text-sm text-muted-foreground">
-            {activeParticipants.length} {activeParticipants.length === 1 ? 'person' : 'people'}
+          <span className='text-sm text-muted-foreground'>
+            {activeParticipants.length}{' '}
+            {activeParticipants.length === 1 ? 'person' : 'people'}
           </span>
         </div>
       </div>
 
       {/* Right: Controls */}
-      <div className="flex items-center gap-2">
+      <div className='flex items-center gap-2'>
         {/* Audio toggle */}
         <Button
           variant={isAudioEnabled ? 'ghost' : 'destructive'}
-          size="sm"
+          size='sm'
           onClick={onToggleAudio}
-          className={cn(
-            'h-9 w-9 p-0',
-            isAudioEnabled && 'hover:bg-accent',
-          )}
+          className={cn('h-9 w-9 p-0', isAudioEnabled && 'hover:bg-accent')}
           title={isAudioEnabled ? 'Mute' : 'Unmute'}
         >
           {isAudioEnabled ? (
-            <Mic className="h-4 w-4" />
+            <Mic className='h-4 w-4' />
           ) : (
-            <MicOff className="h-4 w-4" />
+            <MicOff className='h-4 w-4' />
           )}
         </Button>
 
         {/* Video toggle */}
         <Button
           variant={isVideoEnabled ? 'ghost' : 'destructive'}
-          size="sm"
+          size='sm'
           onClick={onToggleVideo}
-          className={cn(
-            'h-9 w-9 p-0',
-            isVideoEnabled && 'hover:bg-accent',
-          )}
+          className={cn('h-9 w-9 p-0', isVideoEnabled && 'hover:bg-accent')}
           title={isVideoEnabled ? 'Stop video' : 'Start video'}
         >
           {isVideoEnabled ? (
-            <VideoIcon className="h-4 w-4" />
+            <VideoIcon className='h-4 w-4' />
           ) : (
-            <VideoIcon className="h-4 w-4" />
+            <VideoIcon className='h-4 w-4' />
           )}
         </Button>
 
         {/* Minimize */}
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={onMinimize}
-          className="h-9 w-9 p-0"
-          title="Minimize to corner"
+          className='h-9 w-9 p-0'
+          title='Minimize to corner'
         >
-          <Minimize2 className="h-4 w-4" />
+          <Minimize2 className='h-4 w-4' />
         </Button>
 
         {/* Leave */}
         <Button
-          variant="destructive"
-          size="sm"
+          variant='destructive'
+          size='sm'
           onClick={onLeave}
-          className="ml-2"
+          className='ml-2'
         >
-          <X className="mr-1 h-4 w-4" />
+          <X className='mr-1 h-4 w-4' />
           Leave
         </Button>
       </div>

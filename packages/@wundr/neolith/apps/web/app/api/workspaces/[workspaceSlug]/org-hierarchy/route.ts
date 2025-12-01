@@ -21,7 +21,10 @@ import type {
   WorkspaceNodeData,
 } from '@/lib/validations/org-hierarchy';
 import { ORG_HIERARCHY_ERROR_CODES } from '@/lib/validations/org-hierarchy';
-import { createErrorResponse, ORG_ERROR_CODES } from '@/lib/validations/organization';
+import {
+  createErrorResponse,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
 
 /**
  * Route context with workspace ID parameter
@@ -80,8 +83,10 @@ async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
-): Promise<NextResponse<{ data: OrgHierarchyResponse } | { error: string; code: string }>> {
+  context: RouteContext
+): Promise<
+  NextResponse<{ data: OrgHierarchyResponse } | { error: string; code: string }>
+> {
   try {
     // Authenticate user
     const session = await auth();
@@ -89,9 +94,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_HIERARCHY_ERROR_CODES.UNAUTHORIZED,
+          ORG_HIERARCHY_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -103,9 +108,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace identifier',
-          ORG_HIERARCHY_ERROR_CODES.VALIDATION_ERROR,
+          ORG_HIERARCHY_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -115,9 +120,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_HIERARCHY_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_HIERARCHY_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -145,9 +150,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Organization not found',
-          ORG_HIERARCHY_ERROR_CODES.ORGANIZATION_NOT_FOUND,
+          ORG_HIERARCHY_ERROR_CODES.ORGANIZATION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -179,7 +184,7 @@ export async function GET(
     });
 
     // Fetch current tasks for all Orchestrators in parallel
-    const orchestratorTasksPromises = orchestrators.map(async (orchestrator) => {
+    const orchestratorTasksPromises = orchestrators.map(async orchestrator => {
       const currentTask = await prisma.task.findFirst({
         where: {
           orchestratorId: orchestrator.id,
@@ -194,8 +199,12 @@ export async function GET(
       return { orchestratorId: orchestrator.id, currentTask };
     });
 
-    const orchestratorTasksResults = await Promise.all(orchestratorTasksPromises);
-    const orchestratorTasksMap = new Map(orchestratorTasksResults.map((r) => [r.orchestratorId, r.currentTask]));
+    const orchestratorTasksResults = await Promise.all(
+      orchestratorTasksPromises
+    );
+    const orchestratorTasksMap = new Map(
+      orchestratorTasksResults.map(r => [r.orchestratorId, r.currentTask])
+    );
 
     // Build hierarchy tree
     const hierarchy: OrgHierarchyNode[] = [];
@@ -206,7 +215,8 @@ export async function GET(
 
     for (const orchestrator of orchestrators) {
       if (orchestrator.workspaceId) {
-        const existing = workspaceOrchestratorsMap.get(orchestrator.workspaceId) || [];
+        const existing =
+          workspaceOrchestratorsMap.get(orchestrator.workspaceId) || [];
         existing.push(orchestrator);
         workspaceOrchestratorsMap.set(orchestrator.workspaceId, existing);
       } else {
@@ -236,29 +246,38 @@ export async function GET(
       // Build discipline nodes
       const disciplineNodes: OrgHierarchyNode[] = [];
 
-      for (const [disciplineId, disciplineOrchestrators] of disciplineMap.entries()) {
+      for (const [
+        disciplineId,
+        disciplineOrchestrators,
+      ] of disciplineMap.entries()) {
         const firstOrchestrator = disciplineOrchestrators[0];
-        const disciplineName = firstOrchestrator?.disciplineRef?.name || 'Unknown';
+        const disciplineName =
+          firstOrchestrator?.disciplineRef?.name || 'Unknown';
 
         // Build Orchestrator nodes for this discipline
-        const orchestratorNodes: OrgHierarchyNode[] = disciplineOrchestrators.map((orchestrator) => {
-          const currentTask = orchestratorTasksMap.get(orchestrator.id);
-          const orchestratorData: OrchestratorNodeData = {
-            avatarUrl: orchestrator.user.avatarUrl,
-            status: orchestrator.status,
-            discipline: orchestrator.disciplineRef?.name || null,
-            role: orchestrator.role,
-            currentTask: currentTask || null,
-            email: orchestrator.user.email,
-          };
+        const orchestratorNodes: OrgHierarchyNode[] =
+          disciplineOrchestrators.map(orchestrator => {
+            const currentTask = orchestratorTasksMap.get(orchestrator.id);
+            const orchestratorData: OrchestratorNodeData = {
+              avatarUrl: orchestrator.user.avatarUrl,
+              status: orchestrator.status,
+              discipline: orchestrator.disciplineRef?.name || null,
+              role: orchestrator.role,
+              currentTask: currentTask || null,
+              email: orchestrator.user.email,
+            };
 
-          return {
-            id: orchestrator.id,
-            type: 'orchestrator' as const,
-            name: orchestrator.user.displayName || orchestrator.user.name || orchestrator.user.email || 'Unknown Orchestrator',
-            data: orchestratorData,
-          };
-        });
+            return {
+              id: orchestrator.id,
+              type: 'orchestrator' as const,
+              name:
+                orchestrator.user.displayName ||
+                orchestrator.user.name ||
+                orchestrator.user.email ||
+                'Unknown Orchestrator',
+              data: orchestratorData,
+            };
+          });
 
         disciplineNodes.push({
           id: disciplineId,
@@ -269,24 +288,29 @@ export async function GET(
       }
 
       // Add Orchestrators without discipline directly to workspace
-      const noDisciplineOrchestratorNodes: OrgHierarchyNode[] = noDisciplineOrchestrators.map((orchestrator) => {
-        const currentTask = orchestratorTasksMap.get(orchestrator.id);
-        const orchestratorData: OrchestratorNodeData = {
-          avatarUrl: orchestrator.user.avatarUrl,
-          status: orchestrator.status,
-          discipline: null,
-          role: orchestrator.role,
-          currentTask: currentTask || null,
-          email: orchestrator.user.email,
-        };
+      const noDisciplineOrchestratorNodes: OrgHierarchyNode[] =
+        noDisciplineOrchestrators.map(orchestrator => {
+          const currentTask = orchestratorTasksMap.get(orchestrator.id);
+          const orchestratorData: OrchestratorNodeData = {
+            avatarUrl: orchestrator.user.avatarUrl,
+            status: orchestrator.status,
+            discipline: null,
+            role: orchestrator.role,
+            currentTask: currentTask || null,
+            email: orchestrator.user.email,
+          };
 
-        return {
-          id: orchestrator.id,
-          type: 'orchestrator' as const,
-          name: orchestrator.user.displayName || orchestrator.user.name || orchestrator.user.email || 'Unknown Orchestrator',
-          data: orchestratorData,
-        };
-      });
+          return {
+            id: orchestrator.id,
+            type: 'orchestrator' as const,
+            name:
+              orchestrator.user.displayName ||
+              orchestrator.user.name ||
+              orchestrator.user.email ||
+              'Unknown Orchestrator',
+            data: orchestratorData,
+          };
+        });
 
       // Build workspace node
       const workspaceData: WorkspaceNodeData = {
@@ -308,11 +332,13 @@ export async function GET(
 
     // Calculate statistics
     const totalOrchestrators = orchestrators.length;
-    const onlineOrchestrators = orchestrators.filter((orchestrator) => orchestrator.status === 'ONLINE').length;
+    const onlineOrchestrators = orchestrators.filter(
+      orchestrator => orchestrator.status === 'ONLINE'
+    ).length;
     const totalWorkspaces = organization.workspaces.length;
     const totalChannels = organization.workspaces.reduce(
       (sum, ws) => sum + ws._count.channels,
-      0,
+      0
     );
 
     const stats: OrgHierarchyStats = {
@@ -335,13 +361,16 @@ export async function GET(
 
     return NextResponse.json({ data: response });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/org-hierarchy] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/org-hierarchy] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

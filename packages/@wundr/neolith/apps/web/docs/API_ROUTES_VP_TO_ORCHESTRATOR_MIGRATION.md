@@ -2,27 +2,34 @@
 
 ## Summary
 
-Successfully renamed all VP-related API routes to use "Orchestrator" terminology throughout the codebase.
+Successfully renamed all VP-related API routes to use "Orchestrator" terminology throughout the
+codebase.
 
 **Migration Date:** 2025-11-27  
 **Total Routes Renamed:** 58  
-**Total Directories Renamed:** 8  
+**Total Directories Renamed:** 8
 
 ---
 
 ## Directory Structure Changes
 
 ### Root API Routes
+
 - `app/api/orchestrators/` → `app/api/orchestrators/`
 - `app/api/orchestrators/[id]/` → `app/api/orchestrators/[orchestratorId]/`
 
 ### Workspace-Scoped Routes
-- `app/api/workspaces/[workspaceId]/orchestrators/` → `app/api/workspaces/[workspaceId]/orchestrators/`
-- `app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/` → `app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/`
+
+- `app/api/workspaces/[workspaceId]/orchestrators/` →
+  `app/api/workspaces/[workspaceId]/orchestrators/`
+- `app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/` →
+  `app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/`
 
 ### Supporting Routes
+
 - `app/api/presence/orchestrators/` → `app/api/presence/orchestrators/`
-- `app/api/presence/orchestrators/[orchestratorId]/` → `app/api/presence/orchestrators/[orchestratorId]/`
+- `app/api/presence/orchestrators/[orchestratorId]/` →
+  `app/api/presence/orchestrators/[orchestratorId]/`
 - `app/api/disciplines/[id]/orchestrators/` → `app/api/disciplines/[id]/orchestrators/`
 - `app/api/daemon/health/[orchestratorId]/` → `app/api/daemon/health/[orchestratorId]/`
 
@@ -31,6 +38,7 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 ## Complete List of Renamed API Routes
 
 ### Root Orchestrator Routes (4 routes)
+
 1. `GET/POST /api/orchestrators`
 2. `GET/PATCH/DELETE /api/orchestrators/[orchestratorId]`
 3. `POST /api/orchestrators/bulk`
@@ -38,6 +46,7 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 5. `GET /api/orchestrators/conflicts`
 
 ### Orchestrator-Specific Routes (14 routes)
+
 1. `/api/orchestrators/[orchestratorId]/actions`
 2. `/api/orchestrators/[orchestratorId]/analytics`
 3. `/api/orchestrators/[orchestratorId]/api-key`
@@ -51,6 +60,7 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 11. `/api/orchestrators/[orchestratorId]/status`
 
 ### Workspace Orchestrator Routes (46 routes)
+
 1. `GET/POST /api/workspaces/[workspaceId]/orchestrators`
 2. `GET/PATCH/DELETE /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]`
 3. `/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/activity`
@@ -91,13 +101,16 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 38. `/api/workspaces/[workspaceId]/orchestrators/observability`
 
 ### Presence Routes (2 routes)
+
 1. `GET/POST /api/presence/orchestrators`
 2. `GET/PATCH /api/presence/orchestrators/[orchestratorId]`
 
 ### Discipline Routes (1 route)
+
 1. `GET /api/disciplines/[id]/orchestrators`
 
 ### Health Check Routes (1 route)
+
 1. `GET /api/daemon/health/[orchestratorId]`
 
 ---
@@ -105,11 +118,13 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 ## Code Changes Applied
 
 ### 1. Route Parameter Names
+
 - `vpId` → `orchestratorId`
 - `{ vpId }` → `{ orchestratorId }`
 - `params.orchestratorId` → `params.orchestratorId`
 
 ### 2. Variable Names
+
 - `const vp` → `const orchestrator`
 - `const orchestrators` → `const orchestrators`
 - `const vpIds` → `const orchestratorIds`
@@ -119,15 +134,18 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 - `const vpDetails` → `const orchestratorDetails`
 
 ### 3. Function Names
+
 - `getVPWithWorkspaceAccess()` → `getOrchestratorWithWorkspaceAccess()`
 
 ### 4. Documentation & Comments
+
 - All references to "Orchestrator (VP)" → "Orchestrator"
 - All references to "VP" in comments → "Orchestrator"
 - Route documentation updated to reflect new paths
 - JSDoc `@module` paths updated
 
 ### 5. Messages & Responses
+
 - `"VP not found"` → `"Orchestrator not found"`
 - `"VP created successfully"` → `"Orchestrator created successfully"`
 - `"VP updated successfully"` → `"Orchestrator updated successfully"`
@@ -135,10 +153,12 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 - All error messages updated
 
 ### 6. Console Logging
+
 - `console.error('[GET /api/orchestrators]')` → `console.error('[GET /api/orchestrators]')`
 - All console statements updated to reflect new paths
 
 ### 7. Test Files
+
 - `orchestrators/__tests__/vps.test.ts` → `orchestrators/__tests__/orchestrators.test.ts`
 - Test content updated to use "Orchestrator" terminology
 
@@ -147,7 +167,9 @@ Successfully renamed all VP-related API routes to use "Orchestrator" terminology
 ## What Was NOT Changed
 
 ### Prisma Model References
+
 All database queries still reference the `VP` model:
+
 ```typescript
 await prisma.vP.findMany({ ... })
 await prisma.vP.create({ ... })
@@ -155,13 +177,17 @@ await prisma.vP.update({ ... })
 ```
 
 ### Import Paths
+
 Validation schemas and utilities still use the original paths:
+
 ```typescript
-import { createVPSchema, vpFiltersSchema } from '@/lib/validations/orchestrator'
+import { createVPSchema, vpFiltersSchema } from '@/lib/validations/orchestrator';
 ```
 
 ### Database Field Names
-Database fields like `vpId` in related tables (e.g., `task.orchestratorId`) remain unchanged as they reference the Prisma model.
+
+Database fields like `vpId` in related tables (e.g., `task.orchestratorId`) remain unchanged as they
+reference the Prisma model.
 
 ---
 
@@ -179,18 +205,21 @@ Database fields like `vpId` in related tables (e.g., `task.orchestratorId`) rema
 
 ### Client Code Updates Required
 
-Any client code (frontend, mobile apps, external integrations) calling these APIs must update their endpoints:
+Any client code (frontend, mobile apps, external integrations) calling these APIs must update their
+endpoints:
 
 **Old:**
+
 ```typescript
-fetch('/api/workspaces/ws_123/orchestrators')
-fetch('/api/workspaces/ws_123/orchestrators/vp_456')
+fetch('/api/workspaces/ws_123/orchestrators');
+fetch('/api/workspaces/ws_123/orchestrators/vp_456');
 ```
 
 **New:**
+
 ```typescript
-fetch('/api/workspaces/ws_123/orchestrators')
-fetch('/api/workspaces/ws_123/orchestrators/orch_456')
+fetch('/api/workspaces/ws_123/orchestrators');
+fetch('/api/workspaces/ws_123/orchestrators/orch_456');
 ```
 
 ---
@@ -220,9 +249,9 @@ fetch('/api/workspaces/ws_123/orchestrators/orch_456')
 Total files modified: **58 route files + 1 test file = 59 files**
 
 All files are located under:
+
 - `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/`
 - `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/orchestrators/`
 - `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/presence/orchestrators/`
 - `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/disciplines/[id]/orchestrators/`
 - `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/daemon/health/[orchestratorId]/`
-

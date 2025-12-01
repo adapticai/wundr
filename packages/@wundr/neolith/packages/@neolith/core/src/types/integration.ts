@@ -29,7 +29,12 @@ export type IntegrationProvider =
 /**
  * Integration connection status.
  */
-export type IntegrationStatus = 'active' | 'inactive' | 'pending' | 'error' | 'revoked';
+export type IntegrationStatus =
+  | 'active'
+  | 'inactive'
+  | 'pending'
+  | 'error'
+  | 'revoked';
 
 // =============================================================================
 // OAuth Types
@@ -484,8 +489,16 @@ export interface JiraEventPayload extends BaseIntegrationEventPayload {
 /**
  * Generic event payload for custom or other integrations.
  */
-export interface GenericIntegrationEventPayload extends BaseIntegrationEventPayload {
-  source: 'teams' | 'notion' | 'linear' | 'salesforce' | 'hubspot' | 'zapier' | 'custom';
+export interface GenericIntegrationEventPayload
+  extends BaseIntegrationEventPayload {
+  source:
+    | 'teams'
+    | 'notion'
+    | 'linear'
+    | 'salesforce'
+    | 'hubspot'
+    | 'zapier'
+    | 'custom';
   eventName: string;
   data: Record<string, string | number | boolean | null>;
 }
@@ -1044,35 +1057,54 @@ export const INTEGRATION_PERMISSIONS: IntegrationPermission[] = [
 /**
  * Type guard for IntegrationProvider.
  */
-export function isIntegrationProvider(value: unknown): value is IntegrationProvider {
-  return typeof value === 'string' && INTEGRATION_PROVIDERS.includes(value as IntegrationProvider);
+export function isIntegrationProvider(
+  value: unknown
+): value is IntegrationProvider {
+  return (
+    typeof value === 'string' &&
+    INTEGRATION_PROVIDERS.includes(value as IntegrationProvider)
+  );
 }
 
 /**
  * Type guard for IntegrationStatus.
  */
-export function isIntegrationStatus(value: unknown): value is IntegrationStatus {
-  return typeof value === 'string' && INTEGRATION_STATUSES.includes(value as IntegrationStatus);
+export function isIntegrationStatus(
+  value: unknown
+): value is IntegrationStatus {
+  return (
+    typeof value === 'string' &&
+    INTEGRATION_STATUSES.includes(value as IntegrationStatus)
+  );
 }
 
 /**
  * Type guard for WebhookEvent.
  */
 export function isWebhookEvent(value: unknown): value is WebhookEvent {
-  return typeof value === 'string' && WEBHOOK_EVENTS.includes(value as WebhookEvent);
+  return (
+    typeof value === 'string' && WEBHOOK_EVENTS.includes(value as WebhookEvent)
+  );
 }
 
 /**
  * Type guard for IntegrationPermission.
  */
-export function isIntegrationPermission(value: unknown): value is IntegrationPermission {
-  return typeof value === 'string' && INTEGRATION_PERMISSIONS.includes(value as IntegrationPermission);
+export function isIntegrationPermission(
+  value: unknown
+): value is IntegrationPermission {
+  return (
+    typeof value === 'string' &&
+    INTEGRATION_PERMISSIONS.includes(value as IntegrationPermission)
+  );
 }
 
 /**
  * Type guard for IntegrationConfig.
  */
-export function isIntegrationConfig(value: unknown): value is IntegrationConfig {
+export function isIntegrationConfig(
+  value: unknown
+): value is IntegrationConfig {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -1109,7 +1141,9 @@ export function isWebhookConfig(value: unknown): value is WebhookConfig {
 /**
  * Type guard for WebhookRetryPolicy.
  */
-export function isWebhookRetryPolicy(value: unknown): value is WebhookRetryPolicy {
+export function isWebhookRetryPolicy(
+  value: unknown
+): value is WebhookRetryPolicy {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -1126,7 +1160,9 @@ export function isWebhookRetryPolicy(value: unknown): value is WebhookRetryPolic
 /**
  * Validates CreateIntegrationInput.
  */
-export function isValidCreateIntegrationInput(value: unknown): value is CreateIntegrationInput {
+export function isValidCreateIntegrationInput(
+  value: unknown
+): value is CreateIntegrationInput {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -1144,7 +1180,9 @@ export function isValidCreateIntegrationInput(value: unknown): value is CreateIn
 /**
  * Validates CreateWebhookInput.
  */
-export function isValidCreateWebhookInput(value: unknown): value is CreateWebhookInput {
+export function isValidCreateWebhookInput(
+  value: unknown
+): value is CreateWebhookInput {
   if (typeof value !== 'object' || value === null) {
     return false;
   }

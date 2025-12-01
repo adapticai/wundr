@@ -1,10 +1,9 @@
 # API Design Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Architecture
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Architecture
 
-This document defines REST API design standards, request/response formats, and MCP tool integration for API quality.
+This document defines REST API design standards, request/response formats, and MCP tool integration
+for API quality.
 
 ---
 
@@ -49,6 +48,7 @@ This document defines REST API design standards, request/response formats, and M
 ### Resource Naming
 
 **Use nouns for resources:**
+
 ```
 GET /api/users           # List users (noun, plural)
 GET /api/users/123       # Get specific user
@@ -58,6 +58,7 @@ DELETE /api/users/123    # Delete user
 ```
 
 **Use kebab-case:**
+
 ```
 GET /api/user-profiles   # Good
 GET /api/userProfiles    # Avoid
@@ -67,6 +68,7 @@ GET /api/user_profiles   # Avoid
 ### Nested Resources
 
 **For related resources:**
+
 ```
 GET /api/users/123/orders           # User's orders
 GET /api/users/123/orders/456       # Specific order
@@ -80,6 +82,7 @@ GET /api/orders/456/items           # Better - flatten
 ### Query Parameters
 
 **For filtering, sorting, pagination:**
+
 ```
 GET /api/users?status=active                    # Filter
 GET /api/users?sort=createdAt:desc              # Sort
@@ -88,6 +91,7 @@ GET /api/users?status=active&sort=name&page=1   # Combined
 ```
 
 **For search:**
+
 ```
 GET /api/users?search=john           # Text search
 GET /api/products?q=laptop&category=electronics  # Filtered search
@@ -96,6 +100,7 @@ GET /api/products?q=laptop&category=electronics  # Filtered search
 ### Actions on Resources
 
 **For non-CRUD operations, use verbs as sub-resources:**
+
 ```
 POST /api/users/123/activate        # Activate user
 POST /api/users/123/deactivate      # Deactivate user
@@ -109,13 +114,13 @@ POST /api/payments/789/refund       # Process refund
 
 ### Method Usage
 
-| Method | Purpose | Idempotent | Request Body | Response Body |
-|--------|---------|------------|--------------|---------------|
-| GET | Retrieve resource | Yes | No | Yes |
-| POST | Create resource | No | Yes | Yes |
-| PUT | Replace resource | Yes | Yes | Yes |
-| PATCH | Partial update | No | Yes | Yes |
-| DELETE | Remove resource | Yes | No | Optional |
+| Method | Purpose           | Idempotent | Request Body | Response Body |
+| ------ | ----------------- | ---------- | ------------ | ------------- |
+| GET    | Retrieve resource | Yes        | No           | Yes           |
+| POST   | Create resource   | No         | Yes          | Yes           |
+| PUT    | Replace resource  | Yes        | Yes          | Yes           |
+| PATCH  | Partial update    | No         | Yes          | Yes           |
+| DELETE | Remove resource   | Yes        | No           | Optional      |
 
 ### Examples
 
@@ -281,32 +286,32 @@ interface ValidationErrorDetails {
 
 ### Success Codes
 
-| Code | Name | When to Use |
-|------|------|-------------|
-| 200 | OK | Successful GET, PUT, PATCH |
-| 201 | Created | Successful POST creating resource |
-| 204 | No Content | Successful DELETE, no body needed |
+| Code | Name       | When to Use                       |
+| ---- | ---------- | --------------------------------- |
+| 200  | OK         | Successful GET, PUT, PATCH        |
+| 201  | Created    | Successful POST creating resource |
+| 204  | No Content | Successful DELETE, no body needed |
 
 ### Client Error Codes
 
-| Code | Name | When to Use |
-|------|------|-------------|
-| 400 | Bad Request | Invalid request data, validation errors |
-| 401 | Unauthorized | Missing or invalid authentication |
-| 403 | Forbidden | Authenticated but not authorized |
-| 404 | Not Found | Resource doesn't exist |
-| 409 | Conflict | Resource conflict (duplicate, version mismatch) |
-| 422 | Unprocessable Entity | Valid syntax but semantic errors |
-| 429 | Too Many Requests | Rate limit exceeded |
+| Code | Name                 | When to Use                                     |
+| ---- | -------------------- | ----------------------------------------------- |
+| 400  | Bad Request          | Invalid request data, validation errors         |
+| 401  | Unauthorized         | Missing or invalid authentication               |
+| 403  | Forbidden            | Authenticated but not authorized                |
+| 404  | Not Found            | Resource doesn't exist                          |
+| 409  | Conflict             | Resource conflict (duplicate, version mismatch) |
+| 422  | Unprocessable Entity | Valid syntax but semantic errors                |
+| 429  | Too Many Requests    | Rate limit exceeded                             |
 
 ### Server Error Codes
 
-| Code | Name | When to Use |
-|------|------|-------------|
-| 500 | Internal Server Error | Unexpected server error |
-| 502 | Bad Gateway | External service failure |
-| 503 | Service Unavailable | Server temporarily unavailable |
-| 504 | Gateway Timeout | External service timeout |
+| Code | Name                  | When to Use                    |
+| ---- | --------------------- | ------------------------------ |
+| 500  | Internal Server Error | Unexpected server error        |
+| 502  | Bad Gateway           | External service failure       |
+| 503  | Service Unavailable   | Server temporarily unavailable |
+| 504  | Gateway Timeout       | External service timeout       |
 
 ---
 
@@ -369,11 +374,7 @@ X-API-Key: sk_live_abc123...
 ### Authentication Middleware
 
 ```typescript
-async function authenticate(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
@@ -399,6 +400,7 @@ async function authenticate(
 ### API Quality Monitoring
 
 **Analyze API Dependencies:**
+
 ```javascript
 // Check for circular dependencies in API modules
 mcp__wundr__dependency_analyze {
@@ -414,6 +416,7 @@ mcp__wundr__dependency_analyze {
 ```
 
 **Pattern Standardization for APIs:**
+
 ```javascript
 // Check API error handling consistency
 mcp__wundr__pattern_standardize {
@@ -432,6 +435,7 @@ mcp__wundr__pattern_standardize {
 ```
 
 **Quality Reports:**
+
 ```javascript
 // Generate API quality report
 mcp__wundr__governance_report {

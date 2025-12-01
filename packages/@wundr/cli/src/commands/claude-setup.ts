@@ -8,7 +8,6 @@ import ora from 'ora';
 
 import type { Ora } from 'ora';
 
-
 // Type for ora spinner
 type OraSpinner = Ora;
 
@@ -71,7 +70,7 @@ Examples:
   ${chalk.green('wundr claude-setup optimize')}     Setup hardware-adaptive optimizations
   ${chalk.green('wundr claude-setup validate')}     Validate Claude installation
   ${chalk.green('wundr claude-setup project')}      Setup project with templates
-      `),
+      `)
       );
 
     // Main setup command (default)
@@ -90,11 +89,16 @@ Examples:
     // Project setup with templates (from /src/cli/commands/claude-setup.ts)
     claudeSetup
       .command('project [path]')
-      .description('Setup Claude Code in a project directory with optional template')
+      .description(
+        'Setup Claude Code in a project directory with optional template'
+      )
       .option('-g, --global', 'Install tools globally')
       .option('--skip-mcp', 'Skip MCP tools installation')
       .option('--skip-flow', 'Skip Claude Flow setup')
-      .option('-t, --template <name>', 'Use specific project template (typescript, react, nodejs, monorepo)')
+      .option(
+        '-t, --template <name>',
+        'Use specific project template (typescript, react, nodejs, monorepo)'
+      )
       .action(async (projectPath: string = '.', options: SetupOptions) => {
         await this.runProjectSetup(projectPath, options);
       });
@@ -105,7 +109,7 @@ Examples:
       .description('Install and configure MCP tools')
       .option(
         '--tool <tool>',
-        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking, claude-flow)',
+        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking, claude-flow)'
       )
       .action(async (options: McpOptions) => {
         await this.installMcpTools(options);
@@ -152,7 +156,11 @@ Examples:
     claudeSetup
       .command('config')
       .description('Generate or update CLAUDE.md configuration')
-      .argument('[path]', 'Path to repository (defaults to current directory)', '.')
+      .argument(
+        '[path]',
+        'Path to repository (defaults to current directory)',
+        '.'
+      )
       .action(async (repoPath: string) => {
         await this.generateClaudeConfig(repoPath);
       });
@@ -214,7 +222,10 @@ Examples:
   /**
    * Project setup - from /src/cli/commands/claude-setup.ts
    */
-  private async runProjectSetup(projectPath: string, options: SetupOptions): Promise<void> {
+  private async runProjectSetup(
+    projectPath: string,
+    options: SetupOptions
+  ): Promise<void> {
     const spinner = ora('Starting Claude Code project setup...').start();
 
     try {
@@ -224,12 +235,14 @@ Examples:
       if (!fs.existsSync(path.join(repoPath, '.git'))) {
         spinner.stop();
         const inquirer = await import('inquirer');
-        const { shouldInitGit } = await inquirer.default.prompt([{
-          type: 'confirm',
-          name: 'shouldInitGit',
-          message: 'Not a git repository. Initialize git?',
-          default: true,
-        }]);
+        const { shouldInitGit } = await inquirer.default.prompt([
+          {
+            type: 'confirm',
+            name: 'shouldInitGit',
+            message: 'Not a git repository. Initialize git?',
+            default: true,
+          },
+        ]);
 
         if (shouldInitGit) {
           spinner.start('Initializing git repository...');
@@ -270,11 +283,12 @@ Examples:
 
       // Final instructions
       this.displayProjectFinalInstructions(repoPath, options);
-
     } catch (error) {
       spinner.stop();
       console.error(chalk.red('❌ Setup failed:'));
-      console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+      console.error(
+        chalk.red(error instanceof Error ? error.message : String(error))
+      );
       process.exit(1);
     }
   }
@@ -282,7 +296,11 @@ Examples:
   /**
    * Setup Claude Flow - from /src/cli/commands/claude-setup.ts
    */
-  private async setupClaudeFlow(spinner: OraSpinner, repoPath: string, global?: boolean): Promise<void> {
+  private async setupClaudeFlow(
+    spinner: OraSpinner,
+    repoPath: string,
+    global?: boolean
+  ): Promise<void> {
     spinner.text = 'Setting up Claude Flow...';
 
     try {
@@ -297,7 +315,10 @@ Examples:
       } else {
         // Add to package.json dev dependencies if it exists
         if (fs.existsSync(path.join(repoPath, 'package.json'))) {
-          execSync('npm install --save-dev claude-flow@alpha', { cwd: repoPath, stdio: 'inherit' });
+          execSync('npm install --save-dev claude-flow@alpha', {
+            cwd: repoPath,
+            stdio: 'inherit',
+          });
         }
       }
     }
@@ -311,8 +332,14 @@ Examples:
       });
     } catch {
       // MCP configuration might fail if Claude Desktop isn't installed
-      console.log(chalk.yellow('\n⚠️  Could not configure MCP server automatically.'));
-      console.log(chalk.yellow('Please run manually: claude mcp add claude-flow npx claude-flow@alpha mcp start'));
+      console.log(
+        chalk.yellow('\n⚠️  Could not configure MCP server automatically.')
+      );
+      console.log(
+        chalk.yellow(
+          'Please run manually: claude mcp add claude-flow npx claude-flow@alpha mcp start'
+        )
+      );
     }
 
     spinner.text = 'Claude Flow setup completed';
@@ -321,7 +348,10 @@ Examples:
   /**
    * Setup MCP Tools directory - from /src/cli/commands/claude-setup.ts
    */
-  private async setupMCPToolsDirectory(spinner: OraSpinner, repoPath: string): Promise<void> {
+  private async setupMCPToolsDirectory(
+    spinner: OraSpinner,
+    repoPath: string
+  ): Promise<void> {
     spinner.text = 'Setting up MCP Tools directory...';
 
     const mcpToolsPath = path.join(repoPath, 'mcp-tools');
@@ -356,7 +386,7 @@ echo "Customize this script with your specific MCP tools"
 
       fs.writeFileSync(
         path.join(mcpToolsPath, 'package.json'),
-        JSON.stringify(mcpPackageJson, null, 2),
+        JSON.stringify(mcpPackageJson, null, 2)
       );
     }
 
@@ -370,7 +400,7 @@ echo "Customize this script with your specific MCP tools"
     const spinner = ora();
     const scriptPath = path.join(
       __dirname,
-      '../../../../scripts/install-mcp-tools.sh',
+      '../../../../scripts/install-mcp-tools.sh'
     );
 
     console.log(chalk.cyan('\n📦 Installing MCP Tools...\n'));
@@ -382,10 +412,13 @@ echo "Customize this script with your specific MCP tools"
         const installCommands: Record<string, string> = {
           firecrawl: 'npx claude mcp add firecrawl npx @firecrawl/mcp-server',
           context7: 'npx claude mcp add context7 npx @context7/mcp-server',
-          playwright: 'npx claude mcp add playwright npx @playwright/mcp-server',
+          playwright:
+            'npx claude mcp add playwright npx @playwright/mcp-server',
           browser: 'npx claude mcp add browser npx @browser/mcp-server',
-          sequentialthinking: 'npm install -g @modelcontextprotocol/server-sequentialthinking',
-          'claude-flow': 'claude mcp add claude-flow npx claude-flow@alpha mcp start',
+          sequentialthinking:
+            'npm install -g @modelcontextprotocol/server-sequentialthinking',
+          'claude-flow':
+            'claude mcp add claude-flow npx claude-flow@alpha mcp start',
         };
 
         const command = installCommands[options.tool];
@@ -394,7 +427,11 @@ echo "Customize this script with your specific MCP tools"
           spinner.succeed(`${options.tool} MCP installed`);
         } else {
           spinner.fail(`Unknown tool: ${options.tool}`);
-          console.log(chalk.yellow(`Available tools: ${Object.keys(installCommands).join(', ')}`));
+          console.log(
+            chalk.yellow(
+              `Available tools: ${Object.keys(installCommands).join(', ')}`
+            )
+          );
         }
       } catch (error) {
         spinner.fail(`Failed to install ${options.tool}`);
@@ -403,7 +440,9 @@ echo "Customize this script with your specific MCP tools"
     } else {
       // Try to install all tools using the script if it exists
       if (fs.existsSync(scriptPath)) {
-        console.log(chalk.gray('Running comprehensive MCP tools installation...'));
+        console.log(
+          chalk.gray('Running comprehensive MCP tools installation...')
+        );
 
         const install = spawn('bash', [scriptPath], {
           stdio: 'inherit',
@@ -413,7 +452,9 @@ echo "Customize this script with your specific MCP tools"
         return new Promise((resolve, reject) => {
           install.on('close', code => {
             if (code === 0) {
-              console.log(chalk.green('\n✅ All MCP tools installed successfully'));
+              console.log(
+                chalk.green('\n✅ All MCP tools installed successfully')
+              );
               resolve();
             } else {
               reject(new Error(`Installation failed with code ${code}`));
@@ -466,7 +507,7 @@ echo "Customize this script with your specific MCP tools"
         const config = this.generateAgentConfig(agent);
         fs.writeFileSync(
           path.join(agentsDir, `${agent}.json`),
-          JSON.stringify(config, null, 2),
+          JSON.stringify(config, null, 2)
         );
       }
 
@@ -512,8 +553,8 @@ echo "Customize this script with your specific MCP tools"
     } else {
       console.log(
         chalk.yellow(
-          '\n⚠️ Some checks failed. Run with --fix to attempt repairs.',
-        ),
+          '\n⚠️ Some checks failed. Run with --fix to attempt repairs.'
+        )
       );
     }
   }
@@ -542,7 +583,7 @@ echo "Customize this script with your specific MCP tools"
   private async setupOptimizations(options: OptimizeOptions): Promise<void> {
     const spinner = ora();
     console.log(
-      chalk.cyan.bold('\n⚡ Claude Code Hardware-Adaptive Optimization Setup\n'),
+      chalk.cyan.bold('\n⚡ Claude Code Hardware-Adaptive Optimization Setup\n')
     );
 
     try {
@@ -550,7 +591,7 @@ echo "Customize this script with your specific MCP tools"
       const scriptsDir = path.join(homeDir, '.claude', 'scripts');
       const resourcesDir = path.join(
         __dirname,
-        '../../../computer-setup/resources/scripts',
+        '../../../computer-setup/resources/scripts'
       );
 
       // Check if optimization scripts already exist
@@ -585,8 +626,8 @@ echo "Customize this script with your specific MCP tools"
         spinner.fail('Optimization scripts not found in resources');
         console.error(
           chalk.red(
-            `Expected scripts at: ${resourcesDir}\nPlease ensure @wundr/computer-setup is installed.`,
-          ),
+            `Expected scripts at: ${resourcesDir}\nPlease ensure @wundr/computer-setup is installed.`
+          )
         );
         return;
       }
@@ -633,26 +674,28 @@ echo "Customize this script with your specific MCP tools"
       // Show what was installed
       console.log(chalk.cyan('📦 Installed Scripts:'));
       console.log(
-        chalk.white('  • detect-hardware-limits.js - Hardware detection'),
+        chalk.white('  • detect-hardware-limits.js - Hardware detection')
       );
       console.log(
-        chalk.white('  • claude-optimized - Optimized Claude wrapper'),
+        chalk.white('  • claude-optimized - Optimized Claude wrapper')
       );
       console.log(
-        chalk.white('  • orchestrator.js - Fault-tolerant orchestration'),
+        chalk.white('  • orchestrator.js - Fault-tolerant orchestration')
       );
       console.log(
-        chalk.white('  • cleanup-zombies.sh - Process cleanup utility'),
+        chalk.white('  • cleanup-zombies.sh - Process cleanup utility')
       );
 
       console.log(chalk.cyan('\n🔧 Shell Aliases:'));
       console.log(
-        chalk.white('  • claude - Hardware-optimized Claude wrapper'),
+        chalk.white('  • claude - Hardware-optimized Claude wrapper')
       );
       console.log(chalk.white('  • claude-stats - Show hardware statistics'));
-      console.log(chalk.white('  • claude-cleanup - Clean up zombie processes'));
       console.log(
-        chalk.white('  • claude-orchestrate - Run multi-task orchestrator'),
+        chalk.white('  • claude-cleanup - Clean up zombie processes')
+      );
+      console.log(
+        chalk.white('  • claude-orchestrate - Run multi-task orchestrator')
       );
 
       console.log(chalk.cyan('\n📝 Next Steps:'));
@@ -660,7 +703,7 @@ echo "Customize this script with your specific MCP tools"
       console.log('2. Run "claude-stats" to see your hardware configuration');
       console.log('3. Use "claude" command as normal - now optimized!');
       console.log(
-        '4. Read ~/.claude/scripts/QUICK-START.md for advanced usage',
+        '4. Read ~/.claude/scripts/QUICK-START.md for advanced usage'
       );
     } catch (error) {
       spinner.fail('Optimization setup failed');
@@ -679,24 +722,38 @@ echo "Customize this script with your specific MCP tools"
       const resolvedPath = path.resolve(repoPath);
       await this.generateClaudeConfigForPath(spinner, resolvedPath);
       spinner.succeed('CLAUDE.md generated successfully');
-      console.log(chalk.green(`\n✅ CLAUDE.md created at: ${path.join(resolvedPath, 'CLAUDE.md')}`));
+      console.log(
+        chalk.green(
+          `\n✅ CLAUDE.md created at: ${path.join(resolvedPath, 'CLAUDE.md')}`
+        )
+      );
     } catch (error) {
       spinner.fail('Failed to generate CLAUDE.md');
-      console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+      console.error(
+        chalk.red(error instanceof Error ? error.message : String(error))
+      );
     }
   }
 
   /**
    * Generate CLAUDE.md for a specific path
    */
-  private async generateClaudeConfigForPath(spinner: OraSpinner, repoPath: string): Promise<void> {
+  private async generateClaudeConfigForPath(
+    spinner: OraSpinner,
+    repoPath: string
+  ): Promise<void> {
     spinner.text = 'Generating CLAUDE.md configuration...';
 
     try {
       // Try to use the ClaudeConfigGenerator if available
       // Use path.resolve to construct the path at runtime to avoid TypeScript rootDir issues
-      const generatorPath = path.resolve(__dirname, '../../../../../src/claude-generator/claude-config-generator.js');
-      const { ClaudeConfigGenerator } = await import(/* @vite-ignore */ generatorPath);
+      const generatorPath = path.resolve(
+        __dirname,
+        '../../../../../src/claude-generator/claude-config-generator.js'
+      );
+      const { ClaudeConfigGenerator } = await import(
+        /* @vite-ignore */ generatorPath
+      );
       const generator = new ClaudeConfigGenerator(repoPath);
 
       const claudeContent = await generator.generateClaudeMarkdown();
@@ -742,19 +799,25 @@ Run \`npx claude-flow sparc modes\` to see available modes.
   /**
    * Setup project template - from /src/cli/commands/claude-setup.ts
    */
-  private async setupProjectTemplate(spinner: OraSpinner, repoPath: string, templateName: string): Promise<void> {
+  private async setupProjectTemplate(
+    spinner: OraSpinner,
+    repoPath: string,
+    templateName: string
+  ): Promise<void> {
     spinner.text = `Applying ${templateName} template...`;
 
     const templates: Record<string, () => void> = {
-      'typescript': () => this.setupTypeScriptTemplate(repoPath),
-      'react': () => this.setupReactTemplate(repoPath),
-      'nodejs': () => this.setupNodeTemplate(repoPath),
-      'monorepo': () => this.setupMonorepoTemplate(repoPath),
+      typescript: () => this.setupTypeScriptTemplate(repoPath),
+      react: () => this.setupReactTemplate(repoPath),
+      nodejs: () => this.setupNodeTemplate(repoPath),
+      monorepo: () => this.setupMonorepoTemplate(repoPath),
     };
 
     const setupFunction = templates[templateName];
     if (!setupFunction) {
-      throw new Error(`Unknown template: ${templateName}. Available: ${Object.keys(templates).join(', ')}`);
+      throw new Error(
+        `Unknown template: ${templateName}. Available: ${Object.keys(templates).join(', ')}`
+      );
     }
 
     setupFunction();
@@ -790,7 +853,10 @@ Run \`npx claude-flow sparc modes\` to see available modes.
     const srcPath = path.join(repoPath, 'src');
     if (!fs.existsSync(srcPath)) {
       fs.mkdirSync(srcPath, { recursive: true });
-      fs.writeFileSync(path.join(srcPath, 'index.ts'), '// Your TypeScript code here\n');
+      fs.writeFileSync(
+        path.join(srcPath, 'index.ts'),
+        '// Your TypeScript code here\n'
+      );
     }
   }
 
@@ -819,7 +885,10 @@ Run \`npx claude-flow sparc modes\` to see available modes.
     const srcPath = path.join(repoPath, 'src');
     if (!fs.existsSync(srcPath)) {
       fs.mkdirSync(srcPath, { recursive: true });
-      fs.writeFileSync(path.join(srcPath, 'index.js'), '// Your Node.js code here\n');
+      fs.writeFileSync(
+        path.join(srcPath, 'index.js'),
+        '// Your Node.js code here\n'
+      );
     }
 
     // Create routes directory
@@ -851,7 +920,7 @@ Run \`npx claude-flow sparc modes\` to see available modes.
         private: true,
         workspaces: ['packages/*', 'apps/*'],
         devDependencies: {
-          'turbo': '^2.0.0',
+          turbo: '^2.0.0',
         },
       };
 
@@ -862,7 +931,10 @@ Run \`npx claude-flow sparc modes\` to see available modes.
   /**
    * Initialize swarm - from /src/cli/commands/claude-setup.ts
    */
-  private async initializeSwarm(spinner: OraSpinner, repoPath: string): Promise<void> {
+  private async initializeSwarm(
+    spinner: OraSpinner,
+    repoPath: string
+  ): Promise<void> {
     spinner.text = 'Initializing Claude Flow swarm...';
 
     try {
@@ -873,8 +945,14 @@ Run \`npx claude-flow sparc modes\` to see available modes.
       });
     } catch {
       // Swarm init might fail if not properly configured
-      console.log(chalk.yellow('\n⚠️  Could not initialize swarm automatically.'));
-      console.log(chalk.yellow('You can initialize manually later with: npx claude-flow init'));
+      console.log(
+        chalk.yellow('\n⚠️  Could not initialize swarm automatically.')
+      );
+      console.log(
+        chalk.yellow(
+          'You can initialize manually later with: npx claude-flow init'
+        )
+      );
     }
 
     spinner.text = 'Swarm initialization completed';
@@ -883,7 +961,10 @@ Run \`npx claude-flow sparc modes\` to see available modes.
   /**
    * Validate project setup - from /src/cli/commands/claude-setup.ts
    */
-  private async validateProjectSetup(spinner: OraSpinner, repoPath: string): Promise<void> {
+  private async validateProjectSetup(
+    spinner: OraSpinner,
+    repoPath: string
+  ): Promise<void> {
     spinner.text = 'Validating setup...';
 
     const validations = [
@@ -899,7 +980,9 @@ Run \`npx claude-flow sparc modes\` to see available modes.
 
     const failures = results.filter(r => !r.exists);
     if (failures.length > 0) {
-      throw new Error(`Setup validation failed: Missing ${failures.map(f => f.name).join(', ')}`);
+      throw new Error(
+        `Setup validation failed: Missing ${failures.map(f => f.name).join(', ')}`
+      );
     }
 
     spinner.text = 'Setup validation passed';
@@ -950,15 +1033,15 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         // Check if optimization config already exists
         if (
           content.includes(
-            'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)',
+            'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)'
           )
         ) {
           // Remove old config and add new one
           const lines = content.split('\n');
           const startIdx = lines.findIndex(line =>
             line.includes(
-              'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)',
-            ),
+              'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)'
+            )
           );
 
           if (startIdx !== -1) {
@@ -990,17 +1073,17 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   private async installChrome(): Promise<void> {
     if (process.platform === 'darwin') {
       execSync(
-        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"',
+        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"'
       );
       execSync('hdiutil attach ~/Downloads/googlechrome.dmg');
       execSync(
-        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/',
+        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/'
       );
       execSync('hdiutil detach "/Volumes/Google Chrome"');
       execSync('rm ~/Downloads/googlechrome.dmg');
     } else {
       console.log(
-        chalk.yellow('Chrome installation is only automated for macOS'),
+        chalk.yellow('Chrome installation is only automated for macOS')
       );
     }
   }
@@ -1071,8 +1154,8 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     const homeDir = process.env['HOME'] || process.env['USERPROFILE'] || '';
     const agentsDir = path.join(homeDir, '.claude', 'agents');
     if (!fs.existsSync(agentsDir)) {
-return false;
-}
+      return false;
+    }
 
     const files = fs.readdirSync(agentsDir);
     return files.length > 0;
@@ -1083,8 +1166,8 @@ return false;
     const settingsPath = path.join(homeDir, '.claude', 'settings.json');
 
     if (!fs.existsSync(settingsPath)) {
-return false;
-}
+      return false;
+    }
 
     try {
       const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
@@ -1157,14 +1240,8 @@ return false;
         'code-analyzer',
         'base-template-generator',
       ],
-      'Testing & Validation': [
-        'tdd-london-swarm',
-        'production-validator',
-      ],
-      'Migration & Planning': [
-        'migration-planner',
-        'swarm-init',
-      ],
+      'Testing & Validation': ['tdd-london-swarm', 'production-validator'],
+      'Migration & Planning': ['migration-planner', 'swarm-init'],
     };
 
     for (const [category, agents] of Object.entries(categories)) {
@@ -1196,7 +1273,13 @@ return false;
         'system-architect',
         'backend-dev',
       ],
-      devops: ['planner', 'cicd-engineer', 'perf-analyzer', 'github-modes', 'workflow-automation'],
+      devops: [
+        'planner',
+        'cicd-engineer',
+        'perf-analyzer',
+        'github-modes',
+        'workflow-automation',
+      ],
       ml: ['ml-developer', 'coder', 'tester', 'perf-analyzer', 'researcher'],
     };
 
@@ -1224,7 +1307,10 @@ return false;
   /**
    * Display final instructions for project setup
    */
-  private displayProjectFinalInstructions(repoPath: string, options: SetupOptions): void {
+  private displayProjectFinalInstructions(
+    repoPath: string,
+    options: SetupOptions
+  ): void {
     console.log(chalk.green('\n🎉 Claude Code Setup Complete!'));
     console.log(chalk.blue('================================'));
 
@@ -1264,12 +1350,12 @@ return false;
     console.log(chalk.cyan('📋 Next Steps:'));
     console.log('1. Configure API keys for MCP tools (if needed)');
     console.log(
-      '2. Install Browser MCP Chrome extension: wundr claude-setup extension',
+      '2. Install Browser MCP Chrome extension: wundr claude-setup extension'
     );
     console.log('3. Restart Claude Desktop to load new configurations');
     console.log('4. Initialize a project: wundr claude-setup project');
     console.log(
-      '5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"',
+      '5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"'
     );
   }
 }

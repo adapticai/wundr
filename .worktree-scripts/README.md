@@ -1,6 +1,7 @@
 # Git Worktree Management Scripts
 
-This directory contains bash scripts for managing git worktrees for Claude Code subagents, enabling isolated parallel development without file conflicts.
+This directory contains bash scripts for managing git worktrees for Claude Code subagents, enabling
+isolated parallel development without file conflicts.
 
 ## Quick Start
 
@@ -28,11 +29,13 @@ cd /path/to/repo
 Creates an isolated git worktree for an agent to work in.
 
 **Usage:**
+
 ```bash
 ./create-agent-worktree.sh <agent-type> <task-id> [base-branch]
 ```
 
 **Examples:**
+
 ```bash
 # Create worktree for coder agent
 ./create-agent-worktree.sh coder auth-feature-001 master
@@ -45,6 +48,7 @@ Creates an isolated git worktree for an agent to work in.
 ```
 
 **Output:**
+
 - Creates `.worktrees/<agent-type>-<task-id>/` directory
 - Creates new branch `agents/<agent-type>/<task-id>`
 - Initializes worktree registry
@@ -55,16 +59,19 @@ Creates an isolated git worktree for an agent to work in.
 Merges completed agent work from worktree back to target branch.
 
 **Usage:**
+
 ```bash
 ./merge-agent-work.sh <worktree-name> [target-branch] [merge-strategy]
 ```
 
 **Merge Strategies:**
+
 - `no-ff` (default): Creates merge commit preserving branch history
 - `squash`: Squashes all commits into single commit
 - `rebase`: Rebases before fast-forward merge
 
 **Examples:**
+
 ```bash
 # Standard merge with merge commit
 ./merge-agent-work.sh coder-auth-001 master no-ff
@@ -77,6 +84,7 @@ Merges completed agent work from worktree back to target branch.
 ```
 
 **Features:**
+
 - Validates uncommitted changes
 - Updates target branch from remote
 - Handles merge conflicts
@@ -88,11 +96,13 @@ Merges completed agent work from worktree back to target branch.
 Removes worktree and optionally deletes associated branch.
 
 **Usage:**
+
 ```bash
 ./cleanup-worktree.sh <worktree-name> [force]
 ```
 
 **Examples:**
+
 ```bash
 # Safe cleanup (only if merged)
 ./cleanup-worktree.sh coder-auth-001
@@ -102,6 +112,7 @@ Removes worktree and optionally deletes associated branch.
 ```
 
 **Safety Features:**
+
 - Checks if branch is merged
 - Warns about uncommitted changes
 - Requires confirmation for unmerged work
@@ -113,11 +124,13 @@ Removes worktree and optionally deletes associated branch.
 Comprehensive status report for all agent worktrees.
 
 **Usage:**
+
 ```bash
 ./worktree-status.sh
 ```
 
 **Report Includes:**
+
 - Repository information
 - Registry summary (total, active, merged, cleaned)
 - Agent type breakdown
@@ -133,6 +146,7 @@ Comprehensive status report for all agent worktrees.
 Bulk cleanup of all merged agent worktrees and branches.
 
 **Usage:**
+
 ```bash
 # Dry run (see what would be cleaned)
 ./cleanup-all-merged.sh true
@@ -142,6 +156,7 @@ Bulk cleanup of all merged agent worktrees and branches.
 ```
 
 **Examples:**
+
 ```bash
 # Preview cleanup
 ./cleanup-all-merged.sh true master
@@ -151,6 +166,7 @@ Bulk cleanup of all merged agent worktrees and branches.
 ```
 
 **Features:**
+
 - Finds all merged agent branches
 - Removes associated worktrees
 - Deletes merged branches
@@ -270,17 +286,21 @@ TASK_ID=auth-001
 ## Naming Conventions
 
 ### Worktree Names
+
 Format: `{agent-type}-{task-id}`
 
 Examples:
+
 - `coder-auth-001`
 - `tester-integration-002`
 - `reviewer-security-003`
 
 ### Branch Names
+
 Format: `agents/{agent-type}/{task-id}`
 
 Examples:
+
 - `agents/coder/auth-001`
 - `agents/tester/integration-002`
 - `agents/reviewer/security-003`
@@ -310,6 +330,7 @@ All scripts include comprehensive error handling:
 ## Troubleshooting
 
 ### Worktree already exists
+
 ```bash
 # List existing worktrees
 git worktree list
@@ -319,6 +340,7 @@ git worktree remove .worktrees/name --force
 ```
 
 ### Branch already exists
+
 ```bash
 # Check if branch is in use
 git worktree list | grep branch-name
@@ -328,6 +350,7 @@ git branch -D agents/agent/task
 ```
 
 ### Merge conflicts
+
 ```bash
 # Show conflicted files
 git diff --name-only --diff-filter=U
@@ -338,6 +361,7 @@ git commit
 ```
 
 ### Stale worktree metadata
+
 ```bash
 # Clean up metadata
 git worktree prune
@@ -352,27 +376,28 @@ These scripts integrate seamlessly with Claude Code MCP tools:
 
 ```javascript
 // Initialize swarm
-mcp__claude-flow__swarm_init({ topology: "mesh" })
+mcp__claude - flow__swarm_init({ topology: 'mesh' });
 
 // Create worktrees for each agent
-const agents = ["coder", "tester", "reviewer"];
+const agents = ['coder', 'tester', 'reviewer'];
 agents.forEach(agent => {
-  Bash(`./create-agent-worktree.sh ${agent} feature-001 master`)
-})
+  Bash(`./create-agent-worktree.sh ${agent} feature-001 master`);
+});
 
 // Spawn agents with worktree isolation
-Task("Coder agent: Work in .worktrees/coder-feature-001")
-Task("Tester agent: Work in .worktrees/tester-feature-001")
-Task("Reviewer agent: Work in .worktrees/reviewer-feature-001")
+Task('Coder agent: Work in .worktrees/coder-feature-001');
+Task('Tester agent: Work in .worktrees/tester-feature-001');
+Task('Reviewer agent: Work in .worktrees/reviewer-feature-001');
 
 // Merge results
-Bash("./merge-agent-work.sh coder-feature-001")
-Bash("./cleanup-all-merged.sh false")
+Bash('./merge-agent-work.sh coder-feature-001');
+Bash('./cleanup-all-merged.sh false');
 ```
 
 ## Performance
 
 Git worktrees are efficient:
+
 - Shared `.git` repository (no duplication of history)
 - Fast worktree creation (~1-2 seconds)
 - Minimal disk overhead (working tree only)
@@ -387,6 +412,7 @@ Git worktrees are efficient:
 ## Support
 
 For issues or questions:
+
 - Check the [architectural specification](../docs/architecture/git-worktree-integration.md)
 - Review the [error handling section](#error-handling)
 - Run `worktree-status.sh` for diagnostics

@@ -16,8 +16,8 @@ export default function DashboardPage({ params }) {
   const { workspaceSlug } = params;
 
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className='p-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Row 1 */}
         <QuickActionsWidget workspaceSlug={workspaceSlug} />
         <ThreadsWidget workspaceSlug={workspaceSlug} />
@@ -35,6 +35,7 @@ export default function DashboardPage({ params }) {
 ## Widget Props
 
 ### QuickActionsWidget
+
 - `workspaceSlug` (required): string
 - `canCreateWorkflow?`: boolean (default: true)
 - `onSearchClick?`: () => void
@@ -43,18 +44,22 @@ export default function DashboardPage({ params }) {
 - `onInviteMemberClick?`: () => void
 
 ### ThreadsWidget
+
 - `workspaceSlug` (required): string
 - `limit?`: number (default: 5)
 
 ### ChannelsWidget
+
 - `workspaceSlug` (required): string
 - `limit?`: number (default: 6)
 
 ### StatusWidget
+
 - `workspaceSlug` (required): string
 - `onSetCustomStatus?`: () => void
 
 ### WorkspaceSwitcherWidget
+
 - `currentWorkspaceSlug` (required): string
 
 ## API Endpoints Needed
@@ -73,6 +78,7 @@ GET  /api/workspaces
 ## Customization Examples
 
 ### Custom Search Handler
+
 ```tsx
 <QuickActionsWidget
   workspaceSlug={workspaceSlug}
@@ -84,11 +90,13 @@ GET  /api/workspaces
 ```
 
 ### Limit Thread Count
+
 ```tsx
 <ThreadsWidget workspaceSlug={workspaceSlug} limit={3} />
 ```
 
 ### Custom Status Dialog
+
 ```tsx
 <StatusWidget
   workspaceSlug={workspaceSlug}
@@ -117,6 +125,7 @@ packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/dashboard/compo
 ## Features Included
 
 All widgets include:
+
 - Loading skeletons
 - Error handling
 - Empty states

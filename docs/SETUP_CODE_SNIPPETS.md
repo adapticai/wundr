@@ -1,7 +1,7 @@
 # Setup System Code Snippets & References
 
-**Purpose**: Provide specific code locations and implementation details
-**Format**: File paths with code sections and integration points
+**Purpose**: Provide specific code locations and implementation details **Format**: File paths with
+code sections and integration points
 
 ---
 
@@ -12,6 +12,7 @@
 **File**: `/Users/iroselli/wundr/src/cli/commands/claude-setup.ts`
 
 **Key Function** (lines 16-91):
+
 ```typescript
 export function createClaudeSetupCommand(): Command {
   const command = new Command('claude-setup');
@@ -32,6 +33,7 @@ export function createClaudeSetupCommand(): Command {
 ```
 
 **Setup Flow** (lines 29-62):
+
 ```typescript
 // Step 1: Claude Flow setup
 if (!options.skipFlow) {
@@ -61,6 +63,7 @@ await validateSetup(spinner, repoPath);
 ```
 
 **Template Setup** (lines 186-204):
+
 ```typescript
 async function setupProjectTemplate(
   spinner: ora.Ora,
@@ -70,10 +73,10 @@ async function setupProjectTemplate(
   spinner.text = `Applying ${templateName} template...`;
 
   const templates: Record<string, () => void> = {
-    'typescript': () => setupTypeScriptTemplate(repoPath),
-    'react': () => setupReactTemplate(repoPath),
-    'nodejs': () => setupNodeTemplate(repoPath),
-    'monorepo': () => setupMonorepoTemplate(repoPath)
+    typescript: () => setupTypeScriptTemplate(repoPath),
+    react: () => setupReactTemplate(repoPath),
+    nodejs: () => setupNodeTemplate(repoPath),
+    monorepo: () => setupMonorepoTemplate(repoPath),
   };
 
   const setupFunction = templates[templateName];
@@ -90,6 +93,7 @@ async function setupProjectTemplate(
 **Template Implementations** (lines 206-301):
 
 TypeScript (lines 206-236):
+
 ```typescript
 function setupTypeScriptTemplate(repoPath: string): void {
   const tsconfigPath = join(repoPath, 'tsconfig.json');
@@ -105,10 +109,10 @@ function setupTypeScriptTemplate(repoPath: string): void {
         forceConsistentCasingInFileNames: true,
         declaration: true,
         outDir: 'dist',
-        rootDir: 'src'
+        rootDir: 'src',
       },
       include: ['src/**/*'],
-      exclude: ['node_modules', 'dist']
+      exclude: ['node_modules', 'dist'],
     };
     writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2));
   }
@@ -122,6 +126,7 @@ function setupTypeScriptTemplate(repoPath: string): void {
 ```
 
 React (lines 238-256):
+
 ```typescript
 function setupReactTemplate(repoPath: string): void {
   const srcPath = join(repoPath, 'src');
@@ -142,6 +147,7 @@ function setupReactTemplate(repoPath: string): void {
 ```
 
 Monorepo (lines 273-301):
+
 ```typescript
 function setupMonorepoTemplate(repoPath: string): void {
   const packagesPath = join(repoPath, 'packages');
@@ -162,8 +168,8 @@ function setupMonorepoTemplate(repoPath: string): void {
       private: true,
       workspaces: ['packages/*', 'apps/*'],
       devDependencies: {
-        'turbo': '^2.0.0'
-      }
+        turbo: '^2.0.0',
+      },
     };
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
@@ -171,12 +177,9 @@ function setupMonorepoTemplate(repoPath: string): void {
 ```
 
 **MCP Tools Setup** (lines 129-169):
+
 ```typescript
-async function setupMCPTools(
-  spinner: ora.Ora,
-  repoPath: string,
-  global: boolean
-): Promise<void> {
+async function setupMCPTools(spinner: ora.Ora, repoPath: string, global: boolean): Promise<void> {
   spinner.text = 'Setting up MCP Tools...';
 
   const mcpToolsPath = join(repoPath, 'mcp-tools');
@@ -202,29 +205,23 @@ echo "Customize this script with your specific MCP tools"
       description: 'MCP Tools for Claude Code integration',
       private: true,
       scripts: {
-        install: './install.sh'
-      }
+        install: './install.sh',
+      },
     };
 
-    writeFileSync(
-      join(mcpToolsPath, 'package.json'),
-      JSON.stringify(mcpPackageJson, null, 2)
-    );
+    writeFileSync(join(mcpToolsPath, 'package.json'), JSON.stringify(mcpPackageJson, null, 2));
   }
 }
 ```
 
 **CLAUDE.md Generation** (lines 171-184):
+
 ```typescript
-async function generateClaudeConfig(
-  spinner: ora.Ora,
-  repoPath: string
-): Promise<void> {
+async function generateClaudeConfig(spinner: ora.Ora, repoPath: string): Promise<void> {
   spinner.text = 'Generating CLAUDE.md configuration...';
 
-  const { ClaudeConfigGenerator } = await import(
-    '../../claude-generator/claude-config-generator.js'
-  );
+  const { ClaudeConfigGenerator } =
+    await import('../../claude-generator/claude-config-generator.js');
   const generator = new ClaudeConfigGenerator(repoPath);
 
   const claudeContent = await generator.generateClaudeMarkdown();
@@ -243,6 +240,7 @@ async function generateClaudeConfig(
 **File**: `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/claude-setup.ts`
 
 **Class Structure** (lines 12-93):
+
 ```typescript
 export class ClaudeSetupCommands {
   constructor(private program: Command) {
@@ -314,6 +312,7 @@ export class ClaudeSetupCommands {
 ```
 
 **Agent Configuration** (lines 208-242):
+
 ```typescript
 private async configureAgents(options: any): Promise<void> {
   const spinner = ora();
@@ -353,6 +352,7 @@ private async configureAgents(options: any): Promise<void> {
 ```
 
 **Agent Profiles** (lines 639-664):
+
 ```typescript
 private getProfileAgents(profile: string): string[] {
   const profileAgents: Record<string, string[]> = {
@@ -383,6 +383,7 @@ private getProfileAgents(profile: string): string[] {
 ```
 
 **Hardware Optimization Setup** (lines 297-426):
+
 ```typescript
 private async setupOptimizations(options: any): Promise<void> {
   const spinner = ora();
@@ -490,6 +491,7 @@ private async setupOptimizations(options: any): Promise<void> {
 **File**: `/Users/iroselli/wundr/src/claude-generator/claude-config-generator.ts`
 
 **Main Class** (lines 16-29):
+
 ```typescript
 export class ClaudeConfigGenerator {
   private rootPath: string;
@@ -509,6 +511,7 @@ export class ClaudeConfigGenerator {
 ```
 
 **Generate Config** (lines 34-65):
+
 ```typescript
 async generateConfig(): Promise<ClaudeConfig> {
   // Analyze project
@@ -545,6 +548,7 @@ async generateConfig(): Promise<ClaudeConfig> {
 ```
 
 **Generate Markdown** (lines 70-89):
+
 ```typescript
 async generateClaudeMarkdown(): Promise<string> {
   const config = await this.generateConfig();
@@ -569,6 +573,7 @@ async generateClaudeMarkdown(): Promise<string> {
 ```
 
 **Agent Configuration** (lines 138-208):
+
 ```typescript
 private configureAgents(projectType: string, structure: any): AgentConfiguration {
   const baseAgents = ['coder', 'reviewer', 'tester', 'planner', 'researcher'];
@@ -644,6 +649,7 @@ private configureAgents(projectType: string, structure: any): AgentConfiguration
 ```
 
 **MCP Tool Configuration** (lines 210-285):
+
 ```typescript
 private configureMCPTools(projectType: string, structure: any): MCPToolConfig {
   const commonTools = [
@@ -730,6 +736,7 @@ private configureMCPTools(projectType: string, structure: any): MCPToolConfig {
 **File**: `/Users/iroselli/wundr/src/claude-generator/template-engine.ts`
 
 **Main Generation** (lines 7-25):
+
 ```typescript
 generateClaudeConfig(context: TemplateContext): string {
   const sections = [
@@ -753,6 +760,7 @@ generateClaudeConfig(context: TemplateContext): string {
 ```
 
 **Agent Configuration Section** (example):
+
 ```typescript
 private generateAgentConfiguration(context: TemplateContext): string {
   const { agents } = context;
@@ -788,6 +796,7 @@ ${projectAgents.map(agent => `- ${agent}`).join('\n')}
 **File**: `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/templates/template-manager.ts`
 
 **Copy Templates** (lines 58-80):
+
 ```typescript
 async copyTemplates(options: TemplateOptions): Promise<void> {
   const spinner = ora('Copying and customizing templates').start();
@@ -819,10 +828,9 @@ async copyTemplates(options: TemplateOptions): Promise<void> {
 **File**: `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/templates/project-templates.ts`
 
 **Create Project Templates** (lines 21-57):
+
 ```typescript
-export async function createProjectTemplates(
-  options: ProjectTemplateOptions
-): Promise<void> {
+export async function createProjectTemplates(options: ProjectTemplateOptions): Promise<void> {
   const templateManager = new TemplateManager();
 
   console.log(chalk.blue(`\n🏗️  Setting up templates for ${options.projectType} project`));
@@ -853,7 +861,6 @@ export async function createProjectTemplates(
 
     console.log(chalk.green('✅ Project templates created successfully!'));
     printNextSteps(options);
-
   } catch (error) {
     console.error(chalk.red('❌ Failed to create project templates:'), error);
     throw error;
@@ -862,6 +869,7 @@ export async function createProjectTemplates(
 ```
 
 **Get Configs for Project Type** (lines 90-100):
+
 ```typescript
 function getConfigsForProjectType(projectType: string, options: ProjectTemplateOptions): string[] {
   const configs = ['prettier'];
@@ -886,13 +894,13 @@ function getConfigsForProjectType(projectType: string, options: ProjectTemplateO
 
 ### Files That Need Integration:
 
-| Source File | Target Location | Integration Type | Priority |
-|------------|-----------------|-----------------|----------|
-| `/src/cli/commands/claude-setup.ts` | `/packages/@wundr/cli/src/commands/claude-setup.ts` | Consolidation | High |
-| `/src/claude-generator/*` | `setupProjectTemplate()` | Method call | High |
-| `/packages/@wundr/computer-setup/src/templates/*` | `setupProjectTemplate()` | Method call | High |
-| `/.claude/agents/templates/*` | `setupAgentTemplates()` | File copy | High |
-| `/setup/install.sh` | TypeScript implementation | Migration | Medium |
+| Source File                                       | Target Location                                     | Integration Type | Priority |
+| ------------------------------------------------- | --------------------------------------------------- | ---------------- | -------- |
+| `/src/cli/commands/claude-setup.ts`               | `/packages/@wundr/cli/src/commands/claude-setup.ts` | Consolidation    | High     |
+| `/src/claude-generator/*`                         | `setupProjectTemplate()`                            | Method call      | High     |
+| `/packages/@wundr/computer-setup/src/templates/*` | `setupProjectTemplate()`                            | Method call      | High     |
+| `/.claude/agents/templates/*`                     | `setupAgentTemplates()`                             | File copy        | High     |
+| `/setup/install.sh`                               | TypeScript implementation                           | Migration        | Medium   |
 
 ---
 
@@ -903,6 +911,7 @@ function getConfigsForProjectType(projectType: string, options: ProjectTemplateO
 **File**: `/Users/iroselli/wundr/src/claude-generator/types.ts` (143 lines)
 
 Key types:
+
 - `ProjectMetadata` - Project information
 - `ProjectStructure` - Detected project structure
 - `ProjectType` - Project type enum
@@ -991,19 +1000,23 @@ wundr claude-setup extension
 ## References & Links
 
 ### Key Files:
+
 1. `/Users/iroselli/wundr/src/cli/commands/claude-setup.ts` - Primary implementation
-2. `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/claude-setup.ts` - Alternative implementation
+2. `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/claude-setup.ts` - Alternative
+   implementation
 3. `/Users/iroselli/wundr/src/claude-generator/claude-config-generator.ts` - Generator
 4. `/Users/iroselli/wundr/src/claude-generator/template-engine.ts` - Template engine
 
 ### Documentation:
-- CLAUDE.md template: `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
+
+- CLAUDE.md template:
+  `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
 - Agent templates: `/.claude/agents/templates/` (9 markdown files)
 
 ### Test Files:
+
 - `/Users/iroselli/wundr/src/tests/claude-generator.test.ts`
 
 ---
 
-**Last Updated**: 2025-11-21
-**Status**: Reference Complete
+**Last Updated**: 2025-11-21 **Status**: Reference Complete

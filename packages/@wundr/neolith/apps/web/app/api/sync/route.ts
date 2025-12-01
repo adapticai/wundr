@@ -22,7 +22,11 @@ import {
   NOTIFICATION_ERROR_CODES,
 } from '@/lib/validations/notification';
 
-import type { SyncRequestInput, SyncEntity, SyncResponse } from '@/lib/validations/notification';
+import type {
+  SyncRequestInput,
+  SyncEntity,
+  SyncResponse,
+} from '@/lib/validations/notification';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -57,7 +61,12 @@ function parseSyncToken(token: string): Date | null {
 /**
  * Default entities to sync
  */
-const DEFAULT_ENTITIES: SyncEntity[] = ['messages', 'channels', 'users', 'notifications'];
+const DEFAULT_ENTITIES: SyncEntity[] = [
+  'messages',
+  'channels',
+  'users',
+  'notifications',
+];
 
 /**
  * GET /api/sync
@@ -94,8 +103,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -151,9 +163,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -204,8 +216,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -215,8 +230,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createNotificationErrorResponse('Invalid JSON body', NOTIFICATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createNotificationErrorResponse(
+          'Invalid JSON body',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -227,9 +245,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -243,9 +261,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : null;
 
     // Build base where clause for date filtering
-    const dateFilter = lastSyncAt
-      ? { updatedAt: { gt: lastSyncAt } }
-      : {};
+    const dateFilter = lastSyncAt ? { updatedAt: { gt: lastSyncAt } } : {};
 
     // Sync timestamp
     const syncedAt = new Date();
@@ -293,17 +309,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           // Separate created vs updated based on lastSyncAt
           const created = lastSyncAt
-            ? messages.filter((m) => m.createdAt > lastSyncAt)
+            ? messages.filter(m => m.createdAt > lastSyncAt)
             : messages;
           const updated = lastSyncAt
-            ? messages.filter((m) => m.createdAt <= lastSyncAt)
+            ? messages.filter(m => m.createdAt <= lastSyncAt)
             : [];
 
           changes.push({
             entity: 'messages',
             created,
             updated,
-            deleted: deletedMessages.map((m) => m.id),
+            deleted: deletedMessages.map(m => m.id),
           });
           break;
         }
@@ -323,10 +339,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           const created = lastSyncAt
-            ? channels.filter((c) => c.createdAt > lastSyncAt)
+            ? channels.filter(c => c.createdAt > lastSyncAt)
             : channels;
           const updated = lastSyncAt
-            ? channels.filter((c) => c.createdAt <= lastSyncAt)
+            ? channels.filter(c => c.createdAt <= lastSyncAt)
             : [];
 
           changes.push({
@@ -383,10 +399,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           const created = lastSyncAt
-            ? notifications.filter((n) => n.createdAt > lastSyncAt)
+            ? notifications.filter(n => n.createdAt > lastSyncAt)
             : notifications;
           const updated = lastSyncAt
-            ? notifications.filter((n) => n.createdAt <= lastSyncAt)
+            ? notifications.filter(n => n.createdAt <= lastSyncAt)
             : [];
 
           changes.push({
@@ -409,10 +425,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           const created = lastSyncAt
-            ? workspaces.filter((w) => w.createdAt > lastSyncAt)
+            ? workspaces.filter(w => w.createdAt > lastSyncAt)
             : workspaces;
           const updated = lastSyncAt
-            ? workspaces.filter((w) => w.createdAt <= lastSyncAt)
+            ? workspaces.filter(w => w.createdAt <= lastSyncAt)
             : [];
 
           changes.push({
@@ -428,7 +444,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check if there's more data to sync
     const hasMore = changes.some(
-      (c) => c.created.length >= limit || c.updated.length >= limit,
+      c => c.created.length >= limit || c.updated.length >= limit
     );
 
     // Generate new sync token
@@ -473,9 +489,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

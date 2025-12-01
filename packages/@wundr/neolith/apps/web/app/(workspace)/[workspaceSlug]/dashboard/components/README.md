@@ -14,14 +14,23 @@ import { QuickActionsWidget } from './components';
 <QuickActionsWidget
   workspaceSlug={workspaceSlug}
   canCreateWorkflow={hasWorkflowPermission}
-  onSearchClick={() => {/* custom search handler */}}
-  onComposeClick={() => {/* custom compose handler */}}
-  onCreateChannelClick={() => {/* custom channel creation */}}
-  onInviteMemberClick={() => {/* custom invite handler */}}
-/>
+  onSearchClick={() => {
+    /* custom search handler */
+  }}
+  onComposeClick={() => {
+    /* custom compose handler */
+  }}
+  onCreateChannelClick={() => {
+    /* custom channel creation */
+  }}
+  onInviteMemberClick={() => {
+    /* custom invite handler */
+  }}
+/>;
 ```
 
 **Features:**
+
 - New Message (opens compose)
 - Create Channel (opens modal/navigates)
 - Invite Member (opens invite modal)
@@ -40,10 +49,11 @@ import { ThreadsWidget } from './components';
 <ThreadsWidget
   workspaceSlug={workspaceSlug}
   limit={5} // optional, defaults to 5
-/>
+/>;
 ```
 
 **Features:**
+
 - Header with unread count badge
 - List of 3-5 recent threads
 - Each item shows: channel/DM name, preview, time
@@ -62,10 +72,11 @@ import { ChannelsWidget } from './components';
 <ChannelsWidget
   workspaceSlug={workspaceSlug}
   limit={6} // optional, defaults to 6
-/>
+/>;
 ```
 
 **Features:**
+
 - Grid of channel pills
 - Unread indicator dots
 - Star icon for starred channels
@@ -83,11 +94,14 @@ import { StatusWidget } from './components';
 
 <StatusWidget
   workspaceSlug={workspaceSlug}
-  onSetCustomStatus={() => {/* open custom status dialog */}}
-/>
+  onSetCustomStatus={() => {
+    /* open custom status dialog */
+  }}
+/>;
 ```
 
 **Features:**
+
 - Current status display (emoji + message)
 - Expiration time if set
 - Quick status presets:
@@ -109,12 +123,11 @@ Quick switcher for users with multiple workspaces.
 ```tsx
 import { WorkspaceSwitcherWidget } from './components';
 
-<WorkspaceSwitcherWidget
-  currentWorkspaceSlug={workspaceSlug}
-/>
+<WorkspaceSwitcherWidget currentWorkspaceSlug={workspaceSlug} />;
 ```
 
 **Features:**
+
 - Shows all workspaces user belongs to
 - Current workspace highlighted
 - Unread count badges
@@ -138,12 +151,9 @@ import {
 
 export function DashboardWidgets({ workspaceSlug, canCreateWorkflow }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
       {/* Row 1 */}
-      <QuickActionsWidget
-        workspaceSlug={workspaceSlug}
-        canCreateWorkflow={canCreateWorkflow}
-      />
+      <QuickActionsWidget workspaceSlug={workspaceSlug} canCreateWorkflow={canCreateWorkflow} />
       <ThreadsWidget workspaceSlug={workspaceSlug} />
       <ChannelsWidget workspaceSlug={workspaceSlug} />
 
@@ -160,14 +170,17 @@ export function DashboardWidgets({ workspaceSlug, canCreateWorkflow }) {
 The widgets expect the following API endpoints to exist:
 
 ### ThreadsWidget
+
 - `GET /api/workspaces/[workspaceSlug]/threads?limit=5`
   - Response: `{ threads: Thread[], unreadCount: number }`
 
 ### ChannelsWidget
+
 - `GET /api/workspaces/[workspaceSlug]/channels?starred=true&limit=6`
   - Response: `{ channels: Channel[] }`
 
 ### StatusWidget
+
 - `GET /api/workspaces/[workspaceSlug]/status`
   - Response: `{ status: { emoji, message, expiresAt? } }`
 - `PUT /api/workspaces/[workspaceSlug]/status`
@@ -175,12 +188,14 @@ The widgets expect the following API endpoints to exist:
 - `DELETE /api/workspaces/[workspaceSlug]/status`
 
 ### WorkspaceSwitcherWidget
+
 - `GET /api/workspaces`
   - Response: `{ workspaces: Workspace[] }`
 
 ## Common Features
 
 All widgets include:
+
 - **Loading states**: Skeleton loaders while fetching data
 - **Error handling**: Error messages with retry capability
 - **Empty states**: Helpful messages when no data
@@ -190,4 +205,5 @@ All widgets include:
 
 ## Styling
 
-Widgets use shadcn/ui components and Tailwind CSS classes for consistent styling across the application. They automatically adapt to light/dark mode.
+Widgets use shadcn/ui components and Tailwind CSS classes for consistent styling across the
+application. They automatically adapt to light/dark mode.

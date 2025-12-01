@@ -34,7 +34,10 @@ export default function NewOrchestratorPage() {
 
   // Set page header
   useEffect(() => {
-    setPageHeader('Create New Orchestrator', 'Define an AI-powered orchestrator through conversation');
+    setPageHeader(
+      'Create New Orchestrator',
+      'Define an AI-powered orchestrator through conversation'
+    );
   }, [setPageHeader]);
 
   // Handle spec generation from conversation
@@ -97,13 +100,16 @@ export default function NewOrchestratorPage() {
         };
 
         // Create the orchestrator via API
-        const response = await fetch(`/api/workspaces/${workspaceSlug}/orchestrators`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(input),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/orchestrators`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(input),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -115,30 +121,31 @@ export default function NewOrchestratorPage() {
         // Navigate to the new orchestrator's page
         router.push(`/${workspaceSlug}/orchestrators/${result.data.id}`);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to create orchestrator';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to create orchestrator';
         setError(errorMessage);
         console.error('Failed to create orchestrator:', err);
         setIsCreating(false);
       }
     },
-    [workspaceSlug, router],
+    [workspaceSlug, router]
   );
 
   return (
-    <div className="mx-auto h-full max-w-5xl">
+    <div className='mx-auto h-full max-w-5xl'>
       {/* Header with Back Button */}
-      <div className="mb-6 flex items-center gap-4">
+      <div className='mb-6 flex items-center gap-4'>
         <Button
-          variant="ghost"
-          size="icon"
+          variant='ghost'
+          size='icon'
           onClick={handleCancel}
           disabled={isCreating}
-          aria-label="Back to orchestrators list"
+          aria-label='Back to orchestrators list'
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className='h-5 w-5' />
         </Button>
         <div>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             {viewMode === 'conversation'
               ? 'Chat with AI to define your orchestrator'
               : 'Review and finalize your orchestrator configuration'}
@@ -148,16 +155,16 @@ export default function NewOrchestratorPage() {
 
       {/* Error Display */}
       {error && (
-        <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-          <p className="text-sm font-medium text-destructive">{error}</p>
+        <div className='mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4'>
+          <p className='text-sm font-medium text-destructive'>{error}</p>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="rounded-lg border bg-card shadow-sm">
+      <div className='rounded-lg border bg-card shadow-sm'>
         {viewMode === 'conversation' && (
           <ConversationalCreator
-            entityType="orchestrator"
+            entityType='orchestrator'
             workspaceId={workspaceSlug}
             onSpecGenerated={handleSpecGenerated}
             onCancel={handleCancel}
@@ -168,7 +175,7 @@ export default function NewOrchestratorPage() {
 
         {viewMode === 'review' && spec && (
           <SpecReviewForm
-            entityType="orchestrator"
+            entityType='orchestrator'
             spec={spec}
             onConfirm={handleCreateOrchestrator}
             onBackToChat={handleBackToConversation}
@@ -180,10 +187,10 @@ export default function NewOrchestratorPage() {
 
       {/* Loading Overlay */}
       {isCreating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="flex items-center gap-3 rounded-lg bg-card p-6 shadow-lg">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <p className="text-sm font-medium">Creating orchestrator...</p>
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+          <div className='flex items-center gap-3 rounded-lg bg-card p-6 shadow-lg'>
+            <Loader2 className='h-5 w-5 animate-spin text-primary' />
+            <p className='text-sm font-medium'>Creating orchestrator...</p>
           </div>
         </div>
       )}
@@ -195,7 +202,10 @@ export default function NewOrchestratorPage() {
 
 function extractDiscipline(spec: EntitySpec): string {
   // Try to extract from properties or role
-  if (spec.properties?.discipline && typeof spec.properties.discipline === 'string') {
+  if (
+    spec.properties?.discipline &&
+    typeof spec.properties.discipline === 'string'
+  ) {
     return spec.properties.discipline;
   }
 
@@ -227,7 +237,9 @@ function extractValues(spec: EntitySpec): string[] {
   if (
     spec.properties?.values &&
     Array.isArray(spec.properties.values) &&
-    spec.properties.values.every((item): item is string => typeof item === 'string')
+    spec.properties.values.every(
+      (item): item is string => typeof item === 'string'
+    )
   ) {
     return spec.properties.values;
   }
@@ -238,7 +250,9 @@ function extractTraits(spec: EntitySpec): string[] {
   if (
     spec.properties?.traits &&
     Array.isArray(spec.properties.traits) &&
-    spec.properties.traits.every((item): item is string => typeof item === 'string')
+    spec.properties.traits.every(
+      (item): item is string => typeof item === 'string'
+    )
   ) {
     return spec.properties.traits;
   }
@@ -275,7 +289,10 @@ function extractTraits(spec: EntitySpec): string[] {
 }
 
 function extractCommunicationStyle(spec: EntitySpec): string {
-  if (spec.properties?.communicationStyle && typeof spec.properties.communicationStyle === 'string') {
+  if (
+    spec.properties?.communicationStyle &&
+    typeof spec.properties.communicationStyle === 'string'
+  ) {
     return spec.properties.communicationStyle;
   }
 
@@ -294,7 +311,10 @@ function extractCommunicationStyle(spec: EntitySpec): string {
 }
 
 function extractDecisionMakingStyle(spec: EntitySpec): string {
-  if (spec.properties?.decisionMakingStyle && typeof spec.properties.decisionMakingStyle === 'string') {
+  if (
+    spec.properties?.decisionMakingStyle &&
+    typeof spec.properties.decisionMakingStyle === 'string'
+  ) {
     return spec.properties.decisionMakingStyle;
   }
 
@@ -313,7 +333,9 @@ function extractExpertise(spec: EntitySpec): string[] {
   if (
     spec.properties?.expertise &&
     Array.isArray(spec.properties.expertise) &&
-    spec.properties.expertise.every((item): item is string => typeof item === 'string')
+    spec.properties.expertise.every(
+      (item): item is string => typeof item === 'string'
+    )
   ) {
     return spec.properties.expertise;
   }
@@ -355,7 +377,9 @@ function extractCapabilities(spec: EntitySpec): string[] {
   if (
     spec.properties?.capabilities &&
     Array.isArray(spec.properties.capabilities) &&
-    spec.properties.capabilities.every((item): item is string => typeof item === 'string')
+    spec.properties.capabilities.every(
+      (item): item is string => typeof item === 'string'
+    )
   ) {
     return spec.properties.capabilities;
   }

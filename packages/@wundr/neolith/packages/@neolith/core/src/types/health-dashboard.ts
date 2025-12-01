@@ -106,18 +106,18 @@ export interface MetricsChartData {
  * Alert types for health monitoring
  */
 export type HealthAlertType =
-  | 'budget_exhaustion'    // Token budget near or at limit
-  | 'high_error_rate'      // Error rate exceeds threshold
-  | 'session_failure'      // Session creation or management failure
-  | 'latency_spike'        // Response time significantly increased
-  | 'node_unhealthy';      // Orchestrator node is unhealthy
+  | 'budget_exhaustion' // Token budget near or at limit
+  | 'high_error_rate' // Error rate exceeds threshold
+  | 'session_failure' // Session creation or management failure
+  | 'latency_spike' // Response time significantly increased
+  | 'node_unhealthy'; // Orchestrator node is unhealthy
 
 /**
  * Alert severity levels
  */
 export type AlertSeverity =
-  | 'info'      // Informational, no action required
-  | 'warning'   // Warning, may require attention
+  | 'info' // Informational, no action required
+  | 'warning' // Warning, may require attention
   | 'critical'; // Critical, immediate action required
 
 /**
@@ -191,12 +191,7 @@ export interface HealthCheckResult {
 /**
  * Metrics aggregation period
  */
-export type MetricsPeriod =
-  | 'minute'
-  | 'hour'
-  | 'day'
-  | 'week'
-  | 'month';
+export type MetricsPeriod = 'minute' | 'hour' | 'day' | 'week' | 'month';
 
 /**
  * Metrics query filter

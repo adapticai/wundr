@@ -55,9 +55,7 @@ export {
 } from './config';
 
 // Factory functions
-export type {
-  CreateLLMClientConfig,
-} from './factory';
+export type { CreateLLMClientConfig } from './factory';
 
 export {
   createLLMClient,

@@ -1,12 +1,18 @@
 # ADR-003: Plugin-Based Architecture Design
 
 ## Status
+
 Accepted
 
 ## Context
-The unified Wundr platform needs to support extensibility for both code analysis and environment setup functionality. Users should be able to create custom analysis rules, add new setup tools, and integrate with third-party services. A plugin architecture will enable this extensibility while maintaining system stability and security.
+
+The unified Wundr platform needs to support extensibility for both code analysis and environment
+setup functionality. Users should be able to create custom analysis rules, add new setup tools, and
+integrate with third-party services. A plugin architecture will enable this extensibility while
+maintaining system stability and security.
 
 ## Decision Drivers
+
 - **Extensibility**: Support for custom analysis algorithms and setup procedures
 - **Security**: Isolated execution environment for third-party code
 - **Performance**: Minimal impact on core system performance
@@ -17,18 +23,21 @@ The unified Wundr platform needs to support extensibility for both code analysis
 ## Considered Options
 
 ### Plugin Architecture Patterns
+
 1. **Event-Driven Plugin System** (Selected)
 2. Dependency Injection Container
 3. Microservice-based Plugins
 4. WebAssembly (WASM) Plugins
 
 ### Plugin Runtime Environment
+
 1. **Node.js Worker Threads** (Selected)
 2. Docker Containers
 3. V8 Isolates
 4. Child Processes
 
 ### Plugin Discovery Mechanism
+
 1. **NPM Package Registry** (Selected)
 2. Custom Plugin Registry
 3. Git-based Plugins
@@ -41,18 +50,21 @@ The unified Wundr platform needs to support extensibility for both code analysis
 The platform will implement an event-driven plugin architecture with the following components:
 
 #### 1. Plugin Manager
+
 - **Discovery**: Automatic plugin discovery from npm packages with `@wundr/plugin-` prefix
 - **Loading**: Dynamic plugin loading with version management
 - **Lifecycle**: Plugin initialization, activation, deactivation, and cleanup
 - **Security**: Sandboxed execution environment with limited system access
 
 #### 2. Event System
+
 - **Core Events**: System-defined events for analysis, setup, and lifecycle
 - **Custom Events**: Plugin-defined events for inter-plugin communication
 - **Event Bus**: Central message routing with type safety
 - **Priority System**: Event handler execution order control
 
 #### 3. Plugin Runtime
+
 - **Isolation**: Worker thread-based execution for CPU-intensive operations
 - **Resource Limits**: Memory and CPU usage constraints
 - **Communication**: Message passing between main thread and plugin workers
@@ -61,13 +73,14 @@ The platform will implement an event-driven plugin architecture with the followi
 ### Plugin Types
 
 #### Analysis Plugins
+
 ```typescript
 interface AnalysisPlugin {
   name: string;
   version: string;
   type: 'analysis';
   supportedLanguages: string[];
-  
+
   analyze(context: AnalysisContext): Promise<AnalysisResult>;
   configure?(config: PluginConfiguration): void;
   initialize?(runtime: PluginRuntime): Promise<void>;
@@ -76,13 +89,14 @@ interface AnalysisPlugin {
 ```
 
 #### Setup Plugins
+
 ```typescript
 interface SetupPlugin {
   name: string;
   version: string;
   type: 'setup';
   supportedPlatforms: Platform[];
-  
+
   execute(context: SetupContext): Promise<SetupResult>;
   validate?(context: SetupContext): Promise<ValidationResult>;
   rollback?(context: SetupContext): Promise<void>;
@@ -90,13 +104,14 @@ interface SetupPlugin {
 ```
 
 #### Integration Plugins
+
 ```typescript
 interface IntegrationPlugin {
   name: string;
   version: string;
   type: 'integration';
   service: string;
-  
+
   connect(credentials: ServiceCredentials): Promise<void>;
   sync(data: IntegrationData): Promise<void>;
   webhook?(event: WebhookEvent): Promise<void>;
@@ -106,18 +121,20 @@ interface IntegrationPlugin {
 ### Event System Design
 
 #### Core Events
+
 ```typescript
 // Analysis events
-'analysis:started' | 'analysis:file:processed' | 'analysis:completed' | 'analysis:failed'
+'analysis:started' | 'analysis:file:processed' | 'analysis:completed' | 'analysis:failed';
 
-// Setup events  
-'setup:started' | 'setup:step:completed' | 'setup:completed' | 'setup:failed'
+// Setup events
+'setup:started' | 'setup:step:completed' | 'setup:completed' | 'setup:failed';
 
 // System events
-'plugin:loaded' | 'plugin:error' | 'config:changed' | 'system:shutdown'
+'plugin:loaded' | 'plugin:error' | 'config:changed' | 'system:shutdown';
 ```
 
 #### Event Handler Registration
+
 ```typescript
 class PluginManager {
   registerHandler(event: string, handler: EventHandler, priority: number = 0): void;
@@ -131,6 +148,7 @@ class PluginManager {
 ## Implementation Details
 
 ### Plugin Package Structure
+
 ```
 @wundr/plugin-eslint/
 ├── package.json          # Plugin metadata
@@ -144,6 +162,7 @@ class PluginManager {
 ```
 
 ### Plugin Configuration Schema
+
 ```json
 {
   "name": "@wundr/plugin-eslint",
@@ -171,6 +190,7 @@ class PluginManager {
 ### Security Model
 
 #### Sandboxing
+
 - **Worker Threads**: Plugins run in isolated worker threads
 - **Resource Limits**: CPU, memory, and execution time constraints
 - **Filesystem Access**: Limited to specified directories
@@ -178,20 +198,22 @@ class PluginManager {
 - **Process Isolation**: No access to main process or other plugins
 
 #### Permission System
+
 ```typescript
 enum PluginPermission {
   FILESYSTEM_READ = 'filesystem:read',
-  FILESYSTEM_WRITE = 'filesystem:write', 
+  FILESYSTEM_WRITE = 'filesystem:write',
   NETWORK_HTTP = 'network:http',
   NETWORK_HTTPS = 'network:https',
   SYSTEM_EXEC = 'system:exec',
-  SYSTEM_ENV = 'system:env'
+  SYSTEM_ENV = 'system:env',
 }
 ```
 
 ### Plugin Lifecycle
 
 #### Loading Sequence
+
 1. **Discovery**: Scan for plugins in node_modules and configured directories
 2. **Validation**: Verify plugin structure and metadata
 3. **Security Check**: Validate permissions and resource requirements
@@ -200,12 +222,13 @@ enum PluginPermission {
 6. **Registration**: Register event handlers and expose APIs
 
 #### Runtime Management
+
 ```typescript
 class PluginRuntime {
   async loadPlugin(pluginPath: string): Promise<LoadedPlugin>;
   async unloadPlugin(pluginId: string): Promise<void>;
   async reloadPlugin(pluginId: string): Promise<void>;
-  
+
   getPluginStatus(pluginId: string): PluginStatus;
   getPluginMetrics(pluginId: string): PluginMetrics;
   setPluginConfiguration(pluginId: string, config: any): Promise<void>;
@@ -215,11 +238,12 @@ class PluginRuntime {
 ## Plugin Development Kit (PDK)
 
 ### Development Tools
+
 ```typescript
 // @wundr/plugin-sdk package
 export class PluginBase {
   constructor(public context: PluginContext) {}
-  
+
   protected log(level: LogLevel, message: string): void;
   protected emitEvent(event: string, data: any): Promise<void>;
   protected getConfiguration<T>(): T;
@@ -233,6 +257,7 @@ npx @wundr/plugin-cli publish ./my-plugin
 ```
 
 ### Testing Framework
+
 ```typescript
 // Plugin testing utilities
 import { createMockContext, runPluginTest } from '@wundr/plugin-testing';
@@ -241,9 +266,9 @@ describe('My Analysis Plugin', () => {
   it('should analyze JavaScript files', async () => {
     const context = createMockContext({
       files: ['test.js'],
-      configuration: { strict: true }
+      configuration: { strict: true },
     });
-    
+
     const result = await runPluginTest(MyPlugin, context);
     expect(result.issues).toHaveLength(2);
   });
@@ -253,12 +278,14 @@ describe('My Analysis Plugin', () => {
 ## Plugin Registry and Distribution
 
 ### NPM-Based Distribution
+
 - **Naming Convention**: `@wundr/plugin-{name}` or `@{scope}/wundr-plugin-{name}`
 - **Tagging**: Use npm tags for version management (stable, beta, alpha)
 - **Discovery**: Automatic discovery via npm search API
 - **Installation**: Standard npm install process
 
 ### Marketplace Integration
+
 ```typescript
 interface PluginMarketplace {
   searchPlugins(query: PluginSearchQuery): Promise<PluginSearchResult[]>;
@@ -272,12 +299,14 @@ interface PluginMarketplace {
 ## Performance Considerations
 
 ### Resource Management
+
 - **Memory Pools**: Reuse worker threads to reduce initialization overhead
 - **Lazy Loading**: Load plugins only when needed
 - **Caching**: Cache plugin compilation and initialization results
 - **Throttling**: Limit concurrent plugin executions
 
 ### Monitoring
+
 ```typescript
 interface PluginMetrics {
   executionTime: number;
@@ -292,11 +321,13 @@ interface PluginMetrics {
 ## Migration and Versioning
 
 ### Plugin Versioning
+
 - **Semantic Versioning**: Follow semver for plugin versions
 - **API Compatibility**: Maintain backward compatibility within major versions
 - **Migration Hooks**: Support for plugin data migration between versions
 
 ### Core API Versioning
+
 ```typescript
 interface PluginAPI {
   version: string; // "1.0", "1.1", "2.0"
@@ -308,6 +339,7 @@ interface PluginAPI {
 ## Example Plugin Implementation
 
 ### ESLint Analysis Plugin
+
 ```typescript
 // @wundr/plugin-eslint
 import { AnalysisPlugin, PluginBase } from '@wundr/plugin-sdk';
@@ -320,18 +352,18 @@ export class ESLintPlugin extends PluginBase implements AnalysisPlugin {
 
   async analyze(context: AnalysisContext): Promise<AnalysisResult> {
     this.log('info', 'Starting ESLint analysis');
-    
+
     const results: AnalysisResult = {
       summary: { totalFiles: 0, totalIssues: 0 },
       issues: [],
-      metrics: []
+      metrics: [],
     };
 
     for (const file of context.files) {
       if (!this.isSupported(file.path)) continue;
-      
-      this.reportProgress(file.index / context.files.length * 100);
-      
+
+      this.reportProgress((file.index / context.files.length) * 100);
+
       const fileResult = await this.analyzeFile(file);
       results.issues.push(...fileResult.issues);
     }
@@ -343,9 +375,9 @@ export class ESLintPlugin extends PluginBase implements AnalysisPlugin {
     // ESLint analysis implementation
     const eslint = new ESLint(this.getConfiguration());
     const results = await eslint.lintText(file.content, { filePath: file.path });
-    
+
     return {
-      issues: results[0].messages.map(this.mapESLintIssue)
+      issues: results[0].messages.map(this.mapESLintIssue),
     };
   }
 }
@@ -354,6 +386,7 @@ export class ESLintPlugin extends PluginBase implements AnalysisPlugin {
 ## Benefits and Trade-offs
 
 ### Benefits
+
 - **Extensibility**: Easy to add new analysis algorithms and setup procedures
 - **Community**: Enables community contributions and ecosystem growth
 - **Isolation**: Plugin failures don't crash the main system
@@ -361,9 +394,11 @@ export class ESLintPlugin extends PluginBase implements AnalysisPlugin {
 - **Performance**: Worker thread isolation prevents blocking
 
 ### Trade-offs
+
 - **Complexity**: Adds architectural complexity to the system
 - **Overhead**: Worker thread communication has performance overhead
 - **Security**: Requires careful permission and resource management
 - **Debugging**: More complex debugging across plugin boundaries
 
-This plugin architecture provides a robust foundation for extensibility while maintaining system stability and security.
+This plugin architecture provides a robust foundation for extensibility while maintaining system
+stability and security.

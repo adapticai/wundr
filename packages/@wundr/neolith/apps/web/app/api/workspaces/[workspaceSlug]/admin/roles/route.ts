@@ -35,7 +35,12 @@ const SYSTEM_ROLES: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {
     name: 'Owner',
     description: 'Full access to all workspace features and settings',
-    permissions: [{ resource: '*', actions: ['create', 'read', 'update', 'delete', 'manage'] }],
+    permissions: [
+      {
+        resource: '*',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+    ],
     isSystem: true,
     color: '#DC2626',
     memberCount: 0,
@@ -89,14 +94,17 @@ const SYSTEM_ROLES: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>[] = [
  */
 export async function GET(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -112,8 +120,11 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Workspace not found',
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -124,10 +135,16 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -138,7 +155,9 @@ export async function GET(
       _count: { role: true },
     });
 
-    const countMap = new Map(memberCounts.map(m => [m.role.toUpperCase(), m._count.role]));
+    const countMap = new Map(
+      memberCounts.map(m => [m.role.toUpperCase(), m._count.role])
+    );
 
     // For now, return system roles with member counts
     // In production, these would be stored in the database
@@ -153,8 +172,11 @@ export async function GET(
     return NextResponse.json({ roles });
   } catch (_error) {
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch roles', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch roles',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -170,14 +192,17 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -193,8 +218,11 @@ export async function POST(
 
     if (!workspace) {
       return NextResponse.json(
-        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Workspace not found',
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -205,10 +233,16 @@ export async function POST(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -218,8 +252,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Invalid JSON body',
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -230,20 +267,23 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check if role name already exists (including system roles)
     const existingSystemRole = SYSTEM_ROLES.find(
-      r => r.name.toLowerCase() === parseResult.data.name.toLowerCase(),
+      r => r.name.toLowerCase() === parseResult.data.name.toLowerCase()
     );
     if (existingSystemRole) {
       return NextResponse.json(
-        createAdminErrorResponse('Role name already exists', ADMIN_ERROR_CODES.ROLE_NAME_EXISTS),
-        { status: 409 },
+        createAdminErrorResponse(
+          'Role name already exists',
+          ADMIN_ERROR_CODES.ROLE_NAME_EXISTS
+        ),
+        { status: 409 }
       );
     }
 
@@ -253,7 +293,8 @@ export async function POST(
       select: { settings: true },
     });
 
-    const settings = (workspaceWithSettings?.settings as Record<string, unknown>) || {};
+    const settings =
+      (workspaceWithSettings?.settings as Record<string, unknown>) || {};
     const customRoles = (settings.customRoles as Role[]) || [];
 
     const newRole: Role = {
@@ -290,8 +331,11 @@ export async function POST(
     return NextResponse.json({ role: newRole }, { status: 201 });
   } catch (_error) {
     return NextResponse.json(
-      createAdminErrorResponse('Failed to create role', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to create role',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -80,47 +80,52 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t px-6 py-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div className='border-t px-6 py-4'>
+      <form onSubmit={handleSubmit} className='space-y-3'>
         {/* Input area */}
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <Textarea
             ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="min-h-[60px] resize-none"
+            className='min-h-[60px] resize-none'
             disabled={disabled}
-            aria-label="Message input"
+            aria-label='Message input'
           />
           <Button
-            type="submit"
-            size="icon"
-            className="h-[60px] w-[60px] shrink-0"
+            type='submit'
+            size='icon'
+            className='h-[60px] w-[60px] shrink-0'
             disabled={!input.trim() || disabled}
           >
-            <Send className="h-5 w-5" />
-            <span className="sr-only">Send message</span>
+            <Send className='h-5 w-5' />
+            <span className='sr-only'>Send message</span>
           </Button>
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+        <div className='flex items-center justify-between'>
+          <div className='flex gap-2'>
             {onReviewDetails && (
               <Button
-                type="button"
-                variant="default"
+                type='button'
+                variant='default'
                 onClick={onReviewDetails}
                 disabled={disabled}
               >
-                <CheckCircle2 className="mr-2 h-4 w-4" />
+                <CheckCircle2 className='mr-2 h-4 w-4' />
                 Review Details
               </Button>
             )}
           </div>
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={disabled}>
+          <Button
+            type='button'
+            variant='ghost'
+            onClick={onCancel}
+            disabled={disabled}
+          >
             Cancel
           </Button>
         </div>

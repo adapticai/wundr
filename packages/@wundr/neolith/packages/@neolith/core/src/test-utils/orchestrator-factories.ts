@@ -59,7 +59,7 @@ export function resetIdCounter(): void {
  * Create mock personality traits
  */
 export function createMockPersonality(
-  overrides?: Partial<OrchestratorPersonality>,
+  overrides?: Partial<OrchestratorPersonality>
 ): OrchestratorPersonality {
   return {
     tone: 'professional',
@@ -75,7 +75,7 @@ export function createMockPersonality(
  * Create mock communication preferences
  */
 export function createMockCommunicationPreferences(
-  overrides?: Partial<OrchestratorCommunicationPreferences>,
+  overrides?: Partial<OrchestratorCommunicationPreferences>
 ): OrchestratorCommunicationPreferences {
   return {
     responseLength: 'moderate',
@@ -91,7 +91,7 @@ export function createMockCommunicationPreferences(
  * Create mock operational config
  */
 export function createMockOperationalConfig(
-  overrides?: Partial<OrchestratorOperationalConfig>,
+  overrides?: Partial<OrchestratorOperationalConfig>
 ): OrchestratorOperationalConfig {
   return {
     workHours: {
@@ -113,7 +113,9 @@ export function createMockOperationalConfig(
 /**
  * Create mock Orchestrator charter
  */
-export function createMockVPCharter(overrides?: Partial<OrchestratorCharter>): OrchestratorCharter {
+export function createMockVPCharter(
+  overrides?: Partial<OrchestratorCharter>
+): OrchestratorCharter {
   return {
     systemPrompt: 'You are a helpful assistant for the organization.',
     personality: createMockPersonality(overrides?.personality),
@@ -227,7 +229,7 @@ export function createMockUser(overrides?: Partial<MockUser>): MockUser {
  */
 export function createMockOrchestratorWithUser(
   vpOverrides?: Partial<MockVP>,
-  userOverrides?: Partial<MockUser>,
+  userOverrides?: Partial<MockUser>
 ): MockOrchestratorWithUser {
   const vp = createMockVP(vpOverrides);
   const user = createMockUser({
@@ -246,7 +248,7 @@ export function createMockOrchestratorWithUser(
  */
 export function createMockVPList(
   count: number,
-  overrides?: Partial<MockVP>,
+  overrides?: Partial<MockVP>
 ): MockOrchestratorWithUser[] {
   return Array.from({ length: count }, (_, index) =>
     createMockOrchestratorWithUser(
@@ -256,8 +258,8 @@ export function createMockVPList(
       {
         name: `Test Orchestrator ${index + 1}`,
         displayName: `Test Orchestrator ${index + 1}`,
-      },
-    ),
+      }
+    )
   );
 }
 
@@ -269,7 +271,7 @@ export function createMockVPList(
  * Create a mock API key generation result
  */
 export function createMockAPIKeyResult(
-  overrides?: Partial<APIKeyGenerationResult>,
+  overrides?: Partial<APIKeyGenerationResult>
 ): APIKeyGenerationResult {
   const key = `gns_${generateTestId('key')}`;
   return {
@@ -284,7 +286,7 @@ export function createMockAPIKeyResult(
  * Create a mock Orchestrator service account config
  */
 export function createMockServiceAccountConfig(
-  overrides?: Partial<OrchestratorServiceAccountConfig>,
+  overrides?: Partial<OrchestratorServiceAccountConfig>
 ): OrchestratorServiceAccountConfig {
   return {
     apiKeyHash: undefined,
@@ -313,7 +315,7 @@ export interface MockDiscipline {
  * Create a mock discipline
  */
 export function createMockDiscipline(
-  overrides?: Partial<MockDiscipline>,
+  overrides?: Partial<MockDiscipline>
 ): MockDiscipline {
   const id = overrides?.id ?? generateCuid();
 
@@ -367,7 +369,7 @@ export function createMockDisciplineList(): MockDiscipline[] {
  * Create a mock CreateVPInput
  */
 export function createMockCreateVPInput(
-  overrides?: Partial<CreateVPInput>,
+  overrides?: Partial<CreateVPInput>
 ): CreateVPInput {
   return {
     name: 'New Test Orchestrator',
@@ -389,7 +391,7 @@ export function createMockCreateVPInput(
  * Create a mock UpdateVPInput
  */
 export function createMockUpdateVPInput(
-  overrides?: Partial<UpdateVPInput>,
+  overrides?: Partial<UpdateVPInput>
 ): UpdateVPInput {
   return {
     name: 'Updated OrchestratorName',
@@ -417,7 +419,7 @@ export interface MockOrganization {
  * Create a mock organization
  */
 export function createMockOrganization(
-  overrides?: Partial<MockOrganization>,
+  overrides?: Partial<MockOrganization>
 ): MockOrganization {
   const id = overrides?.id ?? generateCuid();
   const now = new Date();
@@ -487,7 +489,11 @@ export function createMockPrismaClient(): MockPrismaClient {
 
   return {
     // Mock data stores for assertions
-    _mockData: { orchestrators: mockOrchestrators, users: mockUsers, organizations: mockOrgs },
+    _mockData: {
+      orchestrators: mockOrchestrators,
+      users: mockUsers,
+      organizations: mockOrgs,
+    },
 
     vP: {
       findUnique: vi.fn(),
@@ -534,7 +540,7 @@ export function createMockPrismaClient(): MockPrismaClient {
             },
           };
           return callback(tx);
-        },
+        }
       ),
     $connect: vi.fn(),
     $disconnect: vi.fn(),

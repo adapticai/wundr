@@ -42,14 +42,14 @@ export const VerificationEmail = ({
           <EmailHeader />
 
           <Section style={contentSection}>
-            <EmailText variant="h1">Verify Your Email</EmailText>
+            <EmailText variant='h1'>Verify Your Email</EmailText>
 
             <EmailText>Hello {username},</EmailText>
 
             <EmailText>
-              Thank you for signing up for Neolith! To complete your registration
-              and start using your AI-powered workspace, please verify your email
-              address.
+              Thank you for signing up for Neolith! To complete your
+              registration and start using your AI-powered workspace, please
+              verify your email address.
             </EmailText>
 
             <Section style={buttonContainer}>
@@ -58,7 +58,7 @@ export const VerificationEmail = ({
               </EmailButton>
             </Section>
 
-            <EmailText variant="small">
+            <EmailText variant='small'>
               Or copy and paste this link into your browser:
             </EmailText>
             <EmailText style={linkText}>{verificationUrl}</EmailText>
@@ -70,9 +70,10 @@ export const VerificationEmail = ({
               </EmailText>
             </Section>
 
-            <EmailText variant="small">
+            <EmailText variant='small'>
               If you didn&apos;t create an account with Neolith, you can safely
-              ignore this email. No account will be created without verification.
+              ignore this email. No account will be created without
+              verification.
             </EmailText>
           </Section>
 

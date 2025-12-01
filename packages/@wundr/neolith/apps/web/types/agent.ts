@@ -17,7 +17,14 @@
  * Defines the specialized roles an agent can perform.
  * Each type has different default configurations optimized for its domain.
  */
-export type AgentType = 'task' | 'research' | 'coding' | 'data' | 'qa' | 'support' | 'custom';
+export type AgentType =
+  | 'task'
+  | 'research'
+  | 'coding'
+  | 'data'
+  | 'qa'
+  | 'support'
+  | 'custom';
 
 /**
  * Agent operational status
@@ -207,7 +214,7 @@ export const AVAILABLE_TOOLS = [
 /**
  * Union type of all available tool names
  */
-export type AvailableTool = typeof AVAILABLE_TOOLS[number];
+export type AvailableTool = (typeof AVAILABLE_TOOLS)[number];
 
 /**
  * Type guard to check if a string is a valid AvailableTool
@@ -273,7 +280,15 @@ export interface AgentListResponseSerialized {
  * @returns True if the string is a valid AgentType
  */
 export function isAgentType(type: string): type is AgentType {
-  return ['task', 'research', 'coding', 'data', 'qa', 'support', 'custom'].includes(type);
+  return [
+    'task',
+    'research',
+    'coding',
+    'data',
+    'qa',
+    'support',
+    'custom',
+  ].includes(type);
 }
 
 /**
@@ -291,7 +306,9 @@ export function isAgentStatus(status: string): status is AgentStatus {
  *
  * Readonly configuration presets optimized for each agent type.
  */
-export const DEFAULT_MODEL_CONFIGS: Readonly<Record<AgentType, AgentModelConfig>> = {
+export const DEFAULT_MODEL_CONFIGS: Readonly<
+  Record<AgentType, AgentModelConfig>
+> = {
   task: {
     model: 'claude-3-haiku',
     temperature: 0.5,
@@ -346,7 +363,9 @@ export interface AgentTypeMetadata {
  *
  * Readonly metadata for rendering agent types in the UI.
  */
-export const AGENT_TYPE_METADATA: Readonly<Record<AgentType, AgentTypeMetadata>> = {
+export const AGENT_TYPE_METADATA: Readonly<
+  Record<AgentType, AgentTypeMetadata>
+> = {
   task: {
     label: 'Task Agent',
     description: 'General-purpose task execution and automation',

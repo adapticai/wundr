@@ -134,7 +134,7 @@ export default defineConfig({
 
     await fs.writeFile(
       path.join(config.outputDir, 'playwright.config.ts'),
-      playwrightConfig,
+      playwrightConfig
     );
   }
 
@@ -191,7 +191,7 @@ export default defineConfig({
 
     // Check for Jest or Vitest
     const packageJson = await fs.readJson(
-      path.join(process.cwd(), 'package.json'),
+      path.join(process.cwd(), 'package.json')
     );
 
     if (packageJson.scripts?.test) {
@@ -235,11 +235,11 @@ export function createTestCommand(): Command {
     .option(
       '-t, --type <type>',
       'Type of tests to run (ui, api, unit, all)',
-      'all',
+      'all'
     )
     .option(
       '-b, --browser <browser>',
-      'Browser to use (chromium, firefox, webkit)',
+      'Browser to use (chromium, firefox, webkit)'
     )
     .option('--headed', 'Run tests in headed mode')
     .option('--base-url <url>', 'Base URL for the application')

@@ -1,6 +1,7 @@
 # Wundr Dashboard Consumer Integration API
 
-This document provides comprehensive guidance for integrating the Wundr dashboard into your existing projects and workflows.
+This document provides comprehensive guidance for integrating the Wundr dashboard into your existing
+projects and workflows.
 
 ## Table of Contents
 
@@ -61,7 +62,7 @@ npx wundr init-dashboard --template react-typescript
 # Development mode
 npm run wundr:dev
 
-# Production mode  
+# Production mode
 npm run wundr:start
 
 # Custom port
@@ -85,7 +86,7 @@ const config = await configAPI.loadConfig();
 // Update configuration
 await configAPI.updateConfig('branding', {
   appName: 'New Name',
-  primaryColor: '#FF6B35'
+  primaryColor: '#FF6B35',
 });
 
 // Validate configuration
@@ -98,12 +99,12 @@ const validConfig = configAPI.validateConfig(userConfig);
 
 ```typescript
 interface BrandingConfig {
-  appName: string;           // Dashboard title
-  logo?: string;             // Logo image path
-  primaryColor: string;      // Primary theme color
-  secondaryColor: string;    // Secondary theme color
-  favicon?: string;          // Favicon path
-  customCss?: string;        // Custom CSS file path
+  appName: string; // Dashboard title
+  logo?: string; // Logo image path
+  primaryColor: string; // Primary theme color
+  secondaryColor: string; // Secondary theme color
+  favicon?: string; // Favicon path
+  customCss?: string; // Custom CSS file path
 }
 ```
 
@@ -111,11 +112,11 @@ interface BrandingConfig {
 
 ```typescript
 interface AnalysisConfig {
-  defaultPath: string;           // Default analysis path
-  excludePatterns: string[];     // Patterns to exclude
-  includeExtensions: string[];   // File extensions to analyze
-  maxFileSize: number;           // Max file size (bytes)
-  enableRealtime: boolean;       // Real-time analysis
+  defaultPath: string; // Default analysis path
+  excludePatterns: string[]; // Patterns to exclude
+  includeExtensions: string[]; // File extensions to analyze
+  maxFileSize: number; // Max file size (bytes)
+  enableRealtime: boolean; // Real-time analysis
 }
 ```
 
@@ -123,9 +124,9 @@ interface AnalysisConfig {
 
 ```typescript
 interface IntegrationConfig {
-  webhooks: WebhookConfig[];         // External webhooks
-  apiEndpoints: ApiEndpoint[];       // Custom API endpoints
-  customScripts: ScriptConfig[];     // Custom scripts
+  webhooks: WebhookConfig[]; // External webhooks
+  apiEndpoints: ApiEndpoint[]; // Custom API endpoints
+  customScripts: ScriptConfig[]; // Custom scripts
 }
 ```
 
@@ -158,11 +159,11 @@ import { ConfigurationBuilder } from '@lumic/wundr/integration';
 const config = new ConfigurationBuilder()
   .branding({
     appName: 'My Project',
-    primaryColor: '#0066CC'
+    primaryColor: '#0066CC',
   })
   .analysis({
     defaultPath: './src',
-    excludePatterns: ['node_modules', 'dist']
+    excludePatterns: ['node_modules', 'dist'],
   })
   .integration({
     customScripts: [
@@ -170,9 +171,9 @@ const config = new ConfigurationBuilder()
         name: 'test',
         command: 'npm test',
         description: 'Run tests',
-        safetyLevel: 'safe'
-      }
-    ]
+        safetyLevel: 'safe',
+      },
+    ],
   })
   .build();
 ```
@@ -218,35 +219,35 @@ my-plugin/
 module.exports = {
   async initialize(context) {
     const { api, logger, config, hooks } = context;
-    
+
     logger.info('Custom plugin initializing...');
-    
+
     // Add menu item
     api.addMenuItem({
       id: 'custom-analytics',
       label: 'Custom Analytics',
       path: '/custom-analytics',
       icon: 'chart-bar',
-      group: 'analytics'
+      group: 'analytics',
     });
-    
+
     // Register hooks
-    hooks.afterAnalysis((data) => {
+    hooks.afterAnalysis(data => {
       logger.info('Analysis completed:', data.summary);
     });
   },
-  
+
   // React component for the page
   component: function CustomAnalytics({ data }) {
     return React.createElement('div', null, [
       React.createElement('h1', null, 'Custom Analytics'),
-      React.createElement('pre', null, JSON.stringify(data, null, 2))
+      React.createElement('pre', null, JSON.stringify(data, null, 2)),
     ]);
   },
-  
+
   async cleanup() {
     console.log('Cleaning up custom plugin...');
-  }
+  },
 };
 ```
 
@@ -258,10 +259,7 @@ import { PluginSystem } from '@lumic/wundr/integration';
 const pluginSystem = new PluginSystem();
 
 // Initialize with plugin paths
-await pluginSystem.initialize([
-  './wundr-dashboard/plugins',
-  './node_modules/@wundr/plugins'
-]);
+await pluginSystem.initialize(['./wundr-dashboard/plugins', './node_modules/@wundr/plugins']);
 
 // Get loaded plugins
 const plugins = pluginSystem.getRegistry().getAllPlugins();
@@ -280,16 +278,16 @@ const plugins = pluginSystem.getRegistry().getAllPlugins();
 ### Available Hook Events
 
 ```typescript
-type HookEvent = 
-  | 'before-analysis'         // Before analysis starts
-  | 'after-analysis'          // After analysis completes
-  | 'before-dashboard-start'  // Before dashboard server starts
-  | 'after-dashboard-start'   // After dashboard server starts
+type HookEvent =
+  | 'before-analysis' // Before analysis starts
+  | 'after-analysis' // After analysis completes
+  | 'before-dashboard-start' // Before dashboard server starts
+  | 'after-dashboard-start' // After dashboard server starts
   | 'before-script-execution' // Before script execution
-  | 'after-script-execution'  // After script execution
-  | 'config-changed'          // When configuration changes
-  | 'plugin-loaded'           // When plugin is loaded
-  | 'error-occurred';         // When error occurs
+  | 'after-script-execution' // After script execution
+  | 'config-changed' // When configuration changes
+  | 'plugin-loaded' // When plugin is loaded
+  | 'error-occurred'; // When error occurs
 ```
 
 ### Hook Types
@@ -312,11 +310,11 @@ hookSystem.registerHook({
   event: 'after-analysis',
   type: 'async',
   description: 'Send results to Slack',
-  callback: async (context) => {
+  callback: async context => {
     const { data, config } = context;
     await sendToSlack(data.summary);
     return data;
-  }
+  },
 });
 
 // Trigger hooks
@@ -365,7 +363,7 @@ interface HookCondition {
   type: 'config' | 'environment' | 'data' | 'time';
   operator: 'equals' | 'not-equals' | 'contains' | 'greater-than' | 'less-than';
   value: any;
-  path?: string;  // Dot notation path for nested values
+  path?: string; // Dot notation path for nested values
 }
 ```
 
@@ -408,7 +406,7 @@ executor.registerScript({
   description: 'Run project tests',
   safetyLevel: 'safe',
   timeout: 30000,
-  validation: (command) => command.startsWith('npm')
+  validation: command => command.startsWith('npm'),
 });
 
 // Execute script
@@ -438,21 +436,17 @@ Global options available for all commands:
 
 ```typescript
 // Blocked commands (security risk)
-const blockedCommands = [
-  'rm', 'del', 'sudo', 'curl', 'wget', 'ssh'
-];
+const blockedCommands = ['rm', 'del', 'sudo', 'curl', 'wget', 'ssh'];
 
 // Safe commands (always allowed)
-const safeCommands = [
-  'npm', 'yarn', 'node', 'git', 'tsc', 'eslint'
-];
+const safeCommands = ['npm', 'yarn', 'node', 'git', 'tsc', 'eslint'];
 
 // Dangerous patterns
 const dangerousPatterns = [
-  /rm\s+-rf/,     // Recursive delete
-  />\s*\/dev\//,  // Device redirection
-  /\|\s*sh/,      // Pipe to shell
-  /`[^`]*`/       // Command substitution
+  /rm\s+-rf/, // Recursive delete
+  />\s*\/dev\//, // Device redirection
+  /\|\s*sh/, // Pipe to shell
+  /`[^`]*`/, // Command substitution
 ];
 ```
 
@@ -465,14 +459,14 @@ const safeEnv = {
   PATH: process.env.PATH,
   HOME: process.env.HOME,
   // Only WUNDR_ prefixed variables passed through
-  ...wundrEnvVars
+  ...wundrEnvVars,
 };
 
 // Resource limits
 const limits = {
-  timeout: 30000,      // 30 second timeout
-  maxBuffer: 1024 * 1024,  // 1MB output buffer
-  maxMemory: 512 * 1024 * 1024,  // 512MB memory
+  timeout: 30000, // 30 second timeout
+  maxBuffer: 1024 * 1024, // 1MB output buffer
+  maxMemory: 512 * 1024 * 1024, // 512MB memory
 };
 ```
 
@@ -498,11 +492,11 @@ const { ConfigurationBuilder } = require('@lumic/wundr/integration');
 module.exports = new ConfigurationBuilder()
   .branding({
     appName: 'MyApp Dashboard',
-    primaryColor: '#0066CC'
+    primaryColor: '#0066CC',
   })
   .analysis({
     defaultPath: './src',
-    excludePatterns: ['node_modules', 'dist', 'coverage']
+    excludePatterns: ['node_modules', 'dist', 'coverage'],
   })
   .integration({
     customScripts: [
@@ -510,15 +504,15 @@ module.exports = new ConfigurationBuilder()
         name: 'test',
         command: 'npm test',
         description: 'Run unit tests',
-        safetyLevel: 'safe'
+        safetyLevel: 'safe',
       },
       {
         name: 'lint',
         command: 'npm run lint',
         description: 'Run linting',
-        safetyLevel: 'safe'
-      }
-    ]
+        safetyLevel: 'safe',
+      },
+    ],
   })
   .build();
 ```
@@ -530,28 +524,28 @@ module.exports = new ConfigurationBuilder()
 class CIIntegrationPlugin {
   async initialize(context) {
     const { api, hooks, logger } = context;
-    
+
     // Add CI status page
     api.addMenuItem({
       id: 'ci-status',
       label: 'CI Status',
       path: '/ci-status',
-      icon: 'build'
+      icon: 'build',
     });
-    
+
     // Hook into analysis completion
-    hooks.afterAnalysis(async (data) => {
+    hooks.afterAnalysis(async data => {
       if (process.env.CI) {
         await this.updateCIStatus(data);
       }
     });
-    
+
     logger.info('CI Integration plugin loaded');
   }
-  
+
   async updateCIStatus(analysisData) {
     const ciProvider = process.env.CI_PROVIDER;
-    
+
     switch (ciProvider) {
       case 'github':
         await this.updateGitHubStatus(analysisData);
@@ -561,13 +555,11 @@ class CIIntegrationPlugin {
         break;
     }
   }
-  
+
   component({ data }) {
     return React.createElement('div', null, [
       React.createElement('h1', null, 'CI Status'),
-      React.createElement('div', null, 
-        `Build Status: ${data.buildStatus}`
-      )
+      React.createElement('div', null, `Build Status: ${data.buildStatus}`),
     ]);
   }
 }
@@ -583,9 +575,9 @@ module.exports = {
   name: 'deployment-webhook',
   event: 'after-analysis',
   type: 'async',
-  callback: async (context) => {
+  callback: async context => {
     const { data, config } = context;
-    
+
     if (data.quality.score > 0.8) {
       // Trigger deployment
       await fetch(config.deployment.webhookUrl, {
@@ -594,13 +586,13 @@ module.exports = {
         body: JSON.stringify({
           event: 'deploy',
           quality: data.quality.score,
-          timestamp: new Date().toISOString()
-        })
+          timestamp: new Date().toISOString(),
+        }),
       });
     }
-    
+
     return data;
-  }
+  },
 };
 ```
 
@@ -722,6 +714,7 @@ DEBUG=wundr:plugins:my-plugin wundr dashboard
    - `unsafe` only when absolutely necessary
 
 2. **Validate script inputs**
+
    ```javascript
    {
      name: 'deploy',
@@ -732,6 +725,7 @@ DEBUG=wundr:plugins:my-plugin wundr dashboard
    ```
 
 3. **Limit resource usage**
+
    ```javascript
    {
      timeout: 60000,      // 1 minute max
@@ -781,7 +775,10 @@ class PluginSystem {
 class ScriptExecutor {
   constructor(workingDirectory?: string);
   registerScript(script: ScriptDefinition): void;
-  executeRegisteredScript(name: string, options?: ScriptExecutionOptions): Promise<ScriptExecutionResult>;
+  executeRegisteredScript(
+    name: string,
+    options?: ScriptExecutionOptions
+  ): Promise<ScriptExecutionResult>;
   executeCommand(command: string, options?: ScriptExecutionOptions): Promise<ScriptExecutionResult>;
   getRegisteredScripts(): ScriptDefinition[];
   getExecutionLogs(): ExecutionLog[];

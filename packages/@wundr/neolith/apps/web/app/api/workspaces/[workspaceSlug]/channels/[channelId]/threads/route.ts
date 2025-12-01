@@ -14,7 +14,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { listThreadsSchema, THREAD_ERROR_CODES } from '@/lib/validations/threads';
+import {
+  listThreadsSchema,
+  THREAD_ERROR_CODES,
+} from '@/lib/validations/threads';
 import { createErrorResponse } from '@/lib/validations/message';
 
 import type { NextRequest } from 'next/server';
@@ -32,7 +35,11 @@ interface RouteContext {
 /**
  * Helper to check workspace and channel access
  */
-async function checkAccess(workspaceId: string, channelId: string, userId: string) {
+async function checkAccess(
+  workspaceId: string,
+  channelId: string,
+  userId: string
+) {
   // Get workspace with organization
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -101,15 +108,18 @@ async function checkAccess(workspaceId: string, channelId: string, userId: strin
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', THREAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          THREAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -128,24 +138,28 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           THREAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { limit, cursor } = queryResult.data;
 
     // Check access
-    const access = await checkAccess(workspaceId, params.channelId, session.user.id);
+    const access = await checkAccess(
+      workspaceId,
+      params.channelId,
+      session.user.id
+    );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied or resources not found',
-          THREAD_ERROR_CODES.FORBIDDEN,
+          THREAD_ERROR_CODES.FORBIDDEN
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -260,7 +274,7 @@ export async function GET(
 
     // For each thread, get the last reply timestamp
     const threadsWithLastReply = await Promise.all(
-      threads.map(async (thread) => {
+      threads.map(async thread => {
         const lastReply = await prisma.message.findFirst({
           where: {
             parentId: thread.id,
@@ -278,17 +292,20 @@ export async function GET(
           ...thread,
           lastReplyAt: lastReply?.createdAt || thread.createdAt,
         };
-      }),
+      })
     );
 
     // Sort by last reply timestamp
-    threadsWithLastReply.sort((a, b) =>
-      new Date(b.lastReplyAt).getTime() - new Date(a.lastReplyAt).getTime()
+    threadsWithLastReply.sort(
+      (a, b) =>
+        new Date(b.lastReplyAt).getTime() - new Date(a.lastReplyAt).getTime()
     );
 
     // Check if there are more threads
     const hasMore = threadsWithLastReply.length > limit;
-    const data = hasMore ? threadsWithLastReply.slice(0, limit) : threadsWithLastReply;
+    const data = hasMore
+      ? threadsWithLastReply.slice(0, limit)
+      : threadsWithLastReply;
 
     // Get total thread count
     const totalCount = await prisma.message.count({
@@ -313,10 +330,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/channels/:channelId/threads] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/channels/:channelId/threads] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', THREAD_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        THREAD_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

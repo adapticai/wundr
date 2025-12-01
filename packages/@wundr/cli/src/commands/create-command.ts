@@ -14,7 +14,7 @@ export const createCommand = new Command('create')
   .description('Create a new wundr-compliant project')
   .argument(
     '[type]',
-    'Project type (frontend|backend|fullstack|monorepo|library|cli)',
+    'Project type (frontend|backend|fullstack|monorepo|library|cli)'
   )
   .argument('[name]', 'Project name')
   .option('-f, --framework <framework>', 'Framework to use')
@@ -76,8 +76,8 @@ export const createCommand = new Command('create')
       logger.error('Failed to create project', error);
       console.error(
         chalk.red(
-          `\n❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ),
+          `\n❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        )
       );
       process.exit(1);
     }
@@ -104,7 +104,7 @@ createCommand
   .option(
     '-f, --framework <framework>',
     'Framework (fastify|express|nestjs)',
-    'fastify',
+    'fastify'
   )
   .action(async (name: string, options: any) => {
     await projectTemplates.createProject({

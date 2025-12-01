@@ -1,6 +1,7 @@
 # LiveKit Video/Audio Call Setup Documentation
 
-This document provides comprehensive setup instructions for the LiveKit video/audio calling integration in the Neolith application.
+This document provides comprehensive setup instructions for the LiveKit video/audio calling
+integration in the Neolith application.
 
 ## Table of Contents
 
@@ -14,9 +15,11 @@ This document provides comprehensive setup instructions for the LiveKit video/au
 
 ## Overview
 
-LiveKit is integrated into Neolith to provide real-time video and audio calling capabilities. The integration includes:
+LiveKit is integrated into Neolith to provide real-time video and audio calling capabilities. The
+integration includes:
 
-- **Backend Service**: Server-side LiveKit SDK integration (`@neolith/core/services/livekit-service`)
+- **Backend Service**: Server-side LiveKit SDK integration
+  (`@neolith/core/services/livekit-service`)
 - **API Routes**: REST endpoints for room and token management
 - **React Components**: Pre-built UI components for video and audio rooms
 - **WebSocket Integration**: LiveKit webhook handling for real-time events
@@ -41,11 +44,11 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://your-livekit-server.com
 
 ### Variable Details
 
-| Variable | Type | Description | Example |
-|----------|------|-------------|---------|
-| `LIVEKIT_URL` | Server | WebSocket URL for LiveKit server (server-side) | `wss://my-app.livekit.cloud` |
-| `LIVEKIT_API_KEY` | Server | API key for authenticating with LiveKit | `APIxxxxxxxxxxxx` |
-| `LIVEKIT_API_SECRET` | Server | Secret key for signing JWT tokens | `xxxxxxxxxxxxxxxx` |
+| Variable                  | Type   | Description                                    | Example                      |
+| ------------------------- | ------ | ---------------------------------------------- | ---------------------------- |
+| `LIVEKIT_URL`             | Server | WebSocket URL for LiveKit server (server-side) | `wss://my-app.livekit.cloud` |
+| `LIVEKIT_API_KEY`         | Server | API key for authenticating with LiveKit        | `APIxxxxxxxxxxxx`            |
+| `LIVEKIT_API_SECRET`      | Server | Secret key for signing JWT tokens              | `xxxxxxxxxxxxxxxx`           |
 | `NEXT_PUBLIC_LIVEKIT_URL` | Client | WebSocket URL for LiveKit server (client-side) | `wss://my-app.livekit.cloud` |
 
 ### Optional Configuration
@@ -79,6 +82,7 @@ packages/@neolith/core/
 ```
 
 **Key Features:**
+
 - Room management (create, delete, list, update)
 - Token generation (host, guest, viewer roles)
 - Participant management (list, remove, mute)
@@ -124,6 +128,7 @@ Creates a new LiveKit room.
 **Endpoint:** `POST /api/livekit/room`
 
 **Request Body:**
+
 ```json
 {
   "name": "meeting-123",
@@ -134,6 +139,7 @@ Creates a new LiveKit room.
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -156,6 +162,7 @@ Lists all active LiveKit rooms.
 **Endpoint:** `GET /api/livekit/room`
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -177,6 +184,7 @@ Gets details of a specific room.
 **Endpoint:** `GET /api/livekit/room/:roomId`
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -195,6 +203,7 @@ Deletes/ends a room.
 **Endpoint:** `DELETE /api/livekit/room/:roomId`
 
 **Response:**
+
 ```json
 {
   "message": "Room deleted successfully"
@@ -208,6 +217,7 @@ Generates an access token for a participant.
 **Endpoint:** `GET /api/livekit/token`
 
 **Query Parameters:**
+
 - `roomName` (required): Name of room to join
 - `identity` (optional): Participant identity (defaults to user ID)
 - `name` (optional): Display name (defaults to user's name)
@@ -215,6 +225,7 @@ Generates an access token for a participant.
 - `metadata` (optional): Custom metadata as JSON string
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -232,11 +243,11 @@ Generates an access token for a participant.
 
 ### Token Roles
 
-| Role | Permissions |
-|------|-------------|
-| `host` | Full permissions: publish, subscribe, room admin, recording |
-| `guest` | Standard permissions: publish, subscribe, publish data |
-| `viewer` | Read-only: subscribe only, no publishing |
+| Role     | Permissions                                                 |
+| -------- | ----------------------------------------------------------- |
+| `host`   | Full permissions: publish, subscribe, room admin, recording |
+| `guest`  | Standard permissions: publish, subscribe, publish data      |
+| `viewer` | Read-only: subscribe only, no publishing                    |
 
 ## React Components
 
@@ -249,7 +260,7 @@ import { LiveKitProvider } from '@/components/call/livekit-provider';
 
 function App() {
   return (
-    <LiveKitProvider serverUrl="wss://my-app.livekit.cloud">
+    <LiveKitProvider serverUrl='wss://my-app.livekit.cloud'>
       <YourApp />
     </LiveKitProvider>
   );
@@ -270,18 +281,19 @@ function MyCall() {
 
   return (
     <VideoRoom
-      token="eyJhbGciOiJIUzI1NiIs..."
-      serverUrl="wss://my-app.livekit.cloud"
-      roomName="meeting-123"
-      channelName="General"
+      token='eyJhbGciOiJIUzI1NiIs...'
+      serverUrl='wss://my-app.livekit.cloud'
+      roomName='meeting-123'
+      channelName='General'
       onDisconnect={handleDisconnect}
-      initialLayout="grid"
+      initialLayout='grid'
     />
   );
 }
 ```
 
 **Features:**
+
 - Grid, spotlight, and sidebar layouts
 - Video/audio controls
 - Screen sharing
@@ -299,10 +311,10 @@ import { AudioRoom } from '@/components/call/audio-room';
 function MyAudioCall() {
   return (
     <AudioRoom
-      token="eyJhbGciOiJIUzI1NiIs..."
-      serverUrl="wss://my-app.livekit.cloud"
-      roomName="audio-call-123"
-      channelName="Voice Chat"
+      token='eyJhbGciOiJIUzI1NiIs...'
+      serverUrl='wss://my-app.livekit.cloud'
+      roomName='audio-call-123'
+      channelName='Voice Chat'
       onDisconnect={() => console.log('Ended')}
     />
   );
@@ -310,6 +322,7 @@ function MyAudioCall() {
 ```
 
 **Features:**
+
 - Participant list with avatars
 - Audio visualization
 - Microphone controls
@@ -387,10 +400,7 @@ async function manageRooms() {
   });
 
   // Generate a host token
-  const token = await liveKitService.generateHostToken(
-    'user-123',
-    'my-room'
-  );
+  const token = await liveKitService.generateHostToken('user-123', 'my-room');
 
   // List participants
   const participants = await liveKitService.listParticipants('my-room');
@@ -409,6 +419,7 @@ async function manageRooms() {
 **Problem:** Missing or invalid environment variables.
 
 **Solution:** Ensure all required environment variables are set in `.env.local`:
+
 ```bash
 LIVEKIT_URL=wss://your-server.com
 LIVEKIT_API_KEY=your-key
@@ -421,6 +432,7 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://your-server.com
 **Problem:** Client-side cannot connect to LiveKit server.
 
 **Solution:**
+
 - Verify `NEXT_PUBLIC_LIVEKIT_URL` is accessible from the browser
 - Check that the URL uses `wss://` (secure WebSocket)
 - Ensure token is valid and not expired
@@ -430,6 +442,7 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://your-server.com
 **Problem:** Server cannot generate JWT tokens.
 
 **Solution:**
+
 - Verify `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET` are correct
 - Check that the room exists before generating tokens
 - Ensure server-side `LIVEKIT_URL` is reachable
@@ -439,6 +452,7 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://your-server.com
 **Problem:** Media devices not accessible.
 
 **Solution:**
+
 - Grant browser permissions for camera/microphone
 - Check device selection in call controls
 - Verify HTTPS is used (required for media access)
@@ -448,6 +462,7 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://your-server.com
 **Problem:** LiveKit webhooks not triggering.
 
 **Solution:**
+
 - Configure webhook URL in LiveKit dashboard
 - Ensure `/api/livekit/webhook` is publicly accessible
 - Verify webhook signature validation
@@ -468,6 +483,7 @@ setLogLevel('debug'); // Shows detailed logs in console
 For local development without a LiveKit server:
 
 1. Run LiveKit locally with Docker:
+
 ```bash
 docker run --rm -p 7880:7880 \
   -p 7881:7881 \
@@ -477,6 +493,7 @@ docker run --rm -p 7880:7880 \
 ```
 
 2. Use local URLs:
+
 ```bash
 LIVEKIT_URL=ws://localhost:7880
 NEXT_PUBLIC_LIVEKIT_URL=ws://localhost:7880
@@ -494,6 +511,7 @@ LIVEKIT_API_SECRET=secret
 ## Support
 
 For issues or questions:
+
 1. Check this documentation
 2. Review LiveKit official docs
 3. Check application logs for errors

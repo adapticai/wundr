@@ -17,7 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 
 import type { CapabilityConfig } from '@/lib/validations/orchestrator-config';
@@ -50,20 +54,27 @@ export function CapabilityToggle({
   const enabled = config?.enabled ?? false;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="text-2xl mt-1">{capability.icon}</div>
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center gap-2">
-              <Label htmlFor={`capability-${capability.type}`} className="text-base font-medium">
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className='border rounded-lg p-4'
+    >
+      <div className='flex items-start justify-between gap-4'>
+        <div className='flex items-start gap-3 flex-1'>
+          <div className='text-2xl mt-1'>{capability.icon}</div>
+          <div className='flex-1 space-y-1'>
+            <div className='flex items-center gap-2'>
+              <Label
+                htmlFor={`capability-${capability.type}`}
+                className='text-base font-medium'
+              >
                 {capability.name}
               </Label>
               {enabled && (
                 <CollapsibleTrigger asChild>
                   <button
-                    type="button"
-                    className="p-1 hover:bg-accent rounded-sm transition-colors"
+                    type='button'
+                    className='p-1 hover:bg-accent rounded-sm transition-colors'
                   >
                     <ChevronDown
                       className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -72,7 +83,9 @@ export function CapabilityToggle({
                 </CollapsibleTrigger>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">{capability.description}</p>
+            <p className='text-sm text-muted-foreground'>
+              {capability.description}
+            </p>
           </div>
         </div>
         <Switch
@@ -84,10 +97,12 @@ export function CapabilityToggle({
       </div>
 
       {enabled && (
-        <CollapsibleContent className="mt-4 space-y-4 border-t pt-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor={`permission-${capability.type}`}>Permission Level</Label>
+        <CollapsibleContent className='mt-4 space-y-4 border-t pt-4'>
+          <div className='grid gap-4 md:grid-cols-2'>
+            <div className='space-y-2'>
+              <Label htmlFor={`permission-${capability.type}`}>
+                Permission Level
+              </Label>
               <Select
                 value={config?.permissionLevel || 'read'}
                 onValueChange={onPermissionChange}
@@ -97,41 +112,43 @@ export function CapabilityToggle({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="read">Read</SelectItem>
-                  <SelectItem value="write">Write</SelectItem>
-                  {isAdmin && <SelectItem value="admin">Admin</SelectItem>}
+                  <SelectItem value='none'>None</SelectItem>
+                  <SelectItem value='read'>Read</SelectItem>
+                  <SelectItem value='write'>Write</SelectItem>
+                  {isAdmin && <SelectItem value='admin'>Admin</SelectItem>}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Control the level of access this capability has
               </p>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor={`rate-hour-${capability.type}`}>Max Per Hour</Label>
+          <div className='grid gap-4 md:grid-cols-2'>
+            <div className='space-y-2'>
+              <Label htmlFor={`rate-hour-${capability.type}`}>
+                Max Per Hour
+              </Label>
               <Input
                 id={`rate-hour-${capability.type}`}
-                type="number"
-                min="1"
+                type='number'
+                min='1'
                 value={config?.rateLimit?.maxPerHour || ''}
-                onChange={(e) => onRateLimitChange('maxPerHour', e.target.value)}
-                placeholder="No limit"
+                onChange={e => onRateLimitChange('maxPerHour', e.target.value)}
+                placeholder='No limit'
                 disabled={disabled}
               />
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label htmlFor={`rate-day-${capability.type}`}>Max Per Day</Label>
               <Input
                 id={`rate-day-${capability.type}`}
-                type="number"
-                min="1"
+                type='number'
+                min='1'
                 value={config?.rateLimit?.maxPerDay || ''}
-                onChange={(e) => onRateLimitChange('maxPerDay', e.target.value)}
-                placeholder="No limit"
+                onChange={e => onRateLimitChange('maxPerDay', e.target.value)}
+                placeholder='No limit'
                 disabled={disabled}
               />
             </div>

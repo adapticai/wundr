@@ -17,7 +17,11 @@ import { expect, type Page, test } from '@playwright/test';
 import * as path from 'path';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
-const SCREENSHOTS_DIR = path.join(__dirname, 'screenshots', 'full-flow-integration');
+const SCREENSHOTS_DIR = path.join(
+  __dirname,
+  'screenshots',
+  'full-flow-integration'
+);
 
 // Helper to capture errors
 let consoleErrors: string[] = [];
@@ -27,7 +31,7 @@ function setupErrorCapture(page: Page) {
   consoleErrors = [];
   pageErrors = [];
 
-  page.on('console', (msg) => {
+  page.on('console', msg => {
     if (msg.type() === 'error') {
       const text = msg.text();
       // Filter out known non-critical errors
@@ -42,7 +46,7 @@ function setupErrorCapture(page: Page) {
     }
   });
 
-  page.on('pageerror', (error) => {
+  page.on('pageerror', error => {
     pageErrors.push(error.message);
   });
 }
@@ -90,7 +94,9 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orch
     console.log('Step 2: Orchestrators page loaded');
 
     // Step 3: Click Create Orchestrator button
-    const createOrchestratorButton = page.locator('button:has-text("Create Orchestrator")').first();
+    const createOrchestratorButton = page
+      .locator('button:has-text("Create Orchestrator")')
+      .first();
     await expect(createOrchestratorButton).toBeVisible({ timeout: 5000 });
     await createOrchestratorButton.click();
     await page.waitForTimeout(1000);
@@ -107,11 +113,17 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orch
     const orchestratorName = `Test Orchestrator ${timestamp}`;
 
     // Find and fill name field
-    const nameInput = page.locator('input[name="name"], input[id="orchestrator-name"], input[placeholder*="name" i]').first();
+    const nameInput = page
+      .locator(
+        'input[name="name"], input[id="orchestrator-name"], input[placeholder*="name" i]'
+      )
+      .first();
     await nameInput.fill(orchestratorName);
 
     // Select discipline if available
-    const disciplineSelect = page.locator('select[name="discipline"], select[id="discipline"]').first();
+    const disciplineSelect = page
+      .locator('select[name="discipline"], select[id="discipline"]')
+      .first();
     if (await disciplineSelect.isVisible().catch(() => false)) {
       await disciplineSelect.selectOption({ index: 1 });
     }
@@ -124,7 +136,11 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orch
     console.log('Step 4: Form filled with:', orchestratorName);
 
     // Step 5: Submit form (stub - may not actually create)
-    const submitButton = page.locator('button[type="submit"]:has-text("Create"), button:has-text("Create Orchestrator")').last();
+    const submitButton = page
+      .locator(
+        'button[type="submit"]:has-text("Create"), button:has-text("Create Orchestrator")'
+      )
+      .last();
     await submitButton.click();
     await page.waitForTimeout(2000);
 
@@ -151,7 +167,9 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orch
 });
 
 test.describe('Flow 2: Dashboard → Channels → Create Channel → Send Message', () => {
-  test('should complete full channel creation and messaging flow', async ({ page }) => {
+  test('should complete full channel creation and messaging flow', async ({
+    page,
+  }) => {
     setupErrorCapture(page);
 
     // Step 1: Navigate to Dashboard
@@ -177,7 +195,9 @@ test.describe('Flow 2: Dashboard → Channels → Create Channel → Send Messag
     console.log('Step 2: Channels page loaded');
 
     // Step 3: Open Create Channel dialog
-    const createChannelBtn = page.locator('button:has-text("Create Channel")').first();
+    const createChannelBtn = page
+      .locator('button:has-text("Create Channel")')
+      .first();
     await expect(createChannelBtn).toBeVisible({ timeout: 5000 });
     await createChannelBtn.click();
     await page.waitForTimeout(1000);
@@ -194,7 +214,10 @@ test.describe('Flow 2: Dashboard → Channels → Create Channel → Send Messag
     const channelName = `test-channel-${timestamp}`;
 
     await page.fill('#channel-name, input[name="name"]', channelName);
-    await page.fill('#channel-description, textarea[name="description"]', 'Test channel for integration testing');
+    await page.fill(
+      '#channel-description, textarea[name="description"]',
+      'Test channel for integration testing'
+    );
 
     // Select channel type
     const privateRadio = page.locator('#type-private, input[value="private"]');
@@ -210,7 +233,9 @@ test.describe('Flow 2: Dashboard → Channels → Create Channel → Send Messag
     console.log('Step 4: Form filled with:', channelName);
 
     // Step 5: Submit form
-    const submitBtn = page.locator('button[type="submit"]:has-text("Create")').last();
+    const submitBtn = page
+      .locator('button[type="submit"]:has-text("Create")')
+      .last();
     await submitBtn.click();
     await page.waitForTimeout(2000);
 
@@ -261,7 +286,11 @@ test.describe('Flow 3: Dashboard → Workflows → Create Workflow → View Work
     console.log('Step 2: Workflows page loaded');
 
     // Step 3: Click Create Workflow button
-    const createBtn = page.locator('button:has-text("Create Workflow"), button:has-text("New Workflow")').first();
+    const createBtn = page
+      .locator(
+        'button:has-text("Create Workflow"), button:has-text("New Workflow")'
+      )
+      .first();
     await expect(createBtn).toBeVisible({ timeout: 5000 });
     await createBtn.click();
     await page.waitForTimeout(1000);
@@ -277,10 +306,18 @@ test.describe('Flow 3: Dashboard → Workflows → Create Workflow → View Work
     const timestamp = Date.now();
     const workflowName = `Test Workflow ${timestamp}`;
 
-    const nameInput = page.locator('input[name="name"], input[id="workflow-name"], input[placeholder*="name" i]').first();
+    const nameInput = page
+      .locator(
+        'input[name="name"], input[id="workflow-name"], input[placeholder*="name" i]'
+      )
+      .first();
     await nameInput.fill(workflowName);
 
-    const descInput = page.locator('textarea[name="description"], textarea[id="workflow-description"]').first();
+    const descInput = page
+      .locator(
+        'textarea[name="description"], textarea[id="workflow-description"]'
+      )
+      .first();
     if (await descInput.isVisible().catch(() => false)) {
       await descInput.fill('Test workflow for integration testing');
     }
@@ -293,7 +330,9 @@ test.describe('Flow 3: Dashboard → Workflows → Create Workflow → View Work
     console.log('Step 4: Form filled with:', workflowName);
 
     // Step 5: Submit
-    const submitBtn = page.locator('button[type="submit"]:has-text("Create")').last();
+    const submitBtn = page
+      .locator('button[type="submit"]:has-text("Create")')
+      .last();
     await submitBtn.click();
     await page.waitForTimeout(2000);
 
@@ -360,16 +399,24 @@ test.describe('Flow 4: Dashboard → Agents → Create Agent → View Agent', ()
     const timestamp = Date.now();
     const agentName = `Test Agent ${timestamp}`;
 
-    const nameInput = page.locator('input[name="name"], input[id="agent-name"], input[placeholder*="name" i]').first();
+    const nameInput = page
+      .locator(
+        'input[name="name"], input[id="agent-name"], input[placeholder*="name" i]'
+      )
+      .first();
     await nameInput.fill(agentName);
 
-    const descInput = page.locator('textarea[name="description"], textarea[id="agent-description"]').first();
+    const descInput = page
+      .locator('textarea[name="description"], textarea[id="agent-description"]')
+      .first();
     if (await descInput.isVisible().catch(() => false)) {
       await descInput.fill('Test agent for integration testing');
     }
 
     // Select type if available
-    const typeSelect = page.locator('select[name="type"], select[id="agent-type"]').first();
+    const typeSelect = page
+      .locator('select[name="type"], select[id="agent-type"]')
+      .first();
     if (await typeSelect.isVisible().catch(() => false)) {
       await typeSelect.selectOption({ index: 1 });
     }
@@ -382,7 +429,9 @@ test.describe('Flow 4: Dashboard → Agents → Create Agent → View Agent', ()
     console.log('Step 4: Form filled with:', agentName);
 
     // Step 5: Submit
-    const submitBtn = page.locator('button[type="submit"]:has-text("Create")').last();
+    const submitBtn = page
+      .locator('button[type="submit"]:has-text("Create")')
+      .last();
     await submitBtn.click();
     await page.waitForTimeout(2000);
 
@@ -407,7 +456,9 @@ test.describe('Flow 4: Dashboard → Agents → Create Agent → View Agent', ()
 });
 
 test.describe('Flow 5: Dashboard → Deployments → Create Deployment → View Logs', () => {
-  test('should complete full deployment creation and logs flow', async ({ page }) => {
+  test('should complete full deployment creation and logs flow', async ({
+    page,
+  }) => {
     setupErrorCapture(page);
 
     // Step 1: Navigate to Dashboard
@@ -450,7 +501,10 @@ test.describe('Flow 5: Dashboard → Deployments → Create Deployment → View 
     const deploymentName = `test-deployment-${timestamp}`;
 
     await page.fill('input[id="name"], input[name="name"]', deploymentName);
-    await page.fill('textarea[id="description"], textarea[name="description"]', 'Test deployment for integration testing');
+    await page.fill(
+      'textarea[id="description"], textarea[name="description"]',
+      'Test deployment for integration testing'
+    );
 
     // Select type
     const typeSelect = page.locator('select[id="type"], select[name="type"]');
@@ -459,7 +513,9 @@ test.describe('Flow 5: Dashboard → Deployments → Create Deployment → View 
     }
 
     // Select environment
-    const envSelect = page.locator('select[id="environment"], select[name="environment"]');
+    const envSelect = page.locator(
+      'select[id="environment"], select[name="environment"]'
+    );
     if (await envSelect.isVisible().catch(() => false)) {
       await envSelect.selectOption('development');
     }
@@ -472,7 +528,9 @@ test.describe('Flow 5: Dashboard → Deployments → Create Deployment → View 
     console.log('Step 4: Form filled with:', deploymentName);
 
     // Step 5: Submit
-    const submitBtn = page.locator('button[type="submit"]:has-text("Create")').last();
+    const submitBtn = page
+      .locator('button[type="submit"]:has-text("Create")')
+      .last();
     await submitBtn.click();
     await page.waitForTimeout(2000);
 
@@ -552,11 +610,15 @@ test.describe('Flow 6: Settings → Change Theme → Verify Persistence', () => 
 
     // Step 4: Get current theme
     const htmlElement = page.locator('html');
-    const currentTheme = await htmlElement.getAttribute('class') || 'light';
+    const currentTheme = (await htmlElement.getAttribute('class')) || 'light';
     console.log('Current theme:', currentTheme);
 
     // Step 5: Toggle theme
-    const themeToggle = page.locator('button[role="switch"], button:has-text("Dark"), button:has-text("Light")').first();
+    const themeToggle = page
+      .locator(
+        'button[role="switch"], button:has-text("Dark"), button:has-text("Light")'
+      )
+      .first();
     if (await themeToggle.isVisible().catch(() => false)) {
       await themeToggle.click();
       await page.waitForTimeout(1000);
@@ -569,7 +631,7 @@ test.describe('Flow 6: Settings → Change Theme → Verify Persistence', () => 
       console.log('Step 5: Theme toggled');
 
       // Step 6: Verify theme changed
-      const newTheme = await htmlElement.getAttribute('class') || 'light';
+      const newTheme = (await htmlElement.getAttribute('class')) || 'light';
       console.log('New theme:', newTheme);
       expect(newTheme).not.toBe(currentTheme);
 
@@ -577,7 +639,8 @@ test.describe('Flow 6: Settings → Change Theme → Verify Persistence', () => 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      const persistedTheme = await htmlElement.getAttribute('class') || 'light';
+      const persistedTheme =
+        (await htmlElement.getAttribute('class')) || 'light';
       console.log('Persisted theme after reload:', persistedTheme);
       expect(persistedTheme).toBe(newTheme);
 
@@ -616,11 +679,27 @@ test.describe('Integration Test Summary Report', () => {
 
     // Test all flows quickly to generate summary
     const flows = [
-      { name: 'Orchestrator Creation Flow', route: '/orchestrators', button: 'Create Orchestrator' },
-      { name: 'Channel Creation Flow', route: '/channels', button: 'Create Channel' },
-      { name: 'Workflow Creation Flow', route: '/workflows', button: 'Create Workflow' },
+      {
+        name: 'Orchestrator Creation Flow',
+        route: '/orchestrators',
+        button: 'Create Orchestrator',
+      },
+      {
+        name: 'Channel Creation Flow',
+        route: '/channels',
+        button: 'Create Channel',
+      },
+      {
+        name: 'Workflow Creation Flow',
+        route: '/workflows',
+        button: 'Create Workflow',
+      },
       { name: 'Agent Creation Flow', route: '/agents', button: 'Create Agent' },
-      { name: 'Deployment Creation Flow', route: '/deployments', button: 'New Deployment' },
+      {
+        name: 'Deployment Creation Flow',
+        route: '/deployments',
+        button: 'New Deployment',
+      },
     ];
 
     await page.goto(BASE_URL);
@@ -633,7 +712,10 @@ test.describe('Integration Test Summary Report', () => {
         await page.waitForTimeout(2000);
 
         const pageLoaded = await page.locator('h1').isVisible();
-        const buttonVisible = await page.locator(`button:has-text("${flow.button}")`).isVisible().catch(() => false);
+        const buttonVisible = await page
+          .locator(`button:has-text("${flow.button}")`)
+          .isVisible()
+          .catch(() => false);
 
         report.flows.push({
           name: flow.name,
@@ -654,7 +736,8 @@ test.describe('Integration Test Summary Report', () => {
     console.log(`Generated: ${report.timestamp}\n`);
     console.log('Flow Results:');
     report.flows.forEach((flow, index) => {
-      const icon = flow.status === 'PASS' ? '✓' : flow.status === 'PARTIAL' ? '~' : '✗';
+      const icon =
+        flow.status === 'PASS' ? '✓' : flow.status === 'PARTIAL' ? '~' : '✗';
       console.log(`  ${index + 1}. ${icon} ${flow.name}: ${flow.status}`);
       console.log(`     ${flow.details}`);
     });

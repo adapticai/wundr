@@ -29,20 +29,26 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           select: {
             id: true,
             name: true,
-            orchestratorId: true
-          }
+            orchestratorId: true,
+          },
         },
       },
     });
 
     if (!subagent) {
-      return NextResponse.json({ error: 'Subagent not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Subagent not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ data: subagent });
   } catch (error) {
     console.error('Error fetching subagent:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -64,8 +70,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           select: {
             id: true,
             name: true,
-            orchestratorId: true
-          }
+            orchestratorId: true,
+          },
         },
       },
     });
@@ -73,7 +79,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ data: subagent });
   } catch (error) {
     console.error('Error updating subagent:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -92,6 +101,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting subagent:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

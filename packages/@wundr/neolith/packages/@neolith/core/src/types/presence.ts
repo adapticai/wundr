@@ -183,7 +183,11 @@ export interface BasePresenceEvent {
  * User presence change event.
  */
 export interface UserPresenceEvent extends BasePresenceEvent {
-  type: 'user.online' | 'user.offline' | 'user.status_changed' | 'user.metadata_updated';
+  type:
+    | 'user.online'
+    | 'user.offline'
+    | 'user.status_changed'
+    | 'user.metadata_updated';
 
   /** User ID associated with the event */
   userId: string;
@@ -236,7 +240,10 @@ export interface ChannelPresenceEvent extends BasePresenceEvent {
 /**
  * Union type for all presence events.
  */
-export type PresenceEvent = UserPresenceEvent | OrchestratorPresenceEvent | ChannelPresenceEvent;
+export type PresenceEvent =
+  | UserPresenceEvent
+  | OrchestratorPresenceEvent
+  | ChannelPresenceEvent;
 
 /**
  * @deprecated Use OrchestratorPresenceEvent instead
@@ -255,7 +262,9 @@ export type PresenceCallback = (event: UserPresenceEvent) => void;
 /**
  * Callback for Orchestrator presence changes.
  */
-export type OrchestratorPresenceCallback = (event: OrchestratorPresenceEvent) => void;
+export type OrchestratorPresenceCallback = (
+  event: OrchestratorPresenceEvent
+) => void;
 
 /**
  * Callback for channel presence changes.
@@ -346,7 +355,10 @@ export const DEFAULT_PRESENCE_CONFIG: PresenceConfig = {
  * Type guard to check if a value is a valid PresenceStatus.
  */
 export function isPresenceStatus(value: unknown): value is PresenceStatus {
-  return typeof value === 'string' && ['ONLINE', 'AWAY', 'BUSY', 'OFFLINE'].includes(value);
+  return (
+    typeof value === 'string' &&
+    ['ONLINE', 'AWAY', 'BUSY', 'OFFLINE'].includes(value)
+  );
 }
 
 /**
@@ -386,26 +398,34 @@ export function isVPPresence(value: unknown): value is OrchestratorPresence {
  * Type guard to check if a value is a valid DeviceType.
  */
 export function isDeviceType(value: unknown): value is DeviceType {
-  return typeof value === 'string' && ['web', 'desktop', 'mobile'].includes(value);
+  return (
+    typeof value === 'string' && ['web', 'desktop', 'mobile'].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a value is a UserPresenceEvent.
  */
-export function isUserPresenceEvent(event: PresenceEvent): event is UserPresenceEvent {
+export function isUserPresenceEvent(
+  event: PresenceEvent
+): event is UserPresenceEvent {
   return event.type.startsWith('user.');
 }
 
 /**
  * Type guard to check if a value is a OrchestratorPresenceEvent.
  */
-export function isVPPresenceEvent(event: PresenceEvent): event is OrchestratorPresenceEvent {
+export function isVPPresenceEvent(
+  event: PresenceEvent
+): event is OrchestratorPresenceEvent {
   return event.type.startsWith('vp.');
 }
 
 /**
  * Type guard to check if a value is a ChannelPresenceEvent.
  */
-export function isChannelPresenceEvent(event: PresenceEvent): event is ChannelPresenceEvent {
+export function isChannelPresenceEvent(
+  event: PresenceEvent
+): event is ChannelPresenceEvent {
   return event.type.startsWith('channel.');
 }

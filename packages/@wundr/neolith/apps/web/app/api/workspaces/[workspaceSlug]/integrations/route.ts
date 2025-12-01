@@ -47,15 +47,18 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', INTEGRATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -65,9 +68,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID is required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -77,9 +80,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -101,19 +104,24 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Fetch integrations
-    const { integrations, total } = await listIntegrations(workspaceId, parseResult.data);
+    const { integrations, total } = await listIntegrations(
+      workspaceId,
+      parseResult.data
+    );
 
     // Calculate metadata
-    const activeCount = integrations.filter((i) => i.status === 'ACTIVE').length;
-    const inactiveCount = integrations.filter((i) => i.status === 'INACTIVE').length;
-    const errorCount = integrations.filter((i) => i.status === 'ERROR').length;
+    const activeCount = integrations.filter(i => i.status === 'ACTIVE').length;
+    const inactiveCount = integrations.filter(
+      i => i.status === 'INACTIVE'
+    ).length;
+    const errorCount = integrations.filter(i => i.status === 'ERROR').length;
 
     return NextResponse.json({
       integrations,
@@ -130,13 +138,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceId]/integrations] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceId]/integrations] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -160,15 +171,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', INTEGRATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -178,9 +192,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID is required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -190,9 +204,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -200,9 +214,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required to create integrations',
-          INTEGRATION_ERROR_CODES.FORBIDDEN,
+          INTEGRATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -212,8 +226,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', INTEGRATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -224,9 +241,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -234,7 +251,7 @@ export async function POST(
     const integration = await createIntegration(
       workspaceId,
       parseResult.data,
-      session.user.id,
+      session.user.id
     );
 
     // Remove sensitive fields from response
@@ -249,16 +266,19 @@ export async function POST(
         integration: safeIntegration,
         message: 'Integration created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceId]/integrations] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceId]/integrations] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -33,7 +33,7 @@ const ALLOWED_ORIGINS = [
 function isOriginAllowed(origin: string | null): boolean {
   if (!origin) return true; // Allow same-origin requests
 
-  return ALLOWED_ORIGINS.some((allowed) => {
+  return ALLOWED_ORIGINS.some(allowed => {
     if (allowed.includes('*')) {
       // Handle wildcard subdomains
       const pattern = allowed.replace(/\*/g, '.*');
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
         status: 426, // Upgrade Required
         headers: {
           'Content-Type': 'application/json',
-          'Upgrade': 'websocket',
+          Upgrade: 'websocket',
         },
       }
     );
@@ -102,14 +102,14 @@ export async function GET(req: NextRequest) {
 
     // For development with Next.js standalone server:
     const nodeReq = (req as any).raw || req;
-    const socket = (nodeReq.socket || nodeReq.connection);
+    const socket = nodeReq.socket || nodeReq.connection;
 
     if (!socket) {
       throw new Error('No socket available for WebSocket upgrade');
     }
 
     // Handle the upgrade via our WebSocket server
-    wsServer.handleUpgrade(nodeReq, socket, Buffer.alloc(0), (ws) => {
+    wsServer.handleUpgrade(nodeReq, socket, Buffer.alloc(0), ws => {
       wsServer.emit('connection', ws, nodeReq);
     });
 
@@ -117,8 +117,8 @@ export async function GET(req: NextRequest) {
     return new Response(null, {
       status: 101, // Switching Protocols
       headers: {
-        'Upgrade': 'websocket',
-        'Connection': 'Upgrade',
+        Upgrade: 'websocket',
+        Connection: 'Upgrade',
       },
     });
   } catch (error) {
@@ -152,7 +152,7 @@ export async function POST() {
       status: 405,
       headers: {
         'Content-Type': 'application/json',
-        'Allow': 'GET',
+        Allow: 'GET',
       },
     }
   );

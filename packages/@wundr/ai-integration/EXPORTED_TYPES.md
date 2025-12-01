@@ -13,18 +13,18 @@ import type {
   Message,
   ToolDefinition,
   ToolCall,
-  
+
   // Token Usage
   TokenUsage,
   Usage, // Backward compatibility alias for TokenUsage
-  
+
   // Enums/Unions
   MessageRole, // 'system' | 'user' | 'assistant' | 'tool'
   FinishReason, // 'stop' | 'length' | 'tool_calls' | 'content_filter' | 'error'
-  
+
   // Streaming
   ChatChunk,
-  
+
   // Configuration
   LLMClientConfig,
 } from '@wundr.io/ai-integration';
@@ -140,6 +140,7 @@ type Usage = TokenUsage;
 ## Build Verification
 
 ✅ All types are properly exported from:
+
 - `/Users/maya/wundr/packages/@wundr/ai-integration/dist/index.d.ts`
 - Package builds successfully with TypeScript compiler
 - Type declarations are generated correctly
@@ -162,5 +163,4 @@ import type {
 
 ## Version
 
-Current version: 1.0.6
-Built: 2025-12-01
+Current version: 1.0.6 Built: 2025-12-01

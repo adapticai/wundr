@@ -62,7 +62,10 @@ export interface UseDaemonActions {
 
 export interface UseDaemonStreamHandlers {
   /** Called when streaming starts */
-  onStreamStart?: (sessionId: string, metadata?: Record<string, unknown>) => void;
+  onStreamStart?: (
+    sessionId: string,
+    metadata?: Record<string, unknown>
+  ) => void;
   /** Called for each stream chunk */
   onStreamChunk?: (chunk: StreamChunk) => void;
   /** Called when streaming ends */
@@ -74,7 +77,11 @@ export interface UseDaemonStreamHandlers {
   /** Called when a task starts executing */
   onTaskExecuting?: (sessionId: string, taskId: string) => void;
   /** Called when a task completes */
-  onTaskCompleted?: (sessionId: string, taskId: string, result?: unknown) => void;
+  onTaskCompleted?: (
+    sessionId: string,
+    taskId: string,
+    result?: unknown
+  ) => void;
   /** Called when a task fails */
   onTaskFailed?: (sessionId: string, taskId: string, error: string) => void;
   /** Called when a session is spawned */
@@ -201,23 +208,28 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
     if (!client) return;
 
     const onConnected = () => {
-      setState((prev) => ({ ...prev, connected: true, connecting: false, error: null }));
+      setState(prev => ({
+        ...prev,
+        connected: true,
+        connecting: false,
+        error: null,
+      }));
     };
 
     const onDisconnected = () => {
-      setState((prev) => ({ ...prev, connected: false }));
+      setState(prev => ({ ...prev, connected: false }));
     };
 
     const onError = (error: Error) => {
-      setState((prev) => ({ ...prev, error, connecting: false }));
+      setState(prev => ({ ...prev, error, connecting: false }));
     };
 
     const onReconnecting = (attempt: number) => {
-      setState((prev) => ({ ...prev, reconnectAttempts: attempt }));
+      setState(prev => ({ ...prev, reconnectAttempts: attempt }));
     };
 
     const onSessionSpawned = (session: Session) => {
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         sessions: [...prev.sessions, session],
       }));
@@ -225,18 +237,21 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
     };
 
     const onSessionUpdated = (session: Session) => {
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
-        sessions: prev.sessions.map((s) => (s.id === session.id ? session : s)),
+        sessions: prev.sessions.map(s => (s.id === session.id ? session : s)),
       }));
       handlers.onSessionUpdated?.(session);
     };
 
     const onDaemonStatus = (status: DaemonStatus) => {
-      setState((prev) => ({ ...prev, daemonStatus: status }));
+      setState(prev => ({ ...prev, daemonStatus: status }));
     };
 
-    const onStreamStart = (sessionId: string, metadata?: Record<string, unknown>) => {
+    const onStreamStart = (
+      sessionId: string,
+      metadata?: Record<string, unknown>
+    ) => {
       handlers.onStreamStart?.(sessionId, metadata);
     };
 
@@ -244,7 +259,10 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
       handlers.onStreamChunk?.(chunk);
     };
 
-    const onStreamEnd = (sessionId: string, metadata?: Record<string, unknown>) => {
+    const onStreamEnd = (
+      sessionId: string,
+      metadata?: Record<string, unknown>
+    ) => {
       handlers.onStreamEnd?.(sessionId, metadata);
     };
 
@@ -260,7 +278,11 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
       handlers.onTaskExecuting?.(sessionId, taskId);
     };
 
-    const onTaskCompleted = (sessionId: string, taskId: string, result?: unknown) => {
+    const onTaskCompleted = (
+      sessionId: string,
+      taskId: string,
+      result?: unknown
+    ) => {
       handlers.onTaskCompleted?.(sessionId, taskId, result);
     };
 
@@ -307,10 +329,15 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
 
   // Auto-connect on mount if enabled
   useEffect(() => {
-    if (autoConnect && clientRef.current && !state.connected && !state.connecting) {
-      setState((prev) => ({ ...prev, connecting: true }));
-      clientRef.current.connect().catch((error) => {
-        setState((prev) => ({ ...prev, error, connecting: false }));
+    if (
+      autoConnect &&
+      clientRef.current &&
+      !state.connected &&
+      !state.connecting
+    ) {
+      setState(prev => ({ ...prev, connecting: true }));
+      clientRef.current.connect().catch(error => {
+        setState(prev => ({ ...prev, error, connecting: false }));
       });
     }
   }, [autoConnect, state.connected, state.connecting]);
@@ -321,12 +348,12 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
       throw new Error('Daemon client not initialized');
     }
 
-    setState((prev) => ({ ...prev, connecting: true, error: null }));
+    setState(prev => ({ ...prev, connecting: true, error: null }));
 
     try {
       await clientRef.current.connect();
     } catch (error) {
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         error: error instanceof Error ? error : new Error('Connection failed'),
         connecting: false,
@@ -338,44 +365,53 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
   const disconnect = useCallback(() => {
     if (!clientRef.current) return;
     clientRef.current.disconnect();
-    setState((prev) => ({ ...prev, sessions: [] }));
+    setState(prev => ({ ...prev, sessions: [] }));
   }, []);
 
-  const spawnSession = useCallback(async (payload: SpawnSessionPayload): Promise<Session> => {
-    if (!clientRef.current) {
-      throw new Error('Daemon client not initialized');
-    }
+  const spawnSession = useCallback(
+    async (payload: SpawnSessionPayload): Promise<Session> => {
+      if (!clientRef.current) {
+        throw new Error('Daemon client not initialized');
+      }
 
-    if (!state.connected) {
-      throw new Error('Not connected to daemon');
-    }
+      if (!state.connected) {
+        throw new Error('Not connected to daemon');
+      }
 
-    return clientRef.current.spawnSession(payload);
-  }, [state.connected]);
+      return clientRef.current.spawnSession(payload);
+    },
+    [state.connected]
+  );
 
-  const executeTask = useCallback((payload: ExecuteTaskPayload) => {
-    if (!clientRef.current) {
-      throw new Error('Daemon client not initialized');
-    }
+  const executeTask = useCallback(
+    (payload: ExecuteTaskPayload) => {
+      if (!clientRef.current) {
+        throw new Error('Daemon client not initialized');
+      }
 
-    if (!state.connected) {
-      throw new Error('Not connected to daemon');
-    }
+      if (!state.connected) {
+        throw new Error('Not connected to daemon');
+      }
 
-    clientRef.current.executeTask(payload);
-  }, [state.connected]);
+      clientRef.current.executeTask(payload);
+    },
+    [state.connected]
+  );
 
-  const getSessionStatus = useCallback((sessionId: string) => {
-    if (!clientRef.current) {
-      throw new Error('Daemon client not initialized');
-    }
+  const getSessionStatus = useCallback(
+    (sessionId: string) => {
+      if (!clientRef.current) {
+        throw new Error('Daemon client not initialized');
+      }
 
-    if (!state.connected) {
-      throw new Error('Not connected to daemon');
-    }
+      if (!state.connected) {
+        throw new Error('Not connected to daemon');
+      }
 
-    clientRef.current.getSessionStatus(sessionId);
-  }, [state.connected]);
+      clientRef.current.getSessionStatus(sessionId);
+    },
+    [state.connected]
+  );
 
   const getDaemonStatus = useCallback(() => {
     if (!clientRef.current) {
@@ -389,27 +425,33 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
     clientRef.current.getDaemonStatus();
   }, [state.connected]);
 
-  const stopSession = useCallback((sessionId: string) => {
-    if (!clientRef.current) {
-      throw new Error('Daemon client not initialized');
-    }
+  const stopSession = useCallback(
+    (sessionId: string) => {
+      if (!clientRef.current) {
+        throw new Error('Daemon client not initialized');
+      }
 
-    if (!state.connected) {
-      throw new Error('Not connected to daemon');
-    }
+      if (!state.connected) {
+        throw new Error('Not connected to daemon');
+      }
 
-    clientRef.current.stopSession(sessionId);
+      clientRef.current.stopSession(sessionId);
 
-    // Remove from local state
-    setState((prev) => ({
-      ...prev,
-      sessions: prev.sessions.filter((s) => s.id !== sessionId),
-    }));
-  }, [state.connected]);
+      // Remove from local state
+      setState(prev => ({
+        ...prev,
+        sessions: prev.sessions.filter(s => s.id !== sessionId),
+      }));
+    },
+    [state.connected]
+  );
 
-  const getSession = useCallback((sessionId: string): Session | undefined => {
-    return state.sessions.find((s) => s.id === sessionId);
-  }, [state.sessions]);
+  const getSession = useCallback(
+    (sessionId: string): Session | undefined => {
+      return state.sessions.find(s => s.id === sessionId);
+    },
+    [state.sessions]
+  );
 
   return {
     // State
@@ -465,9 +507,9 @@ export function useSessionMonitor(
   const { getSession, connected } = useDaemon({
     autoConnect: true,
     handlers: {
-      onStreamChunk: (chunk) => {
+      onStreamChunk: chunk => {
         if (chunk.sessionId === sessionId) {
-          setStreamOutput((prev) => prev + chunk.chunk);
+          setStreamOutput(prev => prev + chunk.chunk);
           handlers?.onStreamChunk?.(chunk);
         }
       },
@@ -477,7 +519,7 @@ export function useSessionMonitor(
           handlers?.onStreamStart?.(sid, metadata);
         }
       },
-      onSessionUpdated: (updatedSession) => {
+      onSessionUpdated: updatedSession => {
         if (updatedSession.id === sessionId) {
           setSession(updatedSession);
           handlers?.onSessionUpdated?.(updatedSession);

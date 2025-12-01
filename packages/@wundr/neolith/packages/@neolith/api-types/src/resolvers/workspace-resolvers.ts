@@ -32,7 +32,8 @@ export const WorkspaceRole = {
   Guest: 'GUEST',
 } as const;
 
-export type WorkspaceRoleType = (typeof WorkspaceRole)[keyof typeof WorkspaceRole];
+export type WorkspaceRoleType =
+  (typeof WorkspaceRole)[keyof typeof WorkspaceRole];
 
 /**
  * Workspace visibility enum matching the Prisma schema
@@ -394,7 +395,9 @@ function generateSlug(name: string): string {
  * @returns Base64 encoded cursor
  */
 function generateCursor(item: { createdAt: Date; id: string }): string {
-  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString('base64');
+  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString(
+    'base64'
+  );
 }
 
 /**
@@ -515,7 +518,10 @@ export const workspaceQueries = {
     if (!memberInfo.isMember) {
       // For public/internal workspaces, check org membership
       if (ws.visibility === 'PUBLIC' || ws.visibility === 'INTERNAL') {
-        const isOrgMember = await isOrganizationMember(context, ws.organizationId);
+        const isOrgMember = await isOrganizationMember(
+          context,
+          ws.organizationId
+        );
         if (!isOrgMember) {
           throw new GraphQLError('Access denied to this workspace', {
             extensions: { code: 'FORBIDDEN' },
@@ -766,7 +772,13 @@ export const workspaceQueries = {
       orderBy: [{ joinedAt: 'desc' }, { id: 'desc' }],
       include: {
         user: {
-          select: { id: true, email: true, name: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
     });
@@ -778,7 +790,7 @@ export const workspaceQueries = {
     const hasNextPage = members.length > first;
     const nodes = hasNextPage ? members.slice(0, -1) : members;
 
-    const edges = nodes.map((member: typeof nodes[number]) => ({
+    const edges = nodes.map((member: (typeof nodes)[number]) => ({
       node: {
         id: member.id,
         role: member.role,
@@ -849,7 +861,10 @@ export const workspaceMutations = {
     const { input } = args;
 
     // Check organization membership
-    const isOrgMember = await isOrganizationMember(context, input.organizationId);
+    const isOrgMember = await isOrganizationMember(
+      context,
+      input.organizationId
+    );
     if (!isOrgMember) {
       throw new GraphQLError('Access denied to this organization', {
         extensions: { code: 'FORBIDDEN' },
@@ -886,7 +901,8 @@ export const workspaceMutations = {
           slug,
           description: input.description ?? null,
           avatarUrl: input.avatarUrl ?? null,
-          visibility: (input.visibility as PrismaWorkspaceVisibility) ?? 'PRIVATE',
+          visibility:
+            (input.visibility as PrismaWorkspaceVisibility) ?? 'PRIVATE',
           settings: {},
           organizationId: input.organizationId,
           workspaceMembers: {
@@ -957,9 +973,12 @@ export const workspaceMutations = {
     // Check modification permission
     const canModify = await canModifyWorkspace(context, id);
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify this workspace', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify this workspace',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Validate input
@@ -1150,7 +1169,12 @@ export const workspaceMutations = {
     if (!orgMembership) {
       return {
         member: null,
-        errors: [{ code: 'FORBIDDEN', message: 'User must be a member of the organization' }],
+        errors: [
+          {
+            code: 'FORBIDDEN',
+            message: 'User must be a member of the organization',
+          },
+        ],
       };
     }
 
@@ -1175,7 +1199,12 @@ export const workspaceMutations = {
     if (role === 'OWNER') {
       return {
         member: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role directly' }],
+        errors: [
+          {
+            code: 'BAD_USER_INPUT',
+            message: 'Cannot assign OWNER role directly',
+          },
+        ],
       };
     }
 
@@ -1259,7 +1288,9 @@ export const workspaceMutations = {
       return {
         success: false,
         deletedId: null,
-        errors: [{ code: 'FORBIDDEN', message: 'Cannot remove workspace owner' }],
+        errors: [
+          { code: 'FORBIDDEN', message: 'Cannot remove workspace owner' },
+        ],
       };
     }
 
@@ -1273,9 +1304,12 @@ export const workspaceMutations = {
       isSelfRemoval;
 
     if (!canRemove) {
-      throw new GraphQLError('You do not have permission to remove this member', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to remove this member',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Remove member
@@ -1367,7 +1401,9 @@ export const workspaceMutations = {
     if (role === 'OWNER') {
       return {
         member: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role' }],
+        errors: [
+          { code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role' },
+        ],
       };
     }
 
@@ -1464,7 +1500,13 @@ export const WorkspaceFieldResolvers = {
       where: { workspaceId: parent.id },
       include: {
         user: {
-          select: { id: true, email: true, name: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
       orderBy: { joinedAt: 'asc' },

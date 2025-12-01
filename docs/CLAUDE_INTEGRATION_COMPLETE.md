@@ -2,11 +2,13 @@
 
 ## ✅ Integration Complete!
 
-All Claude and Claude Flow components have been successfully integrated into the Wundr computer-setup scripts and CLI flow.
+All Claude and Claude Flow components have been successfully integrated into the Wundr
+computer-setup scripts and CLI flow.
 
 ## 📦 What's Been Integrated
 
 ### 1. **Computer Setup Integration**
+
 - **Location**: `/packages/@wundr/computer-setup/src/installers/claude-installer.ts`
 - **Features**:
   - Automatic Claude CLI installation
@@ -19,11 +21,13 @@ All Claude and Claude Flow components have been successfully integrated into the
 ### 2. **CLI Commands**
 
 #### **`wundr setup`** - Main Setup Flow
+
 - Includes Claude installer in all profiles (frontend, backend, fullstack, devops)
 - Automatically installs Claude ecosystem as part of computer provisioning
 - Example: `wundr setup --profile fullstack`
 
 #### **`wundr claude-setup`** - Dedicated Claude Setup
+
 - Complete Claude ecosystem installation
 - MCP tools management
 - Agent configuration
@@ -37,6 +41,7 @@ All Claude and Claude Flow components have been successfully integrated into the
   ```
 
 #### **`wundr claude-init`** - Project Initialization
+
 - Initialize Claude in any git repository
 - Dynamic CLAUDE.md generation
 - Project analysis and audit
@@ -44,6 +49,7 @@ All Claude and Claude Flow components have been successfully integrated into the
 - Example: `wundr claude-init --interactive`
 
 ### 3. **MCP Tools Installation Script**
+
 - **Location**: `/scripts/install-mcp-tools.sh`
 - **Features**:
   - Automated installation of all 5 MCP tools
@@ -52,7 +58,9 @@ All Claude and Claude Flow components have been successfully integrated into the
   - Validation script included
 
 ### 4. **Profile Integration**
+
 All developer profiles now include Claude and Claude Flow:
+
 - **Frontend**: Claude + mobile-dev agent
 - **Backend**: Claude + backend-dev, system-architect agents
 - **Fullstack**: Claude + all core agents
@@ -61,6 +69,7 @@ All developer profiles now include Claude and Claude Flow:
 ## 🚀 Usage Workflows
 
 ### Complete Computer Setup (New Machine)
+
 ```bash
 # Option 1: Interactive setup
 wundr setup
@@ -73,6 +82,7 @@ wundr computer-setup --profile backend
 ```
 
 ### Standalone Claude Setup
+
 ```bash
 # Complete Claude installation
 wundr claude-setup
@@ -85,12 +95,14 @@ wundr claude-setup agents --profile frontend
 ```
 
 ### Initialize Project with Claude
+
 ```bash
 cd your-project
 wundr claude-init --interactive
 ```
 
 ### Direct MCP Tools Installation
+
 ```bash
 ./scripts/install-mcp-tools.sh
 ```
@@ -98,6 +110,7 @@ wundr claude-init --interactive
 ## 🔧 Configuration Files Created
 
 ### System-Wide
+
 - `~/.claude/settings.json` - Main Claude configuration
 - `~/.claude/agents/*.json` - 54 agent configurations
 - `~/.claude/browser-extension/` - Chrome extension files
@@ -105,6 +118,7 @@ wundr claude-init --interactive
 - `~/.claude/.env.*` - MCP tool API configurations
 
 ### Project-Specific
+
 - `CLAUDE.md` - Project-specific Claude configuration
 - `.claude-flow/config.json` - Project Claude Flow settings
 - `.claude/agents/` - Project-specific agents
@@ -113,12 +127,14 @@ wundr claude-init --interactive
 ## 📊 Quality Enforcement
 
 ### Automatic Hooks
+
 - **Pre-tool use**: Validation and resource preparation
 - **Post-edit**: Auto-formatting with Prettier
 - **Pre-commit**: Type checking, linting, test execution
 - **Session management**: Metrics export and state persistence
 
 ### Standards Enforced
+
 - TypeScript type checking (`npm run typecheck`)
 - ESLint code quality (`npm run lint`)
 - Test execution (`npm test`)
@@ -128,6 +144,7 @@ wundr claude-init --interactive
 ## 🤖 54 Specialized Agents
 
 ### Categories
+
 1. **Core Development** (5): coder, reviewer, tester, planner, researcher
 2. **Swarm Coordination** (5): hierarchical, mesh, adaptive coordinators
 3. **Consensus & Distributed** (7): Byzantine, Raft, gossip protocols
@@ -140,6 +157,7 @@ wundr claude-init --interactive
 ## 🔌 MCP Tools Integration
 
 ### Installed Tools
+
 1. **Firecrawl**: Web scraping and crawling
 2. **Context7**: Context management with vector search
 3. **Playwright**: Browser automation and E2E testing
@@ -147,6 +165,7 @@ wundr claude-init --interactive
 5. **Sequential Thinking**: MIT's structured reasoning
 
 ### Chrome Extension
+
 - Auto-generated during setup
 - Located at `~/.claude/browser-extension/`
 - Manual installation required in Chrome
@@ -154,6 +173,7 @@ wundr claude-init --interactive
 ## ✨ Advanced Features
 
 ### Claude Flow Orchestration
+
 - SPARC methodology integration
 - Swarm coordination with multiple topologies
 - Neural training and pattern learning
@@ -161,12 +181,14 @@ wundr claude-init --interactive
 - Performance metrics tracking
 
 ### Project Detection
+
 - Automatic project type identification
 - Framework-specific agent selection
 - Build tool detection
 - Quality standard discovery
 
 ### Team Configuration
+
 - Shared team profiles
 - Standardized tool sets
 - Consistent environment setup
@@ -175,16 +197,19 @@ wundr claude-init --interactive
 ## 📋 Validation & Troubleshooting
 
 ### Validate Installation
+
 ```bash
 wundr claude-setup validate
 ```
 
 ### Auto-Fix Issues
+
 ```bash
 wundr claude-setup validate --fix
 ```
 
 ### Check Specific Components
+
 ```bash
 # Check Claude CLI
 claude --version
@@ -199,6 +224,7 @@ npx claude-flow@alpha --version
 ## 🎯 Next Steps After Installation
 
 1. **Configure API Keys** (if needed):
+
    ```bash
    vim ~/.claude/.env.firecrawl
    vim ~/.claude/.env.context7
@@ -210,6 +236,7 @@ npx claude-flow@alpha --version
    - Load unpacked → `~/.claude/browser-extension/`
 
 3. **Initialize Your First Project**:
+
    ```bash
    cd your-project
    wundr claude-init
@@ -230,16 +257,19 @@ npx claude-flow@alpha --version
 ## 🔄 Updates & Maintenance
 
 ### Update Claude Flow
+
 ```bash
 npm update -g claude-flow@alpha
 ```
 
 ### Update MCP Tools
+
 ```bash
 wundr claude-setup mcp
 ```
 
 ### Regenerate Agents
+
 ```bash
 wundr claude-setup agents --profile fullstack
 ```
@@ -266,4 +296,6 @@ wundr claude-setup agents --profile fullstack
 
 **Integration Status**: ✅ **COMPLETE**
 
-All scripts and commands are fully integrated into the main computer-setup flow and CLI commands. Claude and Claude Flow will be automatically installed and configured when running any of the setup commands.
+All scripts and commands are fully integrated into the main computer-setup flow and CLI commands.
+Claude and Claude Flow will be automatically installed and configured when running any of the setup
+commands.

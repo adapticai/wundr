@@ -19,7 +19,7 @@ const logger = new Logger({ name: 'slack-installer' });
 export class SlackInstaller implements BaseInstaller {
   name = 'slack';
   private readonly homeDir = os.homedir();
-  
+
   isSupported(platform: SetupPlatform): boolean {
     return ['darwin', 'linux'].includes(platform.os);
   }
@@ -47,8 +47,12 @@ export class SlackInstaller implements BaseInstaller {
       if (os.platform() === 'darwin') {
         const plistPath = '/Applications/Slack.app/Contents/Info.plist';
         const { stdout } = await execa('plutil', ['-p', plistPath]);
-        const versionMatch = stdout.match(/"CFBundleShortVersionString"\s*=>\s*"([^"]+)"/);
-        return versionMatch ? `Slack ${versionMatch[1]}` : 'Slack (version unknown)';
+        const versionMatch = stdout.match(
+          /"CFBundleShortVersionString"\s*=>\s*"([^"]+)"/
+        );
+        return versionMatch
+          ? `Slack ${versionMatch[1]}`
+          : 'Slack (version unknown)';
       } else {
         const { stdout } = await execa('slack', ['--version']);
         return stdout.trim();
@@ -58,7 +62,10 @@ export class SlackInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     logger.info(`Installing Slack for ${profile.name || 'user'}...`);
 
     // Install Slack application
@@ -77,9 +84,14 @@ export class SlackInstaller implements BaseInstaller {
     await this.createSlackEnvTemplate();
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     // Log configuration context for debugging
-    logger.info(`Slack configuration verified for ${profile.name || 'user'} on ${platform.os}`);
+    logger.info(
+      `Slack configuration verified for ${profile.name || 'user'} on ${platform.os}`
+    );
   }
 
   async validate(): Promise<boolean> {
@@ -87,16 +99,16 @@ export class SlackInstaller implements BaseInstaller {
       // Check if Slack app is installed
       const appInstalled = await this.isInstalled();
       if (!appInstalled) {
-return false;
-}
-      
+        return false;
+      }
+
       // Check if Slack CLI is available (optional)
       try {
         await which('slack');
       } catch {
         // CLI not required for basic functionality
       }
-      
+
       return true;
     } catch (error) {
       logger.error('Slack validation failed:', error);
@@ -105,17 +117,19 @@ return false;
   }
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
-    return [{
-      id: 'install-slack',
-      name: 'Install Slack',
-      description: 'Install Slack application and development tools',
-      category: 'communication',
-      required: false,
-      dependencies: ['install-homebrew'],
-      estimatedTime: 120,
-      validator: () => this.validate(),
-      installer: () => this.install(profile, platform),
-    }];
+    return [
+      {
+        id: 'install-slack',
+        name: 'Install Slack',
+        description: 'Install Slack application and development tools',
+        category: 'communication',
+        required: false,
+        dependencies: ['install-homebrew'],
+        estimatedTime: 120,
+        validator: () => this.validate(),
+        installer: () => this.install(profile, platform),
+      },
+    ];
   }
 
   private async installSlack(platform: SetupPlatform): Promise<void> {
@@ -152,7 +166,7 @@ return false;
       'sudo apt-get update',
       'sudo apt-get install -y slack-desktop',
     ];
-    
+
     for (const cmd of commands) {
       try {
         await execa('bash', ['-c', cmd]);
@@ -184,7 +198,7 @@ return false;
         // Install Slack CLI
       }
     }
-    
+
     // Create /usr/local/bin if it doesn't exist (macOS)
     if (os.platform() === 'darwin') {
       try {
@@ -192,22 +206,33 @@ return false;
         if (!stat.isDirectory()) {
           logger.info('Creating /usr/local/bin directory...');
           await execa('sudo', ['mkdir', '-p', '/usr/local/bin']);
-          await execa('sudo', ['chown', '-R', `${os.userInfo().username}:admin`, '/usr/local']);
+          await execa('sudo', [
+            'chown',
+            '-R',
+            `${os.userInfo().username}:admin`,
+            '/usr/local',
+          ]);
         }
       } catch {
         logger.info('Creating /usr/local/bin directory...');
         try {
           await execa('sudo', ['mkdir', '-p', '/usr/local/bin']);
-          await execa('sudo', ['chown', '-R', `${os.userInfo().username}:admin`, '/usr/local']);
+          await execa('sudo', [
+            'chown',
+            '-R',
+            `${os.userInfo().username}:admin`,
+            '/usr/local',
+          ]);
         } catch (error) {
           logger.warn('Failed to create /usr/local/bin:', error);
         }
       }
     }
-    
+
     // Install Slack CLI
     try {
-      const installScript = 'https://downloads.slack-edge.com/slack-cli/install.sh';
+      const installScript =
+        'https://downloads.slack-edge.com/slack-cli/install.sh';
       await execa('bash', ['-c', `curl -fsSL ${installScript} | bash`]);
 
       // Add to PATH if installation succeeded but command not found
@@ -221,19 +246,21 @@ return false;
       }
     } catch (error) {
       logger.warn('Slack CLI installation failed:', error);
-      logger.info('You can install it manually by running: curl -fsSL https://downloads.slack-edge.com/slack-cli/install.sh | bash');
+      logger.info(
+        'You can install it manually by running: curl -fsSL https://downloads.slack-edge.com/slack-cli/install.sh | bash'
+      );
     }
   }
 
   private async addSlackCLIToPath(): Promise<void> {
     const slackBinPath = path.join(this.homeDir, '.slack/bin');
     const pathExport = `export PATH="${slackBinPath}:$PATH"`;
-    
+
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     for (const shellFile of shellFiles) {
       const shellPath = path.join(this.homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -241,27 +268,31 @@ return false;
         } catch {
           // File doesn't exist
         }
-        
+
         if (!shellContent.includes('.slack/bin')) {
-          await fs.writeFile(shellPath, shellContent + '\n' + pathExport + '\n', 'utf-8');
+          await fs.writeFile(
+            shellPath,
+            shellContent + '\n' + pathExport + '\n',
+            'utf-8'
+          );
         }
       } catch (error) {
         logger.warn(`Failed to update ${shellFile}:`, error);
       }
     }
-    
+
     // Add to current process PATH
     process.env.PATH = `${slackBinPath}:${process.env.PATH}`;
   }
 
   private async setupSlackWorkflow(): Promise<void> {
     logger.info('Setting up Slack workflow integrations...');
-    
+
     const templatesDir = path.join(this.homeDir, '.slack-templates');
-    
+
     try {
       await fs.mkdir(templatesDir, { recursive: true });
-      
+
       // Slack app manifest
       const manifest = {
         display_information: {
@@ -339,8 +370,11 @@ return false;
         },
       };
 
-      await fs.writeFile(path.join(templatesDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-      
+      await fs.writeFile(
+        path.join(templatesDir, 'manifest.json'),
+        JSON.stringify(manifest, null, 2)
+      );
+
       // Webhook handler template
       const webhookHandler = `const { WebClient } = require('@slack/web-api');
 const { createEventAdapter } = require('@slack/events-api');
@@ -410,8 +444,11 @@ module.exports = {
 };
 `;
 
-      await fs.writeFile(path.join(templatesDir, 'webhook-handler.js'), webhookHandler);
-      
+      await fs.writeFile(
+        path.join(templatesDir, 'webhook-handler.js'),
+        webhookHandler
+      );
+
       // GitHub integration template
       const githubIntegration = `const { WebClient } = require('@slack/web-api');
 const { Octokit } = require('@octokit/rest');
@@ -531,7 +568,10 @@ module.exports = {
 };
 `;
 
-      await fs.writeFile(path.join(templatesDir, 'github-integration.js'), githubIntegration);
+      await fs.writeFile(
+        path.join(templatesDir, 'github-integration.js'),
+        githubIntegration
+      );
 
       logger.info(`Slack workflow templates created in ${templatesDir}`);
     } catch (error) {
@@ -541,7 +581,7 @@ module.exports = {
 
   private async installSlackSDK(): Promise<void> {
     logger.info('Installing Slack SDK for development...');
-    
+
     const packageTemplate = {
       name: 'slack-integrations',
       version: '1.0.0',
@@ -555,13 +595,13 @@ module.exports = {
         dotenv: '^16.3.0',
       },
     };
-    
+
     const templatesDir = path.join(this.homeDir, '.slack-templates');
-    
+
     try {
       await fs.writeFile(
         path.join(templatesDir, 'package.json'),
-        JSON.stringify(packageTemplate, null, 2),
+        JSON.stringify(packageTemplate, null, 2)
       );
       logger.info('Slack SDK package.json template created');
     } catch (error) {
@@ -571,7 +611,7 @@ module.exports = {
 
   private async createSlackEnvTemplate(): Promise<void> {
     logger.info('Creating Slack environment template...');
-    
+
     const envTemplate = `# Slack Configuration
 SLACK_BOT_TOKEN=xoxb-your-bot-token
 SLACK_APP_TOKEN=xapp-your-app-token
@@ -588,7 +628,7 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 `;
 
     const templatesDir = path.join(this.homeDir, '.slack-templates');
-    
+
     try {
       await fs.writeFile(path.join(templatesDir, '.env.example'), envTemplate);
       logger.info('Slack environment template created');
@@ -599,7 +639,7 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 
   async uninstall(): Promise<void> {
     logger.info('Uninstalling Slack...');
-    
+
     try {
       if (os.platform() === 'darwin') {
         // Remove Slack app
@@ -608,18 +648,20 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
         // Linux uninstall
         await execa('sudo', ['apt', 'remove', 'slack-desktop', '-y']);
       }
-      
+
       // Remove Slack CLI
       const slackDir = path.join(this.homeDir, '.slack');
       await fs.rm(slackDir, { recursive: true, force: true });
-      
+
       // Remove templates
       const templatesDir = path.join(this.homeDir, '.slack-templates');
       await fs.rm(templatesDir, { recursive: true, force: true });
 
       logger.info('Slack uninstalled');
     } catch (error) {
-      throw new Error(`Slack uninstallation failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Slack uninstallation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 }

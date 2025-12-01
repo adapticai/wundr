@@ -34,14 +34,17 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an orchestrator
  */
-async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: string) {
+async function getOrchestratorWithAccessCheck(
+  orchestratorId: string,
+  userId: string
+) {
   // Get user's organization memberships
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   // Fetch orchestrator and verify organization access
   const orchestrator = await prisma.orchestrator.findUnique({
@@ -64,12 +67,17 @@ async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: st
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
   // Find user's role in the orchestrator's organization
-  const membership = userOrganizations.find((m) => m.organizationId === orchestrator.organizationId);
+  const membership = userOrganizations.find(
+    m => m.organizationId === orchestrator.organizationId
+  );
 
   return { orchestrator, role: membership?.role ?? null };
 }
@@ -90,14 +98,20 @@ async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: st
  * @param context - Route context containing orchestratorId
  * @returns List of session managers with pagination metadata
  */
-export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -108,22 +122,25 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get orchestrator with access check
-    const result = await getOrchestratorWithAccessCheck(params.orchestratorId, session.user.id);
+    const result = await getOrchestratorWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -182,13 +199,16 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       },
     });
   } catch (error) {
-    console.error('[GET /api/orchestrators/:id/session-managers] Error:', error);
+    console.error(
+      '[GET /api/orchestrators/:id/session-managers] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -217,14 +237,20 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
  * @param context - Route context containing orchestratorId
  * @returns Created session manager object
  */
-export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -235,22 +261,25 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get orchestrator with access check
-    const result = await getOrchestratorWithAccessCheck(params.orchestratorId, session.user.id);
+    const result = await getOrchestratorWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -259,9 +288,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to create session managers',
-          SESSION_MANAGER_ERROR_CODES.FORBIDDEN,
+          SESSION_MANAGER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -271,8 +300,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -283,9 +315,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
         createErrorResponse(
           'Validation failed',
           SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -303,9 +335,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'A session manager with this name already exists for this orchestrator',
-          SESSION_MANAGER_ERROR_CODES.ALREADY_EXISTS,
+          SESSION_MANAGER_ERROR_CODES.ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -342,16 +374,19 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
         data: sessionManager,
         message: 'Session manager created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/orchestrators/:id/session-managers] Error:', error);
+    console.error(
+      '[POST /api/orchestrators/:id/session-managers] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -24,7 +24,8 @@ export const WorkflowStatus = {
   Error: 'ERROR',
 } as const;
 
-export type WorkflowStatusValue = (typeof WorkflowStatus)[keyof typeof WorkflowStatus];
+export type WorkflowStatusValue =
+  (typeof WorkflowStatus)[keyof typeof WorkflowStatus];
 
 /**
  * Trigger type enum
@@ -78,7 +79,8 @@ export const ExecutionStatus = {
   Cancelled: 'CANCELLED',
 } as const;
 
-export type ExecutionStatusValue = (typeof ExecutionStatus)[keyof typeof ExecutionStatus];
+export type ExecutionStatusValue =
+  (typeof ExecutionStatus)[keyof typeof ExecutionStatus];
 
 /**
  * Action result status enum
@@ -90,7 +92,8 @@ export const ActionResultStatus = {
   Skipped: 'SKIPPED',
 } as const;
 
-export type ActionResultStatusValue = (typeof ActionResultStatus)[keyof typeof ActionResultStatus];
+export type ActionResultStatusValue =
+  (typeof ActionResultStatus)[keyof typeof ActionResultStatus];
 
 /**
  * Error behavior enum
@@ -101,7 +104,8 @@ export const ErrorBehavior = {
   Retry: 'RETRY',
 } as const;
 
-export type ErrorBehaviorValue = (typeof ErrorBehavior)[keyof typeof ErrorBehavior];
+export type ErrorBehaviorValue =
+  (typeof ErrorBehavior)[keyof typeof ErrorBehavior];
 
 /**
  * Template category enum
@@ -115,7 +119,8 @@ export const TemplateCategory = {
   Custom: 'CUSTOM',
 } as const;
 
-export type TemplateCategoryValue = (typeof TemplateCategory)[keyof typeof TemplateCategory];
+export type TemplateCategoryValue =
+  (typeof TemplateCategory)[keyof typeof TemplateCategory];
 
 /**
  * User role for authorization checks
@@ -183,9 +188,15 @@ interface PrismaClientWithWorkflows {
  */
 export interface WorkflowService {
   /** Execute a workflow */
-  executeWorkflow(workflowId: string, triggerData?: unknown): Promise<WorkflowExecution>;
+  executeWorkflow(
+    workflowId: string,
+    triggerData?: unknown
+  ): Promise<WorkflowExecution>;
   /** Test a workflow with sample data */
-  testWorkflow(workflowId: string, sampleData: unknown): Promise<WorkflowExecution>;
+  testWorkflow(
+    workflowId: string,
+    sampleData: unknown
+  ): Promise<WorkflowExecution>;
   /** Cancel a running execution */
   cancelExecution(executionId: string): Promise<boolean>;
   /** Get workflow engine status */
@@ -757,7 +768,7 @@ export const workflowTypeDefs = `#graphql
  * Type guard to check if user is authenticated
  */
 function isAuthenticated(
-  context: GraphQLContext,
+  context: GraphQLContext
 ): context is GraphQLContext & { user: ContextUser } {
   return context.user !== null;
 }
@@ -800,7 +811,10 @@ function isValidWorkflowName(name: string): boolean {
 /**
  * Validate workflow actions
  */
-function validateActions(actions: WorkflowActionInput[]): { valid: boolean; error?: string } {
+function validateActions(actions: WorkflowActionInput[]): {
+  valid: boolean;
+  error?: string;
+} {
   if (actions.length === 0) {
     return { valid: false, error: 'At least one action is required' };
   }
@@ -837,11 +851,17 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
     {
       id: 'template_onboarding_welcome',
       name: 'Welcome New Members',
-      description: 'Automatically send a welcome message when a new member joins a channel',
+      description:
+        'Automatically send a welcome message when a new member joins a channel',
       category: 'ONBOARDING',
       trigger: { type: 'MEMBER_ADDED', config: {} },
       actions: [
-        { id: 'act_1', type: 'SEND_MESSAGE', name: 'Send Welcome', config: { template: 'welcome' } },
+        {
+          id: 'act_1',
+          type: 'SEND_MESSAGE',
+          name: 'Send Welcome',
+          config: { template: 'welcome' },
+        },
       ],
       variables: null,
       tags: ['onboarding', 'welcome', 'new-member'],
@@ -855,7 +875,12 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
       category: 'NOTIFICATIONS',
       trigger: { type: 'MESSAGE_RECEIVED', config: { hasMention: true } },
       actions: [
-        { id: 'act_1', type: 'SEND_MESSAGE', name: 'Notify', config: { notificationType: 'push' } },
+        {
+          id: 'act_1',
+          type: 'SEND_MESSAGE',
+          name: 'Notify',
+          config: { notificationType: 'push' },
+        },
       ],
       variables: null,
       tags: ['notification', 'mention', 'alert'],
@@ -869,9 +894,21 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
       category: 'MODERATION',
       trigger: { type: 'MESSAGE_KEYWORD', config: { keywords: [] } },
       actions: [
-        { id: 'act_1', type: 'SEND_DM', name: 'Alert Mods', config: { role: 'moderator' } },
+        {
+          id: 'act_1',
+          type: 'SEND_DM',
+          name: 'Alert Mods',
+          config: { role: 'moderator' },
+        },
       ],
-      variables: [{ name: 'keywords', type: 'string[]', defaultValue: [], description: 'Keywords to monitor' }],
+      variables: [
+        {
+          name: 'keywords',
+          type: 'string[]',
+          defaultValue: [],
+          description: 'Keywords to monitor',
+        },
+      ],
       tags: ['moderation', 'keyword', 'alert'],
       usageCount: 890,
       isBuiltIn: true,
@@ -883,9 +920,21 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
       category: 'PRODUCTIVITY',
       trigger: { type: 'SCHEDULED', config: { cron: '0 9 * * 1-5' } },
       actions: [
-        { id: 'act_1', type: 'SEND_MESSAGE', name: 'Standup Reminder', config: { template: 'standup' } },
+        {
+          id: 'act_1',
+          type: 'SEND_MESSAGE',
+          name: 'Standup Reminder',
+          config: { template: 'standup' },
+        },
       ],
-      variables: [{ name: 'channel', type: 'string', defaultValue: null, description: 'Target channel' }],
+      variables: [
+        {
+          name: 'channel',
+          type: 'string',
+          defaultValue: null,
+          description: 'Target channel',
+        },
+      ],
       tags: ['productivity', 'standup', 'daily', 'reminder'],
       usageCount: 2150,
       isBuiltIn: true,
@@ -897,10 +946,22 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
       category: 'INTEGRATION',
       trigger: { type: 'WEBHOOK_RECEIVED', config: {} },
       actions: [
-        { id: 'act_1', type: 'CONDITION', name: 'Check Event', config: { field: 'event_type' } },
+        {
+          id: 'act_1',
+          type: 'CONDITION',
+          name: 'Check Event',
+          config: { field: 'event_type' },
+        },
         { id: 'act_2', type: 'SEND_MESSAGE', name: 'Post Update', config: {} },
       ],
-      variables: [{ name: 'webhookSecret', type: 'string', defaultValue: null, description: 'Webhook verification secret' }],
+      variables: [
+        {
+          name: 'webhookSecret',
+          type: 'string',
+          defaultValue: null,
+          description: 'Webhook verification secret',
+        },
+      ],
       tags: ['integration', 'webhook', 'external'],
       usageCount: 1680,
       isBuiltIn: true,
@@ -908,14 +969,35 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
     {
       id: 'template_vp_autorespond',
       name: 'VP Auto-Response',
-      description: 'Automatically invoke Orchestrator when certain conditions are met',
+      description:
+        'Automatically invoke Orchestrator when certain conditions are met',
       category: 'CUSTOM',
-      trigger: { type: 'MESSAGE_KEYWORD', config: { keywords: ['@vp', 'help'] } },
+      trigger: {
+        type: 'MESSAGE_KEYWORD',
+        config: { keywords: ['@vp', 'help'] },
+      },
       actions: [
-        { id: 'act_1', type: 'INVOKE_VP', name: 'Ask VP', config: { vpId: '' } },
-        { id: 'act_2', type: 'SEND_MESSAGE', name: 'Reply', config: { source: 'vp_response' } },
+        {
+          id: 'act_1',
+          type: 'INVOKE_VP',
+          name: 'Ask VP',
+          config: { vpId: '' },
+        },
+        {
+          id: 'act_2',
+          type: 'SEND_MESSAGE',
+          name: 'Reply',
+          config: { source: 'vp_response' },
+        },
       ],
-      variables: [{ name: 'vpId', type: 'string', defaultValue: null, description: 'VP to invoke' }],
+      variables: [
+        {
+          name: 'vpId',
+          type: 'string',
+          defaultValue: null,
+          description: 'VP to invoke',
+        },
+      ],
       tags: ['vp', 'automation', 'response'],
       usageCount: 780,
       isBuiltIn: true,
@@ -937,7 +1019,7 @@ export const workflowQueries = {
   workflow: async (
     _parent: unknown,
     args: WorkflowQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -945,9 +1027,9 @@ export const workflowQueries = {
       });
     }
 
-    const workflow = await context.prisma.workflow.findUnique({
+    const workflow = (await context.prisma.workflow.findUnique({
       where: { id: args.id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     return workflow;
   },
@@ -958,7 +1040,7 @@ export const workflowQueries = {
   workflows: async (
     _parent: unknown,
     args: WorkflowsQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -995,7 +1077,7 @@ export const workflowQueries = {
   workflowExecution: async (
     _parent: unknown,
     args: WorkflowExecutionQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WorkflowExecution | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1003,9 +1085,9 @@ export const workflowQueries = {
       });
     }
 
-    const execution = await context.prisma.workflowExecution.findUnique({
+    const execution = (await context.prisma.workflowExecution.findUnique({
       where: { id: args.id },
-    }) as WorkflowExecution | null;
+    })) as WorkflowExecution | null;
 
     return execution;
   },
@@ -1016,7 +1098,7 @@ export const workflowQueries = {
   workflowExecutions: async (
     _parent: unknown,
     args: WorkflowExecutionsQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WorkflowExecution[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1049,7 +1131,7 @@ export const workflowQueries = {
   workflowTemplates: async (
     _parent: unknown,
     args: WorkflowTemplatesQueryArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WorkflowTemplate[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1066,10 +1148,12 @@ export const workflowQueries = {
     }
 
     // Get custom templates from database
-    const customTemplates = await context.prisma.workflowTemplate.findMany({
-      where: args.category ? { category: args.category, isBuiltIn: false } : { isBuiltIn: false },
+    const customTemplates = (await context.prisma.workflowTemplate.findMany({
+      where: args.category
+        ? { category: args.category, isBuiltIn: false }
+        : { isBuiltIn: false },
       orderBy: { usageCount: 'desc' },
-    }) as WorkflowTemplate[];
+    })) as WorkflowTemplate[];
 
     return [...templates, ...customTemplates];
   },
@@ -1089,7 +1173,7 @@ export const workflowMutations = {
   createWorkflow: async (
     _parent: unknown,
     args: CreateWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1101,9 +1185,12 @@ export const workflowMutations = {
 
     // Validate workflow name
     if (!isValidWorkflowName(input.name)) {
-      throw new GraphQLError('Invalid workflow name. Must be between 1 and 100 characters.', {
-        extensions: { code: 'BAD_USER_INPUT' },
-      });
+      throw new GraphQLError(
+        'Invalid workflow name. Must be between 1 and 100 characters.',
+        {
+          extensions: { code: 'BAD_USER_INPUT' },
+        }
+      );
     }
 
     // Validate trigger type
@@ -1159,7 +1246,7 @@ export const workflowMutations = {
     }));
 
     // Create the workflow
-    const workflow = await context.prisma.workflow.create({
+    const workflow = (await context.prisma.workflow.create({
       data: {
         workspaceId,
         name: input.name,
@@ -1172,7 +1259,7 @@ export const workflowMutations = {
         runCount: 0,
         errorCount: 0,
       },
-    }) as Workflow;
+    })) as Workflow;
 
     // Publish status change event
     await context.pubsub.publish(`${WORKFLOW_STATUS_CHANGED}_${workspaceId}`, {
@@ -1188,7 +1275,7 @@ export const workflowMutations = {
   updateWorkflow: async (
     _parent: unknown,
     args: UpdateWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1199,9 +1286,9 @@ export const workflowMutations = {
     const { id, input } = args;
 
     // Verify workflow exists
-    const existing = await context.prisma.workflow.findUnique({
+    const existing = (await context.prisma.workflow.findUnique({
       where: { id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     if (!existing) {
       throw new GraphQLError('Workflow not found', {
@@ -1210,10 +1297,17 @@ export const workflowMutations = {
     }
 
     // Validate name if provided
-    if (input.name !== undefined && input.name !== null && !isValidWorkflowName(input.name)) {
-      throw new GraphQLError('Invalid workflow name. Must be between 1 and 100 characters.', {
-        extensions: { code: 'BAD_USER_INPUT' },
-      });
+    if (
+      input.name !== undefined &&
+      input.name !== null &&
+      !isValidWorkflowName(input.name)
+    ) {
+      throw new GraphQLError(
+        'Invalid workflow name. Must be between 1 and 100 characters.',
+        {
+          extensions: { code: 'BAD_USER_INPUT' },
+        }
+      );
     }
 
     // Validate trigger if provided
@@ -1276,16 +1370,19 @@ export const workflowMutations = {
       }));
     }
 
-    const workflow = await context.prisma.workflow.update({
+    const workflow = (await context.prisma.workflow.update({
       where: { id },
       data: updateData,
-    }) as Workflow;
+    })) as Workflow;
 
     // Publish status change event if status changed
     if (input.status && input.status !== existing.status) {
-      await context.pubsub.publish(`${WORKFLOW_STATUS_CHANGED}_${existing.workspaceId}`, {
-        workflowStatusChanged: workflow,
-      });
+      await context.pubsub.publish(
+        `${WORKFLOW_STATUS_CHANGED}_${existing.workspaceId}`,
+        {
+          workflowStatusChanged: workflow,
+        }
+      );
     }
 
     return workflow;
@@ -1297,7 +1394,7 @@ export const workflowMutations = {
   deleteWorkflow: async (
     _parent: unknown,
     args: DeleteWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<boolean> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1305,9 +1402,9 @@ export const workflowMutations = {
       });
     }
 
-    const existing = await context.prisma.workflow.findUnique({
+    const existing = (await context.prisma.workflow.findUnique({
       where: { id: args.id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     if (!existing) {
       throw new GraphQLError('Workflow not found', {
@@ -1334,7 +1431,7 @@ export const workflowMutations = {
   activateWorkflow: async (
     _parent: unknown,
     args: ActivateWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1342,9 +1439,9 @@ export const workflowMutations = {
       });
     }
 
-    const existing = await context.prisma.workflow.findUnique({
+    const existing = (await context.prisma.workflow.findUnique({
       where: { id: args.id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     if (!existing) {
       throw new GraphQLError('Workflow not found', {
@@ -1358,23 +1455,30 @@ export const workflowMutations = {
 
     // Validate workflow before activation
     if (context.workflowService) {
-      const validation = await context.workflowService.validateWorkflow(existing);
+      const validation =
+        await context.workflowService.validateWorkflow(existing);
       if (!validation.valid) {
-        throw new GraphQLError(`Cannot activate workflow: ${validation.errors.join(', ')}`, {
-          extensions: { code: 'BAD_USER_INPUT' },
-        });
+        throw new GraphQLError(
+          `Cannot activate workflow: ${validation.errors.join(', ')}`,
+          {
+            extensions: { code: 'BAD_USER_INPUT' },
+          }
+        );
       }
     }
 
-    const workflow = await context.prisma.workflow.update({
+    const workflow = (await context.prisma.workflow.update({
       where: { id: args.id },
       data: { status: 'ACTIVE' },
-    }) as Workflow;
+    })) as Workflow;
 
     // Publish status change event
-    await context.pubsub.publish(`${WORKFLOW_STATUS_CHANGED}_${existing.workspaceId}`, {
-      workflowStatusChanged: workflow,
-    });
+    await context.pubsub.publish(
+      `${WORKFLOW_STATUS_CHANGED}_${existing.workspaceId}`,
+      {
+        workflowStatusChanged: workflow,
+      }
+    );
 
     return workflow;
   },
@@ -1385,7 +1489,7 @@ export const workflowMutations = {
   deactivateWorkflow: async (
     _parent: unknown,
     args: DeactivateWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1393,9 +1497,9 @@ export const workflowMutations = {
       });
     }
 
-    const existing = await context.prisma.workflow.findUnique({
+    const existing = (await context.prisma.workflow.findUnique({
       where: { id: args.id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     if (!existing) {
       throw new GraphQLError('Workflow not found', {
@@ -1407,15 +1511,18 @@ export const workflowMutations = {
       return existing;
     }
 
-    const workflow = await context.prisma.workflow.update({
+    const workflow = (await context.prisma.workflow.update({
       where: { id: args.id },
       data: { status: 'INACTIVE' },
-    }) as Workflow;
+    })) as Workflow;
 
     // Publish status change event
-    await context.pubsub.publish(`${WORKFLOW_STATUS_CHANGED}_${existing.workspaceId}`, {
-      workflowStatusChanged: workflow,
-    });
+    await context.pubsub.publish(
+      `${WORKFLOW_STATUS_CHANGED}_${existing.workspaceId}`,
+      {
+        workflowStatusChanged: workflow,
+      }
+    );
 
     return workflow;
   },
@@ -1426,7 +1533,7 @@ export const workflowMutations = {
   executeWorkflow: async (
     _parent: unknown,
     args: ExecuteWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WorkflowExecution> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1434,9 +1541,9 @@ export const workflowMutations = {
       });
     }
 
-    const existing = await context.prisma.workflow.findUnique({
+    const existing = (await context.prisma.workflow.findUnique({
       where: { id: args.id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     if (!existing) {
       throw new GraphQLError('Workflow not found', {
@@ -1452,18 +1559,24 @@ export const workflowMutations = {
 
     // Use workflow service if available
     if (context.workflowService) {
-      const execution = await context.workflowService.executeWorkflow(args.id, args.triggerData);
+      const execution = await context.workflowService.executeWorkflow(
+        args.id,
+        args.triggerData
+      );
 
       // Publish execution update event
-      await context.pubsub.publish(`${WORKFLOW_EXECUTION_UPDATED}_${existing.workspaceId}`, {
-        workflowExecutionUpdated: execution,
-      });
+      await context.pubsub.publish(
+        `${WORKFLOW_EXECUTION_UPDATED}_${existing.workspaceId}`,
+        {
+          workflowExecutionUpdated: execution,
+        }
+      );
 
       return execution;
     }
 
     // Default implementation - create pending execution
-    const execution = await context.prisma.workflowExecution.create({
+    const execution = (await context.prisma.workflowExecution.create({
       data: {
         workflowId: args.id,
         status: 'PENDING',
@@ -1472,7 +1585,7 @@ export const workflowMutations = {
         actionResults: [],
         startedAt: new Date(),
       },
-    }) as WorkflowExecution;
+    })) as WorkflowExecution;
 
     // Update workflow run count and last run time
     await context.prisma.workflow.update({
@@ -1492,7 +1605,7 @@ export const workflowMutations = {
   testWorkflow: async (
     _parent: unknown,
     args: TestWorkflowArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WorkflowExecution> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1500,9 +1613,9 @@ export const workflowMutations = {
       });
     }
 
-    const existing = await context.prisma.workflow.findUnique({
+    const existing = (await context.prisma.workflow.findUnique({
       where: { id: args.id },
-    }) as Workflow | null;
+    })) as Workflow | null;
 
     if (!existing) {
       throw new GraphQLError('Workflow not found', {
@@ -1546,7 +1659,7 @@ export const workflowMutations = {
   cancelExecution: async (
     _parent: unknown,
     args: CancelExecutionArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<boolean> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1554,9 +1667,9 @@ export const workflowMutations = {
       });
     }
 
-    const existing = await context.prisma.workflowExecution.findUnique({
+    const existing = (await context.prisma.workflowExecution.findUnique({
       where: { id: args.id },
-    }) as WorkflowExecution | null;
+    })) as WorkflowExecution | null;
 
     if (!existing) {
       throw new GraphQLError('Execution not found', {
@@ -1593,7 +1706,7 @@ export const workflowMutations = {
   createWorkflowFromTemplate: async (
     _parent: unknown,
     args: CreateFromTemplateArgs,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -1615,12 +1728,13 @@ export const workflowMutations = {
     }
 
     // Find template (check built-in first, then database)
-    let template: WorkflowTemplate | null = getBuiltInTemplates().find(t => t.id === templateId) ?? null;
+    let template: WorkflowTemplate | null =
+      getBuiltInTemplates().find(t => t.id === templateId) ?? null;
 
     if (!template) {
-      template = await context.prisma.workflowTemplate.findUnique({
+      template = (await context.prisma.workflowTemplate.findUnique({
         where: { id: templateId },
-      }) as WorkflowTemplate | null;
+      })) as WorkflowTemplate | null;
     }
 
     if (!template) {
@@ -1632,13 +1746,15 @@ export const workflowMutations = {
     // Parse template data
     const templateTrigger = template.trigger as Record<string, unknown>;
     const templateActions = template.actions as WorkflowActionInput[];
-    const templateVariables = template.variables as WorkflowVariableInput[] | null;
+    const templateVariables = template.variables as
+      | WorkflowVariableInput[]
+      | null;
 
     // Create workflow from template
     const trigger: WorkflowTrigger = {
       id: generateTriggerId(),
       type: templateTrigger.type as TriggerTypeValue,
-      config: templateTrigger.config as Record<string, unknown> ?? {},
+      config: (templateTrigger.config as Record<string, unknown>) ?? {},
       filters: null,
     };
 
@@ -1659,7 +1775,7 @@ export const workflowMutations = {
     }));
 
     // Create the workflow
-    const workflow = await context.prisma.workflow.create({
+    const workflow = (await context.prisma.workflow.create({
       data: {
         workspaceId,
         name: name ?? `${template.name} (from template)`,
@@ -1672,7 +1788,7 @@ export const workflowMutations = {
         runCount: 0,
         errorCount: 0,
       },
-    }) as Workflow;
+    })) as Workflow;
 
     // Increment template usage count (for custom templates)
     if (!template.isBuiltIn) {
@@ -1701,7 +1817,7 @@ export const workflowSubscriptions = {
     subscribe: async (
       _parent: unknown,
       args: WorkflowExecutionUpdatedArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -1709,7 +1825,9 @@ export const workflowSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${WORKFLOW_EXECUTION_UPDATED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${WORKFLOW_EXECUTION_UPDATED}_${args.workspaceId}`
+      );
     },
   },
 
@@ -1720,7 +1838,7 @@ export const workflowSubscriptions = {
     subscribe: async (
       _parent: unknown,
       args: WorkflowStatusChangedArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -1728,7 +1846,9 @@ export const workflowSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${WORKFLOW_STATUS_CHANGED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${WORKFLOW_STATUS_CHANGED}_${args.workspaceId}`
+      );
     },
   },
 };
@@ -1747,7 +1867,7 @@ export const WorkflowFieldResolvers = {
   workspace: async (
     parent: Workflow,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workspace | null> => {
     // Use dataloader if available
     if (context.dataloaders?.workspace) {
@@ -1767,7 +1887,7 @@ export const WorkflowFieldResolvers = {
   creator: async (
     parent: Workflow,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<User | null> => {
     // Use dataloader if available
     if (context.dataloaders?.user) {
@@ -1787,7 +1907,7 @@ export const WorkflowFieldResolvers = {
   recentExecutions: async (
     parent: Workflow,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<WorkflowExecution[]> => {
     const executions = await context.prisma.workflowExecution.findMany({
       where: { workflowId: parent.id },
@@ -1804,7 +1924,7 @@ export const WorkflowFieldResolvers = {
   successRate: async (
     parent: Workflow,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<number> => {
     const executions = await context.prisma.workflowExecution.findMany({
       where: { workflowId: parent.id },
@@ -1848,7 +1968,7 @@ export const WorkflowExecutionFieldResolvers = {
   workflow: async (
     parent: WorkflowExecution,
     _args: unknown,
-    context: GraphQLContext,
+    context: GraphQLContext
   ): Promise<Workflow | null> => {
     // Use dataloader if available
     if (context.dataloaders?.workflow) {
@@ -1964,7 +2084,10 @@ export const workflowResolvers = {
  * ```
  */
 export function createWorkflowResolvers(
-  baseContext: Pick<GraphQLContext, 'prisma' | 'pubsub' | 'workflowService' | 'dataloaders'>,
+  baseContext: Pick<
+    GraphQLContext,
+    'prisma' | 'pubsub' | 'workflowService' | 'dataloaders'
+  >
 ) {
   const createContext = (user: ContextUser): GraphQLContext => ({
     ...baseContext,
@@ -1974,36 +2097,84 @@ export function createWorkflowResolvers(
 
   return {
     Query: {
-      workflow: (_: unknown, args: WorkflowQueryArgs, ctx: { user: ContextUser }) =>
-        workflowQueries.workflow(_, args, createContext(ctx.user)),
-      workflows: (_: unknown, args: WorkflowsQueryArgs, ctx: { user: ContextUser }) =>
-        workflowQueries.workflows(_, args, createContext(ctx.user)),
-      workflowExecution: (_: unknown, args: WorkflowExecutionQueryArgs, ctx: { user: ContextUser }) =>
-        workflowQueries.workflowExecution(_, args, createContext(ctx.user)),
-      workflowExecutions: (_: unknown, args: WorkflowExecutionsQueryArgs, ctx: { user: ContextUser }) =>
-        workflowQueries.workflowExecutions(_, args, createContext(ctx.user)),
-      workflowTemplates: (_: unknown, args: WorkflowTemplatesQueryArgs, ctx: { user: ContextUser }) =>
-        workflowQueries.workflowTemplates(_, args, createContext(ctx.user)),
+      workflow: (
+        _: unknown,
+        args: WorkflowQueryArgs,
+        ctx: { user: ContextUser }
+      ) => workflowQueries.workflow(_, args, createContext(ctx.user)),
+      workflows: (
+        _: unknown,
+        args: WorkflowsQueryArgs,
+        ctx: { user: ContextUser }
+      ) => workflowQueries.workflows(_, args, createContext(ctx.user)),
+      workflowExecution: (
+        _: unknown,
+        args: WorkflowExecutionQueryArgs,
+        ctx: { user: ContextUser }
+      ) => workflowQueries.workflowExecution(_, args, createContext(ctx.user)),
+      workflowExecutions: (
+        _: unknown,
+        args: WorkflowExecutionsQueryArgs,
+        ctx: { user: ContextUser }
+      ) => workflowQueries.workflowExecutions(_, args, createContext(ctx.user)),
+      workflowTemplates: (
+        _: unknown,
+        args: WorkflowTemplatesQueryArgs,
+        ctx: { user: ContextUser }
+      ) => workflowQueries.workflowTemplates(_, args, createContext(ctx.user)),
     },
     Mutation: {
-      createWorkflow: (_: unknown, args: CreateWorkflowArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.createWorkflow(_, args, createContext(ctx.user)),
-      updateWorkflow: (_: unknown, args: UpdateWorkflowArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.updateWorkflow(_, args, createContext(ctx.user)),
-      deleteWorkflow: (_: unknown, args: DeleteWorkflowArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.deleteWorkflow(_, args, createContext(ctx.user)),
-      activateWorkflow: (_: unknown, args: ActivateWorkflowArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.activateWorkflow(_, args, createContext(ctx.user)),
-      deactivateWorkflow: (_: unknown, args: DeactivateWorkflowArgs, ctx: { user: ContextUser }) =>
+      createWorkflow: (
+        _: unknown,
+        args: CreateWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.createWorkflow(_, args, createContext(ctx.user)),
+      updateWorkflow: (
+        _: unknown,
+        args: UpdateWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.updateWorkflow(_, args, createContext(ctx.user)),
+      deleteWorkflow: (
+        _: unknown,
+        args: DeleteWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.deleteWorkflow(_, args, createContext(ctx.user)),
+      activateWorkflow: (
+        _: unknown,
+        args: ActivateWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.activateWorkflow(_, args, createContext(ctx.user)),
+      deactivateWorkflow: (
+        _: unknown,
+        args: DeactivateWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) =>
         workflowMutations.deactivateWorkflow(_, args, createContext(ctx.user)),
-      executeWorkflow: (_: unknown, args: ExecuteWorkflowArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.executeWorkflow(_, args, createContext(ctx.user)),
-      testWorkflow: (_: unknown, args: TestWorkflowArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.testWorkflow(_, args, createContext(ctx.user)),
-      cancelExecution: (_: unknown, args: CancelExecutionArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.cancelExecution(_, args, createContext(ctx.user)),
-      createWorkflowFromTemplate: (_: unknown, args: CreateFromTemplateArgs, ctx: { user: ContextUser }) =>
-        workflowMutations.createWorkflowFromTemplate(_, args, createContext(ctx.user)),
+      executeWorkflow: (
+        _: unknown,
+        args: ExecuteWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.executeWorkflow(_, args, createContext(ctx.user)),
+      testWorkflow: (
+        _: unknown,
+        args: TestWorkflowArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.testWorkflow(_, args, createContext(ctx.user)),
+      cancelExecution: (
+        _: unknown,
+        args: CancelExecutionArgs,
+        ctx: { user: ContextUser }
+      ) => workflowMutations.cancelExecution(_, args, createContext(ctx.user)),
+      createWorkflowFromTemplate: (
+        _: unknown,
+        args: CreateFromTemplateArgs,
+        ctx: { user: ContextUser }
+      ) =>
+        workflowMutations.createWorkflowFromTemplate(
+          _,
+          args,
+          createContext(ctx.user)
+        ),
     },
     Subscription: workflowSubscriptions,
     Workflow: WorkflowFieldResolvers,

@@ -30,13 +30,16 @@ interface RouteContext {
 /**
  * Plan limits configuration
  */
-const PLAN_LIMITS: Record<PlanType, {
-  name: string;
-  members: number;
-  storage: number; // in GB
-  channels: number;
-  features: string[];
-}> = {
+const PLAN_LIMITS: Record<
+  PlanType,
+  {
+    name: string;
+    members: number;
+    storage: number; // in GB
+    channels: number;
+    features: string[];
+  }
+> = {
   FREE: {
     name: 'Free',
     members: 10,
@@ -49,21 +52,38 @@ const PLAN_LIMITS: Record<PlanType, {
     members: 50,
     storage: 50,
     channels: 50,
-    features: ['Unlimited messaging', 'Private channels', '50GB storage', 'Guest access'],
+    features: [
+      'Unlimited messaging',
+      'Private channels',
+      '50GB storage',
+      'Guest access',
+    ],
   },
   PROFESSIONAL: {
     name: 'Professional',
     members: 250,
     storage: 500,
     channels: 250,
-    features: ['Unlimited messaging', 'Unlimited channels', '500GB storage', 'Advanced permissions', 'API access'],
+    features: [
+      'Unlimited messaging',
+      'Unlimited channels',
+      '500GB storage',
+      'Advanced permissions',
+      'API access',
+    ],
   },
   ENTERPRISE: {
     name: 'Enterprise',
     members: -1, // unlimited
     storage: -1, // unlimited
     channels: -1, // unlimited
-    features: ['Unlimited everything', 'SSO/SAML', 'Compliance tools', 'Dedicated support', 'Custom integrations'],
+    features: [
+      'Unlimited everything',
+      'SSO/SAML',
+      'Compliance tools',
+      'Dedicated support',
+      'Custom integrations',
+    ],
   },
 };
 
@@ -78,14 +98,17 @@ const PLAN_LIMITS: Record<PlanType, {
  */
 export async function GET(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -97,15 +120,22 @@ export async function GET(
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Get workspace settings for billing info
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
 
     // Default to FREE plan
@@ -122,7 +152,8 @@ export async function GET(
       }),
     ]);
 
-    const storageGB = Number(storageUsage._sum.size || 0) / (1024 * 1024 * 1024);
+    const storageGB =
+      Number(storageUsage._sum.size || 0) / (1024 * 1024 * 1024);
 
     // Calculate period dates (monthly billing)
     const now = new Date();
@@ -135,7 +166,8 @@ export async function GET(
       status: 'active',
       currentPeriodStart: periodStart,
       currentPeriodEnd: periodEnd,
-      cancelAtPeriodEnd: (billingSettings.cancelAtPeriodEnd as boolean) || false,
+      cancelAtPeriodEnd:
+        (billingSettings.cancelAtPeriodEnd as boolean) || false,
       usage: {
         members: memberCount,
         membersLimit: planConfig.members,
@@ -149,10 +181,16 @@ export async function GET(
 
     return NextResponse.json({ billing });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/admin/billing] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/admin/billing] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch billing info', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch billing info',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

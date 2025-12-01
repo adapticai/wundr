@@ -48,7 +48,7 @@ function extendMockRedisWithListOps(mockRedis: MockRedis) {
       const list = listStore.get(key) || [];
       const actualStop = stop === -1 ? list.length : stop + 1;
       return list.slice(start, actualStop);
-    },
+    }
   );
 
   (mockRedis as unknown as Record<string, unknown>).lpush = vi.fn(
@@ -57,7 +57,7 @@ function extendMockRedisWithListOps(mockRedis: MockRedis) {
       list.unshift(...values);
       listStore.set(key, list);
       return list.length;
-    },
+    }
   );
 
   (mockRedis as unknown as Record<string, unknown>).ltrim = vi.fn(
@@ -66,7 +66,7 @@ function extendMockRedisWithListOps(mockRedis: MockRedis) {
       const actualStop = stop === -1 ? list.length : stop + 1;
       listStore.set(key, list.slice(start, actualStop));
       return 'OK';
-    },
+    }
   );
 
   return {
@@ -94,8 +94,12 @@ describe('SearchService', () => {
     mockRedis = extendMockRedisWithListOps(baseMockRedis) as typeof mockRedis;
 
     searchService = new SearchServiceImpl({
-      prisma: mockPrisma as unknown as Parameters<typeof createSearchService>[0]['prisma'],
-      redis: mockRedis as unknown as Parameters<typeof createSearchService>[0]['redis'],
+      prisma: mockPrisma as unknown as Parameters<
+        typeof createSearchService
+      >[0]['prisma'],
+      redis: mockRedis as unknown as Parameters<
+        typeof createSearchService
+      >[0]['redis'],
       defaultLimit: 20,
       maxLimit: 100,
       cachePrefix: 'test:search:',
@@ -116,20 +120,20 @@ describe('SearchService', () => {
 
   describe('search', () => {
     it('should throw validation error for empty query', async () => {
-      await expect(
-        searchService.search({ query: '' }),
-      ).rejects.toThrow(SearchValidationError);
+      await expect(searchService.search({ query: '' })).rejects.toThrow(
+        SearchValidationError
+      );
 
-      await expect(
-        searchService.search({ query: '   ' }),
-      ).rejects.toThrow(SearchValidationError);
+      await expect(searchService.search({ query: '   ' })).rejects.toThrow(
+        SearchValidationError
+      );
     });
 
     it('should throw validation error for query exceeding max length', async () => {
       const longQuery = 'a'.repeat(501);
-      await expect(
-        searchService.search({ query: longQuery }),
-      ).rejects.toThrow(SearchValidationError);
+      await expect(searchService.search({ query: longQuery })).rejects.toThrow(
+        SearchValidationError
+      );
     });
 
     it('should return cached results if available', async () => {
@@ -447,7 +451,9 @@ describe('SearchService', () => {
       });
 
       expect(result.results[0].highlight).toBeDefined();
-      expect(result.results[0].highlight?.content).toContain('This is a <b>test</b> message');
+      expect(result.results[0].highlight?.content).toContain(
+        'This is a <b>test</b> message'
+      );
     });
 
     it('should cache search results', async () => {
@@ -538,12 +544,16 @@ describe('SearchService', () => {
   describe('getSuggestions', () => {
     it('should return recent searches matching prefix', async () => {
       // Mock the lrange call to return test data
-      mockRedis.lrange.mockResolvedValueOnce(['test query', 'test search', 'other query']);
+      mockRedis.lrange.mockResolvedValueOnce([
+        'test query',
+        'test search',
+        'other query',
+      ]);
 
       const suggestions = await searchService.getSuggestions(
         'test',
         'ws-1',
-        'user-1',
+        'user-1'
       );
 
       expect(suggestions).toHaveLength(2);
@@ -565,7 +575,7 @@ describe('SearchService', () => {
         'test',
         'ws-1',
         'user-1',
-        3,
+        3
       );
 
       expect(suggestions.length).toBeLessThanOrEqual(3);
@@ -577,7 +587,7 @@ describe('SearchService', () => {
       const suggestions = await searchService.getSuggestions(
         'test',
         'ws-1',
-        'user-1',
+        'user-1'
       );
 
       expect(suggestions).toHaveLength(0);
@@ -589,7 +599,7 @@ describe('SearchService', () => {
       const suggestions = await searchService.getSuggestions(
         'test',
         'ws-1',
-        'user-1',
+        'user-1'
       );
 
       expect(suggestions).toHaveLength(2);
@@ -606,16 +616,16 @@ describe('SearchService', () => {
 
       expect(mockRedis.lpush).toHaveBeenCalledWith(
         'test:search:recent:user-1',
-        'test query',
+        'test query'
       );
       expect(mockRedis.ltrim).toHaveBeenCalledWith(
         'test:search:recent:user-1',
         0,
-        49,
+        49
       );
       expect(mockRedis.expire).toHaveBeenCalledWith(
         'test:search:recent:user-1',
-        86400 * 30,
+        86400 * 30
       );
     });
   });
@@ -626,12 +636,18 @@ describe('SearchService', () => {
 
   describe('clearCache', () => {
     it('should clear all cache keys when no workspace specified', async () => {
-      mockRedis.keys.mockResolvedValue(['test:search:key1', 'test:search:key2']);
+      mockRedis.keys.mockResolvedValue([
+        'test:search:key1',
+        'test:search:key2',
+      ]);
 
       await searchService.clearCache();
 
       expect(mockRedis.keys).toHaveBeenCalledWith('test:search:*');
-      expect(mockRedis.del).toHaveBeenCalledWith('test:search:key1', 'test:search:key2');
+      expect(mockRedis.del).toHaveBeenCalledWith(
+        'test:search:key1',
+        'test:search:key2'
+      );
     });
 
     it('should clear workspace-specific cache', async () => {
@@ -673,7 +689,7 @@ describe('SearchService', () => {
       expect(mockRedis.setex).toHaveBeenCalledWith(
         'test:search:index:message:doc-1',
         3600,
-        JSON.stringify(doc),
+        JSON.stringify(doc)
       );
     });
   });
@@ -686,7 +702,9 @@ describe('SearchService', () => {
     it('should remove document from index', async () => {
       await searchService.removeDocument('message', 'msg-1');
 
-      expect(mockRedis.del).toHaveBeenCalledWith('test:search:index:message:msg-1');
+      expect(mockRedis.del).toHaveBeenCalledWith(
+        'test:search:index:message:msg-1'
+      );
     });
   });
 
@@ -697,8 +715,12 @@ describe('SearchService', () => {
   describe('createSearchService', () => {
     it('should create a new SearchService instance', () => {
       const service = createSearchService({
-        prisma: mockPrisma as unknown as Parameters<typeof createSearchService>[0]['prisma'],
-        redis: mockRedis as unknown as Parameters<typeof createSearchService>[0]['redis'],
+        prisma: mockPrisma as unknown as Parameters<
+          typeof createSearchService
+        >[0]['prisma'],
+        redis: mockRedis as unknown as Parameters<
+          typeof createSearchService
+        >[0]['redis'],
       });
 
       expect(service).toBeInstanceOf(SearchServiceImpl);
@@ -708,8 +730,12 @@ describe('SearchService', () => {
   describe('getSearchService', () => {
     it('should return singleton instance', () => {
       const config = {
-        prisma: mockPrisma as unknown as Parameters<typeof createSearchService>[0]['prisma'],
-        redis: mockRedis as unknown as Parameters<typeof createSearchService>[0]['redis'],
+        prisma: mockPrisma as unknown as Parameters<
+          typeof createSearchService
+        >[0]['prisma'],
+        redis: mockRedis as unknown as Parameters<
+          typeof createSearchService
+        >[0]['redis'],
       };
 
       const service1 = getSearchService(config);

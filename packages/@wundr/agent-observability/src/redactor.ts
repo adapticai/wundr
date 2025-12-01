@@ -128,7 +128,7 @@ export class SensitiveDataRedactor {
 
     // Redact metadata attributes
     const metadataResult = this.redact(
-      event.metadata.attributes as Record<string, unknown>,
+      event.metadata.attributes as Record<string, unknown>
     );
 
     // Redact error information
@@ -313,7 +313,7 @@ export class SensitiveDataRedactor {
     key: string,
     value: unknown,
     path: string,
-    result: RedactionResult,
+    result: RedactionResult
   ): unknown {
     // Check if field name is in sensitive fields list
     if (this.isSensitiveField(key)) {
@@ -343,7 +343,7 @@ export class SensitiveDataRedactor {
 
     if (Array.isArray(value)) {
       return value.map((item, index) =>
-        this.redactValue(String(index), item, `${path}[${index}]`, result),
+        this.redactValue(String(index), item, `${path}[${index}]`, result)
       );
     }
 
@@ -392,7 +392,7 @@ export class SensitiveDataRedactor {
   private isSensitiveField(fieldName: string): boolean {
     const lowerFieldName = fieldName.toLowerCase();
     return this.config.sensitiveFields.some(sensitive =>
-      lowerFieldName.includes(sensitive.toLowerCase()),
+      lowerFieldName.includes(sensitive.toLowerCase())
     );
   }
 
@@ -432,7 +432,7 @@ export class SensitiveDataRedactor {
       this.compiledPatterns.set(pattern.name, regex);
     } catch (error) {
       console.error(
-        `Failed to compile redaction pattern "${pattern.name}": ${error}`,
+        `Failed to compile redaction pattern "${pattern.name}": ${error}`
       );
     }
   }
@@ -445,7 +445,7 @@ export class SensitiveDataRedactor {
  * @returns Configured SensitiveDataRedactor instance
  */
 export function createDefaultRedactor(
-  additionalConfig: Partial<RedactionConfig> = {},
+  additionalConfig: Partial<RedactionConfig> = {}
 ): SensitiveDataRedactor {
   return new SensitiveDataRedactor(additionalConfig);
 }

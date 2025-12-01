@@ -85,8 +85,18 @@ function getFileIcon(mimeType: string) {
   if (mimeType.startsWith('image/')) return Image;
   if (mimeType.startsWith('video/')) return Video;
   if (mimeType.startsWith('audio/')) return Music;
-  if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return FileText;
-  if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('rar')) return Archive;
+  if (
+    mimeType.includes('pdf') ||
+    mimeType.includes('document') ||
+    mimeType.includes('text')
+  )
+    return FileText;
+  if (
+    mimeType.includes('zip') ||
+    mimeType.includes('tar') ||
+    mimeType.includes('rar')
+  )
+    return Archive;
   return FileIcon;
 }
 
@@ -129,7 +139,9 @@ export function FileCard({
 }: FileCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
-  const [savedItemId, setSavedItemId] = useState<string | null>(initialSavedItemId);
+  const [savedItemId, setSavedItemId] = useState<string | null>(
+    initialSavedItemId
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const desktopMenuRef = useRef<HTMLDivElement>(null);
@@ -154,7 +166,8 @@ export function FileCard({
     }
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showMenu]);
 
@@ -231,14 +244,17 @@ export function FileCard({
         }
       } else {
         // Save for later
-        const response = await fetch(`/api/workspaces/${workspaceSlug}/saved-items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'FILE',
-            fileId: file.id,
-          }),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/saved-items`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'FILE',
+              fileId: file.id,
+            }),
+          }
+        );
         if (response.ok) {
           const result = await response.json();
           setIsSaved(true);
@@ -273,113 +289,122 @@ export function FileCard({
         className
       )}
       onClick={handlePreview}
-      role="button"
+      role='button'
       tabIndex={0}
-      onKeyDown={(e) => {
+      onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handlePreview();
         }
       }}
     >
-      <div className="flex gap-3">
+      <div className='flex gap-3'>
         {/* Thumbnail or Icon */}
-        <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden">
+        <div className='flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden'>
           {isImage && imagePreviewUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imagePreviewUrl}
               alt={file.originalName}
-              className="h-full w-full object-cover"
+              className='h-full w-full object-cover'
             />
           ) : (
-            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+            <Icon className='h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground' />
           )}
         </div>
 
         {/* File info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="truncate font-medium text-sm sm:text-base">{file.originalName}</p>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-start justify-between gap-2'>
+            <div className='flex-1 min-w-0'>
+              <p className='truncate font-medium text-sm sm:text-base'>
+                {file.originalName}
+              </p>
+              <div className='flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground'>
                 <span>{formatFileSize(file.size)}</span>
-                <span className="hidden xs:inline">•</span>
-                <span className="hidden xs:inline">{formatRelativeTime(file.createdAt)}</span>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:inline truncate max-w-[120px]">
-                  {file.uploadedBy.displayName || file.uploadedBy.name || 'Unknown'}
+                <span className='hidden xs:inline'>•</span>
+                <span className='hidden xs:inline'>
+                  {formatRelativeTime(file.createdAt)}
+                </span>
+                <span className='hidden sm:inline'>•</span>
+                <span className='hidden sm:inline truncate max-w-[120px]'>
+                  {file.uploadedBy.displayName ||
+                    file.uploadedBy.name ||
+                    'Unknown'}
                 </span>
               </div>
               {/* Mobile: show date on second line */}
-              <div className="xs:hidden text-xs text-muted-foreground mt-0.5">
+              <div className='xs:hidden text-xs text-muted-foreground mt-0.5'>
                 {formatRelativeTime(file.createdAt)}
               </div>
             </div>
 
             {/* Desktop: Action buttons on hover */}
-            <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+            <div
+              className='hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'
+              onClick={e => e.stopPropagation()}
+            >
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                variant='ghost'
+                size='icon'
+                className='h-8 w-8'
                 onClick={handlePreview}
-                title="Preview"
+                title='Preview'
               >
-                <Eye className="h-4 w-4" />
+                <Eye className='h-4 w-4' />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                variant='ghost'
+                size='icon'
+                className='h-8 w-8'
                 onClick={handleOpenInNewTab}
-                title="Open in new tab"
+                title='Open in new tab'
               >
-                <ExternalLink className="h-4 w-4" />
+                <ExternalLink className='h-4 w-4' />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                variant='ghost'
+                size='icon'
+                className='h-8 w-8'
                 onClick={handleDownload}
-                title="Download"
+                title='Download'
               >
-                <Download className="h-4 w-4" />
+                <Download className='h-4 w-4' />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                variant='ghost'
+                size='icon'
+                className='h-8 w-8'
                 onClick={handleShare}
-                title="Share file..."
+                title='Share file...'
               >
-                <Forward className="h-4 w-4" />
+                <Forward className='h-4 w-4' />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
+                variant='ghost'
+                size='icon'
                 className={cn('h-8 w-8', isSaved && 'text-yellow-500')}
                 onClick={handleSaveForLater}
                 disabled={isSaving}
                 title={isSaved ? 'Remove from saved' : 'Save for later'}
               >
                 {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className='h-4 w-4 animate-spin' />
                 ) : isSaved ? (
-                  <BookmarkCheck className="h-4 w-4 fill-current" />
+                  <BookmarkCheck className='h-4 w-4 fill-current' />
                 ) : (
-                  <Bookmark className="h-4 w-4" />
+                  <Bookmark className='h-4 w-4' />
                 )}
               </Button>
-              <div className="relative" ref={desktopMenuRef}>
+              <div className='relative' ref={desktopMenuRef}>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
+                  variant='ghost'
+                  size='icon'
+                  className='h-8 w-8'
                   onClick={() => setShowMenu(!showMenu)}
-                  title="More actions"
+                  title='More actions'
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className='h-4 w-4' />
                 </Button>
 
                 {/* Dropdown menu */}
@@ -402,15 +427,19 @@ export function FileCard({
             </div>
 
             {/* Mobile: Always visible more button */}
-            <div className="sm:hidden relative" ref={mobileMenuRef} onClick={(e) => e.stopPropagation()}>
+            <div
+              className='sm:hidden relative'
+              ref={mobileMenuRef}
+              onClick={e => e.stopPropagation()}
+            >
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                variant='ghost'
+                size='icon'
+                className='h-8 w-8'
                 onClick={() => setShowMenu(!showMenu)}
-                title="Actions"
+                title='Actions'
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className='h-4 w-4' />
               </Button>
 
               {/* Dropdown menu */}
@@ -473,80 +502,87 @@ function DropdownMenu({
   return (
     <>
       {/* Backdrop for mobile - clicking closes the menu */}
-      <div
-        className="fixed inset-0 z-40 sm:hidden"
-        onClick={onClose}
-      />
-      <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border bg-popover p-1 shadow-lg">
+      <div className='fixed inset-0 z-40 sm:hidden' onClick={onClose} />
+      <div className='absolute right-0 top-full z-50 mt-1 w-48 rounded-md border bg-popover p-1 shadow-lg'>
         {onPreview && (
           <button
-            type="button"
-            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+            type='button'
+            className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
             onClick={onPreview}
           >
-            <Eye className="h-4 w-4" />
+            <Eye className='h-4 w-4' />
             Preview
           </button>
         )}
         <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
           onClick={onOpenInNewTab}
         >
-          <ExternalLink className="h-4 w-4" />
+          <ExternalLink className='h-4 w-4' />
           Open in new tab
         </button>
         <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
           onClick={onCopyLink}
         >
-          <Link2 className="h-4 w-4" />
+          <Link2 className='h-4 w-4' />
           {copySuccess ? 'Copied!' : 'Copy link'}
         </button>
         <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
           onClick={onDownload}
         >
-          <Download className="h-4 w-4" />
+          <Download className='h-4 w-4' />
           Download
         </button>
         <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+          type='button'
+          className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
           onClick={onShare}
         >
-          <Forward className="h-4 w-4" />
+          <Forward className='h-4 w-4' />
           Share file...
         </button>
         <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent disabled:opacity-50"
+          type='button'
+          className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent disabled:opacity-50'
           onClick={onSaveForLater}
           disabled={isSaving}
         >
           {isSaving ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className='h-4 w-4 animate-spin' />
           ) : isSaved ? (
-            <BookmarkCheck className="h-4 w-4 fill-current text-yellow-500" />
+            <BookmarkCheck className='h-4 w-4 fill-current text-yellow-500' />
           ) : (
-            <Bookmark className="h-4 w-4" />
+            <Bookmark className='h-4 w-4' />
           )}
-          {isSaving ? 'Saving...' : isSaved ? 'Remove from saved' : 'Save for later'}
+          {isSaving
+            ? 'Saving...'
+            : isSaved
+              ? 'Remove from saved'
+              : 'Save for later'}
         </button>
-        <div className="my-1 h-px bg-border" />
+        <div className='my-1 h-px bg-border' />
         <button
-          type="button"
+          type='button'
           className={cn(
             'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent',
-            canDelete ? 'text-destructive' : 'text-muted-foreground cursor-not-allowed'
+            canDelete
+              ? 'text-destructive'
+              : 'text-muted-foreground cursor-not-allowed'
           )}
           onClick={onDelete}
           disabled={!canDelete}
-          title={canDelete ? 'Delete file' : 'Only the uploader or workspace admin can delete files'}
+          title={
+            canDelete
+              ? 'Delete file'
+              : 'Only the uploader or workspace admin can delete files'
+          }
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className='h-4 w-4' />
           Delete file
         </button>
       </div>

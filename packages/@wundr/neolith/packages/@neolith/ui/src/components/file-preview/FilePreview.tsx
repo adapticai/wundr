@@ -5,7 +5,10 @@ import { Progress } from '../ui/progress';
 
 import { AudioPreview, type AudioPreviewProps } from './AudioPreview';
 import { DocumentPreview, type DocumentPreviewProps } from './DocumentPreview';
-import { GenericFilePreview, type GenericFilePreviewProps } from './GenericFilePreview';
+import {
+  GenericFilePreview,
+  type GenericFilePreviewProps,
+} from './GenericFilePreview';
 import { ImagePreview, type ImagePreviewProps } from './ImagePreview';
 import { detectFileType } from './utils';
 import { VideoPreview, type VideoPreviewProps } from './VideoPreview';
@@ -77,21 +80,26 @@ export const FilePreview = React.forwardRef<HTMLDivElement, FilePreviewProps>(
       uploadProgress = 0,
       error,
     },
-    ref,
+    ref
   ) => {
     const fileType = detectFileType(filename, mimeType);
 
     // Show upload progress
     if (isUploading) {
       return (
-        <div ref={ref} className={cn('rounded-lg border bg-card p-4', className)}>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="truncate text-sm font-medium">{filename}</p>
-              <span className="text-sm text-muted-foreground">{uploadProgress}%</span>
+        <div
+          ref={ref}
+          className={cn('rounded-lg border bg-card p-4', className)}
+        >
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <p className='truncate text-sm font-medium'>{filename}</p>
+              <span className='text-sm text-muted-foreground'>
+                {uploadProgress}%
+              </span>
             </div>
             <Progress value={uploadProgress} max={100} />
-            <p className="text-xs text-muted-foreground">Uploading...</p>
+            <p className='text-xs text-muted-foreground'>Uploading...</p>
           </div>
         </div>
       );
@@ -100,10 +108,18 @@ export const FilePreview = React.forwardRef<HTMLDivElement, FilePreviewProps>(
     // Show error state
     if (error) {
       return (
-        <div ref={ref} className={cn('rounded-lg border border-destructive bg-card p-4', className)}>
-          <div className="space-y-2">
-            <p className="truncate text-sm font-medium text-foreground">{filename}</p>
-            <p className="text-sm text-destructive">{error}</p>
+        <div
+          ref={ref}
+          className={cn(
+            'rounded-lg border border-destructive bg-card p-4',
+            className
+          )}
+        >
+          <div className='space-y-2'>
+            <p className='truncate text-sm font-medium text-foreground'>
+              {filename}
+            </p>
+            <p className='text-sm text-destructive'>{error}</p>
           </div>
         </div>
       );
@@ -138,7 +154,9 @@ export const FilePreview = React.forwardRef<HTMLDivElement, FilePreviewProps>(
         );
 
       case 'audio':
-        return <AudioPreview ref={ref} {...(commonProps as AudioPreviewProps)} />;
+        return (
+          <AudioPreview ref={ref} {...(commonProps as AudioPreviewProps)} />
+        );
 
       case 'document':
         return (
@@ -161,13 +179,19 @@ export const FilePreview = React.forwardRef<HTMLDivElement, FilePreviewProps>(
           />
         );
     }
-  },
+  }
 );
 
 FilePreview.displayName = 'FilePreview';
 
 // Re-export specialized components for direct use
-export { ImagePreview, VideoPreview, AudioPreview, DocumentPreview, GenericFilePreview };
+export {
+  ImagePreview,
+  VideoPreview,
+  AudioPreview,
+  DocumentPreview,
+  GenericFilePreview,
+};
 export type {
   ImagePreviewProps,
   VideoPreviewProps,

@@ -187,7 +187,7 @@ export class WorkerPoolManager extends EventEmitter {
    */
   async processBatch<T, R>(
     tasks: WorkerTask<T>[],
-    batchSize?: number,
+    batchSize?: number
   ): Promise<WorkerResult<R>[]> {
     const actualBatchSize =
       batchSize || Math.min(tasks.length, this.workers.size * 2);
@@ -241,8 +241,8 @@ export class WorkerPoolManager extends EventEmitter {
    */
   private async processNextTask(): Promise<void> {
     if (this.taskQueue.length === 0) {
-return;
-}
+      return;
+    }
 
     const availableWorker = this.getAvailableWorker();
     if (!availableWorker) {
@@ -324,7 +324,7 @@ return;
    */
   private waitForTaskResult(
     taskId: string,
-    timeoutHandle: NodeJS.Timeout,
+    timeoutHandle: NodeJS.Timeout
   ): Promise<WorkerResult> {
     return new Promise((resolve, reject) => {
       const handler = (result: WorkerResult) => {
@@ -350,7 +350,7 @@ return;
   private handleTaskCompletion(
     task: any,
     result: WorkerResult,
-    startTime: number,
+    startTime: number
   ): void {
     const executionTime = Date.now() - startTime;
 
@@ -382,13 +382,13 @@ return;
   private handleTaskTimeout(taskId: string): void {
     const activeTask = this.activeTasks.get(taskId);
     if (!activeTask) {
-return;
-}
+      return;
+    }
 
     const workerInfo = this.workers.get(activeTask.workerId);
     if (!workerInfo) {
-return;
-}
+      return;
+    }
 
     // Terminate worker due to timeout
     this.terminateWorker(workerInfo.id, 'Task timeout');
@@ -520,8 +520,8 @@ return;
   private handleWorkerExit(workerId: string, code: number): void {
     const workerInfo = this.workers.get(workerId);
     if (!workerInfo) {
-return;
-}
+      return;
+    }
 
     this.workers.delete(workerId);
 
@@ -544,8 +544,8 @@ return;
   private terminateWorker(workerId: string, reason: string): void {
     const workerInfo = this.workers.get(workerId);
     if (!workerInfo) {
-return;
-}
+      return;
+    }
 
     workerInfo.state = 'terminating';
 
@@ -569,8 +569,8 @@ return;
    */
   private async scaleUp(): Promise<void> {
     if (this.workers.size >= this.config.maxWorkers) {
-return;
-}
+      return;
+    }
 
     const queuePressure =
       this.taskQueue.length / Math.max(1, this.workers.size);
@@ -585,7 +585,7 @@ return;
     if (shouldScale) {
       const newWorkers = Math.min(
         Math.ceil(queuePressure / 2),
-        this.config.maxWorkers - this.workers.size,
+        this.config.maxWorkers - this.workers.size
       );
 
       for (let i = 0; i < newWorkers; i++) {
@@ -611,12 +611,12 @@ return;
   private async scaleDown(): Promise<void> {
     const now = Date.now();
     const idleWorkers = Array.from(this.workers.values()).filter(
-      w => w.state === 'idle' && now - w.lastActivity > this.config.idleTimeout,
+      w => w.state === 'idle' && now - w.lastActivity > this.config.idleTimeout
     );
 
     const excessWorkers = Math.max(
       0,
-      this.workers.size - this.config.minWorkers,
+      this.workers.size - this.config.minWorkers
     );
     const workersToTerminate = Math.min(idleWorkers.length, excessWorkers);
 
@@ -642,8 +642,8 @@ return;
    */
   private startAutoScaling(): void {
     if (!this.config.enableAutoScaling) {
-return;
-}
+      return;
+    }
 
     this.scalingInterval = setInterval(async () => {
       try {
@@ -673,18 +673,18 @@ return;
    */
   private async updateMetrics(): Promise<void> {
     this.metrics.activeWorkers = Array.from(this.workers.values()).filter(
-      w => w.state === 'busy',
+      w => w.state === 'busy'
     ).length;
 
     this.metrics.idleWorkers = Array.from(this.workers.values()).filter(
-      w => w.state === 'idle',
+      w => w.state === 'idle'
     ).length;
 
     this.metrics.queueSize = this.taskQueue.length;
 
     // Calculate throughput (tasks per second)
     const completedInLastMinute = this.completedTasks.filter(
-      task => Date.now() - (task as any).completedAt < 60000,
+      task => Date.now() - (task as any).completedAt < 60000
     ).length;
     this.metrics.throughput = completedInLastMinute / 60;
 
@@ -765,8 +765,8 @@ return;
    */
   async shutdown(timeout: number = 30000): Promise<void> {
     if (this.isShuttingDown) {
-return;
-}
+      return;
+    }
 
     this.isShuttingDown = true;
     this.emit('shutdown-started');
@@ -802,7 +802,7 @@ return;
 
     // Terminate all workers
     const terminationPromises = Array.from(this.workers.keys()).map(workerId =>
-      this.terminateWorker(workerId, 'Pool shutdown'),
+      this.terminateWorker(workerId, 'Pool shutdown')
     );
 
     await Promise.all(terminationPromises);

@@ -15,17 +15,27 @@
  */
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
   Copy,
   Download,
   CheckCircle2,
   AlertCircle,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 import { OrchestratorCharter } from '@/types/orchestrator';
 import { toast } from 'sonner';
@@ -101,8 +111,13 @@ function charterToYAML(charter: OrchestratorCharter): string {
     yaml.push(`    - ${trait}`);
   });
   yaml.push(`  communicationStyle: ${charter.personality.communicationStyle}`);
-  yaml.push(`  decisionMakingStyle: ${charter.personality.decisionMakingStyle}`);
-  yaml.push('  background: |\n    ' + charter.personality.background.replace(/\n/g, '\n    '));
+  yaml.push(
+    `  decisionMakingStyle: ${charter.personality.decisionMakingStyle}`
+  );
+  yaml.push(
+    '  background: |\n    ' +
+      charter.personality.background.replace(/\n/g, '\n    ')
+  );
 
   // Expertise
   yaml.push('\nexpertise:');
@@ -113,7 +128,9 @@ function charterToYAML(charter: OrchestratorCharter): string {
   // Communication Preferences
   yaml.push('\ncommunicationPreferences:');
   yaml.push(`  tone: ${charter.communicationPreferences.tone}`);
-  yaml.push(`  responseLength: ${charter.communicationPreferences.responseLength}`);
+  yaml.push(
+    `  responseLength: ${charter.communicationPreferences.responseLength}`
+  );
   yaml.push(`  formality: ${charter.communicationPreferences.formality}`);
   yaml.push(`  useEmoji: ${charter.communicationPreferences.useEmoji}`);
 
@@ -123,9 +140,13 @@ function charterToYAML(charter: OrchestratorCharter): string {
   yaml.push(`    start: "${charter.operationalSettings.workHours.start}"`);
   yaml.push(`    end: "${charter.operationalSettings.workHours.end}"`);
   yaml.push(`    timezone: ${charter.operationalSettings.workHours.timezone}`);
-  yaml.push(`  responseTimeTarget: ${charter.operationalSettings.responseTimeTarget}`);
+  yaml.push(
+    `  responseTimeTarget: ${charter.operationalSettings.responseTimeTarget}`
+  );
   yaml.push(`  autoEscalation: ${charter.operationalSettings.autoEscalation}`);
-  yaml.push(`  escalationThreshold: ${charter.operationalSettings.escalationThreshold}`);
+  yaml.push(
+    `  escalationThreshold: ${charter.operationalSettings.escalationThreshold}`
+  );
 
   return yaml.join('\n');
 }
@@ -208,26 +229,34 @@ interface CollapsibleSectionProps {
   defaultOpen?: boolean;
 }
 
-function CollapsibleSection({ title, content, defaultOpen = true }: CollapsibleSectionProps) {
+function CollapsibleSection({
+  title,
+  content,
+  defaultOpen = true,
+}: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg">
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className='border rounded-lg'
+    >
       <CollapsibleTrigger asChild>
         <Button
-          variant="ghost"
-          className="w-full justify-between p-4 hover:bg-muted/50"
+          variant='ghost'
+          className='w-full justify-between p-4 hover:bg-muted/50'
         >
-          <span className="font-semibold text-sm">{title}</span>
+          <span className='font-semibold text-sm'>{title}</span>
           {isOpen ? (
-            <ChevronDown className="h-4 w-4 transition-transform" />
+            <ChevronDown className='h-4 w-4 transition-transform' />
           ) : (
-            <ChevronRight className="h-4 w-4 transition-transform" />
+            <ChevronRight className='h-4 w-4 transition-transform' />
           )}
         </Button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 pb-4">
-        <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+      <CollapsibleContent className='px-4 pb-4'>
+        <div className='text-sm text-muted-foreground whitespace-pre-wrap'>
           {content}
         </div>
       </CollapsibleContent>
@@ -243,7 +272,9 @@ export function CharterPreview({
   format = 'yaml',
   className,
 }: CharterPreviewProps) {
-  const [activeFormat, setActiveFormat] = React.useState<'yaml' | 'json'>(format);
+  const [activeFormat, setActiveFormat] = React.useState<'yaml' | 'json'>(
+    format
+  );
   const validation = React.useMemo(() => validateCharter(charter), [charter]);
 
   const yamlContent = React.useMemo(() => charterToYAML(charter), [charter]);
@@ -254,11 +285,14 @@ export function CharterPreview({
    */
   const handleCopy = React.useCallback(() => {
     const content = activeFormat === 'yaml' ? yamlContent : jsonContent;
-    navigator.clipboard.writeText(content).then(() => {
-      toast.success('Copied to clipboard');
-    }).catch(() => {
-      toast.error('Failed to copy to clipboard');
-    });
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        toast.success('Copied to clipboard');
+      })
+      .catch(() => {
+        toast.error('Failed to copy to clipboard');
+      });
   }, [activeFormat, yamlContent, jsonContent]);
 
   /**
@@ -285,41 +319,42 @@ export function CharterPreview({
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
+        <div className='flex items-start justify-between'>
+          <div className='space-y-1'>
             <CardTitle>Charter Preview</CardTitle>
             <CardDescription>
               Review and export your orchestrator charter
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {validation.isValid ? (
-              <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
-                <CheckCircle2 className="h-4 w-4" />
+              <div className='flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400'>
+                <CheckCircle2 className='h-4 w-4' />
                 <span>Valid</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
-                <AlertCircle className="h-4 w-4" />
+              <div className='flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400'>
+                <AlertCircle className='h-4 w-4' />
                 <span>
-                  {validation.errors.length} issue{validation.errors.length > 1 ? 's' : ''}
+                  {validation.errors.length} issue
+                  {validation.errors.length > 1 ? 's' : ''}
                 </span>
               </div>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className='space-y-4'>
         {/* Validation Errors */}
         {!validation.isValid && (
-          <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5" />
-              <div className="space-y-1 flex-1">
-                <div className="text-sm font-medium text-red-900 dark:text-red-100">
+          <div className='rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4'>
+            <div className='flex items-start gap-2'>
+              <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 mt-0.5' />
+              <div className='space-y-1 flex-1'>
+                <div className='text-sm font-medium text-red-900 dark:text-red-100'>
                   Charter Validation Issues
                 </div>
-                <ul className="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-0.5">
+                <ul className='text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-0.5'>
                   {validation.errors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
@@ -330,86 +365,89 @@ export function CharterPreview({
         )}
 
         {/* Collapsible Sections */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold mb-2">Charter Sections</h3>
+        <div className='space-y-2'>
+          <h3 className='text-sm font-semibold mb-2'>Charter Sections</h3>
           <CollapsibleSection
-            title="Mission & Vision"
+            title='Mission & Vision'
             content={`Mission:\n${charter.mission}\n\nVision:\n${charter.vision}`}
           />
           <CollapsibleSection
-            title="Values"
+            title='Values'
             content={charter.values.join('\n')}
             defaultOpen={false}
           />
           <CollapsibleSection
-            title="Personality"
+            title='Personality'
             content={`Traits: ${charter.personality.traits.join(', ')}\n\nCommunication Style: ${charter.personality.communicationStyle}\n\nDecision Making: ${charter.personality.decisionMakingStyle}\n\nBackground:\n${charter.personality.background}`}
             defaultOpen={false}
           />
           <CollapsibleSection
-            title="Expertise"
+            title='Expertise'
             content={charter.expertise.join('\n')}
             defaultOpen={false}
           />
           <CollapsibleSection
-            title="Communication Preferences"
+            title='Communication Preferences'
             content={`Tone: ${charter.communicationPreferences.tone}\nResponse Length: ${charter.communicationPreferences.responseLength}\nFormality: ${charter.communicationPreferences.formality}\nUse Emoji: ${charter.communicationPreferences.useEmoji}`}
             defaultOpen={false}
           />
           <CollapsibleSection
-            title="Operational Settings"
+            title='Operational Settings'
             content={`Work Hours: ${charter.operationalSettings.workHours.start} - ${charter.operationalSettings.workHours.end} (${charter.operationalSettings.workHours.timezone})\nResponse Time Target: ${charter.operationalSettings.responseTimeTarget} minutes\nAuto Escalation: ${charter.operationalSettings.autoEscalation}\nEscalation Threshold: ${charter.operationalSettings.escalationThreshold} minutes`}
             defaultOpen={false}
           />
         </div>
 
         {/* Format Toggle and Code Preview */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Export Format</h3>
-            <div className="flex items-center gap-2">
+        <div className='space-y-2'>
+          <div className='flex items-center justify-between'>
+            <h3 className='text-sm font-semibold'>Export Format</h3>
+            <div className='flex items-center gap-2'>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={handleCopy}
-                className="gap-2"
+                className='gap-2'
               >
-                <Copy className="h-4 w-4" />
+                <Copy className='h-4 w-4' />
                 Copy
               </Button>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={handleDownload}
-                className="gap-2"
+                className='gap-2'
               >
-                <Download className="h-4 w-4" />
+                <Download className='h-4 w-4' />
                 Download
               </Button>
             </div>
           </div>
 
-          <Tabs value={activeFormat} onValueChange={(v) => setActiveFormat(v as 'yaml' | 'json')}>
-            <TabsList className="w-full">
-              <TabsTrigger value="yaml" className="flex-1">
+          <Tabs
+            value={activeFormat}
+            onValueChange={v => setActiveFormat(v as 'yaml' | 'json')}
+          >
+            <TabsList className='w-full'>
+              <TabsTrigger value='yaml' className='flex-1'>
                 YAML
               </TabsTrigger>
-              <TabsTrigger value="json" className="flex-1">
+              <TabsTrigger value='json' className='flex-1'>
                 JSON
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="yaml" className="mt-2">
-              <div className="rounded-lg border bg-muted/30 p-4 overflow-x-auto max-h-[500px] overflow-y-auto">
-                <pre className="text-xs font-mono leading-relaxed">
+            <TabsContent value='yaml' className='mt-2'>
+              <div className='rounded-lg border bg-muted/30 p-4 overflow-x-auto max-h-[500px] overflow-y-auto'>
+                <pre className='text-xs font-mono leading-relaxed'>
                   <code>{highlightYAML(yamlContent)}</code>
                 </pre>
               </div>
             </TabsContent>
 
-            <TabsContent value="json" className="mt-2">
-              <div className="rounded-lg border bg-muted/30 p-4 overflow-x-auto max-h-[500px] overflow-y-auto">
-                <pre className="text-xs font-mono leading-relaxed">
+            <TabsContent value='json' className='mt-2'>
+              <div className='rounded-lg border bg-muted/30 p-4 overflow-x-auto max-h-[500px] overflow-y-auto'>
+                <pre className='text-xs font-mono leading-relaxed'>
                   <code>{highlightJSON(jsonContent)}</code>
                 </pre>
               </div>

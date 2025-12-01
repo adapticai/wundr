@@ -7,10 +7,7 @@
  * @packageDocumentation
  */
 
-import {
-  NotAuthenticatedError,
-  PermissionDeniedError,
-} from './errors';
+import { NotAuthenticatedError, PermissionDeniedError } from './errors';
 import {
   permissionChecker,
   createPermissionChecker,
@@ -20,7 +17,6 @@ import {
 import type { PermissionContext, MembershipInfo } from './permission-checker';
 import type { Permission } from './permissions';
 import type { Session } from '@neolith/database';
-
 
 // =============================================================================
 // Types
@@ -94,14 +90,17 @@ export function requireAuth(): MethodDecorator {
   return function <T>(
     _target: object,
     _propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<T>,
+    descriptor: TypedPropertyDescriptor<T>
   ): TypedPropertyDescriptor<T> | void {
     const originalMethod = descriptor.value;
     if (typeof originalMethod !== 'function') {
       return;
     }
 
-    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
+    descriptor.value = async function (
+      this: unknown,
+      ...args: DecoratorMethodArgs
+    ) {
       const context = extractContext(args);
       const session = context?.session;
 
@@ -109,7 +108,9 @@ export function requireAuth(): MethodDecorator {
         throw new NotAuthenticatedError();
       }
 
-      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
+      return (
+        originalMethod as (...args: DecoratorMethodArgs) => unknown
+      ).apply(this, args);
     } as T;
 
     return descriptor;
@@ -138,14 +139,17 @@ export function requirePermission(permission: Permission): MethodDecorator {
   return function <T>(
     _target: object,
     _propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<T>,
+    descriptor: TypedPropertyDescriptor<T>
   ): TypedPropertyDescriptor<T> | void {
     const originalMethod = descriptor.value;
     if (typeof originalMethod !== 'function') {
       return;
     }
 
-    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
+    descriptor.value = async function (
+      this: unknown,
+      ...args: DecoratorMethodArgs
+    ) {
       const context = extractContext(args);
       const session = context?.session;
       const permContext = context?.permissionContext;
@@ -159,11 +163,13 @@ export function requirePermission(permission: Permission): MethodDecorator {
         await permissionChecker.requirePermission(
           session.userId,
           permission,
-          permContext,
+          permContext
         );
       }
 
-      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
+      return (
+        originalMethod as (...args: DecoratorMethodArgs) => unknown
+      ).apply(this, args);
     } as T;
 
     return descriptor;
@@ -191,14 +197,17 @@ export function requireChannelMember(): MethodDecorator {
   return function <T>(
     _target: object,
     _propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<T>,
+    descriptor: TypedPropertyDescriptor<T>
   ): TypedPropertyDescriptor<T> | void {
     const originalMethod = descriptor.value;
     if (typeof originalMethod !== 'function') {
       return;
     }
 
-    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
+    descriptor.value = async function (
+      this: unknown,
+      ...args: DecoratorMethodArgs
+    ) {
       const context = extractContext(args);
       const session = context?.session;
       const channelId = context?.permissionContext?.channelId;
@@ -211,7 +220,9 @@ export function requireChannelMember(): MethodDecorator {
         await permissionChecker.requireChannelMember(session.userId, channelId);
       }
 
-      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
+      return (
+        originalMethod as (...args: DecoratorMethodArgs) => unknown
+      ).apply(this, args);
     } as T;
 
     return descriptor;
@@ -228,14 +239,17 @@ export function requireWorkspaceMember(): MethodDecorator {
   return function <T>(
     _target: object,
     _propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<T>,
+    descriptor: TypedPropertyDescriptor<T>
   ): TypedPropertyDescriptor<T> | void {
     const originalMethod = descriptor.value;
     if (typeof originalMethod !== 'function') {
       return;
     }
 
-    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
+    descriptor.value = async function (
+      this: unknown,
+      ...args: DecoratorMethodArgs
+    ) {
       const context = extractContext(args);
       const session = context?.session;
       const workspaceId = context?.permissionContext?.workspaceId;
@@ -247,11 +261,13 @@ export function requireWorkspaceMember(): MethodDecorator {
       if (workspaceId) {
         await permissionChecker.requireWorkspaceMember(
           session.userId,
-          workspaceId,
+          workspaceId
         );
       }
 
-      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
+      return (
+        originalMethod as (...args: DecoratorMethodArgs) => unknown
+      ).apply(this, args);
     } as T;
 
     return descriptor;
@@ -268,14 +284,17 @@ export function requireOrganizationMember(): MethodDecorator {
   return function <T>(
     _target: object,
     _propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<T>,
+    descriptor: TypedPropertyDescriptor<T>
   ): TypedPropertyDescriptor<T> | void {
     const originalMethod = descriptor.value;
     if (typeof originalMethod !== 'function') {
       return;
     }
 
-    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
+    descriptor.value = async function (
+      this: unknown,
+      ...args: DecoratorMethodArgs
+    ) {
       const context = extractContext(args);
       const session = context?.session;
       const organizationId = context?.permissionContext?.organizationId;
@@ -287,11 +306,13 @@ export function requireOrganizationMember(): MethodDecorator {
       if (organizationId) {
         await permissionChecker.requireOrganizationMember(
           session.userId,
-          organizationId,
+          organizationId
         );
       }
 
-      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
+      return (
+        originalMethod as (...args: DecoratorMethodArgs) => unknown
+      ).apply(this, args);
     } as T;
 
     return descriptor;
@@ -309,7 +330,7 @@ export function requireOrganizationMember(): MethodDecorator {
  * @throws NotAuthenticatedError if session is invalid
  */
 export function assertAuthenticated(
-  session: Session | null | undefined,
+  session: Session | null | undefined
 ): asserts session is AuthenticatedSession {
   if (!session?.userId) {
     throw new NotAuthenticatedError();
@@ -338,11 +359,15 @@ export function assertAuthenticated(
 export async function assertPermission(
   session: Session | null | undefined,
   permission: Permission,
-  context: PermissionContext,
+  context: PermissionContext
 ): Promise<void> {
   assertAuthenticated(session);
   validatePermissionContext(permission, context);
-  await permissionChecker.requirePermission(session.userId, permission, context);
+  await permissionChecker.requirePermission(
+    session.userId,
+    permission,
+    context
+  );
 }
 
 /**
@@ -355,12 +380,12 @@ export async function assertPermission(
  */
 export async function assertOrganizationMember(
   session: Session | null | undefined,
-  organizationId: string,
+  organizationId: string
 ): Promise<MembershipInfo> {
   assertAuthenticated(session);
   return permissionChecker.requireOrganizationMember(
     session.userId,
-    organizationId,
+    organizationId
   );
 }
 
@@ -374,7 +399,7 @@ export async function assertOrganizationMember(
  */
 export async function assertWorkspaceMember(
   session: Session | null | undefined,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<MembershipInfo> {
   assertAuthenticated(session);
   return permissionChecker.requireWorkspaceMember(session.userId, workspaceId);
@@ -390,7 +415,7 @@ export async function assertWorkspaceMember(
  */
 export async function assertChannelMember(
   session: Session | null | undefined,
-  channelId: string,
+  channelId: string
 ): Promise<MembershipInfo> {
   assertAuthenticated(session);
   return permissionChecker.requireChannelMember(session.userId, channelId);
@@ -407,7 +432,7 @@ export async function assertChannelMember(
 export async function checkPermission(
   session: Session | null | undefined,
   permission: Permission,
-  context: PermissionContext,
+  context: PermissionContext
 ): Promise<GuardResult> {
   if (!session?.userId) {
     return { granted: false, reason: 'Not authenticated' };
@@ -418,7 +443,7 @@ export async function checkPermission(
     const hasPermission = await permissionChecker.hasPermission(
       session.userId,
       permission,
-      context,
+      context
     );
     return {
       granted: hasPermission,
@@ -445,7 +470,7 @@ export async function checkOwnershipOrPermission(
   session: Session | null | undefined,
   ownPermission: Permission,
   anyPermission: Permission,
-  context: PermissionContext & { resourceOwnerId: string },
+  context: PermissionContext & { resourceOwnerId: string }
 ): Promise<GuardResult> {
   if (!session?.userId) {
     return { granted: false, reason: 'Not authenticated' };
@@ -519,7 +544,7 @@ function extractContext(args: unknown[]): MethodContext | undefined {
  * ```
  */
 export function composeGuards(
-  guards: Array<() => Promise<GuardResult>>,
+  guards: Array<() => Promise<GuardResult>>
 ): () => Promise<GuardResult> {
   return async () => {
     for (const guard of guards) {

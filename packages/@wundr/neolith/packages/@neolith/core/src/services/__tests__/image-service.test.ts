@@ -71,7 +71,7 @@ function createMockImageService() {
      */
     processImage: vi.fn(async (key: string): Promise<ImageMetadata> => {
       // Simulate processing delay
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       // Return mock metadata based on file extension
       const extension = key.split('.').pop()?.toLowerCase() ?? 'jpg';
@@ -87,50 +87,52 @@ function createMockImageService() {
     /**
      * Resize image maintaining aspect ratio
      */
-    resizeImage: vi.fn(async (
-      inputKey: string,
-      outputKey: string,
-      options: ResizeOptions,
-    ): Promise<{ key: string; width: number; height: number }> => {
-      const originalWidth = 1920;
-      const originalHeight = 1080;
+    resizeImage: vi.fn(
+      async (
+        inputKey: string,
+        outputKey: string,
+        options: ResizeOptions
+      ): Promise<{ key: string; width: number; height: number }> => {
+        const originalWidth = 1920;
+        const originalHeight = 1080;
 
-      let newWidth: number;
-      let newHeight: number;
+        let newWidth: number;
+        let newHeight: number;
 
-      if (options.fit === 'cover' && options.width && options.height) {
-        // Exact dimensions
-        newWidth = options.width;
-        newHeight = options.height;
-      } else if (options.width && options.height) {
-        // Fit inside dimensions maintaining aspect ratio
-        const aspectRatio = originalWidth / originalHeight;
-        if (options.width / options.height > aspectRatio) {
+        if (options.fit === 'cover' && options.width && options.height) {
+          // Exact dimensions
+          newWidth = options.width;
+          newHeight = options.height;
+        } else if (options.width && options.height) {
+          // Fit inside dimensions maintaining aspect ratio
+          const aspectRatio = originalWidth / originalHeight;
+          if (options.width / options.height > aspectRatio) {
+            newHeight = options.height;
+            newWidth = Math.round(options.height * aspectRatio);
+          } else {
+            newWidth = options.width;
+            newHeight = Math.round(options.width / aspectRatio);
+          }
+        } else if (options.width) {
+          const aspectRatio = originalWidth / originalHeight;
+          newWidth = options.width;
+          newHeight = Math.round(options.width / aspectRatio);
+        } else if (options.height) {
+          const aspectRatio = originalWidth / originalHeight;
           newHeight = options.height;
           newWidth = Math.round(options.height * aspectRatio);
         } else {
-          newWidth = options.width;
-          newHeight = Math.round(options.width / aspectRatio);
+          newWidth = originalWidth;
+          newHeight = originalHeight;
         }
-      } else if (options.width) {
-        const aspectRatio = originalWidth / originalHeight;
-        newWidth = options.width;
-        newHeight = Math.round(options.width / aspectRatio);
-      } else if (options.height) {
-        const aspectRatio = originalWidth / originalHeight;
-        newHeight = options.height;
-        newWidth = Math.round(options.height * aspectRatio);
-      } else {
-        newWidth = originalWidth;
-        newHeight = originalHeight;
-      }
 
-      return {
-        key: outputKey,
-        width: newWidth,
-        height: newHeight,
-      };
-    }),
+        return {
+          key: outputKey,
+          width: newWidth,
+          height: newHeight,
+        };
+      }
+    ),
 
     /**
      * Generate thumbnail
@@ -143,62 +145,68 @@ function createMockImageService() {
     /**
      * Generate all size variants
      */
-    generateVariants: vi.fn(async (
-      key: string,
-      sizes: ImageSize[],
-    ): Promise<ImageVariant[]> => {
-      return sizes.map((size) => createMockImageVariant(size, key));
-    }),
+    generateVariants: vi.fn(
+      async (key: string, sizes: ImageSize[]): Promise<ImageVariant[]> => {
+        return sizes.map(size => createMockImageVariant(size, key));
+      }
+    ),
 
     /**
      * Optimize image quality
      */
-    optimizeImage: vi.fn(async (
-      key: string,
-      quality: number,
-    ): Promise<{ key: string; originalSize: number; optimizedSize: number }> => {
-      const originalSize = 500000; // 500KB
-      const compressionRatio = quality / 100;
-      const optimizedSize = Math.round(originalSize * compressionRatio * 0.7);
+    optimizeImage: vi.fn(
+      async (
+        key: string,
+        quality: number
+      ): Promise<{
+        key: string;
+        originalSize: number;
+        optimizedSize: number;
+      }> => {
+        const originalSize = 500000; // 500KB
+        const compressionRatio = quality / 100;
+        const optimizedSize = Math.round(originalSize * compressionRatio * 0.7);
 
-      return {
-        key: key.replace(/\.[^.]+$/, '_optimized.webp'),
-        originalSize,
-        optimizedSize,
-      };
-    }),
+        return {
+          key: key.replace(/\.[^.]+$/, '_optimized.webp'),
+          originalSize,
+          optimizedSize,
+        };
+      }
+    ),
 
     /**
      * Convert image format
      */
-    convertFormat: vi.fn(async (
-      inputKey: string,
-      outputFormat: string,
-    ): Promise<string> => {
-      return inputKey.replace(/\.[^.]+$/, `.${outputFormat}`);
-    }),
+    convertFormat: vi.fn(
+      async (inputKey: string, outputFormat: string): Promise<string> => {
+        return inputKey.replace(/\.[^.]+$/, `.${outputFormat}`);
+      }
+    ),
 
     /**
      * Extract EXIF data
      */
-    extractExif: vi.fn(async (key: string): Promise<Record<string, unknown> | null> => {
-      // Simulate JPEG with EXIF data
-      if (key.includes('.jpg') || key.includes('.jpeg')) {
-        return {
-          make: 'Canon',
-          model: 'EOS 5D Mark IV',
-          exposureTime: '1/250',
-          fNumber: 2.8,
-          iso: 400,
-          dateTime: new Date('2024-01-15T10:30:00Z'),
-          gps: {
-            latitude: 40.7128,
-            longitude: -74.006,
-          },
-        };
+    extractExif: vi.fn(
+      async (key: string): Promise<Record<string, unknown> | null> => {
+        // Simulate JPEG with EXIF data
+        if (key.includes('.jpg') || key.includes('.jpeg')) {
+          return {
+            make: 'Canon',
+            model: 'EOS 5D Mark IV',
+            exposureTime: '1/250',
+            fNumber: 2.8,
+            iso: 400,
+            dateTime: new Date('2024-01-15T10:30:00Z'),
+            gps: {
+              latitude: 40.7128,
+              longitude: -74.006,
+            },
+          };
+        }
+        return null;
       }
-      return null;
-    }),
+    ),
 
     /**
      * Strip EXIF data for privacy
@@ -323,7 +331,9 @@ describe('ImageService', () => {
 
       const thumbnailUrl = await imageService.generateThumbnail(key);
 
-      expect(thumbnailUrl).toContain('channels/ch_123/files/user_456/photo_thumb');
+      expect(thumbnailUrl).toContain(
+        'channels/ch_123/files/user_456/photo_thumb'
+      );
     });
   });
 
@@ -406,12 +416,18 @@ describe('ImageService', () => {
   describe('generateVariants', () => {
     it('creates all size variants', async () => {
       const key = 'uploads/photo.jpg';
-      const sizes: ImageSize[] = ['thumbnail', 'small', 'medium', 'large', 'original'];
+      const sizes: ImageSize[] = [
+        'thumbnail',
+        'small',
+        'medium',
+        'large',
+        'original',
+      ];
 
       const variants = await imageService.generateVariants(key, sizes);
 
       expect(variants).toHaveLength(5);
-      expect(variants.map((v) => v.size)).toEqual(sizes);
+      expect(variants.map(v => v.size)).toEqual(sizes);
     });
 
     it('generates correct dimensions for each size', async () => {
@@ -421,8 +437,8 @@ describe('ImageService', () => {
       const variants = await imageService.generateVariants(key, sizes);
 
       // Verify thumbnail is smallest
-      const thumbnail = variants.find((v) => v.size === 'thumbnail');
-      const large = variants.find((v) => v.size === 'large');
+      const thumbnail = variants.find(v => v.size === 'thumbnail');
+      const large = variants.find(v => v.size === 'large');
 
       expect(thumbnail).toBeDefined();
       expect(large).toBeDefined();
@@ -444,7 +460,7 @@ describe('ImageService', () => {
 
       const variants = await imageService.generateVariants(key, sizes);
 
-      variants.forEach((variant) => {
+      variants.forEach(variant => {
         expect(variant.url).toContain('https://');
         expect(variant.url.length).toBeGreaterThan(0);
       });
@@ -456,7 +472,7 @@ describe('ImageService', () => {
 
       const variants = await imageService.generateVariants(key, sizes);
 
-      const urls = variants.map((v) => v.url);
+      const urls = variants.map(v => v.url);
       const uniqueUrls = new Set(urls);
 
       expect(uniqueUrls.size).toBe(urls.length);
@@ -649,7 +665,7 @@ describe('ImageService Integration Scenarios', () => {
       const result = await imageService.resizeImage(
         key,
         key.replace('.jpg', `_${size.width}.webp`),
-        { ...size, fit: 'cover' },
+        { ...size, fit: 'cover' }
       );
       expect(result.width).toBe(size.width);
       expect(result.height).toBe(size.height);

@@ -12,8 +12,14 @@ import * as React from 'react';
 import { CommandPalette } from '@/components/ui/command-palette';
 import { KeyboardShortcutsTrigger } from '@/components/ui/keyboard-shortcuts';
 import { MultiPanelLayout } from '@/components/layout/multi-panel-layout';
-import { DragDropUpload, type UploadedFile } from '@/components/ui/drag-drop-upload';
-import { ContextMenuWrapper, type ContextMenuAction } from '@/components/ui/context-menu-wrapper';
+import {
+  DragDropUpload,
+  type UploadedFile,
+} from '@/components/ui/drag-drop-upload';
+import {
+  ContextMenuWrapper,
+  type ContextMenuAction,
+} from '@/components/ui/context-menu-wrapper';
 import { useDesktopNotifications } from '@/hooks/use-desktop-notifications';
 import { Copy, Edit, Trash, Share } from 'lucide-react';
 
@@ -25,7 +31,7 @@ export function CommandPaletteExample() {
   return (
     <>
       {/* Add this at the root level */}
-      <CommandPalette workspaceId="workspace-123" />
+      <CommandPalette workspaceId='workspace-123' />
 
       {/* Users can now press Cmd+K or Ctrl+K to open the command palette */}
     </>
@@ -38,7 +44,7 @@ export function CommandPaletteExample() {
  */
 export function KeyboardShortcutsExample() {
   return (
-    <div className="p-4">
+    <div className='p-4'>
       {/* Add to your settings or help menu */}
       <KeyboardShortcutsTrigger />
 
@@ -55,32 +61,32 @@ export function MultiPanelLayoutExample() {
   return (
     <MultiPanelLayout
       leftPanel={{
-        content: <div className="p-4">Left Sidebar Content</div>,
+        content: <div className='p-4'>Left Sidebar Content</div>,
         defaultSize: 300,
         minSize: 200,
         maxSize: 500,
         collapsible: true,
       }}
       rightPanel={{
-        content: <div className="p-4">Right Sidebar Content</div>,
+        content: <div className='p-4'>Right Sidebar Content</div>,
         defaultSize: 350,
         minSize: 250,
         maxSize: 600,
         collapsible: true,
       }}
       bottomPanel={{
-        content: <div className="p-4">Bottom Panel (e.g., Terminal)</div>,
+        content: <div className='p-4'>Bottom Panel (e.g., Terminal)</div>,
         defaultSize: 300,
         minSize: 100,
         maxSize: 600,
         collapsible: true,
       }}
-      storageKey="my-app-layout"
+      storageKey='my-app-layout'
     >
       {/* Main content area */}
-      <div className="p-8">
-        <h1 className="text-2xl font-bold">Main Content</h1>
-        <p className="mt-4">This area flexes to fill available space.</p>
+      <div className='p-8'>
+        <h1 className='text-2xl font-bold'>Main Content</h1>
+        <p className='mt-4'>This area flexes to fill available space.</p>
       </div>
     </MultiPanelLayout>
   );
@@ -104,7 +110,7 @@ export function DragDropUploadExample() {
     setFiles([...files, ...uploadedFiles]);
 
     // Simulate upload progress
-    uploadedFiles.forEach((uploadedFile) => {
+    uploadedFiles.forEach(uploadedFile => {
       let progress = 0;
       const interval = setInterval(() => {
         progress += 10;
@@ -113,8 +119,8 @@ export function DragDropUploadExample() {
           progress = 100;
         }
 
-        setFiles((prevFiles) =>
-          prevFiles.map((f) =>
+        setFiles(prevFiles =>
+          prevFiles.map(f =>
             f.id === uploadedFile.id ? { ...f, progress } : f
           )
         );
@@ -123,16 +129,16 @@ export function DragDropUploadExample() {
   };
 
   const handleFileRemove = (fileId: string) => {
-    setFiles(files.filter((f) => f.id !== fileId));
+    setFiles(files.filter(f => f.id !== fileId));
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <h2 className="text-xl font-bold mb-4">Upload Files</h2>
+    <div className='max-w-2xl mx-auto p-8'>
+      <h2 className='text-xl font-bold mb-4'>Upload Files</h2>
       <DragDropUpload
         onFilesSelected={handleFilesSelected}
         onFileRemove={handleFileRemove}
-        accept="image/*,video/*,.pdf,.doc,.docx"
+        accept='image/*,video/*,.pdf,.doc,.docx'
         maxSize={10 * 1024 * 1024} // 10MB
         maxFiles={5}
         multiple
@@ -151,20 +157,20 @@ export function ContextMenuWrapperExample() {
   const menuItems: ContextMenuAction[] = [
     {
       label: 'Copy',
-      icon: <Copy className="h-4 w-4" />,
+      icon: <Copy className='h-4 w-4' />,
       shortcut: ['Cmd', 'C'],
       onClick: () => console.log('Copy clicked'),
     },
     {
       label: 'Edit',
-      icon: <Edit className="h-4 w-4" />,
+      icon: <Edit className='h-4 w-4' />,
       shortcut: ['Cmd', 'E'],
       onClick: () => console.log('Edit clicked'),
     },
     { type: 'separator', label: '' },
     {
       label: 'Share',
-      icon: <Share className="h-4 w-4" />,
+      icon: <Share className='h-4 w-4' />,
       children: [
         {
           label: 'Email',
@@ -179,17 +185,17 @@ export function ContextMenuWrapperExample() {
     { type: 'separator', label: '' },
     {
       label: 'Delete',
-      icon: <Trash className="h-4 w-4" />,
+      icon: <Trash className='h-4 w-4' />,
       shortcut: ['Delete'],
       onClick: () => console.log('Delete clicked'),
     },
   ];
 
   return (
-    <div className="p-8">
+    <div className='p-8'>
       <ContextMenuWrapper items={menuItems}>
-        <div className="p-8 border rounded-lg bg-muted">
-          <p className="text-center">Right-click on me to see context menu!</p>
+        <div className='p-8 border rounded-lg bg-muted'>
+          <p className='text-center'>Right-click on me to see context menu!</p>
         </div>
       </ContextMenuWrapper>
     </div>
@@ -227,23 +233,25 @@ export function DesktopNotificationsExample() {
   };
 
   return (
-    <div className="p-8 space-y-4">
-      <h2 className="text-xl font-bold">Desktop Notifications</h2>
+    <div className='p-8 space-y-4'>
+      <h2 className='text-xl font-bold'>Desktop Notifications</h2>
 
       {!isSupported && (
-        <p className="text-destructive">
+        <p className='text-destructive'>
           Notifications are not supported in this browser
         </p>
       )}
 
       {isSupported && (
         <>
-          <p>Permission status: <strong>{permission}</strong></p>
+          <p>
+            Permission status: <strong>{permission}</strong>
+          </p>
 
           {!isPermissionGranted && (
             <button
               onClick={handleRequestPermission}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded"
+              className='px-4 py-2 bg-primary text-primary-foreground rounded'
             >
               Request Permission
             </button>
@@ -252,7 +260,7 @@ export function DesktopNotificationsExample() {
           {isPermissionGranted && (
             <button
               onClick={handleSendNotification}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded"
+              className='px-4 py-2 bg-primary text-primary-foreground rounded'
             >
               Send Test Notification
             </button>
@@ -269,25 +277,25 @@ export function DesktopNotificationsExample() {
  */
 export function FourKDisplayExample() {
   return (
-    <div className="ultra-hd:center-content p-8">
-      <h1 className="ultra-hd:text-4xl text-2xl font-bold mb-4">
+    <div className='ultra-hd:center-content p-8'>
+      <h1 className='ultra-hd:text-4xl text-2xl font-bold mb-4'>
         4K Optimized Content
       </h1>
-      <p className="ultra-hd:text-lg text-base ultra-hd:p-6 p-4 bg-muted rounded-lg">
+      <p className='ultra-hd:text-lg text-base ultra-hd:p-6 p-4 bg-muted rounded-lg'>
         This text and spacing automatically scales on 4K displays (≥1920px).
       </p>
 
-      <div className="grid grid-cols-2 ultra-hd:grid-cols-4 ultra-hd:gap-6 gap-4 mt-6">
-        <div className="ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow">
+      <div className='grid grid-cols-2 ultra-hd:grid-cols-4 ultra-hd:gap-6 gap-4 mt-6'>
+        <div className='ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow'>
           Card 1
         </div>
-        <div className="ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow">
+        <div className='ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow'>
           Card 2
         </div>
-        <div className="ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow">
+        <div className='ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow'>
           Card 3
         </div>
-        <div className="ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow">
+        <div className='ultra-hd:p-6 p-4 bg-card rounded-lg ultra-hd:shadow-lg shadow'>
           Card 4
         </div>
       </div>

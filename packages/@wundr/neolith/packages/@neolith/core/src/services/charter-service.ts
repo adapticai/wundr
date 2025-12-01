@@ -33,7 +33,7 @@ export class CharterVersionNotFoundError extends GenesisError {
       `Charter version not found with ${identifierType}: ${identifier}`,
       'CHARTER_VERSION_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'CharterVersionNotFoundError';
   }
@@ -78,7 +78,9 @@ export interface CharterService {
    * @throws {OrchestratorNotFoundError} If the orchestrator doesn't exist
    * @throws {CharterValidationError} If validation fails
    */
-  createCharterVersion(input: CreateCharterVersionInput): Promise<CharterVersion>;
+  createCharterVersion(
+    input: CreateCharterVersionInput
+  ): Promise<CharterVersion>;
 
   /**
    * Gets a specific charter version by ID.
@@ -95,7 +97,10 @@ export interface CharterService {
    * @param charterId - The charter ID (optional, filters to specific charter)
    * @returns Array of charter versions, ordered by version descending
    */
-  listCharterVersions(orchestratorId: string, charterId?: string): Promise<CharterVersion[]>;
+  listCharterVersions(
+    orchestratorId: string,
+    charterId?: string
+  ): Promise<CharterVersion[]>;
 
   /**
    * Gets the currently active charter for an orchestrator.
@@ -125,7 +130,7 @@ export interface CharterService {
   rollbackToVersion(
     orchestratorId: string,
     charterId: string,
-    version: number,
+    version: number
   ): Promise<CharterVersion>;
 
   /**
@@ -190,7 +195,9 @@ export class CharterServiceImpl implements CharterService {
   /**
    * Creates a new charter version.
    */
-  async createCharterVersion(input: CreateCharterVersionInput): Promise<CharterVersion> {
+  async createCharterVersion(
+    input: CreateCharterVersionInput
+  ): Promise<CharterVersion> {
     // Validate input
     this.validateCreateInput(input);
 
@@ -206,7 +213,7 @@ export class CharterServiceImpl implements CharterService {
     // Get the latest version number for this charter
     const latestVersion = await this.getLatestVersionNumber(
       input.orchestratorId,
-      input.charterId,
+      input.charterId
     );
     const newVersionNumber = latestVersion + 1;
 
@@ -292,7 +299,7 @@ export class CharterServiceImpl implements CharterService {
    */
   async listCharterVersions(
     orchestratorId: string,
-    _charterId?: string,
+    _charterId?: string
   ): Promise<CharterVersion[]> {
     // Verify orchestrator exists
     const orchestrator = await this.db.orchestrator.findUnique({
@@ -336,7 +343,9 @@ export class CharterServiceImpl implements CharterService {
   /**
    * Gets the currently active charter for an orchestrator.
    */
-  async getActiveCharter(orchestratorId: string): Promise<CharterVersion | null> {
+  async getActiveCharter(
+    orchestratorId: string
+  ): Promise<CharterVersion | null> {
     // Verify orchestrator exists
     const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: orchestratorId },
@@ -423,7 +432,7 @@ export class CharterServiceImpl implements CharterService {
   async rollbackToVersion(
     _orchestratorId: string,
     _charterId: string,
-    version: number,
+    version: number
   ): Promise<CharterVersion> {
     // Verify orchestrator exists
     const orchestrator = await this.db.orchestrator.findUnique({
@@ -480,7 +489,7 @@ export class CharterServiceImpl implements CharterService {
    */
   private async getLatestVersionNumber(
     _orchestratorId: string,
-    _charterId: string,
+    _charterId: string
   ): Promise<number> {
     // TODO: Once CharterVersion table is added to schema, use this implementation:
     // const latestVersion = await this.db.charterVersion.findFirst({
@@ -503,7 +512,7 @@ export class CharterServiceImpl implements CharterService {
    */
   private generateDiff(
     oldCharter: GovernanceCharter,
-    newCharter: GovernanceCharter,
+    newCharter: GovernanceCharter
   ): CharterDiff[] {
     const diffs: CharterDiff[] = [];
 
@@ -533,7 +542,14 @@ export class CharterServiceImpl implements CharterService {
     }
 
     // Compare identity fields
-    const identityFields = ['name', 'slug', 'persona', 'slackHandle', 'email', 'avatarUrl'] as const;
+    const identityFields = [
+      'name',
+      'slug',
+      'persona',
+      'slackHandle',
+      'email',
+      'avatarUrl',
+    ] as const;
 
     for (const field of identityFields) {
       const oldValue = oldCharter.identity[field];
@@ -551,10 +567,10 @@ export class CharterServiceImpl implements CharterService {
 
     // Deep compare capabilities
     const oldCapabilities = new Map(
-      oldCharter.capabilities.map((c: { id: string }) => [c.id, c]),
+      oldCharter.capabilities.map((c: { id: string }) => [c.id, c])
     );
     const newCapabilities = new Map(
-      newCharter.capabilities.map((c: { id: string }) => [c.id, c]),
+      newCharter.capabilities.map((c: { id: string }) => [c.id, c])
     );
 
     // Check for added capabilities
@@ -651,7 +667,10 @@ export class CharterServiceImpl implements CharterService {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new CharterValidationError('Charter version validation failed', errors);
+      throw new CharterValidationError(
+        'Charter version validation failed',
+        errors
+      );
     }
   }
 }
@@ -694,7 +713,9 @@ export class CharterServiceImpl implements CharterService {
  * const diffs = await charterService.compareVersions(v1Id, v2Id);
  * ```
  */
-export function createCharterService(database?: PrismaClient): CharterServiceImpl {
+export function createCharterService(
+  database?: PrismaClient
+): CharterServiceImpl {
   return new CharterServiceImpl(database);
 }
 

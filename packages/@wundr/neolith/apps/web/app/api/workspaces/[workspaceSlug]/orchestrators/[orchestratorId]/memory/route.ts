@@ -24,7 +24,10 @@ import {
   MEMORY_ERROR_CODES,
 } from '@/lib/validations/orchestrator-memory';
 
-import type { CreateMemoryInput, MemoryFiltersInput } from '@/lib/validations/orchestrator-memory';
+import type {
+  CreateMemoryInput,
+  MemoryFiltersInput,
+} from '@/lib/validations/orchestrator-memory';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -43,8 +46,11 @@ interface RouteContext {
 async function verifyOrchestratorAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
-): Promise<{ allowed: boolean; orchestrator?: { id: string; organizationId: string } }> {
+  userId: string
+): Promise<{
+  allowed: boolean;
+  orchestrator?: { id: string; organizationId: string };
+}> {
   // Check user has access to workspace
   const workspaceMember = await prisma.workspaceMember.findFirst({
     where: {
@@ -101,15 +107,18 @@ async function verifyOrchestratorAccess(
  */
 export async function GET(
   request: NextRequest,
-  { params }: RouteContext,
+  { params }: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MEMORY_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MEMORY_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -117,14 +126,18 @@ export async function GET(
     const { workspaceSlug: workspaceId, orchestratorId } = resolvedParams;
 
     // Verify access
-    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -149,9 +162,9 @@ export async function GET(
         createErrorResponse(
           'Invalid filter parameters',
           MEMORY_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -206,10 +219,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', MEMORY_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        MEMORY_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -234,15 +253,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: RouteContext,
+  { params }: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MEMORY_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MEMORY_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -250,14 +272,18 @@ export async function POST(
     const { workspaceSlug: workspaceId, orchestratorId } = resolvedParams;
 
     // Verify access
-    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -267,8 +293,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', MEMORY_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          MEMORY_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -279,9 +308,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           MEMORY_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -292,33 +321,42 @@ export async function POST(
 
     return NextResponse.json(
       { data: memory, message: 'Memory created successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory] Error:',
+      error
+    );
 
     // Handle Prisma errors
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          createErrorResponse('Orchestrator not found', MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Orchestrator not found',
+            MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
       if (error.code === 'P2003') {
         return NextResponse.json(
           createErrorResponse(
             'Foreign key constraint failed',
-            MEMORY_ERROR_CODES.VALIDATION_ERROR,
+            MEMORY_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', MEMORY_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        MEMORY_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

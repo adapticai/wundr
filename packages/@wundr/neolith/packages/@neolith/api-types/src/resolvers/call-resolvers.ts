@@ -89,7 +89,10 @@ export interface CallService {
   /** Get connection configuration */
   getConnectionConfig(): Promise<ConnectionConfig>;
   /** Start recording a call */
-  startRecording(roomId: string, settings: Record<string, unknown>): Promise<string>;
+  startRecording(
+    roomId: string,
+    settings: Record<string, unknown>
+  ): Promise<string>;
   /** Stop recording a call */
   stopRecording(recordingId: string): Promise<void>;
   /** End a call room */
@@ -378,11 +381,11 @@ async function canManageCall(
   }
 
   // Check if user is host or co-host
-  const participant = await context.prisma.$queryRaw`
+  const participant = (await context.prisma.$queryRaw`
     SELECT role FROM call_participants
     WHERE call_id = ${callId} AND user_id = ${context.user.id}
     LIMIT 1
-  ` as Array<{ role: string }>;
+  `) as Array<{ role: string }>;
 
   if (participant.length > 0) {
     const role = participant[0]!.role;
@@ -392,9 +395,9 @@ async function canManageCall(
   }
 
   // Check if user is channel admin
-  const call = await context.prisma.$queryRaw`
+  const call = (await context.prisma.$queryRaw`
     SELECT channel_id FROM calls WHERE id = ${callId} LIMIT 1
-  ` as Array<{ channel_id: string }>;
+  `) as Array<{ channel_id: string }>;
 
   if (call.length === 0) {
     return false;
@@ -411,7 +414,9 @@ async function canManageCall(
  * @returns Base64 encoded cursor
  */
 function generateCursor(item: { createdAt: Date; id: string }): string {
-  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString('base64');
+  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString(
+    'base64'
+  );
 }
 
 /**
@@ -534,9 +539,9 @@ export const callQueries = {
     }
 
     // Query call from database (assuming calls table exists)
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls WHERE id = ${args.id} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       return null;
@@ -545,7 +550,10 @@ export const callQueries = {
     const call = callData[0]!;
 
     // Check channel access
-    const memberInfo = await getChannelMemberInfo(context, call.channel_id as string);
+    const memberInfo = await getChannelMemberInfo(
+      context,
+      call.channel_id as string
+    );
     if (!memberInfo.isMember) {
       throw new GraphQLError('Access denied to this call', {
         extensions: { code: 'FORBIDDEN' },
@@ -611,13 +619,13 @@ export const callQueries = {
     }
 
     // Query active call
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls
       WHERE channel_id = ${args.channelId}
         AND status IN ('INITIATING', 'RINGING', 'ACTIVE', 'ON_HOLD')
       ORDER BY created_at DESC
       LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       return null;
@@ -717,15 +725,15 @@ export const callQueries = {
     }
 
     // Get total count
-    const countResult = await context.prisma.$queryRaw`
+    const countResult = (await context.prisma.$queryRaw`
       SELECT COUNT(*) as count FROM calls WHERE channel_id = ${args.channelId}
-    ` as Array<{ count: bigint }>;
+    `) as Array<{ count: bigint }>;
     const totalCount = Number(countResult[0]?.count ?? 0);
 
     const hasNextPage = calls.length > first;
     const nodes = hasNextPage ? calls.slice(0, -1) : calls;
 
-    const edges = nodes.map((call) => {
+    const edges = nodes.map(call => {
       const callData: Call = {
         id: call.id as string,
         type: call.type as CallTypeValue,
@@ -745,7 +753,10 @@ export const callQueries = {
       };
       return {
         node: callData,
-        cursor: generateCursor({ createdAt: call.created_at as Date, id: call.id as string }),
+        cursor: generateCursor({
+          createdAt: call.created_at as Date,
+          id: call.id as string,
+        }),
       };
     });
 
@@ -793,9 +804,9 @@ export const callQueries = {
       });
     }
 
-    const huddleData = await context.prisma.$queryRaw`
+    const huddleData = (await context.prisma.$queryRaw`
       SELECT * FROM huddles WHERE id = ${args.id} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (huddleData.length === 0) {
       return null;
@@ -804,7 +815,10 @@ export const callQueries = {
     const huddle = huddleData[0]!;
 
     // Check workspace access
-    const isMember = await isWorkspaceMember(context, huddle.workspace_id as string);
+    const isMember = await isWorkspaceMember(
+      context,
+      huddle.workspace_id as string
+    );
     if (!isMember) {
       throw new GraphQLError('Access denied to this huddle', {
         extensions: { code: 'FORBIDDEN' },
@@ -868,14 +882,14 @@ export const callQueries = {
       });
     }
 
-    const huddlesData = await context.prisma.$queryRaw`
+    const huddlesData = (await context.prisma.$queryRaw`
       SELECT * FROM huddles
       WHERE workspace_id = ${args.workspaceId}
       ORDER BY created_at DESC
       LIMIT 50
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
-    return huddlesData.map((huddle) => ({
+    return huddlesData.map(huddle => ({
       id: huddle.id as string,
       workspaceId: huddle.workspace_id as string,
       channelId: huddle.channel_id as string | null,
@@ -931,13 +945,13 @@ export const callQueries = {
       });
     }
 
-    const huddlesData = await context.prisma.$queryRaw`
+    const huddlesData = (await context.prisma.$queryRaw`
       SELECT * FROM huddles
       WHERE workspace_id = ${args.workspaceId} AND status = 'ACTIVE'
       ORDER BY started_at DESC
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
-    return huddlesData.map((huddle) => ({
+    return huddlesData.map(huddle => ({
       id: huddle.id as string,
       workspaceId: huddle.workspace_id as string,
       channelId: huddle.channel_id as string | null,
@@ -1006,12 +1020,12 @@ export const callMutations = {
     }
 
     // Check if there's already an active call in this channel
-    const existingCall = await context.prisma.$queryRaw`
+    const existingCall = (await context.prisma.$queryRaw`
       SELECT id FROM calls
       WHERE channel_id = ${args.channelId}
         AND status IN ('INITIATING', 'RINGING', 'ACTIVE', 'ON_HOLD')
       LIMIT 1
-    ` as Array<{ id: string }>;
+    `) as Array<{ id: string }>;
 
     if (existingCall.length > 0) {
       return createCallErrorPayload(
@@ -1051,9 +1065,14 @@ export const callMutations = {
         await context.callService.createRoom(callId, settings);
       } catch (error) {
         // Clean up on failure
-        await context.prisma.$executeRaw`DELETE FROM call_participants WHERE call_id = ${callId}`;
-        await context.prisma.$executeRaw`DELETE FROM calls WHERE id = ${callId}`;
-        return createCallErrorPayload('INTERNAL_ERROR', 'Failed to create call room');
+        await context.prisma
+          .$executeRaw`DELETE FROM call_participants WHERE call_id = ${callId}`;
+        await context.prisma
+          .$executeRaw`DELETE FROM calls WHERE id = ${callId}`;
+        return createCallErrorPayload(
+          'INTERNAL_ERROR',
+          'Failed to create call room'
+        );
       }
     }
 
@@ -1134,9 +1153,9 @@ export const callMutations = {
     }
 
     // Get the call
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls WHERE id = ${args.callId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       return createCallErrorPayload('NOT_FOUND', 'Call not found');
@@ -1183,7 +1202,8 @@ export const callMutations = {
       scheduledStartAt: existingCall.scheduled_start_at as Date | null,
       startedAt: existingCall.started_at as Date | null,
       endedAt: now,
-      settings: (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
+      settings:
+        (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
       metadata: (existingCall.metadata as Record<string, unknown>) ?? {},
       createdAt: existingCall.created_at as Date,
       updatedAt: now,
@@ -1191,7 +1211,9 @@ export const callMutations = {
 
     // Calculate duration
     const duration = existingCall.started_at
-      ? Math.round((now.getTime() - (existingCall.started_at as Date).getTime()) / 1000)
+      ? Math.round(
+          (now.getTime() - (existingCall.started_at as Date).getTime()) / 1000
+        )
       : null;
 
     // Publish call ended event
@@ -1240,9 +1262,9 @@ export const callMutations = {
     }
 
     // Get the call
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls WHERE id = ${args.callId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       throw new GraphQLError('Call not found', {
@@ -1259,7 +1281,10 @@ export const callMutations = {
     }
 
     // Check channel membership
-    const memberInfo = await getChannelMemberInfo(context, existingCall.channel_id as string);
+    const memberInfo = await getChannelMemberInfo(
+      context,
+      existingCall.channel_id as string
+    );
     if (!memberInfo.isMember) {
       throw new GraphQLError('You must be a channel member to join this call', {
         extensions: { code: 'FORBIDDEN' },
@@ -1267,17 +1292,18 @@ export const callMutations = {
     }
 
     // Check if already a participant
-    const existingParticipant = await context.prisma.$queryRaw`
+    const existingParticipant = (await context.prisma.$queryRaw`
       SELECT * FROM call_participants
       WHERE call_id = ${args.callId} AND user_id = ${context.user.id}
       LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     const now = new Date();
     let participant: CallParticipant;
-    const participantId = existingParticipant.length > 0
-      ? existingParticipant[0]!.id as string
-      : `part_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    const participantId =
+      existingParticipant.length > 0
+        ? (existingParticipant[0]!.id as string)
+        : `part_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     if (existingParticipant.length > 0) {
       // Rejoin existing participant
@@ -1298,7 +1324,10 @@ export const callMutations = {
         isVideoOff: args.options?.joinWithoutVideo ?? false,
         isSharingScreen: false,
         isHandRaised: false,
-        role: existingParticipant[0]!.role as 'HOST' | 'CO_HOST' | 'PARTICIPANT',
+        role: existingParticipant[0]!.role as
+          | 'HOST'
+          | 'CO_HOST'
+          | 'PARTICIPANT',
         joinedAt: now,
         leftAt: null,
         deviceInfo: null,
@@ -1363,7 +1392,8 @@ export const callMutations = {
       scheduledStartAt: existingCall.scheduled_start_at as Date | null,
       startedAt: existingCall.started_at as Date | null,
       endedAt: null,
-      settings: (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
+      settings:
+        (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
       metadata: (existingCall.metadata as Record<string, unknown>) ?? {},
       createdAt: existingCall.created_at as Date,
       updatedAt: existingCall.updated_at as Date,
@@ -1422,17 +1452,22 @@ export const callMutations = {
     }
 
     // Get participant
-    const participantData = await context.prisma.$queryRaw`
+    const participantData = (await context.prisma.$queryRaw`
       SELECT * FROM call_participants
       WHERE call_id = ${args.callId} AND user_id = ${context.user.id}
       LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (participantData.length === 0) {
       return {
         success: false,
         deletedId: null,
-        errors: [{ code: 'NOT_FOUND', message: 'You are not a participant in this call' }],
+        errors: [
+          {
+            code: 'NOT_FOUND',
+            message: 'You are not a participant in this call',
+          },
+        ],
       };
     }
 
@@ -1455,9 +1490,9 @@ export const callMutations = {
     `;
 
     // Get call info for event
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT channel_id FROM calls WHERE id = ${args.callId} LIMIT 1
-    ` as Array<{ channel_id: string }>;
+    `) as Array<{ channel_id: string }>;
 
     // Publish participant left event
     await context.pubsub.publish(`${PARTICIPANT_LEFT}_${args.callId}`, {
@@ -1470,10 +1505,10 @@ export const callMutations = {
     });
 
     // Check if this was the last participant (end call if so)
-    const remainingParticipants = await context.prisma.$queryRaw`
+    const remainingParticipants = (await context.prisma.$queryRaw`
       SELECT COUNT(*) as count FROM call_participants
       WHERE call_id = ${args.callId} AND status = 'CONNECTED'
-    ` as Array<{ count: bigint }>;
+    `) as Array<{ count: bigint }>;
 
     if (Number(remainingParticipants[0]?.count ?? 0) === 0) {
       await context.prisma.$executeRaw`
@@ -1481,14 +1516,17 @@ export const callMutations = {
       `;
 
       if (callData.length > 0) {
-        await context.pubsub.publish(`${CALL_ENDED}_${callData[0]!.channel_id}`, {
-          callEnded: {
-            callId: args.callId,
-            channelId: callData[0]!.channel_id,
-            endReason: 'COMPLETED',
-            duration: null,
-          },
-        });
+        await context.pubsub.publish(
+          `${CALL_ENDED}_${callData[0]!.channel_id}`,
+          {
+            callEnded: {
+              callId: args.callId,
+              channelId: callData[0]!.channel_id,
+              endReason: 'COMPLETED',
+              duration: null,
+            },
+          }
+        );
       }
     }
 
@@ -1530,9 +1568,9 @@ export const callMutations = {
     }
 
     // Get the call
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls WHERE id = ${args.callId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       return createCallErrorPayload('NOT_FOUND', 'Call not found');
@@ -1541,7 +1579,10 @@ export const callMutations = {
     const existingCall = callData[0]!;
 
     // Check if user is a participant
-    const memberInfo = await getChannelMemberInfo(context, existingCall.channel_id as string);
+    const memberInfo = await getChannelMemberInfo(
+      context,
+      existingCall.channel_id as string
+    );
     if (!memberInfo.isMember) {
       throw new GraphQLError('You must be a channel member to invite users', {
         extensions: { code: 'FORBIDDEN' },
@@ -1552,9 +1593,9 @@ export const callMutations = {
     const now = new Date();
     for (const userId of args.userIds) {
       // Check if already a participant
-      const existing = await context.prisma.$queryRaw`
+      const existing = (await context.prisma.$queryRaw`
         SELECT id FROM call_participants WHERE call_id = ${args.callId} AND user_id = ${userId} LIMIT 1
-      ` as Array<{ id: string }>;
+      `) as Array<{ id: string }>;
 
       if (existing.length === 0) {
         const participantId = `part_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
@@ -1577,7 +1618,8 @@ export const callMutations = {
       scheduledStartAt: existingCall.scheduled_start_at as Date | null,
       startedAt: existingCall.started_at as Date | null,
       endedAt: null,
-      settings: (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
+      settings:
+        (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
       metadata: (existingCall.metadata as Record<string, unknown>) ?? {},
       createdAt: existingCall.created_at as Date,
       updatedAt: existingCall.updated_at as Date,
@@ -1619,9 +1661,12 @@ export const callMutations = {
     // Check if user can manage the call
     const canManage = await canManageCall(context, args.callId);
     if (!canManage) {
-      throw new GraphQLError('You do not have permission to mute participants', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to mute participants',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Update participant
@@ -1637,9 +1682,9 @@ export const callMutations = {
     }
 
     // Get call for response
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls WHERE id = ${args.callId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       return createCallErrorPayload('NOT_FOUND', 'Call not found');
@@ -1658,7 +1703,8 @@ export const callMutations = {
       scheduledStartAt: existingCall.scheduled_start_at as Date | null,
       startedAt: existingCall.started_at as Date | null,
       endedAt: existingCall.ended_at as Date | null,
-      settings: (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
+      settings:
+        (existingCall.settings as CallSettings) ?? DEFAULT_CALL_SETTINGS,
       metadata: (existingCall.metadata as Record<string, unknown>) ?? {},
       createdAt: existingCall.created_at as Date,
       updatedAt: existingCall.updated_at as Date,
@@ -1669,7 +1715,9 @@ export const callMutations = {
       participantUpdated: {
         callId: args.callId,
         participantId: args.participantId,
-        changes: { [args.trackType === 'AUDIO' ? 'isMuted' : 'isVideoOff']: true },
+        changes: {
+          [args.trackType === 'AUDIO' ? 'isMuted' : 'isVideoOff']: true,
+        },
       },
     });
 
@@ -1709,15 +1757,18 @@ export const callMutations = {
     // Check if user can manage the call
     const canManage = await canManageCall(context, args.callId);
     if (!canManage) {
-      throw new GraphQLError('You do not have permission to remove participants', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to remove participants',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Get participant info
-    const participantData = await context.prisma.$queryRaw`
+    const participantData = (await context.prisma.$queryRaw`
       SELECT user_id FROM call_participants WHERE id = ${args.participantId} LIMIT 1
-    ` as Array<{ user_id: string }>;
+    `) as Array<{ user_id: string }>;
 
     if (participantData.length === 0) {
       return {
@@ -1787,9 +1838,12 @@ export const callMutations = {
     // Check workspace membership
     const isMember = await isWorkspaceMember(context, input.workspaceId);
     if (!isMember) {
-      throw new GraphQLError('You must be a workspace member to create a huddle', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You must be a workspace member to create a huddle',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Generate room ID
@@ -1869,9 +1923,9 @@ export const callMutations = {
     }
 
     // Get huddle
-    const huddleData = await context.prisma.$queryRaw`
+    const huddleData = (await context.prisma.$queryRaw`
       SELECT * FROM huddles WHERE id = ${args.huddleId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (huddleData.length === 0) {
       return createHuddleErrorPayload('NOT_FOUND', 'Huddle not found');
@@ -1884,29 +1938,38 @@ export const callMutations = {
     }
 
     // Check workspace membership
-    const isMember = await isWorkspaceMember(context, existingHuddle.workspace_id as string);
+    const isMember = await isWorkspaceMember(
+      context,
+      existingHuddle.workspace_id as string
+    );
     if (!isMember) {
-      throw new GraphQLError('You must be a workspace member to join this huddle', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You must be a workspace member to join this huddle',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Check participant count
-    const participantCount = await context.prisma.$queryRaw`
+    const participantCount = (await context.prisma.$queryRaw`
       SELECT COUNT(*) as count FROM huddle_participants
       WHERE huddle_id = ${args.huddleId} AND left_at IS NULL
-    ` as Array<{ count: bigint }>;
+    `) as Array<{ count: bigint }>;
 
-    if (Number(participantCount[0]?.count ?? 0) >= (existingHuddle.max_participants as number)) {
+    if (
+      Number(participantCount[0]?.count ?? 0) >=
+      (existingHuddle.max_participants as number)
+    ) {
       return createHuddleErrorPayload('FORBIDDEN', 'Huddle is full');
     }
 
     // Check if already a participant
-    const existingParticipant = await context.prisma.$queryRaw`
+    const existingParticipant = (await context.prisma.$queryRaw`
       SELECT id FROM huddle_participants
       WHERE huddle_id = ${args.huddleId} AND user_id = ${context.user.id}
       LIMIT 1
-    ` as Array<{ id: string }>;
+    `) as Array<{ id: string }>;
 
     const now = new Date();
     if (existingParticipant.length > 0) {
@@ -1926,10 +1989,10 @@ export const callMutations = {
     }
 
     // Get updated participant count
-    const newCount = await context.prisma.$queryRaw`
+    const newCount = (await context.prisma.$queryRaw`
       SELECT COUNT(*) as count FROM huddle_participants
       WHERE huddle_id = ${args.huddleId} AND left_at IS NULL
-    ` as Array<{ count: bigint }>;
+    `) as Array<{ count: bigint }>;
 
     const huddle: Huddle = {
       id: args.huddleId,
@@ -1948,13 +2011,16 @@ export const callMutations = {
     };
 
     // Publish huddle updated event
-    await context.pubsub.publish(`${HUDDLE_UPDATED}_${existingHuddle.workspace_id}`, {
-      huddleUpdated: {
-        huddle,
-        updateType: 'PARTICIPANT_JOINED',
-        participantCount: Number(newCount[0]?.count ?? 0),
-      },
-    });
+    await context.pubsub.publish(
+      `${HUDDLE_UPDATED}_${existingHuddle.workspace_id}`,
+      {
+        huddleUpdated: {
+          huddle,
+          updateType: 'PARTICIPANT_JOINED',
+          participantCount: Number(newCount[0]?.count ?? 0),
+        },
+      }
+    );
 
     return createHuddleSuccessPayload(huddle);
   },
@@ -1990,9 +2056,9 @@ export const callMutations = {
     }
 
     // Get huddle
-    const huddleData = await context.prisma.$queryRaw`
+    const huddleData = (await context.prisma.$queryRaw`
       SELECT * FROM huddles WHERE id = ${args.huddleId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (huddleData.length === 0) {
       return createHuddleErrorPayload('NOT_FOUND', 'Huddle not found');
@@ -2009,10 +2075,10 @@ export const callMutations = {
     `;
 
     // Get updated participant count
-    const newCount = await context.prisma.$queryRaw`
+    const newCount = (await context.prisma.$queryRaw`
       SELECT COUNT(*) as count FROM huddle_participants
       WHERE huddle_id = ${args.huddleId} AND left_at IS NULL
-    ` as Array<{ count: bigint }>;
+    `) as Array<{ count: bigint }>;
 
     const participantCount = Number(newCount[0]?.count ?? 0);
 
@@ -2040,13 +2106,16 @@ export const callMutations = {
     };
 
     // Publish huddle updated event
-    await context.pubsub.publish(`${HUDDLE_UPDATED}_${existingHuddle.workspace_id}`, {
-      huddleUpdated: {
-        huddle,
-        updateType: participantCount === 0 ? 'ENDED' : 'PARTICIPANT_LEFT',
-        participantCount,
-      },
-    });
+    await context.pubsub.publish(
+      `${HUDDLE_UPDATED}_${existingHuddle.workspace_id}`,
+      {
+        huddleUpdated: {
+          huddle,
+          updateType: participantCount === 0 ? 'ENDED' : 'PARTICIPANT_LEFT',
+          participantCount,
+        },
+      }
+    );
 
     return createHuddleSuccessPayload(huddle);
   },
@@ -2083,9 +2152,9 @@ export const callMutations = {
     }
 
     // Get huddle
-    const huddleData = await context.prisma.$queryRaw`
+    const huddleData = (await context.prisma.$queryRaw`
       SELECT * FROM huddles WHERE id = ${args.huddleId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (huddleData.length === 0) {
       return {
@@ -2098,7 +2167,10 @@ export const callMutations = {
     const existingHuddle = huddleData[0]!;
 
     // Only creator or system admin can delete
-    if (existingHuddle.creator_id !== context.user.id && !isSystemAdmin(context)) {
+    if (
+      existingHuddle.creator_id !== context.user.id &&
+      !isSystemAdmin(context)
+    ) {
       throw new GraphQLError('Only the huddle creator can delete the huddle', {
         extensions: { code: 'FORBIDDEN' },
       });
@@ -2118,17 +2190,20 @@ export const callMutations = {
     `;
 
     // Publish huddle updated event
-    await context.pubsub.publish(`${HUDDLE_UPDATED}_${existingHuddle.workspace_id}`, {
-      huddleUpdated: {
-        huddle: {
-          id: args.huddleId,
-          workspaceId: existingHuddle.workspace_id,
-          status: 'ENDED',
+    await context.pubsub.publish(
+      `${HUDDLE_UPDATED}_${existingHuddle.workspace_id}`,
+      {
+        huddleUpdated: {
+          huddle: {
+            id: args.huddleId,
+            workspaceId: existingHuddle.workspace_id,
+            status: 'ENDED',
+          },
+          updateType: 'ENDED',
+          participantCount: 0,
         },
-        updateType: 'ENDED',
-        participantCount: 0,
-      },
-    });
+      }
+    );
 
     return {
       success: true,
@@ -2176,9 +2251,9 @@ export const callMutations = {
     }
 
     // Get call
-    const callData = await context.prisma.$queryRaw`
+    const callData = (await context.prisma.$queryRaw`
       SELECT * FROM calls WHERE id = ${args.callId} LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (callData.length === 0) {
       return {
@@ -2193,20 +2268,27 @@ export const callMutations = {
     if (!settings.allowRecording) {
       return {
         recording: null,
-        errors: [{ code: 'FORBIDDEN', message: 'Recording is not allowed for this call' }],
+        errors: [
+          {
+            code: 'FORBIDDEN',
+            message: 'Recording is not allowed for this call',
+          },
+        ],
       };
     }
 
     // Check if already recording
-    const existingRecording = await context.prisma.$queryRaw`
+    const existingRecording = (await context.prisma.$queryRaw`
       SELECT id FROM call_recordings WHERE call_id = ${args.callId} AND status IN ('STARTING', 'RECORDING')
       LIMIT 1
-    ` as Array<{ id: string }>;
+    `) as Array<{ id: string }>;
 
     if (existingRecording.length > 0) {
       return {
         recording: null,
-        errors: [{ code: 'CONFLICT', message: 'Recording is already in progress' }],
+        errors: [
+          { code: 'CONFLICT', message: 'Recording is already in progress' },
+        ],
       };
     }
 
@@ -2229,7 +2311,10 @@ export const callMutations = {
     // Start actual recording if call service is available
     if (context.callService && call.room_id) {
       try {
-        await context.callService.startRecording(call.room_id as string, recordingSettings);
+        await context.callService.startRecording(
+          call.room_id as string,
+          recordingSettings
+        );
         await context.prisma.$executeRaw`
           UPDATE call_recordings SET status = 'RECORDING', updated_at = ${new Date()} WHERE id = ${recordingId}
         `;
@@ -2239,7 +2324,9 @@ export const callMutations = {
         `;
         return {
           recording: null,
-          errors: [{ code: 'INTERNAL_ERROR', message: 'Failed to start recording' }],
+          errors: [
+            { code: 'INTERNAL_ERROR', message: 'Failed to start recording' },
+          ],
         };
       }
     }
@@ -2305,11 +2392,11 @@ export const callMutations = {
     }
 
     // Get active recording
-    const recordingData = await context.prisma.$queryRaw`
+    const recordingData = (await context.prisma.$queryRaw`
       SELECT * FROM call_recordings
       WHERE call_id = ${args.callId} AND status IN ('STARTING', 'RECORDING')
       LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (recordingData.length === 0) {
       return {
@@ -2320,7 +2407,9 @@ export const callMutations = {
 
     const existingRecording = recordingData[0]!;
     const now = new Date();
-    const duration = Math.round((now.getTime() - (existingRecording.started_at as Date).getTime()) / 1000);
+    const duration = Math.round(
+      (now.getTime() - (existingRecording.started_at as Date).getTime()) / 1000
+    );
 
     // Stop actual recording if call service is available
     if (context.callService) {
@@ -2470,9 +2559,9 @@ export const callSubscriptions = {
       }
 
       // Verify call access
-      const callData = await context.prisma.$queryRaw`
+      const callData = (await context.prisma.$queryRaw`
         SELECT channel_id FROM calls WHERE id = ${args.callId} LIMIT 1
-      ` as Array<{ channel_id: string }>;
+      `) as Array<{ channel_id: string }>;
 
       if (callData.length === 0) {
         throw new GraphQLError('Call not found', {
@@ -2480,14 +2569,19 @@ export const callSubscriptions = {
         });
       }
 
-      const memberInfo = await getChannelMemberInfo(context, callData[0]!.channel_id);
+      const memberInfo = await getChannelMemberInfo(
+        context,
+        callData[0]!.channel_id
+      );
       if (!memberInfo.isMember) {
         throw new GraphQLError('Access denied to this call', {
           extensions: { code: 'FORBIDDEN' },
         });
       }
 
-      return context.pubsub.asyncIterator(`${PARTICIPANT_JOINED}_${args.callId}`);
+      return context.pubsub.asyncIterator(
+        `${PARTICIPANT_JOINED}_${args.callId}`
+      );
     },
   },
 
@@ -2517,9 +2611,9 @@ export const callSubscriptions = {
         });
       }
 
-      const callData = await context.prisma.$queryRaw`
+      const callData = (await context.prisma.$queryRaw`
         SELECT channel_id FROM calls WHERE id = ${args.callId} LIMIT 1
-      ` as Array<{ channel_id: string }>;
+      `) as Array<{ channel_id: string }>;
 
       if (callData.length === 0) {
         throw new GraphQLError('Call not found', {
@@ -2527,7 +2621,10 @@ export const callSubscriptions = {
         });
       }
 
-      const memberInfo = await getChannelMemberInfo(context, callData[0]!.channel_id);
+      const memberInfo = await getChannelMemberInfo(
+        context,
+        callData[0]!.channel_id
+      );
       if (!memberInfo.isMember) {
         throw new GraphQLError('Access denied to this call', {
           extensions: { code: 'FORBIDDEN' },
@@ -2572,7 +2669,9 @@ export const callSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${HUDDLE_UPDATED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${HUDDLE_UPDATED}_${args.workspaceId}`
+      );
     },
   },
 };
@@ -2593,11 +2692,7 @@ export const CallFieldResolvers = {
    * @param context - GraphQL context
    * @returns The channel
    */
-  channel: async (
-    parent: Call,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  channel: async (parent: Call, _args: unknown, context: GraphQLContext) => {
     return context.prisma.channel.findUnique({
       where: { id: parent.channelId },
     });
@@ -2616,11 +2711,11 @@ export const CallFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ): Promise<CallParticipant[]> => {
-    const participants = await context.prisma.$queryRaw`
+    const participants = (await context.prisma.$queryRaw`
       SELECT * FROM call_participants WHERE call_id = ${parent.id} ORDER BY joined_at ASC
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
-    return participants.map((p) => ({
+    return participants.map(p => ({
       id: p.id as string,
       callId: parent.id,
       userId: p.user_id as string,
@@ -2644,11 +2739,7 @@ export const CallFieldResolvers = {
    * @param context - GraphQL context
    * @returns The initiator user
    */
-  initiator: async (
-    parent: Call,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  initiator: async (parent: Call, _args: unknown, context: GraphQLContext) => {
     return context.prisma.user.findUnique({
       where: { id: parent.initiatorId },
     });
@@ -2667,12 +2758,12 @@ export const CallFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ): Promise<CallRecording | null> => {
-    const recordings = await context.prisma.$queryRaw`
+    const recordings = (await context.prisma.$queryRaw`
       SELECT * FROM call_recordings
       WHERE call_id = ${parent.id}
       ORDER BY started_at DESC
       LIMIT 1
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
     if (recordings.length === 0) {
       return null;
@@ -2739,11 +2830,7 @@ export const HuddleFieldResolvers = {
    * @param context - GraphQL context
    * @returns The creator user
    */
-  creator: async (
-    parent: Huddle,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  creator: async (parent: Huddle, _args: unknown, context: GraphQLContext) => {
     return context.prisma.user.findUnique({
       where: { id: parent.creatorId },
     });
@@ -2762,13 +2849,13 @@ export const HuddleFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ): Promise<HuddleParticipant[]> => {
-    const participants = await context.prisma.$queryRaw`
+    const participants = (await context.prisma.$queryRaw`
       SELECT * FROM huddle_participants
       WHERE huddle_id = ${parent.id} AND left_at IS NULL
       ORDER BY joined_at ASC
-    ` as Array<Record<string, unknown>>;
+    `) as Array<Record<string, unknown>>;
 
-    return participants.map((p) => ({
+    return participants.map(p => ({
       id: p.id as string,
       huddleId: parent.id,
       userId: p.user_id as string,
@@ -2793,10 +2880,10 @@ export const HuddleFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ): Promise<number> => {
-    const result = await context.prisma.$queryRaw`
+    const result = (await context.prisma.$queryRaw`
       SELECT COUNT(*) as count FROM huddle_participants
       WHERE huddle_id = ${parent.id} AND left_at IS NULL
-    ` as Array<{ count: bigint }>;
+    `) as Array<{ count: bigint }>;
 
     return Number(result[0]?.count ?? 0);
   },

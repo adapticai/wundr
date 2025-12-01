@@ -21,10 +21,7 @@ import {
   vi,
 } from 'vitest';
 
-import {
-  createMockRedis,
-  type MockRedis,
-} from '../../test-utils/mock-redis';
+import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
 import {
   _createMockDegradedHealthStatus,
   _createMockHealthStatus,
@@ -76,14 +73,14 @@ class MockHeartbeatService {
       heartbeatIntervalMs: HEARTBEAT_INTERVAL_MS,
       degradedThreshold: DEGRADED_THRESHOLD,
       unhealthyThreshold: UNHEALTHY_THRESHOLD,
-    },
+    }
   ) {}
 
   // Heartbeat operations
   async sendHeartbeat(
     vpId: string,
     daemonId: string,
-    metrics?: VPMetrics,
+    metrics?: VPMetrics
   ): Promise<void> {
     const key = `${HEARTBEAT_KEY_PREFIX}${vpId}`;
     const now = new Date().toISOString();
@@ -139,7 +136,7 @@ class MockHeartbeatService {
     const lastHeartbeat = new Date(data.timestamp);
     const timeSinceLastHeartbeat = now.getTime() - lastHeartbeat.getTime();
     const missedHeartbeats = Math.floor(
-      timeSinceLastHeartbeat / this.config.heartbeatIntervalMs,
+      timeSinceLastHeartbeat / this.config.heartbeatIntervalMs
     );
 
     let status: HealthStatus;
@@ -192,10 +189,7 @@ class MockHeartbeatService {
     return unhealthyVPs;
   }
 
-  async registerVP(
-    vpId: string,
-    organizationId?: string,
-  ): Promise<void> {
+  async registerVP(vpId: string, organizationId?: string): Promise<void> {
     await this.redis.sadd(VP_REGISTRY_KEY, vpId);
 
     if (organizationId) {
@@ -215,18 +209,18 @@ class MockHeartbeatService {
 
   async getAllVPHealthStatuses(): Promise<HealthCheckStatus[]> {
     const vpIds = await this.redis.smembers(VP_REGISTRY_KEY);
-    return Promise.all(vpIds.map((vpId) => this.checkHealth(vpId)));
+    return Promise.all(vpIds.map(vpId => this.checkHealth(vpId)));
   }
 
   // Callback setters for monitoring
   setOnUnhealthy(
-    callback: (vpId: string, status: HealthCheckStatus) => void,
+    callback: (vpId: string, status: HealthCheckStatus) => void
   ): void {
     this.healthCallbacks.onUnhealthy = callback;
   }
 
   setOnRecovered(
-    callback: (vpId: string, status: HealthCheckStatus) => void,
+    callback: (vpId: string, status: HealthCheckStatus) => void
   ): void {
     this.healthCallbacks.onRecovered = callback;
   }
@@ -234,7 +228,9 @@ class MockHeartbeatService {
   // Internal method to simulate health check (for testing)
   async _triggerHealthCheck(vpId: string): Promise<void> {
     const previousKey = `${HEARTBEAT_KEY_PREFIX}${vpId}:previousStatus`;
-    const previousStatus = (await this.redis.get(previousKey)) as HealthStatus | null;
+    const previousStatus = (await this.redis.get(
+      previousKey
+    )) as HealthStatus | null;
     const currentHealth = await this.checkHealth(vpId);
 
     // Store current status for next comparison
@@ -265,19 +261,25 @@ class MockHeartbeatService {
 class MockHeartbeatMonitor {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private running = false;
-  private onUnhealthyCallback?: (vpId: string, status: HealthCheckStatus) => void;
-  private onRecoveredCallback?: (vpId: string, status: HealthCheckStatus) => void;
+  private onUnhealthyCallback?: (
+    vpId: string,
+    status: HealthCheckStatus
+  ) => void;
+  private onRecoveredCallback?: (
+    vpId: string,
+    status: HealthCheckStatus
+  ) => void;
   private previousStatuses = new Map<string, HealthStatus>();
 
   constructor(
     private heartbeatService: MockHeartbeatService,
-    private checkIntervalMs: number = 10000,
+    private checkIntervalMs: number = 10000
   ) {}
 
   start(): void {
     if (this.running) {
-return;
-}
+      return;
+    }
 
     this.running = true;
     this.intervalId = setInterval(() => {
@@ -298,13 +300,13 @@ return;
   }
 
   setOnUnhealthy(
-    callback: (vpId: string, status: HealthCheckStatus) => void,
+    callback: (vpId: string, status: HealthCheckStatus) => void
   ): void {
     this.onUnhealthyCallback = callback;
   }
 
   setOnRecovered(
-    callback: (vpId: string, status: HealthCheckStatus) => void,
+    callback: (vpId: string, status: HealthCheckStatus) => void
   ): void {
     this.onRecoveredCallback = callback;
   }
@@ -324,10 +326,10 @@ return;
 
     return {
       totalOrchestrators: statuses.length,
-      healthyCount: statuses.filter((s) => s.status === 'healthy').length,
-      degradedCount: statuses.filter((s) => s.status === 'degraded').length,
-      unhealthyCount: statuses.filter((s) => s.status === 'unhealthy').length,
-      unknownCount: statuses.filter((s) => s.status === 'unknown').length,
+      healthyCount: statuses.filter(s => s.status === 'healthy').length,
+      degradedCount: statuses.filter(s => s.status === 'degraded').length,
+      unhealthyCount: statuses.filter(s => s.status === 'unhealthy').length,
+      unknownCount: statuses.filter(s => s.status === 'unknown').length,
     };
   }
 
@@ -466,7 +468,7 @@ describe('HeartbeatService', () => {
 
       expect(redis.publish).toHaveBeenCalledWith(
         HEARTBEAT_CHANNEL,
-        expect.stringContaining(vpId),
+        expect.stringContaining(vpId)
       );
 
       const event = JSON.parse(redis._publishedMessages[0].message);
@@ -482,8 +484,8 @@ describe('HeartbeatService', () => {
       // Send multiple rapid heartbeats
       await Promise.all(
         Array.from({ length: 10 }, () =>
-          heartbeatService.sendHeartbeat(vpId, daemonId),
-        ),
+          heartbeatService.sendHeartbeat(vpId, daemonId)
+        )
       );
 
       const key = `${HEARTBEAT_KEY_PREFIX}${vpId}`;
@@ -622,9 +624,9 @@ describe('HeartbeatService', () => {
       const unhealthyList = await heartbeatService.getUnhealthyVPs();
 
       expect(unhealthyList).toHaveLength(2);
-      expect(unhealthyList.map((u) => u.orchestratorId)).toContain(unhealthyVP1);
-      expect(unhealthyList.map((u) => u.orchestratorId)).toContain(unhealthyVP2);
-      expect(unhealthyList.map((u) => u.orchestratorId)).not.toContain(healthyVP);
+      expect(unhealthyList.map(u => u.orchestratorId)).toContain(unhealthyVP1);
+      expect(unhealthyList.map(u => u.orchestratorId)).toContain(unhealthyVP2);
+      expect(unhealthyList.map(u => u.orchestratorId)).not.toContain(healthyVP);
     });
 
     it('filters by organization', async () => {
@@ -739,9 +741,9 @@ describe('HeartbeatService', () => {
 
       expect(statuses).toHaveLength(3);
 
-      const vp1Status = statuses.find((s) => s.orchestratorId === vp1);
-      const vp2Status = statuses.find((s) => s.orchestratorId === vp2);
-      const vp3Status = statuses.find((s) => s.orchestratorId === vp3);
+      const vp1Status = statuses.find(s => s.orchestratorId === vp1);
+      const vp2Status = statuses.find(s => s.orchestratorId === vp2);
+      const vp3Status = statuses.find(s => s.orchestratorId === vp3);
 
       expect(vp1Status?.status).toBe('healthy');
       expect(vp2Status?.status).toBe('healthy');
@@ -817,7 +819,7 @@ describe('HeartbeatMonitor', () => {
         expect.objectContaining({
           status: 'unhealthy',
           vpId,
-        }),
+        })
       );
     });
 
@@ -843,7 +845,7 @@ describe('HeartbeatMonitor', () => {
         expect.objectContaining({
           status: 'healthy',
           vpId,
-        }),
+        })
       );
     });
 

@@ -115,7 +115,10 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    * @param config - Queue configuration
    * @param processorRegistry - Optional processor registry for job handling
    */
-  constructor(config: Partial<MemoryQueueConfig> = {}, processorRegistry?: ProcessorRegistry) {
+  constructor(
+    config: Partial<MemoryQueueConfig> = {},
+    processorRegistry?: ProcessorRegistry
+  ) {
     super(config.queue?.name ?? DEFAULT_CONFIG.queue.name!);
     this.config = this.mergeConfig(config);
     this.processorRegistry = processorRegistry ?? null;
@@ -153,7 +156,7 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
 
     // Start processing loop
     this.processingLoop = setInterval(() => {
-      this.processNextJobs().catch((error) => {
+      this.processNextJobs().catch(error => {
         this.emit<QueueErrorEvent>(QueueEvent.QUEUE_ERROR, {
           error: error as Error,
           context: 'processing-loop',
@@ -163,7 +166,7 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
 
     // Start cleanup loop
     this.cleanupLoop = setInterval(() => {
-      this.cleanupOldJobs().catch((error) => {
+      this.cleanupOldJobs().catch(error => {
         console.error('Cleanup error:', error);
       });
     }, 60000); // Every minute
@@ -177,8 +180,8 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    */
   async close(): Promise<void> {
     if (!this.ready) {
-return;
-}
+      return;
+    }
 
     this.ready = false;
 
@@ -195,7 +198,7 @@ return;
 
     // Wait for active jobs to complete
     while (this.activeJobs.size > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Clear data
@@ -269,8 +272,8 @@ return;
   async getJob(jobId: string): Promise<JobInfo | null> {
     const job = this.jobs.get(jobId);
     if (!job) {
-return null;
-}
+      return null;
+    }
     return this.mapToJobInfo(job);
   }
 
@@ -280,8 +283,8 @@ return null;
   async cancelJob(jobId: string): Promise<boolean> {
     const job = this.jobs.get(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
 
     if (job.status === JobStatus.ACTIVE) {
       return false; // Cannot cancel active jobs
@@ -305,8 +308,8 @@ return false;
   async retryJob(jobId: string): Promise<boolean> {
     const job = this.jobs.get(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
 
     if (job.status !== JobStatus.FAILED) {
       return false;
@@ -330,7 +333,11 @@ return false;
   /**
    * Update job progress
    */
-  async updateProgress(jobId: string, progress: number, message?: string): Promise<void> {
+  async updateProgress(
+    jobId: string,
+    progress: number,
+    message?: string
+  ): Promise<void> {
     const job = this.jobs.get(jobId);
     if (job) {
       job.progress = Math.max(0, Math.min(100, progress));
@@ -509,8 +516,8 @@ return false;
       if (job.status === status) {
         result.push(this.mapToJobInfo(job));
         if (result.length >= limit) {
-break;
-}
+          break;
+        }
       }
     }
 
@@ -522,8 +529,8 @@ break;
    */
   private async processNextJobs(): Promise<void> {
     if (this.paused || !this.ready) {
-return;
-}
+      return;
+    }
 
     const concurrency = this.config.queue.concurrency ?? 2;
     const availableSlots = concurrency - this.activeJobs.size;
@@ -531,15 +538,15 @@ return;
     for (let i = 0; i < availableSlots && this.waitingQueue.length > 0; i++) {
       const jobId = this.waitingQueue.shift();
       if (!jobId) {
-continue;
-}
+        continue;
+      }
 
       const job = this.jobs.get(jobId);
       if (!job || job.status !== JobStatus.WAITING) {
-continue;
-}
+        continue;
+      }
 
-      this.processJob(job).catch((error) => {
+      this.processJob(job).catch(error => {
         console.error(`Error processing job ${jobId}:`, error);
       });
     }
@@ -583,11 +590,12 @@ continue;
       }
 
       // Process with timeout
-      const timeout = job.data.options?.timeout ?? this.config.queue.defaultTimeout ?? 300000;
+      const timeout =
+        job.data.options?.timeout ?? this.config.queue.defaultTimeout ?? 300000;
       const result = await this.withTimeout(
         processor.process(job.data),
         timeout,
-        `Job ${job.id} timed out after ${timeout}ms`,
+        `Job ${job.id} timed out after ${timeout}ms`
       );
 
       // Success
@@ -612,7 +620,10 @@ continue;
         const baseDelay = this.config.queue.retryDelay ?? 1000;
         const multiplier = this.config.queue.retryBackoffMultiplier ?? 2;
         const maxDelay = this.config.queue.maxRetryDelay ?? 30000;
-        const delay = Math.min(baseDelay * Math.pow(multiplier, job.attempts - 1), maxDelay);
+        const delay = Math.min(
+          baseDelay * Math.pow(multiplier, job.attempts - 1),
+          maxDelay
+        );
 
         job.status = JobStatus.DELAYED;
         job.nextRetryAt = new Date(Date.now() + delay);
@@ -708,7 +719,8 @@ continue;
    */
   private async cleanupOldJobs(): Promise<void> {
     const now = Date.now();
-    const completedThreshold = now - (this.config.queue.removeOnComplete ?? 3600000);
+    const completedThreshold =
+      now - (this.config.queue.removeOnComplete ?? 3600000);
     const failedThreshold = now - (this.config.queue.removeOnFail ?? 86400000);
 
     for (const [jobId, job] of this.jobs) {
@@ -717,7 +729,10 @@ continue;
         if (finishedAt < completedThreshold) {
           this.jobs.delete(jobId);
         }
-      } else if (job.status === JobStatus.FAILED || job.status === JobStatus.CANCELLED) {
+      } else if (
+        job.status === JobStatus.FAILED ||
+        job.status === JobStatus.CANCELLED
+      ) {
         const finishedAt = job.finishedAt?.getTime() ?? 0;
         if (finishedAt < failedThreshold) {
           this.jobs.delete(jobId);
@@ -751,12 +766,12 @@ continue;
   private async withTimeout<T>(
     promise: Promise<T>,
     timeoutMs: number,
-    message: string,
+    message: string
   ): Promise<T> {
     return Promise.race([
       promise,
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error(message)), timeoutMs),
+        setTimeout(() => reject(new Error(message)), timeoutMs)
       ),
     ]);
   }
@@ -771,7 +786,7 @@ continue;
  */
 export function createMemoryProcessingQueue(
   config?: Partial<MemoryQueueConfig>,
-  processorRegistry?: ProcessorRegistry,
+  processorRegistry?: ProcessorRegistry
 ): MemoryProcessingQueue {
   return new MemoryProcessingQueue(config, processorRegistry);
 }

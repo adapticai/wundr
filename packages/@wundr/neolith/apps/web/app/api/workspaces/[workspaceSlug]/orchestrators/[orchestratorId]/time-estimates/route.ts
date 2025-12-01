@@ -15,7 +15,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createErrorResponse, ORCHESTRATOR_ERROR_CODES } from '@/lib/validations/orchestrator';
+import {
+  createErrorResponse,
+  ORCHESTRATOR_ERROR_CODES,
+} from '@/lib/validations/orchestrator';
 import {
   getTimeEstimatesSchema,
   recordTimeEstimateSchema,
@@ -33,7 +36,11 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an Orchestrator within a workspace
  */
-async function checkOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function checkOrchestratorAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -116,14 +123,17 @@ async function checkOrchestratorAccess(workspaceId: string, orchestratorId: stri
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -132,16 +142,26 @@ export async function GET(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
-    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -159,9 +179,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -208,7 +228,7 @@ export async function GET(
 
     // Process time estimates
     const estimates = tasks
-      .map((task) => {
+      .map(task => {
         const metadata = task.metadata as Record<string, unknown>;
         const timeTracking = metadata.timeTracking as
           | { actualHours?: number; notes?: string }
@@ -222,7 +242,7 @@ export async function GET(
         const actualHours = timeTracking.actualHours;
         const variance = actualHours - estimatedHours;
         const accuracy = Math.round(
-          (1 - Math.abs(variance) / Math.max(estimatedHours, actualHours)) * 100,
+          (1 - Math.abs(variance) / Math.max(estimatedHours, actualHours)) * 100
         );
 
         return {
@@ -236,7 +256,10 @@ export async function GET(
           notes: timeTracking.notes,
         };
       })
-      .filter((estimate): estimate is NonNullable<typeof estimate> => estimate !== null);
+      .filter(
+        (estimate): estimate is NonNullable<typeof estimate> =>
+          estimate !== null
+      );
 
     // Calculate metrics if requested
     let metrics = null;
@@ -245,11 +268,12 @@ export async function GET(
       const averageAccuracy =
         estimates.reduce((sum, e) => sum + e.accuracy, 0) / totalEstimates;
       const averageVariance =
-        estimates.reduce((sum, e) => sum + Math.abs(e.variance), 0) / totalEstimates;
+        estimates.reduce((sum, e) => sum + Math.abs(e.variance), 0) /
+        totalEstimates;
 
-      const overestimates = estimates.filter((e) => e.variance < 0).length;
-      const underestimates = estimates.filter((e) => e.variance > 0).length;
-      const perfectEstimates = estimates.filter((e) => e.variance === 0).length;
+      const overestimates = estimates.filter(e => e.variance < 0).length;
+      const underestimates = estimates.filter(e => e.variance > 0).length;
+      const perfectEstimates = estimates.filter(e => e.variance === 0).length;
 
       metrics = {
         totalEstimates,
@@ -257,7 +281,9 @@ export async function GET(
         averageVariance: Math.round(averageVariance * 100) / 100,
         overestimateRate: Math.round((overestimates / totalEstimates) * 100),
         underestimateRate: Math.round((underestimates / totalEstimates) * 100),
-        perfectEstimateRate: Math.round((perfectEstimates / totalEstimates) * 100),
+        perfectEstimateRate: Math.round(
+          (perfectEstimates / totalEstimates) * 100
+        ),
       };
     }
 
@@ -271,11 +297,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/time-estimates] Error:',
-      error,
+      error
     );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -318,14 +347,17 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -334,8 +366,11 @@ export async function POST(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -344,8 +379,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -355,21 +393,29 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
-    const { taskId, estimatedHours, actualHours, completedAt, notes } = parseResult.data;
+    const { taskId, estimatedHours, actualHours, completedAt, notes } =
+      parseResult.data;
 
     // Verify task exists and belongs to this Orchestrator
     const task = await prisma.task.findFirst({
@@ -389,16 +435,16 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Task not found or does not belong to this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.TASK_NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.TASK_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Calculate accuracy metrics
     const variance = actualHours - estimatedHours;
     const accuracy = Math.round(
-      (1 - Math.abs(variance) / Math.max(estimatedHours, actualHours)) * 100,
+      (1 - Math.abs(variance) / Math.max(estimatedHours, actualHours)) * 100
     );
 
     // Update task metadata with time tracking info
@@ -434,16 +480,19 @@ export async function POST(
         },
         message: 'Time estimate recorded successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/time-estimates] Error:',
-      error,
+      error
     );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

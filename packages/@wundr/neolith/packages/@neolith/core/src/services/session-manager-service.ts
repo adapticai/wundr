@@ -83,7 +83,7 @@ export interface SessionManagerService {
    */
   listByOrchestrator(
     orchestratorId: string,
-    options?: ListSessionManagersOptions,
+    options?: ListSessionManagersOptions
   ): Promise<PaginatedSessionManagerResult>;
 
   /**
@@ -92,7 +92,9 @@ export interface SessionManagerService {
    * @param options - Listing options
    * @returns Paginated Session Manager results
    */
-  listGlobal(options?: ListSessionManagersOptions): Promise<PaginatedSessionManagerResult>;
+  listGlobal(
+    options?: ListSessionManagersOptions
+  ): Promise<PaginatedSessionManagerResult>;
 
   /**
    * Updates a Session Manager.
@@ -102,7 +104,10 @@ export interface SessionManagerService {
    * @returns The updated Session Manager
    * @throws {SessionManagerNotFoundError} If the Session Manager doesn't exist
    */
-  update(id: string, data: UpdateSessionManagerInput): Promise<SessionManagerWithRelations>;
+  update(
+    id: string,
+    data: UpdateSessionManagerInput
+  ): Promise<SessionManagerWithRelations>;
 
   /**
    * Deletes a Session Manager.
@@ -145,7 +150,9 @@ export class SessionManagerServiceImpl implements SessionManagerService {
   /**
    * Creates a new Session Manager with validation.
    */
-  async create(data: CreateSessionManagerInput): Promise<SessionManagerWithRelations> {
+  async create(
+    data: CreateSessionManagerInput
+  ): Promise<SessionManagerWithRelations> {
     // Validate input
     this.validateCreateInput(data);
 
@@ -174,7 +181,9 @@ export class SessionManagerServiceImpl implements SessionManagerService {
       },
       include: {
         orchestrator: { select: { id: true, userId: true } },
-        subagents: { select: { id: true, name: true, status: true, tier: true } },
+        subagents: {
+          select: { id: true, name: true, status: true, tier: true },
+        },
       },
     });
 
@@ -189,7 +198,9 @@ export class SessionManagerServiceImpl implements SessionManagerService {
       where: { id },
       include: {
         orchestrator: { select: { id: true, userId: true } },
-        subagents: { select: { id: true, name: true, status: true, tier: true } },
+        subagents: {
+          select: { id: true, name: true, status: true, tier: true },
+        },
       },
     });
 
@@ -201,14 +212,16 @@ export class SessionManagerServiceImpl implements SessionManagerService {
    */
   async listByOrchestrator(
     orchestratorId: string,
-    options: ListSessionManagersOptions = {},
+    options: ListSessionManagersOptions = {}
   ): Promise<PaginatedSessionManagerResult> {
     const where: any = {
       orchestratorId,
       ...(options.status && { status: options.status }),
       ...(options.disciplineId && { disciplineId: options.disciplineId }),
       ...(options.isGlobal !== undefined && { isGlobal: options.isGlobal }),
-      ...(!options.includeInactive && { status: { not: 'INACTIVE' as AgentStatus } }),
+      ...(!options.includeInactive && {
+        status: { not: 'INACTIVE' as AgentStatus },
+      }),
     };
 
     const [data, total] = await Promise.all([
@@ -216,11 +229,15 @@ export class SessionManagerServiceImpl implements SessionManagerService {
         where,
         include: {
           orchestrator: { select: { id: true, userId: true } },
-          subagents: { select: { id: true, name: true, status: true, tier: true } },
+          subagents: {
+            select: { id: true, name: true, status: true, tier: true },
+          },
         },
         skip: options.skip,
         take: options.take ?? 50,
-        orderBy: options.orderBy ? { [options.orderBy]: options.orderDirection ?? 'desc' } : { createdAt: 'desc' },
+        orderBy: options.orderBy
+          ? { [options.orderBy]: options.orderDirection ?? 'desc' }
+          : { createdAt: 'desc' },
       }),
       this.prisma.sessionManager.count({ where }),
     ]);
@@ -235,12 +252,16 @@ export class SessionManagerServiceImpl implements SessionManagerService {
   /**
    * Lists global Session Managers.
    */
-  async listGlobal(options: ListSessionManagersOptions = {}): Promise<PaginatedSessionManagerResult> {
+  async listGlobal(
+    options: ListSessionManagersOptions = {}
+  ): Promise<PaginatedSessionManagerResult> {
     const where: any = {
       isGlobal: true,
       ...(options.status && { status: options.status }),
       ...(options.disciplineId && { disciplineId: options.disciplineId }),
-      ...(!options.includeInactive && { status: { not: 'INACTIVE' as AgentStatus } }),
+      ...(!options.includeInactive && {
+        status: { not: 'INACTIVE' as AgentStatus },
+      }),
     };
 
     const [data, total] = await Promise.all([
@@ -248,11 +269,15 @@ export class SessionManagerServiceImpl implements SessionManagerService {
         where,
         include: {
           orchestrator: { select: { id: true, userId: true } },
-          subagents: { select: { id: true, name: true, status: true, tier: true } },
+          subagents: {
+            select: { id: true, name: true, status: true, tier: true },
+          },
         },
         skip: options.skip,
         take: options.take ?? 50,
-        orderBy: options.orderBy ? { [options.orderBy]: options.orderDirection ?? 'desc' } : { createdAt: 'desc' },
+        orderBy: options.orderBy
+          ? { [options.orderBy]: options.orderDirection ?? 'desc' }
+          : { createdAt: 'desc' },
       }),
       this.prisma.sessionManager.count({ where }),
     ]);
@@ -267,7 +292,10 @@ export class SessionManagerServiceImpl implements SessionManagerService {
   /**
    * Updates a Session Manager.
    */
-  async update(id: string, data: UpdateSessionManagerInput): Promise<SessionManagerWithRelations> {
+  async update(
+    id: string,
+    data: UpdateSessionManagerInput
+  ): Promise<SessionManagerWithRelations> {
     const existing = await this.getById(id);
     if (!existing) {
       throw new SessionManagerNotFoundError(id);
@@ -277,17 +305,31 @@ export class SessionManagerServiceImpl implements SessionManagerService {
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
-        ...(data.description !== undefined && { description: data.description }),
-        ...(data.charterData !== undefined && { charterData: data.charterData as any }),
-        ...(data.globalConfig !== undefined && { globalConfig: data.globalConfig as any }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
+        ...(data.charterData !== undefined && {
+          charterData: data.charterData as any,
+        }),
+        ...(data.globalConfig !== undefined && {
+          globalConfig: data.globalConfig as any,
+        }),
         ...(data.status !== undefined && { status: data.status }),
-        ...(data.maxConcurrentSubagents !== undefined && { maxConcurrentSubagents: data.maxConcurrentSubagents }),
-        ...(data.tokenBudgetPerHour !== undefined && { tokenBudgetPerHour: data.tokenBudgetPerHour }),
-        ...(data.worktreeConfig !== undefined && { worktreeConfig: data.worktreeConfig as any }),
+        ...(data.maxConcurrentSubagents !== undefined && {
+          maxConcurrentSubagents: data.maxConcurrentSubagents,
+        }),
+        ...(data.tokenBudgetPerHour !== undefined && {
+          tokenBudgetPerHour: data.tokenBudgetPerHour,
+        }),
+        ...(data.worktreeConfig !== undefined && {
+          worktreeConfig: data.worktreeConfig as any,
+        }),
       },
       include: {
         orchestrator: { select: { id: true, userId: true } },
-        subagents: { select: { id: true, name: true, status: true, tier: true } },
+        subagents: {
+          select: { id: true, name: true, status: true, tier: true },
+        },
       },
     });
 
@@ -340,8 +382,13 @@ export class SessionManagerServiceImpl implements SessionManagerService {
       errors.orchestratorId = ['Orchestrator ID is required'];
     }
 
-    if (data.maxConcurrentSubagents !== undefined && data.maxConcurrentSubagents < 1) {
-      errors.maxConcurrentSubagents = ['Max concurrent subagents must be at least 1'];
+    if (
+      data.maxConcurrentSubagents !== undefined &&
+      data.maxConcurrentSubagents < 1
+    ) {
+      errors.maxConcurrentSubagents = [
+        'Max concurrent subagents must be at least 1',
+      ];
     }
 
     if (data.tokenBudgetPerHour !== undefined && data.tokenBudgetPerHour < 0) {
@@ -349,7 +396,10 @@ export class SessionManagerServiceImpl implements SessionManagerService {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new SessionManagerValidationError('Session Manager validation failed', errors);
+      throw new SessionManagerValidationError(
+        'Session Manager validation failed',
+        errors
+      );
     }
   }
 
@@ -405,6 +455,8 @@ export class SessionManagerServiceImpl implements SessionManagerService {
  * await sessionManagerService.activate(sessionManager.id);
  * ```
  */
-export function createSessionManagerService(prisma: PrismaClient): SessionManagerServiceImpl {
+export function createSessionManagerService(
+  prisma: PrismaClient
+): SessionManagerServiceImpl {
   return new SessionManagerServiceImpl({ prisma });
 }

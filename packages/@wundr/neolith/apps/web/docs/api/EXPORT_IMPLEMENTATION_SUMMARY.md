@@ -2,7 +2,8 @@
 
 ## Overview
 
-The workspace export API has been fully implemented, replacing the previous stub implementation with a comprehensive export system that supports:
+The workspace export API has been fully implemented, replacing the previous stub implementation with
+a comprehensive export system that supports:
 
 - **Synchronous exports** for small datasets (<10k records)
 - **Asynchronous job-based exports** for large datasets
@@ -16,9 +17,11 @@ The workspace export API has been fully implemented, replacing the previous stub
 ## Files Created/Modified
 
 ### 1. Prisma Schema Changes
+
 **File**: `/packages/@neolith/database/prisma/schema.prisma`
 
 Added:
+
 - `ExportStatus` enum (PENDING, PROCESSING, COMPLETED, FAILED)
 - `ExportFormat` enum (JSON, CSV)
 - `exportJob` model with fields for tracking export jobs
@@ -51,9 +54,11 @@ model exportJob {
 ```
 
 ### 2. Export Utilities
+
 **File**: `/apps/web/lib/export-utils.ts` (NEW)
 
 Utility functions for:
+
 - Converting data to CSV format
 - Flattening nested objects
 - Generating export filenames
@@ -61,6 +66,7 @@ Utility functions for:
 - Estimating export file sizes
 
 Key functions:
+
 - `convertToCSV<T>(data: T[], columns?: string[]): string`
 - `flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string, unknown>`
 - `flattenData<T>(data: T[]): Record<string, unknown>[]`
@@ -70,11 +76,13 @@ Key functions:
 - `shouldUseAsyncExport(recordCount, threshold = 10000): boolean`
 
 ### 3. Main Export Endpoint
+
 **File**: `/apps/web/app/api/workspaces/[workspaceId]/export/route.ts` (REPLACED)
 
 **Previous**: POST-only stub returning mock data
 
 **New**:
+
 - **GET** endpoint for synchronous exports with query params
 - **POST** endpoint for creating async export jobs
 - Automatic sync/async decision based on dataset size
@@ -83,6 +91,7 @@ Key functions:
 - Proper authentication and authorization
 
 ### 4. Export Job Status Endpoint
+
 **File**: `/apps/web/app/api/workspaces/[workspaceId]/export/jobs/[jobId]/route.ts` (NEW)
 
 - **GET**: Fetch job status and download URL
@@ -90,6 +99,7 @@ Key functions:
 - Includes progress tracking and duration calculations
 
 ### 5. Export Jobs List Endpoint
+
 **File**: `/apps/web/app/api/workspaces/[workspaceId]/export/jobs/route.ts` (NEW)
 
 - **GET**: List all export jobs for workspace
@@ -98,9 +108,11 @@ Key functions:
 - Returns job history with metadata
 
 ### 6. API Documentation
+
 **File**: `/apps/web/docs/api/export-api-examples.md` (NEW)
 
 Comprehensive documentation including:
+
 - All endpoint specifications
 - Request/response examples
 - Data type schemas
@@ -113,24 +125,32 @@ Comprehensive documentation including:
 ## API Endpoints
 
 ### GET /api/workspaces/{workspaceId}/export
+
 Query params: `type`, `format`, `startDate`, `endDate`
+
 - Returns data directly for small exports
 - Returns job ID for large exports (>10k records)
 
 ### POST /api/workspaces/{workspaceId}/export
+
 Body: `{ type, format, startDate, endDate }`
+
 - Creates async export job
 - Returns job ID for status polling
 
 ### GET /api/workspaces/{workspaceId}/export/jobs
+
 Query params: `status`, `limit`, `offset`
+
 - Lists all export jobs
 - Supports pagination and filtering
 
 ### GET /api/workspaces/{workspaceId}/export/jobs/{jobId}
+
 - Returns job status, progress, and download URL
 
 ### DELETE /api/workspaces/{workspaceId}/export/jobs/{jobId}
+
 - Cancels or deletes export job
 
 ---
@@ -151,11 +171,13 @@ Query params: `status`, `limit`, `offset`
 ## Export Formats
 
 ### JSON
+
 - Preserves nested structure
 - Ideal for re-importing
 - Pretty-printed with 2-space indentation
 
 ### CSV
+
 - Flattened data structure
 - Nested objects converted to dot notation (e.g., `user.email`)
 - Multiple sections for "all" export type
@@ -166,21 +188,25 @@ Query params: `status`, `limit`, `offset`
 ## Features Implemented
 
 ### ✅ Authentication & Authorization
+
 - Requires valid session
 - Workspace membership verification
 - ADMIN/OWNER role requirement for exports
 
 ### ✅ Data Filtering
+
 - Date range filtering (startDate, endDate)
 - Type-specific exports
 - Selective field exports (only relevant fields)
 
 ### ✅ Format Support
+
 - JSON with proper structure
 - CSV with flattened nested objects
 - Proper Content-Type and Content-Disposition headers
 
 ### ✅ Async Job Support
+
 - Automatic threshold detection (10k records)
 - Job status tracking
 - Progress reporting
@@ -188,12 +214,14 @@ Query params: `status`, `limit`, `offset`
 - Duration tracking
 
 ### ✅ Performance Optimizations
+
 - Record count estimation before export
 - Pagination limits for safety (10k messages)
 - Indexed database queries
 - Efficient data transformations
 
 ### ✅ Error Handling
+
 - Zod validation for inputs
 - Proper HTTP status codes
 - Descriptive error messages
@@ -211,6 +239,7 @@ npx prisma migrate dev --name add_export_job_model
 ```
 
 This will:
+
 1. Create the `export_jobs` table
 2. Add `ExportStatus` and `ExportFormat` enums
 3. Apply necessary indexes for performance
@@ -220,6 +249,7 @@ This will:
 ## Example Usage
 
 ### Sync Export (Small Dataset)
+
 ```bash
 curl -X GET \
   "https://api.example.com/api/workspaces/ws_123/export?type=channels&format=json" \
@@ -227,6 +257,7 @@ curl -X GET \
 ```
 
 ### Async Export (Large Dataset)
+
 ```bash
 # 1. Create export job
 curl -X POST \
@@ -314,6 +345,7 @@ curl -X GET \
 ## Security Considerations
 
 ✅ **Implemented**:
+
 - Authentication required
 - Role-based authorization (ADMIN/OWNER only)
 - Workspace membership verification
@@ -321,6 +353,7 @@ curl -X GET \
 - SQL injection prevention (Prisma)
 
 ⚠️ **To Consider**:
+
 - Export file encryption
 - Audit logging of export requests
 - Data retention policies
@@ -342,6 +375,7 @@ curl -X GET \
 ## Conclusion
 
 The export API is now fully functional with:
+
 - ✅ Real database queries (no more mocks)
 - ✅ Multiple format support (JSON, CSV)
 - ✅ Async job support for large datasets
@@ -351,6 +385,7 @@ The export API is now fully functional with:
 - ✅ Job management and history
 
 **Next Steps**:
+
 1. Run Prisma migration to create `export_jobs` table
 2. Implement background job processor for async exports
 3. Add file storage integration (S3/CloudFlare R2)

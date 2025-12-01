@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document describes the implementation of message routing for Orchestrators (Virtual Persons) in the Neolith platform. Orchestrators are users with dedicated machines that run daemon processes, and messages directed to them need special routing to reach their active Neolith daemon instances.
+This document describes the implementation of message routing for Orchestrators (Virtual Persons) in
+the Neolith platform. Orchestrators are users with dedicated machines that run daemon processes, and
+messages directed to them need special routing to reach their active Neolith daemon instances.
 
 ## Architecture
 
@@ -43,6 +45,7 @@ if (result.success) {
 ```
 
 The router:
+
 - Checks if the orchestrator is online (via PresenceService)
 - Gets the active daemon session
 - Delivers the message to the daemon's event queue
@@ -63,6 +66,7 @@ await orchestratorRouter.registerSession(orchestratorId, {
 ```
 
 Sessions are:
+
 - Stored in Redis with 1-hour TTL
 - Automatically refreshed on activity
 - Cleaned up on daemon disconnect
@@ -77,6 +81,7 @@ await orchestratorRouter.queueMessageForOffline(message, orchestratorId);
 ```
 
 Queued messages:
+
 - Stored in Redis FIFO queue
 - Maximum queue size (default: 100 messages)
 - TTL-based expiration (default: 24 hours)
@@ -138,18 +143,21 @@ Messages are delivered via the daemon's event queue:
 ```typescript
 // Published to Redis
 const eventQueueKey = `daemon:events:${daemonId}`;
-await redis.lpush(eventQueueKey, JSON.stringify({
-  id: 'evt_...',
-  type: 'message.received',
-  daemonId,
-  orchestratorId,
-  payload: {
-    messageId: message.id,
-    channelId: message.channelId,
-    content: message.content,
-  },
-  timestamp: new Date(),
-}));
+await redis.lpush(
+  eventQueueKey,
+  JSON.stringify({
+    id: 'evt_...',
+    type: 'message.received',
+    daemonId,
+    orchestratorId,
+    payload: {
+      messageId: message.id,
+      channelId: message.channelId,
+      content: message.content,
+    },
+    timestamp: new Date(),
+  })
+);
 
 // Also published to real-time channel
 await redis.publish(`daemon:${daemonId}:events`, JSON.stringify(event));
@@ -208,6 +216,7 @@ Deliver all queued messages
 ## Redis Key Structure
 
 ### Session Keys
+
 ```
 routing:session:{orchestratorId}
   → { sessionId, daemonId, status, lastActiveAt, createdAt }
@@ -215,6 +224,7 @@ routing:session:{orchestratorId}
 ```
 
 ### Message Queue Keys
+
 ```
 routing:queue:{orchestratorId}
   → List of queued messages
@@ -222,6 +232,7 @@ routing:queue:{orchestratorId}
 ```
 
 ### Delivery Confirmation Keys
+
 ```
 routing:delivered:{messageId}
   → { sessionId, deliveredAt }
@@ -271,19 +282,19 @@ const router = createOrchestratorRouter({
 The router emits events for monitoring and logging:
 
 ```typescript
-orchestratorRouter.on('message.routed', (event) => {
+orchestratorRouter.on('message.routed', event => {
   console.log(`Message ${event.messageId} routed via session ${event.sessionId}`);
 });
 
-orchestratorRouter.on('message.routing_failed', (event) => {
+orchestratorRouter.on('message.routing_failed', event => {
   console.error(`Failed to route message ${event.messageId}: ${event.error}`);
 });
 
-orchestratorRouter.on('session.registered', (event) => {
+orchestratorRouter.on('session.registered', event => {
   console.log(`Session registered for orchestrator ${event.orchestratorId}`);
 });
 
-orchestratorRouter.on('queue.processing_completed', (event) => {
+orchestratorRouter.on('queue.processing_completed', event => {
   console.log(`Processed ${event.processed} queued messages`);
 });
 ```
@@ -421,31 +432,38 @@ describe('Message Routing Integration', () => {
 #### Methods
 
 **`routeMessage(message, orchestratorId): Promise<RouteMessageResult>`**
+
 - Routes a message to an orchestrator's active daemon
 - Handles retry logic and offline queuing
 - Returns routing result with status
 
 **`getOrchestratorSession(orchestratorId): Promise<OrchestratorSessionInfo | null>`**
+
 - Gets the active daemon session for an orchestrator
 - Returns null if no active session
 
 **`isOrchestratorOnline(orchestratorId): Promise<boolean>`**
+
 - Checks if an orchestrator is currently online
 - Uses PresenceService if available
 
 **`queueMessageForOffline(message, orchestratorId): Promise<void>`**
+
 - Queues a message for offline delivery
 - Enforces queue size limits
 
 **`registerSession(orchestratorId, session): Promise<void>`**
+
 - Registers a new daemon session
 - Triggers processing of queued messages
 
 **`unregisterSession(orchestratorId): Promise<void>`**
+
 - Unregisters a daemon session on disconnect
 - Cleans up Redis keys
 
 **`updateSessionActivity(orchestratorId): Promise<void>`**
+
 - Updates the last active timestamp for a session
 - Should be called on heartbeats
 

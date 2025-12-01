@@ -7,7 +7,7 @@ async function debugTest() {
     spawningStrategy: 'adaptive',
     healthCheckInterval: 5000,
     autoRecovery: true,
-    loadBalancing: true
+    loadBalancing: true,
   };
 
   const coordinator = new AgentCoordinator(mockConfig);
@@ -28,13 +28,13 @@ async function debugTest() {
         tasksCompleted: 0,
         successRate: 1,
         averageResponseTime: 0,
-        healthScore: 100
-      }
+        healthScore: 100,
+      },
     },
     {
       id: 'reviewer-1',
       type: 'reviewer',
-      category: 'core', 
+      category: 'core',
       capabilities: ['code-review', 'quality-assurance', 'coding'],
       status: 'idle',
       topology: 'mesh',
@@ -44,8 +44,8 @@ async function debugTest() {
         tasksCompleted: 0,
         successRate: 1,
         averageResponseTime: 0,
-        healthScore: 100
-      }
+        healthScore: 100,
+      },
     },
     {
       id: 'tester-1',
@@ -53,15 +53,15 @@ async function debugTest() {
       category: 'core',
       capabilities: ['testing', 'validation', 'coding'],
       status: 'idle',
-      topology: 'mesh', 
+      topology: 'mesh',
       sessionId: 'test-session',
       createdAt: new Date(),
       metrics: {
         tasksCompleted: 0,
         successRate: 1,
         averageResponseTime: 0,
-        healthScore: 100
-      }
+        healthScore: 100,
+      },
     },
     {
       id: 'ml-dev-1',
@@ -76,9 +76,9 @@ async function debugTest() {
         tasksCompleted: 0,
         successRate: 1,
         averageResponseTime: 0,
-        healthScore: 100
-      }
-    }
+        healthScore: 100,
+      },
+    },
   ];
 
   // Register agents
@@ -100,17 +100,23 @@ async function debugTest() {
     requiredCapabilities: ['coding'],
     context: {},
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
   // First selection - make one agent busy
   console.log('\n=== First Task Assignment ===');
   const busyAgent = await coordinator.selectAgentsForTask(mockTask);
-  console.log('Selected for first task:', busyAgent.map(a => ({ id: a.id, status: a.status })));
+  console.log(
+    'Selected for first task:',
+    busyAgent.map(a => ({ id: a.id, status: a.status }))
+  );
 
   if (busyAgent.length > 0) {
     await coordinator.assignTask(mockTask, busyAgent);
-    console.log('Agent status after assignment:', busyAgent.map(a => ({ id: a.id, status: a.status })));
+    console.log(
+      'Agent status after assignment:',
+      busyAgent.map(a => ({ id: a.id, status: a.status }))
+    );
   }
 
   // Second selection - should prefer idle agents
@@ -118,12 +124,22 @@ async function debugTest() {
   const newTask = {
     ...mockTask,
     id: 'new-task',
-    requiredCapabilities: ['coding']
+    requiredCapabilities: ['coding'],
   };
 
   const selectedAgents = await coordinator.selectAgentsForTask(newTask);
-  console.log('Selected for second task:', selectedAgents.map(a => ({ id: a.id, status: a.status, capabilities: a.capabilities })));
-  console.log('Has idle agents:', selectedAgents.some(agent => agent.status === 'idle'));
+  console.log(
+    'Selected for second task:',
+    selectedAgents.map(a => ({
+      id: a.id,
+      status: a.status,
+      capabilities: a.capabilities,
+    }))
+  );
+  console.log(
+    'Has idle agents:',
+    selectedAgents.some(agent => agent.status === 'idle')
+  );
 
   // Check complex task diversity
   console.log('\n=== Complex Task (Diversity Test) ===');
@@ -132,11 +148,19 @@ async function debugTest() {
     id: 'complex-task',
     type: 'coding',
     requiredCapabilities: ['coding', 'testing', 'code-review'],
-    description: 'Complex task requiring multiple skills'
+    description: 'Complex task requiring multiple skills',
   };
 
   const diverseAgents = await coordinator.selectAgentsForTask(complexTask);
-  console.log('Selected for complex task:', diverseAgents.map(a => ({ id: a.id, status: a.status, category: a.category, capabilities: a.capabilities })));
+  console.log(
+    'Selected for complex task:',
+    diverseAgents.map(a => ({
+      id: a.id,
+      status: a.status,
+      category: a.category,
+      capabilities: a.capabilities,
+    }))
+  );
   const categories = [...new Set(diverseAgents.map(agent => agent.category))];
   console.log('Unique categories:', categories, 'Count:', categories.length);
 

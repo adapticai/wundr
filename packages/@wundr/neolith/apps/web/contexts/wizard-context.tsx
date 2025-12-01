@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+} from 'react';
 
 // Types
 export type WizardMode = 'chat' | 'edit';
@@ -257,7 +263,10 @@ interface WizardProviderProps {
   autoRestore?: boolean;
 }
 
-export function WizardProvider({ children, autoRestore = true }: WizardProviderProps) {
+export function WizardProvider({
+  children,
+  autoRestore = true,
+}: WizardProviderProps) {
   const [state, dispatch] = useReducer(wizardReducer, initialState);
 
   // Restore from localStorage on mount
@@ -292,9 +301,12 @@ export function WizardProvider({ children, autoRestore = true }: WizardProviderP
     dispatch({ type: 'UPDATE_FIELD', payload: { field, value } });
   }, []);
 
-  const updateExtractedData = useCallback((data: Partial<ExtractedEntityData>) => {
-    dispatch({ type: 'UPDATE_EXTRACTED_DATA', payload: data });
-  }, []);
+  const updateExtractedData = useCallback(
+    (data: Partial<ExtractedEntityData>) => {
+      dispatch({ type: 'UPDATE_EXTRACTED_DATA', payload: data });
+    },
+    []
+  );
 
   const switchMode = useCallback((mode: WizardMode) => {
     dispatch({ type: 'SET_MODE', payload: mode });
@@ -334,7 +346,9 @@ export function WizardProvider({ children, autoRestore = true }: WizardProviderP
     setConversationId,
   };
 
-  return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>;
+  return (
+    <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
+  );
 }
 
 // Hook for consuming the context
@@ -365,7 +379,11 @@ export function useWizardCompletionStatus(): {
 
     switch (entityType) {
       case 'agent':
-        return !!(extractedData.name && extractedData.title && extractedData.description);
+        return !!(
+          extractedData.name &&
+          extractedData.title &&
+          extractedData.description
+        );
       case 'deployment':
         return !!(extractedData.deploymentName && extractedData.environment);
       case 'channel':

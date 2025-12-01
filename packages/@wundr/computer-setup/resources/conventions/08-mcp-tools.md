@@ -1,10 +1,9 @@
 # MCP Tools Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Tooling & Automation
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Tooling & Automation
 
-This document defines comprehensive conventions for using MCP (Model Context Protocol) tools, particularly Wundr MCP tools for governance, standardization, and quality management.
+This document defines comprehensive conventions for using MCP (Model Context Protocol) tools,
+particularly Wundr MCP tools for governance, standardization, and quality management.
 
 ---
 
@@ -24,7 +23,8 @@ This document defines comprehensive conventions for using MCP (Model Context Pro
 
 ### What is MCP?
 
-The Model Context Protocol (MCP) enables AI assistants like Claude to interact with external tools and services. MCP tools extend Claude's capabilities beyond text generation to include:
+The Model Context Protocol (MCP) enables AI assistants like Claude to interact with external tools
+and services. MCP tools extend Claude's capabilities beyond text generation to include:
 
 - Code quality monitoring
 - Automated standardization
@@ -35,6 +35,7 @@ The Model Context Protocol (MCP) enables AI assistants like Claude to interact w
 ### Claude Code vs MCP Tools
 
 **Claude Code Handles (Built-in):**
+
 - File operations (Read, Write, Edit, Glob, Grep)
 - Code generation and programming
 - Bash commands and terminal operations
@@ -43,6 +44,7 @@ The Model Context Protocol (MCP) enables AI assistants like Claude to interact w
 - Testing and debugging
 
 **MCP Tools Handle (Extended):**
+
 - Coordination and planning
 - Memory management
 - Performance tracking
@@ -72,26 +74,26 @@ claude mcp list
 
 ### Wundr MCP Tools (7 Core Tools)
 
-| Tool | Purpose | Key Actions |
-|------|---------|-------------|
-| `drift_detection` | Monitor code quality changes | create-baseline, detect, trends |
-| `pattern_standardize` | Auto-fix code patterns | run, review, check |
-| `monorepo_manage` | Monorepo management | init, add-package, check-deps |
-| `governance_report` | Generate reports | weekly, quality, compliance |
-| `dependency_analyze` | Analyze dependencies | all, circular, unused, external |
-| `test_baseline` | Test coverage management | create, compare, update |
-| `claude_config` | Configuration generation | claude-md, hooks, conventions, all |
+| Tool                  | Purpose                      | Key Actions                        |
+| --------------------- | ---------------------------- | ---------------------------------- |
+| `drift_detection`     | Monitor code quality changes | create-baseline, detect, trends    |
+| `pattern_standardize` | Auto-fix code patterns       | run, review, check                 |
+| `monorepo_manage`     | Monorepo management          | init, add-package, check-deps      |
+| `governance_report`   | Generate reports             | weekly, quality, compliance        |
+| `dependency_analyze`  | Analyze dependencies         | all, circular, unused, external    |
+| `test_baseline`       | Test coverage management     | create, compare, update            |
+| `claude_config`       | Configuration generation     | claude-md, hooks, conventions, all |
 
 ### Claude-Flow MCP Tools (Swarm Coordination)
 
-| Tool | Purpose |
-|------|---------|
-| `swarm_init` | Initialize agent swarm |
-| `agent_spawn` | Spawn new agents |
-| `task_orchestrate` | Orchestrate tasks |
-| `swarm_status` | Check swarm status |
-| `memory_usage` | Monitor memory |
-| `neural_status` | Neural network status |
+| Tool               | Purpose                |
+| ------------------ | ---------------------- |
+| `swarm_init`       | Initialize agent swarm |
+| `agent_spawn`      | Spawn new agents       |
+| `task_orchestrate` | Orchestrate tasks      |
+| `swarm_status`     | Check swarm status     |
+| `memory_usage`     | Monitor memory         |
+| `neural_status`    | Neural network status  |
 
 ---
 
@@ -103,14 +105,15 @@ Monitor code quality drift by comparing against established baselines.
 
 **Actions:**
 
-| Action | Purpose | Output |
-|--------|---------|--------|
-| `create-baseline` | Create quality snapshot | version, message, details |
-| `detect` | Check for drift | severity, recommendations |
-| `list-baselines` | List all baselines | count, baselines array |
-| `trends` | Analyze trends | growth, duplicate, complexity trends |
+| Action            | Purpose                 | Output                               |
+| ----------------- | ----------------------- | ------------------------------------ |
+| `create-baseline` | Create quality snapshot | version, message, details            |
+| `detect`          | Check for drift         | severity, recommendations            |
+| `list-baselines`  | List all baselines      | count, baselines array               |
+| `trends`          | Analyze trends          | growth, duplicate, complexity trends |
 
 **Usage:**
+
 ```javascript
 // Create baseline at milestone
 mcp__wundr__drift_detection {
@@ -135,6 +138,7 @@ mcp__wundr__drift_detection {
 ```
 
 **Severity Levels:**
+
 - `none`: No drift detected
 - `low`: Minor changes, acceptable
 - `medium`: Notable drift, review needed
@@ -149,26 +153,27 @@ Automatically fix code patterns and enforce consistency.
 
 **Actions:**
 
-| Action | Purpose | Output |
-|--------|---------|--------|
-| `run` | Apply fixes | filesModified, changesByRule |
-| `review` | Manual attention needed | issues, nextSteps |
-| `check` | Validate without fixing | status, recommendations |
+| Action   | Purpose                 | Output                       |
+| -------- | ----------------------- | ---------------------------- |
+| `run`    | Apply fixes             | filesModified, changesByRule |
+| `review` | Manual attention needed | issues, nextSteps            |
+| `check`  | Validate without fixing | status, recommendations      |
 
 **Available Rules:**
 
-| Rule | What it does |
-|------|-------------|
-| `consistent-error-handling` | Replace string throws with AppError |
-| `async-await-pattern` | Convert promise chains to async/await |
-| `enum-standardization` | Convert const objects to enums |
-| `service-lifecycle` | Ensure BaseService extension |
-| `import-ordering` | Standardize import order |
-| `naming-conventions` | Fix naming violations |
-| `optional-chaining` | Use `?.` where appropriate |
-| `type-assertions` | Use `as` keyword |
+| Rule                        | What it does                          |
+| --------------------------- | ------------------------------------- |
+| `consistent-error-handling` | Replace string throws with AppError   |
+| `async-await-pattern`       | Convert promise chains to async/await |
+| `enum-standardization`      | Convert const objects to enums        |
+| `service-lifecycle`         | Ensure BaseService extension          |
+| `import-ordering`           | Standardize import order              |
+| `naming-conventions`        | Fix naming violations                 |
+| `optional-chaining`         | Use `?.` where appropriate            |
+| `type-assertions`           | Use `as` keyword                      |
 
 **Usage:**
+
 ```javascript
 // Run all rules
 mcp__wundr__pattern_standardize {
@@ -206,14 +211,15 @@ Initialize and manage monorepo structure with pnpm workspaces.
 
 **Actions:**
 
-| Action | Purpose | Requirements |
-|--------|---------|--------------|
-| `init` | Create monorepo | None |
-| `plan` | Migration plan | analysisReport path |
-| `add-package` | Create package | packageName |
-| `check-deps` | Check circular deps | None |
+| Action        | Purpose             | Requirements        |
+| ------------- | ------------------- | ------------------- |
+| `init`        | Create monorepo     | None                |
+| `plan`        | Migration plan      | analysisReport path |
+| `add-package` | Create package      | packageName         |
+| `check-deps`  | Check circular deps | None                |
 
 **Usage:**
+
 ```javascript
 // Initialize monorepo structure
 mcp__wundr__monorepo_manage {
@@ -247,16 +253,17 @@ Generate comprehensive governance and quality reports.
 
 **Report Types:**
 
-| Type | Purpose | Contents |
-|------|---------|----------|
-| `weekly` | Weekly summary | commits, changes, highlights |
-| `drift` | Drift analysis | severity, metrics, recommendations |
-| `quality` | Code quality | score, coverage, complexity |
+| Type         | Purpose         | Contents                            |
+| ------------ | --------------- | ----------------------------------- |
+| `weekly`     | Weekly summary  | commits, changes, highlights        |
+| `drift`      | Drift analysis  | severity, metrics, recommendations  |
+| `quality`    | Code quality    | score, coverage, complexity         |
 | `compliance` | Standards audit | status, violations, recommendations |
 
 **Formats:** `markdown`, `json`, `html`
 
 **Usage:**
+
 ```javascript
 // Weekly governance report
 mcp__wundr__governance_report {
@@ -289,16 +296,17 @@ Analyze and map project dependencies.
 
 **Scopes:**
 
-| Scope | Purpose | Output |
-|-------|---------|--------|
-| `all` | Complete analysis | graph, insights |
-| `circular` | Find cycles | cycles, recommendations |
-| `unused` | Find unused | packages, savings |
-| `external` | NPM analysis | security, licenses, outdated |
+| Scope      | Purpose           | Output                       |
+| ---------- | ----------------- | ---------------------------- |
+| `all`      | Complete analysis | graph, insights              |
+| `circular` | Find cycles       | cycles, recommendations      |
+| `unused`   | Find unused       | packages, savings            |
+| `external` | NPM analysis      | security, licenses, outdated |
 
 **Output Formats:** `graph`, `json`, `markdown`
 
 **Usage:**
+
 ```javascript
 // Full dependency analysis
 mcp__wundr__dependency_analyze {
@@ -336,15 +344,16 @@ Create and manage test coverage baselines.
 
 **Actions:**
 
-| Action | Purpose | Output |
-|--------|---------|--------|
-| `create` | Create baseline | summary, baselineFile |
+| Action    | Purpose          | Output                     |
+| --------- | ---------------- | -------------------------- |
+| `create`  | Create baseline  | summary, baselineFile      |
 | `compare` | Compare coverage | status, delta, regressions |
-| `update` | Update baseline | archived, result |
+| `update`  | Update baseline  | archived, result           |
 
 **Test Types:** `unit`, `integration`, `e2e`, `all`
 
 **Usage:**
+
 ```javascript
 // Create coverage baseline
 mcp__wundr__test_baseline {
@@ -368,6 +377,7 @@ mcp__wundr__test_baseline {
 ```
 
 **Comparison Status:**
+
 - `REGRESSION`: Coverage dropped
 - `STABLE`: Coverage maintained
 - `IMPROVED`: Coverage increased
@@ -380,14 +390,15 @@ Generate Claude Code configuration files.
 
 **Config Types:**
 
-| Type | Generates | Features |
-|------|-----------|----------|
-| `claude-md` | CLAUDE.md | ai-assistance, governance |
-| `hooks` | Workflow hooks | auto-governance |
-| `conventions` | .wundr-conventions.json | strict-mode |
-| `all` | All configs | All features |
+| Type          | Generates               | Features                  |
+| ------------- | ----------------------- | ------------------------- |
+| `claude-md`   | CLAUDE.md               | ai-assistance, governance |
+| `hooks`       | Workflow hooks          | auto-governance           |
+| `conventions` | .wundr-conventions.json | strict-mode               |
+| `all`         | All configs             | All features              |
 
 **Usage:**
+
 ```javascript
 // Generate CLAUDE.md
 mcp__wundr__claude_config {
@@ -434,6 +445,7 @@ mcp__wundr__drift_detection {
 ### Batch Operations
 
 **ALWAYS batch related MCP calls in a single message:**
+
 ```javascript
 // CORRECT: Single message batch
 [BatchTool]:
@@ -632,13 +644,13 @@ All MCP tools return structured responses:
 
 ### Common Errors
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| "Script not found" | Missing scripts | Run setup scripts |
-| "No baseline found" | No baseline created | Run create-baseline first |
-| "Analysis report required" | Missing parameter | Provide analysisReport path |
-| "Package name required" | Missing parameter | Provide packageName |
-| "Unknown action" | Invalid action | Check valid enum values |
+| Error                      | Cause               | Solution                    |
+| -------------------------- | ------------------- | --------------------------- |
+| "Script not found"         | Missing scripts     | Run setup scripts           |
+| "No baseline found"        | No baseline created | Run create-baseline first   |
+| "Analysis report required" | Missing parameter   | Provide analysisReport path |
+| "Package name required"    | Missing parameter   | Provide packageName         |
+| "Unknown action"           | Invalid action      | Check valid enum values     |
 
 ### Server Issues
 
@@ -660,21 +672,25 @@ claude mcp logs wundr
 ### Tool-Specific Issues
 
 **Drift Detection:**
+
 - Ensure `.governance/` directory exists
 - Check write permissions
 - Verify governance scripts present
 
 **Pattern Standardization:**
+
 - Check TypeScript compiles
 - Review parsing errors
 - Run with `dryRun` first
 
 **Test Baseline:**
+
 - Ensure tests can run
 - Check `.testing/baselines/` exists
 - Verify test configuration
 
 **Dependency Analysis:**
+
 - Valid `package.json` required
 - Run `npm install` first
 - Check target path validity
@@ -712,15 +728,14 @@ mcp__wundr__governance_report { reportType: "weekly" }
 
 ### Workflow Cheat Sheet
 
-| Task | Command |
-|------|---------|
-| Daily check | drift detect + circular deps + test compare |
-| Pre-commit | pattern run + drift detect |
-| Pre-merge | quality report + compliance + pattern review |
-| Weekly | create baseline + weekly report + trends |
-| Release | compliance + external deps + quality report |
+| Task        | Command                                      |
+| ----------- | -------------------------------------------- |
+| Daily check | drift detect + circular deps + test compare  |
+| Pre-commit  | pattern run + drift detect                   |
+| Pre-merge   | quality report + compliance + pattern review |
+| Weekly      | create baseline + weekly report + trends     |
+| Release     | compliance + external deps + quality report  |
 
 ---
 
-**Version**: 1.0.0
-**Maintainer**: Wundr Team
+**Version**: 1.0.0 **Maintainer**: Wundr Team

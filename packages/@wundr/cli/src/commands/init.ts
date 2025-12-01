@@ -19,7 +19,7 @@ export class InitCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager,
+    private pluginManager: PluginManager
   ) {
     this.registerCommands();
   }
@@ -37,7 +37,10 @@ export class InitCommands {
       .option('--skip-git', 'skip git initialization')
       .option('--skip-install', 'skip dependency installation')
       .option('--monorepo', 'initialize as monorepo')
-      .option('--with-rag', 'initialize RAG (Retrieval-Augmented Generation) support')
+      .option(
+        '--with-rag',
+        'initialize RAG (Retrieval-Augmented Generation) support'
+      )
       .action(async (name, options) => {
         await this.initProject(name, options);
       });
@@ -132,10 +135,10 @@ export class InitCommands {
 
         if (ragResult.success) {
           logger.success(
-            `RAG initialized: ${ragResult.filesIndexed} files indexed`,
+            `RAG initialized: ${ragResult.filesIndexed} files indexed`
           );
           logger.info(
-            `  Framework detected: ${chalk.cyan(ragResult.framework.name)}`,
+            `  Framework detected: ${chalk.cyan(ragResult.framework.name)}`
           );
         } else {
           logger.warn('RAG initialization had issues:');
@@ -158,7 +161,7 @@ export class InitCommands {
         'WUNDR_INIT_PROJECT_FAILED',
         'Failed to initialize project',
         { name, options },
-        true,
+        true
       );
     }
   }
@@ -189,7 +192,7 @@ export class InitCommands {
         logger.info(`  Exclusions: ${chalk.cyan(result.excludePath)}`);
         logger.info(`  Files indexed: ${chalk.cyan(result.filesIndexed)}`);
         logger.info(
-          `  Framework: ${chalk.cyan(result.framework.name)} (${result.framework.projectType})`,
+          `  Framework: ${chalk.cyan(result.framework.name)} (${result.framework.projectType})`
         );
       } else {
         logger.error('RAG initialization failed:');
@@ -206,7 +209,7 @@ export class InitCommands {
         'WUNDR_INIT_RAG_FAILED',
         'Failed to initialize RAG',
         { options },
-        true,
+        true
       );
     }
   }
@@ -234,7 +237,7 @@ export class InitCommands {
         'WUNDR_INIT_CONFIG_FAILED',
         'Failed to initialize configuration',
         { options },
-        true,
+        true
       );
     }
   }
@@ -269,7 +272,7 @@ export class InitCommands {
       // Create workspace-specific wundr config
       await this.configManager.loadConfig();
       await this.configManager.saveConfig(
-        path.join(process.cwd(), 'wundr.config.json'),
+        path.join(process.cwd(), 'wundr.config.json')
       );
 
       logger.success('Workspace initialized successfully!');
@@ -278,7 +281,7 @@ export class InitCommands {
         'WUNDR_INIT_WORKSPACE_FAILED',
         'Failed to initialize workspace',
         { options },
-        true,
+        true
       );
     }
   }
@@ -305,7 +308,7 @@ export class InitCommands {
         'WUNDR_INIT_PLUGINS_FAILED',
         'Failed to initialize plugins',
         { options },
-        true,
+        true
       );
     }
   }
@@ -315,7 +318,7 @@ export class InitCommands {
    */
   private async createProjectStructure(
     projectPath: string,
-    options: any,
+    options: any
   ): Promise<void> {
     await fs.ensureDir(projectPath);
 
@@ -332,7 +335,7 @@ export class InitCommands {
     // Create project-specific config
     const config = await this.configManager.loadConfig();
     await this.configManager.saveConfig(
-      path.join(projectPath, 'wundr.config.json'),
+      path.join(projectPath, 'wundr.config.json')
     );
   }
 
@@ -341,7 +344,7 @@ export class InitCommands {
    */
   private async createDefaultStructure(
     projectPath: string,
-    options: any,
+    options: any
   ): Promise<void> {
     const directories = options.monorepo
       ? ['packages', 'apps', 'tools', 'docs', 'scripts', '.claude-flow']
@@ -644,11 +647,11 @@ fi
 
     await fs.writeFile(
       path.join(projectPath, 'scripts', 'verify-claims.sh'),
-      verifyScript,
+      verifyScript
     );
     await fs.chmod(
       path.join(projectPath, 'scripts', 'verify-claims.sh'),
-      '755',
+      '755'
     );
 
     // Create FAILURES.md
@@ -678,7 +681,7 @@ _(None yet - will be populated when failures are resolved)_
 
     await fs.writeFile(
       path.join(projectPath, 'docs', 'FAILURES.md'),
-      failuresMd,
+      failuresMd
     );
 
     // Create verification hooks
@@ -718,7 +721,7 @@ _(None yet - will be populated when failures are resolved)_
     await fs.writeJson(
       path.join(projectPath, '.claude-flow', 'verification-hooks.json'),
       verificationHooks,
-      { spaces: 2 },
+      { spaces: 2 }
     );
 
     // Create agent verification protocol
@@ -759,7 +762,7 @@ Remember: It's better to report a failure honestly than to claim false success.
 
     await fs.writeFile(
       path.join(projectPath, 'docs', 'AGENT_VERIFICATION_PROTOCOL.md'),
-      agentProtocol,
+      agentProtocol
     );
 
     logger.debug('Verification files created');

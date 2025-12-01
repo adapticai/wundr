@@ -32,17 +32,24 @@ interface TemplateProps {
 }
 
 export default function EmailPreviewPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('welcome');
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<EmailTemplate>('welcome');
   const [previewProps, setPreviewProps] = useState<TemplateProps>({
     email: 'test@example.com',
     username: 'Test User',
   });
   const [previewKey, setPreviewKey] = useState(0);
   const [sendingEmail, setSendingEmail] = useState(false);
-  const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [sendResult, setSendResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   // Template-specific form fields
-  const templateFields: Record<EmailTemplate, Array<{ name: string; label: string; type?: string; options?: string[] }>> = {
+  const templateFields: Record<
+    EmailTemplate,
+    Array<{ name: string; label: string; type?: string; options?: string[] }>
+  > = {
     welcome: [
       { name: 'email', label: 'Email' },
       { name: 'username', label: 'Username' },
@@ -67,7 +74,12 @@ export default function EmailPreviewPage() {
     ],
     notification: [
       { name: 'email', label: 'Email' },
-      { name: 'type', label: 'Type', type: 'select', options: ['mention', 'message', 'channel', 'task', 'system'] },
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        options: ['mention', 'message', 'channel', 'task', 'system'],
+      },
       { name: 'title', label: 'Title' },
       { name: 'message', label: 'Message' },
       { name: 'actionText', label: 'Action Text (optional)' },
@@ -180,50 +192,54 @@ export default function EmailPreviewPage() {
   };
 
   return (
-    <div className="container mx-auto p-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Email Template Preview</h1>
-        <p className="text-muted-foreground">
+    <div className='container mx-auto p-8 max-w-7xl'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold mb-2'>Email Template Preview</h1>
+        <p className='text-muted-foreground'>
           Preview and test email templates. Only available in development mode.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         {/* Left Panel: Controls */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className='lg:col-span-1 space-y-6'>
           {/* Template Selection */}
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Select Template</h2>
+          <Card className='p-4'>
+            <h2 className='text-lg font-semibold mb-4'>Select Template</h2>
             <select
               value={selectedTemplate}
-              onChange={(e) => handleTemplateChange(e.target.value as EmailTemplate)}
-              className="w-full p-2 border rounded-md bg-background"
+              onChange={e =>
+                handleTemplateChange(e.target.value as EmailTemplate)
+              }
+              className='w-full p-2 border rounded-md bg-background'
             >
-              <option value="welcome">Welcome Email</option>
-              <option value="password-reset">Password Reset</option>
-              <option value="verification">Email Verification</option>
-              <option value="invitation">Workspace Invitation</option>
-              <option value="notification">Notification</option>
-              <option value="password-changed">Password Changed</option>
+              <option value='welcome'>Welcome Email</option>
+              <option value='password-reset'>Password Reset</option>
+              <option value='verification'>Email Verification</option>
+              <option value='invitation'>Workspace Invitation</option>
+              <option value='notification'>Notification</option>
+              <option value='password-changed'>Password Changed</option>
             </select>
           </Card>
 
           {/* Template Properties */}
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Template Properties</h2>
-            <div className="space-y-4">
-              {templateFields[selectedTemplate].map((field) => (
+          <Card className='p-4'>
+            <h2 className='text-lg font-semibold mb-4'>Template Properties</h2>
+            <div className='space-y-4'>
+              {templateFields[selectedTemplate].map(field => (
                 <div key={field.name}>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className='block text-sm font-medium mb-1'>
                     {field.label}
                   </label>
                   {field.type === 'select' ? (
                     <select
                       value={previewProps[field.name] || ''}
-                      onChange={(e) => handlePropChange(field.name, e.target.value)}
-                      className="w-full p-2 border rounded-md bg-background text-sm"
+                      onChange={e =>
+                        handlePropChange(field.name, e.target.value)
+                      }
+                      className='w-full p-2 border rounded-md bg-background text-sm'
                     >
-                      {field.options?.map((option) => (
+                      {field.options?.map(option => (
                         <option key={option} value={option}>
                           {option}
                         </option>
@@ -231,11 +247,13 @@ export default function EmailPreviewPage() {
                     </select>
                   ) : (
                     <input
-                      type="text"
+                      type='text'
                       value={previewProps[field.name] || ''}
-                      onChange={(e) => handlePropChange(field.name, e.target.value)}
+                      onChange={e =>
+                        handlePropChange(field.name, e.target.value)
+                      }
                       placeholder={field.label}
-                      className="w-full p-2 border rounded-md bg-background text-sm"
+                      className='w-full p-2 border rounded-md bg-background text-sm'
                     />
                   )}
                 </div>
@@ -244,20 +262,20 @@ export default function EmailPreviewPage() {
           </Card>
 
           {/* Actions */}
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Actions</h2>
-            <div className="space-y-3">
+          <Card className='p-4'>
+            <h2 className='text-lg font-semibold mb-4'>Actions</h2>
+            <div className='space-y-3'>
               <Button
                 onClick={handleRefreshPreview}
-                className="w-full"
-                variant="outline"
+                className='w-full'
+                variant='outline'
               >
                 Refresh Preview
               </Button>
               <Button
                 onClick={handleSendTestEmail}
                 disabled={sendingEmail}
-                className="w-full"
+                className='w-full'
               >
                 {sendingEmail ? 'Sending...' : 'Send Test Email'}
               </Button>
@@ -278,16 +296,19 @@ export default function EmailPreviewPage() {
         </div>
 
         {/* Right Panel: Preview */}
-        <div className="lg:col-span-2">
-          <Card className="p-4 h-full">
-            <h2 className="text-lg font-semibold mb-4">Email Preview</h2>
-            <div className="border rounded-lg overflow-hidden bg-gray-50" style={{ height: 'calc(100vh - 250px)' }}>
+        <div className='lg:col-span-2'>
+          <Card className='p-4 h-full'>
+            <h2 className='text-lg font-semibold mb-4'>Email Preview</h2>
+            <div
+              className='border rounded-lg overflow-hidden bg-gray-50'
+              style={{ height: 'calc(100vh - 250px)' }}
+            >
               <iframe
                 key={previewKey}
                 src={buildPreviewUrl()}
-                className="w-full h-full"
-                title="Email Preview"
-                sandbox="allow-same-origin"
+                className='w-full h-full'
+                title='Email Preview'
+                sandbox='allow-same-origin'
               />
             </div>
           </Card>

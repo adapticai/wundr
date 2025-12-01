@@ -1,6 +1,7 @@
 # API Reference
 
-This document provides comprehensive reference for all Wundr APIs, including the CLI commands, programmatic interfaces, configuration options, and plugin development APIs.
+This document provides comprehensive reference for all Wundr APIs, including the CLI commands,
+programmatic interfaces, configuration options, and plugin development APIs.
 
 ## 📋 Table of Contents
 
@@ -18,15 +19,15 @@ This document provides comprehensive reference for all Wundr APIs, including the
 
 These options are available for all commands:
 
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `--version` | boolean | Show version number | - |
-| `--help` | boolean | Show help information | - |
-| `--config` | string | Path to config file | `wundr.config.json` |
-| `--verbose` | boolean | Enable verbose output | `false` |
-| `--debug` | boolean | Enable debug output | `false` |
-| `--quiet` | boolean | Suppress non-error output | `false` |
-| `--no-color` | boolean | Disable colored output | `false` |
+| Option       | Type    | Description               | Default             |
+| ------------ | ------- | ------------------------- | ------------------- |
+| `--version`  | boolean | Show version number       | -                   |
+| `--help`     | boolean | Show help information     | -                   |
+| `--config`   | string  | Path to config file       | `wundr.config.json` |
+| `--verbose`  | boolean | Enable verbose output     | `false`             |
+| `--debug`    | boolean | Enable debug output       | `false`             |
+| `--quiet`    | boolean | Suppress non-error output | `false`             |
+| `--no-color` | boolean | Disable colored output    | `false`             |
 
 ### Command: `wundr init`
 
@@ -38,15 +39,15 @@ wundr init [options]
 
 #### Options
 
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `--interactive, -i` | boolean | Interactive setup wizard | `false` |
-| `--template, -t` | string | Project template (`react`, `vue`, `typescript`, etc.) | `auto-detect` |
-| `--ai-enabled` | boolean | Enable AI features | `false` |
-| `--dashboard` | boolean | Setup dashboard | `true` |
-| `--monorepo` | boolean | Configure for monorepo | `false` |
-| `--enterprise` | boolean | Enterprise configuration | `false` |
-| `--overwrite` | boolean | Overwrite existing config | `false` |
+| Option              | Type    | Description                                           | Default       |
+| ------------------- | ------- | ----------------------------------------------------- | ------------- |
+| `--interactive, -i` | boolean | Interactive setup wizard                              | `false`       |
+| `--template, -t`    | string  | Project template (`react`, `vue`, `typescript`, etc.) | `auto-detect` |
+| `--ai-enabled`      | boolean | Enable AI features                                    | `false`       |
+| `--dashboard`       | boolean | Setup dashboard                                       | `true`        |
+| `--monorepo`        | boolean | Configure for monorepo                                | `false`       |
+| `--enterprise`      | boolean | Enterprise configuration                              | `false`       |
+| `--overwrite`       | boolean | Overwrite existing config                             | `false`       |
 
 #### Examples
 
@@ -71,38 +72,38 @@ wundr analyze [path] [options]
 
 #### Arguments
 
-| Argument | Type | Description | Default |
-|----------|------|-------------|---------|
-| `path` | string | Path to analyze | `./src` |
+| Argument | Type   | Description     | Default |
+| -------- | ------ | --------------- | ------- |
+| `path`   | string | Path to analyze | `./src` |
 
 #### Options
 
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `--focus` | string[] | Analysis focus areas | `["all"]` |
-| `--exclude` | string[] | Patterns to exclude | `[]` |
-| `--include` | string[] | Patterns to include | `["**/*.{js,ts,jsx,tsx}"]` |
-| `--format` | string[] | Output formats | `["json", "html"]` |
-| `--output, -o` | string | Output directory | `./wundr-output` |
-| `--ai-review` | boolean | Include AI analysis | `false` |
-| `--benchmark` | boolean | Performance benchmarking | `false` |
-| `--incremental` | boolean | Incremental analysis | `false` |
-| `--baseline` | string | Baseline file path | - |
-| `--max-files` | number | Maximum files to analyze | `10000` |
-| `--max-concurrency` | number | Concurrent processing limit | `10` |
-| `--timeout` | number | Analysis timeout (ms) | `300000` |
+| Option              | Type     | Description                 | Default                    |
+| ------------------- | -------- | --------------------------- | -------------------------- |
+| `--focus`           | string[] | Analysis focus areas        | `["all"]`                  |
+| `--exclude`         | string[] | Patterns to exclude         | `[]`                       |
+| `--include`         | string[] | Patterns to include         | `["**/*.{js,ts,jsx,tsx}"]` |
+| `--format`          | string[] | Output formats              | `["json", "html"]`         |
+| `--output, -o`      | string   | Output directory            | `./wundr-output`           |
+| `--ai-review`       | boolean  | Include AI analysis         | `false`                    |
+| `--benchmark`       | boolean  | Performance benchmarking    | `false`                    |
+| `--incremental`     | boolean  | Incremental analysis        | `false`                    |
+| `--baseline`        | string   | Baseline file path          | -                          |
+| `--max-files`       | number   | Maximum files to analyze    | `10000`                    |
+| `--max-concurrency` | number   | Concurrent processing limit | `10`                       |
+| `--timeout`         | number   | Analysis timeout (ms)       | `300000`                   |
 
 #### Focus Areas
 
-| Focus | Description |
-|-------|-------------|
-| `duplicates` | Duplicate code detection |
-| `complexity` | Complexity metrics |
-| `dependencies` | Dependency analysis |
-| `security` | Security vulnerabilities |
-| `performance` | Performance issues |
-| `maintainability` | Code maintainability |
-| `all` | All analysis types |
+| Focus             | Description              |
+| ----------------- | ------------------------ |
+| `duplicates`      | Duplicate code detection |
+| `complexity`      | Complexity metrics       |
+| `dependencies`    | Dependency analysis      |
+| `security`        | Security vulnerabilities |
+| `performance`     | Performance issues       |
+| `maintainability` | Code maintainability     |
+| `all`             | All analysis types       |
 
 #### Examples
 
@@ -139,6 +140,7 @@ wundr ai setup [options]
 ```
 
 **Options:**
+
 - `--provider` (string): AI provider (`claude`, `openai`)
 - `--model` (string): AI model to use
 - `--api-key` (string): API key
@@ -153,6 +155,7 @@ wundr ai chat [options]
 ```
 
 **Options:**
+
 - `--context` (string): Context directory
 - `--model` (string): Override default model
 - `--temperature` (number): Response creativity (0-1)
@@ -166,6 +169,7 @@ wundr ai review [path] [options]
 ```
 
 **Options:**
+
 - `--focus` (string[]): Review focus areas
 - `--suggestions` (boolean): Include improvement suggestions
 - `--security` (boolean): Focus on security issues
@@ -207,16 +211,16 @@ wundr dashboard [options]
 
 #### Options
 
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `--port, -p` | number | Dashboard port | `3000` |
-| `--host` | string | Host address | `localhost` |
-| `--theme` | string | Dashboard theme | `system` |
-| `--open` | boolean | Open in browser | `false` |
-| `--dev` | boolean | Development mode | `false` |
-| `--build` | boolean | Build for production | `false` |
-| `--ws-port` | number | WebSocket port | `8080` |
-| `--disable-websocket` | boolean | Disable real-time updates | `false` |
+| Option                | Type    | Description               | Default     |
+| --------------------- | ------- | ------------------------- | ----------- |
+| `--port, -p`          | number  | Dashboard port            | `3000`      |
+| `--host`              | string  | Host address              | `localhost` |
+| `--theme`             | string  | Dashboard theme           | `system`    |
+| `--open`              | boolean | Open in browser           | `false`     |
+| `--dev`               | boolean | Development mode          | `false`     |
+| `--build`             | boolean | Build for production      | `false`     |
+| `--ws-port`           | number  | WebSocket port            | `8080`      |
+| `--disable-websocket` | boolean | Disable real-time updates | `false`     |
 
 #### Examples
 
@@ -241,14 +245,14 @@ wundr refactor [options]
 
 #### Options
 
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `--guided` | boolean | Interactive guided refactoring | `false` |
-| `--patterns` | boolean | Standardize code patterns | `false` |
-| `--duplicates` | boolean | Consolidate duplicates | `false` |
-| `--dry-run` | boolean | Show changes without applying | `false` |
-| `--batch-size` | number | Number of changes per batch | `5` |
-| `--priority` | string | Priority level (`high`, `medium`, `low`) | `high` |
+| Option         | Type    | Description                              | Default |
+| -------------- | ------- | ---------------------------------------- | ------- |
+| `--guided`     | boolean | Interactive guided refactoring           | `false` |
+| `--patterns`   | boolean | Standardize code patterns                | `false` |
+| `--duplicates` | boolean | Consolidate duplicates                   | `false` |
+| `--dry-run`    | boolean | Show changes without applying            | `false` |
+| `--batch-size` | number  | Number of changes per batch              | `5`     |
+| `--priority`   | string  | Priority level (`high`, `medium`, `low`) | `high`  |
 
 ## 💻 Programmatic API
 
@@ -299,7 +303,7 @@ interface ProgressCallback {
   (event: ProgressEvent): void;
 }
 
-type ProgressEvent = 
+type ProgressEvent =
   | { type: 'phase'; phase: string; message: string }
   | { type: 'progress'; progress: number; total: number }
   | { type: 'complete'; report: AnalysisReport };
@@ -316,12 +320,12 @@ const engine = new AnalysisEngine({
   maxConcurrency: 10,
   ai: {
     enabled: true,
-    provider: 'claude'
-  }
+    provider: 'claude',
+  },
 });
 
 // Set up progress tracking
-engine.setProgressCallback((event) => {
+engine.setProgressCallback(event => {
   if (event.type === 'progress') {
     console.log(`Progress: ${event.progress}/${event.total}`);
   }
@@ -339,7 +343,7 @@ import { AIService } from '@adapticai/wundr/ai';
 
 const aiService = new AIService({
   provider: 'claude',
-  apiKey: process.env.CLAUDE_API_KEY
+  apiKey: process.env.CLAUDE_API_KEY,
 });
 ```
 
@@ -519,7 +523,7 @@ interface Plugin {
   version: string;
   description: string;
   dependencies?: string[];
-  
+
   initialize(context: PluginContext): Promise<void>;
   activate?(): Promise<void>;
   deactivate?(): Promise<void>;
@@ -536,7 +540,7 @@ interface PluginContext {
   analysis: AnalysisAPI;
   dashboard: DashboardAPI;
   cli: CLIAPI;
-  
+
   registerCommand(command: CommandDefinition): void;
   registerAnalyzer(analyzer: AnalyzerDefinition): void;
   registerVisualization(viz: VisualizationDefinition): void;
@@ -558,20 +562,20 @@ export class SecurityPlugin implements Plugin {
     context.registerAnalyzer({
       name: 'security-vulnerabilities',
       analyze: this.analyzeSecurityIssues.bind(this),
-      dependencies: ['ast-analysis']
+      dependencies: ['ast-analysis'],
     });
 
     // Register CLI command
     context.registerCommand({
       name: 'security',
       description: 'Run security analysis',
-      handler: this.handleSecurityCommand.bind(this)
+      handler: this.handleSecurityCommand.bind(this),
     });
 
     // Register dashboard component
     context.dashboard.addComponent('SecurityDashboard', {
       path: '/security',
-      component: SecurityDashboardComponent
+      component: SecurityDashboardComponent,
     });
   }
 
@@ -606,7 +610,7 @@ context.dashboard.addComponent('MyComponent', {
   path: '/my-feature',
   component: MyFeatureComponent,
   icon: 'chart',
-  title: 'My Feature'
+  title: 'My Feature',
 });
 ```
 
@@ -616,10 +620,10 @@ context.dashboard.addComponent('MyComponent', {
 interface DashboardDataAPI {
   // Get analysis data
   getAnalysisData(): Promise<AnalysisReport>;
-  
+
   // Subscribe to real-time updates
   subscribe(event: string, callback: Function): void;
-  
+
   // Send custom data to dashboard
   emit(event: string, data: any): void;
 }
@@ -654,11 +658,11 @@ import { WundrWebSocket } from '@adapticai/wundr/websocket';
 const ws = new WundrWebSocket('ws://localhost:8080');
 
 // Subscribe to events
-ws.on('analysis-progress', (data) => {
+ws.on('analysis-progress', data => {
   console.log(`Analysis progress: ${data.progress}%`);
 });
 
-ws.on('analysis-complete', (report) => {
+ws.on('analysis-complete', report => {
   console.log('Analysis complete:', report);
 });
 
@@ -670,13 +674,13 @@ ws.send('start-analysis', { path: './src' });
 
 Events emitted by the WebSocket server:
 
-| Event | Data | Description |
-|-------|------|-------------|
-| `analysis-started` | `{ path: string }` | Analysis started |
-| `analysis-progress` | `{ progress: number, total: number, phase: string }` | Progress update |
-| `analysis-complete` | `AnalysisReport` | Analysis finished |
-| `file-changed` | `{ path: string, action: string }` | File system change |
-| `config-updated` | `WundrConfig` | Configuration changed |
+| Event               | Data                                                 | Description           |
+| ------------------- | ---------------------------------------------------- | --------------------- |
+| `analysis-started`  | `{ path: string }`                                   | Analysis started      |
+| `analysis-progress` | `{ progress: number, total: number, phase: string }` | Progress update       |
+| `analysis-complete` | `AnalysisReport`                                     | Analysis finished     |
+| `file-changed`      | `{ path: string, action: string }`                   | File system change    |
+| `config-updated`    | `WundrConfig`                                        | Configuration changed |
 
 ## 🌐 REST API
 
@@ -697,6 +701,7 @@ Currently no authentication required for local development. Enterprise versions 
 Get latest analysis results.
 
 **Response:**
+
 ```json
 {
   "status": "success",
@@ -712,6 +717,7 @@ Get latest analysis results.
 Start new analysis.
 
 **Request:**
+
 ```json
 {
   "path": "./src",
@@ -723,6 +729,7 @@ Start new analysis.
 ```
 
 **Response:**
+
 ```json
 {
   "status": "success",
@@ -754,6 +761,7 @@ List project files.
 Request AI code review.
 
 **Request:**
+
 ```json
 {
   "code": "function example() { ... }",
@@ -844,28 +852,30 @@ interface Issue {
 
 ### CLI Error Codes
 
-| Code | Description |
-|------|-------------|
+| Code        | Description                  |
+| ----------- | ---------------------------- |
 | `WUNDR_001` | Configuration file not found |
 | `WUNDR_002` | Invalid configuration format |
-| `WUNDR_003` | Analysis failed |
-| `WUNDR_004` | AI service unavailable |
-| `WUNDR_005` | Permission denied |
-| `WUNDR_006` | Network connection failed |
-| `WUNDR_007` | Plugin loading failed |
-| `WUNDR_008` | Dashboard startup failed |
+| `WUNDR_003` | Analysis failed              |
+| `WUNDR_004` | AI service unavailable       |
+| `WUNDR_005` | Permission denied            |
+| `WUNDR_006` | Network connection failed    |
+| `WUNDR_007` | Plugin loading failed        |
+| `WUNDR_008` | Dashboard startup failed     |
 
 ### API Error Codes
 
-| Code | Description | HTTP Status |
-|------|-------------|-------------|
-| `API_001` | Invalid request format | 400 |
-| `API_002` | Missing required parameters | 400 |
-| `API_003` | Resource not found | 404 |
-| `API_004` | Analysis in progress | 409 |
-| `API_005` | Rate limit exceeded | 429 |
-| `API_006` | Internal server error | 500 |
+| Code      | Description                 | HTTP Status |
+| --------- | --------------------------- | ----------- |
+| `API_001` | Invalid request format      | 400         |
+| `API_002` | Missing required parameters | 400         |
+| `API_003` | Resource not found          | 404         |
+| `API_004` | Analysis in progress        | 409         |
+| `API_005` | Rate limit exceeded         | 429         |
+| `API_006` | Internal server error       | 500         |
 
 ---
 
-For more detailed information and examples, visit our [complete documentation](https://docs.wundr.io) or join our [Discord community](https://discord.gg/wundr) for help and discussions.
+For more detailed information and examples, visit our
+[complete documentation](https://docs.wundr.io) or join our
+[Discord community](https://discord.gg/wundr) for help and discussions.

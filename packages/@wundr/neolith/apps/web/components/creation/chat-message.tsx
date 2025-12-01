@@ -38,8 +38,8 @@ export function ChatMessage({
 
   if (isSystem) {
     return (
-      <div className="flex w-full justify-center">
-        <div className="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">
+      <div className='flex w-full justify-center'>
+        <div className='rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground'>
           {content}
         </div>
       </div>
@@ -50,21 +50,21 @@ export function ChatMessage({
     <div
       className={cn(
         'flex w-full gap-3',
-        isUser ? 'flex-row-reverse' : 'flex-row',
+        isUser ? 'flex-row-reverse' : 'flex-row'
       )}
-      role="article"
+      role='article'
       aria-label={`${role} message`}
     >
       {/* Avatar */}
-      <Avatar className="h-8 w-8 flex-shrink-0">
+      <Avatar className='h-8 w-8 flex-shrink-0'>
         <AvatarFallback
           className={cn(
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground',
+              : 'bg-secondary text-secondary-foreground'
           )}
         >
-          {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+          {isUser ? <User className='h-4 w-4' /> : <Bot className='h-4 w-4' />}
         </AvatarFallback>
       </Avatar>
 
@@ -74,7 +74,7 @@ export function ChatMessage({
         <div
           className={cn(
             'mb-1 text-xs font-medium',
-            isUser ? 'text-right text-foreground/70' : 'text-foreground/70',
+            isUser ? 'text-right text-foreground/70' : 'text-foreground/70'
           )}
         >
           {isUser ? 'You' : 'AI Assistant'}
@@ -86,13 +86,13 @@ export function ChatMessage({
             'rounded-lg px-4 py-2.5 shadow-sm',
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-foreground',
+              : 'bg-muted text-foreground'
           )}
         >
-          <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+          <div className='whitespace-pre-wrap break-words text-sm leading-relaxed'>
             {content}
             {isStreaming && (
-              <span className="ml-1 inline-block">
+              <span className='ml-1 inline-block'>
                 <StreamingCursor />
               </span>
             )}
@@ -104,7 +104,7 @@ export function ChatMessage({
           <div
             className={cn(
               'mt-1 text-xs text-muted-foreground',
-              isUser && 'text-right',
+              isUser && 'text-right'
             )}
           >
             {formatTimestamp(timestamp)}
@@ -119,9 +119,7 @@ export function ChatMessage({
  * StreamingCursor - Animated cursor for streaming messages
  */
 function StreamingCursor() {
-  return (
-    <span className="inline-block h-4 w-[2px] animate-pulse bg-current" />
-  );
+  return <span className='inline-block h-4 w-[2px] animate-pulse bg-current' />;
 }
 
 /**

@@ -21,7 +21,10 @@ import {
   createChannelIntelligenceError,
   CHANNEL_INTELLIGENCE_ERROR_CODES,
 } from '@/lib/validations/channel-intelligence';
-import { ORCHESTRATOR_ERROR_CODES, createErrorResponse } from '@/lib/validations/orchestrator';
+import {
+  ORCHESTRATOR_ERROR_CODES,
+  createErrorResponse,
+} from '@/lib/validations/orchestrator';
 
 import type { NextRequest } from 'next/server';
 
@@ -38,7 +41,7 @@ interface RouteContext {
 async function getOrchestratorWithWorkspaceAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -107,14 +110,17 @@ async function getOrchestratorWithWorkspaceAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -125,21 +131,25 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Invalid parameters',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify access
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -156,7 +166,7 @@ export async function GET(
       select: { channelId: true },
     });
 
-    const excludeChannelIds = currentMemberships.map((m) => m.channelId);
+    const excludeChannelIds = currentMemberships.map(m => m.channelId);
 
     // Get base recommendations
     const baseRecommendations = await getRecommendedChannels(orchestratorId, {
@@ -168,7 +178,7 @@ export async function GET(
 
     // Apply additional filters
     let recommendations = baseRecommendations.filter(
-      (rec) => !excludeChannelIds.includes(rec.id),
+      rec => !excludeChannelIds.includes(rec.id)
     );
 
     // Filter by recent activity if specified
@@ -176,7 +186,7 @@ export async function GET(
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - filters.recentActivityDays);
 
-      const channelIds = recommendations.map((r) => r.id);
+      const channelIds = recommendations.map(r => r.id);
       const activeChannels = await prisma.channel.findMany({
         where: {
           id: { in: channelIds },
@@ -189,15 +199,17 @@ export async function GET(
         select: { id: true },
       });
 
-      const activeChannelIds = new Set(activeChannels.map((c) => c.id));
-      recommendations = recommendations.filter((rec) => activeChannelIds.has(rec.id));
+      const activeChannelIds = new Set(activeChannels.map(c => c.id));
+      recommendations = recommendations.filter(rec =>
+        activeChannelIds.has(rec.id)
+      );
     }
 
     // Limit to requested count
     recommendations = recommendations.slice(0, filters.limit);
 
     // Format response
-    const formattedRecommendations = recommendations.map((rec) => ({
+    const formattedRecommendations = recommendations.map(rec => ({
       channelId: rec.id,
       channelName: rec.name,
       channelSlug: rec.slug,
@@ -222,14 +234,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/channel-recommendations] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createChannelIntelligenceError(
         'An internal error occurred',
-        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR,
+        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

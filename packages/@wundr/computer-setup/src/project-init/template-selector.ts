@@ -48,7 +48,9 @@ export class TemplateSelector {
   /**
    * Select appropriate templates based on criteria
    */
-  async selectTemplates(criteria: TemplateSelectionCriteria): Promise<TemplateMetadata[]> {
+  async selectTemplates(
+    criteria: TemplateSelectionCriteria
+  ): Promise<TemplateMetadata[]> {
     const matchedTemplates: TemplateMetadata[] = [];
 
     for (const template of this.templates.values()) {
@@ -180,8 +182,8 @@ export class TemplateSelector {
    * Get templates for specific project type
    */
   getTemplatesForType(projectType: string): TemplateMetadata[] {
-    return Array.from(this.templates.values()).filter(
-      t => t.projectTypes.includes(projectType),
+    return Array.from(this.templates.values()).filter(t =>
+      t.projectTypes.includes(projectType)
     );
   }
 
@@ -190,7 +192,7 @@ export class TemplateSelector {
    */
   private calculateMatchScore(
     template: TemplateMetadata,
-    criteria: TemplateSelectionCriteria,
+    criteria: TemplateSelectionCriteria
   ): number {
     let score = 0;
     let maxScore = 0;
@@ -209,7 +211,10 @@ export class TemplateSelector {
       large: 'advanced',
       enterprise: 'enterprise',
     };
-    if (criteria.scale && template.complexity === complexityMap[criteria.scale]) {
+    if (
+      criteria.scale &&
+      template.complexity === complexityMap[criteria.scale]
+    ) {
       score += 2;
     }
 
@@ -217,7 +222,7 @@ export class TemplateSelector {
     maxScore += 3;
     if (criteria.features) {
       const matchingFeatures = criteria.features.filter(f =>
-        template.features.includes(f),
+        template.features.includes(f)
       );
       score += (matchingFeatures.length / criteria.features.length) * 3;
     }
@@ -226,14 +231,23 @@ export class TemplateSelector {
     maxScore += 1;
     if (criteria.teamSize) {
       if (criteria.teamSize === 1 && template.complexity === 'basic') {
-score += 1;
-} else if (criteria.teamSize <= 5 && template.complexity === 'intermediate') {
-score += 1;
-} else if (criteria.teamSize <= 20 && template.complexity === 'advanced') {
-score += 1;
-} else if (criteria.teamSize > 20 && template.complexity === 'enterprise') {
-score += 1;
-}
+        score += 1;
+      } else if (
+        criteria.teamSize <= 5 &&
+        template.complexity === 'intermediate'
+      ) {
+        score += 1;
+      } else if (
+        criteria.teamSize <= 20 &&
+        template.complexity === 'advanced'
+      ) {
+        score += 1;
+      } else if (
+        criteria.teamSize > 20 &&
+        template.complexity === 'enterprise'
+      ) {
+        score += 1;
+      }
     }
 
     return score / maxScore;
@@ -269,9 +283,20 @@ score += 1;
       projectTypes: ['react'],
       frameworks: ['react', 'vite'],
       features: ['typescript', 'testing', 'cicd', 'docker'],
-      agents: ['coder', 'reviewer', 'tester', 'mobile-dev', 'frontend-architect'],
+      agents: [
+        'coder',
+        'reviewer',
+        'tester',
+        'mobile-dev',
+        'frontend-architect',
+      ],
       workflows: ['tdd', 'review', 'deployment'],
-      conventions: ['code-style', 'component-structure', 'git-workflow', 'testing-standards'],
+      conventions: [
+        'code-style',
+        'component-structure',
+        'git-workflow',
+        'testing-standards',
+      ],
       complexity: 'intermediate',
       requirements: {
         nodeVersion: '>=18.0.0',
@@ -286,15 +311,32 @@ score += 1;
       description: 'Complete Next.js application with backend and frontend',
       projectTypes: ['nextjs', 'react', 'node'],
       frameworks: ['nextjs', 'react'],
-      features: ['typescript', 'testing', 'cicd', 'docker', 'api-docs', 'auth', 'database'],
+      features: [
+        'typescript',
+        'testing',
+        'cicd',
+        'docker',
+        'api-docs',
+        'auth',
+        'database',
+      ],
       agents: [
-        'coder', 'reviewer', 'tester', 'planner',
-        'backend-dev', 'mobile-dev', 'system-architect',
+        'coder',
+        'reviewer',
+        'tester',
+        'planner',
+        'backend-dev',
+        'mobile-dev',
+        'system-architect',
       ],
       workflows: ['sparc', 'tdd', 'review', 'deployment'],
       conventions: [
-        'code-style', 'api-design', 'component-structure',
-        'git-workflow', 'testing-standards', 'documentation',
+        'code-style',
+        'api-design',
+        'component-structure',
+        'git-workflow',
+        'testing-standards',
+        'documentation',
       ],
       complexity: 'advanced',
       requirements: {
@@ -311,18 +353,34 @@ score += 1;
       projectTypes: ['monorepo'],
       frameworks: ['turborepo', 'nx'],
       features: [
-        'typescript', 'testing', 'cicd', 'docker',
-        'monitoring', 'api-docs',
+        'typescript',
+        'testing',
+        'cicd',
+        'docker',
+        'monitoring',
+        'api-docs',
       ],
       agents: [
-        'coder', 'reviewer', 'tester', 'planner', 'researcher',
-        'repo-architect', 'sync-coordinator', 'multi-repo-swarm',
-        'system-architect', 'cicd-engineer',
+        'coder',
+        'reviewer',
+        'tester',
+        'planner',
+        'researcher',
+        'repo-architect',
+        'sync-coordinator',
+        'multi-repo-swarm',
+        'system-architect',
+        'cicd-engineer',
       ],
       workflows: ['sparc', 'tdd', 'review', 'deployment', 'release'],
       conventions: [
-        'code-style', 'monorepo-structure', 'package-naming',
-        'git-workflow', 'testing-standards', 'versioning', 'documentation',
+        'code-style',
+        'monorepo-structure',
+        'package-naming',
+        'git-workflow',
+        'testing-standards',
+        'versioning',
+        'documentation',
       ],
       complexity: 'enterprise',
       requirements: {
@@ -357,11 +415,20 @@ score += 1;
       projectTypes: ['go'],
       frameworks: ['gin', 'chi'],
       features: ['testing', 'cicd', 'docker', 'monitoring', 'api-docs'],
-      agents: ['coder', 'reviewer', 'tester', 'backend-dev', 'microservices-architect'],
+      agents: [
+        'coder',
+        'reviewer',
+        'tester',
+        'backend-dev',
+        'microservices-architect',
+      ],
       workflows: ['tdd', 'review', 'deployment'],
       conventions: [
-        'code-style', 'package-structure', 'git-workflow',
-        'testing-standards', 'api-design',
+        'code-style',
+        'package-structure',
+        'git-workflow',
+        'testing-standards',
+        'api-design',
       ],
       complexity: 'advanced',
       requirements: {
@@ -377,9 +444,20 @@ score += 1;
       projectTypes: ['rust'],
       frameworks: ['actix-web', 'tokio'],
       features: ['testing', 'cicd', 'docker'],
-      agents: ['coder', 'reviewer', 'tester', 'systems-architect', 'performance-engineer'],
+      agents: [
+        'coder',
+        'reviewer',
+        'tester',
+        'systems-architect',
+        'performance-engineer',
+      ],
       workflows: ['tdd', 'review'],
-      conventions: ['code-style', 'cargo-structure', 'git-workflow', 'testing-standards'],
+      conventions: [
+        'code-style',
+        'cargo-structure',
+        'git-workflow',
+        'testing-standards',
+      ],
       complexity: 'advanced',
       requirements: {
         tools: ['cargo', 'rustc'],
@@ -394,19 +472,37 @@ score += 1;
       projectTypes: ['node', 'java'],
       frameworks: ['nestjs', 'spring-boot'],
       features: [
-        'typescript', 'testing', 'cicd', 'docker',
-        'monitoring', 'api-docs', 'auth', 'database',
+        'typescript',
+        'testing',
+        'cicd',
+        'docker',
+        'monitoring',
+        'api-docs',
+        'auth',
+        'database',
       ],
       agents: [
-        'coder', 'reviewer', 'tester', 'planner',
-        'backend-dev', 'api-docs', 'system-architect',
-        'cicd-engineer', 'security-manager', 'performance-benchmarker',
+        'coder',
+        'reviewer',
+        'tester',
+        'planner',
+        'backend-dev',
+        'api-docs',
+        'system-architect',
+        'cicd-engineer',
+        'security-manager',
+        'performance-benchmarker',
       ],
       workflows: ['sparc', 'tdd', 'review', 'deployment', 'release'],
       conventions: [
-        'code-style', 'api-design', 'service-architecture',
-        'git-workflow', 'testing-standards', 'security',
-        'documentation', 'deployment',
+        'code-style',
+        'api-design',
+        'service-architecture',
+        'git-workflow',
+        'testing-standards',
+        'security',
+        'documentation',
+        'deployment',
       ],
       complexity: 'enterprise',
       requirements: {
@@ -439,16 +535,23 @@ score += 1;
   /**
    * Validate template requirements against current environment
    */
-  async validateTemplateRequirements(template: TemplateMetadata): Promise<boolean> {
+  async validateTemplateRequirements(
+    template: TemplateMetadata
+  ): Promise<boolean> {
     const issues: string[] = [];
 
     // Check Node version if required
     if (template.requirements.nodeVersion) {
       const currentVersion = process.version;
       // Simple version check (could be enhanced)
-      if (!this.satisfiesVersion(currentVersion, template.requirements.nodeVersion)) {
+      if (
+        !this.satisfiesVersion(
+          currentVersion,
+          template.requirements.nodeVersion
+        )
+      ) {
         issues.push(
-          `Node.js version ${template.requirements.nodeVersion} required, found ${currentVersion}`,
+          `Node.js version ${template.requirements.nodeVersion} required, found ${currentVersion}`
         );
       }
     }
@@ -456,7 +559,7 @@ score += 1;
     // Check required tools
     if (template.requirements.tools) {
       for (const tool of template.requirements.tools) {
-        if (!await this.isToolAvailable(tool)) {
+        if (!(await this.isToolAvailable(tool))) {
           issues.push(`Required tool not found: ${tool}`);
         }
       }

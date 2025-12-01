@@ -65,7 +65,7 @@ const createMultiOrchestratorTaskSchema = z.object({
  */
 async function verifyWorkspaceAccess(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<{ success: boolean; organizationId?: string; error?: string }> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -105,7 +105,7 @@ async function verifyWorkspaceAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -114,9 +114,9 @@ export async function GET(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -125,14 +125,17 @@ export async function GET(
     const { workspaceSlug: workspaceId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -175,7 +178,11 @@ export async function GET(
       taskId: string;
       taskTitle: string;
       primaryOrchestratorId: string;
-      collaborators: Array<{ orchestratorId: string; role: string; addedAt: string }>;
+      collaborators: Array<{
+        orchestratorId: string;
+        role: string;
+        addedAt: string;
+      }>;
     }> = [];
 
     const handoffs: Array<{
@@ -187,13 +194,17 @@ export async function GET(
       context: Record<string, unknown>;
     }> = [];
 
-    tasks.forEach((task) => {
+    tasks.forEach(task => {
       const metadata = task.metadata as OrchestratorCoordinationMetadata;
 
       // Extract delegations
       if (metadata.delegations) {
-        metadata.delegations.forEach((delegation) => {
-          if (!orchestratorId || delegation.fromOrchestratorId === orchestratorId || delegation.toOrchestratorId === orchestratorId) {
+        metadata.delegations.forEach(delegation => {
+          if (
+            !orchestratorId ||
+            delegation.fromOrchestratorId === orchestratorId ||
+            delegation.toOrchestratorId === orchestratorId
+          ) {
             delegations.push({
               taskId: task.id,
               taskTitle: task.title,
@@ -208,7 +219,13 @@ export async function GET(
 
       // Extract collaborations
       if (metadata.collaborators && metadata.collaborators.length > 0) {
-        if (!orchestratorId || metadata.collaborators.some((c) => c.orchestratorId === orchestratorId) || task.orchestratorId === orchestratorId) {
+        if (
+          !orchestratorId ||
+          metadata.collaborators.some(
+            c => c.orchestratorId === orchestratorId
+          ) ||
+          task.orchestratorId === orchestratorId
+        ) {
           collaborations.push({
             taskId: task.id,
             taskTitle: task.title,
@@ -220,8 +237,12 @@ export async function GET(
 
       // Extract handoffs
       if (metadata.handoffs) {
-        metadata.handoffs.forEach((handoff) => {
-          if (!orchestratorId || handoff.fromOrchestratorId === orchestratorId || handoff.toOrchestratorId === orchestratorId) {
+        metadata.handoffs.forEach(handoff => {
+          if (
+            !orchestratorId ||
+            handoff.fromOrchestratorId === orchestratorId ||
+            handoff.toOrchestratorId === orchestratorId
+          ) {
             handoffs.push({
               taskId: task.id,
               taskTitle: task.title,
@@ -252,20 +273,24 @@ export async function GET(
           totalDelegations: delegations.length,
           totalCollaborations: collaborations.length,
           totalHandoffs: handoffs.length,
-          totalCoordinationActivities: delegations.length + collaborations.length + handoffs.length,
+          totalCoordinationActivities:
+            delegations.length + collaborations.length + handoffs.length,
         },
       };
     }
 
     return NextResponse.json({ data: responseData });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/coordination] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/coordination] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -281,7 +306,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -290,9 +315,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -301,14 +326,17 @@ export async function POST(
     const { workspaceSlug: workspaceId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -320,9 +348,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -333,9 +361,9 @@ export async function POST(
         createCoordinationErrorResponse(
           'Validation failed',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -351,7 +379,10 @@ export async function POST(
     } = parseResult.data;
 
     // Verify all Orchestrators exist and belong to workspace organization
-    const allOrchestratorIds = [primaryOrchestratorId, ...requiredOrchestratorIds];
+    const allOrchestratorIds = [
+      primaryOrchestratorId,
+      ...requiredOrchestratorIds,
+    ];
     const orchestrators = await prisma.orchestrator.findMany({
       where: {
         id: { in: allOrchestratorIds },
@@ -370,15 +401,15 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Some Orchestrators not found or not in workspace organization',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Create multi-Orchestrator task with coordination metadata
     const coordinationMetadata: OrchestratorCoordinationMetadata = {
-      collaborators: requiredOrchestratorIds.map((orchestratorId) => ({
+      collaborators: requiredOrchestratorIds.map(orchestratorId => ({
         orchestratorId,
         role: 'collaborator',
         addedAt: new Date().toISOString(),
@@ -415,10 +446,12 @@ export async function POST(
     });
 
     // Create notifications for all required Orchestrators
-    const primaryOrchestrator = orchestrators.find((orchestrator) => orchestrator.id === primaryOrchestratorId);
+    const primaryOrchestrator = orchestrators.find(
+      orchestrator => orchestrator.id === primaryOrchestratorId
+    );
     await Promise.all(
-      requiredOrchestratorIds.map((orchestratorId) => {
-        const orchestrator = orchestrators.find((v) => v.id === orchestratorId);
+      requiredOrchestratorIds.map(orchestratorId => {
+        const orchestrator = orchestrators.find(v => v.id === orchestratorId);
         if (!orchestrator) {
           return Promise.resolve();
         }
@@ -442,15 +475,19 @@ export async function POST(
             read: false,
           },
         });
-      }),
+      })
     );
 
     return NextResponse.json({
       data: {
         task,
         coordination: {
-          primaryOrchestrator: orchestrators.find((orchestrator) => orchestrator.id === primaryOrchestratorId),
-          requiredOrchestrators: orchestrators.filter((orchestrator) => requiredOrchestratorIds.includes(orchestrator.id)),
+          primaryOrchestrator: orchestrators.find(
+            orchestrator => orchestrator.id === primaryOrchestratorId
+          ),
+          requiredOrchestrators: orchestrators.filter(orchestrator =>
+            requiredOrchestratorIds.includes(orchestrator.id)
+          ),
           consensusThreshold,
           status: 'PENDING',
         },
@@ -458,13 +495,16 @@ export async function POST(
       message: 'Multi-Orchestrator task created successfully',
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/coordination] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/coordination] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

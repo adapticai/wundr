@@ -1,6 +1,7 @@
 # Claude Code MCP Integration Guide
 
-This guide explains how to use the Wundr toolkit's MCP (Model Context Protocol) tools with Claude Code for enhanced AI-assisted development.
+This guide explains how to use the Wundr toolkit's MCP (Model Context Protocol) tools with Claude
+Code for enhanced AI-assisted development.
 
 ## 🚀 Quick Setup
 
@@ -42,15 +43,18 @@ claude mcp list
 ### Governance Tools
 
 #### 1. Drift Detection (`drift_detection`)
+
 Monitor code quality drift over time.
 
 **Natural Language Examples:**
+
 - "Check for code drift"
 - "Create a new drift baseline"
 - "Show drift trends for the last month"
 - "Compare current code against baseline"
 
 **Direct Tool Usage:**
+
 ```javascript
 {
   "tool": "drift_detection",
@@ -62,9 +66,11 @@ Monitor code quality drift over time.
 ```
 
 #### 2. Governance Reports (`governance_report`)
+
 Generate comprehensive governance reports.
 
 **Natural Language Examples:**
+
 - "Generate weekly governance report"
 - "Show code quality compliance"
 - "Create a drift report in markdown"
@@ -73,15 +79,18 @@ Generate comprehensive governance reports.
 ### Standardization Tools
 
 #### 3. Pattern Standardization (`pattern_standardize`)
+
 Automatically fix code patterns to match standards.
 
 **Natural Language Examples:**
+
 - "Standardize all error handling"
 - "Fix import ordering issues"
 - "Review patterns that need manual attention"
 - "Show what patterns would be fixed (dry run)"
 
 **Direct Tool Usage:**
+
 ```javascript
 {
   "tool": "pattern_standardize",
@@ -96,9 +105,11 @@ Automatically fix code patterns to match standards.
 ### Monorepo Tools
 
 #### 4. Monorepo Management (`monorepo_manage`)
+
 Initialize and manage monorepo structures.
 
 **Natural Language Examples:**
+
 - "Initialize a monorepo structure"
 - "Add a new package called user-service"
 - "Check for circular dependencies"
@@ -107,9 +118,11 @@ Initialize and manage monorepo structures.
 ### Analysis Tools
 
 #### 5. Dependency Analysis (`dependency_analyze`)
+
 Analyze project dependencies comprehensively.
 
 **Natural Language Examples:**
+
 - "Find all circular dependencies"
 - "Show unused npm packages"
 - "Analyze external dependencies"
@@ -118,9 +131,11 @@ Analyze project dependencies comprehensively.
 ### Testing Tools
 
 #### 6. Test Baselines (`test_baseline`)
+
 Manage test coverage baselines.
 
 **Natural Language Examples:**
+
 - "Create test coverage baseline"
 - "Compare coverage against baseline"
 - "Update test baseline with current metrics"
@@ -129,9 +144,11 @@ Manage test coverage baselines.
 ### Configuration Tools
 
 #### 7. Claude Config (`claude_config`)
+
 Generate optimized Claude Code configurations.
 
 **Natural Language Examples:**
+
 - "Generate CLAUDE.md for this project"
 - "Set up Claude Code hooks"
 - "Create coding conventions config"
@@ -140,6 +157,7 @@ Generate optimized Claude Code configurations.
 ## 📋 Workflow Examples
 
 ### Example 1: Complete Quality Check
+
 ```
 You: "Run a complete quality check: detect drift, fix patterns, and generate a report"
 
@@ -151,6 +169,7 @@ Claude will:
 ```
 
 ### Example 2: Monorepo Setup
+
 ```
 You: "Set up a monorepo with packages for auth, api, and worker services"
 
@@ -163,6 +182,7 @@ Claude will:
 ```
 
 ### Example 3: Pre-Commit Validation
+
 ```
 You: "Check if my code is ready to commit"
 
@@ -177,6 +197,7 @@ Claude will:
 ## 🔧 Advanced Configuration
 
 ### Environment Variables
+
 ```bash
 # Logging level (debug, info, warn, error)
 export WUNDR_MCP_LOG_LEVEL=debug
@@ -189,6 +210,7 @@ export WUNDR_MCP_TIMEOUT=60000
 ```
 
 ### Project Configuration
+
 Create `.wundr-mcp.json` in project root:
 
 ```json
@@ -226,24 +248,28 @@ Create `.wundr-mcp.json` in project root:
 ## 🎯 Best Practices
 
 ### 1. Regular Baseline Creation
+
 ```
 # Weekly baseline creation
 You: "Create a new drift baseline and archive the old one"
 ```
 
 ### 2. Pre-Merge Validation
+
 ```
 # Before merging PRs
 You: "Validate this branch is ready to merge: check drift, dependencies, and coverage"
 ```
 
 ### 3. Automated Standardization
+
 ```
 # After adding new code
 You: "Standardize any new code patterns and show what changed"
 ```
 
 ### 4. Continuous Monitoring
+
 ```
 # Daily check
 You: "Show me today's code quality summary and any issues"
@@ -252,6 +278,7 @@ You: "Show me today's code quality summary and any issues"
 ## 🚨 Troubleshooting
 
 ### MCP Tools Not Found
+
 ```bash
 # Restart Claude Code
 claude mcp restart wundr
@@ -264,6 +291,7 @@ cd mcp-tools && npm install && npm link
 ```
 
 ### Permission Errors
+
 ```bash
 # Fix permissions
 chmod +x mcp-tools/install.sh
@@ -271,6 +299,7 @@ chmod +x mcp-tools/wundr-mcp
 ```
 
 ### Debug Mode
+
 ```bash
 # Enable debug logging
 export WUNDR_MCP_LOG_LEVEL=debug
@@ -282,6 +311,7 @@ claude mcp logs wundr
 ## 🔗 Integration with CI/CD
 
 ### GitHub Actions Example
+
 ```yaml
 name: Wundr Quality Gates
 on: [push, pull_request]
@@ -291,30 +321,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          
+
       - name: Install Wundr MCP Tools
         run: |
           cd mcp-tools
           npm install
           npm run build
-          
+
       - name: Run Drift Detection
         run: npx wundr-mcp drift-detection detect
-        
+
       - name: Check Dependencies
         run: npx wundr-mcp monorepo-manage check-deps
-        
+
       - name: Validate Coverage
         run: npx wundr-mcp test-baseline compare
-        
+
       - name: Generate Report
         run: npx wundr-mcp governance-report compliance --format markdown
-        
+
       - name: Upload Report
         uses: actions/upload-artifact@v3
         with:
@@ -323,20 +353,21 @@ jobs:
 ```
 
 ### Pre-Commit Hook
+
 ```javascript
 // .claude/hooks/pre-commit.js
-module.exports = async (context) => {
+module.exports = async context => {
   // Run standardization
   await context.runMCPTool('pattern_standardize', {
     action: 'run',
-    dryRun: false
+    dryRun: false,
   });
-  
+
   // Check drift
   const drift = await context.runMCPTool('drift_detection', {
-    action: 'detect'
+    action: 'detect',
   });
-  
+
   if (drift.severity === 'critical') {
     throw new Error('Critical drift detected!');
   }

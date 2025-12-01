@@ -59,7 +59,9 @@ export function useLLMChat() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate chat completion');
+          throw new Error(
+            errorData.error || 'Failed to generate chat completion'
+          );
         }
 
         const result: { success: boolean; data: string; usage: LLMUsage } =
@@ -68,7 +70,8 @@ export function useLLMChat() {
         setLastUsage(result.usage);
         return result.data;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
         return null;
       } finally {
@@ -79,7 +82,10 @@ export function useLLMChat() {
   );
 
   const chatJSON = useCallback(
-    async <T = any>(prompt: string, options?: ChatOptions): Promise<T | null> => {
+    async <T = any>(
+      prompt: string,
+      options?: ChatOptions
+    ): Promise<T | null> => {
       setLoading(true);
       setError(null);
 
@@ -98,7 +104,9 @@ export function useLLMChat() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate chat completion');
+          throw new Error(
+            errorData.error || 'Failed to generate chat completion'
+          );
         }
 
         const result: { success: boolean; data: T; usage: LLMUsage } =
@@ -107,7 +115,8 @@ export function useLLMChat() {
         setLastUsage(result.usage);
         return result.data;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
         return null;
       } finally {
@@ -146,7 +155,9 @@ export function useLLMChat() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate chat completion');
+          throw new Error(
+            errorData.error || 'Failed to generate chat completion'
+          );
         }
 
         const result: { success: boolean; data: T; usage: LLMUsage } =
@@ -155,7 +166,8 @@ export function useLLMChat() {
         setLastUsage(result.usage);
         return result.data;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
         return null;
       } finally {
@@ -166,7 +178,10 @@ export function useLLMChat() {
   );
 
   const chatWithHistory = useCallback(
-    async (messages: ChatMessage[], options?: ChatOptions): Promise<string | null> => {
+    async (
+      messages: ChatMessage[],
+      options?: ChatOptions
+    ): Promise<string | null> => {
       setLoading(true);
       setError(null);
 
@@ -185,7 +200,9 @@ export function useLLMChat() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate chat completion');
+          throw new Error(
+            errorData.error || 'Failed to generate chat completion'
+          );
         }
 
         const result: { success: boolean; data: string; usage: LLMUsage } =
@@ -194,7 +211,8 @@ export function useLLMChat() {
         setLastUsage(result.usage);
         return result.data;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
         return null;
       } finally {
@@ -257,7 +275,8 @@ export function useLLMImageAnalysis() {
         setLastUsage(result.usage);
         return result.data;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
         return null;
       } finally {

@@ -27,5 +27,7 @@ export function isAgentStatus(value: unknown): value is AgentStatus {
  * Type guard for AgentScope.
  */
 export function isAgentScope(value: unknown): value is AgentScope {
-  return ['UNIVERSAL', 'DISCIPLINE', 'WORKSPACE', 'PRIVATE'].includes(value as string);
+  return ['UNIVERSAL', 'DISCIPLINE', 'WORKSPACE', 'PRIVATE'].includes(
+    value as string
+  );
 }

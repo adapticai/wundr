@@ -2,12 +2,16 @@
 
 ## Overview
 
-This document outlines the comprehensive strategy for integrating the existing Wundr code analysis platform with the New-Starter environment setup toolkit into a unified developer experience platform.
+This document outlines the comprehensive strategy for integrating the existing Wundr code analysis
+platform with the New-Starter environment setup toolkit into a unified developer experience
+platform.
 
 ## Current State Analysis
 
 ### Wundr Platform (Existing)
+
 **Strengths:**
+
 - Comprehensive code analysis engine with AST parsing
 - Rich web dashboard with data visualizations
 - Established patterns for quality metrics and governance
@@ -15,6 +19,7 @@ This document outlines the comprehensive strategy for integrating the existing W
 - Mature CI/CD integration workflows
 
 **Architecture:**
+
 - Monorepo structure with TypeScript
 - React-based web client
 - Node.js analysis services
@@ -22,7 +27,9 @@ This document outlines the comprehensive strategy for integrating the existing W
 - Comprehensive testing suite
 
 ### New-Starter Toolkit (Existing)
+
 **Strengths:**
+
 - Automated environment setup workflows
 - Cross-platform compatibility (macOS, Linux, Windows)
 - Interactive CLI with guided setup
@@ -30,6 +37,7 @@ This document outlines the comprehensive strategy for integrating the existing W
 - Tool validation and verification systems
 
 **Architecture:**
+
 - Node.js CLI application
 - Shell script orchestration
 - Template-driven configuration
@@ -39,6 +47,7 @@ This document outlines the comprehensive strategy for integrating the existing W
 ## Integration Architecture
 
 ### Unified Platform Vision
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                 Wundr Unified Platform                     │
@@ -67,6 +76,7 @@ This document outlines the comprehensive strategy for integrating the existing W
 ### Integration Points
 
 #### 1. Shared Package Architecture
+
 ```typescript
 // packages/core - Shared business logic
 export interface ProjectContext {
@@ -103,6 +113,7 @@ export class WundrCLI {
 ```
 
 #### 2. Unified Configuration System
+
 ```typescript
 // Merged configuration schema
 interface WundrConfiguration {
@@ -119,14 +130,14 @@ interface ProjectConfiguration {
   language: string[];
   framework?: string;
   packageManager: 'npm' | 'yarn' | 'pnpm';
-  
+
   // Analysis settings (from Wundr)
   analysis: {
     rules: string[];
     excludePatterns: string[];
     thresholds: QualityThresholds;
   };
-  
+
   // Setup settings (from New-Starter)
   setup: {
     tools: ToolConfiguration[];
@@ -137,6 +148,7 @@ interface ProjectConfiguration {
 ```
 
 #### 3. Event-Driven Workflow Integration
+
 ```typescript
 // Unified event system for cross-component communication
 interface WorkflowEvent {
@@ -151,7 +163,7 @@ interface WorkflowEvent {
 class WorkflowOrchestrator {
   async executeHybridWorkflow(config: WorkflowConfiguration): Promise<WorkflowResult> {
     const workflow = await this.buildWorkflow(config);
-    
+
     for (const step of workflow.steps) {
       switch (step.type) {
         case 'setup':
@@ -165,7 +177,7 @@ class WorkflowOrchestrator {
           break;
       }
     }
-    
+
     return workflow.result;
   }
 }
@@ -174,9 +186,11 @@ class WorkflowOrchestrator {
 ## Migration Strategy
 
 ### Phase 1: Foundation (Weeks 1-4)
+
 **Objective:** Establish unified monorepo and shared infrastructure
 
 **Activities:**
+
 1. **Monorepo Setup**
    - Migrate both codebases into Turborepo structure
    - Establish shared package dependencies
@@ -193,14 +207,17 @@ class WorkflowOrchestrator {
    - Shared development environment setup
 
 **Deliverables:**
+
 - Functional monorepo with both systems
 - Shared @wundr/core package
 - Unified development documentation
 
 ### Phase 2: API Unification (Weeks 5-8)
+
 **Objective:** Create unified API gateway and service layer
 
 **Activities:**
+
 1. **API Gateway Development**
    - Create unified REST API endpoints
    - Implement GraphQL schema with both domains
@@ -217,15 +234,19 @@ class WorkflowOrchestrator {
    - Create audit logging for all operations
 
 **Deliverables:**
+
 - Unified API gateway service
 - Integrated authentication system
 - Consolidated database schema
 
 ### Phase 3: CLI Integration (Weeks 9-12)
+
 **Objective:** Merge CLI tools into unified command-line experience
 
 **Activities:**
+
 1. **Command Structure Design**
+
    ```bash
    # Unified CLI commands
    wundr init <project-name>          # Initialize new project
@@ -246,14 +267,17 @@ class WorkflowOrchestrator {
    - Cross-platform compatibility verification
 
 **Deliverables:**
+
 - Single unified CLI tool
 - Integrated workflow system
 - Enhanced user documentation
 
 ### Phase 4: Web Dashboard Enhancement (Weeks 13-16)
+
 **Objective:** Enhanced web dashboard with setup capabilities
 
 **Activities:**
+
 1. **Dashboard Integration**
    - Add setup management interface
    - Create workflow designer and executor
@@ -270,6 +294,7 @@ class WorkflowOrchestrator {
    - Real-time update efficiency
 
 **Deliverables:**
+
 - Enhanced web dashboard
 - Real-time workflow monitoring
 - Team collaboration features
@@ -277,6 +302,7 @@ class WorkflowOrchestrator {
 ## Technical Integration Details
 
 ### Package Dependencies
+
 ```json
 {
   "packages/core": {
@@ -313,6 +339,7 @@ class WorkflowOrchestrator {
 ```
 
 ### Data Model Integration
+
 ```sql
 -- Extended project table with setup information
 CREATE TABLE projects (
@@ -322,14 +349,14 @@ CREATE TABLE projects (
   language VARCHAR(100)[] NOT NULL,
   framework VARCHAR(100),
   package_manager package_manager DEFAULT 'npm',
-  
+
   -- Analysis configuration (existing)
   analysis_config JSONB DEFAULT '{}',
-  
+
   -- Setup configuration (new)
   setup_config JSONB DEFAULT '{}',
   environment_health JSONB DEFAULT '{}',
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -348,72 +375,74 @@ CREATE TABLE workflow_executions (
 
 CREATE TYPE workflow_type AS ENUM (
   'setup_only',
-  'analysis_only', 
+  'analysis_only',
   'setup_then_analysis',
   'custom'
 );
 ```
 
 ### Workflow Configuration Examples
+
 ```yaml
 # .wundr/workflows/onboarding.yml
-name: "New Developer Onboarding"
-description: "Complete setup and initial analysis for new team members"
+name: 'New Developer Onboarding'
+description: 'Complete setup and initial analysis for new team members'
 
 trigger:
-  event: "developer.joined"
+  event: 'developer.joined'
   conditions:
     - "user.role == 'developer'"
 
 steps:
-  - name: "environment-setup"
-    type: "setup"
-    profile: "fullstack-typescript"
+  - name: 'environment-setup'
+    type: 'setup'
+    profile: 'fullstack-typescript'
     config:
       skip_optional: true
       install_recommendations: true
-    
-  - name: "project-analysis"
-    type: "analysis"
-    depends_on: ["environment-setup"]
+
+  - name: 'project-analysis'
+    type: 'analysis'
+    depends_on: ['environment-setup']
     config:
-      types: ["quality", "security", "dependencies"]
+      types: ['quality', 'security', 'dependencies']
       generate_report: true
-    
-  - name: "health-check"
-    type: "validation"
-    depends_on: ["environment-setup", "project-analysis"]
+
+  - name: 'health-check'
+    type: 'validation'
+    depends_on: ['environment-setup', 'project-analysis']
     config:
       verify_tools: true
       run_tests: true
 
 notifications:
   on_success:
-    - type: "slack"
-      message: "🎉 {{user.name}} successfully onboarded to {{project.name}}"
+    - type: 'slack'
+      message: '🎉 {{user.name}} successfully onboarded to {{project.name}}'
   on_failure:
-    - type: "email"
-      template: "onboarding_failure"
+    - type: 'email'
+      template: 'onboarding_failure'
 ```
 
 ### API Integration Examples
+
 ```typescript
 // Unified API endpoints
 app.post('/api/v1/projects/:id/workflows', async (req, res) => {
   const { id } = req.params;
   const { workflowType, configuration } = req.body;
-  
+
   const workflow = await workflowOrchestrator.create({
     projectId: id,
     type: workflowType,
     configuration
   });
-  
+
   // Stream progress updates via WebSocket
   workflow.on('progress', (update) => {
     io.to(`project:${id}`).emit('workflow:progress', update);
   });
-  
+
   const result = await workflow.execute();
   res.json(result);
 });
@@ -425,13 +454,13 @@ type Mutation {
     profileName: String!
     options: SetupOptionsInput
   ): WorkflowExecution!
-  
+
   executeAnalysisWorkflow(
     projectId: ID!
     analysisTypes: [AnalysisType!]!
     options: AnalysisOptionsInput
   ): WorkflowExecution!
-  
+
   executeHybridWorkflow(
     projectId: ID!
     workflowConfig: WorkflowConfigInput!
@@ -442,18 +471,21 @@ type Mutation {
 ## Success Metrics
 
 ### Technical Metrics
+
 - **Build Time**: < 60 seconds for full monorepo
 - **API Response Time**: < 200ms for 95th percentile
 - **CLI Command Speed**: < 3 seconds for basic operations
 - **Test Coverage**: > 90% across all packages
 
 ### User Experience Metrics
+
 - **Setup Success Rate**: > 95% for standard profiles
 - **Analysis Accuracy**: > 98% issue detection rate
 - **User Satisfaction**: > 4.5/5 in quarterly surveys
 - **Adoption Rate**: 80% of existing users migrate within 3 months
 
 ### Business Metrics
+
 - **Feature Parity**: 100% of existing features available in unified platform
 - **Performance Improvement**: 2x faster workflow execution
 - **Developer Productivity**: 40% reduction in environment setup time
@@ -462,6 +494,7 @@ type Mutation {
 ## Risk Mitigation
 
 ### Technical Risks
+
 1. **Performance Degradation**
    - Mitigation: Comprehensive benchmarking and performance testing
    - Monitoring: Continuous performance metrics in CI/CD
@@ -475,6 +508,7 @@ type Mutation {
    - Testing: Comprehensive regression testing suite
 
 ### User Experience Risks
+
 1. **Learning Curve for Existing Users**
    - Mitigation: Comprehensive migration guide and video tutorials
    - Support: Dedicated migration support period
@@ -486,15 +520,19 @@ type Mutation {
 ## Rollback Strategy
 
 ### Automated Rollback Triggers
+
 - API error rate > 5% for 10 minutes
 - CLI command failure rate > 10% for 5 minutes
 - Database migration failure
 - Critical user-reported issues
 
 ### Rollback Procedures
+
 1. **Immediate**: Revert to previous Docker images
 2. **Database**: Restore from automated backup
 3. **Configuration**: Reset to last known good state
 4. **Communication**: Notify users via status page
 
-This integration strategy provides a comprehensive roadmap for unifying Wundr and New-Starter into a cohesive, powerful developer platform while minimizing risks and ensuring a smooth transition for existing users.
+This integration strategy provides a comprehensive roadmap for unifying Wundr and New-Starter into a
+cohesive, powerful developer platform while minimizing risks and ensuring a smooth transition for
+existing users.

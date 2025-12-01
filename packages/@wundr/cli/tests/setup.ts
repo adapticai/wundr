@@ -23,7 +23,7 @@ beforeAll(async () => {
 afterAll(async () => {
   // Cleanup test directories
   const testDir = process.env.WUNDR_TEST_DIR;
-  if (testDir && await fs.pathExists(testDir)) {
+  if (testDir && (await fs.pathExists(testDir))) {
     await fs.remove(testDir);
   }
 });
@@ -37,7 +37,10 @@ jest.mock('child_process');
 // Extend Jest matchers for CLI testing
 expect.extend({
   toBeValidCommand(received) {
-    const pass = received && typeof received.name === 'function' && typeof received.description === 'function';
+    const pass =
+      received &&
+      typeof received.name === 'function' &&
+      typeof received.description === 'function';
     if (pass) {
       return {
         message: () => `Expected ${received} not to be a valid command`,
@@ -50,7 +53,7 @@ expect.extend({
       };
     }
   },
-  
+
   toHaveExitCode(received, expected) {
     const pass = received === expected;
     if (pass) {
@@ -60,11 +63,12 @@ expect.extend({
       };
     } else {
       return {
-        message: () => `Expected exit code ${expected} but received ${received}`,
+        message: () =>
+          `Expected exit code ${expected} but received ${received}`,
         pass: false,
       };
     }
-  }
+  },
 });
 
 declare global {

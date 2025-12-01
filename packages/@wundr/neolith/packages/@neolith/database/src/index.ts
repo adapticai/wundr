@@ -11,7 +11,6 @@ import type { Prisma, PrismaClient as PrismaClientType } from '@prisma/client';
 // Client Exports
 // =============================================================================
 
-
 // Re-export Prisma types and namespace
 export { Prisma, PrismaClient } from '@prisma/client';
 // Export the singleton client and utilities
@@ -115,7 +114,8 @@ export type UpdateTaskManyInput = Prisma.taskUpdateManyMutationInput;
 export type UpdateBacklogInput = Prisma.backlogUpdateInput;
 export type UpdateBacklogManyInput = Prisma.backlogUpdateManyMutationInput;
 export type UpdateBacklogItemInput = Prisma.backlogItemUpdateInput;
-export type UpdateBacklogItemManyInput = Prisma.backlogItemUpdateManyMutationInput;
+export type UpdateBacklogItemManyInput =
+  Prisma.backlogItemUpdateManyMutationInput;
 
 // Future update types (uncomment after adding models):
 // export type UpdateOrganizationInput = Prisma.OrganizationUpdateInput;
@@ -212,7 +212,8 @@ export type UserSelect = Prisma.userSelect;
 export type UserOrderByInput = Prisma.userOrderByWithRelationInput;
 export type TaskOrderByInput = Prisma.taskOrderByWithRelationInput;
 export type BacklogOrderByInput = Prisma.backlogOrderByWithRelationInput;
-export type BacklogItemOrderByInput = Prisma.backlogItemOrderByWithRelationInput;
+export type BacklogItemOrderByInput =
+  Prisma.backlogItemOrderByWithRelationInput;
 
 // Future orderBy types (uncomment after adding models):
 // export type OrganizationOrderByInput = Prisma.OrganizationOrderByWithRelationInput;

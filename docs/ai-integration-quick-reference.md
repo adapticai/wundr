@@ -1,12 +1,13 @@
 # AI Integration Package - Quick Reference Guide
 
-**Package**: `@wundr.io/ai-integration` v1.0.6
-**Analysis Date**: 2025-11-30
-**Report**: `/Users/iroselli/wundr/docs/ai-integration-analysis-report.json`
+**Package**: `@wundr.io/ai-integration` v1.0.6 **Analysis Date**: 2025-11-30 **Report**:
+`/Users/iroselli/wundr/docs/ai-integration-analysis-report.json`
 
 ## Executive Summary
 
-The `@wundr/ai-integration` package is a **sophisticated orchestration system** for managing AI agents, swarm intelligence, and workflow automation. However, it **lacks direct LLM integration** and focuses on coordination via external MCP servers.
+The `@wundr/ai-integration` package is a **sophisticated orchestration system** for managing AI
+agents, swarm intelligence, and workflow automation. However, it **lacks direct LLM integration**
+and focuses on coordination via external MCP servers.
 
 ### Key Numbers
 
@@ -120,10 +121,10 @@ const response = await this.llmProvider.chatCompletion({
   model: 'claude-3-5-sonnet-20241022',
   messages: [
     { role: 'system', content: 'You are a coding agent...' },
-    { role: 'user', content: 'Implement authentication' }
+    { role: 'user', content: 'Implement authentication' },
   ],
   temperature: 0.7,
-  max_tokens: 4096
+  max_tokens: 4096,
 });
 ```
 
@@ -293,7 +294,7 @@ class OpenAIProvider implements LLMProvider {
       messages: messages,
       temperature: options.temperature || 0.7,
       max_tokens: options.maxTokens || 4096,
-      stream: false
+      stream: false,
     });
     return this.parseResponse(response);
   }
@@ -312,10 +313,7 @@ class ChatSession {
   async sendMessage(content: string, options?: ChatOptions): Promise<ChatResponse> {
     this.messageHistory.push({ role: 'user', content });
 
-    const response = await this.provider.chatCompletion(
-      this.messageHistory,
-      options
-    );
+    const response = await this.provider.chatCompletion(this.messageHistory, options);
 
     this.messageHistory.push({ role: 'assistant', content: response.content });
     this.pruneHistoryIfNeeded();
@@ -356,7 +354,7 @@ class FunctionConverter {
     return {
       name: tool.id,
       description: tool.metadata.configuration.description,
-      parameters: this.inferParametersFromTool(tool)
+      parameters: this.inferParametersFromTool(tool),
     };
   }
 }
@@ -371,15 +369,15 @@ const driftDetectionFunction = {
       operation: {
         type: 'string',
         enum: ['check', 'baseline', 'trends'],
-        description: 'The drift detection operation to perform'
+        description: 'The drift detection operation to perform',
       },
       path: {
         type: 'string',
-        description: 'Path to the codebase to analyze'
-      }
+        description: 'Path to the codebase to analyze',
+      },
     },
-    required: ['operation']
-  }
+    required: ['operation'],
+  },
 };
 ```
 
@@ -396,9 +394,9 @@ export const llmConfig = {
           maxTokens: 16000,
           contextWindow: 128000,
           costPer1kTokens: 0.0001,
-          capabilities: ['chat', 'function-calling', 'streaming']
-        }
-      }
+          capabilities: ['chat', 'function-calling', 'streaming'],
+        },
+      },
     },
     anthropic: {
       apiKey: process.env.ANTHROPIC_API_KEY,
@@ -406,14 +404,14 @@ export const llmConfig = {
         'claude-3-5-sonnet-20241022': {
           maxTokens: 8192,
           contextWindow: 200000,
-          capabilities: ['chat', 'function-calling', 'streaming', 'vision']
-        }
-      }
-    }
+          capabilities: ['chat', 'function-calling', 'streaming', 'vision'],
+        },
+      },
+    },
   },
   defaultProvider: 'anthropic',
   defaultModel: 'claude-3-5-sonnet-20241022',
-  fallbackModel: 'gpt-5-mini'
+  fallbackModel: 'gpt-5-mini',
 };
 ```
 
@@ -434,14 +432,11 @@ class AIIntegrationHive extends EventEmitter {
     options?: ChatOptions
   ): Promise<ChatResponse> {
     const systemPrompt = this.getAgentSystemPrompt(agentType);
-    const fullMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages
-    ];
+    const fullMessages = [{ role: 'system', content: systemPrompt }, ...messages];
 
     return this.llmProvider.chatCompletion(fullMessages, {
       ...options,
-      functions: this.getMCPFunctionsForAgent(agentType)
+      functions: this.getMCPFunctionsForAgent(agentType),
     });
   }
 
@@ -449,10 +444,7 @@ class AIIntegrationHive extends EventEmitter {
   async llmConsensus(prompt: string, models: string[]): Promise<ConsensusResult> {
     const responses = await Promise.all(
       models.map(model =>
-        this.llmProvider.chatCompletion(
-          [{ role: 'user', content: prompt }],
-          { model }
-        )
+        this.llmProvider.chatCompletion([{ role: 'user', content: prompt }], { model })
       )
     );
 
@@ -475,7 +467,7 @@ class AIIntegrationHive extends EventEmitter {
 const result = await hive.executeTask({
   description: 'Implement authentication',
   type: 'coding',
-  requiredCapabilities: ['coding', 'security']
+  requiredCapabilities: ['coding', 'security'],
 });
 // Limitation: No direct LLM interaction, relies on MCP server
 ```
@@ -484,17 +476,19 @@ const result = await hive.executeTask({
 
 ```typescript
 // Option 1: Direct LLM chat with specialized agent
-const coderResponse = await hive.chatWithAgent('coder', [
-  { role: 'user', content: 'Implement JWT authentication in TypeScript' }
-], {
-  model: 'gpt-5-mini',
-  temperature: 0.7,
-  functions: ['drift_detection', 'pattern_standardize']
-});
+const coderResponse = await hive.chatWithAgent(
+  'coder',
+  [{ role: 'user', content: 'Implement JWT authentication in TypeScript' }],
+  {
+    model: 'gpt-5-mini',
+    temperature: 0.7,
+    functions: ['drift_detection', 'pattern_standardize'],
+  }
+);
 
 // Option 2: Streaming for real-time feedback
 const stream = hive.streamChatWithAgent('researcher', [
-  { role: 'user', content: 'Research best practices for authentication' }
+  { role: 'user', content: 'Research best practices for authentication' },
 ]);
 
 for await (const chunk of stream) {
@@ -502,39 +496,40 @@ for await (const chunk of stream) {
 }
 
 // Option 3: Multi-model consensus for critical decisions
-const consensus = await hive.llmConsensus(
-  'Should we use bcrypt or argon2 for password hashing?',
-  ['claude-3-5-sonnet-20241022', 'gpt-5-mini']
-);
+const consensus = await hive.llmConsensus('Should we use bcrypt or argon2 for password hashing?', [
+  'claude-3-5-sonnet-20241022',
+  'gpt-5-mini',
+]);
 
 // Option 4: Existing MCP orchestration (for complex workflows)
 const workflowResult = await hive.executeTask({
   description: 'Full authentication implementation with tests',
   type: 'coding',
-  requiredCapabilities: ['coding', 'testing', 'security']
+  requiredCapabilities: ['coding', 'testing', 'security'],
 });
 ```
 
 ## Effort Estimate
 
-| Task | Priority | Effort | Dependencies |
-|------|----------|--------|--------------|
-| LLM Provider Abstraction | CRITICAL | 3-5 days | None |
-| Chat Session Management | CRITICAL | 4-6 days | LLM Provider |
-| Streaming Support | HIGH | 2-3 days | LLM Provider |
-| Function Calling Integration | HIGH | 3-4 days | LLM Provider |
-| GPT-5-mini Configuration | HIGH | 1-2 days | LLM Provider |
-| Prompt Management | MEDIUM | 2-3 days | Chat Session |
-| Token Management | MEDIUM | 2-3 days | LLM Provider |
-| Retry Strategies | MEDIUM | 2 days | LLM Provider |
-| Model Selection | LOW | 1-2 days | LLM Provider |
-| **TOTAL** | | **15-25 days** | |
+| Task                         | Priority | Effort         | Dependencies |
+| ---------------------------- | -------- | -------------- | ------------ |
+| LLM Provider Abstraction     | CRITICAL | 3-5 days       | None         |
+| Chat Session Management      | CRITICAL | 4-6 days       | LLM Provider |
+| Streaming Support            | HIGH     | 2-3 days       | LLM Provider |
+| Function Calling Integration | HIGH     | 3-4 days       | LLM Provider |
+| GPT-5-mini Configuration     | HIGH     | 1-2 days       | LLM Provider |
+| Prompt Management            | MEDIUM   | 2-3 days       | Chat Session |
+| Token Management             | MEDIUM   | 2-3 days       | LLM Provider |
+| Retry Strategies             | MEDIUM   | 2 days         | LLM Provider |
+| Model Selection              | LOW      | 1-2 days       | LLM Provider |
+| **TOTAL**                    |          | **15-25 days** |              |
 
 ## Risk Assessment
 
 **Risk Level**: **LOW**
 
 **Rationale**:
+
 - Existing architecture is well-designed and modular
 - New LLM layer can be added without breaking changes
 - Event-driven architecture already supports async operations
@@ -543,9 +538,12 @@ const workflowResult = await hive.executeTask({
 
 ## Conclusion
 
-The `@wundr/ai-integration` package is an **excellent orchestration framework** but lacks direct LLM integration. Adding LLM support is straightforward and can be done **incrementally without breaking existing functionality**.
+The `@wundr/ai-integration` package is an **excellent orchestration framework** but lacks direct LLM
+integration. Adding LLM support is straightforward and can be done **incrementally without breaking
+existing functionality**.
 
 **Recommended Strategy**:
+
 1. Add LLM provider layer (OpenAI + Anthropic)
 2. Implement chat session management
 3. Add streaming support
@@ -553,9 +551,8 @@ The `@wundr/ai-integration` package is an **excellent orchestration framework** 
 5. Configure GPT-5-mini alongside Claude models
 6. Maintain hybrid mode: MCP for workflows, LLM for direct chat
 
-**Timeline**: 15-25 developer days
-**Impact**: Transform from orchestrator-only to full-featured LLM integration platform
-**Compatibility**: 100% backward compatible with existing MCP workflows
+**Timeline**: 15-25 developer days **Impact**: Transform from orchestrator-only to full-featured LLM
+integration platform **Compatibility**: 100% backward compatible with existing MCP workflows
 
 ---
 

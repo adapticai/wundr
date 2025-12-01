@@ -2,11 +2,14 @@
 
 ## Overview
 
-The Notifications API is **fully implemented** and production-ready. This document provides a comprehensive overview of the implementation, including database schema, API routes, helper services, and usage examples.
+The Notifications API is **fully implemented** and production-ready. This document provides a
+comprehensive overview of the implementation, including database schema, API routes, helper
+services, and usage examples.
 
 ## Database Schema
 
-The `notification` model is already defined in the Prisma schema at `/packages/@neolith/database/prisma/schema.prisma`:
+The `notification` model is already defined in the Prisma schema at
+`/packages/@neolith/database/prisma/schema.prisma`:
 
 ```prisma
 model notification {
@@ -55,6 +58,7 @@ enum NotificationPriority {
 ```
 
 ### Key Features
+
 - **User relationship**: Each notification belongs to a user (cascade delete)
 - **Resource tracking**: Optional `resourceId` and `resourceType` for linking to source entities
 - **Read tracking**: `read` boolean and `readAt` timestamp
@@ -69,17 +73,20 @@ enum NotificationPriority {
 All routes are implemented and tested at `/app/api/notifications/`:
 
 ### 1. GET /api/notifications
+
 **List notifications with pagination and filtering**
 
 **File**: `app/api/notifications/route.ts` (322 lines)
 
 **Query Parameters**:
+
 - `page` (number): Page number (default: 1)
 - `limit` (number): Items per page (default: 20, max: 100)
 - `read` (boolean): Filter by read status
 - `type` (string): Filter by notification type
 
 **Response**:
+
 ```json
 {
   "data": [
@@ -109,16 +116,19 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 ### 2. GET /api/notifications/count
+
 **Get unread notification count with optional breakdown**
 
 **File**: `app/api/notifications/count/route.ts` (164 lines)
 
 **Query Parameters**:
+
 - `type` (string): Filter by notification type
 - `priority` (string): Filter by priority
 - `breakdown` (boolean): Include breakdown by type/priority (default: true)
 
 **Response**:
+
 ```json
 {
   "data": {
@@ -137,11 +147,13 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 ### 3. GET /api/notifications/[id]
+
 **Get a single notification by ID**
 
 **File**: `app/api/notifications/[id]/route.ts` (347 lines)
 
 **Response**:
+
 ```json
 {
   "data": {
@@ -168,11 +180,13 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 ### 4. PATCH /api/notifications/[id]
+
 **Update a notification (mark as read/archived)**
 
 **File**: `app/api/notifications/[id]/route.ts`
 
 **Request Body**:
+
 ```json
 {
   "read": true,
@@ -181,19 +195,24 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 **Response**:
+
 ```json
 {
-  "data": { /* updated notification */ },
+  "data": {
+    /* updated notification */
+  },
   "message": "Notification updated successfully"
 }
 ```
 
 ### 5. DELETE /api/notifications/[id]
+
 **Delete a notification**
 
 **File**: `app/api/notifications/[id]/route.ts`
 
 **Response**:
+
 ```json
 {
   "message": "Notification deleted successfully"
@@ -201,11 +220,13 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 ### 6. POST /api/notifications/read-all
+
 **Mark all unread notifications as read**
 
 **File**: `app/api/notifications/read-all/route.ts` (124 lines)
 
 **Request Body** (optional):
+
 ```json
 {
   "type": "MESSAGE",
@@ -214,6 +235,7 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 **Response**:
+
 ```json
 {
   "data": {
@@ -224,11 +246,13 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 ### 7. PATCH /api/notifications (bulk)
+
 **Mark multiple notifications as read**
 
 **File**: `app/api/notifications/route.ts`
 
 **Request Body**:
+
 ```json
 {
   "ids": ["clx1", "clx2", "clx3"],
@@ -237,6 +261,7 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 **Response**:
+
 ```json
 {
   "data": {
@@ -246,11 +271,13 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 ### 8. DELETE /api/notifications (bulk)
+
 **Delete multiple notifications**
 
 **File**: `app/api/notifications/route.ts`
 
 **Request Body**:
+
 ```json
 {
   "ids": ["clx1", "clx2", "clx3"]
@@ -258,6 +285,7 @@ All routes are implemented and tested at `/app/api/notifications/`:
 ```
 
 **Response**:
+
 ```json
 {
   "data": {
@@ -270,11 +298,13 @@ All routes are implemented and tested at `/app/api/notifications/`:
 
 **File**: `/lib/services/notification-service.ts` (649 lines)
 
-The `NotificationService` provides a high-level API for creating and managing notifications across the platform.
+The `NotificationService` provides a high-level API for creating and managing notifications across
+the platform.
 
 ### Core Methods
 
 #### createNotification()
+
 Create a single notification with full control over all properties.
 
 ```typescript
@@ -296,6 +326,7 @@ const notification = await NotificationService.createNotification({
 ```
 
 #### createBulkNotifications()
+
 Create notifications for multiple users efficiently.
 
 ```typescript
@@ -311,6 +342,7 @@ const notifications = await NotificationService.createBulkNotifications({
 ### Convenience Methods
 
 #### notifyMention()
+
 Notify when a user is mentioned in a message.
 
 ```typescript
@@ -324,6 +356,7 @@ await NotificationService.notifyMention(
 ```
 
 #### notifyNewMessage()
+
 Notify about a new message in a channel.
 
 ```typescript
@@ -337,6 +370,7 @@ await NotificationService.notifyNewMessage(
 ```
 
 #### notifyThreadReply()
+
 Notify about a reply to a thread.
 
 ```typescript
@@ -351,6 +385,7 @@ await NotificationService.notifyThreadReply(
 ```
 
 #### notifyTaskAssigned()
+
 Notify when a task is assigned to a user.
 
 ```typescript
@@ -363,6 +398,7 @@ await NotificationService.notifyTaskAssigned(
 ```
 
 #### notifyTaskCompleted()
+
 Notify when a task is completed.
 
 ```typescript
@@ -375,6 +411,7 @@ await NotificationService.notifyTaskCompleted(
 ```
 
 #### notifyWorkflowCompleted()
+
 Notify about workflow completion or failure.
 
 ```typescript
@@ -387,18 +424,15 @@ await NotificationService.notifyWorkflowCompleted(
 ```
 
 #### notifyChannelInvite()
+
 Notify about a channel invitation.
 
 ```typescript
-await NotificationService.notifyChannelInvite(
-  'user-123',
-  'channel-456',
-  'engineering',
-  'Alice'
-);
+await NotificationService.notifyChannelInvite('user-123', 'channel-456', 'engineering', 'Alice');
 ```
 
 #### notifyMemberJoined()
+
 Notify multiple users about a new member joining.
 
 ```typescript
@@ -410,6 +444,7 @@ await NotificationService.notifyMemberJoined(
 ```
 
 #### notifySystem()
+
 Send a generic system notification.
 
 ```typescript
@@ -425,6 +460,7 @@ await NotificationService.notifySystem(
 ### Utility Methods
 
 #### getUnreadCount()
+
 Get the count of unread notifications for a user.
 
 ```typescript
@@ -433,6 +469,7 @@ const count = await NotificationService.getUnreadCount('user-123');
 ```
 
 #### markAsRead()
+
 Mark a specific notification as read.
 
 ```typescript
@@ -440,6 +477,7 @@ await NotificationService.markAsRead('notification-123', 'user-123');
 ```
 
 #### markAllAsRead()
+
 Mark all notifications as read for a user.
 
 ```typescript
@@ -448,6 +486,7 @@ const count = await NotificationService.markAllAsRead('user-123');
 ```
 
 #### deleteNotification()
+
 Delete a notification.
 
 ```typescript
@@ -455,6 +494,7 @@ await NotificationService.deleteNotification('notification-123', 'user-123');
 ```
 
 #### deleteExpiredNotifications() (Cleanup job)
+
 Delete all expired notifications.
 
 ```typescript
@@ -462,6 +502,7 @@ const deletedCount = await NotificationService.deleteExpiredNotifications();
 ```
 
 #### archiveOldNotifications() (Cleanup job)
+
 Archive old read notifications.
 
 ```typescript
@@ -493,7 +534,9 @@ When a new message is created:
 import { NotificationService } from '@/lib/services/notification-service';
 
 // After creating a message
-const message = await prisma.message.create({ /* ... */ });
+const message = await prisma.message.create({
+  /* ... */
+});
 
 // Get channel members
 const members = await prisma.channelMember.findMany({
@@ -539,12 +582,7 @@ const task = await prisma.task.update({
   data: { assignedToId: userId },
 });
 
-await NotificationService.notifyTaskAssigned(
-  userId,
-  task.id,
-  task.title,
-  assignedByName
-);
+await NotificationService.notifyTaskAssigned(userId, task.id, task.title, assignedByName);
 ```
 
 ### Workflow Service Integration
@@ -578,7 +616,9 @@ When a new member joins:
 ```typescript
 import { NotificationService } from '@/lib/services/notification-service';
 
-const member = await prisma.organizationMember.create({ /* ... */ });
+const member = await prisma.organizationMember.create({
+  /* ... */
+});
 
 // Get all existing members
 const existingMembers = await prisma.organizationMember.findMany({
@@ -598,6 +638,7 @@ await NotificationService.notifyMemberJoined(
 Test suite located at: `/app/api/notifications/__tests__/notifications.test.ts` (30,058 lines)
 
 Comprehensive test coverage for:
+
 - All API endpoints
 - Authentication and authorization
 - Input validation
@@ -629,7 +670,9 @@ The following features are marked as TODO in the codebase:
 ## Performance Considerations
 
 ### Database Indexes
+
 All critical fields are indexed:
+
 - `userId` - Primary query filter
 - `read` - Filtering unread notifications
 - `type` - Filtering by notification type
@@ -637,12 +680,14 @@ All critical fields are indexed:
 - `createdAt` - Sorting by recency
 
 ### Query Optimization
+
 - Use `findMany` with pagination for list endpoints
 - Use `count` for unread badge count
 - Use `updateMany` for bulk operations
 - Use `groupBy` for breakdown statistics
 
 ### Cleanup Jobs
+
 Schedule these as cron jobs:
 
 ```typescript
@@ -666,6 +711,7 @@ All routes use standardized error responses:
 ```
 
 Error codes defined in `NOTIFICATION_ERROR_CODES`:
+
 - `NOTIFICATION_NOT_FOUND`
 - `UNAUTHORIZED`
 - `FORBIDDEN`

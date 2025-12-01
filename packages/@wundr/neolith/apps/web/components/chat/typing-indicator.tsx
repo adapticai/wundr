@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 
 import type { TypingUser } from '@/types/chat';
 
-
 /**
  * Props for the TypingIndicator component
  */
@@ -15,10 +14,13 @@ interface TypingIndicatorProps {
   className?: string;
 }
 
-export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps) {
+export function TypingIndicator({
+  typingUsers,
+  className,
+}: TypingIndicatorProps) {
   if (typingUsers.length === 0) {
-return null;
-}
+    return null;
+  }
 
   const getTypingText = () => {
     if (typingUsers.length === 1) {
@@ -37,7 +39,7 @@ return null;
     <div
       className={cn(
         'flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground',
-        className,
+        className
       )}
     >
       <TypingDots />
@@ -48,10 +50,10 @@ return null;
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1">
-      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" />
+    <div className='flex items-center gap-1'>
+      <span className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]' />
+      <span className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]' />
+      <span className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground' />
     </div>
   );
 }

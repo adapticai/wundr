@@ -2,7 +2,9 @@
 
 ## Overview
 
-This implementation provides a secure, CAN-SPAM compliant email unsubscribe system for the Neolith platform. Users can unsubscribe from different types of emails using signed tokens that are embedded in email footers.
+This implementation provides a secure, CAN-SPAM compliant email unsubscribe system for the Neolith
+platform. Users can unsubscribe from different types of emails using signed tokens that are embedded
+in email footers.
 
 ## Files Created/Modified
 
@@ -87,7 +89,7 @@ import { prisma } from '@neolith/database';
 // Check before sending email
 const user = await prisma.user.findUnique({
   where: { id: userId },
-  select: { preferences: true, email: true }
+  select: { preferences: true, email: true },
 });
 
 if (isUnsubscribed(user.preferences, 'marketing')) {
@@ -136,9 +138,11 @@ No database migrations are required since `user.preferences` is already a JSON f
 Process unsubscribe request and show confirmation page.
 
 **Query Parameters:**
+
 - `token` (required) - Signed unsubscribe token
 
 **Response:**
+
 - Returns HTML page confirming unsubscribe or showing error
 - HTTP 200 for successful unsubscribe
 - HTTP 400 for invalid/expired tokens
@@ -146,6 +150,7 @@ Process unsubscribe request and show confirmation page.
 - HTTP 500 for server errors
 
 **Example:**
+
 ```
 GET /api/unsubscribe?token=eyJ1c2VySWQiOiJ1c2VyLTEyMyIsImVtYWlsVHlwZSI6Im1hcmtldGluZyIsInRpbWVzdGFtcCI6MTcwMDAwMDAwMH0.d4f2c3b1a0
 ```
@@ -153,10 +158,12 @@ GET /api/unsubscribe?token=eyJ1c2VySWQiOiJ1c2VyLTEyMyIsImVtYWlsVHlwZSI6Im1hcmtld
 ## Environment Variables
 
 Required environment variable (one of):
+
 - `UNSUBSCRIBE_SECRET` - Dedicated secret for unsubscribe tokens (recommended)
 - `NEXTAUTH_SECRET` - Falls back to this if `UNSUBSCRIBE_SECRET` not set
 
 Example in `.env.local`:
+
 ```bash
 # Dedicated secret for unsubscribe tokens (recommended)
 UNSUBSCRIBE_SECRET=your-secret-here-generate-with-openssl-rand-base64-32
@@ -166,6 +173,7 @@ NEXTAUTH_SECRET=your-nextauth-secret
 ```
 
 Generate a secret:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -189,6 +197,7 @@ npx tsx scripts/test-unsubscribe.ts
 When users click the unsubscribe link, they see a styled HTML page with:
 
 **Success Page:**
+
 - Green checkmark icon
 - "Successfully Unsubscribed" heading
 - Confirmation of email type unsubscribed from
@@ -197,6 +206,7 @@ When users click the unsubscribe link, they see a styled HTML page with:
 - Link to manage preferences (if not unsubscribed from all)
 
 **Error Page:**
+
 - Red X icon
 - "Unsubscribe Failed" heading
 - Error message explaining the issue
@@ -232,7 +242,7 @@ const unsubscribeUrl = generateUnsubscribeUrl(userId, 'marketing');
 // Add to email footer
 `<p>
   <a href="${unsubscribeUrl}">Unsubscribe from marketing emails</a>
-</p>`
+</p>`;
 ```
 
 ### Check Before Sending
@@ -253,7 +263,8 @@ if (isUnsubscribed(user.preferences, 'marketing')) {
 
 ### Transactional Emails
 
-For critical transactional emails (password resets, account verification), you may skip the unsubscribe check:
+For critical transactional emails (password resets, account verification), you may skip the
+unsubscribe check:
 
 - Password reset emails
 - Email verification
@@ -275,12 +286,11 @@ Potential improvements for future iterations:
 ## Support
 
 For questions or issues:
+
 1. Check this documentation
 2. Review test script examples
 3. Contact the engineering team
 
 ---
 
-**Version:** 1.0.0
-**Last Updated:** 2025-11-29
-**Author:** Backend Engineering Team
+**Version:** 1.0.0 **Last Updated:** 2025-11-29 **Author:** Backend Engineering Team

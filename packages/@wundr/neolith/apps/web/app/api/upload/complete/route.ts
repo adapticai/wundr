@@ -76,7 +76,7 @@ async function verifyFileExists(s3Key: string): Promise<boolean> {
       new HeadObjectCommand({
         Bucket: bucket,
         Key: s3Key,
-      }),
+      })
     );
 
     return true;
@@ -123,7 +123,10 @@ async function checkWorkspaceMembership(workspaceId: string, userId: string) {
  * @param fileId - ID of the file to process
  * @param mimeType - File MIME type
  */
-async function triggerFileProcessing(fileId: string, mimeType: string): Promise<void> {
+async function triggerFileProcessing(
+  fileId: string,
+  mimeType: string
+): Promise<void> {
   const category = getFileCategory(mimeType);
   const sqsQueueUrl = process.env.FILE_PROCESSING_QUEUE_URL;
 
@@ -158,7 +161,7 @@ async function triggerFileProcessing(fileId: string, mimeType: string): Promise<
               category,
               action: 'PROCESS_FILE',
             }),
-          }),
+          })
         );
       } else {
         // SQS module not available, fall back to direct processing
@@ -214,8 +217,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -225,8 +231,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -237,23 +246,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: UploadCompleteInput = parseResult.data;
 
     // Check workspace membership
-    const membership = await checkWorkspaceMembership(input.workspaceId, session.user.id);
+    const membership = await checkWorkspaceMembership(
+      input.workspaceId,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -271,9 +283,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Upload not found or already completed',
-          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND,
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -283,17 +295,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Upload failed - file not found in storage',
-          UPLOAD_ERROR_CODES.UPLOAD_FAILED,
+          UPLOAD_ERROR_CODES.UPLOAD_FAILED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Generate thumbnail URL
-    const thumbnailUrl = generateThumbnailUrl(input.s3Key, pendingFile.mimeType);
+    const thumbnailUrl = generateThumbnailUrl(
+      input.s3Key,
+      pendingFile.mimeType
+    );
 
     // Merge existing metadata with new metadata
-    const existingMetadata = pendingFile.metadata as Record<string, unknown> | null;
+    const existingMetadata = pendingFile.metadata as Record<
+      string,
+      unknown
+    > | null;
     const mergedMetadata = {
       ...existingMetadata,
       ...input.metadata,
@@ -337,17 +355,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     return NextResponse.json(
-      { data: { file: responseData }, message: 'Upload completed successfully' },
-      { status: 201 },
+      {
+        data: { file: responseData },
+        message: 'Upload completed successfully',
+      },
+      { status: 201 }
     );
   } catch (_error) {
     // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -88,7 +88,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
 function createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  searchParams?: Record<string, string>,
+  searchParams?: Record<string, string>
 ): NextRequest {
   const url = new URL('http://localhost:3000/api/orchestrators');
 
@@ -222,12 +222,12 @@ describe('OrchestratorAPI Routes', () => {
       };
 
       mockVPService.createVP.mockRejectedValue(
-        new Error('Orchestrator validation failed'),
+        new Error('Orchestrator validation failed')
       );
 
-      await expect(
-        mockVPService.createVP(invalidRequestBody),
-      ).rejects.toThrow('Orchestrator validation failed');
+      await expect(mockVPService.createVP(invalidRequestBody)).rejects.toThrow(
+        'Orchestrator validation failed'
+      );
     });
 
     it('validates name length', async () => {
@@ -244,11 +244,11 @@ describe('OrchestratorAPI Routes', () => {
       };
 
       mockVPService.createVP.mockRejectedValue(
-        new Error('Name must be 100 characters or less'),
+        new Error('Name must be 100 characters or less')
       );
 
       await expect(mockVPService.createVP(requestBody)).rejects.toThrow(
-        'Name must be 100 characters or less',
+        'Name must be 100 characters or less'
       );
     });
   });
@@ -262,7 +262,10 @@ describe('OrchestratorAPI Routes', () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const mockOrchestrators = [createMockVPResponse(), createMockVPResponse()];
+      const mockOrchestrators = [
+        createMockVPResponse(),
+        createMockVPResponse(),
+      ];
       mockVPService.listOrchestratorsByOrganization.mockResolvedValue({
         data: mockOrchestrators,
         total: 2,
@@ -270,14 +273,14 @@ describe('OrchestratorAPI Routes', () => {
       });
 
       const result = await mockVPService.listOrchestratorsByOrganization(
-        session.user.organizationId,
+        session.user.organizationId
       );
 
       expect(result.data).toHaveLength(2);
       expect(result.total).toBe(2);
-      expect(mockVPService.listOrchestratorsByOrganization).toHaveBeenCalledWith(
-        'org-123',
-      );
+      expect(
+        mockVPService.listOrchestratorsByOrganization
+      ).toHaveBeenCalledWith('org-123');
     });
 
     it('filters by status', async () => {
@@ -293,7 +296,7 @@ describe('OrchestratorAPI Routes', () => {
 
       const result = await mockVPService.listOrchestratorsByOrganization(
         session.user.organizationId,
-        { status: 'ONLINE' },
+        { status: 'ONLINE' }
       );
 
       expect(result.data).toHaveLength(1);
@@ -304,7 +307,9 @@ describe('OrchestratorAPI Routes', () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const mockOrchestrators = Array.from({ length: 10 }, () => createMockVPResponse());
+      const mockOrchestrators = Array.from({ length: 10 }, () =>
+        createMockVPResponse()
+      );
       mockVPService.listOrchestratorsByOrganization.mockResolvedValue({
         data: mockOrchestrators,
         total: 25,
@@ -314,7 +319,7 @@ describe('OrchestratorAPI Routes', () => {
 
       const result = await mockVPService.listOrchestratorsByOrganization(
         session.user.organizationId,
-        { take: 10, skip: 0 },
+        { take: 10, skip: 0 }
       );
 
       expect(result.data).toHaveLength(10);
@@ -391,11 +396,11 @@ describe('OrchestratorAPI Routes', () => {
       mockAuth.mockResolvedValue(session);
 
       mockVPService.updateVP.mockRejectedValue(
-        new Error('Orchestrator not found with id: non-existent-id'),
+        new Error('Orchestrator not found with id: non-existent-id')
       );
 
       await expect(
-        mockVPService.updateVP('non-existent-id', { name: 'New Name' }),
+        mockVPService.updateVP('non-existent-id', { name: 'New Name' })
       ).rejects.toThrow('Orchestrator not found');
     });
   });
@@ -411,7 +416,9 @@ describe('OrchestratorAPI Routes', () => {
 
       mockVPService.deleteVP.mockResolvedValue(undefined);
 
-      await expect(mockVPService.deleteVP('orchestrator-123')).resolves.toBeUndefined();
+      await expect(
+        mockVPService.deleteVP('orchestrator-123')
+      ).resolves.toBeUndefined();
       expect(mockVPService.deleteVP).toHaveBeenCalledWith('orchestrator-123');
     });
 
@@ -420,11 +427,11 @@ describe('OrchestratorAPI Routes', () => {
       mockAuth.mockResolvedValue(session);
 
       mockVPService.deleteVP.mockRejectedValue(
-        new Error('Orchestrator not found with id: non-existent-id'),
+        new Error('Orchestrator not found with id: non-existent-id')
       );
 
       await expect(mockVPService.deleteVP('non-existent-id')).rejects.toThrow(
-        'Orchestrator not found',
+        'Orchestrator not found'
       );
     });
 
@@ -439,7 +446,8 @@ describe('OrchestratorAPI Routes', () => {
       });
       mockAuth.mockResolvedValue(session);
 
-      const canDelete = session.user.role === 'ADMIN' || session.user.role === 'OWNER';
+      const canDelete =
+        session.user.role === 'ADMIN' || session.user.role === 'OWNER';
       expect(canDelete).toBe(false);
     });
   });
@@ -469,12 +477,12 @@ describe('OrchestratorAPI Routes', () => {
       mockAuth.mockResolvedValue(session);
 
       mockVPService.activateVP.mockRejectedValue(
-        new Error('Orchestrator not found with id: non-existent-id'),
+        new Error('Orchestrator not found with id: non-existent-id')
       );
 
-      await expect(
-        mockVPService.activateVP('non-existent-id'),
-      ).rejects.toThrow('Orchestrator not found');
+      await expect(mockVPService.activateVP('non-existent-id')).rejects.toThrow(
+        'Orchestrator not found'
+      );
     });
   });
 
@@ -526,12 +534,12 @@ describe('OrchestratorAPI Routes', () => {
       mockAuth.mockResolvedValue(session);
 
       mockVPService.generateAPIKey.mockRejectedValue(
-        new Error('Orchestrator already has an active API key'),
+        new Error('Orchestrator already has an active API key')
       );
 
-      await expect(mockVPService.generateAPIKey('orchestrator-123')).rejects.toThrow(
-        'already has an active API key',
-      );
+      await expect(
+        mockVPService.generateAPIKey('orchestrator-123')
+      ).rejects.toThrow('already has an active API key');
     });
   });
 
@@ -571,7 +579,7 @@ describe('OrchestratorAPI Routes', () => {
       mockVPService.revokeAPIKey.mockResolvedValue(undefined);
 
       await expect(
-        mockVPService.revokeAPIKey('orchestrator-123'),
+        mockVPService.revokeAPIKey('orchestrator-123')
       ).resolves.toBeUndefined();
     });
   });

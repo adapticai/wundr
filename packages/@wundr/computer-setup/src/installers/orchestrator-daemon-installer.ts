@@ -71,8 +71,11 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
     super();
     this.logger = new Logger({ name: 'OrchestratorDaemonInstaller' });
     this.homeDir = os.homedir();
-    this.orchestratorDaemonDir = config.orchestratorDaemonDir || path.join(this.homeDir, 'orchestrator-daemon');
-    this.wundrConfigDir = config.wundrConfigDir || path.join(this.homeDir, '.wundr');
+    this.orchestratorDaemonDir =
+      config.orchestratorDaemonDir ||
+      path.join(this.homeDir, 'orchestrator-daemon');
+    this.wundrConfigDir =
+      config.wundrConfigDir || path.join(this.homeDir, '.wundr');
   }
 
   /**
@@ -88,7 +91,9 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
   async isInstalled(): Promise<boolean> {
     try {
       const orchestratorCharterExists = await fs
-        .access(path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml'))
+        .access(
+          path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml')
+        )
         .then(() => true)
         .catch(() => false);
 
@@ -108,7 +113,10 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
    */
   async getVersion(): Promise<string | null> {
     try {
-      const charterPath = path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml');
+      const charterPath = path.join(
+        this.orchestratorDaemonDir,
+        'orchestrator-charter.yaml'
+      );
       const charterContent = await fs.readFile(charterPath, 'utf-8');
       const versionMatch = charterContent.match(/version:\s*["']?([^"'\n]+)/);
       return versionMatch?.[1] || '1.0.0';
@@ -124,14 +132,14 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
    */
   async install(
     _profile?: DeveloperProfile,
-    _platform?: SetupPlatform,
+    _platform?: SetupPlatform
   ): Promise<void> {
     const result = await this.installWithResult();
     if (!result.success) {
       throw new Error(
         result.errors.length > 0
           ? result.errors[0].message
-          : 'Orchestrator Daemon installation failed',
+          : 'Orchestrator Daemon installation failed'
       );
     }
   }
@@ -152,37 +160,55 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
       await this.createDirectoryStructure();
       installedResources.push('directory-structure');
 
-      this.emit('progress', { step: 'Copying Orchestrator daemon files', percentage: 25 });
+      this.emit('progress', {
+        step: 'Copying Orchestrator daemon files',
+        percentage: 25,
+      });
 
       // 2. Copy Orchestrator daemon files
       await this.installOrchestratorDaemonFiles();
       installedResources.push('orchestrator-daemon-files');
 
-      this.emit('progress', { step: 'Copying global wundr resources', percentage: 40 });
+      this.emit('progress', {
+        step: 'Copying global wundr resources',
+        percentage: 40,
+      });
 
       // 3. Copy global wundr resources
       await this.installWundrResources();
       installedResources.push('wundr-resources');
 
-      this.emit('progress', { step: 'Setting up integrations config', percentage: 60 });
+      this.emit('progress', {
+        step: 'Setting up integrations config',
+        percentage: 60,
+      });
 
       // 4. Setup integration configurations
       await this.setupIntegrationConfigs();
       installedResources.push('integration-configs');
 
-      this.emit('progress', { step: 'Creating session manager templates', percentage: 75 });
+      this.emit('progress', {
+        step: 'Creating session manager templates',
+        percentage: 75,
+      });
 
       // 5. Setup session manager archetypes
       await this.setupSessionManagerArchetypes();
       installedResources.push('session-archetypes');
 
-      this.emit('progress', { step: 'Setting up memory architecture', percentage: 85 });
+      this.emit('progress', {
+        step: 'Setting up memory architecture',
+        percentage: 85,
+      });
 
       // 6. Setup memory architecture
       await this.setupMemoryArchitecture();
       installedResources.push('memory-architecture');
 
-      this.emit('progress', { step: 'Finalizing installation', percentage: 95 });
+      this.emit('progress', {
+        step: 'Finalizing installation',
+        percentage: 95,
+      });
 
       // 7. Set permissions
       await this.setPermissions();
@@ -233,7 +259,9 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
 
       // Check Orchestrator charter
       const charterExists = await fs
-        .access(path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml'))
+        .access(
+          path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml')
+        )
         .then(() => true)
         .catch(() => false);
 
@@ -334,12 +362,21 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
    */
   private async installOrchestratorDaemonFiles(): Promise<void> {
     const resourcesDir = this.getResourcesDir();
-    const orchestratorDaemonResourceDir = path.join(resourcesDir, 'orchestrator-daemon');
+    const orchestratorDaemonResourceDir = path.join(
+      resourcesDir,
+      'orchestrator-daemon'
+    );
 
     try {
       // Copy orchestrator-charter.yaml
-      const charterSrc = path.join(orchestratorDaemonResourceDir, 'orchestrator-charter.yaml');
-      const charterDest = path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml');
+      const charterSrc = path.join(
+        orchestratorDaemonResourceDir,
+        'orchestrator-charter.yaml'
+      );
+      const charterDest = path.join(
+        this.orchestratorDaemonDir,
+        'orchestrator-charter.yaml'
+      );
 
       const charterExists = await fs
         .access(charterSrc)
@@ -357,7 +394,11 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
       // Create sessions index
       await fs.writeFile(
         path.join(this.orchestratorDaemonDir, 'sessions', 'index.json'),
-        JSON.stringify({ sessions: [], lastUpdated: new Date().toISOString() }, null, 2),
+        JSON.stringify(
+          { sessions: [], lastUpdated: new Date().toISOString() },
+          null,
+          2
+        )
       );
     } catch (error) {
       this.logger.error('Failed to install Orchestrator daemon files:', error);
@@ -410,7 +451,10 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
    * Setup integration configurations
    */
   private async setupIntegrationConfigs(): Promise<void> {
-    const integrationsDir = path.join(this.orchestratorDaemonDir, 'integrations');
+    const integrationsDir = path.join(
+      this.orchestratorDaemonDir,
+      'integrations'
+    );
 
     // Slack integration template
     await fs.writeFile(
@@ -425,8 +469,8 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
           webhooks: [],
         },
         null,
-        2,
-      ),
+        2
+      )
     );
 
     // Gmail integration template
@@ -441,8 +485,8 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
           scopes: ['gmail.readonly', 'gmail.send'],
         },
         null,
-        2,
-      ),
+        2
+      )
     );
 
     // Google Drive integration template
@@ -457,8 +501,8 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
           rootFolderId: '',
         },
         null,
-        2,
-      ),
+        2
+      )
     );
 
     // Twilio integration template
@@ -472,8 +516,8 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
           phoneNumber: '',
         },
         null,
-        2,
-      ),
+        2
+      )
     );
 
     this.logger.info('Integration configuration templates created');
@@ -541,7 +585,7 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
     for (const [name, config] of Object.entries(archetypes)) {
       await fs.writeFile(
         path.join(archetypesDir, `${name}.archetype.json`),
-        JSON.stringify(config, null, 2),
+        JSON.stringify(config, null, 2)
       );
     }
 
@@ -597,7 +641,7 @@ export class OrchestratorDaemonInstaller extends EventEmitter {
 
     await fs.writeFile(
       path.join(memoryDir, 'memory-config.json'),
-      JSON.stringify(memoryConfig, null, 2),
+      JSON.stringify(memoryConfig, null, 2)
     );
 
     this.logger.info('Memory architecture configured');
@@ -705,7 +749,10 @@ session_archetypes:
   - custom
 `;
 
-    await fs.writeFile(path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml'), charter);
+    await fs.writeFile(
+      path.join(this.orchestratorDaemonDir, 'orchestrator-charter.yaml'),
+      charter
+    );
     this.logger.info('Created default Orchestrator charter');
   }
 

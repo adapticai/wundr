@@ -561,7 +561,11 @@
         "userType": "AI agents (service)",
         "sessionType": "JWT Bearer token",
         "stateless": true,
-        "useCases": ["Background services", "API-only access", "Stateless integrations"],
+        "useCases": [
+          "Background services",
+          "API-only access",
+          "Stateless integrations"
+        ],
         "endpoints": ["POST /api/daemon/auth", "POST /api/daemon/auth/refresh"],
         "limitation": "Not yet supported by API routes - needs Bearer token middleware"
       }

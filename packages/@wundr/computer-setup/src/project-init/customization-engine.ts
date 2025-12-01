@@ -45,7 +45,7 @@ export class CustomizationEngine {
   async customize(
     content: string,
     context: TemplateContext,
-    filePath?: string,
+    filePath?: string
   ): Promise<string> {
     let customized = content;
 
@@ -53,7 +53,7 @@ export class CustomizationEngine {
     const projectRules = this.rules.get(context.project.type) || [];
     const globalRules = this.rules.get('*') || [];
     const allRules = [...globalRules, ...projectRules].sort(
-      (a, b) => b.priority - a.priority,
+      (a, b) => b.priority - a.priority
     );
 
     for (const rule of allRules) {
@@ -67,7 +67,7 @@ export class CustomizationEngine {
       customized = await this.applyFileSpecificCustomization(
         customized,
         filePath,
-        context,
+        context
       );
     }
 
@@ -79,13 +79,19 @@ export class CustomizationEngine {
    */
   async customizeProject(
     projectPath: string,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
-    logger.info(chalk.blue('Customizing project for type: ' + context.project.type));
+    logger.info(
+      chalk.blue('Customizing project for type: ' + context.project.type)
+    );
 
     const procedure = this.procedures.get(context.project.type);
     if (!procedure) {
-      logger.warn(chalk.yellow('No specific customization procedure found, using defaults'));
+      logger.warn(
+        chalk.yellow(
+          'No specific customization procedure found, using defaults'
+        )
+      );
       return;
     }
 
@@ -103,7 +109,7 @@ export class CustomizationEngine {
   private async customizeFile(
     filePath: string,
     context: TemplateContext,
-    _procedure: CustomizationProcedure,
+    _procedure: CustomizationProcedure
   ): Promise<void> {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
@@ -124,7 +130,7 @@ export class CustomizationEngine {
   private async applyFileSpecificCustomization(
     content: string,
     filePath: string,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<string> {
     const ext = path.extname(filePath);
     const basename = path.basename(filePath);
@@ -155,7 +161,10 @@ export class CustomizationEngine {
   /**
    * Customize TypeScript/JavaScript files
    */
-  private customizeTypeScriptFile(content: string, context: TemplateContext): string {
+  private customizeTypeScriptFile(
+    content: string,
+    context: TemplateContext
+  ): string {
     let customized = content;
 
     // Add project-specific imports
@@ -177,7 +186,10 @@ export class CustomizationEngine {
   /**
    * Customize package.json
    */
-  private customizePackageJson(content: string, context: TemplateContext): string {
+  private customizePackageJson(
+    content: string,
+    context: TemplateContext
+  ): string {
     try {
       const pkg = JSON.parse(content);
 
@@ -200,7 +212,10 @@ export class CustomizationEngine {
         pkg.dependencies = { ...pkg.dependencies, ...deps.dependencies };
       }
       if (deps.devDependencies) {
-        pkg.devDependencies = { ...pkg.devDependencies, ...deps.devDependencies };
+        pkg.devDependencies = {
+          ...pkg.devDependencies,
+          ...deps.devDependencies,
+        };
       }
 
       return JSON.stringify(pkg, null, 2);
@@ -250,7 +265,7 @@ export class CustomizationEngine {
    */
   private async findFilesToCustomize(
     projectPath: string,
-    procedure: CustomizationProcedure,
+    procedure: CustomizationProcedure
   ): Promise<string[]> {
     const files: string[] = [];
     const patterns = procedure.filePatterns || ['**/*'];
@@ -269,9 +284,11 @@ export class CustomizationEngine {
         const relativePath = path.relative(projectPath, fullPath);
 
         // Check exclude patterns
-        if (excludePatterns.some(pattern =>
-          relativePath.includes(pattern.replace('**/', '')),
-        )) {
+        if (
+          excludePatterns.some(pattern =>
+            relativePath.includes(pattern.replace('**/', ''))
+          )
+        ) {
           continue;
         }
 
@@ -279,12 +296,16 @@ export class CustomizationEngine {
           await scan(fullPath);
         } else {
           // Check if file matches patterns
-          if (patterns.some(pattern => {
-            const ext = path.extname(entry.name);
-            return pattern === '**/*' ||
-                   pattern.includes(ext) ||
-                   entry.name.includes(pattern.replace('**/', ''));
-          })) {
+          if (
+            patterns.some(pattern => {
+              const ext = path.extname(entry.name);
+              return (
+                pattern === '**/*' ||
+                pattern.includes(ext) ||
+                entry.name.includes(pattern.replace('**/', ''))
+              );
+            })
+          ) {
             files.push(fullPath);
           }
         }
@@ -309,7 +330,10 @@ export class CustomizationEngine {
         apply: (content, context) => {
           return content
             .replace(/\{\{PROJECT_NAME\}\}/g, context.project.name)
-            .replace(/\{\{PROJECT_DESCRIPTION\}\}/g, context.project.description)
+            .replace(
+              /\{\{PROJECT_DESCRIPTION\}\}/g,
+              context.project.description
+            )
             .replace(/\{\{AUTHOR\}\}/g, context.project.author)
             .replace(/\{\{VERSION\}\}/g, context.project.version);
         },
@@ -320,7 +344,7 @@ export class CustomizationEngine {
         name: 'Update Dates',
         description: 'Replace date placeholders',
         condition: () => true,
-        apply: (content) => {
+        apply: content => {
           const now = new Date();
           return content
             .replace(/\{\{CURRENT_YEAR\}\}/g, now.getFullYear().toString())
@@ -336,8 +360,8 @@ export class CustomizationEngine {
         id: 'add-react-imports',
         name: 'Add React Imports',
         description: 'Add common React imports',
-        condition: (context) => context.project.type === 'react',
-        apply: (content) => {
+        condition: context => context.project.type === 'react',
+        apply: content => {
           if (content.includes('export') && !content.includes('import React')) {
             return `import React from 'react';\n${content}`;
           }
@@ -353,7 +377,7 @@ export class CustomizationEngine {
         id: 'add-node-shebang',
         name: 'Add Node.js Shebang',
         description: 'Add shebang to executable files',
-        condition: (context) => context.project.type === 'node',
+        condition: context => context.project.type === 'node',
         apply: (content, _context) => {
           if (content.includes('#!/usr/bin/env node')) {
             return content;
@@ -372,12 +396,16 @@ export class CustomizationEngine {
       id: 'add-ts-strict',
       name: 'Enable TypeScript Strict Mode',
       description: 'Add strict type checking',
-      condition: (context) => Boolean(context.customVariables?.TYPESCRIPT_PROJECT),
-      apply: (content) => {
-        if (content.includes('"compilerOptions"') && !content.includes('"strict"')) {
+      condition: context =>
+        Boolean(context.customVariables?.TYPESCRIPT_PROJECT),
+      apply: content => {
+        if (
+          content.includes('"compilerOptions"') &&
+          !content.includes('"strict"')
+        ) {
           return content.replace(
             /"compilerOptions"\s*:\s*\{/,
-            '"compilerOptions": {\n    "strict": true,',
+            '"compilerOptions": {\n    "strict": true,'
           );
         }
         return content;
@@ -400,7 +428,14 @@ export class CustomizationEngine {
     this.procedures.set('react', {
       projectType: 'react',
       rules: this.rules.get('react') || [],
-      filePatterns: ['**/*.tsx', '**/*.ts', '**/*.jsx', '**/*.js', '**/*.json', '**/*.md'],
+      filePatterns: [
+        '**/*.tsx',
+        '**/*.ts',
+        '**/*.jsx',
+        '**/*.js',
+        '**/*.json',
+        '**/*.md',
+      ],
       excludePatterns: ['**/node_modules/**', '**/dist/**', '**/build/**'],
     });
 
@@ -455,27 +490,27 @@ export class CustomizationEngine {
   private getProjectTypeScripts(projectType: string): Record<string, string> {
     const scriptsMap: Record<string, Record<string, string>> = {
       react: {
-        'dev': 'vite',
-        'build': 'vite build',
-        'preview': 'vite preview',
-        'test': 'vitest',
-        'lint': 'eslint src --ext ts,tsx',
-        'typecheck': 'tsc --noEmit',
+        dev: 'vite',
+        build: 'vite build',
+        preview: 'vite preview',
+        test: 'vitest',
+        lint: 'eslint src --ext ts,tsx',
+        typecheck: 'tsc --noEmit',
       },
       node: {
-        'dev': 'tsx watch src/index.ts',
-        'build': 'tsc',
-        'start': 'node dist/index.js',
-        'test': 'jest',
-        'lint': 'eslint src --ext ts',
-        'typecheck': 'tsc --noEmit',
+        dev: 'tsx watch src/index.ts',
+        build: 'tsc',
+        start: 'node dist/index.js',
+        test: 'jest',
+        lint: 'eslint src --ext ts',
+        typecheck: 'tsc --noEmit',
       },
       monorepo: {
-        'build': 'turbo run build',
-        'test': 'turbo run test',
-        'lint': 'turbo run lint',
-        'dev': 'turbo run dev',
-        'clean': 'turbo run clean',
+        build: 'turbo run build',
+        test: 'turbo run test',
+        lint: 'turbo run lint',
+        dev: 'turbo run dev',
+        clean: 'turbo run clean',
       },
     };
 
@@ -486,20 +521,26 @@ export class CustomizationEngine {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   } {
-    const depsMap: Record<string, { dependencies?: Record<string, string>; devDependencies?: Record<string, string> }> = {
+    const depsMap: Record<
+      string,
+      {
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+      }
+    > = {
       react: {
         dependencies: {
-          'react': '^18.2.0',
+          react: '^18.2.0',
           'react-dom': '^18.2.0',
         },
         devDependencies: {
           '@vitejs/plugin-react': '^4.0.0',
-          'vite': '^4.4.0',
+          vite: '^4.4.0',
         },
       },
       node: {
         dependencies: {
-          'express': '^4.18.0',
+          express: '^4.18.0',
         },
         devDependencies: {
           '@types/express': '^4.17.0',
@@ -510,7 +551,10 @@ export class CustomizationEngine {
     return depsMap[projectType] || {};
   }
 
-  private addProjectTypeSections(content: string, context: TemplateContext): string {
+  private addProjectTypeSections(
+    content: string,
+    context: TemplateContext
+  ): string {
     const sections: Record<string, string> = {
       react: `
 ## Development

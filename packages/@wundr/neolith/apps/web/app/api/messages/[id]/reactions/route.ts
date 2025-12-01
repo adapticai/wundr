@@ -71,15 +71,18 @@ async function checkMessageAccess(messageId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MESSAGE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -88,18 +91,24 @@ export async function GET(
     const paramResult = messageIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid message ID format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid message ID format',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Check message access
-    const { message, hasAccess } = await checkMessageAccess(params.id, session.user.id);
+    const { message, hasAccess } = await checkMessageAccess(
+      params.id,
+      session.user.id
+    );
 
     if (!message) {
       return NextResponse.json(
         createErrorResponse('Message not found', MESSAGE_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -107,9 +116,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -162,7 +171,7 @@ export async function GET(
           }>;
           hasReacted: boolean;
         }
-      >,
+      >
     );
 
     return NextResponse.json({
@@ -173,9 +182,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -203,15 +212,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MESSAGE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -220,8 +232,11 @@ export async function POST(
     const paramResult = messageIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid message ID format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid message ID format',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -231,8 +246,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -243,21 +261,24 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: AddReactionInput = parseResult.data;
 
     // Check message access
-    const { message, hasAccess } = await checkMessageAccess(params.id, session.user.id);
+    const { message, hasAccess } = await checkMessageAccess(
+      params.id,
+      session.user.id
+    );
 
     if (!message) {
       return NextResponse.json(
         createErrorResponse('Message not found', MESSAGE_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -265,9 +286,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -276,9 +297,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot react to a deleted message',
-          MESSAGE_ERROR_CODES.MESSAGE_DELETED,
+          MESSAGE_ERROR_CODES.MESSAGE_DELETED
         ),
-        { status: 410 },
+        { status: 410 }
       );
     }
 
@@ -297,9 +318,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You have already reacted with this emoji',
-          MESSAGE_ERROR_CODES.ALREADY_REACTED,
+          MESSAGE_ERROR_CODES.ALREADY_REACTED
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -324,7 +345,7 @@ export async function POST(
 
     return NextResponse.json(
       { data: reaction, message: 'Reaction added successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/messages/:id/reactions] Error:', error);
@@ -337,18 +358,18 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You have already reacted with this emoji',
-          MESSAGE_ERROR_CODES.ALREADY_REACTED,
+          MESSAGE_ERROR_CODES.ALREADY_REACTED
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -371,15 +392,18 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MESSAGE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -388,8 +412,11 @@ export async function DELETE(
     const paramResult = messageIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid message ID format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid message ID format',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -399,19 +426,22 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Emoji query parameter is required',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check message access
-    const { message, hasAccess } = await checkMessageAccess(params.id, session.user.id);
+    const { message, hasAccess } = await checkMessageAccess(
+      params.id,
+      session.user.id
+    );
 
     if (!message) {
       return NextResponse.json(
         createErrorResponse('Message not found', MESSAGE_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -419,9 +449,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -440,9 +470,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Reaction not found',
-          MESSAGE_ERROR_CODES.REACTION_NOT_FOUND,
+          MESSAGE_ERROR_CODES.REACTION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -459,9 +489,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

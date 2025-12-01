@@ -35,7 +35,11 @@ export {
 export type { FileTypeCategory, FileTypeMapping } from './excludes';
 
 import { DEFAULT_RAG_CONFIG, RagConfig, RagLogLevel } from './defaults';
-import { GLOBAL_EXCLUDES, DEFAULT_INCLUDE_PATTERNS, FileTypeCategory } from './excludes';
+import {
+  GLOBAL_EXCLUDES,
+  DEFAULT_INCLUDE_PATTERNS,
+  FileTypeCategory,
+} from './excludes';
 
 /**
  * User-provided RAG configuration (partial)
@@ -106,7 +110,9 @@ export interface ExtendedRagConfig extends RagConfig {
  * @param configPath - Path to the configuration file
  * @returns Parsed user configuration or null if file doesn't exist
  */
-export const loadConfigFromFile = (configPath: string): UserRagConfig | null => {
+export const loadConfigFromFile = (
+  configPath: string
+): UserRagConfig | null => {
   try {
     if (!fs.existsSync(configPath)) {
       return null;
@@ -126,12 +132,10 @@ export const loadConfigFromFile = (configPath: string): UserRagConfig | null => 
  * @param startDir - Directory to start searching from
  * @returns Path to configuration file or null if not found
  */
-export const findConfigFile = (startDir: string = process.cwd()): string | null => {
-  const configNames = [
-    'rag.config.json',
-    '.ragrc.json',
-    '.wundr/rag.json',
-  ];
+export const findConfigFile = (
+  startDir: string = process.cwd()
+): string | null => {
+  const configNames = ['rag.config.json', '.ragrc.json', '.wundr/rag.json'];
 
   let currentDir = startDir;
   const root = path.parse(currentDir).root;
@@ -220,9 +224,11 @@ const mergeConfigs = (
     autoSync: override.autoSync ?? base.autoSync,
     logLevel: override.logLevel ?? base.logLevel,
     embeddingModel: override.embeddingModel ?? base.embeddingModel,
-    similarityThreshold: override.similarityThreshold ?? base.similarityThreshold,
+    similarityThreshold:
+      override.similarityThreshold ?? base.similarityThreshold,
     maxResults: override.maxResults ?? base.maxResults,
-    maxConcurrentOperations: override.maxConcurrentOperations ?? base.maxConcurrentOperations,
+    maxConcurrentOperations:
+      override.maxConcurrentOperations ?? base.maxConcurrentOperations,
     cacheTtlMs: override.cacheTtlMs ?? base.cacheTtlMs,
     retryAttempts: override.retryAttempts ?? base.retryAttempts,
     retryDelayMs: override.retryDelayMs ?? base.retryDelayMs,
@@ -304,10 +310,7 @@ export const validateRagConfig = (
       });
     }
 
-    if (
-      config.chunkSize !== undefined &&
-      config.overlap >= config.chunkSize
-    ) {
+    if (config.chunkSize !== undefined && config.overlap >= config.chunkSize) {
       errors.push({
         field: 'overlap',
         message: 'Overlap must be less than chunk size',
@@ -362,7 +365,10 @@ export const validateRagConfig = (
 
   // Validate storePath
   if (config.storePath !== undefined) {
-    if (typeof config.storePath !== 'string' || config.storePath.trim() === '') {
+    if (
+      typeof config.storePath !== 'string' ||
+      config.storePath.trim() === ''
+    ) {
       errors.push({
         field: 'storePath',
         message: 'Must be a non-empty string',
@@ -424,9 +430,7 @@ export const createSampleConfig = (): string => {
     embeddingModel: 'text-embedding-004',
     similarityThreshold: 0.7,
     maxResults: 10,
-    excludePatterns: [
-      '**/custom-exclude/**',
-    ],
+    excludePatterns: ['**/custom-exclude/**'],
     includeCategories: ['code', 'config', 'docs'],
   };
 

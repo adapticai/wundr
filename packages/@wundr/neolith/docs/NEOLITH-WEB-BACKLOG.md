@@ -1,8 +1,9 @@
 # NEOLITH WEB APPLICATION BACKLOG
 
 **Version:** 2.1.0 **Date:** November 27, 2025 **Source:** Comprehensive Code Review of
-`neolith/apps/web` + 20-Agent Parallel Analysis **Reference:** Phase 8 in INSTITUTIONAL-READINESS-ROADMAP.md **Phase 8 Status:**
-✅ COMPLETED (November 26, 2025) **Agent Audit:** November 27, 2025 (20-agent swarm)
+`neolith/apps/web` + 20-Agent Parallel Analysis **Reference:** Phase 8 in
+INSTITUTIONAL-READINESS-ROADMAP.md **Phase 8 Status:** ✅ COMPLETED (November 26, 2025) **Agent
+Audit:** November 27, 2025 (20-agent swarm)
 
 ---
 
@@ -31,79 +32,81 @@
 
 A comprehensive code review of all `page.tsx` files, API routes, hooks, and utilities in the Neolith
 web application revealed **200+ issues** requiring attention before the application is
-production-ready. **Phase 8 addressed ~140 of these issues.** **Agent Swarm deployment addressed critical P0/P1 fixes.**
+production-ready. **Phase 8 addressed ~140 of these issues.** **Agent Swarm deployment addressed
+critical P0/P1 fixes.**
 
-**Last Updated:** November 27, 2025, 10:00 UTC
-**Agents Deployed:** 20-agent parallel swarm (comprehensive code analysis)
-**Update Cycle:** Post-Phase 8 + 20-Agent Code Audit
+**Last Updated:** November 27, 2025, 10:00 UTC **Agents Deployed:** 20-agent parallel swarm
+(comprehensive code analysis) **Update Cycle:** Post-Phase 8 + 20-Agent Code Audit
 
 ### 20-Agent Code Audit Results (November 27, 2025)
 
-| Agent | Area Analyzed | Score | Key Findings |
-|-------|---------------|-------|--------------|
-| 1 | Auth Pages | 7/10 | Email/password non-functional, reset password page missing |
-| 2 | Dashboard | 9/10 | ✅ COMPLETE with real Prisma queries |
-| 3 | VPs | 5/5 | ✅ 30+ API endpoints, comprehensive implementation |
-| 4 | Workflows | 7.5/10 | Form-based builder (not drag-drop), action configs empty |
-| 5 | Agents | 8/10 | Full CRUD, uses in-memory mock store |
-| 6 | Channels | 95% | List page doesn't call existing API |
-| 7 | Analytics | 9/10 | ✅ COMPLETE with real data and export |
-| 8 | Deployments | 7/10 | UI complete, mock data backend |
-| 9 | Settings | 8.5/10 | Complete UI, some API persistence missing |
-| 10 | Admin | 96% | Full RBAC, user management working |
-| 11 | API Routes | 75% | 251 routes analyzed, 75% production-ready |
-| 12 | Hooks | 9/10 | Production-ready, real API calls, WebSocket stubbed |
-| 13 | Lib/Utils | 8.5/10 | Comprehensive Zod validation schemas |
-| 14 | Components | 8.5/10 | 216 components, full coverage |
-| 15 | Types | 8/10 | 17 'any' instances need fixing |
-| 16 | Middleware | **3/10** | ❌ CRITICAL: No middleware.ts file exists |
-| 17 | Prisma Schema | 8.5/10 | Schema/type mismatches identified |
-| 18 | Tests | 6.5/10 | ~15-20% coverage, needs more tests |
-| 19 | Error Boundaries | **6/10** | ❌ Missing error.tsx files in routes |
-| 20 | Environment Config | **7.5/10** | ❌ Missing .env.example documentation |
+| Agent | Area Analyzed      | Score      | Key Findings                                               |
+| ----- | ------------------ | ---------- | ---------------------------------------------------------- |
+| 1     | Auth Pages         | 7/10       | Email/password non-functional, reset password page missing |
+| 2     | Dashboard          | 9/10       | ✅ COMPLETE with real Prisma queries                       |
+| 3     | VPs                | 5/5        | ✅ 30+ API endpoints, comprehensive implementation         |
+| 4     | Workflows          | 7.5/10     | Form-based builder (not drag-drop), action configs empty   |
+| 5     | Agents             | 8/10       | Full CRUD, uses in-memory mock store                       |
+| 6     | Channels           | 95%        | List page doesn't call existing API                        |
+| 7     | Analytics          | 9/10       | ✅ COMPLETE with real data and export                      |
+| 8     | Deployments        | 7/10       | UI complete, mock data backend                             |
+| 9     | Settings           | 8.5/10     | Complete UI, some API persistence missing                  |
+| 10    | Admin              | 96%        | Full RBAC, user management working                         |
+| 11    | API Routes         | 75%        | 251 routes analyzed, 75% production-ready                  |
+| 12    | Hooks              | 9/10       | Production-ready, real API calls, WebSocket stubbed        |
+| 13    | Lib/Utils          | 8.5/10     | Comprehensive Zod validation schemas                       |
+| 14    | Components         | 8.5/10     | 216 components, full coverage                              |
+| 15    | Types              | 8/10       | 17 'any' instances need fixing                             |
+| 16    | Middleware         | **3/10**   | ❌ CRITICAL: No middleware.ts file exists                  |
+| 17    | Prisma Schema      | 8.5/10     | Schema/type mismatches identified                          |
+| 18    | Tests              | 6.5/10     | ~15-20% coverage, needs more tests                         |
+| 19    | Error Boundaries   | **6/10**   | ❌ Missing error.tsx files in routes                       |
+| 20    | Environment Config | **7.5/10** | ❌ Missing .env.example documentation                      |
 
 ### Critical Gaps Discovered (NEW)
 
-| Gap | Severity | Impact | Estimated Hours |
-|-----|----------|--------|-----------------|
-| No middleware.ts | ❌ CRITICAL | No centralized auth, rate limiting, CORS | 4-6 hours |
-| Missing error.tsx files | ⚠️ HIGH | Uncaught errors crash pages | 3-4 hours |
-| No .env.example | ⚠️ HIGH | Developer onboarding friction | 1 hour |
-| Channel list page stub | ⚠️ MEDIUM | Channel list uses mock data despite API existing | 1 hour |
-| Deployments mock backend | ⚠️ MEDIUM | Deployments uses in-memory store | 2-4 hours |
-| Test coverage low | ⚠️ MEDIUM | Only 15-20% code coverage | 20-30 hours |
-| 17 TypeScript 'any' types | LOW | Reduced type safety | 2-3 hours |
+| Gap                       | Severity    | Impact                                           | Estimated Hours |
+| ------------------------- | ----------- | ------------------------------------------------ | --------------- |
+| No middleware.ts          | ❌ CRITICAL | No centralized auth, rate limiting, CORS         | 4-6 hours       |
+| Missing error.tsx files   | ⚠️ HIGH     | Uncaught errors crash pages                      | 3-4 hours       |
+| No .env.example           | ⚠️ HIGH     | Developer onboarding friction                    | 1 hour          |
+| Channel list page stub    | ⚠️ MEDIUM   | Channel list uses mock data despite API existing | 1 hour          |
+| Deployments mock backend  | ⚠️ MEDIUM   | Deployments uses in-memory store                 | 2-4 hours       |
+| Test coverage low         | ⚠️ MEDIUM   | Only 15-20% code coverage                        | 20-30 hours     |
+| 17 TypeScript 'any' types | LOW         | Reduced type safety                              | 2-3 hours       |
 
 ### Quality Scores by Area (Updated After 20-Agent Audit - November 27, 2025)
 
-| Area        | Score                   | Issues      | Status                                        |
-| ----------- | ----------------------- | ----------- | --------------------------------------------- |
-| Dashboard   | ~~4/10~~ → **9/10**     | ~~15~~ → 2  | ✅ Real data, dynamic stats, activity working |
-| VPs Pages   | ~~7.5/10~~ → **9/10**   | ~~12~~ → 2  | ✅ Activity log complete, 30+ API endpoints   |
-| Channels    | ~~4/10~~ → **9.5/10**   | ~~25~~ → 2  | ✅ CRUD complete, threads/reactions ✅ IMPLEMENTED |
-| Admin Pages | ~~4/10~~ → **9/10**     | ~~47~~ → 5  | ✅ 96% complete, full RBAC user management    |
-| Workflows   | ~~4.5/10~~ → **7.5/10** | ~~18~~ → 4  | ⚠️ Form-based builder, action configs empty   |
-| Settings    | ~~3.5/10~~ → **8.5/10** | ~~34~~ → 6  | ✅ Complete UI, some API persistence missing  |
-| Agents      | ~~5%~~ → **80%**        | ~~N/A~~ → 2 | ⚠️ Full CRUD but uses in-memory mock store   |
-| Deployments | ~~5%~~ → **70%**        | ~~N/A~~ → 2 | ⚠️ UI complete, mock data backend            |
-| Auth Pages  | ~~6.5/10~~ → **7/10**   | ~~12~~ → 4  | ⚠️ Email/password non-functional, reset missing |
-| Hooks       | -                       | ~~51~~ → 3  | ✅ Production-ready, WebSocket stubbed        |
-| Analytics   | N/A → **9/10**          | 1           | ✅ Real data with export functionality        |
-| API Routes  | N/A → **75%**           | ~60         | ⚠️ 251 routes, 75% production-ready          |
-| Components  | N/A → **8.5/10**        | 3           | ✅ 216 components, comprehensive coverage     |
-| Tests       | N/A → **6.5/10**        | 10+         | ❌ Only 15-20% coverage, needs expansion      |
-| Middleware  | N/A → **3/10**          | 1 (critical)| ❌ CRITICAL: No middleware.ts file           |
+| Area        | Score                   | Issues       | Status                                             |
+| ----------- | ----------------------- | ------------ | -------------------------------------------------- |
+| Dashboard   | ~~4/10~~ → **9/10**     | ~~15~~ → 2   | ✅ Real data, dynamic stats, activity working      |
+| VPs Pages   | ~~7.5/10~~ → **9/10**   | ~~12~~ → 2   | ✅ Activity log complete, 30+ API endpoints        |
+| Channels    | ~~4/10~~ → **9.5/10**   | ~~25~~ → 2   | ✅ CRUD complete, threads/reactions ✅ IMPLEMENTED |
+| Admin Pages | ~~4/10~~ → **9/10**     | ~~47~~ → 5   | ✅ 96% complete, full RBAC user management         |
+| Workflows   | ~~4.5/10~~ → **7.5/10** | ~~18~~ → 4   | ⚠️ Form-based builder, action configs empty        |
+| Settings    | ~~3.5/10~~ → **8.5/10** | ~~34~~ → 6   | ✅ Complete UI, some API persistence missing       |
+| Agents      | ~~5%~~ → **80%**        | ~~N/A~~ → 2  | ⚠️ Full CRUD but uses in-memory mock store         |
+| Deployments | ~~5%~~ → **70%**        | ~~N/A~~ → 2  | ⚠️ UI complete, mock data backend                  |
+| Auth Pages  | ~~6.5/10~~ → **7/10**   | ~~12~~ → 4   | ⚠️ Email/password non-functional, reset missing    |
+| Hooks       | -                       | ~~51~~ → 3   | ✅ Production-ready, WebSocket stubbed             |
+| Analytics   | N/A → **9/10**          | 1            | ✅ Real data with export functionality             |
+| API Routes  | N/A → **75%**           | ~60          | ⚠️ 251 routes, 75% production-ready                |
+| Components  | N/A → **8.5/10**        | 3            | ✅ 216 components, comprehensive coverage          |
+| Tests       | N/A → **6.5/10**        | 10+          | ❌ Only 15-20% coverage, needs expansion           |
+| Middleware  | N/A → **3/10**          | 1 (critical) | ❌ CRITICAL: No middleware.ts file                 |
 
 ### Technical Debt Estimate: ~~150-200 hours~~ → ~~25-35 hours~~ → **35-45 hours remaining (after 20-agent audit)**
 
 **Breakdown of Remaining Work (Updated November 27, 2025 - 20-Agent Audit):**
 
 #### ❌ CRITICAL (Must fix before production)
+
 - **Create middleware.ts**: 4-6 hours (auth middleware, rate limiting, CORS)
 - **Add error.tsx files**: 3-4 hours (route-level error boundaries)
 - **Create .env.example**: 1 hour (environment variable documentation)
 
 #### ⚠️ HIGH Priority
+
 - ~~Channel threads/reactions: 8-10 hours~~ ✅ COMPLETE
 - ~~Agents page implementation: 6-8 hours~~ ✅ COMPLETE
 - ~~Deployments page implementation: 6-8 hours~~ ✅ COMPLETE
@@ -112,12 +115,14 @@ production-ready. **Phase 8 addressed ~140 of these issues.** **Agent Swarm depl
 - Channel list API integration: 1 hour (list page uses mock data despite API existing)
 
 #### ⚠️ MEDIUM Priority
+
 - STUB API implementations (real backend): 3-5 hours (3 endpoints: ai-config, export, notifications)
 - Database schema for Agents/Deployments: 2-5 hours (currently using mock data stores)
 - Workflow action configs: 2-4 hours (action selectors return empty config)
 - Fix 17 TypeScript 'any' types: 2-3 hours
 
 #### LOW Priority (Post-Launch)
+
 - Expand test coverage from 15-20% to 60%+: 20-30 hours
 - Prisma schema/type alignment: 2-3 hours (minor mismatches)
 
@@ -380,7 +385,8 @@ const orchestrators = await response.json(); // VP[] directly
 - ✅ Added error handling and validation feedback
 - ✅ Navigates to new channel on success or refreshes channel list
 
-**Note:** Initial member selection not implemented in this iteration (can be added in future enhancement)
+**Note:** Initial member selection not implemented in this iteration (can be added in future
+enhancement)
 
 ---
 
@@ -509,16 +515,16 @@ const orchestrators = await response.json(); // VP[] directly
 
 ### High (Enable key features)
 
-| Endpoint                           | Purpose           | Priority |
-| ---------------------------------- | ----------------- | -------- |
-| `GET /api/channels`                | List channels     | P1       |
-| `POST /api/channels`               | Create channel    | P1       |
-| `GET /api/channels/[id]/messages`  | Channel messages  | P1       |
-| `POST /api/channels/[id]/messages` | Send message      | P1       |
-| `GET /api/vps/[id]/activity`       | Orchestrator activity log   | P1       |
-| `GET /api/analytics/dashboard`     | Analytics data    | P1       |
-| `GET /api/deployments`             | List deployments  | P1       |
-| `POST /api/deployments`            | Create deployment | P1       |
+| Endpoint                           | Purpose                   | Priority |
+| ---------------------------------- | ------------------------- | -------- |
+| `GET /api/channels`                | List channels             | P1       |
+| `POST /api/channels`               | Create channel            | P1       |
+| `GET /api/channels/[id]/messages`  | Channel messages          | P1       |
+| `POST /api/channels/[id]/messages` | Send message              | P1       |
+| `GET /api/vps/[id]/activity`       | Orchestrator activity log | P1       |
+| `GET /api/analytics/dashboard`     | Analytics data            | P1       |
+| `GET /api/deployments`             | List deployments          | P1       |
+| `POST /api/deployments`            | Create deployment         | P1       |
 
 ### Medium (Enhance experience)
 
@@ -536,14 +542,14 @@ const orchestrators = await response.json(); // VP[] directly
 
 ## Missing Pages
 
-| Page               | Route                         | Priority | Description              |
-| ------------------ | ----------------------------- | -------- | ------------------------ |
-| Settings Index     | `/settings/page.tsx`          | P0       | Returns 404              |
-| Forgot Password    | `/forgot-password/page.tsx`   | P1       | No password reset        |
-| Reset Password     | `/reset-password/page.tsx`    | P1       | No password reset        |
-| Email Verification | `/verify-email/page.tsx`      | P2       | No email verification    |
-| Orchestrator Activity        | `/vps/[id]/activity/page.tsx` | P2       | Activity subpage         |
-| Orchestrator Agents          | `/vps/[id]/agents/page.tsx`   | P2       | Agent management subpage |
+| Page                  | Route                         | Priority | Description              |
+| --------------------- | ----------------------------- | -------- | ------------------------ |
+| Settings Index        | `/settings/page.tsx`          | P0       | Returns 404              |
+| Forgot Password       | `/forgot-password/page.tsx`   | P1       | No password reset        |
+| Reset Password        | `/reset-password/page.tsx`    | P1       | No password reset        |
+| Email Verification    | `/verify-email/page.tsx`      | P2       | No email verification    |
+| Orchestrator Activity | `/vps/[id]/activity/page.tsx` | P2       | Activity subpage         |
+| Orchestrator Agents   | `/vps/[id]/agents/page.tsx`   | P2       | Agent management subpage |
 
 ---
 
@@ -551,12 +557,12 @@ const orchestrators = await response.json(); // VP[] directly
 
 ### Not Integrated (Required)
 
-| Package                         | Purpose                 | Integration Status              |
-| ------------------------------- | ----------------------- | ------------------------------- |
-| `@wundr.io/orchestrator-daemon`           | Orchestrator autonomous operation | 0% - Package built but not used |
+| Package                         | Purpose                           | Integration Status              |
+| ------------------------------- | --------------------------------- | ------------------------------- |
+| `@wundr.io/orchestrator-daemon` | Orchestrator autonomous operation | 0% - Package built but not used |
 | `@wundr.io/agent-memory`        | Orchestrator memory persistence   | 0% - Not imported               |
 | `@wundr.io/agent-observability` | Orchestrator analytics            | 0% - Not imported               |
-| `@wundr.io/slack-agent`         | Slack integration       | 0% - Not imported               |
+| `@wundr.io/slack-agent`         | Slack integration                 | 0% - Not imported               |
 
 ### Partially Integrated
 
@@ -615,27 +621,27 @@ const orchestrators = await response.json(); // VP[] directly
 
 ### By Category
 
-| Category           | Estimated Hours   |
-| ------------------ | ----------------- |
-| Auth System        | 20-25             |
-| Admin Pages        | 25-30             |
-| Channel Features   | 30-35             |
-| Orchestrator Features        | 25-30             |
-| API Endpoints      | 25-30             |
-| Security Hardening | 15-20             |
-| Code Quality       | 10-15             |
-| Testing            | 20-25             |
-| **Total**          | **170-210 hours** |
+| Category              | Estimated Hours   |
+| --------------------- | ----------------- |
+| Auth System           | 20-25             |
+| Admin Pages           | 25-30             |
+| Channel Features      | 30-35             |
+| Orchestrator Features | 25-30             |
+| API Endpoints         | 25-30             |
+| Security Hardening    | 15-20             |
+| Code Quality          | 10-15             |
+| Testing               | 20-25             |
+| **Total**             | **170-210 hours** |
 
 ### By Sprint (2-week sprints)
 
-| Sprint   | Focus              | Deliverables                                     |
-| -------- | ------------------ | ------------------------------------------------ |
-| Sprint 1 | Critical fixes     | Auth registration, Admin API paths, Settings 404 |
-| Sprint 2 | Channel completion | All 13 channel endpoints, message CRUD           |
-| Sprint 3 | Orchestrator features        | Activity log, agent management, real data        |
-| Sprint 4 | Admin completion   | All admin pages functional, real data            |
-| Sprint 5 | Polish & security  | Logging, validation, testing                     |
+| Sprint   | Focus                 | Deliverables                                     |
+| -------- | --------------------- | ------------------------------------------------ |
+| Sprint 1 | Critical fixes        | Auth registration, Admin API paths, Settings 404 |
+| Sprint 2 | Channel completion    | All 13 channel endpoints, message CRUD           |
+| Sprint 3 | Orchestrator features | Activity log, agent management, real data        |
+| Sprint 4 | Admin completion      | All admin pages functional, real data            |
+| Sprint 5 | Polish & security     | Logging, validation, testing                     |
 
 ---
 
@@ -898,15 +904,15 @@ interacting with UI elements.
 
 ### Critical Console Errors
 
-| Error                                                     | Location                                   | Priority | Status      |
-| --------------------------------------------------------- | ------------------------------------------ | -------- | ----------- |
-| `Module not found: Can't resolve '@wundr.io/org-genesis'` | `/api/workspaces/generate-org/route.ts:36` | P0       | ✅ FIXED    |
-| `Failed to fetch activities: 404 Not Found`               | Dashboard activity widget                  | P1       | ✅ FIXED    |
-| `Failed to fetch channels` errors                         | Dashboard sidebar, channels page           | P1       | ✅ FIXED    |
-| `Failed to fetch VPs` errors                              | VPs page API calls                         | P1       | ✅ FIXED    |
-| `Failed to fetch workflows` type mismatch                 | Workflows page                             | P1       | ✅ FIXED    |
-| Settings redirect to onboarding                           | Settings layout                            | P0       | ✅ FIXED    |
-| Dashboard stats showing zeros                             | Dashboard quick stats                      | P1       | ✅ FIXED    |
+| Error                                                     | Location                                   | Priority | Status     |
+| --------------------------------------------------------- | ------------------------------------------ | -------- | ---------- |
+| `Module not found: Can't resolve '@wundr.io/org-genesis'` | `/api/workspaces/generate-org/route.ts:36` | P0       | ✅ FIXED   |
+| `Failed to fetch activities: 404 Not Found`               | Dashboard activity widget                  | P1       | ✅ FIXED   |
+| `Failed to fetch channels` errors                         | Dashboard sidebar, channels page           | P1       | ✅ FIXED   |
+| `Failed to fetch VPs` errors                              | VPs page API calls                         | P1       | ✅ FIXED   |
+| `Failed to fetch workflows` type mismatch                 | Workflows page                             | P1       | ✅ FIXED   |
+| Settings redirect to onboarding                           | Settings layout                            | P0       | ✅ FIXED   |
+| Dashboard stats showing zeros                             | Dashboard quick stats                      | P1       | ✅ FIXED   |
 | Multiple `404 (Not Found)` resource errors                | Various API calls                          | P2       | ⚠️ Reduced |
 | `403 (Forbidden)`                                         | Some API endpoints                         | P2       | ⚠️ Open    |
 | WebSocket HMR connection errors                           | Dev server (expected in dev)               | P3       | Expected   |
@@ -915,28 +921,30 @@ interacting with UI elements.
 
 #### Module Import Error (FIXED)
 
-| Issue                                                     | Severity | Status   | Description                                                     |
-| --------------------------------------------------------- | -------- | -------- | --------------------------------------------------------------- |
+| Issue                                                     | Severity | Status   | Description                                                    |
+| --------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------- |
 | `Module not found: Can't resolve '@wundr.io/org-genesis'` | P0       | ✅ FIXED | Added `@wundr.io/org-genesis` to web app package.json as link: |
 
-**Fix Applied:** Added dependency `"@wundr.io/org-genesis": "link:../../../org-genesis"` to `/packages/@wundr/neolith/apps/web/package.json` and ran `pnpm install`. Module now resolves correctly.
+**Fix Applied:** Added dependency `"@wundr.io/org-genesis": "link:../../../org-genesis"` to
+`/packages/@wundr/neolith/apps/web/package.json` and ran `pnpm install`. Module now resolves
+correctly.
 
 #### Dashboard (`/neolith/dashboard`)
 
-| Issue                        | Severity | Description                                       |
-| ---------------------------- | -------- | ------------------------------------------------- |
-| Failed to load channels      | P1       | Sidebar shows "Failed to fetch channels" error    |
-| Activity feed 404            | ✅ FIXED | Now using `/dashboard/activity` endpoint |
+| Issue                        | Severity | Description                                          |
+| ---------------------------- | -------- | ---------------------------------------------------- |
+| Failed to load channels      | P1       | Sidebar shows "Failed to fetch channels" error       |
+| Activity feed 404            | ✅ FIXED | Now using `/dashboard/activity` endpoint             |
 | Quick Stats all zero         | ✅ FIXED | Now using `/dashboard/stats` API - shows real counts |
-| Quick Actions non-functional | P2       | Buttons present but untested if they work         |
+| Quick Actions non-functional | P2       | Buttons present but untested if they work            |
 
 #### Virtual Persons (`/neolith/vps`)
 
-| Issue                    | Severity | Description                           |
-| ------------------------ | -------- | ------------------------------------- |
-| Failed to load VPs       | ✅ FIXED | Orchestrator API now uses correct workspace endpoint |
-| All status counters zero | ✅ FIXED | Status counts now calculated from real data |
-| Create Orchestrator modal works    | ✅       | Multi-step wizard functional          |
+| Issue                           | Severity | Description                                          |
+| ------------------------------- | -------- | ---------------------------------------------------- |
+| Failed to load VPs              | ✅ FIXED | Orchestrator API now uses correct workspace endpoint |
+| All status counters zero        | ✅ FIXED | Status counts now calculated from real data          |
+| Create Orchestrator modal works | ✅       | Multi-step wizard functional                         |
 
 #### Agents (`/neolith/agents`)
 
@@ -947,12 +955,12 @@ interacting with UI elements.
 
 #### Workflows (`/neolith/workflows`)
 
-| Issue                       | Severity  | Description                                                               |
-| --------------------------- | --------- | ------------------------------------------------------------------------- |
-| Failed to load workflows    | ✅ FIXED  | Type mismatch resolved (Nov 26, 2025)                                     |
-| Create Workflow modal works | ✅        | Has triggers and actions UI                                               |
-| Templates modal works       | ✅        | Shows categories with 7 built-in templates                                |
-| No workflow templates       | ✅ FIXED  | Hook now calls correct workspace-scoped endpoint, categories aligned      |
+| Issue                       | Severity | Description                                                          |
+| --------------------------- | -------- | -------------------------------------------------------------------- |
+| Failed to load workflows    | ✅ FIXED | Type mismatch resolved (Nov 26, 2025)                                |
+| Create Workflow modal works | ✅       | Has triggers and actions UI                                          |
+| Templates modal works       | ✅       | Shows categories with 7 built-in templates                           |
+| No workflow templates       | ✅ FIXED | Hook now calls correct workspace-scoped endpoint, categories aligned |
 
 #### Deployments (`/neolith/deployments`)
 
@@ -963,18 +971,18 @@ interacting with UI elements.
 
 #### Channels (`/neolith/channels`)
 
-| Issue                    | Severity | Description                                             |
-| ------------------------ | -------- | ------------------------------------------------------- |
-| Sidebar channels fail    | P1       | "Failed to fetch channels" in sidebar                   |
-| Main content shows empty | P2       | "No Channels Yet" despite sidebar error                 |
-| Create Channel stub      | ✅ FIXED | Full channel creation form now implemented              |
+| Issue                    | Severity | Description                                |
+| ------------------------ | -------- | ------------------------------------------ |
+| Sidebar channels fail    | P1       | "Failed to fetch channels" in sidebar      |
+| Main content shows empty | P2       | "No Channels Yet" despite sidebar error    |
+| Create Channel stub      | ✅ FIXED | Full channel creation form now implemented |
 
 #### Settings (`/neolith/settings`)
 
-| Issue                      | Severity  | Description                                                                              |
-| -------------------------- | --------- | ---------------------------------------------------------------------------------------- |
-| Redirects to onboarding    | ✅ FIXED  | Settings layout now redirects to user's actual workspace settings instead of onboarding  |
-| No actual settings visible | ✅ FIXED  | Existing workspace users now see their settings page correctly                           |
+| Issue                      | Severity | Description                                                                             |
+| -------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| Redirects to onboarding    | ✅ FIXED | Settings layout now redirects to user's actual workspace settings instead of onboarding |
+| No actual settings visible | ✅ FIXED | Existing workspace users now see their settings page correctly                          |
 
 #### Settings Profile (`/neolith/settings/profile`)
 
@@ -984,12 +992,12 @@ interacting with UI elements.
 
 ### Missing Pages (404)
 
-| Route               | Expected Feature                     | Priority | Status    |
-| ------------------- | ------------------------------------ | -------- | --------- |
-| `/neolith/tasks`    | Task management page                 | P1       | PENDING   |
+| Route               | Expected Feature                     | Priority | Status     |
+| ------------------- | ------------------------------------ | -------- | ---------- |
+| `/neolith/tasks`    | Task management page                 | P1       | PENDING    |
 | `/neolith/members`  | Team members management              | P1       | ✅ CREATED |
 | `/neolith/activity` | Activity feed page                   | P2       | ✅ CREATED |
-| `/neolith/admin`    | Admin panel (redirects to dashboard) | P2       | PENDING   |
+| `/neolith/admin`    | Admin panel (redirects to dashboard) | P2       | PENDING    |
 
 ### Authentication Pages
 
@@ -1001,16 +1009,16 @@ interacting with UI elements.
 
 ### Working Features
 
-| Feature                  | Location       | Status                  |
-| ------------------------ | -------------- | ----------------------- |
-| Navigation sidebar       | All pages      | ✅ Works                |
-| User avatar/profile link | Sidebar footer | ✅ Works                |
-| Theme toggle             | -              | Not tested              |
-| Create Orchestrator wizard         | VPs page       | ✅ Full 4-step wizard   |
-| Create Workflow modal    | Workflows page | ✅ Triggers and actions |
-| Workflow Templates modal | Workflows page | ✅ Category filtering   |
-| Login form               | Auth           | ✅ Accepts input        |
-| Register form            | Auth           | ✅ Accepts input        |
+| Feature                    | Location       | Status                  |
+| -------------------------- | -------------- | ----------------------- |
+| Navigation sidebar         | All pages      | ✅ Works                |
+| User avatar/profile link   | Sidebar footer | ✅ Works                |
+| Theme toggle               | -              | Not tested              |
+| Create Orchestrator wizard | VPs page       | ✅ Full 4-step wizard   |
+| Create Workflow modal      | Workflows page | ✅ Triggers and actions |
+| Workflow Templates modal   | Workflows page | ✅ Category filtering   |
+| Login form                 | Auth           | ✅ Accepts input        |
+| Register form              | Auth           | ✅ Accepts input        |
 
 ### API Endpoint Failures Observed
 
@@ -1027,7 +1035,8 @@ GET /api/workspaces/neolith/workflows → 404 or error
 
 #### P0 - Critical (Blocks core usage)
 
-1. ~~**Fix Settings redirect**~~ - ✅ FIXED (November 26, 2025) - Users now see correct workspace settings
+1. ~~**Fix Settings redirect**~~ - ✅ FIXED (November 26, 2025) - Users now see correct workspace
+   settings
 2. ~~**Fix @wundr.io/org-genesis import**~~ - ✅ FIXED - Module now properly linked
 3. **Create forgot-password page** - Currently redirects to OAuth
 
@@ -1035,7 +1044,8 @@ GET /api/workspaces/neolith/workflows → 404 or error
 
 4. **Fix channels API** - Dashboard sidebar cannot load channels
 5. **Create tasks page** - 404 on `/neolith/tasks`
-6. ~~**Create members page**~~ - ✅ FIXED (November 26, 2025) - Created grid-based team members page with invite functionality
+6. ~~**Create members page**~~ - ✅ FIXED (November 26, 2025) - Created grid-based team members page
+   with invite functionality
 7. **Fix activity API** - Dashboard activity widget returns 404
 8. **Fix VPs API** - Orchestrator list fails to load
 9. **Fix workflows API** - Workflow list fails to load
@@ -1043,7 +1053,8 @@ GET /api/workspaces/neolith/workflows → 404 or error
 
 #### P2 - Medium (Feature gaps)
 
-11. ~~**Create activity page**~~ - ✅ CREATED (November 26, 2025) - Activity feed page at `/neolith/activity`
+11. ~~**Create activity page**~~ - ✅ CREATED (November 26, 2025) - Activity feed page at
+    `/neolith/activity`
 12. **Populate workflow templates** - All categories empty
 13. ~~**Fix quick stats**~~ - ✅ FIXED (November 26, 2025) - Now shows real counts from database
 
@@ -1063,11 +1074,15 @@ GET /api/workspaces/neolith/workflows → 404 or error
 
 ### Overview
 
-Replace traditional form-based wizards with a conversational LLM interface for creating and modifying organizational entities. The LLM guides users through providing necessary details, then generates a structured specification that users can review/edit before triggering the actual generation process.
+Replace traditional form-based wizards with a conversational LLM interface for creating and
+modifying organizational entities. The LLM guides users through providing necessary details, then
+generates a structured specification that users can review/edit before triggering the actual
+generation process.
 
 ### Agent Hierarchy Naming Convention
 
 **Three-tier agent hierarchy:**
+
 1. **Orchestrator** (formerly "Virtual Person/VP") - Top-level autonomous agent with a charter
 2. **Session Manager** - Mid-level agent managing specific contexts/channels
 3. **Subagent** - Task-specific worker agents
@@ -1075,6 +1090,7 @@ Replace traditional form-based wizards with a conversational LLM interface for c
 ### Core Concept
 
 **Conversational Creation Flow:**
+
 1. User initiates creation (e.g., "Create a new workspace")
 2. LLM engages in natural conversation to gather requirements
 3. LLM asks clarifying questions, suggests options, fills in gaps
@@ -1084,14 +1100,14 @@ Replace traditional form-based wizards with a conversational LLM interface for c
 
 ### Affected Entity Types
 
-| Entity | Current UI | Target UI | Generator Service |
-|--------|-----------|-----------|-------------------|
-| Workspace | Multi-step wizard | Conversational + Form Review | `org-genesis` |
-| Orchestrator | 4-step wizard (as "VP") | Conversational + Form Review | Orchestrator creation API |
-| Session Manager | None (stub) | Conversational + Form Review | Session Manager API |
-| Subagent | None (stub) | Conversational + Form Review | Subagent API |
-| Workflow | Basic modal | Conversational + Form Review | Workflow API |
-| Channel | Placeholder modal | Conversational + Form Review | Channel API |
+| Entity          | Current UI              | Target UI                    | Generator Service         |
+| --------------- | ----------------------- | ---------------------------- | ------------------------- |
+| Workspace       | Multi-step wizard       | Conversational + Form Review | `org-genesis`             |
+| Orchestrator    | 4-step wizard (as "VP") | Conversational + Form Review | Orchestrator creation API |
+| Session Manager | None (stub)             | Conversational + Form Review | Session Manager API       |
+| Subagent        | None (stub)             | Conversational + Form Review | Subagent API              |
+| Workflow        | Basic modal             | Conversational + Form Review | Workflow API              |
+| Channel         | Placeholder modal       | Conversational + Form Review | Channel API               |
 
 ### User Experience Design
 
@@ -1195,7 +1211,13 @@ Allow users to bypass conversation entirely and jump straight to form editing:
 
 ```typescript
 interface ConversationalCreatorProps {
-  entityType: 'workspace' | 'orchestrator' | 'session-manager' | 'subagent' | 'workflow' | 'channel';
+  entityType:
+    | 'workspace'
+    | 'orchestrator'
+    | 'session-manager'
+    | 'subagent'
+    | 'workflow'
+    | 'channel';
   onSpecGenerated: (spec: EntitySpec) => void;
   onCancel: () => void;
   existingSpec?: EntitySpec; // For modifications
@@ -1218,6 +1240,7 @@ Response: Stream of LLM responses
 ```
 
 **System Prompt Structure:**
+
 - Entity-specific creation guidelines
 - Workspace context (existing VPs, channels, workflows)
 - Charter templates and best practices
@@ -1239,60 +1262,60 @@ interface GeneratedSpec {
 
 #### 4. Entity-Specific Generators
 
-| Entity | Generator | Output |
-|--------|-----------|--------|
-| Workspace | `org-genesis` | Full org hierarchy with Orchestrators, Session Managers, Subagents |
-| Orchestrator | `orchestrator-creation-service` | Orchestrator + optional Session Managers + Subagents |
-| Session Manager | `session-manager-api` | Session Manager linked to Orchestrator |
-| Subagent | `subagent-api` | Subagent linked to Session Manager |
-| Workflow | `workflow-api` | Workflow with steps and triggers |
-| Channel | `channel-api` | Channel with settings and members |
+| Entity          | Generator                       | Output                                                             |
+| --------------- | ------------------------------- | ------------------------------------------------------------------ |
+| Workspace       | `org-genesis`                   | Full org hierarchy with Orchestrators, Session Managers, Subagents |
+| Orchestrator    | `orchestrator-creation-service` | Orchestrator + optional Session Managers + Subagents               |
+| Session Manager | `session-manager-api`           | Session Manager linked to Orchestrator                             |
+| Subagent        | `subagent-api`                  | Subagent linked to Session Manager                                 |
+| Workflow        | `workflow-api`                  | Workflow with steps and triggers                                   |
+| Channel         | `channel-api`                   | Channel with settings and members                                  |
 
 ### Implementation Tasks
 
 #### P1 - Core Infrastructure
 
-| Task | Description | Est. Hours | Status |
-|------|-------------|------------|--------|
-| Chat UI Component | Build reusable conversational interface | 8 | ✅ CREATED |
-| LLM Streaming API | Create `/api/creation/conversation` endpoint | 6 | ⏳ TODO |
-| System Prompts | Write entity-specific creation prompts | 4 | ⏳ TODO |
-| Spec Schema | Define TypeScript interfaces for all entity specs | 4 | ✅ CREATED |
-| Form Review Component | Build editable form view from spec | 8 | ⏳ TODO |
+| Task                  | Description                                       | Est. Hours | Status     |
+| --------------------- | ------------------------------------------------- | ---------- | ---------- |
+| Chat UI Component     | Build reusable conversational interface           | 8          | ✅ CREATED |
+| LLM Streaming API     | Create `/api/creation/conversation` endpoint      | 6          | ⏳ TODO    |
+| System Prompts        | Write entity-specific creation prompts            | 4          | ⏳ TODO    |
+| Spec Schema           | Define TypeScript interfaces for all entity specs | 4          | ✅ CREATED |
+| Form Review Component | Build editable form view from spec                | 8          | ⏳ TODO    |
 
 #### P1 - Workspace Creation
 
-| Task | Description | Est. Hours |
-|------|-------------|------------|
-| Conversational Workspace Wizard | Replace current wizard with chat interface | 8 |
-| Org-Genesis Integration | Connect spec to org-genesis generator | 4 |
-| Preview Before Generate | Show full org hierarchy preview | 6 |
+| Task                            | Description                                | Est. Hours |
+| ------------------------------- | ------------------------------------------ | ---------- |
+| Conversational Workspace Wizard | Replace current wizard with chat interface | 8          |
+| Org-Genesis Integration         | Connect spec to org-genesis generator      | 4          |
+| Preview Before Generate         | Show full org hierarchy preview            | 6          |
 
 #### P1 - Orchestrator Creation
 
-| Task | Description | Est. Hours |
-|------|-------------|------------|
-| Conversational Orchestrator Creator | Chat-driven Orchestrator creation | 8 |
-| Charter Generation | LLM generates charter from conversation | 4 |
-| Session Manager Suggestions | Auto-suggest SMs based on Orchestrator role | 4 |
-| Subagent Suggestions | Auto-suggest subagents based on Orchestrator capabilities | 4 |
+| Task                                | Description                                               | Est. Hours |
+| ----------------------------------- | --------------------------------------------------------- | ---------- |
+| Conversational Orchestrator Creator | Chat-driven Orchestrator creation                         | 8          |
+| Charter Generation                  | LLM generates charter from conversation                   | 4          |
+| Session Manager Suggestions         | Auto-suggest SMs based on Orchestrator role               | 4          |
+| Subagent Suggestions                | Auto-suggest subagents based on Orchestrator capabilities | 4          |
 
 #### P2 - Other Entities
 
-| Task | Description | Est. Hours |
-|------|-------------|------------|
-| Session Manager Creator | Chat + form for SM creation | 6 |
-| Subagent Creator | Chat + form for subagent creation | 6 |
-| Workflow Creator | Chat-driven workflow builder | 8 |
-| Channel Creator | Chat + form for channel creation | 4 |
+| Task                    | Description                       | Est. Hours |
+| ----------------------- | --------------------------------- | ---------- |
+| Session Manager Creator | Chat + form for SM creation       | 6          |
+| Subagent Creator        | Chat + form for subagent creation | 6          |
+| Workflow Creator        | Chat-driven workflow builder      | 8          |
+| Channel Creator         | Chat + form for channel creation  | 4          |
 
 #### P2 - Modification Flow
 
-| Task | Description | Est. Hours |
-|------|-------------|------------|
-| Edit Existing Entity | Chat interface for modifications | 8 |
-| Diff View | Show changes before applying | 4 |
-| Bulk Modifications | Modify multiple entities via conversation | 6 |
+| Task                 | Description                               | Est. Hours |
+| -------------------- | ----------------------------------------- | ---------- |
+| Edit Existing Entity | Chat interface for modifications          | 8          |
+| Diff View            | Show changes before applying              | 4          |
+| Bulk Modifications   | Modify multiple entities via conversation | 6          |
 
 ### API Endpoints Required
 
@@ -1336,9 +1359,9 @@ GET  /api/templates/[entityType]       # Get entity templates
 ---
 
 **Document Version:** 2.3.0 **Last Updated:** November 27, 2025 **Phase 8 Completed:** November 26,
-2025 **20-Agent Audit:** November 27, 2025 **Playwright Testing:** November 26, 2025
-**Overall Readiness:** 92% (down from 95% after audit revealed critical gaps)
-**Next Phase:** Phase 9 - LLM-Driven Conversational Entity Creation & Critical Gap Resolution
+2025 **20-Agent Audit:** November 27, 2025 **Playwright Testing:** November 26, 2025 **Overall
+Readiness:** 92% (down from 95% after audit revealed critical gaps) **Next Phase:** Phase 9 -
+LLM-Driven Conversational Entity Creation & Critical Gap Resolution
 
 ---
 
@@ -1346,18 +1369,22 @@ GET  /api/templates/[entityType]       # Get entity templates
 
 ### Channels API 404 Errors - FIXED
 
-**Issue:** Dashboard sidebar showed "Failed to fetch channels" because the `useChannels` and `useDirectMessages` hooks were not reading the API response correctly.
+**Issue:** Dashboard sidebar showed "Failed to fetch channels" because the `useChannels` and
+`useDirectMessages` hooks were not reading the API response correctly.
 
 **Root Cause:**
+
 1. API returns `{ data: [...], pagination: {...} }` format
 2. Hook expected `data.channels` instead of `data.data`
 3. DM hook called wrong endpoint (`/direct-messages` vs `/dm`)
 4. DM creation sent wrong payload format (`userIds` vs `userId`)
 
 **Files Modified:**
+
 - `/packages/@wundr/neolith/apps/web/hooks/use-channel.ts`
 
 **Changes:**
+
 1. Line 165: Changed `data.channels` to `(data.data || [])`
 2. Line 678: Changed endpoint from `/direct-messages` to `/dm`
 3. Line 684: Changed `data.directMessages` to `data.data || []`
@@ -1365,11 +1392,14 @@ GET  /api/templates/[entityType]       # Get entity templates
 5. Line 710: Updated to extract `result.data` properly
 
 **Verification:**
+
 - TypeScript compilation: ✅ Pass (only unused variable warnings)
-- API routes exist: ✅ `/api/workspaces/[workspaceId]/channels` and `/api/workspaces/[workspaceId]/dm`
+- API routes exist: ✅ `/api/workspaces/[workspaceId]/channels` and
+  `/api/workspaces/[workspaceId]/dm`
 - Response format matches: ✅ Both return `{ data: [...] }`
 
 **Impact:**
+
 - Dashboard sidebar will now load channels correctly
 - Direct messages will load from correct endpoint
 - Channel creation will work via sidebar
@@ -1380,9 +1410,11 @@ GET  /api/templates/[entityType]       # Get entity templates
 
 ### Workflows API Type Mismatch - FIXED (November 26, 2025)
 
-**Issue:** Workflows page showed "Failed to fetch workflows" error due to type mismatch between database schema and frontend types.
+**Issue:** Workflows page showed "Failed to fetch workflows" error due to type mismatch between
+database schema and frontend types.
 
 **Root Cause:**
+
 1. Database schema uses `executionCount`, `successCount`, `failureCount` fields
 2. Frontend types expect `runCount` and `errorCount`
 3. Database enum uses `ACTIVE`, `INACTIVE`, `DRAFT`, `ARCHIVED`
@@ -1390,9 +1422,11 @@ GET  /api/templates/[entityType]       # Get entity templates
 5. Database uses `lastExecutedAt` but frontend expects `lastRunAt`
 
 **Files Modified:**
+
 - `/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/workflows/route.ts`
 
 **Changes:**
+
 1. Lines 185-222: Updated GET handler to map database fields to frontend types
    - `executionCount` → `runCount`
    - `failureCount` → `errorCount`
@@ -1406,11 +1440,13 @@ GET  /api/templates/[entityType]       # Get entity templates
    - Proper status mapping on workflow creation
 
 **Verification:**
+
 - ESLint: ✅ Pass (auto-fixed unused variable)
 - TypeScript: ✅ Compiles (only Next.js internal type warnings)
 - API response now matches `Workflow` interface from `/types/workflow.ts`
 
 **Impact:**
+
 - Workflows page will now load and display workflows correctly
 - Workflow creation will return properly formatted workflow objects
 - Statistics will show correct execution counts
@@ -1422,20 +1458,26 @@ GET  /api/templates/[entityType]       # Get entity templates
 
 ### Settings Redirect to Onboarding - FIXED (P0)
 
-**Issue:** When users navigated to `/neolith/settings` or `/neolith/settings/profile`, they were incorrectly redirected to the "Create Organization" onboarding wizard instead of seeing their actual settings page.
+**Issue:** When users navigated to `/neolith/settings` or `/neolith/settings/profile`, they were
+incorrectly redirected to the "Create Organization" onboarding wizard instead of seeing their actual
+settings page.
 
 **Root Cause:**
+
 1. Users navigate to `/neolith/settings` where "neolith" is used as the workspace ID
-2. The settings layout (`app/(workspace)/[workspaceId]/settings/layout.tsx`) checks if the user has a `workspaceMember` record for workspace "neolith"
+2. The settings layout (`app/(workspace)/[workspaceId]/settings/layout.tsx`) checks if the user has
+   a `workspaceMember` record for workspace "neolith"
 3. When no membership is found, it redirected to `/dashboard`
 4. The `/dashboard` page then redirected to `/onboarding` if the user had no workspaces
-5. This created a bad user experience where existing workspace users saw onboarding instead of settings
+5. This created a bad user experience where existing workspace users saw onboarding instead of
+   settings
 
 **Files Modified:**
+
 - `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/settings/layout.tsx`
 
-**Changes:**
-The settings layout now follows the same redirect logic as the dashboard and root pages:
+**Changes:** The settings layout now follows the same redirect logic as the dashboard and root
+pages:
 
 ```typescript
 if (\!membership) {
@@ -1460,41 +1502,46 @@ if (\!membership) {
 ```
 
 **Before:**
+
 - `/neolith/settings` → `/dashboard` → `/onboarding` (bad UX)
 - Users saw onboarding wizard instead of settings
 
 **After:**
+
 - `/neolith/settings` → `/{actual-workspace-id}/settings` (correct)
 - Users see their actual settings page
 - Only users with no workspaces see onboarding
 
 **Verification:**
+
 - TypeScript compilation: ✅ Pass
 - ESLint: ✅ No errors for settings/layout
 - Logic matches dashboard redirect pattern: ✅ Consistent
 
 **Impact:**
+
 - Settings page now works correctly for all users with workspaces
 - Settings Profile page also fixed (inherits from layout)
 - Consistent redirect behavior across dashboard and settings
 
 **Status:** Ready for testing when dev server is running.
 
-
-
 ---
 
 ### VPs (Virtual Persons) API 404 Errors - FIXED
 
-**Issue:** VPs page showed "Failed to fetch VPs" error with all status counters (Online/Offline/Busy/Away) showing 0.
+**Issue:** VPs page showed "Failed to fetch VPs" error with all status counters
+(Online/Offline/Busy/Away) showing 0.
 
 **Root Cause:**
+
 1. `useVPs` hook was calling wrong endpoint: `/api/vps?organizationId=...`
 2. Should have been calling workspace-scoped endpoint: `/api/workspaces/[workspaceId]/vps`
 3. Hook parameter incorrectly named `orgId` instead of `workspaceId`
 4. VPs page was passing `workspaceId` but hook expected `organizationId`
 
 **Files Modified:**
+
 - `/packages/@wundr/neolith/apps/web/hooks/use-vp.ts`
 - `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/vps/page.tsx`
 
@@ -1503,7 +1550,8 @@ if (\!membership) {
 1. **use-vp.ts:**
    - Line 205: Changed parameter from `orgId: string` to `workspaceId: string`
    - Line 212: Updated validation to check `workspaceId` instead of `orgId`
-   - Line 240-242: Changed API call from `/api/vps?organizationId=...` to `/api/workspaces/${workspaceId}/vps`
+   - Line 240-242: Changed API call from `/api/vps?organizationId=...` to
+     `/api/workspaces/${workspaceId}/vps`
    - Line 282: Updated dependency array from `orgId` to `workspaceId`
    - Updated JSDoc comments to reflect workspace-scoped behavior
 
@@ -1513,11 +1561,13 @@ if (\!membership) {
    - Removed lines 27-28 that had the temporary organizationId mapping
 
 **API Endpoint Verified:**
+
 - ✅ `/api/workspaces/[workspaceId]/vps/route.ts` exists and returns correct format
 - ✅ Response includes `{ data: VP[], pagination: {...} }` structure
 - ✅ Orchestrator statistics calculated server-side (totalTasks, tasksCompleted, activeTasks)
 
 **Impact:**
+
 - VPs page will now load VPs correctly from workspace-scoped endpoint
 - Status counters (Online/Offline/Busy/Away) will display real data
 - Filtering by discipline, status, and search will work correctly
@@ -1525,22 +1575,25 @@ if (\!membership) {
 
 **Status:** TypeScript validated. Ready for testing when dev server is running.
 
-
-
-
 ---
 
 ### Dashboard Activity Widget 404 Error - FIXED (November 26, 2025)
 
-**Issue:** Dashboard activity widget showed "Failed to fetch activities: 404 Not Found" error in the Recent Activity section.
+**Issue:** Dashboard activity widget showed "Failed to fetch activities: 404 Not Found" error in the
+Recent Activity section.
 
 **Root Cause:**
-1. Dashboard component (`dashboard-content.tsx`) was calling legacy endpoint: `/api/workspaces/${workspaceId}/activity`
-2. Should have been calling the enhanced dashboard endpoint: `/api/workspaces/${workspaceId}/dashboard/activity`
-3. The dashboard activity API provides enhanced data structure with actor information and unified activity feed
+
+1. Dashboard component (`dashboard-content.tsx`) was calling legacy endpoint:
+   `/api/workspaces/${workspaceId}/activity`
+2. Should have been calling the enhanced dashboard endpoint:
+   `/api/workspaces/${workspaceId}/dashboard/activity`
+3. The dashboard activity API provides enhanced data structure with actor information and unified
+   activity feed
 4. Component data transformation logic was incompatible with new API response format
 
 **Files Modified:**
+
 - `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx`
 
 **Changes:**
@@ -1548,10 +1601,12 @@ if (\!membership) {
 1. **API Endpoint Update:**
    - Line 47: Changed from `/api/workspaces/${workspaceId}/activity?limit=5`
    - To: `/api/workspaces/${workspaceId}/dashboard/activity?limit=5&type=all`
-   - Added `type=all` parameter to fetch all activity types (messages, tasks, workflows, members, files, channels)
+   - Added `type=all` parameter to fetch all activity types (messages, tasks, workflows, members,
+     files, channels)
 
 2. **Response Transformation:**
-   - Added transformation logic (lines 51-64) to convert dashboard API response format to ActivityEntry interface
+   - Added transformation logic (lines 51-64) to convert dashboard API response format to
+     ActivityEntry interface
    - Maps `result.data` array to transform each activity:
      - `activity.actor` → `user.name` and `user.displayName`
      - `activity.target?.type` → `resourceType`
@@ -1559,6 +1614,7 @@ if (\!membership) {
      - `activity.timestamp` → `createdAt`
 
 **Dashboard Activity API Response Structure:**
+
 ```typescript
 {
   data: ActivityEntry[],           // Enhanced activity entries with actor info
@@ -1577,6 +1633,7 @@ if (\!membership) {
 ```
 
 **API Endpoint Verified:**
+
 - ✅ `/api/workspaces/[workspaceId]/dashboard/activity/route.ts` exists (789 lines)
 - ✅ Supports cursor-based pagination with filters
 - ✅ Aggregates from multiple sources: messages, tasks, workflows, members, files, channels
@@ -1585,6 +1642,7 @@ if (\!membership) {
 - ✅ Comprehensive error handling and authentication
 
 **Impact:**
+
 - Dashboard Recent Activity widget will now load activities correctly
 - Shows unified feed across all workspace activity types
 - Displays proper actor names and resource information
@@ -1597,30 +1655,38 @@ if (\!membership) {
 
 ### Dashboard Quick Stats Showing Zeros - FIXED (November 26, 2025)
 
-**Issue:** Dashboard quick stats (Team Members, Channels, Workflows, Virtual Persons) all showed 0 even when data existed in the workspace.
+**Issue:** Dashboard quick stats (Team Members, Channels, Workflows, Virtual Persons) all showed 0
+even when data existed in the workspace.
 
 **Root Cause:**
-1. Dashboard component (`dashboard-content.tsx`) was making multiple separate API calls to different endpoints:
+
+1. Dashboard component (`dashboard-content.tsx`) was making multiple separate API calls to different
+   endpoints:
    - `/api/workspaces/${workspaceId}/members` for members count
    - `/api/workspaces/${workspaceId}/workflows` for workflows count
    - `/api/workspaces/${workspaceId}/vps` for VPs count
    - `/api/workspaces/${workspaceId}` for channels count
 2. This approach was inefficient and error-prone
-3. A dedicated dashboard stats API already existed at `/api/workspaces/${workspaceId}/dashboard/stats` that returns all counts in one call
-4. The interface structure was inconsistent (using `membersCount`, `channelsCount`, etc. instead of `teamMembers`, `channels`, etc.)
+3. A dedicated dashboard stats API already existed at
+   `/api/workspaces/${workspaceId}/dashboard/stats` that returns all counts in one call
+4. The interface structure was inconsistent (using `membersCount`, `channelsCount`, etc. instead of
+   `teamMembers`, `channels`, etc.)
 
 **Files Modified:**
+
 - `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx`
 
 **Changes:**
 
 1. **Interface Update (lines 25-30):**
-   - Changed interface from `WorkspaceStats` with `membersCount`, `channelsCount`, `workflowsCount`, `vpsCount`
+   - Changed interface from `WorkspaceStats` with `membersCount`, `channelsCount`, `workflowsCount`,
+     `vpsCount`
    - To: `teamMembers`, `channels`, `workflows`, `orchestrators` (formerly VPs)
    - Aligns with API response structure
 
 2. **Consolidated API Call (lines 80-114):**
-   - Replaced 4 separate Promise.all() API calls with single call to `/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`
+   - Replaced 4 separate Promise.all() API calls with single call to
+     `/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`
    - Maps response data:
      - `statsData.members.total` → `teamMembers`
      - `statsData.channels.total` → `channels`
@@ -1635,6 +1701,7 @@ if (\!membership) {
    - Changed from `stats?.vpsCount` to `stats?.orchestrators`
 
 **Dashboard Stats API Verified:**
+
 - ✅ `/api/workspaces/[workspaceId]/dashboard/stats/route.ts` exists (519 lines)
 - ✅ Returns comprehensive stats:
   - `members`: total, activeToday, vpCount, humanCount
@@ -1648,6 +1715,7 @@ if (\!membership) {
 - ✅ Handles missing data gracefully (returns 0 instead of errors)
 
 **Impact:**
+
 - Dashboard quick stats will now display actual counts from the database
 - Reduced API calls from 4 to 1 (more efficient)
 - Consistent data structure across dashboard components
@@ -1658,6 +1726,7 @@ if (\!membership) {
   - Virtual Persons/Orchestrators (VPs only)
 
 **Additional Fix:**
+
 - Fixed unrelated TypeScript error in `/app/(workspace)/[workspaceId]/activity/page.tsx` line 513
 - Added type guard to check `typeof activity.metadata.replyCount === 'number'` before displaying
 
@@ -1669,7 +1738,8 @@ if (\!membership) {
 
 ### Summary
 
-The final wave was completed on November 27, 2025, implementing the remaining three major backlog items:
+The final wave was completed on November 27, 2025, implementing the remaining three major backlog
+items:
 
 1. **Full Agents Page Implementation** (6-8 hours estimated → ✅ COMPLETE)
 2. **Full Deployments Page Implementation** (6-8 hours estimated → ✅ COMPLETE)
@@ -1680,6 +1750,7 @@ The final wave was completed on November 27, 2025, implementing the remaining th
 ### Agents Page - COMPLETE
 
 **Files Created:**
+
 - `types/agent.ts` - Full TypeScript types for Agent entity
 - `hooks/use-agents.ts` - Custom hook for agent CRUD operations
 - `components/agents/agent-card.tsx` - Agent card component with status badges
@@ -1689,6 +1760,7 @@ The final wave was completed on November 27, 2025, implementing the remaining th
 - `app/api/workspaces/[workspaceId]/agents/[agentId]/route.ts` - GET, PATCH, DELETE endpoints
 
 **Features Implemented:**
+
 - Agent types: task, research, coding, data, qa, support, custom
 - Agent status: active, paused, inactive
 - Model configuration: model, temperature, maxTokens
@@ -1699,6 +1771,7 @@ The final wave was completed on November 27, 2025, implementing the remaining th
 ### Deployments Page - COMPLETE
 
 **Files Created:**
+
 - `types/deployment.ts` - Full TypeScript types for Deployment entity
 - `hooks/use-deployments.ts` - Custom hook for deployment CRUD operations
 - `components/deployments/deployment-card.tsx` - Deployment card with environment badges
@@ -1709,6 +1782,7 @@ The final wave was completed on November 27, 2025, implementing the remaining th
 - `app/api/workspaces/[workspaceId]/deployments/[deploymentId]/logs/route.ts` - Log streaming
 
 **Features Implemented:**
+
 - Deployment status: pending, building, deploying, active, failed, stopped
 - Environment types: development, staging, production
 - Git integration: commit hash, branch tracking
@@ -1719,6 +1793,7 @@ The final wave was completed on November 27, 2025, implementing the remaining th
 ### Channel Threads & Reactions - COMPLETE
 
 **Files Created:**
+
 - `lib/validations/threads.ts` - Thread validation schemas
 - `lib/validations/reactions.ts` - Reaction validation schemas
 - `hooks/use-thread.ts` - Thread state management hook
@@ -1731,6 +1806,7 @@ The final wave was completed on November 27, 2025, implementing the remaining th
 - `app/api/workspaces/[workspaceId]/channels/[channelId]/threads/route.ts`
 
 **Features Implemented:**
+
 - Thread replies to messages
 - Thread count display on parent messages
 - Emoji reactions (add/remove/list)
@@ -1763,4 +1839,3 @@ After the 20-agent audit (November 27, 2025), the remaining technical debt is mi
 **Estimated Remaining:** 8-10 hours (Export API only)
 
 ---
-

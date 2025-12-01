@@ -91,15 +91,18 @@ async function checkChannelMembership(channelId: string, userId: string) {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MESSAGE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -108,8 +111,11 @@ export async function POST(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -129,23 +135,26 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: MarkAsReadInput = parseResult.data;
 
     // Check channel membership
-    const membership = await checkChannelMembership(params.channelId, session.user.id);
+    const membership = await checkChannelMembership(
+      params.channelId,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -160,9 +169,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Message not found',
-            MESSAGE_ERROR_CODES.NOT_FOUND,
+            MESSAGE_ERROR_CODES.NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -170,9 +179,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Message does not belong to this channel',
-            MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+            MESSAGE_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -228,9 +237,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -261,15 +270,18 @@ export async function POST(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', MESSAGE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -278,20 +290,26 @@ export async function GET(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', MESSAGE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Check channel membership
-    const membership = await checkChannelMembership(params.channelId, session.user.id);
+    const membership = await checkChannelMembership(
+      params.channelId,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -344,9 +362,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

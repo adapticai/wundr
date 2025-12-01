@@ -5,7 +5,11 @@
  * @packageDocumentation
  */
 
-import { DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS, DAEMON_TOKEN_EXPIRY } from '../types/daemon';
+import {
+  DAEMON_REDIS_KEYS,
+  DAEMON_SCOPE_SETS,
+  DAEMON_TOKEN_EXPIRY,
+} from '../types/daemon';
 
 import type {
   DaemonAuthResult,
@@ -94,7 +98,11 @@ export class SessionNotFoundError extends DaemonAuthError {
 
 export class InsufficientScopeError extends DaemonAuthError {
   constructor(requiredScope: string) {
-    super(`Insufficient scope: ${requiredScope} required`, 'INSUFFICIENT_SCOPE', 403);
+    super(
+      `Insufficient scope: ${requiredScope} required`,
+      'INSUFFICIENT_SCOPE',
+      403
+    );
   }
 }
 
@@ -118,15 +126,19 @@ export class DaemonAuthService {
     this.jwtSecret = config.jwtSecret;
     this.issuer = config.issuer ?? 'genesis-platform';
     this.audience = config.audience ?? 'genesis-api';
-    this.accessTokenTtl = config.accessTokenTtl ?? DAEMON_TOKEN_EXPIRY.accessTokenSeconds;
-    this.refreshTokenTtl = config.refreshTokenTtl ?? DAEMON_TOKEN_EXPIRY.refreshTokenSeconds;
+    this.accessTokenTtl =
+      config.accessTokenTtl ?? DAEMON_TOKEN_EXPIRY.accessTokenSeconds;
+    this.refreshTokenTtl =
+      config.refreshTokenTtl ?? DAEMON_TOKEN_EXPIRY.refreshTokenSeconds;
     this.sessionTtl = config.sessionTtl ?? DAEMON_TOKEN_EXPIRY.sessionSeconds;
   }
 
   /**
    * Authenticate a daemon using OrchestratorAPI key.
    */
-  async authenticate(credentials: DaemonCredentials): Promise<DaemonAuthResult> {
+  async authenticate(
+    credentials: DaemonCredentials
+  ): Promise<DaemonAuthResult> {
     // Validate API key and get Orchestrator
     // Note: We look for any Orchestrator user that has orchestratorConfig set
     const user = await this.prisma.user.findFirst({
@@ -152,10 +164,14 @@ export class DaemonAuthService {
     }
 
     // Verify API key hash
-    const orchestratorConfig = user.orchestratorConfig as OrchestratorConfig | null;
+    const orchestratorConfig =
+      user.orchestratorConfig as OrchestratorConfig | null;
     const storedHash = orchestratorConfig?.apiKeyHash;
 
-    if (!storedHash || !await this.verifyApiKey(credentials.apiKey, storedHash)) {
+    if (
+      !storedHash ||
+      !(await this.verifyApiKey(credentials.apiKey, storedHash))
+    ) {
       throw new InvalidCredentialsError('Invalid API key');
     }
 
@@ -194,8 +210,11 @@ export class DaemonAuthService {
     }
 
     // Determine granted scopes
-    const requestedScopes = credentials.requestedScopes ?? DAEMON_SCOPE_SETS.standard;
-    const vpCapabilities = Array.isArray(orchestrator.capabilities) ? orchestrator.capabilities as string[] : [];
+    const requestedScopes =
+      credentials.requestedScopes ?? DAEMON_SCOPE_SETS.standard;
+    const vpCapabilities = Array.isArray(orchestrator.capabilities)
+      ? (orchestrator.capabilities as string[])
+      : [];
     const grantedScopes = this.resolveScopes(requestedScopes, vpCapabilities);
 
     // Create session
@@ -282,7 +301,10 @@ export class DaemonAuthService {
     }
 
     // Check if token is revoked
-    const isRevoked = await this.redis.sismember(DAEMON_REDIS_KEYS.revokedTokens, payload.jti);
+    const isRevoked = await this.redis.sismember(
+      DAEMON_REDIS_KEYS.revokedTokens,
+      payload.jti
+    );
     if (isRevoked) {
       throw new TokenRevokedError();
     }
@@ -317,25 +339,36 @@ export class DaemonAuthService {
   /**
    * Terminate a session.
    */
-  async terminateSession(sessionId: string, reason: DaemonSessionStatus = 'terminated'): Promise<void> {
+  async terminateSession(
+    sessionId: string,
+    reason: DaemonSessionStatus = 'terminated'
+  ): Promise<void> {
     const session = await this.getSession(sessionId);
     if (!session) {
-return;
-}
+      return;
+    }
 
     session.status = reason;
     await this.saveSession(session);
 
     // Clean up session references
-    await this.redis.srem(DAEMON_REDIS_KEYS.orchestratorSessions(session.orchestratorId), sessionId);
-    await this.redis.srem(DAEMON_REDIS_KEYS.daemonSessions(session.daemonId), sessionId);
+    await this.redis.srem(
+      DAEMON_REDIS_KEYS.orchestratorSessions(session.orchestratorId),
+      sessionId
+    );
+    await this.redis.srem(
+      DAEMON_REDIS_KEYS.daemonSessions(session.daemonId),
+      sessionId
+    );
   }
 
   /**
    * Get active sessions for a daemon.
    */
   async getActiveSessions(daemonId: string): Promise<DaemonSession[]> {
-    const sessionIds = await this.redis.smembers(DAEMON_REDIS_KEYS.daemonSessions(daemonId));
+    const sessionIds = await this.redis.smembers(
+      DAEMON_REDIS_KEYS.daemonSessions(daemonId)
+    );
     const sessions: DaemonSession[] = [];
 
     for (const sessionId of sessionIds) {
@@ -354,7 +387,7 @@ return;
   async updateHeartbeat(
     sessionId: string,
     status: DaemonSessionStatus = 'active',
-    metrics?: DaemonMetrics,
+    metrics?: DaemonMetrics
   ): Promise<void> {
     const session = await this.getSession(sessionId);
     if (!session) {
@@ -485,8 +518,14 @@ return;
     await this.saveSession(session);
 
     // Add to session indices
-    await this.redis.sadd(DAEMON_REDIS_KEYS.orchestratorSessions(params.orchestratorId), session.id);
-    await this.redis.sadd(DAEMON_REDIS_KEYS.daemonSessions(params.daemonId), session.id);
+    await this.redis.sadd(
+      DAEMON_REDIS_KEYS.orchestratorSessions(params.orchestratorId),
+      session.id
+    );
+    await this.redis.sadd(
+      DAEMON_REDIS_KEYS.daemonSessions(params.daemonId),
+      session.id
+    );
 
     return session;
   }
@@ -505,8 +544,8 @@ return;
     const data = await this.redis.get(key);
 
     if (!data) {
-return null;
-}
+      return null;
+    }
 
     const session = JSON.parse(data) as DaemonSession;
     session.createdAt = new Date(session.createdAt);
@@ -531,7 +570,10 @@ return null;
    * @param vpCapabilities - Capabilities configured for the VP
    * @returns Array of granted scopes
    */
-  private resolveScopes(requested: DaemonScope[], vpCapabilities: string[]): DaemonScope[] {
+  private resolveScopes(
+    requested: DaemonScope[],
+    vpCapabilities: string[]
+  ): DaemonScope[] {
     // Build allowed scopes based on Orchestrator capabilities
     const allowedScopes = new Set(DAEMON_SCOPE_SETS.full);
 
@@ -563,7 +605,7 @@ return null;
 
       // Return intersection of requested, allowed, and restricted
       return requested.filter(
-        scope => allowedScopes.has(scope) && restrictedScopes.has(scope),
+        scope => allowedScopes.has(scope) && restrictedScopes.has(scope)
       );
     }
 
@@ -575,10 +617,14 @@ return null;
     // Simple base64 encoding for mock implementation
     // In production, use proper JWT signing with jsonwebtoken or jose
     const header = { alg: 'HS256', typ: 'JWT' };
-    const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url');
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const encodedHeader = Buffer.from(JSON.stringify(header)).toString(
+      'base64url'
+    );
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+      'base64url'
+    );
     const signature = Buffer.from(
-      `${encodedHeader}.${encodedPayload}.${this.jwtSecret}`,
+      `${encodedHeader}.${encodedPayload}.${this.jwtSecret}`
     ).toString('base64url');
 
     return `${encodedHeader}.${encodedPayload}.${signature}`;
@@ -597,7 +643,7 @@ return null;
       }
 
       const payload = JSON.parse(
-        Buffer.from(encodedPayload, 'base64url').toString(),
+        Buffer.from(encodedPayload, 'base64url').toString()
       ) as DaemonTokenPayload;
 
       // Check expiration
@@ -608,13 +654,16 @@ return null;
       return payload;
     } catch (error) {
       if (error instanceof DaemonAuthError) {
-throw error;
-}
+        throw error;
+      }
       throw new DaemonAuthError('Invalid token', 'INVALID_TOKEN');
     }
   }
 
-  private async verifyApiKey(apiKey: string, storedHash: string): Promise<boolean> {
+  private async verifyApiKey(
+    apiKey: string,
+    storedHash: string
+  ): Promise<boolean> {
     // Simple comparison for mock implementation
     // In production, use proper password hashing (argon2, bcrypt)
     const keyHash = Buffer.from(apiKey).toString('base64');
@@ -638,7 +687,9 @@ throw error;
 /**
  * Create a new DaemonAuthService instance.
  */
-export function createDaemonAuthService(config: DaemonAuthServiceConfig): DaemonAuthService {
+export function createDaemonAuthService(
+  config: DaemonAuthServiceConfig
+): DaemonAuthService {
   return new DaemonAuthService(config);
 }
 

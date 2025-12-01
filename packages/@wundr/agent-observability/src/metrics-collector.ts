@@ -181,7 +181,7 @@ export class MetricsCollector {
   incrementCounter(
     name: string,
     labels: Record<string, string> = {},
-    value: number = 1,
+    value: number = 1
   ): void {
     this.ensureMetricExists(name, 'counter');
 
@@ -228,7 +228,7 @@ export class MetricsCollector {
   setGauge(
     name: string,
     value: number,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): void {
     this.ensureMetricExists(name, 'gauge');
 
@@ -254,7 +254,7 @@ export class MetricsCollector {
   incrementGauge(
     name: string,
     value: number = 1,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): void {
     const currentValue = this.getGauge(name, labels);
     this.setGauge(name, currentValue + value, labels);
@@ -270,7 +270,7 @@ export class MetricsCollector {
   decrementGauge(
     name: string,
     value: number = 1,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): void {
     const currentValue = this.getGauge(name, labels);
     this.setGauge(name, currentValue - value, labels);
@@ -303,7 +303,7 @@ export class MetricsCollector {
   observeHistogram(
     name: string,
     value: number,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): void {
     this.ensureMetricExists(name, 'histogram');
 
@@ -349,7 +349,7 @@ export class MetricsCollector {
    */
   getHistogram(
     name: string,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): {
     sum: number;
     count: number;
@@ -385,7 +385,7 @@ export class MetricsCollector {
   observeSummary(
     name: string,
     value: number,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): void {
     this.ensureMetricExists(name, 'summary');
 
@@ -422,7 +422,7 @@ export class MetricsCollector {
    */
   getSummary(
     name: string,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): { count: number; sum: number; quantiles: Record<string, number> } | null {
     const summaryMap = this.summaries.get(name);
     if (!summaryMap) {
@@ -468,7 +468,7 @@ export class MetricsCollector {
     aggregationType: MetricAggregation['aggregationType'],
     startTime: Date,
     endTime: Date,
-    labels: Record<string, string> = {},
+    labels: Record<string, string> = {}
   ): MetricAggregation | null {
     const points = this.dataPoints.get(name);
     if (!points || points.length === 0) {
@@ -479,7 +479,7 @@ export class MetricsCollector {
     const filtered = points.filter(p => {
       const inTimeRange = p.timestamp >= startTime && p.timestamp <= endTime;
       const matchesLabels = Object.entries(labels).every(
-        ([k, v]) => p.labels[k] === v,
+        ([k, v]) => p.labels[k] === v
       );
       return inTimeRange && matchesLabels;
     });
@@ -543,7 +543,7 @@ export class MetricsCollector {
   getDataPoints(
     name: string,
     startTime?: Date,
-    endTime?: Date,
+    endTime?: Date
   ): MetricDataPoint[] {
     const points = this.dataPoints.get(name) || [];
 
@@ -767,7 +767,7 @@ export class MetricsCollector {
       });
     } else if (definition.type !== expectedType) {
       throw new Error(
-        `Metric "${name}" is defined as ${definition.type}, not ${expectedType}`,
+        `Metric "${name}" is defined as ${definition.type}, not ${expectedType}`
       );
     }
   }
@@ -777,7 +777,7 @@ export class MetricsCollector {
    */
   private labelsToKey(labels: Record<string, string>): string {
     const sortedEntries = Object.entries(labels).sort(([a], [b]) =>
-      a.localeCompare(b),
+      a.localeCompare(b)
     );
     return JSON.stringify(sortedEntries);
   }
@@ -788,7 +788,7 @@ export class MetricsCollector {
   private recordDataPoint(
     name: string,
     value: number,
-    labels: Record<string, string>,
+    labels: Record<string, string>
   ): void {
     const points = this.dataPoints.get(name);
     if (!points) {
@@ -837,7 +837,7 @@ export class MetricsCollector {
  * @returns Configured MetricsCollector instance
  */
 export function createMetricsCollector(
-  config: Partial<MetricsCollectorConfig> = {},
+  config: Partial<MetricsCollectorConfig> = {}
 ): MetricsCollector {
   return new MetricsCollector(config);
 }

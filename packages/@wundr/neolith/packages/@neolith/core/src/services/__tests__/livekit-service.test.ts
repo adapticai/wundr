@@ -146,7 +146,7 @@ describe('LiveKitService', () => {
 
       expect(room.enabledCodecs).toBeDefined();
       expect(room.enabledCodecs.length).toBeGreaterThan(0);
-      expect(room.enabledCodecs.some((c) => c.mime === 'audio/opus')).toBe(true);
+      expect(room.enabledCodecs.some(c => c.mime === 'audio/opus')).toBe(true);
     });
 
     it('creates multiple rooms independently', async () => {
@@ -157,8 +157,8 @@ describe('LiveKitService', () => {
       ]);
 
       expect(rooms).toHaveLength(3);
-      expect(new Set(rooms.map((r) => r.sid)).size).toBe(3);
-      expect(new Set(rooms.map((r) => r.name)).size).toBe(3);
+      expect(new Set(rooms.map(r => r.sid)).size).toBe(3);
+      expect(new Set(rooms.map(r => r.name)).size).toBe(3);
     });
   });
 
@@ -305,7 +305,7 @@ describe('LiveKitService', () => {
         iss: 'test-api-key',
       };
       const expiredToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${Buffer.from(
-        JSON.stringify(payload),
+        JSON.stringify(payload)
       ).toString('base64')}.mock-signature`;
 
       const verification = await livekit.verifyToken(expiredToken);
@@ -335,8 +335,8 @@ describe('LiveKitService', () => {
       const participants = await livekit.listParticipants(testRoom.name);
 
       expect(participants).toHaveLength(2);
-      expect(participants.map((p) => p.identity)).toContain('user-1');
-      expect(participants.map((p) => p.identity)).toContain('user-2');
+      expect(participants.map(p => p.identity)).toContain('user-1');
+      expect(participants.map(p => p.identity)).toContain('user-2');
     });
 
     it('returns empty array for room with no participants', async () => {
@@ -363,7 +363,7 @@ describe('LiveKitService', () => {
       expect(remaining).toHaveLength(0);
       expect(livekit.removeParticipant).toHaveBeenCalledWith(
         testRoom.name,
-        'to-remove',
+        'to-remove'
       );
     });
 
@@ -399,7 +399,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'speaker',
         'track-audio-1',
-        true,
+        true
       );
 
       expect(mutedTrack).toBeDefined();
@@ -425,7 +425,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'video-user',
         'track-video-1',
-        false,
+        false
       );
 
       expect(unmutedTrack?.muted).toBe(false);
@@ -439,7 +439,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'no-track',
         'non-existent-track',
-        true,
+        true
       );
 
       expect(result).toBeNull();
@@ -453,7 +453,10 @@ describe('LiveKitService', () => {
 
       livekit._addParticipant(testRoom.name, participant);
 
-      const found = await livekit.getParticipant(testRoom.name, 'specific-user');
+      const found = await livekit.getParticipant(
+        testRoom.name,
+        'specific-user'
+      );
 
       expect(found).toBeDefined();
       expect(found?.identity).toBe('specific-user');
@@ -473,7 +476,7 @@ describe('LiveKitService', () => {
       const updated = await livekit.updateParticipant(
         testRoom.name,
         'meta-user',
-        JSON.stringify({ role: 'moderator' }),
+        JSON.stringify({ role: 'moderator' })
       );
 
       expect(updated?.metadata).toBe(JSON.stringify({ role: 'moderator' }));
@@ -499,7 +502,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'permission-user',
         undefined,
-        { canPublish: false },
+        { canPublish: false }
       );
 
       expect(updated?.permission.canPublish).toBe(false);
@@ -533,7 +536,7 @@ describe('LiveKitService', () => {
       const event = createMockWebhookEvent(
         'participant_joined',
         { name: 'webhook-room' },
-        { identity: 'joining-user' },
+        { identity: 'joining-user' }
       );
 
       const body = JSON.stringify(event);
@@ -548,7 +551,7 @@ describe('LiveKitService', () => {
       const event = createMockWebhookEvent(
         'participant_left',
         { name: 'webhook-room' },
-        { identity: 'leaving-user' },
+        { identity: 'leaving-user' }
       );
 
       const body = JSON.stringify(event);
@@ -559,7 +562,9 @@ describe('LiveKitService', () => {
     });
 
     it('parses room_started webhook', async () => {
-      const event = createMockWebhookEvent('room_started', { name: 'new-room' });
+      const event = createMockWebhookEvent('room_started', {
+        name: 'new-room',
+      });
 
       const body = JSON.stringify(event);
       const parsed = await livekit.parseWebhook(body);
@@ -569,7 +574,9 @@ describe('LiveKitService', () => {
     });
 
     it('parses room_finished webhook', async () => {
-      const event = createMockWebhookEvent('room_finished', { name: 'ended-room' });
+      const event = createMockWebhookEvent('room_finished', {
+        name: 'ended-room',
+      });
 
       const body = JSON.stringify(event);
       const parsed = await livekit.parseWebhook(body);
@@ -582,7 +589,7 @@ describe('LiveKitService', () => {
       const event = createMockWebhookEvent(
         'track_published',
         { name: 'track-room' },
-        { identity: 'publisher' },
+        { identity: 'publisher' }
       );
 
       const body = JSON.stringify(event);
@@ -592,7 +599,9 @@ describe('LiveKitService', () => {
     });
 
     it('includes event timestamp', async () => {
-      const event = createMockWebhookEvent('room_started', { name: 'time-room' });
+      const event = createMockWebhookEvent('room_started', {
+        name: 'time-room',
+      });
 
       const body = JSON.stringify(event);
       const parsed = await livekit.parseWebhook(body);
@@ -625,7 +634,11 @@ describe('LiveKitService', () => {
       const rooms = await livekit.listRooms();
 
       expect(rooms).toHaveLength(3);
-      expect(rooms.map((r) => r.name).sort()).toEqual(['room-a', 'room-b', 'room-c']);
+      expect(rooms.map(r => r.name).sort()).toEqual([
+        'room-a',
+        'room-b',
+        'room-c',
+      ]);
     });
 
     it('lists specific rooms by name', async () => {
@@ -636,7 +649,7 @@ describe('LiveKitService', () => {
       const rooms = await livekit.listRooms(['room-1', 'room-3']);
 
       expect(rooms).toHaveLength(2);
-      expect(rooms.map((r) => r.name).sort()).toEqual(['room-1', 'room-3']);
+      expect(rooms.map(r => r.name).sort()).toEqual(['room-1', 'room-3']);
     });
 
     it('returns empty array when no rooms exist', async () => {
@@ -657,9 +670,17 @@ describe('LiveKitService', () => {
     });
 
     it('removes participants when room is deleted', async () => {
-      const room = await livekit.createRoom({ name: 'delete-with-participants' });
-      livekit._addParticipant(room.name, createMockParticipant({ identity: 'user-1' }));
-      livekit._addParticipant(room.name, createMockParticipant({ identity: 'user-2' }));
+      const room = await livekit.createRoom({
+        name: 'delete-with-participants',
+      });
+      livekit._addParticipant(
+        room.name,
+        createMockParticipant({ identity: 'user-1' })
+      );
+      livekit._addParticipant(
+        room.name,
+        createMockParticipant({ identity: 'user-2' })
+      );
 
       await livekit.deleteRoom(room.name);
 
@@ -687,7 +708,7 @@ describe('LiveKitService', () => {
 
       const updated = await livekit.updateRoomMetadata(
         'metadata-room',
-        JSON.stringify({ updated: true }),
+        JSON.stringify({ updated: true })
       );
 
       expect(updated?.metadata).toBe(JSON.stringify({ updated: true }));

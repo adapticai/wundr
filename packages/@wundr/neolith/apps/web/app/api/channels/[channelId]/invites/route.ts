@@ -92,15 +92,18 @@ async function checkChannelAccess(channelId: string, userId: string) {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -109,8 +112,11 @@ export async function POST(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -120,9 +126,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -133,9 +139,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Channel Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -145,29 +151,39 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate emails
-    if (!body.emails || !Array.isArray(body.emails) || body.emails.length === 0) {
+    if (
+      !body.emails ||
+      !Array.isArray(body.emails) ||
+      body.emails.length === 0
+    ) {
       return NextResponse.json(
-        createErrorResponse('At least one email is required', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'At least one email is required',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const invalidEmails = body.emails.filter((email) => !emailRegex.test(email));
+    const invalidEmails = body.emails.filter(email => !emailRegex.test(email));
     if (invalidEmails.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           `Invalid email format: ${invalidEmails.join(', ')}`,
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -193,17 +209,20 @@ export async function POST(
     });
 
     const existingMemberEmails = existingUsers
-      .filter((u) => u.channelMembers.length > 0)
-      .map((u) => u.email);
+      .filter(u => u.channelMembers.length > 0)
+      .map(u => u.email);
 
     const workspaceMemberEmails = existingUsers
-      .filter((u) => u.workspaceMembers.length > 0 && u.channelMembers.length === 0)
-      .map((u) => u.email);
+      .filter(
+        u => u.workspaceMembers.length > 0 && u.channelMembers.length === 0
+      )
+      .map(u => u.email);
 
     // Filter emails that are completely new (not workspace members)
     const newEmails = body.emails.filter(
-      (email) =>
-        !existingMemberEmails.includes(email) && !workspaceMemberEmails.includes(email),
+      email =>
+        !existingMemberEmails.includes(email) &&
+        !workspaceMemberEmails.includes(email)
     );
 
     // Get current user info for notification
@@ -211,7 +230,8 @@ export async function POST(
       where: { id: session.user.id },
       select: { name: true, displayName: true, email: true },
     });
-    const inviterName = currentUser?.displayName || currentUser?.name || 'Someone';
+    const inviterName =
+      currentUser?.displayName || currentUser?.name || 'Someone';
 
     const results = {
       invited: [] as string[],
@@ -223,11 +243,11 @@ export async function POST(
     // For workspace members who aren't in the channel, add them directly
     if (workspaceMemberEmails.length > 0) {
       const workspaceUsers = existingUsers.filter(
-        (u) => u.workspaceMembers.length > 0 && u.channelMembers.length === 0,
+        u => u.workspaceMembers.length > 0 && u.channelMembers.length === 0
       );
 
       await prisma.channelMember.createMany({
-        data: workspaceUsers.map((user) => ({
+        data: workspaceUsers.map(user => ({
           channelId: params.channelId,
           userId: user.id,
           role,
@@ -240,9 +260,12 @@ export async function POST(
           user.id,
           params.channelId,
           access.channel.name,
-          inviterName,
-        ).catch((err) => {
-          console.error('[POST /api/channels/:channelId/invites] Failed to send notification:', err);
+          inviterName
+        ).catch(err => {
+          console.error(
+            '[POST /api/channels/:channelId/invites] Failed to send notification:',
+            err
+          );
         });
       }
 
@@ -259,10 +282,15 @@ export async function POST(
       // 4. Creating a public invitation acceptance page
 
       // For now, we'll just log that this feature is pending
-      console.log('[POST /api/channels/:channelId/invites] Email invitations not yet implemented for:', newEmails);
+      console.log(
+        '[POST /api/channels/:channelId/invites] Email invitations not yet implemented for:',
+        newEmails
+      );
 
       // Return them as failed for now
-      results.failed.push(...newEmails.map(email => `${email} (email invitations coming soon)`));
+      results.failed.push(
+        ...newEmails.map(email => `${email} (email invitations coming soon)`)
+      );
     }
 
     return NextResponse.json(
@@ -270,13 +298,16 @@ export async function POST(
         data: results,
         message: `Invited ${results.invited.length} user(s) successfully`,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/invites] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

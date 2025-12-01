@@ -27,7 +27,8 @@ export const OrchestratorStatus = {
   Deleted: 'DELETED',
 } as const;
 
-export type OrchestratorStatus = (typeof OrchestratorStatus)[keyof typeof OrchestratorStatus];
+export type OrchestratorStatus =
+  (typeof OrchestratorStatus)[keyof typeof OrchestratorStatus];
 
 /**
  * Orchestrator online/presence status
@@ -348,7 +349,11 @@ export interface OrchestratorFilterInput {
 /**
  * Sortable fields for Orchestrator queries
  */
-export type OrchestratorSortField = 'name' | 'createdAt' | 'updatedAt' | 'lastActiveAt';
+export type OrchestratorSortField =
+  | 'name'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'lastActiveAt';
 
 /**
  * Sort direction
@@ -469,7 +474,8 @@ export const OrchestratorErrorCode = {
   ValidationError: 'ORCHESTRATOR_VALIDATION_ERROR',
 } as const;
 
-export type OrchestratorErrorCode = (typeof OrchestratorErrorCode)[keyof typeof OrchestratorErrorCode];
+export type OrchestratorErrorCode =
+  (typeof OrchestratorErrorCode)[keyof typeof OrchestratorErrorCode];
 
 /**
  * Orchestrator error structure
@@ -502,7 +508,8 @@ export const OrchestratorEventType = {
   ApiKeyRevoked: 'ORCHESTRATOR_API_KEY_REVOKED',
 } as const;
 
-export type OrchestratorEventType = (typeof OrchestratorEventType)[keyof typeof OrchestratorEventType];
+export type OrchestratorEventType =
+  (typeof OrchestratorEventType)[keyof typeof OrchestratorEventType];
 
 /**
  * Orchestrator event structure

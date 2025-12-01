@@ -18,10 +18,7 @@ import { createId } from '@paralleldrive/cuid2';
 import * as admin from 'firebase-admin';
 import * as webpush from 'web-push';
 
-import {
-  GenesisError,
-  TransactionError,
-} from '../errors';
+import { GenesisError, TransactionError } from '../errors';
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   DEFAULT_NOTIFICATION_LIST_OPTIONS,
@@ -60,7 +57,12 @@ import type { PrismaClient } from '@neolith/database';
  * Base error for notification operations.
  */
 export class NotificationError extends GenesisError {
-  constructor(message: string, code: string, statusCode: number = 400, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    statusCode: number = 400,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, statusCode, metadata);
     this.name = 'NotificationError';
   }
@@ -75,7 +77,7 @@ export class NotificationNotFoundError extends GenesisError {
       `Notification not found: ${notificationId}`,
       'NOTIFICATION_NOT_FOUND',
       404,
-      { notificationId },
+      { notificationId }
     );
     this.name = 'NotificationNotFoundError';
   }
@@ -86,12 +88,7 @@ export class NotificationNotFoundError extends GenesisError {
  */
 export class UserNotFoundError extends GenesisError {
   constructor(userId: string) {
-    super(
-      `User not found: ${userId}`,
-      'USER_NOT_FOUND',
-      404,
-      { userId },
-    );
+    super(`User not found: ${userId}`, 'USER_NOT_FOUND', 404, { userId });
     this.name = 'UserNotFoundError';
   }
 }
@@ -101,12 +98,9 @@ export class UserNotFoundError extends GenesisError {
  */
 export class DeviceNotFoundError extends GenesisError {
   constructor(deviceId: string) {
-    super(
-      `Device not found: ${deviceId}`,
-      'DEVICE_NOT_FOUND',
-      404,
-      { deviceId },
-    );
+    super(`Device not found: ${deviceId}`, 'DEVICE_NOT_FOUND', 404, {
+      deviceId,
+    });
     this.name = 'DeviceNotFoundError';
   }
 }
@@ -164,8 +158,15 @@ export class NotificationValidationError extends GenesisError {
 export interface NotificationService {
   // Push Notification Sending
   sendPush(userId: string, notification: PushNotification): Promise<void>;
-  sendBulkPush(userIds: string[], notification: PushNotification): Promise<BatchResult>;
-  sendToChannel(channelId: string, notification: PushNotification, excludeUserIds?: string[]): Promise<void>;
+  sendBulkPush(
+    userIds: string[],
+    notification: PushNotification
+  ): Promise<BatchResult>;
+  sendToChannel(
+    channelId: string,
+    notification: PushNotification,
+    excludeUserIds?: string[]
+  ): Promise<void>;
 
   // Device Management
   registerDevice(userId: string, device: DeviceRegistration): Promise<Device>;
@@ -175,7 +176,10 @@ export interface NotificationService {
 
   // Preferences
   getPreferences(userId: string): Promise<NotificationPreferences>;
-  updatePreferences(userId: string, prefs: UpdatePreferencesInput): Promise<NotificationPreferences>;
+  updatePreferences(
+    userId: string,
+    prefs: UpdatePreferencesInput
+  ): Promise<NotificationPreferences>;
   muteChannel(userId: string, channelId: string): Promise<void>;
   unmuteChannel(userId: string, channelId: string): Promise<void>;
 
@@ -183,7 +187,10 @@ export interface NotificationService {
   createNotification(input: CreateNotificationInput): Promise<Notification>;
   markAsRead(notificationId: string): Promise<void>;
   markAllAsRead(userId: string): Promise<number>;
-  getNotifications(userId: string, options?: NotificationListOptions): Promise<PaginatedNotificationResult>;
+  getNotifications(
+    userId: string,
+    options?: NotificationListOptions
+  ): Promise<PaginatedNotificationResult>;
   getUnreadCount(userId: string): Promise<number>;
   deleteNotification(notificationId: string): Promise<void>;
   deleteAllNotifications(userId: string): Promise<number>;
@@ -193,8 +200,14 @@ export interface NotificationService {
  * Interface for notification event subscriptions.
  */
 export interface NotificationEvents {
-  onNotificationCreated(userId: string, callback: OnNotificationCreatedCallback): () => void;
-  onNotificationRead(userId: string, callback: OnNotificationReadCallback): () => void;
+  onNotificationCreated(
+    userId: string,
+    callback: OnNotificationCreatedCallback
+  ): () => void;
+  onNotificationRead(
+    userId: string,
+    callback: OnNotificationReadCallback
+  ): () => void;
   onPushSent(userId: string, callback: OnPushSentCallback): () => void;
 }
 
@@ -225,7 +238,9 @@ const notificationsByUser = new Map<string, Set<string>>();
  * Complete notification service implementation providing push notifications,
  * device management, preferences, and in-app notifications.
  */
-export class NotificationServiceImpl implements NotificationService, NotificationEvents {
+export class NotificationServiceImpl
+  implements NotificationService, NotificationEvents
+{
   private readonly db: PrismaClient;
   private readonly eventEmitter: EventEmitter;
   private readonly config: NotificationServiceConfig;
@@ -264,7 +279,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
         webpush.setVapidDetails(
           `mailto:${this.config.webPush.contactEmail}`,
           this.config.webPush.publicKey,
-          this.config.webPush.privateKey,
+          this.config.webPush.privateKey
         );
         this.webPushConfigured = true;
       } catch {
@@ -277,14 +292,17 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     if (this.config.fcm) {
       try {
         // eslint-disable-next-line import/namespace
-        this.fcmApp = admin.initializeApp({
-          // eslint-disable-next-line import/namespace
-          credential: admin.credential.cert({
-            projectId: this.config.fcm.projectId,
-            privateKey: this.config.fcm.privateKey.replace(/\\n/g, '\n'),
-            clientEmail: this.config.fcm.clientEmail,
-          }),
-        }, `genesis-notifications-${createId()}`);
+        this.fcmApp = admin.initializeApp(
+          {
+            // eslint-disable-next-line import/namespace
+            credential: admin.credential.cert({
+              projectId: this.config.fcm.projectId,
+              privateKey: this.config.fcm.privateKey.replace(/\\n/g, '\n'),
+              clientEmail: this.config.fcm.clientEmail,
+            }),
+          },
+          `genesis-notifications-${createId()}`
+        );
       } catch {
         // FCM initialization failed - will skip FCM sends
         this.fcmApp = null;
@@ -299,7 +317,10 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
   /**
    * Sends a push notification to a specific user.
    */
-  async sendPush(userId: string, notification: PushNotification): Promise<void> {
+  async sendPush(
+    userId: string,
+    notification: PushNotification
+  ): Promise<void> {
     // Verify user exists
     const user = await this.db.user.findUnique({
       where: { id: userId },
@@ -343,7 +364,11 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
 
     for (const device of devices) {
       try {
-        const result = await this.sendToDevice(device, notification, preferences);
+        const result = await this.sendToDevice(
+          device,
+          notification,
+          preferences
+        );
         results.push(result);
 
         if (!result.success && result.error?.includes('invalid')) {
@@ -386,7 +411,10 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
   /**
    * Sends a push notification to multiple users.
    */
-  async sendBulkPush(userIds: string[], notification: PushNotification): Promise<BatchResult> {
+  async sendBulkPush(
+    userIds: string[],
+    notification: PushNotification
+  ): Promise<BatchResult> {
     const allResults: PushSendResult[] = [];
     const allInvalidTokens: string[] = [];
 
@@ -396,7 +424,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     for (let i = 0; i < userIds.length; i += batchSize) {
       const batch = userIds.slice(i, i + batchSize);
 
-      const batchPromises = batch.map(async (userId) => {
+      const batchPromises = batch.map(async userId => {
         try {
           await this.sendPush(userId, notification);
           return { userId, success: true };
@@ -436,7 +464,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
   async sendToChannel(
     channelId: string,
     notification: PushNotification,
-    excludeUserIds: string[] = [],
+    excludeUserIds: string[] = []
   ): Promise<void> {
     // Get channel members
     const members = await this.db.channelMember.findMany({
@@ -474,15 +502,26 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
   private async sendToDevice(
     device: Device,
     notification: PushNotification,
-    preferences: NotificationPreferences,
+    preferences: NotificationPreferences
   ): Promise<PushSendResult> {
     const { platform, token, id: deviceId } = device;
 
     try {
       if (platform === 'web') {
-        return await this.sendWebPush(deviceId, token, notification, preferences);
+        return await this.sendWebPush(
+          deviceId,
+          token,
+          notification,
+          preferences
+        );
       } else {
-        return await this.sendFCM(deviceId, token, notification, platform, preferences);
+        return await this.sendFCM(
+          deviceId,
+          token,
+          notification,
+          platform,
+          preferences
+        );
       }
     } catch (error) {
       return {
@@ -501,7 +540,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     deviceId: string,
     token: string,
     notification: PushNotification,
-    preferences: NotificationPreferences,
+    preferences: NotificationPreferences
   ): Promise<PushSendResult> {
     if (!this.webPushConfigured) {
       return {
@@ -540,7 +579,11 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
         TTL: notification.ttl ?? this.config.defaultTTL,
       };
 
-      const result = await webpush.sendNotification(subscription, payload, options);
+      const result = await webpush.sendNotification(
+        subscription,
+        payload,
+        options
+      );
 
       return {
         success: true,
@@ -549,10 +592,12 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
         messageId: result.headers?.['message-id'] as string | undefined,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const isInvalid = errorMessage.includes('expired') ||
-                        errorMessage.includes('invalid') ||
-                        errorMessage.includes('unsubscribed');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      const isInvalid =
+        errorMessage.includes('expired') ||
+        errorMessage.includes('invalid') ||
+        errorMessage.includes('unsubscribed');
 
       return {
         success: false,
@@ -571,7 +616,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     token: string,
     notification: PushNotification,
     platform: 'ios' | 'android',
-    preferences: NotificationPreferences,
+    preferences: NotificationPreferences
   ): Promise<PushSendResult> {
     if (!this.fcmApp) {
       return {
@@ -592,7 +637,8 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     }
 
     try {
-      const ttlSeconds = notification.ttl ?? this.config.defaultTTL ?? DEFAULT_PUSH_TTL;
+      const ttlSeconds =
+        notification.ttl ?? this.config.defaultTTL ?? DEFAULT_PUSH_TTL;
 
       const message: admin.messaging.Message = {
         token,
@@ -601,35 +647,53 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
           body: notification.body,
           imageUrl: notification.image,
         },
-        data: notification.data ? this.stringifyData(notification.data) : undefined,
-        android: platform === 'android' ? {
-          priority: notification.priority === 'urgent' ? 'high' : 'normal',
-          ttl: ttlSeconds * 1000,
-          notification: {
-            sound: preferences.mobile.sound ? (notification.sound ?? 'default') : undefined,
-            clickAction: notification.clickAction,
-            tag: notification.tag,
-          },
-          collapseKey: notification.collapseKey,
-        } : undefined,
-        apns: platform === 'ios' ? {
-          headers: {
-            'apns-priority': notification.priority === 'urgent' ? '10' : '5',
-            'apns-expiration': String(Math.floor(Date.now() / 1000) + ttlSeconds),
-            ...(notification.collapseKey ? { 'apns-collapse-id': notification.collapseKey } : {}),
-          },
-          payload: {
-            aps: {
-              alert: {
-                title: notification.title,
-                body: notification.body,
-              },
-              badge: notification.badge,
-              sound: preferences.mobile.sound ? (notification.sound ?? 'default') : undefined,
-              'mutable-content': 1,
-            },
-          },
-        } : undefined,
+        data: notification.data
+          ? this.stringifyData(notification.data)
+          : undefined,
+        android:
+          platform === 'android'
+            ? {
+                priority:
+                  notification.priority === 'urgent' ? 'high' : 'normal',
+                ttl: ttlSeconds * 1000,
+                notification: {
+                  sound: preferences.mobile.sound
+                    ? (notification.sound ?? 'default')
+                    : undefined,
+                  clickAction: notification.clickAction,
+                  tag: notification.tag,
+                },
+                collapseKey: notification.collapseKey,
+              }
+            : undefined,
+        apns:
+          platform === 'ios'
+            ? {
+                headers: {
+                  'apns-priority':
+                    notification.priority === 'urgent' ? '10' : '5',
+                  'apns-expiration': String(
+                    Math.floor(Date.now() / 1000) + ttlSeconds
+                  ),
+                  ...(notification.collapseKey
+                    ? { 'apns-collapse-id': notification.collapseKey }
+                    : {}),
+                },
+                payload: {
+                  aps: {
+                    alert: {
+                      title: notification.title,
+                      body: notification.body,
+                    },
+                    badge: notification.badge,
+                    sound: preferences.mobile.sound
+                      ? (notification.sound ?? 'default')
+                      : undefined,
+                    'mutable-content': 1,
+                  },
+                },
+              }
+            : undefined,
       };
 
       // eslint-disable-next-line import/namespace
@@ -643,14 +707,19 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
       };
     } catch (error) {
       const errorCode = (error as admin.FirebaseError)?.code;
-      const isInvalid = errorCode === 'messaging/invalid-registration-token' ||
-                        errorCode === 'messaging/registration-token-not-registered';
+      const isInvalid =
+        errorCode === 'messaging/invalid-registration-token' ||
+        errorCode === 'messaging/registration-token-not-registered';
 
       return {
         success: false,
         deviceId,
         platform,
-        error: isInvalid ? 'invalid_token' : (error instanceof Error ? error.message : 'Unknown error'),
+        error: isInvalid
+          ? 'invalid_token'
+          : error instanceof Error
+            ? error.message
+            : 'Unknown error',
       };
     }
   }
@@ -669,11 +738,14 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
   /**
    * Cleans up invalid device tokens.
    */
-  private async cleanupInvalidTokens(userId: string, tokens: string[]): Promise<void> {
+  private async cleanupInvalidTokens(
+    userId: string,
+    tokens: string[]
+  ): Promise<void> {
     const userDeviceIds = devicesByUser.get(userId);
     if (!userDeviceIds) {
-return;
-}
+      return;
+    }
 
     Array.from(userDeviceIds).forEach(deviceId => {
       const device = deviceStore.get(deviceId);
@@ -730,7 +802,10 @@ return;
   /**
    * Registers a device for push notifications.
    */
-  async registerDevice(userId: string, device: DeviceRegistration): Promise<Device> {
+  async registerDevice(
+    userId: string,
+    device: DeviceRegistration
+  ): Promise<Device> {
     // Verify user exists
     const user = await this.db.user.findUnique({
       where: { id: userId },
@@ -755,7 +830,7 @@ return;
     if (activeDevices.length >= MAX_DEVICES_PER_USER) {
       // Deactivate oldest device
       const oldestDevice = activeDevices.sort(
-        (a, b) => a.lastSeenAt.getTime() - b.lastSeenAt.getTime(),
+        (a, b) => a.lastSeenAt.getTime() - b.lastSeenAt.getTime()
       )[0];
       if (oldestDevice) {
         oldestDevice.isActive = false;
@@ -766,7 +841,7 @@ return;
     try {
       // Check if device with this token already exists
       const existingDevice = Array.from(deviceStore.values()).find(
-        d => d.token === device.token && d.platform === device.platform,
+        d => d.token === device.token && d.platform === device.platform
       );
 
       if (existingDevice) {
@@ -810,10 +885,9 @@ return;
 
       return newDevice;
     } catch (error) {
-      throw new DeviceRegistrationError(
-        'Failed to register device',
-        { error: error instanceof Error ? error.message : 'Unknown error' },
-      );
+      throw new DeviceRegistrationError('Failed to register device', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   }
 
@@ -839,8 +913,8 @@ return;
   async getDevices(userId: string): Promise<Device[]> {
     const userDeviceIds = devicesByUser.get(userId);
     if (!userDeviceIds) {
-return [];
-}
+      return [];
+    }
 
     return Array.from(userDeviceIds)
       .map(id => deviceStore.get(id))
@@ -895,7 +969,10 @@ return [];
   /**
    * Updates notification preferences for a user.
    */
-  async updatePreferences(userId: string, prefs: UpdatePreferencesInput): Promise<NotificationPreferences> {
+  async updatePreferences(
+    userId: string,
+    prefs: UpdatePreferencesInput
+  ): Promise<NotificationPreferences> {
     // Ensure user exists
     const user = await this.db.user.findUnique({
       where: { id: userId },
@@ -909,9 +986,15 @@ return [];
     const updatedPrefs: NotificationPreferences = {
       ...currentPrefs,
       ...prefs,
-      email: prefs.email ? { ...currentPrefs.email, ...prefs.email } : currentPrefs.email,
-      mobile: prefs.mobile ? { ...currentPrefs.mobile, ...prefs.mobile } : currentPrefs.mobile,
-      desktop: prefs.desktop ? { ...currentPrefs.desktop, ...prefs.desktop } : currentPrefs.desktop,
+      email: prefs.email
+        ? { ...currentPrefs.email, ...prefs.email }
+        : currentPrefs.email,
+      mobile: prefs.mobile
+        ? { ...currentPrefs.mobile, ...prefs.mobile }
+        : currentPrefs.mobile,
+      desktop: prefs.desktop
+        ? { ...currentPrefs.desktop, ...prefs.desktop }
+        : currentPrefs.desktop,
     };
 
     preferencesStore.set(userId, updatedPrefs);
@@ -954,7 +1037,9 @@ return [];
   /**
    * Creates an in-app notification.
    */
-  async createNotification(input: CreateNotificationInput): Promise<Notification> {
+  async createNotification(
+    input: CreateNotificationInput
+  ): Promise<Notification> {
     // Validate input
     this.validateCreateNotificationInput(input);
 
@@ -1018,7 +1103,10 @@ return [];
 
       return notification;
     } catch (error) {
-      throw new TransactionError('createNotification', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createNotification',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -1047,8 +1135,8 @@ return [];
   async markAllAsRead(userId: string): Promise<number> {
     const userNotifIds = notificationsByUser.get(userId);
     if (!userNotifIds) {
-return 0;
-}
+      return 0;
+    }
 
     let count = 0;
     const now = new Date();
@@ -1071,7 +1159,7 @@ return 0;
    */
   async getNotifications(
     userId: string,
-    options: NotificationListOptions = {},
+    options: NotificationListOptions = {}
   ): Promise<PaginatedNotificationResult> {
     const {
       limit = DEFAULT_NOTIFICATION_LIST_OPTIONS.limit,
@@ -1097,23 +1185,23 @@ return 0;
       .map(id => notificationStore.get(id))
       .filter((n): n is Notification => {
         if (!n) {
-return false;
-}
+          return false;
+        }
         if (isRead !== undefined && n.isRead !== isRead) {
-return false;
-}
+          return false;
+        }
         if (type && n.type !== type) {
-return false;
-}
+          return false;
+        }
         if (after && n.createdAt <= after) {
-return false;
-}
+          return false;
+        }
         if (before && n.createdAt >= before) {
-return false;
-}
+          return false;
+        }
         if (!includeExpired && n.expiresAt && n.expiresAt < now) {
-return false;
-}
+          return false;
+        }
         return true;
       })
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -1125,18 +1213,20 @@ return false;
       .map(id => notificationStore.get(id))
       .filter((n): n is Notification => {
         if (!n || n.isRead) {
-return false;
-}
+          return false;
+        }
         if (n.expiresAt && n.expiresAt < now) {
-return false;
-}
+          return false;
+        }
         return true;
       }).length;
 
     // Apply pagination
     notifications = notifications.slice(offset, offset + effectiveLimit + 1);
     const hasMore = notifications.length > effectiveLimit;
-    const data = hasMore ? notifications.slice(0, effectiveLimit) : notifications;
+    const data = hasMore
+      ? notifications.slice(0, effectiveLimit)
+      : notifications;
 
     return {
       data,
@@ -1152,8 +1242,8 @@ return false;
   async getUnreadCount(userId: string): Promise<number> {
     const userNotifIds = notificationsByUser.get(userId);
     if (!userNotifIds) {
-return 0;
-}
+      return 0;
+    }
 
     const now = new Date();
 
@@ -1161,11 +1251,11 @@ return 0;
       .map(id => notificationStore.get(id))
       .filter((n): n is Notification => {
         if (!n || n.isRead) {
-return false;
-}
+          return false;
+        }
         if (n.expiresAt && n.expiresAt < now) {
-return false;
-}
+          return false;
+        }
         return true;
       }).length;
   }
@@ -1194,8 +1284,8 @@ return false;
   async deleteAllNotifications(userId: string): Promise<number> {
     const userNotifIds = notificationsByUser.get(userId);
     if (!userNotifIds) {
-return 0;
-}
+      return 0;
+    }
 
     const count = userNotifIds.size;
 
@@ -1211,7 +1301,9 @@ return 0;
   /**
    * Validates create notification input.
    */
-  private validateCreateNotificationInput(input: CreateNotificationInput): void {
+  private validateCreateNotificationInput(
+    input: CreateNotificationInput
+  ): void {
     const errors: Record<string, string[]> = {};
 
     if (!input.userId || input.userId.trim().length === 0) {
@@ -1231,7 +1323,10 @@ return 0;
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new NotificationValidationError('Notification validation failed', errors);
+      throw new NotificationValidationError(
+        'Notification validation failed',
+        errors
+      );
     }
   }
 
@@ -1242,7 +1337,10 @@ return 0;
   /**
    * Subscribes to notification created events.
    */
-  onNotificationCreated(userId: string, callback: OnNotificationCreatedCallback): () => void {
+  onNotificationCreated(
+    userId: string,
+    callback: OnNotificationCreatedCallback
+  ): () => void {
     const eventName = `notification:created:${userId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -1254,7 +1352,10 @@ return 0;
   /**
    * Subscribes to notification read events.
    */
-  onNotificationRead(userId: string, callback: OnNotificationReadCallback): () => void {
+  onNotificationRead(
+    userId: string,
+    callback: OnNotificationReadCallback
+  ): () => void {
     const eventName = `notification:read:${userId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -1279,7 +1380,10 @@ return 0;
   // Private Event Emitters
   // ===========================================================================
 
-  private emitNotificationCreated(userId: string, notification: Notification): void {
+  private emitNotificationCreated(
+    userId: string,
+    notification: Notification
+  ): void {
     this.eventEmitter.emit(`notification:created:${userId}`, notification);
   }
 
@@ -1290,7 +1394,7 @@ return 0;
   private emitPushSent(
     userId: string,
     notification: PushNotification,
-    result: PushSendResult | BatchResult,
+    result: PushSendResult | BatchResult
   ): void {
     this.eventEmitter.emit(`push:sent:${userId}`, notification, result);
   }
@@ -1381,7 +1485,7 @@ return 0;
  */
 export function createNotificationService(
   config?: NotificationServiceConfig,
-  database?: PrismaClient,
+  database?: PrismaClient
 ): NotificationServiceImpl {
   return new NotificationServiceImpl(config, database);
 }
@@ -1400,7 +1504,9 @@ export function createNotificationService(
  * @param database - Optional Prisma client instance
  * @returns Notification service instance
  */
-export function createNotificationServiceFromEnv(database?: PrismaClient): NotificationServiceImpl {
+export function createNotificationServiceFromEnv(
+  database?: PrismaClient
+): NotificationServiceImpl {
   const config: NotificationServiceConfig = {};
 
   // Configure Web Push if environment variables are set
@@ -1441,7 +1547,9 @@ let notificationServiceInstance: NotificationServiceImpl | null = null;
  * @param config - Optional configuration (only used on first call)
  * @returns Notification service instance
  */
-export function getNotificationService(config?: NotificationServiceConfig): NotificationServiceImpl {
+export function getNotificationService(
+  config?: NotificationServiceConfig
+): NotificationServiceImpl {
   if (!notificationServiceInstance) {
     notificationServiceInstance = config
       ? createNotificationService(config)

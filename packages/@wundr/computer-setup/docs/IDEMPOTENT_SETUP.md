@@ -2,21 +2,25 @@
 
 ## Overview
 
-This document describes the architecture for a fully idempotent computer setup system that safely handles fresh installations, upgrades, user-customized environments, and partial installations.
+This document describes the architecture for a fully idempotent computer setup system that safely
+handles fresh installations, upgrades, user-customized environments, and partial installations.
 
 ## Design Principles
 
 ### 1. Idempotency
 
-All operations must be idempotent - running them multiple times produces the same result as running them once. This is achieved through:
+All operations must be idempotent - running them multiple times produces the same result as running
+them once. This is achieved through:
 
 - **State checking before action**: Every operation verifies current state before making changes
 - **Deterministic outcomes**: Same inputs always produce same outputs
-- **No side effects on re-runs**: Operations that complete successfully produce no changes on subsequent runs
+- **No side effects on re-runs**: Operations that complete successfully produce no changes on
+  subsequent runs
 
 ### 2. Safety First
 
-- **Zero destructive operations without confirmation**: Any operation that could destroy user data requires explicit confirmation
+- **Zero destructive operations without confirmation**: Any operation that could destroy user data
+  requires explicit confirmation
 - **Backup before modify**: Configuration files are backed up before any modifications
 - **Preserve user customizations**: User modifications to managed files are detected and preserved
 
@@ -51,15 +55,15 @@ All operations must be idempotent - running them multiple times produces the sam
 
 ```typescript
 enum InstallationStatus {
-  NOT_INSTALLED,  // Not present on system
-  MANAGED,        // Installed and managed by Wundr
-  UNMANAGED,      // Pre-existing, not managed by Wundr
-  MODIFIED,       // Wundr-managed but user-modified
-  OUTDATED,       // Installed but needs update
-  CORRUPTED,      // Broken installation
-  PENDING,        // Queued for installation
-  INSTALLING,     // Currently being installed
-  FAILED          // Installation failed
+  NOT_INSTALLED, // Not present on system
+  MANAGED, // Installed and managed by Wundr
+  UNMANAGED, // Pre-existing, not managed by Wundr
+  MODIFIED, // Wundr-managed but user-modified
+  OUTDATED, // Installed but needs update
+  CORRUPTED, // Broken installation
+  PENDING, // Queued for installation
+  INSTALLING, // Currently being installed
+  FAILED, // Installation failed
 }
 ```
 
@@ -67,11 +71,11 @@ enum InstallationStatus {
 
 ```typescript
 enum ConfigurationState {
-  MISSING,      // File does not exist
-  PRISTINE,     // File matches expected content exactly
-  MODIFIED,     // File has user modifications
-  CONFLICTED,   // File has incompatible changes
-  BACKED_UP     // File has been backed up
+  MISSING, // File does not exist
+  PRISTINE, // File matches expected content exactly
+  MODIFIED, // File has user modifications
+  CONFLICTED, // File has incompatible changes
+  BACKED_UP, // File has been backed up
 }
 ```
 
@@ -137,29 +141,29 @@ enum ConfigurationState {
 
 ### State Transitions
 
-| From | To | Trigger | Guard |
-|------|-----|---------|-------|
-| INITIAL | DETECTING | start | - |
-| DETECTING | DETECTED | detectionComplete | - |
-| DETECTING | FAILED | detectionFailed | - |
-| DETECTED | VALIDATING | validate | - |
-| DETECTED | AWAITING_CONFIRMATION | requiresConfirmation | hasDestructiveChanges |
-| VALIDATING | BACKING_UP | validationPassed | backupRequired |
-| VALIDATING | INSTALLING | validationPassed | noBackupRequired |
-| VALIDATING | FAILED | validationFailed | - |
-| AWAITING_CONFIRMATION | VALIDATING | confirmed | - |
-| BACKING_UP | INSTALLING | backupComplete | - |
-| BACKING_UP | FAILED | backupFailed | - |
-| INSTALLING | CONFIGURING | installComplete | - |
-| INSTALLING | ROLLING_BACK | installFailed | hasBackup |
-| INSTALLING | FAILED | installFailed | noBackup |
-| INSTALLING | PAUSED | pause | - |
-| CONFIGURING | VERIFYING | configComplete | - |
-| CONFIGURING | ROLLING_BACK | configFailed | hasBackup |
-| VERIFYING | COMPLETED | verificationPassed | - |
-| VERIFYING | CONFIGURING | verificationFailed | canRetry |
-| ROLLING_BACK | FAILED | rollbackComplete | - |
-| PAUSED | INSTALLING | resume | - |
+| From                  | To                    | Trigger              | Guard                 |
+| --------------------- | --------------------- | -------------------- | --------------------- |
+| INITIAL               | DETECTING             | start                | -                     |
+| DETECTING             | DETECTED              | detectionComplete    | -                     |
+| DETECTING             | FAILED                | detectionFailed      | -                     |
+| DETECTED              | VALIDATING            | validate             | -                     |
+| DETECTED              | AWAITING_CONFIRMATION | requiresConfirmation | hasDestructiveChanges |
+| VALIDATING            | BACKING_UP            | validationPassed     | backupRequired        |
+| VALIDATING            | INSTALLING            | validationPassed     | noBackupRequired      |
+| VALIDATING            | FAILED                | validationFailed     | -                     |
+| AWAITING_CONFIRMATION | VALIDATING            | confirmed            | -                     |
+| BACKING_UP            | INSTALLING            | backupComplete       | -                     |
+| BACKING_UP            | FAILED                | backupFailed         | -                     |
+| INSTALLING            | CONFIGURING           | installComplete      | -                     |
+| INSTALLING            | ROLLING_BACK          | installFailed        | hasBackup             |
+| INSTALLING            | FAILED                | installFailed        | noBackup              |
+| INSTALLING            | PAUSED                | pause                | -                     |
+| CONFIGURING           | VERIFYING             | configComplete       | -                     |
+| CONFIGURING           | ROLLING_BACK          | configFailed         | hasBackup             |
+| VERIFYING             | COMPLETED             | verificationPassed   | -                     |
+| VERIFYING             | CONFIGURING           | verificationFailed   | canRetry              |
+| ROLLING_BACK          | FAILED                | rollbackComplete     | -                     |
+| PAUSED                | INSTALLING            | resume               | -                     |
 
 ## Idempotent Operation Patterns
 
@@ -172,7 +176,7 @@ async function idempotentOperation() {
 
   // 2. Determine if action needed
   if (currentState === desiredState) {
-    return { changed: false, message: "Already in desired state" };
+    return { changed: false, message: 'Already in desired state' };
   }
 
   // 3. Perform action
@@ -181,10 +185,10 @@ async function idempotentOperation() {
   // 4. Verify result
   const newState = await checkState();
   if (newState !== desiredState) {
-    throw new Error("Action did not achieve desired state");
+    throw new Error('Action did not achieve desired state');
   }
 
-  return { changed: true, message: "State updated" };
+  return { changed: true, message: 'State updated' };
 }
 ```
 
@@ -238,7 +242,7 @@ async function idempotentShellConfig(blockId: string, content: string) {
   const startMarker = `# BEGIN WUNDR MANAGED BLOCK: ${blockId}`;
   const endMarker = `# END WUNDR MANAGED BLOCK: ${blockId}`;
 
-  const rcContent = await fs.readFile("~/.zshrc");
+  const rcContent = await fs.readFile('~/.zshrc');
 
   // Check if block exists and matches
   if (rcContent.includes(startMarker)) {
@@ -248,13 +252,13 @@ async function idempotentShellConfig(blockId: string, content: string) {
     }
     // Replace existing block
     const newContent = replaceBlock(rcContent, startMarker, endMarker, content);
-    await fs.writeFile("~/.zshrc", newContent);
-    return { changed: true, action: "updated" };
+    await fs.writeFile('~/.zshrc', newContent);
+    return { changed: true, action: 'updated' };
   }
 
   // Append new block
-  await fs.appendFile("~/.zshrc", `\n${startMarker}\n${content}\n${endMarker}\n`);
-  return { changed: true, action: "added" };
+  await fs.appendFile('~/.zshrc', `\n${startMarker}\n${content}\n${endMarker}\n`);
+  return { changed: true, action: 'added' };
 }
 ```
 
@@ -582,7 +586,7 @@ try {
 const result = await idempotentBrewInstall('node', {
   retries: 3,
   retryDelayMs: 5000,
-  onLog: (level, message) => console.log(`[${level}] ${message}`)
+  onLog: (level, message) => console.log(`[${level}] ${message}`),
 });
 
 if (!result.success) {

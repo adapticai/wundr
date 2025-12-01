@@ -24,23 +24,41 @@ export interface SearchService {
     pagination: { limit: number; offset: number };
     highlight?: boolean | undefined;
     facets?: string[] | undefined;
-    sort?: { field: 'relevance' | 'date'; direction: 'asc' | 'desc' } | undefined;
+    sort?:
+      | { field: 'relevance' | 'date'; direction: 'asc' | 'desc' }
+      | undefined;
   }): Promise<{
     results: Array<{
       id: string;
       type: string;
       score: number;
-      highlight?: { content?: string[] | undefined; title?: string[] | undefined; fileName?: string[] | undefined } | undefined;
+      highlight?:
+        | {
+            content?: string[] | undefined;
+            title?: string[] | undefined;
+            fileName?: string[] | undefined;
+          }
+        | undefined;
       data: Record<string, unknown>;
     }>;
     total: number;
     took: number;
-    facets?: {
-      types?: Array<{ key: string; label: string; count: number }> | undefined;
-      channels?: Array<{ key: string; label: string; count: number }> | undefined;
-      users?: Array<{ key: string; label: string; count: number }> | undefined;
-      dates?: Array<{ key: string; label: string; count: number }> | undefined;
-    } | undefined;
+    facets?:
+      | {
+          types?:
+            | Array<{ key: string; label: string; count: number }>
+            | undefined;
+          channels?:
+            | Array<{ key: string; label: string; count: number }>
+            | undefined;
+          users?:
+            | Array<{ key: string; label: string; count: number }>
+            | undefined;
+          dates?:
+            | Array<{ key: string; label: string; count: number }>
+            | undefined;
+        }
+      | undefined;
     pagination: { hasMore: boolean; nextCursor?: string | undefined };
   }>;
   saveRecentSearch(userId: string, query: string): Promise<void>;
@@ -49,7 +67,13 @@ export interface SearchService {
     workspaceId: string,
     userId: string,
     limit: number
-  ): Promise<Array<{ text: string; type: string; metadata?: Record<string, unknown> | undefined }>>;
+  ): Promise<
+    Array<{
+      text: string;
+      type: string;
+      metadata?: Record<string, unknown> | undefined;
+    }>
+  >;
 }
 
 // =============================================================================
@@ -81,7 +105,8 @@ export const SearchResultType = {
   VP: 'vp',
 } as const;
 
-export type SearchResultTypeValue = (typeof SearchResultType)[keyof typeof SearchResultType];
+export type SearchResultTypeValue =
+  (typeof SearchResultType)[keyof typeof SearchResultType];
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -200,7 +225,10 @@ export const searchQueries = {
    */
   search: async (
     _parent: unknown,
-    { input, sort }: {
+    {
+      input,
+      sort,
+    }: {
       input: {
         query: string;
         workspaceId: string;
@@ -232,10 +260,13 @@ export const searchQueries = {
         types: input.types as SearchResultTypeValue[],
         channelIds: input.channelIds,
         userIds: input.userIds,
-        dateRange: input.dateFrom && input.dateTo ? {
-          start: input.dateFrom,
-          end: input.dateTo,
-        } : undefined,
+        dateRange:
+          input.dateFrom && input.dateTo
+            ? {
+                start: input.dateFrom,
+                end: input.dateTo,
+              }
+            : undefined,
       },
       pagination: {
         limit: input.limit ?? 20,
@@ -247,7 +278,10 @@ export const searchQueries = {
     });
 
     // Save to recent searches
-    await context.services.search.saveRecentSearch(context.user.id, input.query);
+    await context.services.search.saveRecentSearch(
+      context.user.id,
+      input.query
+    );
 
     return result;
   },
@@ -257,7 +291,11 @@ export const searchQueries = {
    */
   searchSuggestions: async (
     _parent: unknown,
-    { workspaceId, query, limit }: {
+    {
+      workspaceId,
+      query,
+      limit,
+    }: {
       workspaceId: string;
       query: string;
       limit?: number;

@@ -12,8 +12,8 @@ export function EmptyAnalytics() {
   return (
     <EmptyState
       icon={BarChart3}
-      title="No analytics data yet"
-      description="Analytics and insights will be available once your Orchestrators and workflows are active."
+      title='No analytics data yet'
+      description='Analytics and insights will be available once your Orchestrators and workflows are active.'
     />
   );
 }

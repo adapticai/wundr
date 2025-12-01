@@ -1,6 +1,11 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { VideoRoom } from '@/components/call/video-room';
 
 interface HuddleDialogProps {
@@ -40,8 +45,8 @@ export function HuddleDialog({
 }: HuddleDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl h-[90vh] p-0">
-        <DialogHeader className="sr-only">
+      <DialogContent className='max-w-7xl h-[90vh] p-0'>
+        <DialogHeader className='sr-only'>
           <DialogTitle>Huddle in #{channelName}</DialogTitle>
         </DialogHeader>
         <VideoRoom
@@ -51,7 +56,7 @@ export function HuddleDialog({
           channelName={channelName}
           onDisconnect={onDisconnect}
           onError={onError}
-          className="h-full rounded-lg overflow-hidden"
+          className='h-full rounded-lg overflow-hidden'
         />
       </DialogContent>
     </Dialog>

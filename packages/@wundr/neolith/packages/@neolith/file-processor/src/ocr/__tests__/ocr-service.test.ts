@@ -131,8 +131,14 @@ const createMockImageBuffer = (width = 800, height = 600): Buffer => {
 
 interface OCRService {
   recognizeText(imagePath: string, options?: OCROptions): Promise<OCRResult>;
-  recognizeTextFromBuffer(buffer: Buffer, options?: OCROptions): Promise<OCRResult>;
-  preprocessImage(imagePath: string, options?: PreprocessingOptions): Promise<PreprocessingResult>;
+  recognizeTextFromBuffer(
+    buffer: Buffer,
+    options?: OCROptions
+  ): Promise<OCRResult>;
+  preprocessImage(
+    imagePath: string,
+    options?: PreprocessingOptions
+  ): Promise<PreprocessingResult>;
   detectLanguage(imagePath: string): Promise<string[]>;
   terminate(): Promise<void>;
 }
@@ -153,7 +159,10 @@ function createMockOCRService(): OCRService {
 
   return {
     recognizeText: vi.fn(
-      async (imagePath: string, options: OCROptions = {}): Promise<OCRResult> => {
+      async (
+        imagePath: string,
+        options: OCROptions = {}
+      ): Promise<OCRResult> => {
         const worker = mockTesseract.createWorker();
         const languages = options.languages?.join('+') ?? 'eng';
 
@@ -162,7 +171,9 @@ function createMockOCRService(): OCRService {
 
         if (options.preserveInterwordSpaces !== undefined) {
           await worker.setParameters({
-            preserve_interword_spaces: options.preserveInterwordSpaces ? '1' : '0',
+            preserve_interword_spaces: options.preserveInterwordSpaces
+              ? '1'
+              : '0',
           });
         }
 
@@ -170,7 +181,7 @@ function createMockOCRService(): OCRService {
         await worker.terminate();
 
         return result;
-      },
+      }
     ),
 
     recognizeTextFromBuffer: vi.fn(
@@ -185,13 +196,13 @@ function createMockOCRService(): OCRService {
         await worker.terminate();
 
         return result;
-      },
+      }
     ),
 
     preprocessImage: vi.fn(
       async (
         imagePath: string,
-        options: PreprocessingOptions = {},
+        options: PreprocessingOptions = {}
       ): Promise<PreprocessingResult> => {
         const transformations: string[] = [];
         let buffer = createMockImageBuffer();
@@ -234,7 +245,7 @@ function createMockOCRService(): OCRService {
           skewAngle,
           enhancedContrast: options.improveContrast ? 1.2 : undefined,
         };
-      },
+      }
     ),
 
     detectLanguage: vi.fn(async (imagePath: string): Promise<string[]> => {
@@ -299,13 +310,41 @@ describe('OCRService', () => {
         text: 'Hello, World!\nThis is a test document.',
         confidence: 92.5,
         words: [
-          { text: 'Hello,', confidence: 95, boundingBox: { x: 10, y: 10, width: 60, height: 20 } },
-          { text: 'World!', confidence: 93, boundingBox: { x: 75, y: 10, width: 55, height: 20 } },
-          { text: 'This', confidence: 91, boundingBox: { x: 10, y: 40, width: 40, height: 20 } },
-          { text: 'is', confidence: 98, boundingBox: { x: 55, y: 40, width: 15, height: 20 } },
-          { text: 'a', confidence: 99, boundingBox: { x: 75, y: 40, width: 10, height: 20 } },
-          { text: 'test', confidence: 94, boundingBox: { x: 90, y: 40, width: 35, height: 20 } },
-          { text: 'document.', confidence: 89, boundingBox: { x: 130, y: 40, width: 80, height: 20 } },
+          {
+            text: 'Hello,',
+            confidence: 95,
+            boundingBox: { x: 10, y: 10, width: 60, height: 20 },
+          },
+          {
+            text: 'World!',
+            confidence: 93,
+            boundingBox: { x: 75, y: 10, width: 55, height: 20 },
+          },
+          {
+            text: 'This',
+            confidence: 91,
+            boundingBox: { x: 10, y: 40, width: 40, height: 20 },
+          },
+          {
+            text: 'is',
+            confidence: 98,
+            boundingBox: { x: 55, y: 40, width: 15, height: 20 },
+          },
+          {
+            text: 'a',
+            confidence: 99,
+            boundingBox: { x: 75, y: 40, width: 10, height: 20 },
+          },
+          {
+            text: 'test',
+            confidence: 94,
+            boundingBox: { x: 90, y: 40, width: 35, height: 20 },
+          },
+          {
+            text: 'document.',
+            confidence: 89,
+            boundingBox: { x: 130, y: 40, width: 80, height: 20 },
+          },
         ],
         lines: [
           {
@@ -340,9 +379,21 @@ describe('OCRService', () => {
         text: 'Hello Bonjour Hola',
         confidence: 88,
         words: [
-          { text: 'Hello', confidence: 95, boundingBox: { x: 10, y: 10, width: 50, height: 20 } },
-          { text: 'Bonjour', confidence: 87, boundingBox: { x: 70, y: 10, width: 70, height: 20 } },
-          { text: 'Hola', confidence: 82, boundingBox: { x: 150, y: 10, width: 40, height: 20 } },
+          {
+            text: 'Hello',
+            confidence: 95,
+            boundingBox: { x: 10, y: 10, width: 50, height: 20 },
+          },
+          {
+            text: 'Bonjour',
+            confidence: 87,
+            boundingBox: { x: 70, y: 10, width: 70, height: 20 },
+          },
+          {
+            text: 'Hola',
+            confidence: 82,
+            boundingBox: { x: 150, y: 10, width: 40, height: 20 },
+          },
         ],
         lines: [],
         blocks: [],
@@ -367,8 +418,16 @@ describe('OCRService', () => {
         text: 'Clear text',
         confidence: 98.5,
         words: [
-          { text: 'Clear', confidence: 99, boundingBox: { x: 10, y: 10, width: 50, height: 20 } },
-          { text: 'text', confidence: 98, boundingBox: { x: 70, y: 10, width: 40, height: 20 } },
+          {
+            text: 'Clear',
+            confidence: 99,
+            boundingBox: { x: 10, y: 10, width: 50, height: 20 },
+          },
+          {
+            text: 'text',
+            confidence: 98,
+            boundingBox: { x: 70, y: 10, width: 40, height: 20 },
+          },
         ],
         lines: [],
         blocks: [],
@@ -382,7 +441,9 @@ describe('OCRService', () => {
 
       expect(result.confidence).toBe(98.5);
       expect(result.words[0].confidence).toBe(99);
-      expect(result.words.every((w) => w.confidence >= 0 && w.confidence <= 100)).toBe(true);
+      expect(
+        result.words.every(w => w.confidence >= 0 && w.confidence <= 100)
+      ).toBe(true);
     });
 
     it('returns word bounding boxes', async () => {
@@ -390,8 +451,16 @@ describe('OCRService', () => {
         text: 'Sample text',
         confidence: 95,
         words: [
-          { text: 'Sample', confidence: 96, boundingBox: { x: 100, y: 50, width: 80, height: 25 } },
-          { text: 'text', confidence: 94, boundingBox: { x: 190, y: 50, width: 60, height: 25 } },
+          {
+            text: 'Sample',
+            confidence: 96,
+            boundingBox: { x: 100, y: 50, width: 80, height: 25 },
+          },
+          {
+            text: 'text',
+            confidence: 94,
+            boundingBox: { x: 190, y: 50, width: 60, height: 25 },
+          },
         ],
         lines: [],
         blocks: [],
@@ -414,7 +483,7 @@ describe('OCRService', () => {
       });
 
       // Verify bounding box structure
-      result.words.forEach((word) => {
+      result.words.forEach(word => {
         expect(word.boundingBox).toHaveProperty('x');
         expect(word.boundingBox).toHaveProperty('y');
         expect(word.boundingBox).toHaveProperty('width');
@@ -429,10 +498,26 @@ describe('OCRService', () => {
         text: 'Bl urry t ext',
         confidence: 45,
         words: [
-          { text: 'Bl', confidence: 40, boundingBox: { x: 10, y: 10, width: 20, height: 20 } },
-          { text: 'urry', confidence: 50, boundingBox: { x: 35, y: 10, width: 40, height: 20 } },
-          { text: 't', confidence: 35, boundingBox: { x: 85, y: 10, width: 10, height: 20 } },
-          { text: 'ext', confidence: 55, boundingBox: { x: 100, y: 10, width: 30, height: 20 } },
+          {
+            text: 'Bl',
+            confidence: 40,
+            boundingBox: { x: 10, y: 10, width: 20, height: 20 },
+          },
+          {
+            text: 'urry',
+            confidence: 50,
+            boundingBox: { x: 35, y: 10, width: 40, height: 20 },
+          },
+          {
+            text: 't',
+            confidence: 35,
+            boundingBox: { x: 85, y: 10, width: 10, height: 20 },
+          },
+          {
+            text: 'ext',
+            confidence: 55,
+            boundingBox: { x: 100, y: 10, width: 30, height: 20 },
+          },
         ],
         lines: [],
         blocks: [],
@@ -445,7 +530,7 @@ describe('OCRService', () => {
       const result = await service.recognizeText('/path/to/blurry.png');
 
       expect(result.confidence).toBeLessThan(50);
-      expect(result.words.some((w) => w.confidence < 50)).toBe(true);
+      expect(result.words.some(w => w.confidence < 50)).toBe(true);
     });
 
     it('handles empty images', async () => {
@@ -471,9 +556,9 @@ describe('OCRService', () => {
     it('handles OCR errors gracefully', async () => {
       mockWorker.recognize.mockRejectedValue(new Error('OCR engine failed'));
 
-      await expect(service.recognizeText('/path/to/invalid.png')).rejects.toThrow(
-        'OCR engine failed',
-      );
+      await expect(
+        service.recognizeText('/path/to/invalid.png')
+      ).rejects.toThrow('OCR engine failed');
     });
   });
 
@@ -535,24 +620,28 @@ describe('OCRService', () => {
 
     it('handles preprocessing errors', async () => {
       const mockSharpError = mockSharp('/path/to/corrupted.png');
-      mockSharpError.toBuffer = vi.fn().mockRejectedValue(new Error('Image processing failed'));
+      mockSharpError.toBuffer = vi
+        .fn()
+        .mockRejectedValue(new Error('Image processing failed'));
 
       // The service mock doesn't actually use mockSharp in the test
       // This tests the error path
       mockSharp.mockReturnValue({
         rotate: vi.fn().mockReturnThis(),
-        toBuffer: vi.fn().mockRejectedValue(new Error('Image processing failed')),
+        toBuffer: vi
+          .fn()
+          .mockRejectedValue(new Error('Image processing failed')),
       });
 
       // Re-create service to pick up new mock
       const errorService = createMockOCRService();
-      (errorService.preprocessImage as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Image processing failed'),
-      );
+      (
+        errorService.preprocessImage as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(new Error('Image processing failed'));
 
-      await expect(errorService.preprocessImage('/path/to/corrupted.png', {})).rejects.toThrow(
-        'Image processing failed',
-      );
+      await expect(
+        errorService.preprocessImage('/path/to/corrupted.png', {})
+      ).rejects.toThrow('Image processing failed');
     });
   });
 
@@ -583,7 +672,9 @@ describe('OCRService', () => {
       mockWorker.recognize.mockResolvedValue({ languages: [] });
 
       // Default behavior returns ['eng'] when no language detected
-      (service.detectLanguage as ReturnType<typeof vi.fn>).mockResolvedValue(['eng']);
+      (service.detectLanguage as ReturnType<typeof vi.fn>).mockResolvedValue([
+        'eng',
+      ]);
 
       const languages = await service.detectLanguage('/path/to/unknown.png');
 
@@ -603,8 +694,16 @@ describe('OCRService', () => {
         text: 'Buffer content',
         confidence: 90,
         words: [
-          { text: 'Buffer', confidence: 92, boundingBox: { x: 10, y: 10, width: 60, height: 20 } },
-          { text: 'content', confidence: 88, boundingBox: { x: 80, y: 10, width: 70, height: 20 } },
+          {
+            text: 'Buffer',
+            confidence: 92,
+            boundingBox: { x: 10, y: 10, width: 60, height: 20 },
+          },
+          {
+            text: 'content',
+            confidence: 88,
+            boundingBox: { x: 80, y: 10, width: 70, height: 20 },
+          },
         ],
         lines: [],
         blocks: [],
@@ -625,9 +724,9 @@ describe('OCRService', () => {
 
       mockWorker.recognize.mockRejectedValue(new Error('Invalid image data'));
 
-      await expect(service.recognizeTextFromBuffer(invalidBuffer)).rejects.toThrow(
-        'Invalid image data',
-      );
+      await expect(
+        service.recognizeTextFromBuffer(invalidBuffer)
+      ).rejects.toThrow('Invalid image data');
     });
   });
 
@@ -766,9 +865,33 @@ describe('OCRService Integration', () => {
     ];
 
     const pageResults: OCRResult[] = [
-      { text: 'Page 1 content', confidence: 90, words: [], lines: [], blocks: [], language: 'eng', processingTime: 1000 },
-      { text: 'Page 2 content', confidence: 92, words: [], lines: [], blocks: [], language: 'eng', processingTime: 1100 },
-      { text: 'Page 3 content', confidence: 88, words: [], lines: [], blocks: [], language: 'eng', processingTime: 900 },
+      {
+        text: 'Page 1 content',
+        confidence: 90,
+        words: [],
+        lines: [],
+        blocks: [],
+        language: 'eng',
+        processingTime: 1000,
+      },
+      {
+        text: 'Page 2 content',
+        confidence: 92,
+        words: [],
+        lines: [],
+        blocks: [],
+        language: 'eng',
+        processingTime: 1100,
+      },
+      {
+        text: 'Page 3 content',
+        confidence: 88,
+        words: [],
+        lines: [],
+        blocks: [],
+        language: 'eng',
+        processingTime: 900,
+      },
     ];
 
     let callIndex = 0;
@@ -779,7 +902,7 @@ describe('OCRService Integration', () => {
     });
 
     const results = await Promise.all(
-      pages.map((buffer) => service.recognizeTextFromBuffer(buffer)),
+      pages.map(buffer => service.recognizeTextFromBuffer(buffer))
     );
 
     expect(results).toHaveLength(3);
@@ -787,7 +910,8 @@ describe('OCRService Integration', () => {
     expect(results[1].text).toBe('Page 2 content');
     expect(results[2].text).toBe('Page 3 content');
 
-    const avgConfidence = results.reduce((sum, r) => sum + r.confidence, 0) / results.length;
+    const avgConfidence =
+      results.reduce((sum, r) => sum + r.confidence, 0) / results.length;
     expect(avgConfidence).toBe(90);
   });
 });

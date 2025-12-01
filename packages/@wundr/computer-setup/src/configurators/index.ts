@@ -12,12 +12,12 @@ import * as fs from 'fs-extra';
 
 import { getLogger } from '../utils/logger';
 
-import type { 
-  DeveloperProfile, 
-  GitConfiguration, 
+import type {
+  DeveloperProfile,
+  GitConfiguration,
   AIToolsConfiguration,
   SetupStep,
-  ConfigurationChange, 
+  ConfigurationChange,
 } from '../types';
 
 const logger = getLogger('computer-setup:configurator');
@@ -177,7 +177,11 @@ export class ConfiguratorService {
       execSync(cmd);
     }
 
-    this.recordConfigChange('~/.gitconfig', ['user.name', 'user.email', 'init.defaultBranch']);
+    this.recordConfigChange('~/.gitconfig', [
+      'user.name',
+      'user.email',
+      'init.defaultBranch',
+    ]);
   }
 
   /**
@@ -197,7 +201,10 @@ export class ConfiguratorService {
     execSync(`git config --global user.signingkey ${config.gpgKey}`);
     execSync('git config --global commit.gpgsign true');
 
-    this.recordConfigChange('~/.gitconfig', ['user.signingkey', 'commit.gpgsign']);
+    this.recordConfigChange('~/.gitconfig', [
+      'user.signingkey',
+      'commit.gpgsign',
+    ]);
   }
 
   /**
@@ -212,8 +219,10 @@ export class ConfiguratorService {
     if (!config.sshKey) {
       // Generate a new SSH key
       const keyPath = path.join(sshDir, 'id_ed25519');
-      if (!await fs.pathExists(keyPath)) {
-        execSync(`ssh-keygen -t ed25519 -C "${config.userEmail}" -f ${keyPath} -N ""`);
+      if (!(await fs.pathExists(keyPath))) {
+        execSync(
+          `ssh-keygen -t ed25519 -C "${config.userEmail}" -f ${keyPath} -N ""`
+        );
         logger.info('Generated new SSH key');
       }
     }
@@ -232,7 +241,9 @@ export class ConfiguratorService {
   /**
    * Configure Git aliases
    */
-  private async configureGitAliases(aliases: Record<string, string>): Promise<void> {
+  private async configureGitAliases(
+    aliases: Record<string, string>
+  ): Promise<void> {
     logger.info('Configuring Git aliases');
 
     for (const [alias, command] of Object.entries(aliases)) {
@@ -244,7 +255,10 @@ export class ConfiguratorService {
       }
     }
 
-    this.recordConfigChange('~/.gitconfig', Object.keys(aliases).map(a => `alias.${a}`));
+    this.recordConfigChange(
+      '~/.gitconfig',
+      Object.keys(aliases).map(a => `alias.${a}`)
+    );
   }
 
   /**
@@ -310,16 +324,25 @@ export class ConfiguratorService {
 
     for (const ext of extensions) {
       try {
-        execSync(`code --install-extension ${ext}`, { stdio: 'pipe', timeout: 30000 });
+        execSync(`code --install-extension ${ext}`, {
+          stdio: 'pipe',
+          timeout: 30000,
+        });
         logger.info(`Installed extension: ${ext}`);
       } catch (error: unknown) {
         // Check if already installed or actual error
-        const execError = error as { stdout?: Buffer; status?: number; message?: string };
+        const execError = error as {
+          stdout?: Buffer;
+          status?: number;
+          message?: string;
+        };
         if (execError.stdout?.toString().includes('already installed')) {
           logger.info(`Extension ${ext} already installed, skipping`);
         } else if (execError.status === 134) {
           // VS Code crash - this is a known VS Code bug, not fatal
-          logger.warn(`VS Code crashed installing ${ext}, but may have succeeded`);
+          logger.warn(
+            `VS Code crashed installing ${ext}, but may have succeeded`
+          );
         } else {
           logger.warn(`Failed to install extension: ${ext}`, execError.message);
         }
@@ -376,9 +399,10 @@ call plug#end()
 colorscheme gruvbox
 `;
 
-    const configPath = editor === 'neovim' 
-      ? path.join(os.homedir(), '.config', 'nvim', 'init.vim')
-      : path.join(os.homedir(), '.vimrc');
+    const configPath =
+      editor === 'neovim'
+        ? path.join(os.homedir(), '.config', 'nvim', 'init.vim')
+        : path.join(os.homedir(), '.vimrc');
 
     await fs.ensureDir(path.dirname(configPath));
     await fs.writeFile(configPath, vimrc);
@@ -393,17 +417,17 @@ colorscheme gruvbox
     logger.info('Configuring Sublime Text');
 
     const settings = {
-      'font_size': 14,
-      'font_face': 'Fira Code',
-      'theme': 'Default Dark.sublime-theme',
-      'color_scheme': 'Monokai.sublime-color-scheme',
-      'tab_size': 2,
-      'translate_tabs_to_spaces': true,
-      'trim_trailing_white_space_on_save': true,
-      'ensure_newline_at_eof_on_save': true,
-      'save_on_focus_lost': true,
-      'rulers': [80, 120],
-      'word_wrap': true,
+      font_size: 14,
+      font_face: 'Fira Code',
+      theme: 'Default Dark.sublime-theme',
+      color_scheme: 'Monokai.sublime-color-scheme',
+      tab_size: 2,
+      translate_tabs_to_spaces: true,
+      trim_trailing_white_space_on_save: true,
+      ensure_newline_at_eof_on_save: true,
+      save_on_focus_lost: true,
+      rulers: [80, 120],
+      word_wrap: true,
     };
 
     const settingsPath = this.getSublimeSettingsPath();
@@ -421,7 +445,7 @@ colorscheme gruvbox
 
     const shell = profile.preferences?.shell || 'bash';
     const rcFile = this.getShellRcFile(shell);
-    
+
     const config = `
 # Wundr Computer Setup Configuration
 # Generated: ${new Date().toISOString()}
@@ -460,7 +484,7 @@ function serve() {
 `;
 
     const rcPath = path.join(os.homedir(), rcFile);
-    
+
     // Backup existing file
     if (await fs.pathExists(rcPath)) {
       const backupPath = path.join(this.backupDir, `${rcFile}.${Date.now()}`);
@@ -518,7 +542,11 @@ function serve() {
   /**
    * Record a configuration change
    */
-  private recordConfigChange(file: string, changes: string[], backup?: string): void {
+  private recordConfigChange(
+    file: string,
+    changes: string[],
+    backup?: string
+  ): void {
     this.configChanges.push({
       file,
       changes,
@@ -532,11 +560,31 @@ function serve() {
   private getVSCodeSettingsPath(): string {
     switch (process.platform) {
       case 'darwin':
-        return path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'settings.json');
+        return path.join(
+          os.homedir(),
+          'Library',
+          'Application Support',
+          'Code',
+          'User',
+          'settings.json'
+        );
       case 'linux':
-        return path.join(os.homedir(), '.config', 'Code', 'User', 'settings.json');
+        return path.join(
+          os.homedir(),
+          '.config',
+          'Code',
+          'User',
+          'settings.json'
+        );
       case 'win32':
-        return path.join(os.homedir(), 'AppData', 'Roaming', 'Code', 'User', 'settings.json');
+        return path.join(
+          os.homedir(),
+          'AppData',
+          'Roaming',
+          'Code',
+          'User',
+          'settings.json'
+        );
       default:
         return path.join(os.homedir(), '.vscode', 'settings.json');
     }
@@ -548,13 +596,40 @@ function serve() {
   private getSublimeSettingsPath(): string {
     switch (process.platform) {
       case 'darwin':
-        return path.join(os.homedir(), 'Library', 'Application Support', 'Sublime Text', 'Packages', 'User', 'Preferences.sublime-settings');
+        return path.join(
+          os.homedir(),
+          'Library',
+          'Application Support',
+          'Sublime Text',
+          'Packages',
+          'User',
+          'Preferences.sublime-settings'
+        );
       case 'linux':
-        return path.join(os.homedir(), '.config', 'sublime-text', 'Packages', 'User', 'Preferences.sublime-settings');
+        return path.join(
+          os.homedir(),
+          '.config',
+          'sublime-text',
+          'Packages',
+          'User',
+          'Preferences.sublime-settings'
+        );
       case 'win32':
-        return path.join(os.homedir(), 'AppData', 'Roaming', 'Sublime Text', 'Packages', 'User', 'Preferences.sublime-settings');
+        return path.join(
+          os.homedir(),
+          'AppData',
+          'Roaming',
+          'Sublime Text',
+          'Packages',
+          'User',
+          'Preferences.sublime-settings'
+        );
       default:
-        return path.join(os.homedir(), '.sublime', 'Preferences.sublime-settings');
+        return path.join(
+          os.homedir(),
+          '.sublime',
+          'Preferences.sublime-settings'
+        );
     }
   }
 

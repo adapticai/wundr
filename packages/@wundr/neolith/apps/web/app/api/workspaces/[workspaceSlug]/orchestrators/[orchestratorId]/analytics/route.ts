@@ -40,7 +40,11 @@ interface RouteContext {
 /**
  * Helper to verify workspace and Orchestrator access
  */
-async function verifyOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function verifyOrchestratorAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -102,7 +106,7 @@ async function verifyOrchestratorAccess(workspaceId: string, orchestratorId: str
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -111,9 +115,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -126,36 +130,41 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify access
-    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const parseResult = orchestratorAnalyticsQuerySchema.safeParse(searchParams);
+    const parseResult =
+      orchestratorAnalyticsQuerySchema.safeParse(searchParams);
 
     if (!parseResult.success) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -172,14 +181,17 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           error instanceof Error ? error.message : 'Invalid date range',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_DATE_RANGE,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_DATE_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get basic metrics
-    const metrics = await getOrchestratorMetrics(orchestratorId, query.timeRange);
+    const metrics = await getOrchestratorMetrics(
+      orchestratorId,
+      query.timeRange
+    );
 
     // Build where condition for detailed queries
     const whereCondition: Prisma.taskWhereInput = {
@@ -208,7 +220,7 @@ export async function GET(
           acc[item.status] = item._count.id;
           return acc;
         },
-        {} as Record<string, number>,
+        {} as Record<string, number>
       );
     }
 
@@ -228,14 +240,18 @@ export async function GET(
           acc[item.priority] = item._count.id;
           return acc;
         },
-        {} as Record<string, number>,
+        {} as Record<string, number>
       );
     }
 
     // Calculate quality metrics if requested
     let qualityMetrics = undefined;
     if (query.includeQualityMetrics) {
-      const qualityScore = await calculateQualityScore(orchestratorId, startDate, endDate);
+      const qualityScore = await calculateQualityScore(
+        orchestratorId,
+        startDate,
+        endDate
+      );
       qualityMetrics = {
         overallScore: qualityScore.score,
         feedbackCount: qualityScore.feedbackCount,
@@ -258,7 +274,8 @@ export async function GET(
     });
 
     const onTimeCount = tasksWithDueDate.filter(
-      (task) => task.completedAt && task.dueDate && task.completedAt <= task.dueDate,
+      task =>
+        task.completedAt && task.dueDate && task.completedAt <= task.dueDate
     ).length;
     const onTimeRate =
       tasksWithDueDate.length > 0
@@ -300,13 +317,16 @@ export async function GET(
       message: 'Orchestrator analytics retrieved successfully',
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/analytics] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/analytics] Error:',
+      error
+    );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

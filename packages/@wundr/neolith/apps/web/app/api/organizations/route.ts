@@ -22,7 +22,10 @@ import {
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
 
-import type { CreateOrganizationInput, OrganizationFiltersInput } from '@/lib/validations/organization';
+import type {
+  CreateOrganizationInput,
+  OrganizationFiltersInput,
+} from '@/lib/validations/organization';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -44,8 +47,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,9 +64,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -72,7 +78,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       select: { organizationId: true },
     });
 
-    const accessibleOrgIds = userMemberships.map((m) => m.organizationId);
+    const accessibleOrgIds = userMemberships.map(m => m.organizationId);
 
     // Build where clause
     const where: Prisma.organizationWhereInput = {
@@ -134,9 +140,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -167,8 +173,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -178,8 +187,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -190,9 +202,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -207,14 +219,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'An organization with this slug already exists',
-          ORG_ERROR_CODES.ORG_SLUG_EXISTS,
+          ORG_ERROR_CODES.ORG_SLUG_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     // Create organization with the creator as owner
-    const organization = await prisma.$transaction(async (tx) => {
+    const organization = await prisma.$transaction(async tx => {
       // Create the organization
       const newOrg = await tx.organization.create({
         data: {
@@ -251,7 +263,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(
       { data: organization, message: 'Organization created successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/organizations] Error:', error);
@@ -264,18 +276,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'An organization with this slug already exists',
-          ORG_ERROR_CODES.ORG_SLUG_EXISTS,
+          ORG_ERROR_CODES.ORG_SLUG_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

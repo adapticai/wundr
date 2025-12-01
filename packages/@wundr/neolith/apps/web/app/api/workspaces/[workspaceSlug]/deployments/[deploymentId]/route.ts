@@ -33,14 +33,14 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -55,7 +55,10 @@ export async function GET(
     });
 
     if (!deployment || deployment.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Deployment not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Deployment not found' },
+        { status: 404 }
+      );
     }
 
     // Transform to frontend format
@@ -78,9 +81,13 @@ export async function GET(
           FAILED: 'failed',
           STOPPED: 'stopped',
         };
-        return (
-          statusMap[deployment.status] || deployment.status.toLowerCase()
-        ) as 'deploying' | 'running' | 'stopped' | 'failed' | 'updating';
+        return (statusMap[deployment.status] ||
+          deployment.status.toLowerCase()) as
+          | 'deploying'
+          | 'running'
+          | 'stopped'
+          | 'failed'
+          | 'updating';
       })(),
       environment: deployment.environment.toLowerCase() as
         | 'production'
@@ -124,7 +131,7 @@ export async function GET(
     console.error('Error fetching deployment:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -136,14 +143,14 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -154,10 +161,7 @@ export async function PATCH(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Check if deployment exists and belongs to workspace
@@ -166,7 +170,10 @@ export async function PATCH(
     });
 
     if (!existingDeployment || existingDeployment.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Deployment not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Deployment not found' },
+        { status: 404 }
+      );
     }
 
     // Prepare update data
@@ -256,7 +263,7 @@ export async function PATCH(
     console.error('Error updating deployment:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -268,14 +275,14 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -288,7 +295,10 @@ export async function DELETE(
     });
 
     if (!existingDeployment || existingDeployment.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Deployment not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Deployment not found' },
+        { status: 404 }
+      );
     }
 
     // Delete deployment from database (logs will be cascade deleted)
@@ -304,7 +314,7 @@ export async function DELETE(
     console.error('Error deleting deployment:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

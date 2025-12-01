@@ -111,7 +111,7 @@ const mockEmptyOrchestrators: typeof mockOrchestrators = [];
 test.describe('Orchestrators Page - Full Test Suite', () => {
   test.beforeEach(async ({ page }) => {
     // Intercept Orchestrator list API and return mock data
-    await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
+    await page.route('**/api/workspaces/**/orchestrators*', async route => {
       const url = route.request().url();
       const urlParams = new URL(url).searchParams;
       const status = urlParams.get('status');
@@ -122,18 +122,22 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Apply filters
       if (status) {
-        filteredOrchestrators = filteredOrchestrators.filter((orch) => orch.status === status);
+        filteredOrchestrators = filteredOrchestrators.filter(
+          orch => orch.status === status
+        );
       }
       if (discipline) {
-        filteredOrchestrators = filteredOrchestrators.filter((orch) => orch.discipline === discipline);
+        filteredOrchestrators = filteredOrchestrators.filter(
+          orch => orch.discipline === discipline
+        );
       }
       if (search) {
         const searchLower = search.toLowerCase();
         filteredOrchestrators = filteredOrchestrators.filter(
-          (orch) =>
+          orch =>
             orch.title.toLowerCase().includes(searchLower) ||
             orch.discipline?.toLowerCase().includes(searchLower) ||
-            orch.description?.toLowerCase().includes(searchLower),
+            orch.description?.toLowerCase().includes(searchLower)
         );
       }
 
@@ -152,12 +156,16 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     // Navigate to Orchestrators page (assuming workspace ID is available)
     await page.goto(BASE_URL);
-    await page.waitForURL(/\/.*\/(dashboard|orchestrators)/, { timeout: 10000 });
+    await page.waitForURL(/\/.*\/(dashboard|orchestrators)/, {
+      timeout: 10000,
+    });
 
     // Navigate to Orchestrators page if not already there
     const currentUrl = page.url();
     if (!currentUrl.includes('/orchestrators')) {
-      const workspaceId = currentUrl.match(/\/([^\/]+)\/(dashboard|orchestrators)/)?.[1];
+      const workspaceId = currentUrl.match(
+        /\/([^\/]+)\/(dashboard|orchestrators)/
+      )?.[1];
       if (workspaceId) {
         await page.goto(`${BASE_URL}/${workspaceId}/orchestrators`);
       }
@@ -174,13 +182,13 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should display page title and description', async ({ page }) => {
       await expect(page.locator('h1')).toContainText('Orchestrators');
-      await expect(
-        page.locator('text=Manage your organization'),
-      ).toBeVisible();
+      await expect(page.locator('text=Manage your organization')).toBeVisible();
     });
 
     test('should display Create Orchestrator button', async ({ page }) => {
-      const createButton = page.locator('button:has-text("Create Orchestrator")');
+      const createButton = page.locator(
+        'button:has-text("Create Orchestrator")'
+      );
       await expect(createButton).toBeVisible();
       await expect(createButton).toBeEnabled();
     });
@@ -202,7 +210,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   });
 
   test.describe('Orchestrator List Display', () => {
-    test('should display Orchestrator cards when data exists', async ({ page }) => {
+    test('should display Orchestrator cards when data exists', async ({
+      page,
+    }) => {
       const orchestratorCards = page.locator('[class*="grid"] > div').filter({
         has: page.locator('h3'),
       });
@@ -211,15 +221,19 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await expect(orchestratorCards).toHaveCount(3);
     });
 
-    test('should display Orchestrator card with correct information', async ({ page }) => {
+    test('should display Orchestrator card with correct information', async ({
+      page,
+    }) => {
       const firstCard = page
         .locator('h3:has-text("Head of Engineering")')
         .locator('..');
 
-      await expect(firstCard.locator('h3')).toContainText('Head of Engineering');
+      await expect(firstCard.locator('h3')).toContainText(
+        'Head of Engineering'
+      );
       await expect(firstCard.locator('text=Engineering')).toBeVisible();
       await expect(
-        firstCard.locator('text=Technical leadership'),
+        firstCard.locator('text=Technical leadership')
       ).toBeVisible();
     });
 
@@ -246,8 +260,8 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should show loading skeleton initially', async ({ page }) => {
       // Intercept and delay API
-      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+      await page.route('**/api/workspaces/**/orchestrators*', async route => {
+        await new Promise(resolve => setTimeout(resolve, 2000));
         await route.continue();
       });
 
@@ -262,7 +276,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Empty State', () => {
     test.beforeEach(async ({ page }) => {
       // Override route to return empty data
-      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -277,21 +291,29 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
     });
 
-    test('should display empty state when no Orchestrators exist', async ({ page }) => {
+    test('should display empty state when no Orchestrators exist', async ({
+      page,
+    }) => {
       await expect(page.locator('text=No Orchestrators Yet')).toBeVisible();
-      await expect(
-        page.locator('text=Get started by creating'),
-      ).toBeVisible();
+      await expect(page.locator('text=Get started by creating')).toBeVisible();
     });
 
-    test('should show Create Orchestrator action in empty state', async ({ page }) => {
-      const createButton = page.locator('button:has-text("Create Your First Orchestrator")');
+    test('should show Create Orchestrator action in empty state', async ({
+      page,
+    }) => {
+      const createButton = page.locator(
+        'button:has-text("Create Your First Orchestrator")'
+      );
       await expect(createButton).toBeVisible();
     });
 
     test('should open create dialog from empty state', async ({ page }) => {
-      await page.locator('button:has-text("Create Your First Orchestrator")').click();
-      await expect(page.locator('h2:has-text("Create New Orchestrator")')).toBeVisible();
+      await page
+        .locator('button:has-text("Create Your First Orchestrator")')
+        .click();
+      await expect(
+        page.locator('h2:has-text("Create New Orchestrator")')
+      ).toBeVisible();
     });
   });
 
@@ -307,7 +329,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       // Should only show 1 Online Orchestrator
       const orchestratorCards = page.locator('h3:has-text("Head of")');
       await expect(orchestratorCards).toHaveCount(1);
-      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Engineering")')
+      ).toBeVisible();
     });
 
     test('should filter Orchestrators by Busy status', async ({ page }) => {
@@ -319,7 +343,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       // Should only show 1 Busy Orchestrator
-      await expect(page.locator('h3:has-text("Head of Product")')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Product")')
+      ).toBeVisible();
     });
 
     test('should filter Orchestrators by Offline status', async ({ page }) => {
@@ -351,50 +377,62 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await statusSelect.selectOption('ONLINE');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=Showing 1 of 3 Orchestrators')).toBeVisible();
+      await expect(
+        page.locator('text=Showing 1 of 3 Orchestrators')
+      ).toBeVisible();
     });
   });
 
   test.describe('Search Filter', () => {
     test('should filter Orchestrators by name search', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
 
       await searchInput.fill('Engineering');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
-      await expect(page.locator('h3:has-text("Head of Product")')).not.toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Engineering")')
+      ).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Product")')
+      ).not.toBeVisible();
     });
 
-    test('should filter Orchestrators by discipline search', async ({ page }) => {
+    test('should filter Orchestrators by discipline search', async ({
+      page,
+    }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
 
       await searchInput.fill('Product');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("Head of Product")')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Product")')
+      ).toBeVisible();
     });
 
     test('should be case insensitive', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
 
       await searchInput.fill('engineering');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Engineering")')
+      ).toBeVisible();
     });
 
     test('should show empty state when search has no results', async ({
       page,
     }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
 
       await searchInput.fill('NonexistentOrchestrator');
@@ -405,7 +443,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should clear search when input is cleared', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
 
       await searchInput.fill('Engineering');
@@ -429,8 +467,12 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await disciplineSelect.selectOption('Engineering');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
-      await expect(page.locator('h3:has-text("Head of Product")')).not.toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Engineering")')
+      ).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Product")')
+      ).not.toBeVisible();
     });
 
     test('should show all disciplines in dropdown', async ({ page }) => {
@@ -438,9 +480,15 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
         has: page.locator('option:has-text("All Disciplines")'),
       });
 
-      await expect(disciplineSelect.locator('option:has-text("Engineering")')).toBeVisible();
-      await expect(disciplineSelect.locator('option:has-text("Product")')).toBeVisible();
-      await expect(disciplineSelect.locator('option:has-text("Design")')).toBeVisible();
+      await expect(
+        disciplineSelect.locator('option:has-text("Engineering")')
+      ).toBeVisible();
+      await expect(
+        disciplineSelect.locator('option:has-text("Product")')
+      ).toBeVisible();
+      await expect(
+        disciplineSelect.locator('option:has-text("Design")')
+      ).toBeVisible();
     });
   });
 
@@ -454,20 +502,24 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Set search filter
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
       await searchInput.fill('Engineering');
 
       await page.waitForLoadState('networkidle');
 
       // Should only show Engineering Orchestrator that is Online
-      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
-      await expect(page.locator('text=Showing 1 of 3 Orchestrators')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Head of Engineering")')
+      ).toBeVisible();
+      await expect(
+        page.locator('text=Showing 1 of 3 Orchestrators')
+      ).toBeVisible();
     });
 
     test('should show active filter count', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
       await searchInput.fill('Engineering');
 
@@ -477,7 +529,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     test('should clear all filters', async ({ page }) => {
       // Apply filters
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
       await searchInput.fill('Engineering');
 
@@ -502,19 +554,25 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Create Orchestrator Wizard', () => {
     test('should open create Orchestrator dialog', async ({ page }) => {
       await page.locator('button:has-text("Create Orchestrator")').click();
-      await expect(page.locator('h2:has-text("Create New Orchestrator")')).toBeVisible();
+      await expect(
+        page.locator('h2:has-text("Create New Orchestrator")')
+      ).toBeVisible();
     });
 
     test('should close dialog on X button click', async ({ page }) => {
       await page.locator('button:has-text("Create Orchestrator")').click();
       await page.locator('button[aria-label="Close dialog"]').click();
-      await expect(page.locator('h2:has-text("Create New Orchestrator")')).not.toBeVisible();
+      await expect(
+        page.locator('h2:has-text("Create New Orchestrator")')
+      ).not.toBeVisible();
     });
 
     test('should close dialog on Cancel click', async ({ page }) => {
       await page.locator('button:has-text("Create Orchestrator")').click();
       await page.locator('button:has-text("Cancel")').click();
-      await expect(page.locator('h2:has-text("Create New Orchestrator")')).not.toBeVisible();
+      await expect(
+        page.locator('h2:has-text("Create New Orchestrator")')
+      ).not.toBeVisible();
     });
 
     test('should display step indicators', async ({ page }) => {
@@ -537,7 +595,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Fill in required fields
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
 
       // Next button should be enabled
       await expect(nextButton).toBeEnabled();
@@ -547,7 +607,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.locator('button:has-text("Create Orchestrator")').click();
 
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page
         .locator('textarea#orchestrator-description')
         .fill('Test description');
@@ -565,7 +627,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Complete step 1
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
       // Next should be disabled without traits
@@ -579,19 +643,25 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await expect(nextButton).toBeEnabled();
     });
 
-    test('Step 2: Charter - should allow adding expertise', async ({ page }) => {
+    test('Step 2: Charter - should allow adding expertise', async ({
+      page,
+    }) => {
       await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete step 1
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
       // Select trait
       await page.locator('button:has-text("Analytical")').click();
 
       // Add expertise
-      const expertiseInput = page.locator('input[placeholder*="Add expertise"]');
+      const expertiseInput = page.locator(
+        'input[placeholder*="Add expertise"]'
+      );
       await expertiseInput.fill('Scalability');
       await page.locator('button:has-text("Add")').click();
 
@@ -606,14 +676,18 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Complete step 1
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
       // Select trait
       await page.locator('button:has-text("Analytical")').click();
 
       // Add expertise
-      const expertiseInput = page.locator('input[placeholder*="Add expertise"]');
+      const expertiseInput = page.locator(
+        'input[placeholder*="Add expertise"]'
+      );
       await expertiseInput.fill('Scalability');
       await page.locator('button:has-text("Add")').click();
 
@@ -631,7 +705,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Complete steps 1-2
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Analytical")').click();
       await page.locator('button:has-text("Next")').click();
@@ -649,7 +725,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Complete steps 1-2
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Analytical")').click();
       await page.locator('button:has-text("Next")').click();
@@ -673,7 +751,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Complete all steps
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page
         .locator('textarea#orchestrator-description')
         .fill('Test description');
@@ -693,18 +773,24 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await expect(page.locator('text=Strategic')).toBeVisible();
     });
 
-    test('Step 4: Review - should have Create Orchestrator button', async ({ page }) => {
+    test('Step 4: Review - should have Create Orchestrator button', async ({
+      page,
+    }) => {
       await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Navigate to review step
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Analytical")').click();
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Next")').click();
 
-      const createButton = page.locator('button:has-text("Create Orchestrator")');
+      const createButton = page.locator(
+        'button:has-text("Create Orchestrator")'
+      );
       await expect(createButton).toBeVisible();
       await expect(createButton).toBeEnabled();
     });
@@ -714,14 +800,18 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Go to step 2
       await page.locator('input#orchestrator-title').fill('Test Orchestrator');
-      await page.locator('select#orchestrator-discipline').selectOption('Engineering');
+      await page
+        .locator('select#orchestrator-discipline')
+        .selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
       // Go back to step 1
       await page.locator('button:has-text("Back")').click();
 
       // Should see step 1 content
-      await expect(page.locator('input#orchestrator-title')).toHaveValue('Test Orchestrator');
+      await expect(page.locator('input#orchestrator-title')).toHaveValue(
+        'Test Orchestrator'
+      );
     });
 
     test('should show progress through steps', async ({ page }) => {
@@ -741,7 +831,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   });
 
   test.describe('Orchestrator Card Interactions', () => {
-    test('should navigate to Orchestrator detail on View click', async ({ page }) => {
+    test('should navigate to Orchestrator detail on View click', async ({
+      page,
+    }) => {
       const viewButton = page
         .locator('h3:has-text("Head of Engineering")')
         .locator('..')
@@ -752,7 +844,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     });
 
     test('should have hover effect on Orchestrator card', async ({ page }) => {
-      const orchestratorCard = page.locator('h3:has-text("Head of Engineering")').locator('..');
+      const orchestratorCard = page
+        .locator('h3:has-text("Head of Engineering")')
+        .locator('..');
 
       await orchestratorCard.hover();
 
@@ -776,16 +870,19 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Orchestrator Detail Page', () => {
     test.beforeEach(async ({ page }) => {
       // Mock single Orchestrator API
-      await page.route('**/api/workspaces/**/orchestrators/orch_001*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ data: mockOrchestrators[0] }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/orchestrators/orch_001*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ data: mockOrchestrators[0] }),
+          });
+        }
+      );
 
       // Mock Orchestrator tasks API
-      await page.route('**/api/orchestrators/orch_001/tasks*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/tasks*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -811,7 +908,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should load Orchestrator detail page', async ({ page }) => {
       await expect(page).toHaveURL(/\/orchestrators\/orch_001$/);
-      await expect(page.locator('h1:has-text("Head of Engineering")')).toBeVisible();
+      await expect(
+        page.locator('h1:has-text("Head of Engineering")')
+      ).toBeVisible();
     });
 
     test('should display breadcrumb navigation', async ({ page }) => {
@@ -820,24 +919,36 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     });
 
     test('should display Orchestrator information', async ({ page }) => {
-      await expect(page.locator('h1:has-text("Head of Engineering")')).toBeVisible();
+      await expect(
+        page.locator('h1:has-text("Head of Engineering")')
+      ).toBeVisible();
       await expect(page.locator('text=Engineering')).toBeVisible();
       await expect(page.locator('text=Technical leadership')).toBeVisible();
       await expect(page.locator('text=Online')).toBeVisible();
     });
 
     test('should display all tabs', async ({ page }) => {
-      await expect(page.locator('button[role="tab"]:has-text("Overview")')).toBeVisible();
-      await expect(page.locator('button[role="tab"]:has-text("Tasks")')).toBeVisible();
       await expect(
-        page.locator('button[role="tab"]:has-text("Configuration")'),
+        page.locator('button[role="tab"]:has-text("Overview")')
       ).toBeVisible();
-      await expect(page.locator('button[role="tab"]:has-text("Activity")')).toBeVisible();
-      await expect(page.locator('button[role="tab"]:has-text("Agents")')).toBeVisible();
+      await expect(
+        page.locator('button[role="tab"]:has-text("Tasks")')
+      ).toBeVisible();
+      await expect(
+        page.locator('button[role="tab"]:has-text("Configuration")')
+      ).toBeVisible();
+      await expect(
+        page.locator('button[role="tab"]:has-text("Activity")')
+      ).toBeVisible();
+      await expect(
+        page.locator('button[role="tab"]:has-text("Agents")')
+      ).toBeVisible();
     });
 
     test('should show Overview tab by default', async ({ page }) => {
-      const overviewTab = page.locator('button[role="tab"]:has-text("Overview")');
+      const overviewTab = page.locator(
+        'button[role="tab"]:has-text("Overview")'
+      );
       expect(await overviewTab.getAttribute('aria-selected')).toBe('true');
     });
 
@@ -845,7 +956,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.locator('button[role="tab"]:has-text("Tasks")').click();
       await expect(page.locator('h3:has-text("Assigned Tasks")')).toBeVisible();
 
-      await page.locator('button[role="tab"]:has-text("Configuration")').click();
+      await page
+        .locator('button[role="tab"]:has-text("Configuration")')
+        .click();
       await expect(page.locator('text=Configuration')).toBeVisible();
     });
 
@@ -857,14 +970,18 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     });
 
     test('should display charter summary', async ({ page }) => {
-      await expect(page.locator('h3:has-text("Charter Summary")')).toBeVisible();
+      await expect(
+        page.locator('h3:has-text("Charter Summary")')
+      ).toBeVisible();
       await expect(page.locator('text=Personality')).toBeVisible();
       await expect(page.locator('text=Analytical')).toBeVisible();
       await expect(page.locator('text=Strategic')).toBeVisible();
       await expect(page.locator('text=Technical')).toBeVisible();
     });
 
-    test('should have Set Offline button when Orchestrator is online', async ({ page }) => {
+    test('should have Set Offline button when Orchestrator is online', async ({
+      page,
+    }) => {
       const statusButton = page.locator('button:has-text("Set Offline")');
       await expect(statusButton).toBeVisible();
       await expect(statusButton).toBeEnabled();
@@ -880,16 +997,19 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Orchestrator Status Management', () => {
     test.beforeEach(async ({ page }) => {
       // Mock single Orchestrator API
-      await page.route('**/api/workspaces/**/orchestrators/orch_001*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ data: mockOrchestrators[0] }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/orchestrators/orch_001*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ data: mockOrchestrators[0] }),
+          });
+        }
+      );
 
       // Mock Orchestrator tasks API
-      await page.route('**/api/orchestrators/orch_001/tasks*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/tasks*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -915,11 +1035,13 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should show confirmation before status change', async ({ page }) => {
       // Mock status update API
-      await page.route('**/api/orchestrators/orch_001/status*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/status*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ data: { ...mockOrchestrators[0], status: 'OFFLINE' } }),
+          body: JSON.stringify({
+            data: { ...mockOrchestrators[0], status: 'OFFLINE' },
+          }),
         });
       });
 
@@ -934,16 +1056,19 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Orchestrator Delete', () => {
     test.beforeEach(async ({ page }) => {
       // Mock single Orchestrator API
-      await page.route('**/api/workspaces/**/orchestrators/orch_001*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ data: mockOrchestrators[0] }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/orchestrators/orch_001*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ data: mockOrchestrators[0] }),
+          });
+        }
+      );
 
       // Mock Orchestrator tasks API
-      await page.route('**/api/orchestrators/orch_001/tasks*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/tasks*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -969,7 +1094,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should show confirmation dialog before delete', async ({ page }) => {
       // Set up dialog handler
-      page.on('dialog', (dialog) => {
+      page.on('dialog', dialog => {
         expect(dialog.message()).toContain('Are you sure');
         dialog.dismiss();
       });
@@ -982,7 +1107,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       page,
     }) => {
       // Mock delete API
-      await page.route('**/api/orchestrators/orch_001*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001*', async route => {
         if (route.request().method() === 'DELETE') {
           await route.fulfill({
             status: 200,
@@ -995,7 +1120,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       });
 
       // Accept confirmation
-      page.on('dialog', (dialog) => dialog.accept());
+      page.on('dialog', dialog => dialog.accept());
 
       const deleteButton = page.locator('button:has-text("Delete")');
       await deleteButton.click();
@@ -1008,7 +1133,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Error Handling', () => {
     test('should display error message on API failure', async ({ page }) => {
       // Override route to return error
-      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async route => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -1019,12 +1144,14 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=Failed to load Orchestrators')).toBeVisible();
+      await expect(
+        page.locator('text=Failed to load Orchestrators')
+      ).toBeVisible();
     });
 
     test('should have retry button on error', async ({ page }) => {
       // Override route to return error
-      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async route => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -1040,13 +1167,16 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     });
 
     test('should handle 404 on Orchestrator detail page', async ({ page }) => {
-      await page.route('**/api/workspaces/**/orchestrators/nonexistent*', async (route) => {
-        await route.fulfill({
-          status: 404,
-          contentType: 'application/json',
-          body: JSON.stringify({ error: 'Orchestrator not found' }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/orchestrators/nonexistent*',
+        async route => {
+          await route.fulfill({
+            status: 404,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'Orchestrator not found' }),
+          });
+        }
+      );
 
       const currentUrl = page.url();
       const workspaceId = currentUrl.match(/\/([^\/]+)\/orchestrators/)?.[1];
@@ -1056,7 +1186,9 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
         await page.waitForLoadState('networkidle');
 
         await expect(page.locator('text=Orchestrator not found')).toBeVisible();
-        await expect(page.locator('a:has-text("Back to Orchestrators")')).toBeVisible();
+        await expect(
+          page.locator('a:has-text("Back to Orchestrators")')
+        ).toBeVisible();
       }
     });
   });
@@ -1077,7 +1209,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.setViewportSize({ width: 768, height: 1024 });
 
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]',
+        'input[placeholder*="Search Orchestrators"]'
       );
       await expect(searchInput).toBeVisible();
     });
@@ -1101,7 +1233,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
         expect(
           hasHorizontalScroll,
-          `Horizontal scroll at ${viewport.width}x${viewport.height}`,
+          `Horizontal scroll at ${viewport.width}x${viewport.height}`
         ).toBe(false);
       }
     });

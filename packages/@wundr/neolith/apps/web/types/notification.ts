@@ -101,7 +101,12 @@ export interface Notification {
 /**
  * Frequency options for notification digests
  */
-export type DigestFrequency = 'instant' | 'hourly' | 'daily' | 'weekly' | 'never';
+export type DigestFrequency =
+  | 'instant'
+  | 'hourly'
+  | 'daily'
+  | 'weekly'
+  | 'never';
 
 /**
  * Configuration for quiet hours when notifications should be suppressed
@@ -201,7 +206,13 @@ export type QueuedActionPayload =
 /**
  * Queued action types for offline operations
  */
-export type QueuedActionType = 'send_message' | 'add_reaction' | 'remove_reaction' | 'upload_file' | 'delete_message' | 'edit_message';
+export type QueuedActionType =
+  | 'send_message'
+  | 'add_reaction'
+  | 'remove_reaction'
+  | 'upload_file'
+  | 'delete_message'
+  | 'edit_message';
 
 /**
  * Represents a queued action waiting to be synced
@@ -288,52 +299,69 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
  * Type guard to check if a string is a valid NotificationType
  */
 export function isNotificationType(value: unknown): value is NotificationType {
-  return typeof value === 'string' && [
-    'message',
-    'mention',
-    'reaction',
-    'thread_reply',
-    'channel_invite',
-    'call_incoming',
-    'call_missed',
-    'orchestrator_update',
-    'system',
-  ].includes(value);
+  return (
+    typeof value === 'string' &&
+    [
+      'message',
+      'mention',
+      'reaction',
+      'thread_reply',
+      'channel_invite',
+      'call_incoming',
+      'call_missed',
+      'orchestrator_update',
+      'system',
+    ].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a string is a valid NotificationPriority
  */
-export function isNotificationPriority(value: unknown): value is NotificationPriority {
-  return typeof value === 'string' && ['low', 'normal', 'high', 'urgent'].includes(value);
+export function isNotificationPriority(
+  value: unknown
+): value is NotificationPriority {
+  return (
+    typeof value === 'string' &&
+    ['low', 'normal', 'high', 'urgent'].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a string is a valid DigestFrequency
  */
 export function isDigestFrequency(value: unknown): value is DigestFrequency {
-  return typeof value === 'string' && ['instant', 'hourly', 'daily', 'weekly', 'never'].includes(value);
+  return (
+    typeof value === 'string' &&
+    ['instant', 'hourly', 'daily', 'weekly', 'never'].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a string is a valid SyncStatus
  */
 export function isSyncStatus(value: unknown): value is SyncStatus {
-  return typeof value === 'string' && ['idle', 'syncing', 'synced', 'error', 'conflict'].includes(value);
+  return (
+    typeof value === 'string' &&
+    ['idle', 'syncing', 'synced', 'error', 'conflict'].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a string is a valid QueuedActionType
  */
 export function isQueuedActionType(value: unknown): value is QueuedActionType {
-  return typeof value === 'string' && [
-    'send_message',
-    'add_reaction',
-    'remove_reaction',
-    'upload_file',
-    'delete_message',
-    'edit_message',
-  ].includes(value);
+  return (
+    typeof value === 'string' &&
+    [
+      'send_message',
+      'add_reaction',
+      'remove_reaction',
+      'upload_file',
+      'delete_message',
+      'edit_message',
+    ].includes(value)
+  );
 }
 
 /**
@@ -367,12 +395,18 @@ export type ActionableNotificationType = Exclude<NotificationType, 'system'>;
 /**
  * Extract notification types that are call-related
  */
-export type CallNotificationType = Extract<NotificationType, 'call_incoming' | 'call_missed'>;
+export type CallNotificationType = Extract<
+  NotificationType,
+  'call_incoming' | 'call_missed'
+>;
 
 /**
  * Extract notification types that are message-related
  */
-export type MessageNotificationType = Extract<NotificationType, 'message' | 'mention' | 'thread_reply'>;
+export type MessageNotificationType = Extract<
+  NotificationType,
+  'message' | 'mention' | 'thread_reply'
+>;
 
 /**
  * Partial notification for creation (before server assigns ID and timestamp)

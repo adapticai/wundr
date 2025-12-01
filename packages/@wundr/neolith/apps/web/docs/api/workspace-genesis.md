@@ -1,6 +1,7 @@
 # Workspace Genesis API
 
-Complete API endpoint for generating organizational structures using @wundr/org-genesis package integration.
+Complete API endpoint for generating organizational structures using @wundr/org-genesis package
+integration.
 
 ## Endpoint
 
@@ -10,7 +11,9 @@ POST /api/workspaces/generate-org
 
 ## Overview
 
-This endpoint generates a complete organizational structure with workspace, VPs, disciplines, and channels using the org-genesis engine. It performs the following operations in a single database transaction:
+This endpoint generates a complete organizational structure with workspace, VPs, disciplines, and
+channels using the org-genesis engine. It performs the following operations in a single database
+transaction:
 
 1. Validates user permissions (ADMIN or OWNER required)
 2. Generates org structure using @wundr/org-genesis
@@ -206,6 +209,7 @@ Authorization: <session-token>
 ### Database Transaction
 
 The endpoint uses a Prisma transaction with:
+
 - **Max Wait**: 30 seconds
 - **Timeout**: 60 seconds
 
@@ -234,6 +238,7 @@ All operations are atomic - if any step fails, all changes are rolled back.
 ### Orchestrator User Creation
 
 Each Orchestrator is created as a user with:
+
 - Email: `{orchestrator-name}@vp.{workspace-slug}.local`
 - Display name: Orchestrator title
 - Status: ACTIVE
@@ -243,6 +248,7 @@ Each Orchestrator is created as a user with:
 ### Channel Creation
 
 For each discipline, creates:
+
 - Public channel with discipline name as slug
 - Topic and purpose from discipline definition
 - Settings with discipline metadata
@@ -253,6 +259,7 @@ For each discipline, creates:
 ### Discipline Mapping
 
 Disciplines are mapped with:
+
 - Color coding based on name
 - Icon assignment based on type
 - Parent organization link
@@ -310,9 +317,11 @@ console.log(`Created workspace with ${result.genesis.orchestratorCount} VPs`);
 
 ### Unit Tests
 
-Located at: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/__tests__/generate-org.test.ts`
+Located at:
+`/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/__tests__/generate-org.test.ts`
 
 Run tests:
+
 ```bash
 cd packages/@wundr/neolith/apps/web
 npm test -- app/api/workspaces/generate-org/__tests__/generate-org.test.ts
@@ -356,6 +365,7 @@ The endpoint implements comprehensive error handling:
 ## Monitoring
 
 Key metrics to monitor:
+
 - Request duration
 - Generation success rate
 - Transaction failure rate
@@ -365,9 +375,12 @@ Key metrics to monitor:
 
 ## Related Files
 
-- Route: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/route.ts`
-- Validation: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/workspace-genesis.ts`
-- Tests: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/__tests__/generate-org.test.ts`
+- Route:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/route.ts`
+- Validation:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/workspace-genesis.ts`
+- Tests:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/__tests__/generate-org.test.ts`
 - Integration: `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/org-integration/`
 - Generator: `/Users/iroselli/wundr/packages/@wundr/org-genesis/`
 

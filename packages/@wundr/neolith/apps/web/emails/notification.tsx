@@ -23,7 +23,12 @@ import {
   colors,
 } from './components';
 
-export type NotificationType = 'mention' | 'message' | 'channel' | 'task' | 'system';
+export type NotificationType =
+  | 'mention'
+  | 'message'
+  | 'channel'
+  | 'task'
+  | 'system';
 
 export interface NotificationEmailProps {
   type: NotificationType;
@@ -81,7 +86,7 @@ export const NotificationEmail = ({
             </Section>
 
             {/* Title */}
-            <EmailText variant="h1">{title}</EmailText>
+            <EmailText variant='h1'>{title}</EmailText>
 
             {/* Message */}
             <EmailText>{message}</EmailText>
@@ -89,14 +94,12 @@ export const NotificationEmail = ({
             {/* Action Button */}
             {actionUrl && actionText && (
               <Section style={buttonContainer}>
-                <EmailButton href={actionUrl}>
-                  {actionText}
-                </EmailButton>
+                <EmailButton href={actionUrl}>{actionText}</EmailButton>
               </Section>
             )}
 
             {/* Timestamp */}
-            <EmailText variant="caption" style={timestampText}>
+            <EmailText variant='caption' style={timestampText}>
               {formattedTimestamp}
             </EmailText>
 

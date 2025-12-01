@@ -41,7 +41,10 @@ import type Redis from 'ioredis';
  * Union type for all presence event callback functions.
  * Used internally by the subscription system.
  */
-type PresenceEventCallback = PresenceCallback | ChannelPresenceCallback | VPPresenceCallback;
+type PresenceEventCallback =
+  | PresenceCallback
+  | ChannelPresenceCallback
+  | VPPresenceCallback;
 
 // =============================================================================
 // Custom Errors
@@ -65,7 +68,7 @@ export class RedisUnavailableError extends GenesisError {
     super(
       'Redis is not available. Presence service is operating in degraded mode.',
       'REDIS_UNAVAILABLE',
-      503,
+      503
     );
     this.name = 'RedisUnavailableError';
   }
@@ -205,7 +208,10 @@ export interface PresenceService {
    * @param callback - Function called on presence changes
    * @returns Unsubscribe function
    */
-  subscribeToUser(userId: string, callback: PresenceCallback): UnsubscribeFunction;
+  subscribeToUser(
+    userId: string,
+    callback: PresenceCallback
+  ): UnsubscribeFunction;
 
   /**
    * Subscribes to presence changes for a channel.
@@ -214,7 +220,10 @@ export interface PresenceService {
    * @param callback - Function called on presence changes
    * @returns Unsubscribe function
    */
-  subscribeToChannel(channelId: string, callback: ChannelPresenceCallback): UnsubscribeFunction;
+  subscribeToChannel(
+    channelId: string,
+    callback: ChannelPresenceCallback
+  ): UnsubscribeFunction;
 
   /**
    * Subscribes to presence changes for a VP.
@@ -223,7 +232,10 @@ export interface PresenceService {
    * @param callback - Function called on presence changes
    * @returns Unsubscribe function
    */
-  subscribeToVP(vpId: string, callback: VPPresenceCallback): UnsubscribeFunction;
+  subscribeToVP(
+    vpId: string,
+    callback: VPPresenceCallback
+  ): UnsubscribeFunction;
 
   // ==========================================================================
   // Utility Methods
@@ -304,7 +316,10 @@ export class PresenceServiceImpl implements PresenceService {
   /**
    * Sets a user as online with optional metadata.
    */
-  async setUserOnline(userId: string, metadata?: PresenceMetadata): Promise<void> {
+  async setUserOnline(
+    userId: string,
+    metadata?: PresenceMetadata
+  ): Promise<void> {
     if (!this.isAvailable()) {
       return; // Graceful degradation
     }
@@ -364,7 +379,10 @@ export class PresenceServiceImpl implements PresenceService {
 
     try {
       // Get previous status for event
-      const previousStatus = await this.redis.hget(key, 'status') as PresenceStatus | null;
+      const previousStatus = (await this.redis.hget(
+        key,
+        'status'
+      )) as PresenceStatus | null;
 
       const pipeline = this.redis.pipeline();
 
@@ -407,7 +425,10 @@ export class PresenceServiceImpl implements PresenceService {
 
     try {
       // Get previous status
-      const previousStatus = await this.redis.hget(key, 'status') as PresenceStatus | null;
+      const previousStatus = (await this.redis.hget(
+        key,
+        'status'
+      )) as PresenceStatus | null;
 
       const pipeline = this.redis.pipeline();
 
@@ -455,12 +476,19 @@ export class PresenceServiceImpl implements PresenceService {
         this.redis.exists(heartbeatKey),
       ]);
 
-      if (!data || Object.keys(data).length === 0 || !data.userId || !data.lastSeen) {
+      if (
+        !data ||
+        Object.keys(data).length === 0 ||
+        !data.userId ||
+        !data.lastSeen
+      ) {
         return null;
       }
 
       // If no heartbeat, user is considered offline
-      const status: PresenceStatus = heartbeatExists ? (data.status as PresenceStatus) : 'OFFLINE';
+      const status: PresenceStatus = heartbeatExists
+        ? (data.status as PresenceStatus)
+        : 'OFFLINE';
 
       return {
         userId: data.userId,
@@ -478,7 +506,9 @@ export class PresenceServiceImpl implements PresenceService {
   /**
    * Gets presence for multiple users.
    */
-  async getMultiplePresence(userIds: string[]): Promise<Map<string, UserPresence>> {
+  async getMultiplePresence(
+    userIds: string[]
+  ): Promise<Map<string, UserPresence>> {
     const result = new Map<string, UserPresence>();
 
     if (!this.isAvailable() || userIds.length === 0) {
@@ -491,7 +521,7 @@ export class PresenceServiceImpl implements PresenceService {
     try {
       // Fetch all presences in parallel
       const presences = await Promise.all(
-        limitedIds.map((id) => this.getUserPresence(id)),
+        limitedIds.map(id => this.getUserPresence(id))
       );
 
       presences.forEach((presence, index) => {
@@ -599,7 +629,7 @@ export class PresenceServiceImpl implements PresenceService {
     const presenceMap = await this.getMultiplePresence(memberIds);
     const onlineMembers: UserPresence[] = [];
 
-    presenceMap.forEach((presence) => {
+    presenceMap.forEach(presence => {
       if (presence.status !== 'OFFLINE') {
         onlineMembers.push(presence);
       }
@@ -667,7 +697,10 @@ export class PresenceServiceImpl implements PresenceService {
     const now = new Date();
 
     try {
-      const previousStatus = await this.redis.hget(key, 'status') as PresenceStatus | null;
+      const previousStatus = (await this.redis.hget(
+        key,
+        'status'
+      )) as PresenceStatus | null;
 
       const pipeline = this.redis.pipeline();
 
@@ -710,22 +743,31 @@ export class PresenceServiceImpl implements PresenceService {
         this.redis.exists(heartbeatKey),
       ]);
 
-      if (!data || Object.keys(data).length === 0 || !data.vpId || !data.lastHeartbeat) {
+      if (
+        !data ||
+        Object.keys(data).length === 0 ||
+        !data.vpId ||
+        !data.lastHeartbeat
+      ) {
         return null;
       }
 
-      const status: PresenceStatus = heartbeatExists ? (data.status as PresenceStatus) : 'OFFLINE';
+      const status: PresenceStatus = heartbeatExists
+        ? (data.status as PresenceStatus)
+        : 'OFFLINE';
 
       return {
         orchestratorId: data.vpId,
         status,
         lastHeartbeat: new Date(data.lastHeartbeat),
-        daemonInfo: data.daemonInfo ? JSON.parse(data.daemonInfo) : {
-          version: 'unknown',
-          hostname: 'unknown',
-          processId: 0,
-          startedAt: new Date(),
-        },
+        daemonInfo: data.daemonInfo
+          ? JSON.parse(data.daemonInfo)
+          : {
+              version: 'unknown',
+              hostname: 'unknown',
+              processId: 0,
+              startedAt: new Date(),
+            },
       };
     } catch (error) {
       this.logError('Failed to get Orchestrator presence', error);
@@ -736,7 +778,10 @@ export class PresenceServiceImpl implements PresenceService {
   /**
    * Sends a heartbeat for a VP.
    */
-  async vpHeartbeat(vpId: string, metrics?: DaemonInfo['metrics']): Promise<void> {
+  async vpHeartbeat(
+    vpId: string,
+    metrics?: DaemonInfo['metrics']
+  ): Promise<void> {
     if (!this.isAvailable()) {
       return;
     }
@@ -791,7 +836,10 @@ export class PresenceServiceImpl implements PresenceService {
    * @param callback - Function called when the user's presence changes
    * @returns Unsubscribe function to remove the subscription
    */
-  subscribeToUser(userId: string, callback: PresenceCallback): UnsubscribeFunction {
+  subscribeToUser(
+    userId: string,
+    callback: PresenceCallback
+  ): UnsubscribeFunction {
     if (!this.config.enablePubSub) {
       return () => {};
     }
@@ -807,7 +855,10 @@ export class PresenceServiceImpl implements PresenceService {
    * @param callback - Function called when channel presence changes
    * @returns Unsubscribe function to remove the subscription
    */
-  subscribeToChannel(channelId: string, callback: ChannelPresenceCallback): UnsubscribeFunction {
+  subscribeToChannel(
+    channelId: string,
+    callback: ChannelPresenceCallback
+  ): UnsubscribeFunction {
     if (!this.config.enablePubSub) {
       return () => {};
     }
@@ -823,7 +874,10 @@ export class PresenceServiceImpl implements PresenceService {
    * @param callback - Function called when the VP's presence changes
    * @returns Unsubscribe function to remove the subscription
    */
-  subscribeToVP(vpId: string, callback: VPPresenceCallback): UnsubscribeFunction {
+  subscribeToVP(
+    vpId: string,
+    callback: VPPresenceCallback
+  ): UnsubscribeFunction {
     if (!this.config.enablePubSub) {
       return () => {};
     }
@@ -865,7 +919,7 @@ export class PresenceServiceImpl implements PresenceService {
       ]);
 
       // Filter user keys (exclude Orchestrator keys)
-      const userOnlyKeys = userKeys.filter((k) => !k.includes(':vp:'));
+      const userOnlyKeys = userKeys.filter(k => !k.includes(':vp:'));
 
       return {
         onlineUsers: userOnlyKeys.length,
@@ -896,7 +950,9 @@ export class PresenceServiceImpl implements PresenceService {
 
     try {
       // Find all presence keys without active heartbeats
-      const userPresenceKeys = await this.redis.keys(`${PRESENCE_KEY_PATTERNS.USER_PRESENCE}*`);
+      const userPresenceKeys = await this.redis.keys(
+        `${PRESENCE_KEY_PATTERNS.USER_PRESENCE}*`
+      );
 
       for (const key of userPresenceKeys) {
         const userId = key.replace(PRESENCE_KEY_PATTERNS.USER_PRESENCE, '');
@@ -911,7 +967,9 @@ export class PresenceServiceImpl implements PresenceService {
       }
 
       // Same for VPs
-      const vpPresenceKeys = await this.redis.keys(`${PRESENCE_KEY_PATTERNS.VP_PRESENCE}*`);
+      const vpPresenceKeys = await this.redis.keys(
+        `${PRESENCE_KEY_PATTERNS.VP_PRESENCE}*`
+      );
 
       for (const key of vpPresenceKeys) {
         const vpId = key.replace(PRESENCE_KEY_PATTERNS.VP_PRESENCE, '');
@@ -981,7 +1039,7 @@ export class PresenceServiceImpl implements PresenceService {
       if (callbacks) {
         try {
           const event = JSON.parse(message) as PresenceEvent;
-          callbacks.forEach((cb) => {
+          callbacks.forEach(cb => {
             // Call the callback with the appropriate event type
             // The callback will receive the correctly typed event
             (cb as (event: PresenceEvent) => void)(event);
@@ -1005,7 +1063,10 @@ export class PresenceServiceImpl implements PresenceService {
    * @param callback - The callback function to invoke on events
    * @returns Unsubscribe function to remove the subscription
    */
-  private subscribe(channel: string, callback: PresenceEventCallback): UnsubscribeFunction {
+  private subscribe(
+    channel: string,
+    callback: PresenceEventCallback
+  ): UnsubscribeFunction {
     if (!this.subscriptions.has(channel)) {
       this.subscriptions.set(channel, new Set());
 
@@ -1052,7 +1113,10 @@ export class PresenceServiceImpl implements PresenceService {
     try {
       const channel = `${PRESENCE_KEY_PATTERNS.USER_EVENTS}${event.userId}`;
       await this.redis.publish(channel, JSON.stringify(event));
-      await this.redis.publish(PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS, JSON.stringify(event));
+      await this.redis.publish(
+        PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS,
+        JSON.stringify(event)
+      );
     } catch (error) {
       this.logError('Failed to publish user event', error);
     }
@@ -1069,7 +1133,10 @@ export class PresenceServiceImpl implements PresenceService {
     try {
       const channel = `${PRESENCE_KEY_PATTERNS.VP_EVENTS}${event.orchestratorId}`;
       await this.redis.publish(channel, JSON.stringify(event));
-      await this.redis.publish(PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS, JSON.stringify(event));
+      await this.redis.publish(
+        PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS,
+        JSON.stringify(event)
+      );
     } catch (error) {
       this.logError('Failed to publish Orchestrator event', error);
     }
@@ -1078,7 +1145,9 @@ export class PresenceServiceImpl implements PresenceService {
   /**
    * Publishes a channel presence event.
    */
-  private async publishChannelEvent(event: ChannelPresenceEvent): Promise<void> {
+  private async publishChannelEvent(
+    event: ChannelPresenceEvent
+  ): Promise<void> {
     if (!this.config.enablePubSub || !this.isAvailable()) {
       return;
     }
@@ -1086,7 +1155,10 @@ export class PresenceServiceImpl implements PresenceService {
     try {
       const channel = `${PRESENCE_KEY_PATTERNS.CHANNEL_EVENTS}${event.channelId}`;
       await this.redis.publish(channel, JSON.stringify(event));
-      await this.redis.publish(PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS, JSON.stringify(event));
+      await this.redis.publish(
+        PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS,
+        JSON.stringify(event)
+      );
     } catch (error) {
       this.logError('Failed to publish channel event', error);
     }
@@ -1097,7 +1169,10 @@ export class PresenceServiceImpl implements PresenceService {
    */
   private logError(message: string, error: unknown): void {
     // eslint-disable-next-line no-console
-    console.error(`[PresenceService] ${message}:`, error instanceof Error ? error.message : error);
+    console.error(
+      `[PresenceService] ${message}:`,
+      error instanceof Error ? error.message : error
+    );
   }
 }
 
@@ -1133,7 +1208,7 @@ export class PresenceServiceImpl implements PresenceService {
  */
 export function createPresenceService(
   redisClient?: Redis,
-  config?: Partial<PresenceConfig>,
+  config?: Partial<PresenceConfig>
 ): PresenceServiceImpl {
   return new PresenceServiceImpl(redisClient, config);
 }

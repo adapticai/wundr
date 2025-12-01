@@ -43,8 +43,14 @@ type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 // Task assignment form schema
 const taskAssignmentSchema = z.object({
-  title: z.string().min(1, 'Task title is required').max(100, 'Title must be 100 characters or less'),
-  description: z.string().min(1, 'Description is required').max(1000, 'Description must be 1000 characters or less'),
+  title: z
+    .string()
+    .min(1, 'Task title is required')
+    .max(100, 'Title must be 100 characters or less'),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(1000, 'Description must be 1000 characters or less'),
   priority: z.enum(TASK_PRIORITIES),
   orchestratorId: z.string().min(1, 'Please select an Orchestrator'),
 });
@@ -71,7 +77,7 @@ export function OrchestratorTaskAssignmentDialog({
 
   const isControlled = controlledOpen !== undefined;
   const isOpen = isControlled ? controlledOpen : internalOpen;
-  const setIsOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
+  const setIsOpen = isControlled ? onOpenChange || (() => {}) : setInternalOpen;
 
   const form = useForm<TaskAssignmentFormValues>({
     resolver: zodResolver(taskAssignmentSchema),
@@ -101,31 +107,37 @@ export function OrchestratorTaskAssignmentDialog({
   };
 
   // Filter only online Orchestrators
-  const activeOrchestrators = orchestrators.filter((orchestrator) => orchestrator.status === 'ONLINE');
+  const activeOrchestrators = orchestrators.filter(
+    orchestrator => orchestrator.status === 'ONLINE'
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className='sm:max-w-[550px]'>
         <DialogHeader>
           <DialogTitle>Assign Task to Orchestrator</DialogTitle>
           <DialogDescription>
-            Create a new task and assign it to an orchestrator. Only active Orchestrators are available for assignment.
+            Create a new task and assign it to an orchestrator. Only active
+            Orchestrators are available for assignment.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className='space-y-4'
+          >
             {/* Task Title */}
             <FormField
               control={form.control}
-              name="title"
+              name='title'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Task Title</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Review user feedback"
+                      placeholder='e.g., Review user feedback'
                       {...field}
                     />
                   </FormControl>
@@ -137,14 +149,14 @@ export function OrchestratorTaskAssignmentDialog({
             {/* Task Description */}
             <FormField
               control={form.control}
-              name="description"
+              name='description'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Provide detailed information about the task..."
-                      className="min-h-[100px]"
+                      placeholder='Provide detailed information about the task...'
+                      className='min-h-[100px]'
                       {...field}
                     />
                   </FormControl>
@@ -159,7 +171,7 @@ export function OrchestratorTaskAssignmentDialog({
             {/* Priority */}
             <FormField
               control={form.control}
-              name="priority"
+              name='priority'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
@@ -169,31 +181,31 @@ export function OrchestratorTaskAssignmentDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
+                        <SelectValue placeholder='Select priority' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="low">
-                        <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-gray-500" />
+                      <SelectItem value='low'>
+                        <div className='flex items-center gap-2'>
+                          <span className='h-2 w-2 rounded-full bg-gray-500' />
                           Low
                         </div>
                       </SelectItem>
-                      <SelectItem value="medium">
-                        <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-blue-500" />
+                      <SelectItem value='medium'>
+                        <div className='flex items-center gap-2'>
+                          <span className='h-2 w-2 rounded-full bg-blue-500' />
                           Medium
                         </div>
                       </SelectItem>
-                      <SelectItem value="high">
-                        <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-orange-500" />
+                      <SelectItem value='high'>
+                        <div className='flex items-center gap-2'>
+                          <span className='h-2 w-2 rounded-full bg-orange-500' />
                           High
                         </div>
                       </SelectItem>
-                      <SelectItem value="urgent">
-                        <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-red-500" />
+                      <SelectItem value='urgent'>
+                        <div className='flex items-center gap-2'>
+                          <span className='h-2 w-2 rounded-full bg-red-500' />
                           Urgent
                         </div>
                       </SelectItem>
@@ -207,7 +219,7 @@ export function OrchestratorTaskAssignmentDialog({
             {/* OrchestratorSelector */}
             <FormField
               control={form.control}
-              name="orchestratorId"
+              name='orchestratorId'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to Orchestrator</FormLabel>
@@ -217,34 +229,37 @@ export function OrchestratorTaskAssignmentDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an Orchestrator" />
+                        <SelectValue placeholder='Select an Orchestrator' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {activeOrchestrators.length === 0 ? (
-                        <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                        <div className='px-2 py-4 text-center text-sm text-muted-foreground'>
                           No active Orchestrators available
                         </div>
                       ) : (
-                        activeOrchestrators.map((orchestrator) => (
-                          <SelectItem key={orchestrator.id} value={orchestrator.id}>
-                            <div className="flex items-center gap-2">
+                        activeOrchestrators.map(orchestrator => (
+                          <SelectItem
+                            key={orchestrator.id}
+                            value={orchestrator.id}
+                          >
+                            <div className='flex items-center gap-2'>
                               {orchestrator.avatarUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={orchestrator.avatarUrl}
                                   alt={orchestrator.title}
-                                  className="h-5 w-5 rounded-md object-cover"
+                                  className='h-5 w-5 rounded-md object-cover'
                                 />
                               ) : (
-                                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary">
+                                <div className='flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary'>
                                   {orchestrator.title.charAt(0)}
                                 </div>
                               )}
-                              <span className="truncate">
+                              <span className='truncate'>
                                 {orchestrator.title}
                                 {orchestrator.discipline && (
-                                  <span className="ml-1 text-muted-foreground">
+                                  <span className='ml-1 text-muted-foreground'>
                                     ({orchestrator.discipline})
                                   </span>
                                 )}
@@ -267,15 +282,15 @@ export function OrchestratorTaskAssignmentDialog({
 
             <DialogFooter>
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={() => setIsOpen(false)}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type='submit'
                 disabled={isSubmitting || activeOrchestrators.length === 0}
               >
                 {isSubmitting ? 'Assigning...' : 'Assign Task'}
@@ -291,10 +306,30 @@ export function OrchestratorTaskAssignmentDialog({
 // Priority badge component for reuse
 export function TaskPriorityBadge({ priority }: { priority: TaskPriority }) {
   const config = {
-    low: { label: 'Low', color: 'text-gray-700', bgColor: 'bg-gray-100', dotColor: 'bg-gray-500' },
-    medium: { label: 'Medium', color: 'text-blue-700', bgColor: 'bg-blue-100', dotColor: 'bg-blue-500' },
-    high: { label: 'High', color: 'text-orange-700', bgColor: 'bg-orange-100', dotColor: 'bg-orange-500' },
-    urgent: { label: 'Urgent', color: 'text-red-700', bgColor: 'bg-red-100', dotColor: 'bg-red-500' },
+    low: {
+      label: 'Low',
+      color: 'text-gray-700',
+      bgColor: 'bg-gray-100',
+      dotColor: 'bg-gray-500',
+    },
+    medium: {
+      label: 'Medium',
+      color: 'text-blue-700',
+      bgColor: 'bg-blue-100',
+      dotColor: 'bg-blue-500',
+    },
+    high: {
+      label: 'High',
+      color: 'text-orange-700',
+      bgColor: 'bg-orange-100',
+      dotColor: 'bg-orange-500',
+    },
+    urgent: {
+      label: 'Urgent',
+      color: 'text-red-700',
+      bgColor: 'bg-red-100',
+      dotColor: 'bg-red-500',
+    },
   }[priority];
 
   return (

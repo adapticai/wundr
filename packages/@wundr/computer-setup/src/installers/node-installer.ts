@@ -40,7 +40,10 @@ export class NodeInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     const nodeConfig = profile.tools?.languages?.node;
     if (!nodeConfig) {
       throw new Error('Node.js configuration not found in profile');
@@ -48,7 +51,7 @@ export class NodeInstaller implements BaseInstaller {
 
     // Check if Node Version Manager is installed
     const nvmInstalled = await this.isNVMInstalled();
-    
+
     if (!nvmInstalled) {
       await this.installNVM(platform);
     }
@@ -70,8 +73,13 @@ export class NodeInstaller implements BaseInstaller {
     await this.installPackageManagers(profile);
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    logger.info(`Configuring Node.js environment on ${platform.os} (${platform.arch})`);
+  async configure(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
+    logger.info(
+      `Configuring Node.js environment on ${platform.os} (${platform.arch})`
+    );
 
     // Configure npm
     await this.configureNPM(profile);
@@ -89,8 +97,8 @@ export class NodeInstaller implements BaseInstaller {
     try {
       const nodeVersion = await this.getVersion();
       if (!nodeVersion) {
-return false;
-}
+        return false;
+      }
 
       const { stdout: npmVersion } = await execa('npm', ['--version']);
       return !!npmVersion;
@@ -102,8 +110,8 @@ return false;
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     const nodeConfig = profile.tools?.languages?.node;
     if (!nodeConfig) {
-return [];
-}
+      return [];
+    }
 
     const steps: SetupStep[] = [
       {
@@ -169,27 +177,30 @@ return [];
 
   private async installNVM(platform: SetupPlatform): Promise<void> {
     logger.info('Installing NVM (Node Version Manager)...');
-    
+
     const homeDir = os.homedir();
     const nvmDir = path.join(homeDir, '.nvm');
-    
+
     if (await fs.pathExists(nvmDir)) {
       logger.info('NVM already installed');
       return;
     }
 
     if (platform.os === 'win32') {
-      throw new Error('NVM installation on Windows requires manual setup of nvm-windows');
+      throw new Error(
+        'NVM installation on Windows requires manual setup of nvm-windows'
+      );
     }
 
     try {
       // Install NVM
-      const installScript = 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash';
+      const installScript =
+        'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash';
       await execa('bash', ['-c', installScript], { stdio: 'inherit' });
-      
+
       // Setup environment for current session
       process.env.NVM_DIR = nvmDir;
-      
+
       // Update shell profiles
       await this.setupNVMShellIntegration();
 
@@ -201,7 +212,7 @@ return [];
 
   private async installNodeVersion(version: string): Promise<void> {
     logger.info(`Installing Node.js v${version}...`);
-    
+
     try {
       if (process.platform === 'win32') {
         await execa('nvm', ['install', version]);
@@ -217,7 +228,9 @@ return [];
       }
       logger.info(`Node.js v${version} installed successfully`);
     } catch (error) {
-      logger.warn(`Warning: Failed to install Node.js v${version}: ${String(error)}`);
+      logger.warn(
+        `Warning: Failed to install Node.js v${version}: ${String(error)}`
+      );
     }
   }
 
@@ -241,7 +254,9 @@ return [];
         await execa('bash', ['-c', nvmScript]);
       }
     } catch (error) {
-      logger.warn(`Warning: Failed to set default Node.js version to ${version}: ${String(error)}`);
+      logger.warn(
+        `Warning: Failed to set default Node.js version to ${version}: ${String(error)}`
+      );
       // Continue instead of throwing - non-critical failure
     }
   }
@@ -252,16 +267,20 @@ return [];
         // Use --force flag to handle existing packages
         await execa('npm', ['install', '-g', pkg, '--force']);
       } catch (error) {
-        logger.warn(`Failed to install global package ${pkg}: ${String(error)}`);
+        logger.warn(
+          `Failed to install global package ${pkg}: ${String(error)}`
+        );
       }
     }
   }
 
-  private async installPackageManagers(profile: DeveloperProfile): Promise<void> {
+  private async installPackageManagers(
+    profile: DeveloperProfile
+  ): Promise<void> {
     const packageManagers = profile.tools?.packageManagers;
     if (!packageManagers) {
-return;
-}
+      return;
+    }
 
     // Install pnpm
     if (packageManagers.pnpm) {
@@ -276,7 +295,7 @@ return;
 
   private async installPnpm(): Promise<void> {
     logger.info('Installing pnpm...');
-    
+
     try {
       // Check if already installed
       await which('pnpm');
@@ -289,20 +308,33 @@ return;
 
     try {
       // Use the official pnpm installation script
-      await execa('bash', ['-c', 'curl -fsSL https://get.pnpm.io/install.sh | sh -']);
-      
+      await execa('bash', [
+        '-c',
+        'curl -fsSL https://get.pnpm.io/install.sh | sh -',
+      ]);
+
       // Setup environment
       const pnpmHome = path.join(os.homedir(), '.local', 'share', 'pnpm');
       process.env.PNPM_HOME = pnpmHome;
       process.env.PATH = `${pnpmHome}:${process.env.PATH}`;
-      
+
       // Update shell profiles
       await this.updateShellWithPnpm(pnpmHome);
-      
+
       // Configure pnpm
-      await execa('pnpm', ['config', 'set', 'store-dir', path.join(os.homedir(), '.pnpm-store')]);
+      await execa('pnpm', [
+        'config',
+        'set',
+        'store-dir',
+        path.join(os.homedir(), '.pnpm-store'),
+      ]);
       await execa('pnpm', ['config', 'set', 'auto-install-peers', 'true']);
-      await execa('pnpm', ['config', 'set', 'strict-peer-dependencies', 'false']);
+      await execa('pnpm', [
+        'config',
+        'set',
+        'strict-peer-dependencies',
+        'false',
+      ]);
 
       logger.info('pnpm installed and configured');
     } catch (error) {
@@ -312,7 +344,7 @@ return;
 
   private async installYarn(profile: DeveloperProfile): Promise<void> {
     logger.info('Installing Yarn...');
-    
+
     try {
       // Check if already installed
       await which('yarn');
@@ -324,13 +356,23 @@ return;
 
     try {
       await execa('npm', ['install', '-g', 'yarn', '--force']);
-      
+
       // Configure yarn
       if (profile.name) {
-        await execa('yarn', ['config', 'set', 'init-author-name', profile.name]);
+        await execa('yarn', [
+          'config',
+          'set',
+          'init-author-name',
+          profile.name,
+        ]);
       }
       if (profile.email) {
-        await execa('yarn', ['config', 'set', 'init-author-email', profile.email]);
+        await execa('yarn', [
+          'config',
+          'set',
+          'init-author-email',
+          profile.email,
+        ]);
       }
       await execa('yarn', ['config', 'set', 'init-license', 'MIT']);
 
@@ -342,33 +384,38 @@ return;
 
   private async configureNPM(profile: DeveloperProfile): Promise<void> {
     logger.info('Configuring npm...');
-    
+
     const homeDir = os.homedir();
     const npmGlobalDir = path.join(homeDir, '.npm-global');
-    
+
     try {
       // Create npm-global directory structure
       await fs.ensureDir(path.join(npmGlobalDir, 'lib'));
       await fs.ensureDir(path.join(npmGlobalDir, 'bin'));
-      
+
       // Set npm prefix before any global installs
       await execa('npm', ['config', 'set', 'prefix', npmGlobalDir]);
-      
+
       // Configure npm settings
       if (profile.name) {
         await execa('npm', ['config', 'set', 'init-author-name', profile.name]);
       }
       if (profile.email) {
-        await execa('npm', ['config', 'set', 'init-author-email', profile.email]);
+        await execa('npm', [
+          'config',
+          'set',
+          'init-author-email',
+          profile.email,
+        ]);
       }
       await execa('npm', ['config', 'set', 'init-license', 'MIT']);
-      
+
       // Update npm after setting prefix
       await execa('npm', ['install', '-g', 'npm@latest', '--force']);
-      
+
       // Update shell profiles to include npm global bin
       await this.updateShellWithNpmGlobal(npmGlobalDir);
-      
+
       logger.info('npm configured successfully');
     } catch (error) {
       logger.warn('npm configuration failed:', String(error));
@@ -378,18 +425,20 @@ return;
   private async setupNVMRC(profile: DeveloperProfile): Promise<void> {
     const nodeConfig = profile.tools?.languages?.node;
     if (!nodeConfig) {
-return;
-}
+      return;
+    }
 
     // This could be used to create .nvmrc files in common project directories
     // For now, just ensure the user knows about .nvmrc
   }
 
-  private async configurePackageManagers(profile: DeveloperProfile): Promise<void> {
+  private async configurePackageManagers(
+    profile: DeveloperProfile
+  ): Promise<void> {
     const packageManagers = profile.tools?.packageManagers;
     if (!packageManagers) {
-return;
-}
+      return;
+    }
 
     // Configure pnpm if installed
     if (packageManagers.pnpm) {
@@ -461,7 +510,7 @@ return;
   private async setupNVMShellIntegration(): Promise<void> {
     const homeDir = os.homedir();
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     const nvmConfig = `
 # NVM Configuration
 export NVM_DIR="$HOME/.nvm"
@@ -493,7 +542,7 @@ load-nvmrc
 
     for (const shellFile of shellFiles) {
       const shellPath = path.join(homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -519,7 +568,7 @@ load-nvmrc
     const homeDir = os.homedir();
     const shellFiles = ['.zshrc', '.bashrc'];
     const npmPath = path.join(npmGlobalDir, 'bin');
-    
+
     const npmConfig = `
 # NPM Global Path
 export PATH="${npmPath}:$PATH"
@@ -527,7 +576,7 @@ export PATH="${npmPath}:$PATH"
 
     for (const shellFile of shellFiles) {
       const shellPath = path.join(homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -552,7 +601,7 @@ export PATH="${npmPath}:$PATH"
   private async updateShellWithPnpm(pnpmHome: string): Promise<void> {
     const homeDir = os.homedir();
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     const pnpmConfig = `
 # pnpm
 export PNPM_HOME="${pnpmHome}"
@@ -564,7 +613,7 @@ esac
 
     for (const shellFile of shellFiles) {
       const shellPath = path.join(homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {

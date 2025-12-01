@@ -35,7 +35,11 @@ interface RouteContext {
 /**
  * Helper to verify workspace and Orchestrator access
  */
-async function verifyOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function verifyOrchestratorAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -75,7 +79,10 @@ async function verifyOrchestratorAccess(workspaceId: string, orchestratorId: str
 /**
  * Calculate period-over-period change
  */
-function calculateChange(current: number, previous: number): {
+function calculateChange(
+  current: number,
+  previous: number
+): {
   value: number;
   percentage: number;
   direction: 'up' | 'down' | 'stable';
@@ -116,7 +123,7 @@ function calculateChange(current: number, previous: number): {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -125,9 +132,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -140,21 +147,25 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify access
-    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -167,9 +178,9 @@ export async function GET(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -186,14 +197,18 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           error instanceof Error ? error.message : 'Invalid date range',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_DATE_RANGE,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_DATE_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get trends for current period
-    const trends = await getOrchestratorTrends(orchestratorId, 'completions', query.timeRange);
+    const trends = await getOrchestratorTrends(
+      orchestratorId,
+      'completions',
+      query.timeRange
+    );
 
     // Get previous period data if requested
     let comparison = null;
@@ -220,18 +235,24 @@ export async function GET(
         },
       });
 
-      const previousCompleted = previousTasks.filter((t) => t.status === 'DONE').length;
+      const previousCompleted = previousTasks.filter(
+        t => t.status === 'DONE'
+      ).length;
       const previousTotal = previousTasks.length;
       const previousSuccessRate =
         previousTotal > 0 ? (previousCompleted / previousTotal) * 100 : 0;
 
       // Calculate current period totals
-      const currentCompleted = trends.reduce((sum, t) => sum + t.tasksCompleted, 0);
-      const currentTotal = trends.reduce(
-        (sum, t) => sum + (t.tasksCompleted / (t.successRate / 100)),
-        0,
+      const currentCompleted = trends.reduce(
+        (sum, t) => sum + t.tasksCompleted,
+        0
       );
-      const currentSuccessRate = currentTotal > 0 ? (currentCompleted / currentTotal) * 100 : 0;
+      const currentTotal = trends.reduce(
+        (sum, t) => sum + t.tasksCompleted / (t.successRate / 100),
+        0
+      );
+      const currentSuccessRate =
+        currentTotal > 0 ? (currentCompleted / currentTotal) * 100 : 0;
 
       // Calculate average response time for previous period
       let previousAvgResponseTime: number | null = null;
@@ -239,24 +260,26 @@ export async function GET(
         const totalTime = previousTasks.reduce((sum, task) => {
           return sum + (task.updatedAt.getTime() - task.createdAt.getTime());
         }, 0);
-        previousAvgResponseTime = totalTime / previousTasks.length / (1000 * 60); // Minutes
+        previousAvgResponseTime =
+          totalTime / previousTasks.length / (1000 * 60); // Minutes
       }
 
       const currentAvgResponseTime =
-        trends.reduce((sum, t) => sum + (t.avgDurationMinutes || 0), 0) / trends.length;
+        trends.reduce((sum, t) => sum + (t.avgDurationMinutes || 0), 0) /
+        trends.length;
 
       comparison = {
         tasksCompleted: calculateChange(currentCompleted, previousCompleted),
         successRate: calculateChange(currentSuccessRate, previousSuccessRate),
         avgResponseTime: calculateChange(
           currentAvgResponseTime,
-          previousAvgResponseTime || 0,
+          previousAvgResponseTime || 0
         ),
       };
     }
 
     // Format trends data
-    const formattedTrends = trends.map((period) => ({
+    const formattedTrends = trends.map(period => ({
       periodStart: period.periodStart.toISOString(),
       periodEnd: period.periodEnd.toISOString(),
       tasksCompleted: period.tasksCompleted,
@@ -282,18 +305,24 @@ export async function GET(
       ...(comparison && { comparison }),
       summary: {
         totalDataPoints: trends.length,
-        totalTasksCompleted: trends.reduce((sum, t) => sum + t.tasksCompleted, 0),
+        totalTasksCompleted: trends.reduce(
+          (sum, t) => sum + t.tasksCompleted,
+          0
+        ),
         avgSuccessRate:
           trends.length > 0
             ? Math.round(
-                trends.reduce((sum, t) => sum + t.successRate, 0) / trends.length,
+                trends.reduce((sum, t) => sum + t.successRate, 0) /
+                  trends.length
               )
             : 0,
         avgResponseTimeMinutes:
           trends.length > 0
             ? Math.round(
-                trends.reduce((sum, t) => sum + (t.avgDurationMinutes || 0), 0) /
-                  trends.length,
+                trends.reduce(
+                  (sum, t) => sum + (t.avgDurationMinutes || 0),
+                  0
+                ) / trends.length
               )
             : null,
       },
@@ -306,14 +335,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/analytics/trends] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

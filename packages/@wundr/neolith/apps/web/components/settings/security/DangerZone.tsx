@@ -51,7 +51,8 @@ export function DangerZone({ onDeleteAccount }: DangerZoneProps) {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete account',
+        description:
+          error instanceof Error ? error.message : 'Failed to delete account',
         variant: 'destructive',
       });
     } finally {
@@ -63,24 +64,24 @@ export function DangerZone({ onDeleteAccount }: DangerZoneProps) {
 
   return (
     <>
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
+      <Alert variant='destructive'>
+        <AlertTriangle className='h-4 w-4' />
         <AlertTitle>Danger Zone</AlertTitle>
         <AlertDescription>
           These actions are permanent and cannot be undone.
         </AlertDescription>
       </Alert>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-4'>
           <div>
-            <p className="text-sm font-medium">Delete Account</p>
-            <p className="text-xs text-muted-foreground">
+            <p className='text-sm font-medium'>Delete Account</p>
+            <p className='text-xs text-muted-foreground'>
               Permanently delete your account and all associated data
             </p>
           </div>
           <Button
-            variant="destructive"
+            variant='destructive'
             onClick={() => setShowDeleteDialog(true)}
           >
             Delete Account
@@ -98,16 +99,16 @@ export function DangerZone({ onDeleteAccount }: DangerZoneProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="confirm-delete">
-                Type <span className="font-bold">DELETE</span> to confirm
+          <div className='space-y-4 py-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='confirm-delete'>
+                Type <span className='font-bold'>DELETE</span> to confirm
               </Label>
               <Input
-                id="confirm-delete"
+                id='confirm-delete'
                 value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="DELETE"
+                onChange={e => setConfirmText(e.target.value)}
+                placeholder='DELETE'
               />
             </div>
           </div>
@@ -117,7 +118,7 @@ export function DangerZone({ onDeleteAccount }: DangerZoneProps) {
             <AlertDialogAction
               onClick={handleDeleteAccount}
               disabled={confirmText !== 'DELETE' || isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
             >
               {isDeleting ? 'Deleting...' : 'Delete Account'}
             </AlertDialogAction>

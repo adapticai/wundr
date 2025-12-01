@@ -151,7 +151,9 @@ export interface UseCallDurationReturn {
 /**
  * Map LiveKit connection quality to our internal type
  */
-function mapConnectionQuality(quality: ConnectionQuality): ParticipantConnectionQuality {
+function mapConnectionQuality(
+  quality: ConnectionQuality
+): ParticipantConnectionQuality {
   switch (quality) {
     case ConnectionQuality.Excellent:
       return 'excellent';
@@ -172,7 +174,7 @@ function mapConnectionQuality(quality: ConnectionQuality): ParticipantConnection
 function toCallParticipant(
   participant: LocalParticipant | RemoteParticipant,
   isLocal: boolean,
-  pinnedParticipants: Set<string>,
+  pinnedParticipants: Set<string>
 ): CallParticipant {
   const videoTrack = participant.getTrackPublication(Track.Source.Camera);
   const audioTrack = participant.getTrackPublication(Track.Source.Microphone);
@@ -209,13 +211,16 @@ function toCallParticipant(
 export function useCall(roomName: string): UseCallReturn {
   const [room, setRoom] = useState<Room | null>(null);
   const [participants, setParticipants] = useState<CallParticipant[]>([]);
-  const [localParticipant, setLocalParticipant] = useState<LocalParticipant | null>(null);
+  const [localParticipant, setLocalParticipant] =
+    useState<LocalParticipant | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>(
-    ConnectionState.Disconnected,
+    ConnectionState.Disconnected
   );
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [pinnedParticipants, setPinnedParticipants] = useState<Set<string>>(new Set());
+  const [pinnedParticipants, setPinnedParticipants] = useState<Set<string>>(
+    new Set()
+  );
   const roomRef = useRef<Room | null>(null);
 
   // Update participants list whenever room state or pins change
@@ -229,13 +234,19 @@ export function useCall(roomName: string): UseCallReturn {
     // Add local participant
     if (roomRef.current.localParticipant) {
       allParticipants.push(
-        toCallParticipant(roomRef.current.localParticipant, true, pinnedParticipants),
+        toCallParticipant(
+          roomRef.current.localParticipant,
+          true,
+          pinnedParticipants
+        )
       );
     }
 
     // Add remote participants
-    roomRef.current.remoteParticipants.forEach((participant) => {
-      allParticipants.push(toCallParticipant(participant, false, pinnedParticipants));
+    roomRef.current.remoteParticipants.forEach(participant => {
+      allParticipants.push(
+        toCallParticipant(participant, false, pinnedParticipants)
+      );
     });
 
     setParticipants(allParticipants);
@@ -267,7 +278,7 @@ export function useCall(roomName: string): UseCallReturn {
         });
 
         // Set up event listeners
-        newRoom.on(RoomEvent.ConnectionStateChanged, (state) => {
+        newRoom.on(RoomEvent.ConnectionStateChanged, state => {
           setConnectionState(state);
         });
 
@@ -290,7 +301,8 @@ export function useCall(roomName: string): UseCallReturn {
         });
 
         // Get LiveKit server URL from environment
-        const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://localhost:7880';
+        const livekitUrl =
+          process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://localhost:7880';
 
         await newRoom.connect(livekitUrl, token);
 
@@ -299,7 +311,9 @@ export function useCall(roomName: string): UseCallReturn {
         setLocalParticipant(newRoom.localParticipant);
         updateParticipants();
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to connect to room'));
+        setError(
+          err instanceof Error ? err : new Error('Failed to connect to room')
+        );
         // Clean up if connection failed
         roomRef.current = null;
         setRoom(null);
@@ -309,7 +323,7 @@ export function useCall(roomName: string): UseCallReturn {
         setIsConnecting(false);
       }
     },
-    [roomName, isConnecting, connectionState, updateParticipants],
+    [roomName, isConnecting, connectionState, updateParticipants]
   );
 
   // Disconnect from room
@@ -326,7 +340,7 @@ export function useCall(roomName: string): UseCallReturn {
 
   // Toggle pin for a participant
   const togglePin = useCallback((participantId: string) => {
-    setPinnedParticipants((prev) => {
+    setPinnedParticipants(prev => {
       const newSet = new Set(prev);
       if (newSet.has(participantId)) {
         newSet.delete(participantId);
@@ -353,14 +367,14 @@ export function useCall(roomName: string): UseCallReturn {
 
   // Get active speaker
   const activeSpeaker = useMemo(
-    () => participants.find((p) => p.isSpeaking && !p.isLocal) || null,
-    [participants],
+    () => participants.find(p => p.isSpeaking && !p.isLocal) || null,
+    [participants]
   );
 
   // Get screen sharers
   const screenSharers = useMemo(
-    () => participants.filter((p) => p.isScreenSharing),
-    [participants],
+    () => participants.filter(p => p.isScreenSharing),
+    [participants]
   );
 
   return {
@@ -407,10 +421,11 @@ export function useLocalMedia(): UseLocalMediaReturn {
       const audioDevices: MediaDevice[] = [];
       const audioOutputDevices: MediaDevice[] = [];
 
-      mediaDevices.forEach((device) => {
+      mediaDevices.forEach(device => {
         const mediaDevice: MediaDevice = {
           deviceId: device.deviceId,
-          label: device.label || `${device.kind} ${device.deviceId.slice(0, 5)}`,
+          label:
+            device.label || `${device.kind} ${device.deviceId.slice(0, 5)}`,
           kind: device.kind as MediaDevice['kind'],
         };
 
@@ -440,7 +455,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
         setSelectedAudioOutput(audioOutputDevices[0].deviceId);
       }
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to enumerate devices'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to enumerate devices')
+      );
     }
   }, [selectedVideoDevice, selectedAudioDevice, selectedAudioOutput]);
 
@@ -452,7 +469,10 @@ export function useLocalMedia(): UseLocalMediaReturn {
     navigator.mediaDevices.addEventListener('devicechange', enumerateDevices);
 
     return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', enumerateDevices);
+      navigator.mediaDevices.removeEventListener(
+        'devicechange',
+        enumerateDevices
+      );
     };
   }, [enumerateDevices]);
 
@@ -468,7 +488,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
       setError(null);
       return track;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to enable video'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to enable video')
+      );
       return null;
     }
   }, [selectedVideoDevice]);
@@ -505,7 +527,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
       setError(null);
       return track;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to enable audio'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to enable audio')
+      );
       return null;
     }
   }, [selectedAudioDevice]);
@@ -536,7 +560,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
       // This hook just tracks the state
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to share screen'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to share screen')
+      );
       setIsScreenSharing(false);
     }
   }, []);
@@ -561,13 +587,17 @@ export function useLocalMedia(): UseLocalMediaReturn {
           setError(null);
         }
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to change video device'));
+        setError(
+          err instanceof Error
+            ? err
+            : new Error('Failed to change video device')
+        );
         // Restore previous state on error
         setIsVideoEnabled(false);
         setVideoTrack(null);
       }
     },
-    [isVideoEnabled, videoTrack],
+    [isVideoEnabled, videoTrack]
   );
 
   // Change audio device
@@ -587,13 +617,17 @@ export function useLocalMedia(): UseLocalMediaReturn {
           setError(null);
         }
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to change audio device'));
+        setError(
+          err instanceof Error
+            ? err
+            : new Error('Failed to change audio device')
+        );
         // Restore previous state on error
         setIsAudioEnabled(false);
         setAudioTrack(null);
       }
     },
-    [isAudioEnabled, audioTrack],
+    [isAudioEnabled, audioTrack]
   );
 
   // Cleanup on unmount
@@ -668,10 +702,12 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
             ...p,
             joinedAt: new Date(p.joinedAt),
           })),
-        })),
+        }))
       );
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch huddles'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to fetch huddles')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -692,14 +728,16 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
 
     const setupEventSource = () => {
       // Set up SSE for real-time huddle updates
-      eventSource = new EventSource(`/api/workspaces/${workspaceId}/huddles/subscribe`);
+      eventSource = new EventSource(
+        `/api/workspaces/${workspaceId}/huddles/subscribe`
+      );
 
-      eventSource.onmessage = (event) => {
+      eventSource.onmessage = event => {
         try {
           reconnectAttempts = 0; // Reset on successful message
           const data = JSON.parse(event.data);
           if (data.type === 'huddle_created') {
-            setHuddles((prev) => [
+            setHuddles(prev => [
               ...prev,
               {
                 ...data.huddle,
@@ -707,15 +745,15 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
               },
             ]);
           } else if (data.type === 'huddle_updated') {
-            setHuddles((prev) =>
-              prev.map((h) =>
+            setHuddles(prev =>
+              prev.map(h =>
                 h.id === data.huddle.id
                   ? {
                       ...data.huddle,
                       createdAt: new Date(data.huddle.createdAt),
                     }
-                  : h,
-              ),
+                  : h
+              )
             );
             // Update active huddle if it's the one being updated
             if (activeHuddle?.id === data.huddle.id) {
@@ -725,7 +763,7 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
               });
             }
           } else if (data.type === 'huddle_ended') {
-            setHuddles((prev) => prev.filter((h) => h.id !== data.huddleId));
+            setHuddles(prev => prev.filter(h => h.id !== data.huddleId));
             if (activeHuddle?.id === data.huddleId) {
               setActiveHuddle(null);
             }
@@ -741,13 +779,18 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
         // Exponential backoff with max attempts
         if (reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
+          const delay = Math.min(
+            1000 * Math.pow(2, reconnectAttempts - 1),
+            30000
+          );
           reconnectTimeout = setTimeout(() => {
             fetchHuddles();
             setupEventSource();
           }, delay);
         } else {
-          setError(new Error('Failed to maintain connection to huddle updates'));
+          setError(
+            new Error('Failed to maintain connection to huddle updates')
+          );
         }
       };
     };
@@ -773,9 +816,12 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
       setError(null);
 
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/huddles/${huddleId}/join`, {
-          method: 'POST',
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/huddles/${huddleId}/join`,
+          {
+            method: 'POST',
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to join huddle: ${response.statusText}`);
@@ -787,12 +833,14 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
           createdAt: new Date(data.huddle.createdAt),
         });
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to join huddle'));
+        setError(
+          err instanceof Error ? err : new Error('Failed to join huddle')
+        );
       } finally {
         setIsJoining(false);
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   // Leave the active huddle
@@ -802,9 +850,12 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
     }
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/huddles/${activeHuddle.id}/leave`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/huddles/${activeHuddle.id}/leave`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to leave huddle: ${response.statusText}`);
@@ -812,7 +863,9 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
 
       setActiveHuddle(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to leave huddle'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to leave huddle')
+      );
     }
   }, [workspaceId, activeHuddle]);
 
@@ -848,18 +901,20 @@ export function useHuddle(workspaceId: string): UseHuddleReturn {
           createdAt: new Date(data.huddle.createdAt),
         };
 
-        setHuddles((prev) => [...prev, huddle]);
+        setHuddles(prev => [...prev, huddle]);
         setActiveHuddle(huddle);
 
         return huddle;
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to create huddle'));
+        setError(
+          err instanceof Error ? err : new Error('Failed to create huddle')
+        );
         return null;
       } finally {
         setIsLoading(false);
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {

@@ -68,8 +68,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -90,7 +93,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userId: session.user.id,
       read: false,
       ...(filters.type && { type: filters.type as NotificationType }),
-      ...(filters.beforeDate && { createdAt: { lte: new Date(filters.beforeDate) } }),
+      ...(filters.beforeDate && {
+        createdAt: { lte: new Date(filters.beforeDate) },
+      }),
     };
 
     // Update all matching notifications
@@ -103,9 +108,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     const count = result.count;
-    const message = count === 1
-      ? '1 notification marked as read'
-      : `${count} notifications marked as read`;
+    const message =
+      count === 1
+        ? '1 notification marked as read'
+        : `${count} notifications marked as read`;
 
     return NextResponse.json({
       data: { count },
@@ -116,9 +122,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

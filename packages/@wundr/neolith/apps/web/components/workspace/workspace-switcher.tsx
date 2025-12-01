@@ -35,13 +35,13 @@ function WorkspaceSwitcherSkeleton() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton size="lg" disabled>
-          <Skeleton className="size-8 rounded-lg" />
-          <div className="grid flex-1 gap-1">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-16" />
+        <SidebarMenuButton size='lg' disabled>
+          <Skeleton className='size-8 rounded-lg' />
+          <div className='grid flex-1 gap-1'>
+            <Skeleton className='h-4 w-24' />
+            <Skeleton className='h-3 w-16' />
           </div>
-          <Skeleton className="size-4 ml-auto" />
+          <Skeleton className='size-4 ml-auto' />
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
@@ -54,16 +54,18 @@ function WorkspaceSwitcherError({ onRetry }: { onRetry: () => void }) {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton
-          size="lg"
+          size='lg'
           onClick={onRetry}
-          className="text-destructive hover:text-destructive"
+          className='text-destructive hover:text-destructive'
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-destructive/10">
-            <AlertCircle className="size-4" />
+          <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-destructive/10'>
+            <AlertCircle className='size-4' />
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Error loading workspaces</span>
-            <span className="truncate text-xs">Click to retry</span>
+          <div className='grid flex-1 text-left text-sm leading-tight'>
+            <span className='truncate font-semibold'>
+              Error loading workspaces
+            </span>
+            <span className='truncate text-xs'>Click to retry</span>
           </div>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -79,13 +81,20 @@ export function WorkspaceSwitcher() {
 
   const currentWorkspaceSlug = params.workspaceSlug as string;
   // Match workspace by slug (URL param) or fall back to id for compatibility
-  const activeWorkspace = workspaces.find((w) => w.slug === currentWorkspaceSlug || w.id === currentWorkspaceSlug) || workspaces[0];
+  const activeWorkspace =
+    workspaces.find(
+      w => w.slug === currentWorkspaceSlug || w.id === currentWorkspaceSlug
+    ) || workspaces[0];
 
   // Keyboard shortcuts for workspace switching (Cmd+1, Cmd+2, etc.)
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Check for Cmd/Ctrl + number keys (1-9)
-      if ((event.metaKey || event.ctrlKey) && event.key >= '1' && event.key <= '9') {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.key >= '1' &&
+        event.key <= '9'
+      ) {
         const index = parseInt(event.key) - 1;
         if (workspaces[index]) {
           event.preventDefault();
@@ -138,59 +147,64 @@ export function WorkspaceSwitcher() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              size="lg"
-              className="border min-w-9 min-h-9 data-[state=open]:border-white data-[state=open]:text-sidebar-accent-foreground hover:bg-none hover:opacity-80"
+              size='lg'
+              className='border min-w-9 min-h-9 data-[state=open]:border-white data-[state=open]:text-sidebar-accent-foreground hover:bg-none hover:opacity-80'
             >
-              <div className="flex shrink-0 aspect-square size-9 items-center justify-center rounded-lg bg-card text-sidebar-primary-foreground overflow-hidden">
+              <div className='flex shrink-0 aspect-square size-9 items-center justify-center rounded-lg bg-card text-sidebar-primary-foreground overflow-hidden'>
                 {activeWorkspace.avatarUrl ? (
-                    <Avatar className="size-9 rounded-none">
-                      <AvatarImage src={activeWorkspace.avatarUrl} alt={activeWorkspace.name} />
-                      <AvatarFallback className="text-[10px]">
-                        {activeWorkspace.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    ) : (
-                      <Building2 className="size-4 shrink-0 m-2" />
-                    )} 
+                  <Avatar className='size-9 rounded-none'>
+                    <AvatarImage
+                      src={activeWorkspace.avatarUrl}
+                      alt={activeWorkspace.name}
+                    />
+                    <AvatarFallback className='text-[10px]'>
+                      {activeWorkspace.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Building2 className='size-4 shrink-0 m-2' />
+                )}
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
+              <div className='grid flex-1 text-left text-sm leading-tight'>
+                <span className='truncate font-semibold'>
                   {activeWorkspace.name}
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className='ml-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            align="start"
+            className='w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg'
+            align='start'
             side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
           >
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
+            <DropdownMenuLabel className='text-xs text-muted-foreground'>
               Workspaces
             </DropdownMenuLabel>
             {workspaces.map((workspace, index) => {
-
               return (
                 <DropdownMenuItem
                   key={workspace.id}
                   onClick={() => handleWorkspaceChange(workspace)}
-                  className="gap-2"
+                  className='gap-2'
                 >
-                  <div className="flex size-6 items-center justify-center rounded-sm border overflow-hidden">
+                  <div className='flex size-6 items-center justify-center rounded-sm border overflow-hidden'>
                     {workspace.avatarUrl ? (
-                    <Avatar className="h-6 w-6 rounded-none">
-                      <AvatarImage src={workspace.avatarUrl} alt={workspace.name} />
-                      <AvatarFallback className="text-[10px]">
-                        {workspace.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                      <Avatar className='h-6 w-6 rounded-none'>
+                        <AvatarImage
+                          src={workspace.avatarUrl}
+                          alt={workspace.name}
+                        />
+                        <AvatarFallback className='text-[10px]'>
+                          {workspace.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                     ) : (
-                      <Building2 className="size-4 shrink-0 m-2" />
-                    )} 
+                      <Building2 className='size-4 shrink-0 m-2' />
+                    )}
                   </div>
-                                      <div className="font-bold text-sm">{workspace.name}</div>
+                  <div className='font-bold text-sm'>{workspace.name}</div>
 
                   {index < 9 && (
                     <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
@@ -199,11 +213,16 @@ export function WorkspaceSwitcher() {
               );
             })}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleCreateWorkspace} className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
+            <DropdownMenuItem
+              onClick={handleCreateWorkspace}
+              className='gap-2 p-2'
+            >
+              <div className='flex size-6 items-center justify-center rounded-md border bg-background'>
+                <Plus className='size-4' />
               </div>
-              <span className="font-medium text-muted-foreground">Add workspace</span>
+              <span className='font-medium text-muted-foreground'>
+                Add workspace
+              </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

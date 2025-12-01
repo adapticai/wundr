@@ -1,10 +1,9 @@
 # Testing Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Quality Assurance
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Quality Assurance
 
-This document defines testing standards, patterns, and MCP tool integration for test coverage management.
+This document defines testing standards, patterns, and MCP tool integration for test coverage
+management.
 
 ---
 
@@ -26,11 +25,13 @@ This document defines testing standards, patterns, and MCP tool integration for 
 ### Test-Driven Development (TDD)
 
 **The TDD Cycle:**
+
 1. **RED**: Write a failing test
 2. **GREEN**: Write minimal code to pass
 3. **REFACTOR**: Improve code while tests pass
 
 **Benefits:**
+
 - Tests document expected behavior
 - Forces modular, testable design
 - Prevents over-engineering
@@ -52,6 +53,7 @@ This document defines testing standards, patterns, and MCP tool integration for 
 ```
 
 **Distribution Target:**
+
 - Unit Tests: 70%
 - Integration Tests: 20%
 - E2E Tests: 10%
@@ -89,21 +91,23 @@ project-root/
 
 ### File Naming
 
-| Test Type | Pattern | Example |
-|-----------|---------|---------|
-| Unit | `*.test.ts` | `user.service.test.ts` |
+| Test Type   | Pattern                 | Example                   |
+| ----------- | ----------------------- | ------------------------- |
+| Unit        | `*.test.ts`             | `user.service.test.ts`    |
 | Integration | `*.integration.test.ts` | `api.integration.test.ts` |
-| E2E | `*.e2e.test.ts` | `checkout.e2e.test.ts` |
-| Spec style | `*.spec.ts` | `user.spec.ts` |
+| E2E         | `*.e2e.test.ts`         | `checkout.e2e.test.ts`    |
+| Spec style  | `*.spec.ts`             | `user.spec.ts`            |
 
 ### Co-location vs Separation
 
 **Co-locate for:**
+
 - Component tests (React, Vue)
 - Simple utility tests
 - Tests tightly coupled to implementation
 
 **Separate in `/tests/` for:**
+
 - Integration tests
 - E2E tests
 - Tests spanning multiple modules
@@ -133,6 +137,7 @@ describe('UserService', () => {
 ### Test Names
 
 **Use `should` + expected behavior:**
+
 ```typescript
 // Good: clear expected behavior
 it('should return user by id', () => {});
@@ -145,6 +150,7 @@ it('calls hashPassword function', () => {});
 ```
 
 **Include context when helpful:**
+
 ```typescript
 it('should apply 10% discount when user has 10+ purchases', () => {});
 it('should rate limit requests exceeding 100/minute', () => {});
@@ -314,16 +320,17 @@ const mockService = createMockUserService({
 
 ### Minimum Thresholds
 
-| Metric | Minimum | Target |
-|--------|---------|--------|
-| Lines | 80% | 90% |
-| Branches | 75% | 85% |
-| Functions | 80% | 90% |
-| Statements | 80% | 90% |
+| Metric     | Minimum | Target |
+| ---------- | ------- | ------ |
+| Lines      | 80%     | 90%    |
+| Branches   | 75%     | 85%    |
+| Functions  | 80%     | 90%    |
+| Statements | 80%     | 90%    |
 
 ### Critical Path Coverage
 
 **100% coverage required for:**
+
 - Authentication logic
 - Authorization checks
 - Payment processing
@@ -366,6 +373,7 @@ module.exports = {
 ### Test Baseline Management
 
 **Create Coverage Baseline:**
+
 ```javascript
 // Establish baseline at project milestone
 mcp__wundr__test_baseline {
@@ -383,6 +391,7 @@ mcp__wundr__test_baseline {
 ```
 
 **Compare Against Baseline:**
+
 ```javascript
 // Check for coverage regression
 mcp__wundr__test_baseline {
@@ -397,6 +406,7 @@ mcp__wundr__test_baseline {
 ```
 
 **Update Baseline:**
+
 ```javascript
 // Update baseline after improvements
 mcp__wundr__test_baseline {

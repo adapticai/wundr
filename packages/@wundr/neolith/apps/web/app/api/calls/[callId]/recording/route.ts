@@ -71,13 +71,15 @@ async function getCallWithAccess(
   } | null = null;
 
   try {
-    const calls = await prisma.$queryRaw<Array<{
-      id: string;
-      channel_id: string;
-      status: string;
-      room_name: string;
-      created_by_id: string;
-    }>>`
+    const calls = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        channel_id: string;
+        status: string;
+        room_name: string;
+        created_by_id: string;
+      }>
+    >`
       SELECT id, channel_id, status, room_name, created_by_id
       FROM calls
       WHERE id = ${callId}
@@ -120,15 +122,18 @@ async function getCallWithAccess(
           channelId: channels[0].id,
           status: settings.activeCall.status,
           roomName: settings.activeCall.roomName,
-          createdById: settings.activeCall.createdById ?? settings.activeCall.createdBy?.id ?? '',
+          createdById:
+            settings.activeCall.createdById ??
+            settings.activeCall.createdBy?.id ??
+            '',
         };
       }
     }
   }
 
   if (!call) {
-return null;
-}
+    return null;
+  }
 
   // Verify channel access
   const channel = await prisma.channel.findUnique({
@@ -137,8 +142,8 @@ return null;
   });
 
   if (!channel) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -150,8 +155,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   // For private channels, check membership
   if (channel.type === 'PRIVATE') {
@@ -164,8 +169,8 @@ return null;
       },
     });
     if (!channelMembership) {
-return null;
-}
+      return null;
+    }
   }
 
   // Check if user can manage recording (creator or admin)
@@ -200,15 +205,18 @@ return null;
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -217,8 +225,11 @@ export async function POST(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -239,9 +250,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -251,8 +262,11 @@ export async function POST(
     const result = await getCallWithAccess(params.callId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Call not found or access denied', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Call not found or access denied',
+          CALL_ERROR_CODES.CALL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -261,24 +275,29 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only the call creator or an admin can manage recording',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Check if call is active
     if (result.call.status !== 'active') {
       return NextResponse.json(
-        createErrorResponse('Can only record active calls', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 400 },
+        createErrorResponse(
+          'Can only record active calls',
+          CALL_ERROR_CODES.CALL_NOT_FOUND
+        ),
+        { status: 400 }
       );
     }
 
     // Check if recording is already active
     let currentRecording: { status: string; egress_id: string } | null = null;
     try {
-      const recordings = await prisma.$queryRaw<Array<{ status: string; egress_id: string }>>`
+      const recordings = await prisma.$queryRaw<
+        Array<{ status: string; egress_id: string }>
+      >`
         SELECT status, egress_id FROM call_recordings
         WHERE call_id = ${params.callId} AND status IN ('starting', 'recording')
         LIMIT 1
@@ -294,9 +313,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Recording is already active for this call',
-          CALL_ERROR_CODES.RECORDING_ALREADY_ACTIVE,
+          CALL_ERROR_CODES.RECORDING_ALREADY_ACTIVE
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -339,7 +358,10 @@ export async function POST(
         )
       `;
     } catch (recordingError) {
-      console.error('[POST /api/calls/:callId/recording] Recording table not available:', recordingError);
+      console.error(
+        '[POST /api/calls/:callId/recording] Recording table not available:',
+        recordingError
+      );
       // Table may not exist, store in call metadata
       try {
         await prisma.$executeRaw`
@@ -358,7 +380,10 @@ export async function POST(
           WHERE id = ${params.callId}
         `;
       } catch (metadataError) {
-        console.error('[POST /api/calls/:callId/recording] Error storing in call metadata:', metadataError);
+        console.error(
+          '[POST /api/calls/:callId/recording] Error storing in call metadata:',
+          metadataError
+        );
         // Store in channel settings as last resort
       }
     }
@@ -377,8 +402,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/calls/:callId/recording] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -394,15 +422,18 @@ export async function POST(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -411,8 +442,11 @@ export async function DELETE(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -420,8 +454,11 @@ export async function DELETE(
     const result = await getCallWithAccess(params.callId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Call not found or access denied', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Call not found or access denied',
+          CALL_ERROR_CODES.CALL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -430,16 +467,18 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only the call creator or an admin can manage recording',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get current recording
     let currentRecording: { id: string; egress_id: string } | null = null;
     try {
-      const recordings = await prisma.$queryRaw<Array<{ id: string; egress_id: string }>>`
+      const recordings = await prisma.$queryRaw<
+        Array<{ id: string; egress_id: string }>
+      >`
         SELECT id, egress_id FROM call_recordings
         WHERE call_id = ${params.callId} AND status IN ('starting', 'recording')
         LIMIT 1
@@ -453,8 +492,11 @@ export async function DELETE(
 
     if (!currentRecording) {
       return NextResponse.json(
-        createErrorResponse('No active recording found', CALL_ERROR_CODES.RECORDING_NOT_STARTED),
-        { status: 400 },
+        createErrorResponse(
+          'No active recording found',
+          CALL_ERROR_CODES.RECORDING_NOT_STARTED
+        ),
+        { status: 400 }
       );
     }
 
@@ -472,7 +514,10 @@ export async function DELETE(
         WHERE id = ${currentRecording.id}
       `;
     } catch (updateError) {
-      console.error('[DELETE /api/calls/:callId/recording] Error updating recording status:', updateError);
+      console.error(
+        '[DELETE /api/calls/:callId/recording] Error updating recording status:',
+        updateError
+      );
       // Table may not exist
     }
 
@@ -490,8 +535,11 @@ export async function DELETE(
   } catch (error) {
     console.error('[DELETE /api/calls/:callId/recording] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -507,15 +555,18 @@ export async function DELETE(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -524,8 +575,11 @@ export async function GET(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -533,8 +587,11 @@ export async function GET(
     const result = await getCallWithAccess(params.callId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Call not found or access denied', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Call not found or access denied',
+          CALL_ERROR_CODES.CALL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -547,12 +604,14 @@ export async function GET(
     } | null = null;
 
     try {
-      const recordings = await prisma.$queryRaw<Array<{
-        status: string;
-        egress_id: string;
-        format: string | null;
-        started_at: Date | null;
-      }>>`
+      const recordings = await prisma.$queryRaw<
+        Array<{
+          status: string;
+          egress_id: string;
+          format: string | null;
+          started_at: Date | null;
+        }>
+      >`
         SELECT status, egress_id, format, started_at
         FROM call_recordings
         WHERE call_id = ${params.callId}
@@ -584,8 +643,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/calls/:callId/recording] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

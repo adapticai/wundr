@@ -27,9 +27,9 @@ export function BasicWizardExample() {
       <DialogTrigger asChild>
         <Button>Create Workspace</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="workspace"
+          entityType='workspace'
           onComplete={handleComplete}
           onCancel={() => setIsOpen(false)}
         />
@@ -55,7 +55,7 @@ export function CustomLLMWizardExample() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           entityType: 'orchestrator',
-          messages: history.map((m) => ({
+          messages: history.map(m => ({
             role: m.role,
             content: m.content,
           })),
@@ -111,13 +111,13 @@ export function CustomLLMWizardExample() {
       <DialogTrigger asChild>
         <Button>Create Orchestrator</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="orchestrator"
+          entityType='orchestrator'
           onComplete={handleComplete}
           onCancel={() => setIsOpen(false)}
           onSendMessage={handleSendMessage}
-          initialContext="I need help creating a new orchestrator agent."
+          initialContext='I need help creating a new orchestrator agent.'
         />
       </DialogContent>
     </Dialog>
@@ -133,12 +133,12 @@ export function WorkflowWizardExample() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Create Workflow</Button>
+        <Button variant='outline'>Create Workflow</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="workflow"
-          onComplete={(data) => {
+          entityType='workflow'
+          onComplete={data => {
             console.log('Workflow data:', data);
             setIsOpen(false);
           }}
@@ -166,13 +166,13 @@ export function EditEntityWizardExample() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary">Edit Orchestrator</Button>
+        <Button variant='secondary'>Edit Orchestrator</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="orchestrator"
+          entityType='orchestrator'
           initialData={existingData}
-          onComplete={(data) => {
+          onComplete={data => {
             console.log('Updated data:', data);
             setIsOpen(false);
           }}
@@ -219,9 +219,9 @@ export function SessionManagerWizardExample() {
       <DialogTrigger asChild>
         <Button>Create Session Manager</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="session-manager"
+          entityType='session-manager'
           onComplete={handleComplete}
           onCancel={() => setIsOpen(false)}
         />
@@ -240,9 +240,9 @@ export function StandaloneWizardExample() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl py-8">
+    <div className='container mx-auto max-w-4xl py-8'>
       <ConversationalWizard
-        entityType="subagent"
+        entityType='subagent'
         onComplete={handleComplete}
         onCancel={() => window.history.back()}
         initialContext="I'll help you create a new subagent. What specific task should this subagent handle?"
@@ -256,13 +256,15 @@ export function StandaloneWizardExample() {
  */
 export function MultiStepWizardExample() {
   const [step, setStep] = React.useState(1);
-  const [workspaceData, setWorkspaceData] = React.useState<EntityData | null>(null);
+  const [workspaceData, setWorkspaceData] = React.useState<EntityData | null>(
+    null
+  );
 
   if (step === 1) {
     return (
       <ConversationalWizard
-        entityType="workspace"
-        onComplete={(data) => {
+        entityType='workspace'
+        onComplete={data => {
           setWorkspaceData(data);
           setStep(2);
         }}
@@ -274,9 +276,9 @@ export function MultiStepWizardExample() {
   if (step === 2) {
     return (
       <ConversationalWizard
-        entityType="orchestrator"
+        entityType='orchestrator'
         initialContext={`Great! Now let's create an orchestrator for your ${workspaceData?.name} workspace.`}
-        onComplete={(data) => {
+        onComplete={data => {
           console.log('Workspace:', workspaceData);
           console.log('Orchestrator:', data);
           // Create both entities

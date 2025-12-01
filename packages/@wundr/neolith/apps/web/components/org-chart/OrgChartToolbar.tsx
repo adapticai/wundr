@@ -6,7 +6,6 @@ import { OrgChartExport } from './OrgChartExport';
 import { OrgChartFilters } from './OrgChartFilters';
 import { OrgChartSearch } from './OrgChartSearch';
 
-
 interface OrgChartToolbarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -35,14 +34,19 @@ export function OrgChartToolbar({
   className,
 }: OrgChartToolbarProps) {
   return (
-    <div className={cn('flex flex-col sm:flex-row gap-4 items-start sm:items-center', className)}>
+    <div
+      className={cn(
+        'flex flex-col sm:flex-row gap-4 items-start sm:items-center',
+        className
+      )}
+    >
       <OrgChartSearch
         value={searchQuery}
         onChange={onSearchChange}
         matchCount={matchCount}
-        className="flex-1 w-full sm:w-auto"
+        className='flex-1 w-full sm:w-auto'
       />
-      <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className='flex items-center gap-2 w-full sm:w-auto'>
         <OrgChartFilters
           selectedDisciplines={selectedDisciplines}
           selectedStatuses={selectedStatuses}

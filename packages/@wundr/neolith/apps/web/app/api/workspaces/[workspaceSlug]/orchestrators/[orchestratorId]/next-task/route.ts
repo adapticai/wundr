@@ -64,15 +64,20 @@ const PRIORITY_ORDER: Record<TaskPriority, number> = {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; orchestratorId: string }> },
+  {
+    params,
+  }: { params: Promise<{ workspaceSlug: string; orchestratorId: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user (can be Orchestrator or human)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', BACKLOG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          BACKLOG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -82,8 +87,11 @@ export async function GET(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', BACKLOG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          BACKLOG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -110,16 +118,22 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Orchestrator can be workspace-specific or organization-wide
     if (orchestrator.workspaceId && orchestrator.workspaceId !== workspaceId) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found in this workspace',
+          BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -137,9 +151,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            BACKLOG_ERROR_CODES.FORBIDDEN,
+            BACKLOG_ERROR_CODES.FORBIDDEN
           ),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -153,9 +167,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           BACKLOG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -171,10 +185,7 @@ export async function GET(
       workspaceId,
       status: { in: statusArray as TaskStatus[] },
       // Only unassigned or assigned to this Orchestrator
-      OR: [
-        { assignedToId: null },
-        { assignedToId: orchestrator.user.id },
-      ],
+      OR: [{ assignedToId: null }, { assignedToId: orchestrator.user.id }],
     };
 
     // Apply minimum priority filter if specified
@@ -267,7 +278,9 @@ export async function GET(
         : [];
 
       for (const task of availableTasks) {
-        const taskMetadata = task.metadata as { requiredCapabilities?: string[] } | null;
+        const taskMetadata = task.metadata as {
+          requiredCapabilities?: string[];
+        } | null;
         const requiredCapabilities = taskMetadata?.requiredCapabilities || [];
 
         if (requiredCapabilities.length === 0) {
@@ -277,8 +290,8 @@ export async function GET(
         }
 
         // Check if Orchestrator has all required capabilities
-        const hasAllCapabilities = requiredCapabilities.every((cap) =>
-          orchestratorCapabilities.includes(cap),
+        const hasAllCapabilities = requiredCapabilities.every(cap =>
+          orchestratorCapabilities.includes(cap)
         );
 
         if (hasAllCapabilities) {
@@ -306,10 +319,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/next-task] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/next-task] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', BACKLOG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        BACKLOG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

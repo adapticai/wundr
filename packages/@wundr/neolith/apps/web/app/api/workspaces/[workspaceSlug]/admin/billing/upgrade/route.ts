@@ -21,7 +21,7 @@ import {
   type PlanType,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -33,18 +33,26 @@ interface RouteContext {
 /**
  * Plan order for upgrade validation
  */
-const PLAN_ORDER: PlanType[] = ['FREE', 'STARTER', 'PROFESSIONAL', 'ENTERPRISE'];
+const PLAN_ORDER: PlanType[] = [
+  'FREE',
+  'STARTER',
+  'PROFESSIONAL',
+  'ENTERPRISE',
+];
 
 /**
  * Plan limits configuration
  */
-const PLAN_LIMITS: Record<PlanType, {
-  name: string;
-  members: number;
-  storage: number;
-  channels: number;
-  features: string[];
-}> = {
+const PLAN_LIMITS: Record<
+  PlanType,
+  {
+    name: string;
+    members: number;
+    storage: number;
+    channels: number;
+    features: string[];
+  }
+> = {
   FREE: {
     name: 'Free',
     members: 10,
@@ -57,21 +65,38 @@ const PLAN_LIMITS: Record<PlanType, {
     members: 50,
     storage: 50,
     channels: 50,
-    features: ['Unlimited messaging', 'Private channels', '50GB storage', 'Guest access'],
+    features: [
+      'Unlimited messaging',
+      'Private channels',
+      '50GB storage',
+      'Guest access',
+    ],
   },
   PROFESSIONAL: {
     name: 'Professional',
     members: 250,
     storage: 500,
     channels: 250,
-    features: ['Unlimited messaging', 'Unlimited channels', '500GB storage', 'Advanced permissions', 'API access'],
+    features: [
+      'Unlimited messaging',
+      'Unlimited channels',
+      '500GB storage',
+      'Advanced permissions',
+      'API access',
+    ],
   },
   ENTERPRISE: {
     name: 'Enterprise',
     members: -1,
     storage: -1,
     channels: -1,
-    features: ['Unlimited everything', 'SSO/SAML', 'Compliance tools', 'Dedicated support', 'Custom integrations'],
+    features: [
+      'Unlimited everything',
+      'SSO/SAML',
+      'Compliance tools',
+      'Dedicated support',
+      'Custom integrations',
+    ],
   },
 };
 
@@ -86,14 +111,17 @@ const PLAN_LIMITS: Record<PlanType, {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -107,8 +135,11 @@ export async function POST(
 
     if (!membership || !['owner', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
-        createAdminErrorResponse('Only workspace owner can manage billing', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Only workspace owner can manage billing',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -118,8 +149,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Invalid JSON body',
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -130,16 +164,17 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { plan: targetPlan } = parseResult.data;
 
     // Get current plan
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
     const currentPlan = (billingSettings.plan as PlanType) || 'FREE';
 
@@ -151,9 +186,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Can only upgrade to a higher plan. Contact support for downgrades.',
-          ADMIN_ERROR_CODES.PLAN_DOWNGRADE_NOT_ALLOWED,
+          ADMIN_ERROR_CODES.PLAN_DOWNGRADE_NOT_ALLOWED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -194,7 +229,8 @@ export async function POST(
       }),
     ]);
 
-    const storageGB = Number(storageUsage._sum.size || 0) / (1024 * 1024 * 1024);
+    const storageGB =
+      Number(storageUsage._sum.size || 0) / (1024 * 1024 * 1024);
     const planConfig = PLAN_LIMITS[targetPlan];
 
     const now = new Date();
@@ -228,10 +264,16 @@ export async function POST(
 
     return NextResponse.json({ billing, checkoutUrl });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/admin/billing/upgrade] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/admin/billing/upgrade] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to upgrade plan', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to upgrade plan',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

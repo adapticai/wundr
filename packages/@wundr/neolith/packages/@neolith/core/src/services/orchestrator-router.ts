@@ -12,10 +12,7 @@ import { EventEmitter } from 'events';
 import { prisma } from '@neolith/database';
 
 import { GenesisError } from '../errors';
-import {
-  createRedisClient,
-  isRedisAvailable,
-} from '../redis/client';
+import { createRedisClient, isRedisAvailable } from '../redis/client';
 
 import type { PresenceServiceImpl } from './presence-service';
 import type {
@@ -23,9 +20,7 @@ import type {
   DaemonSessionStatus,
   DaemonEventType,
 } from '../types/daemon';
-import type {
-  MessageWithRelations,
-} from '../types/message';
+import type { MessageWithRelations } from '../types/message';
 import type { PrismaClient } from '@neolith/database';
 import type Redis from 'ioredis';
 
@@ -37,11 +32,11 @@ import type Redis from 'ioredis';
  * Status of a routed message.
  */
 export type MessageRoutingStatus =
-  | 'pending'      // Message queued for delivery
-  | 'routing'      // Actively being routed
-  | 'delivered'    // Successfully delivered to orchestrator daemon
-  | 'failed'       // Failed to deliver after retries
-  | 'offline';     // Orchestrator offline, queued for later
+  | 'pending' // Message queued for delivery
+  | 'routing' // Actively being routed
+  | 'delivered' // Successfully delivered to orchestrator daemon
+  | 'failed' // Failed to deliver after retries
+  | 'offline'; // Orchestrator offline, queued for later
 
 /**
  * Message routing metadata.
@@ -223,7 +218,7 @@ export class OrchestratorOfflineError extends GenesisError {
       `Orchestrator is offline: ${orchestratorId}`,
       'ORCHESTRATOR_OFFLINE',
       503,
-      { orchestratorId },
+      { orchestratorId }
     );
     this.name = 'OrchestratorOfflineError';
   }
@@ -238,7 +233,7 @@ export class NoActiveSessionError extends GenesisError {
       `No active session found for orchestrator: ${orchestratorId}`,
       'NO_ACTIVE_SESSION',
       404,
-      { orchestratorId },
+      { orchestratorId }
     );
     this.name = 'NoActiveSessionError';
   }
@@ -269,7 +264,10 @@ export class OrchestratorRouter {
     this.redis = config.redis ?? createRedisClient();
     this.db = config.prisma ?? prisma;
     this.retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config.retry };
-    this.offlineQueueConfig = { ...DEFAULT_OFFLINE_QUEUE_CONFIG, ...config.offlineQueue };
+    this.offlineQueueConfig = {
+      ...DEFAULT_OFFLINE_QUEUE_CONFIG,
+      ...config.offlineQueue,
+    };
     // Note: deliveryTimeoutMs stored in config but not currently used in implementation
     this.eventEmitter = new EventEmitter();
     this.eventEmitter.setMaxListeners(100);
@@ -296,7 +294,7 @@ export class OrchestratorRouter {
    */
   async routeMessage(
     message: MessageWithRelations,
-    orchestratorId: string,
+    orchestratorId: string
   ): Promise<RouteMessageResult> {
     let attempts = 0;
     let lastError: string | undefined;
@@ -403,7 +401,9 @@ export class OrchestratorRouter {
    * @param orchestratorId - The orchestrator ID
    * @returns Session info or null if no active session
    */
-  async getOrchestratorSession(orchestratorId: string): Promise<OrchestratorSessionInfo | null> {
+  async getOrchestratorSession(
+    orchestratorId: string
+  ): Promise<OrchestratorSessionInfo | null> {
     if (!isRedisAvailable()) {
       return null;
     }
@@ -456,10 +456,12 @@ export class OrchestratorRouter {
    */
   async queueMessageForOffline(
     message: MessageWithRelations,
-    orchestratorId: string,
+    orchestratorId: string
   ): Promise<void> {
     if (!isRedisAvailable()) {
-      throw new OrchestratorRoutingError('Redis not available for offline queuing');
+      throw new OrchestratorRoutingError(
+        'Redis not available for offline queuing'
+      );
     }
 
     const queueKey = ROUTING_KEYS.queue(orchestratorId);
@@ -484,7 +486,10 @@ export class OrchestratorRouter {
       };
 
       await this.redis.rpush(queueKey, JSON.stringify(queuedMessage));
-      await this.redis.expire(queueKey, this.offlineQueueConfig.queueTtlSeconds);
+      await this.redis.expire(
+        queueKey,
+        this.offlineQueueConfig.queueTtlSeconds
+      );
 
       this.emitRoutingEvent('message.queued', {
         messageId: message.id,
@@ -492,11 +497,14 @@ export class OrchestratorRouter {
         queueSize: queueSize + 1,
       });
     } catch (error) {
-      throw new OrchestratorRoutingError('Failed to queue message for offline delivery', {
-        messageId: message.id,
-        orchestratorId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      throw new OrchestratorRoutingError(
+        'Failed to queue message for offline delivery',
+        {
+          messageId: message.id,
+          orchestratorId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }
+      );
     }
   }
 
@@ -512,7 +520,7 @@ export class OrchestratorRouter {
    */
   async registerSession(
     orchestratorId: string,
-    session: Pick<DaemonSession, 'id' | 'daemonId' | 'status' | 'createdAt'>,
+    session: Pick<DaemonSession, 'id' | 'daemonId' | 'status' | 'createdAt'>
   ): Promise<void> {
     if (!isRedisAvailable()) {
       return;
@@ -531,7 +539,7 @@ export class OrchestratorRouter {
       await this.redis.setex(
         key,
         3600, // 1 hour TTL
-        JSON.stringify(sessionInfo),
+        JSON.stringify(sessionInfo)
       );
 
       this.emitRoutingEvent('session.registered', {
@@ -650,7 +658,7 @@ export class OrchestratorRouter {
           if (message) {
             const result = await this.routeMessage(
               message as MessageWithRelations,
-              orchestratorId,
+              orchestratorId
             );
 
             if (result.success) {
@@ -684,10 +692,12 @@ export class OrchestratorRouter {
    */
   private async deliverToSession(
     message: MessageWithRelations,
-    session: OrchestratorSessionInfo,
+    session: OrchestratorSessionInfo
   ): Promise<void> {
     if (!isRedisAvailable()) {
-      throw new OrchestratorRoutingError('Redis not available for message delivery');
+      throw new OrchestratorRoutingError(
+        'Redis not available for message delivery'
+      );
     }
 
     // Publish event to daemon's event queue
@@ -714,19 +724,28 @@ export class OrchestratorRouter {
       await this.redis.expire(eventQueueKey, 86400); // 24 hours
 
       // Publish to real-time channel
-      await this.redis.publish(`daemon:${session.daemonId}:events`, JSON.stringify(event));
+      await this.redis.publish(
+        `daemon:${session.daemonId}:events`,
+        JSON.stringify(event)
+      );
     } catch (error) {
-      throw new OrchestratorRoutingError('Failed to deliver message to session', {
-        sessionId: session.sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      throw new OrchestratorRoutingError(
+        'Failed to deliver message to session',
+        {
+          sessionId: session.sessionId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }
+      );
     }
   }
 
   /**
    * Marks a message as delivered.
    */
-  private async markDelivered(messageId: string, sessionId: string): Promise<void> {
+  private async markDelivered(
+    messageId: string,
+    sessionId: string
+  ): Promise<void> {
     if (!isRedisAvailable()) {
       return;
     }
@@ -748,10 +767,9 @@ export class OrchestratorRouter {
    * Calculates retry delay with exponential backoff.
    */
   private calculateRetryDelay(attempt: number): number {
-    const delay = this.retryConfig.initialDelayMs * Math.pow(
-      this.retryConfig.backoffMultiplier,
-      attempt - 1,
-    );
+    const delay =
+      this.retryConfig.initialDelayMs *
+      Math.pow(this.retryConfig.backoffMultiplier, attempt - 1);
     return Math.min(delay, this.retryConfig.maxDelayMs);
   }
 
@@ -759,7 +777,7 @@ export class OrchestratorRouter {
    * Sleep helper for retry delays.
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
@@ -767,7 +785,7 @@ export class OrchestratorRouter {
    */
   private emitRoutingEvent(
     eventType: string,
-    data: Record<string, unknown>,
+    data: Record<string, unknown>
   ): void {
     this.eventEmitter.emit(eventType, {
       type: eventType,
@@ -783,7 +801,7 @@ export class OrchestratorRouter {
     // eslint-disable-next-line no-console
     console.error(
       `[OrchestratorRouter] ${message}:`,
-      error instanceof Error ? error.message : error,
+      error instanceof Error ? error.message : error
     );
   }
 
@@ -817,7 +835,7 @@ export class OrchestratorRouter {
  * Creates a new orchestrator router instance.
  */
 export function createOrchestratorRouter(
-  config?: OrchestratorRouterConfig,
+  config?: OrchestratorRouterConfig
 ): OrchestratorRouter {
   return new OrchestratorRouter(config);
 }

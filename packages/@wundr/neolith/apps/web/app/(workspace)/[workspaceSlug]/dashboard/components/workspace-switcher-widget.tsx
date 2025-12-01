@@ -20,7 +20,9 @@ interface WorkspaceSwitcherWidgetProps {
   currentWorkspaceSlug: string;
 }
 
-export function WorkspaceSwitcherWidget({ currentWorkspaceSlug }: WorkspaceSwitcherWidgetProps) {
+export function WorkspaceSwitcherWidget({
+  currentWorkspaceSlug,
+}: WorkspaceSwitcherWidgetProps) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,17 +64,17 @@ export function WorkspaceSwitcherWidget({ currentWorkspaceSlug }: WorkspaceSwitc
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Workspaces</CardTitle>
+        <CardTitle className='text-lg'>Workspaces</CardTitle>
       </CardHeader>
       <CardContent>
         {error ? (
-          <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-            <p className="font-medium">Error loading workspaces</p>
-            <p className="mt-1 text-xs">{error}</p>
+          <div className='rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
+            <p className='font-medium'>Error loading workspaces</p>
+            <p className='mt-1 text-xs'>{error}</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {workspaces.map((workspace) => (
+          <div className='space-y-2'>
+            {workspaces.map(workspace => (
               <WorkspaceItem
                 key={workspace.id}
                 workspace={workspace}
@@ -94,32 +96,32 @@ interface WorkspaceItemProps {
 function WorkspaceItem({ workspace, isCurrent }: WorkspaceItemProps) {
   const content = (
     <>
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+      <div className='flex items-center gap-3 flex-1 min-w-0'>
+        <div className='flex-shrink-0 h-10 w-10 rounded-lg bg-muted flex items-center justify-center'>
           {workspace.avatar ? (
             <img
               src={workspace.avatar}
-              alt=""
-              className="h-full w-full rounded-lg object-cover"
+              alt=''
+              className='h-full w-full rounded-lg object-cover'
             />
           ) : (
-            <Building2 className="h-5 w-5 text-muted-foreground" />
+            <Building2 className='h-5 w-5 text-muted-foreground' />
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium truncate">{workspace.name}</p>
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2'>
+            <p className='text-sm font-medium truncate'>{workspace.name}</p>
             {isCurrent && (
-              <Check className="h-4 w-4 text-primary flex-shrink-0" />
+              <Check className='h-4 w-4 text-primary flex-shrink-0' />
             )}
           </div>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className='text-xs text-muted-foreground truncate'>
             /{workspace.slug}
           </p>
         </div>
       </div>
       {workspace.unreadCount && workspace.unreadCount > 0 && (
-        <Badge variant="default" className="flex-shrink-0">
+        <Badge variant='default' className='flex-shrink-0'>
           {workspace.unreadCount > 99 ? '99+' : workspace.unreadCount}
         </Badge>
       )}
@@ -156,16 +158,16 @@ function WorkspaceSwitcherSkeleton() {
   return (
     <Card>
       <CardHeader>
-        <Skeleton className="h-6 w-24" />
+        <Skeleton className='h-6 w-24' />
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 p-3">
-              <Skeleton className="h-10 w-10 rounded-lg" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
+        <div className='space-y-2'>
+          {[1, 2, 3].map(i => (
+            <div key={i} className='flex items-center gap-3 p-3'>
+              <Skeleton className='h-10 w-10 rounded-lg' />
+              <div className='flex-1 space-y-2'>
+                <Skeleton className='h-4 w-32' />
+                <Skeleton className='h-3 w-24' />
               </div>
             </div>
           ))}

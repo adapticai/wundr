@@ -39,8 +39,7 @@ export class BackupRollbackManager {
 
   constructor(backupDir?: string) {
     this.homeDir = process.env.HOME || process.env.USERPROFILE || '';
-    this.backupDir =
-      backupDir || path.join(this.homeDir, '.wundr', 'backups');
+    this.backupDir = backupDir || path.join(this.homeDir, '.wundr', 'backups');
     this.metadataFile = path.join(this.backupDir, 'metadata.json');
   }
 
@@ -67,7 +66,7 @@ export class BackupRollbackManager {
    */
   async createBackup(
     files: string[],
-    reason: string = 'Manual backup',
+    reason: string = 'Manual backup'
   ): Promise<BackupMetadata> {
     const backupId = this.generateBackupId();
     const timestamp = new Date().toISOString();
@@ -203,7 +202,9 @@ export class BackupRollbackManager {
       console.log(chalk.green(`\n✅ Restored ${restoredFiles.length} files`));
 
       if (failedFiles.length > 0) {
-        console.log(chalk.red(`❌ Failed to restore ${failedFiles.length} files`));
+        console.log(
+          chalk.red(`❌ Failed to restore ${failedFiles.length} files`)
+        );
         failedFiles.forEach(file => {
           console.log(chalk.red(`  - ${file}`));
         });
@@ -224,8 +225,9 @@ export class BackupRollbackManager {
     try {
       const content = await fs.readFile(this.metadataFile, 'utf-8');
       const backups = JSON.parse(content) as BackupMetadata[];
-      return backups.sort((a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      return backups.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
     } catch (error) {
       logger.error('Failed to list backups', error);
@@ -347,8 +349,9 @@ export class BackupRollbackManager {
     console.log(chalk.white('Backup ID:'), chalk.green(metadata.backupId));
     console.log(chalk.white('Timestamp:'), chalk.gray(metadata.timestamp));
     console.log(chalk.white('Reason:'), chalk.gray(metadata.reason));
-    console.log(chalk.white('Status:'),
-      metadata.success ? chalk.green('Success') : chalk.red('Failed'),
+    console.log(
+      chalk.white('Status:'),
+      metadata.success ? chalk.green('Success') : chalk.red('Failed')
     );
     console.log(chalk.white('Files:'), chalk.cyan(metadata.files.length));
 

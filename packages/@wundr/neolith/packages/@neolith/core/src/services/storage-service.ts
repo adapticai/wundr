@@ -23,7 +23,6 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createId } from '@paralleldrive/cuid2';
 
-
 import { GenesisError } from '../errors';
 import {
   DEFAULT_STORAGE_CONFIG,
@@ -88,7 +87,7 @@ export class StorageError extends GenesisError {
     message: string,
     code: string,
     statusCode: number = 500,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ) {
     super(message, code, statusCode, metadata);
     this.name = 'StorageError';
@@ -100,12 +99,10 @@ export class StorageError extends GenesisError {
  */
 export class FileNotFoundError extends StorageError {
   constructor(key: string, bucket?: string) {
-    super(
-      `File not found: ${key}`,
-      'STORAGE_FILE_NOT_FOUND',
-      404,
-      { key, bucket },
-    );
+    super(`File not found: ${key}`, 'STORAGE_FILE_NOT_FOUND', 404, {
+      key,
+      bucket,
+    });
     this.name = 'FileNotFoundError';
   }
 }
@@ -132,7 +129,7 @@ export class FileSizeError extends StorageError {
       `File size ${formatBytes(size)} exceeds maximum allowed size ${formatBytes(maxSize)}`,
       'STORAGE_FILE_TOO_LARGE',
       413,
-      { size, maxSize },
+      { size, maxSize }
     );
     this.name = 'FileSizeError';
   }
@@ -147,7 +144,7 @@ export class MimeTypeError extends StorageError {
       `MIME type '${mimeType}' is not allowed`,
       'STORAGE_INVALID_MIME_TYPE',
       415,
-      { mimeType, allowedTypes },
+      { mimeType, allowedTypes }
     );
     this.name = 'MimeTypeError';
   }
@@ -200,7 +197,10 @@ export interface StorageService {
    * @param options - Buffer upload options
    * @returns Upload result with URL and metadata
    */
-  uploadBuffer(buffer: Buffer, options: BufferUploadOptions): Promise<UploadResult>;
+  uploadBuffer(
+    buffer: Buffer,
+    options: BufferUploadOptions
+  ): Promise<UploadResult>;
 
   // Download operations
 
@@ -229,7 +229,10 @@ export interface StorageService {
    * @param options - Signed URL options
    * @returns Signed upload URL with metadata
    */
-  getSignedUploadUrl(key: string, options?: SignedUrlOptions): Promise<SignedUploadUrl>;
+  getSignedUploadUrl(
+    key: string,
+    options?: SignedUrlOptions
+  ): Promise<SignedUploadUrl>;
 
   // Management operations
 
@@ -333,9 +336,12 @@ export class StorageServiceImpl implements StorageService {
     this.config = {
       ...config,
       maxFileSize: config.maxFileSize ?? DEFAULT_STORAGE_CONFIG.maxFileSize,
-      signedUrlExpiration: config.signedUrlExpiration ?? DEFAULT_STORAGE_CONFIG.signedUrlExpiration,
+      signedUrlExpiration:
+        config.signedUrlExpiration ??
+        DEFAULT_STORAGE_CONFIG.signedUrlExpiration,
       defaultACL: config.defaultACL ?? DEFAULT_STORAGE_CONFIG.defaultACL,
-      allowedMimeTypes: config.allowedMimeTypes ?? DEFAULT_STORAGE_CONFIG.allowedMimeTypes,
+      allowedMimeTypes:
+        config.allowedMimeTypes ?? DEFAULT_STORAGE_CONFIG.allowedMimeTypes,
     };
 
     // Build S3 client configuration
@@ -433,7 +439,10 @@ export class StorageServiceImpl implements StorageService {
   /**
    * Uploads a file from a URL.
    */
-  async uploadFromUrl(url: string, options?: UploadOptions): Promise<UploadResult> {
+  async uploadFromUrl(
+    url: string,
+    options?: UploadOptions
+  ): Promise<UploadResult> {
     try {
       // Fetch the file
       const response = await fetch(url);
@@ -443,14 +452,15 @@ export class StorageServiceImpl implements StorageService {
           `Failed to fetch file from URL: ${response.status} ${response.statusText}`,
           'STORAGE_FETCH_ERROR',
           502,
-          { url, status: response.status },
+          { url, status: response.status }
         );
       }
 
       // Get content type from response or options
-      const contentType = options?.contentType
-        ?? response.headers.get('content-type')
-        ?? 'application/octet-stream';
+      const contentType =
+        options?.contentType ??
+        response.headers.get('content-type') ??
+        'application/octet-stream';
 
       // Generate key if not provided
       const key = options?.key ?? this.generateKeyFromUrl(url);
@@ -473,7 +483,7 @@ export class StorageServiceImpl implements StorageService {
         `Failed to upload from URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'STORAGE_URL_UPLOAD_ERROR',
         500,
-        { url },
+        { url }
       );
     }
   }
@@ -481,7 +491,10 @@ export class StorageServiceImpl implements StorageService {
   /**
    * Uploads a buffer to storage.
    */
-  async uploadBuffer(buffer: Buffer, options: BufferUploadOptions): Promise<UploadResult> {
+  async uploadBuffer(
+    buffer: Buffer,
+    options: BufferUploadOptions
+  ): Promise<UploadResult> {
     return this.uploadFile({
       file: buffer,
       key: options.key,
@@ -548,7 +561,8 @@ export class StorageServiceImpl implements StorageService {
     }
 
     if (options?.responseContentDisposition) {
-      commandInput.ResponseContentDisposition = options.responseContentDisposition;
+      commandInput.ResponseContentDisposition =
+        options.responseContentDisposition;
     }
 
     try {
@@ -568,9 +582,10 @@ export class StorageServiceImpl implements StorageService {
    */
   async getSignedUploadUrl(
     key: string,
-    options?: SignedUrlOptions,
+    options?: SignedUrlOptions
   ): Promise<SignedUploadUrl> {
-    const expiresIn = options?.expiresIn ?? this.config.signedUrlExpiration ?? 3600;
+    const expiresIn =
+      options?.expiresIn ?? this.config.signedUrlExpiration ?? 3600;
 
     const commandInput: PutObjectCommandInput = {
       Bucket: this.config.bucket,
@@ -660,7 +675,7 @@ export class StorageServiceImpl implements StorageService {
         const command = new DeleteObjectsCommand({
           Bucket: this.config.bucket,
           Delete: {
-            Objects: chunk.map((Key) => ({ Key })),
+            Objects: chunk.map(Key => ({ Key })),
             Quiet: true,
           },
         });
@@ -715,7 +730,7 @@ export class StorageServiceImpl implements StorageService {
         'Failed to move file: could not delete source after copy',
         'STORAGE_MOVE_ERROR',
         500,
-        { sourceKey, destKey },
+        { sourceKey, destKey }
       );
     }
   }
@@ -754,7 +769,10 @@ export class StorageServiceImpl implements StorageService {
   /**
    * Lists files with a given prefix.
    */
-  async listFiles(prefix: string, options?: ListOptions): Promise<FileListResult> {
+  async listFiles(
+    prefix: string,
+    options?: ListOptions
+  ): Promise<FileListResult> {
     try {
       const command = new ListObjectsV2Command({
         Bucket: this.config.bucket,
@@ -767,7 +785,7 @@ export class StorageServiceImpl implements StorageService {
 
       const response = await this.client.send(command);
 
-      const files: FileMetadata[] = (response.Contents ?? []).map((item) => ({
+      const files: FileMetadata[] = (response.Contents ?? []).map(item => ({
         key: item.Key ?? '',
         size: item.Size ?? 0,
         contentType: 'application/octet-stream', // Not available in list response
@@ -778,7 +796,7 @@ export class StorageServiceImpl implements StorageService {
 
       return {
         files,
-        prefixes: (response.CommonPrefixes ?? []).map((p) => p.Prefix ?? ''),
+        prefixes: (response.CommonPrefixes ?? []).map(p => p.Prefix ?? ''),
         nextContinuationToken: response.NextContinuationToken,
         isTruncated: response.IsTruncated ?? false,
         keyCount: response.KeyCount ?? 0,
@@ -882,13 +900,16 @@ export class StorageServiceImpl implements StorageService {
       errors.push('Invalid provider. Must be s3, r2, or minio');
     }
 
-    if ((config.provider === 'r2' || config.provider === 'minio') && !config.endpoint) {
+    if (
+      (config.provider === 'r2' || config.provider === 'minio') &&
+      !config.endpoint
+    ) {
       errors.push(`Endpoint is required for ${config.provider} provider`);
     }
 
     if (errors.length > 0) {
       throw new StorageConfigError(
-        `Invalid storage configuration: ${errors.join(', ')}`,
+        `Invalid storage configuration: ${errors.join(', ')}`
       );
     }
   }
@@ -920,7 +941,8 @@ export class StorageServiceImpl implements StorageService {
    * Validates file size against limits.
    */
   private validateFileSize(size: number, contentType: string): void {
-    const maxSize = this.config.maxFileSize ?? getMaxFileSizeForType(contentType);
+    const maxSize =
+      this.config.maxFileSize ?? getMaxFileSizeForType(contentType);
 
     if (size > maxSize) {
       throw new FileSizeError(size, maxSize);
@@ -1045,14 +1067,15 @@ export class StorageServiceImpl implements StorageService {
       throw new FileNotFoundError(key, this.config.bucket);
     }
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     const errorName = error instanceof Error ? error.name : 'UnknownError';
 
     throw new StorageError(
       `Storage operation '${operation}' failed: ${errorMessage}`,
       `STORAGE_${errorName.toUpperCase()}`,
       500,
-      { operation, key, originalError: errorMessage },
+      { operation, key, originalError: errorMessage }
     );
   }
 }
@@ -1080,22 +1103,28 @@ export class StorageServiceImpl implements StorageService {
  * @throws {StorageConfigError} If required environment variables are missing
  */
 export function createStorageServiceFromEnv(): StorageServiceImpl {
-  const provider = (process.env.STORAGE_PROVIDER || 's3') as StorageConfig['provider'];
+  const provider = (process.env.STORAGE_PROVIDER ||
+    's3') as StorageConfig['provider'];
   const bucket = process.env.STORAGE_BUCKET;
-  const region = process.env.STORAGE_REGION || process.env.AWS_REGION || 'us-east-1';
-  const accessKeyId = process.env.STORAGE_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.STORAGE_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+  const region =
+    process.env.STORAGE_REGION || process.env.AWS_REGION || 'us-east-1';
+  const accessKeyId =
+    process.env.STORAGE_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey =
+    process.env.STORAGE_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
   const endpoint = process.env.STORAGE_ENDPOINT;
   const publicUrlBase = process.env.STORAGE_PUBLIC_URL;
   const maxFileSize = process.env.STORAGE_MAX_FILE_SIZE
     ? parseInt(process.env.STORAGE_MAX_FILE_SIZE, 10)
     : undefined;
   // Default to 'public-read' for user-facing files (avatars, icons, etc.)
-  const defaultACL = (process.env.STORAGE_DEFAULT_ACL || 'public-read') as 'private' | 'public-read';
+  const defaultACL = (process.env.STORAGE_DEFAULT_ACL || 'public-read') as
+    | 'private'
+    | 'public-read';
 
   if (!bucket || !accessKeyId || !secretAccessKey) {
     throw new StorageConfigError(
-      'Missing required storage environment variables: STORAGE_BUCKET, access key, and secret key',
+      'Missing required storage environment variables: STORAGE_BUCKET, access key, and secret key'
     );
   }
 
@@ -1142,7 +1171,9 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
  * console.log('File uploaded:', result.url);
  * ```
  */
-export function createStorageService(config: StorageConfig): StorageServiceImpl {
+export function createStorageService(
+  config: StorageConfig
+): StorageServiceImpl {
   return new StorageServiceImpl(config);
 }
 
@@ -1155,8 +1186,8 @@ export function createStorageService(config: StorageConfig): StorageServiceImpl 
  */
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-return '0 Bytes';
-}
+    return '0 Bytes';
+  }
 
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];

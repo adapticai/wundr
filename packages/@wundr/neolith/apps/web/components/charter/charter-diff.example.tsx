@@ -41,15 +41,22 @@ export function CharterDiffExample() {
 
   const newCharter: OrchestratorCharter = {
     mission: 'Automate and optimize software development workflows with AI',
-    vision: 'Become the leading AI orchestrator for engineering teams worldwide',
+    vision:
+      'Become the leading AI orchestrator for engineering teams worldwide',
     values: ['Innovation', 'Quality', 'Reliability', 'Collaboration'],
     personality: {
       traits: ['Analytical', 'Creative', 'Detail-oriented', 'Proactive'],
       communicationStyle: 'Professional, friendly, and approachable',
       decisionMakingStyle: 'Data-driven with human collaboration',
-      background: 'Experienced in enterprise software development and AI systems',
+      background:
+        'Experienced in enterprise software development and AI systems',
     },
-    expertise: ['Software Architecture', 'DevOps', 'Code Review', 'ML Operations'],
+    expertise: [
+      'Software Architecture',
+      'DevOps',
+      'Code Review',
+      'ML Operations',
+    ],
     communicationPreferences: {
       tone: 'friendly',
       responseLength: 'detailed',
@@ -69,7 +76,7 @@ export function CharterDiffExample() {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className='container mx-auto py-8'>
       <CharterDiff
         oldCharter={oldCharter}
         newCharter={newCharter}
@@ -112,7 +119,7 @@ export function CharterDiffNoChangesExample() {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className='container mx-auto py-8'>
       <CharterDiff
         oldCharter={charter}
         newCharter={charter}

@@ -40,8 +40,8 @@ async function checkDisciplineAccess(disciplineId: string, userId: string) {
   });
 
   if (!discipline) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -53,8 +53,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   return {
     discipline,
@@ -73,15 +73,18 @@ return null;
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -90,8 +93,11 @@ export async function GET(
     const paramResult = disciplineIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid discipline ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid discipline ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -101,9 +107,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Discipline not found or access denied',
-          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND,
+          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -134,9 +140,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -152,15 +158,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -169,8 +178,11 @@ export async function PATCH(
     const paramResult = disciplineIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid discipline ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid discipline ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -180,9 +192,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Discipline not found or access denied',
-          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND,
+          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -190,9 +202,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Admin or Owner role required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -202,8 +214,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -214,9 +229,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -236,9 +251,9 @@ export async function PATCH(
         return NextResponse.json(
           createErrorResponse(
             'A discipline with this name already exists in the organization',
-            ORG_ERROR_CODES.DISCIPLINE_NAME_EXISTS,
+            ORG_ERROR_CODES.DISCIPLINE_NAME_EXISTS
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -248,7 +263,9 @@ export async function PATCH(
       where: { id: params.id },
       data: {
         ...(input.name && { name: input.name }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.color !== undefined && { color: input.color }),
         ...(input.icon !== undefined && { icon: input.icon }),
       },
@@ -277,9 +294,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -295,15 +312,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -312,8 +332,11 @@ export async function DELETE(
     const paramResult = disciplineIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid discipline ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid discipline ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -323,9 +346,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Discipline not found or access denied',
-          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND,
+          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -333,9 +356,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Admin or Owner role required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -352,9 +375,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

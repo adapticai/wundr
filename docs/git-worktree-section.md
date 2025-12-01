@@ -3,6 +3,7 @@
 ### Why Use Git Worktrees for Agent Coordination
 
 **Critical Benefits:**
+
 - **Conflict Prevention**: Each agent works in isolated filesystem directories
 - **True Parallelism**: Multiple agents can modify the same logical file simultaneously
 - **Clean Contexts**: Each worktree has its own HEAD, staging area, and working directory
@@ -10,6 +11,7 @@
 - **Atomic Integration**: Merge verified changes only after agent completion
 
 **Problem Without Worktrees:**
+
 ```bash
 # ❌ CONFLICT: Two agents editing same file in main workspace
 Agent 1: Edit src/api/users.ts     # Working...
@@ -17,6 +19,7 @@ Agent 2: Edit src/api/users.ts     # COLLISION! File locked/overwritten
 ```
 
 **Solution With Worktrees:**
+
 ```bash
 # ✅ ISOLATED: Each agent in separate worktree
 Agent 1: Edit ../worktrees/agent-coder-1/src/api/users.ts
@@ -27,6 +30,7 @@ Agent 2: Edit ../worktrees/agent-coder-2/src/api/users.ts
 ### When to Use Git Worktrees
 
 **ALWAYS Use Worktrees When:**
+
 - Spawning 2+ agents that may touch overlapping files
 - Running parallel SPARC modes (architect + coder + tester)
 - Conducting concurrent experiments/refactorings
@@ -34,22 +38,21 @@ Agent 2: Edit ../worktrees/agent-coder-2/src/api/users.ts
 - Agent tasks require different git branches
 
 **NEVER Use Worktrees When:**
+
 - Single agent working sequentially
 - Agent only reads files (no modifications)
 - Agent works in completely isolated directories (e.g., `/tmp`)
 - Quick, single-file edits
 
-**Decision Matrix:**
-| Scenario | Use Worktrees? | Reason |
-|----------|----------------|--------|
-| 3 agents: researcher (read), coder (write), tester (write) | YES | 2+ writers |
-| 1 agent: coder implementing feature | NO | Single agent |
-| 5 agents: all analyzing codebase | NO | Read-only |
-| 2 agents: refactoring same module | YES | Write conflicts likely |
+**Decision Matrix:** | Scenario | Use Worktrees? | Reason | |----------|----------------|--------| |
+3 agents: researcher (read), coder (write), tester (write) | YES | 2+ writers | | 1 agent: coder
+implementing feature | NO | Single agent | | 5 agents: all analyzing codebase | NO | Read-only | | 2
+agents: refactoring same module | YES | Write conflicts likely |
 
 ### Standardized Naming Conventions
 
 **Worktree Directory Structure:**
+
 ```
 /Users/iroselli/wundr/              # Main repository
 ├── .git/
@@ -62,6 +65,7 @@ Agent 2: Edit ../worktrees/agent-coder-2/src/api/users.ts
 ```
 
 **Naming Pattern:**
+
 ```
 agent-{type}-{timestamp}
 sparc-{mode}-{timestamp}
@@ -75,6 +79,7 @@ swarm-mesh-1-agent-coder-1
 ```
 
 **Branch Naming:**
+
 ```
 worktree/{agent-type}/{task-id}
 worktree/{sparc-mode}/{timestamp}
@@ -110,6 +115,7 @@ git worktree list
 ```
 
 **Expected Output:**
+
 ```
 /Users/iroselli/wundr              f7cd045 [master]
 /Users/iroselli/worktrees/agent-coder-20231121-143052  f7cd045 [worktree/coder/feature-auth]
@@ -234,6 +240,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
 #### ✅ DO:
 
 1. **Always Use Absolute Paths**
+
    ```bash
    # ✅ CORRECT
    WORKTREE_PATH="/Users/iroselli/wundr/../worktrees/agent-coder-123"
@@ -243,6 +250,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 2. **Create Worktrees from Clean State**
+
    ```bash
    # ✅ Verify main workspace is clean before creating worktrees
    cd /Users/iroselli/wundr
@@ -251,6 +259,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 3. **Use Descriptive Branch Names**
+
    ```bash
    # ✅ Clear purpose
    worktree/coder/feature-auth
@@ -262,6 +271,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 4. **Verify Before Cleanup**
+
    ```bash
    # ✅ Check merge success before removing worktree
    git log --oneline --graph --all -10
@@ -270,6 +280,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 5. **Use Worktree-Specific Dependencies**
+
    ```bash
    # ✅ Each worktree has own node_modules
    cd "${WORKTREE_PATH}"
@@ -286,6 +297,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
 #### ❌ DON'T:
 
 1. **Don't Create Nested Worktrees**
+
    ```bash
    # ❌ WRONG: Worktree inside repo
    git worktree add ./worktrees/agent-1
@@ -295,6 +307,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 2. **Don't Reuse Worktree Paths**
+
    ```bash
    # ❌ WRONG: Overwriting existing worktree
    git worktree add /same/path/agent-1  # Path already exists!
@@ -304,6 +317,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 3. **Don't Skip Cleanup**
+
    ```bash
    # ❌ WRONG: Leaving orphaned worktrees
    # (worktrees accumulate, waste disk space)
@@ -314,6 +328,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 4. **Don't Modify Same Files Manually**
+
    ```bash
    # ❌ WRONG: Editing files in both main repo and worktree
    # (creates merge conflicts)
@@ -322,6 +337,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 5. **Don't Create Worktrees Without Branches**
+
    ```bash
    # ❌ WRONG: Detached HEAD state
    git worktree add /path/worktree HEAD
@@ -331,6 +347,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```
 
 6. **Don't Push Worktree Branches to Remote**
+
    ```bash
    # ❌ WRONG: Polluting remote with temp branches
    git push origin worktree/coder/temp
@@ -682,4 +699,5 @@ echo "✅ Worktree cleaned: ${WORKTREE_NAME}"
 
 ---
 
-**Remember**: Git worktrees enable true parallel agent execution by providing isolated filesystem contexts. Use them whenever multiple agents might conflict, and always clean up after integration!
+**Remember**: Git worktrees enable true parallel agent execution by providing isolated filesystem
+contexts. Use them whenever multiple agents might conflict, and always clean up after integration!

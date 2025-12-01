@@ -54,7 +54,11 @@ export interface InviteMembersModalProps {
   /** Callback fired when inviting existing workspace members */
   onInviteMembers?: (userIds: string[], role: string) => Promise<void>;
   /** Callback fired when inviting by email */
-  onInviteByEmail?: (emails: string[], role: string, message?: string) => Promise<void>;
+  onInviteByEmail?: (
+    emails: string[],
+    role: string,
+    message?: string
+  ) => Promise<void>;
   /** The context of the invitation (workspace, channel, or dm) */
   context: InviteContext;
   /** The workspace ID for user search */
@@ -87,7 +91,7 @@ function isValidEmail(email: string): boolean {
 function parseEmails(text: string): string[] {
   return text
     .split(/[,\n]/)
-    .map((e) => e.trim())
+    .map(e => e.trim())
     .filter(Boolean);
 }
 
@@ -136,7 +140,9 @@ export function InviteMembersModal({
   description,
 }: InviteMembersModalProps) {
   // Tab state
-  const [activeTab, setActiveTab] = useState<'workspace' | 'email'>('workspace');
+  const [activeTab, setActiveTab] = useState<'workspace' | 'email'>(
+    'workspace'
+  );
 
   // Workspace members state
   const [searchQuery, setSearchQuery] = useState('');
@@ -213,27 +219,27 @@ export function InviteMembersModal({
 
   // Filter available users (exclude existing members and selected users)
   const availableUsers = workspaceUsers.filter(
-    (u) =>
+    u =>
       !existingMemberIds.includes(u.id) &&
-      !selectedUsers.some((s) => s.id === u.id)
+      !selectedUsers.some(s => s.id === u.id)
   );
 
   // Handle adding a user to selection
   const handleAddUser = useCallback((user: User) => {
-    setSelectedUsers((prev) => [...prev, user]);
+    setSelectedUsers(prev => [...prev, user]);
     setSearchQuery('');
   }, []);
 
   // Handle removing a user from selection
   const handleRemoveUser = useCallback((userId: string) => {
-    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
+    setSelectedUsers(prev => prev.filter(u => u.id !== userId));
   }, []);
 
   // Validate emails
   const validateEmails = useCallback((emails: string[]): boolean => {
     const errors: string[] = [];
 
-    emails.forEach((email) => {
+    emails.forEach(email => {
       if (!isValidEmail(email)) {
         errors.push(email);
       }
@@ -254,7 +260,7 @@ export function InviteMembersModal({
 
     try {
       await onInviteMembers(
-        selectedUsers.map((u) => u.id),
+        selectedUsers.map(u => u.id),
         selectedRole
       );
       onOpenChange(false);
@@ -264,7 +270,13 @@ export function InviteMembersModal({
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedUsers, selectedRole, isSubmitting, onInviteMembers, onOpenChange]);
+  }, [
+    selectedUsers,
+    selectedRole,
+    isSubmitting,
+    onInviteMembers,
+    onOpenChange,
+  ]);
 
   // Handle invite by email
   const handleInviteByEmail = useCallback(async () => {
@@ -345,7 +357,7 @@ export function InviteMembersModal({
   };
 
   const contextText = getContextText();
-  const selectedRoleObj = availableRoles.find((r) => r.id === selectedRole);
+  const selectedRoleObj = availableRoles.find(r => r.id === selectedRole);
 
   // Determine if submit should be enabled
   const canSubmit =
@@ -354,12 +366,12 @@ export function InviteMembersModal({
     (activeTab === 'workspace'
       ? selectedUsers.length > 0
       : isBulkMode
-      ? bulkEmailInput.trim().length > 0
-      : emailInput.trim().length > 0);
+        ? bulkEmailInput.trim().length > 0
+        : emailInput.trim().length > 0);
 
   return (
     <ResponsiveModal open={open} onOpenChange={onOpenChange}>
-      <ResponsiveModalContent className="max-w-2xl">
+      <ResponsiveModalContent className='max-w-2xl'>
         <ResponsiveModalHeader>
           <ResponsiveModalTitle>{contextText.title}</ResponsiveModalTitle>
           <ResponsiveModalDescription>
@@ -368,45 +380,51 @@ export function InviteMembersModal({
         </ResponsiveModalHeader>
 
         {/* Main Content */}
-        <div className="space-y-4 px-6 pb-4">
+        <div className='space-y-4 px-6 pb-4'>
           {/* Error Display */}
           {error && (
-            <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
-              <p className="text-sm text-destructive">{error}</p>
+            <div className='rounded-md bg-destructive/10 border border-destructive/20 p-3'>
+              <p className='text-sm text-destructive'>{error}</p>
             </div>
           )}
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'workspace' | 'email')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="workspace" disabled={isLoading || isSubmitting}>
+          <Tabs
+            value={activeTab}
+            onValueChange={v => setActiveTab(v as 'workspace' | 'email')}
+          >
+            <TabsList className='grid w-full grid-cols-2'>
+              <TabsTrigger
+                value='workspace'
+                disabled={isLoading || isSubmitting}
+              >
                 {contextText.workspaceTabLabel}
               </TabsTrigger>
-              <TabsTrigger value="email" disabled={isLoading || isSubmitting}>
+              <TabsTrigger value='email' disabled={isLoading || isSubmitting}>
                 Invite by Email
               </TabsTrigger>
             </TabsList>
 
             {/* From Workspace Tab */}
-            <TabsContent value="workspace" className="space-y-4">
+            <TabsContent value='workspace' className='space-y-4'>
               {/* Search Input */}
-              <div className="space-y-2">
-                <Label htmlFor="user-search">Search members</Label>
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className='space-y-2'>
+                <Label htmlFor='user-search'>Search members</Label>
+                <div className='relative'>
+                  <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
                   <Input
-                    id="user-search"
-                    type="text"
+                    id='user-search'
+                    type='text'
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by name or email..."
-                    className="pl-9"
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder='Search by name or email...'
+                    className='pl-9'
                     disabled={isLoading || isSubmitting}
-                    autoComplete="off"
+                    autoComplete='off'
                   />
                   {isSearching && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <LoadingSpinner className="h-4 w-4" />
+                    <div className='absolute right-3 top-1/2 -translate-y-1/2'>
+                      <LoadingSpinner className='h-4 w-4' />
                     </div>
                   )}
                 </div>
@@ -414,30 +432,33 @@ export function InviteMembersModal({
 
               {/* Selected Users */}
               {selectedUsers.length > 0 && (
-                <div className="space-y-2">
+                <div className='space-y-2'>
                   <Label>Selected ({selectedUsers.length})</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedUsers.map((user) => (
+                  <div className='flex flex-wrap gap-2'>
+                    {selectedUsers.map(user => (
                       <Badge
                         key={user.id}
-                        variant="secondary"
-                        className="gap-1.5 pl-1 pr-2"
+                        variant='secondary'
+                        className='gap-1.5 pl-1 pr-2'
                       >
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={user.image || undefined} alt={user.name} />
-                          <AvatarFallback className="text-xs">
+                        <Avatar className='h-5 w-5'>
+                          <AvatarImage
+                            src={user.image || undefined}
+                            alt={user.name}
+                          />
+                          <AvatarFallback className='text-xs'>
                             {getInitials(user.name || user.email)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs font-medium">{user.name}</span>
+                        <span className='text-xs font-medium'>{user.name}</span>
                         <button
-                          type="button"
+                          type='button'
                           onClick={() => handleRemoveUser(user.id)}
                           disabled={isLoading || isSubmitting}
-                          className="ml-0.5 rounded-full p-0.5 hover:bg-secondary-foreground/10"
+                          className='ml-0.5 rounded-full p-0.5 hover:bg-secondary-foreground/10'
                           aria-label={`Remove ${user.name}`}
                         >
-                          <XIcon className="h-3 w-3" />
+                          <XIcon className='h-3 w-3' />
                         </button>
                       </Badge>
                     ))}
@@ -447,37 +468,40 @@ export function InviteMembersModal({
 
               {/* Search Results */}
               {searchQuery && (
-                <div className="space-y-2">
+                <div className='space-y-2'>
                   <Label>Results</Label>
-                  <div className="max-h-60 overflow-y-auto rounded-md border bg-background">
+                  <div className='max-h-60 overflow-y-auto rounded-md border bg-background'>
                     {availableUsers.length === 0 ? (
-                      <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+                      <p className='px-4 py-8 text-center text-sm text-muted-foreground'>
                         {isSearching ? 'Searching...' : 'No users found'}
                       </p>
                     ) : (
-                      <div className="divide-y">
-                        {availableUsers.map((user) => (
+                      <div className='divide-y'>
+                        {availableUsers.map(user => (
                           <button
                             key={user.id}
-                            type="button"
+                            type='button'
                             onClick={() => handleAddUser(user)}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent"
+                            className='flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent'
                           >
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage src={user.image || undefined} alt={user.name} />
-                              <AvatarFallback className="text-sm">
+                            <Avatar className='h-9 w-9'>
+                              <AvatarImage
+                                src={user.image || undefined}
+                                alt={user.name}
+                              />
+                              <AvatarFallback className='text-sm'>
                                 {getInitials(user.name || user.email)}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">
+                            <div className='flex-1 min-w-0'>
+                              <p className='text-sm font-medium text-foreground truncate'>
                                 {user.name}
                               </p>
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className='text-xs text-muted-foreground truncate'>
                                 {user.email}
                               </p>
                             </div>
-                            <PlusIcon className="h-4 w-4 text-muted-foreground" />
+                            <PlusIcon className='h-4 w-4 text-muted-foreground' />
                           </button>
                         ))}
                       </div>
@@ -488,72 +512,72 @@ export function InviteMembersModal({
             </TabsContent>
 
             {/* Invite by Email Tab */}
-            <TabsContent value="email" className="space-y-4">
+            <TabsContent value='email' className='space-y-4'>
               {/* Bulk/Single Toggle */}
-              <div className="flex gap-2">
+              <div className='flex gap-2'>
                 <Button
-                  type="button"
+                  type='button'
                   variant={!isBulkMode ? 'default' : 'outline'}
                   onClick={() => setIsBulkMode(false)}
                   disabled={isLoading || isSubmitting}
-                  className="flex-1"
-                  size="sm"
+                  className='flex-1'
+                  size='sm'
                 >
                   Single Email
                 </Button>
                 <Button
-                  type="button"
+                  type='button'
                   variant={isBulkMode ? 'default' : 'outline'}
                   onClick={() => setIsBulkMode(true)}
                   disabled={isLoading || isSubmitting}
-                  className="flex-1"
-                  size="sm"
+                  className='flex-1'
+                  size='sm'
                 >
                   Bulk Emails
                 </Button>
               </div>
 
               {/* Email Input */}
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label htmlFor={isBulkMode ? 'bulk-emails' : 'email'}>
                   {isBulkMode ? 'Email Addresses' : 'Email Address'}
                 </Label>
                 {isBulkMode ? (
                   <>
                     <Textarea
-                      id="bulk-emails"
+                      id='bulk-emails'
                       value={bulkEmailInput}
-                      onChange={(e) => {
+                      onChange={e => {
                         setBulkEmailInput(e.target.value);
                         setEmailErrors([]);
                       }}
-                      placeholder="Enter emails separated by commas or newlines&#10;e.g., user1@example.com, user2@example.com"
+                      placeholder='Enter emails separated by commas or newlines&#10;e.g., user1@example.com, user2@example.com'
                       rows={5}
                       disabled={isLoading || isSubmitting}
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className='text-xs text-muted-foreground'>
                       Separate multiple emails with commas or newlines
                     </p>
                   </>
                 ) : (
                   <Input
-                    id="email"
-                    type="email"
+                    id='email'
+                    type='email'
                     value={emailInput}
-                    onChange={(e) => {
+                    onChange={e => {
                       setEmailInput(e.target.value);
                       setEmailErrors([]);
                     }}
-                    placeholder="colleague@example.com"
+                    placeholder='colleague@example.com'
                     disabled={isLoading || isSubmitting}
                   />
                 )}
                 {emailErrors.length > 0 && (
-                  <div className="rounded-md bg-destructive/10 border border-destructive/20 p-2">
-                    <p className="text-xs text-destructive font-medium mb-1">
+                  <div className='rounded-md bg-destructive/10 border border-destructive/20 p-2'>
+                    <p className='text-xs text-destructive font-medium mb-1'>
                       Invalid email addresses:
                     </p>
-                    <ul className="text-xs text-destructive space-y-0.5 pl-4 list-disc">
+                    <ul className='text-xs text-destructive space-y-0.5 pl-4 list-disc'>
                       {emailErrors.map((email, idx) => (
                         <li key={idx}>{email}</li>
                       ))}
@@ -563,17 +587,19 @@ export function InviteMembersModal({
               </div>
 
               {/* Custom Message */}
-              <div className="space-y-2">
-                <Label htmlFor="custom-message">Personal Message (optional)</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='custom-message'>
+                  Personal Message (optional)
+                </Label>
                 <Textarea
-                  id="custom-message"
+                  id='custom-message'
                   value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder="Add a personal message to include in the invitation email..."
+                  onChange={e => setCustomMessage(e.target.value)}
+                  placeholder='Add a personal message to include in the invitation email...'
                   rows={3}
                   disabled={isLoading || isSubmitting}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   This message will be included in the invitation email
                 </p>
               </div>
@@ -581,24 +607,24 @@ export function InviteMembersModal({
           </Tabs>
 
           {/* Role Selection (shown for both tabs) */}
-          <div className="space-y-2">
-            <Label htmlFor="role-select">Role</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='role-select'>Role</Label>
             <Select
               value={selectedRole}
               onValueChange={setSelectedRole}
               disabled={isLoading || isSubmitting}
             >
-              <SelectTrigger id="role-select">
-                <SelectValue placeholder="Select a role" />
+              <SelectTrigger id='role-select'>
+                <SelectValue placeholder='Select a role' />
               </SelectTrigger>
               <SelectContent>
-                {availableRoles.map((role) => (
+                {availableRoles.map(role => (
                   <SelectItem key={role.id} value={role.id}>
-                    <div className="flex items-start gap-2">
+                    <div className='flex items-start gap-2'>
                       <div>
-                        <div className="font-medium">{role.name}</div>
+                        <div className='font-medium'>{role.name}</div>
                         {role.description && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className='text-xs text-muted-foreground'>
                             {role.description}
                           </div>
                         )}
@@ -609,7 +635,7 @@ export function InviteMembersModal({
               </SelectContent>
             </Select>
             {selectedRoleObj?.description && (
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 {selectedRoleObj.description}
               </p>
             )}
@@ -617,29 +643,29 @@ export function InviteMembersModal({
         </div>
 
         {/* Footer */}
-        <ResponsiveModalFooter className="flex-col gap-2 sm:flex-row">
+        <ResponsiveModalFooter className='flex-col gap-2 sm:flex-row'>
           <Button
-            type="button"
-            variant="outline"
+            type='button'
+            variant='outline'
             onClick={() => onOpenChange(false)}
             disabled={isLoading || isSubmitting}
-            className="w-full sm:w-auto"
+            className='w-full sm:w-auto'
           >
             Cancel
           </Button>
           <Button
-            type="button"
+            type='button'
             onClick={
               activeTab === 'workspace'
                 ? handleInviteFromWorkspace
                 : handleInviteByEmail
             }
             disabled={!canSubmit}
-            className="w-full sm:w-auto"
+            className='w-full sm:w-auto'
           >
             {isSubmitting ? (
               <>
-                <LoadingSpinner className="mr-2 h-4 w-4" />
+                <LoadingSpinner className='mr-2 h-4 w-4' />
                 Sending...
               </>
             ) : (
@@ -662,15 +688,15 @@ function SearchIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
+      <circle cx='11' cy='11' r='8' />
+      <path d='m21 21-4.3-4.3' />
     </svg>
   );
 }
@@ -679,15 +705,15 @@ function XIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }
@@ -696,15 +722,15 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
+      <path d='M5 12h14' />
+      <path d='M12 5v14' />
     </svg>
   );
 }
@@ -713,22 +739,22 @@ function LoadingSpinner({ className }: { className?: string }) {
   return (
     <svg
       className={cn('animate-spin', className)}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
     >
       <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
+        className='opacity-25'
+        cx='12'
+        cy='12'
+        r='10'
+        stroke='currentColor'
+        strokeWidth='4'
       />
       <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        className='opacity-75'
+        fill='currentColor'
+        d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
       />
     </svg>
   );

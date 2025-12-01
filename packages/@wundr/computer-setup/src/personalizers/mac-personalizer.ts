@@ -52,14 +52,16 @@ export class MacPersonalizer {
       await execa('sudo', ['scutil', '--set', 'ComputerName', computerName]);
       await execa('sudo', ['scutil', '--set', 'HostName', hostname]);
       await execa('sudo', ['scutil', '--set', 'LocalHostName', localHostname]);
-      
+
       // Set NetBIOS name for SMB sharing
       await execa('sudo', [
-        'defaults', 'write',
+        'defaults',
+        'write',
         '/Library/Preferences/SystemConfiguration/com.apple.smb.server',
-        'NetBIOSName', '-string', netbiosName,
+        'NetBIOSName',
+        '-string',
+        netbiosName,
       ]);
-
     } catch (error) {
       throw new Error(`Failed to set computer name: ${error}`);
     }
@@ -75,14 +77,19 @@ export class MacPersonalizer {
 
     try {
       const username = process.env.USER || 'user';
-      
+
       // Remove existing picture
       try {
-        await execa('dscl', ['.', '-delete', `/Users/${username}`, 'JPEGPhoto']);
+        await execa('dscl', [
+          '.',
+          '-delete',
+          `/Users/${username}`,
+          'JPEGPhoto',
+        ]);
       } catch {
         // Ignore error if no existing photo
       }
-      
+
       try {
         await execa('dscl', ['.', '-delete', `/Users/${username}`, 'Picture']);
       } catch {
@@ -90,8 +97,13 @@ export class MacPersonalizer {
       }
 
       // Set new picture
-      await execa('dscl', ['.', '-create', `/Users/${username}`, 'Picture', picturePath]);
-
+      await execa('dscl', [
+        '.',
+        '-create',
+        `/Users/${username}`,
+        'Picture',
+        picturePath,
+      ]);
     } catch (error) {
       throw new Error(`Failed to set user picture: ${error}`);
     }
@@ -108,7 +120,6 @@ export class MacPersonalizer {
     try {
       const script = `tell application "Finder" to set desktop picture to POSIX file "${wallpaperPath}"`;
       await execa('osascript', ['-e', script]);
-
     } catch (error) {
       throw new Error(`Failed to set desktop wallpaper: ${error}`);
     }
@@ -141,19 +152,39 @@ export class MacPersonalizer {
       }
 
       // Clear existing persistent apps
-      await execa('defaults', ['write', 'com.apple.dock', 'persistent-apps', '-array']);
+      await execa('defaults', [
+        'write',
+        'com.apple.dock',
+        'persistent-apps',
+        '-array',
+      ]);
 
       // Add developer apps to Dock
       const appsToAdd: DockApp[] = [
-        { name: 'Finder', path: '/System/Library/CoreServices/Finder.app', required: true },
-        { name: 'Visual Studio Code', path: '/Applications/Visual Studio Code.app' },
+        {
+          name: 'Finder',
+          path: '/System/Library/CoreServices/Finder.app',
+          required: true,
+        },
+        {
+          name: 'Visual Studio Code',
+          path: '/Applications/Visual Studio Code.app',
+        },
         { name: 'iTerm', path: '/Applications/iTerm.app' },
-        { name: 'Terminal', path: '/Applications/Utilities/Terminal.app', required: true },
+        {
+          name: 'Terminal',
+          path: '/Applications/Utilities/Terminal.app',
+          required: true,
+        },
         { name: 'Docker Desktop', path: '/Applications/Docker.app' },
         { name: 'Slack', path: '/Applications/Slack.app' },
         { name: 'Google Chrome', path: '/Applications/Google Chrome.app' },
         { name: 'Safari', path: '/Applications/Safari.app', required: true },
-        { name: 'System Preferences', path: '/System/Applications/System Preferences.app', required: true },
+        {
+          name: 'System Preferences',
+          path: '/System/Applications/System Preferences.app',
+          required: true,
+        },
       ];
 
       for (const app of appsToAdd) {
@@ -169,7 +200,6 @@ export class MacPersonalizer {
 
       // Restart Dock
       await execa('killall', ['Dock']);
-
     } catch (error) {
       throw new Error(`Failed to configure Dock: ${error}`);
     }
@@ -180,10 +210,13 @@ export class MacPersonalizer {
    */
   private async addAppToDock(appPath: string): Promise<void> {
     const dockItem = `<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>${appPath}</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>`;
-    
+
     await execa('defaults', [
-      'write', 'com.apple.dock', 'persistent-apps',
-      '-array-add', dockItem,
+      'write',
+      'com.apple.dock',
+      'persistent-apps',
+      '-array-add',
+      dockItem,
     ]);
   }
 
@@ -197,24 +230,29 @@ export class MacPersonalizer {
 
     try {
       const hotCorners: HotCorner[] = [
-        { corner: 'tl', action: 2, modifier: 0 },  // Top left: Mission Control
-        { corner: 'tr', action: 4, modifier: 0 },  // Top right: Desktop
-        { corner: 'bl', action: 3, modifier: 0 },  // Bottom left: Application Windows
+        { corner: 'tl', action: 2, modifier: 0 }, // Top left: Mission Control
+        { corner: 'tr', action: 4, modifier: 0 }, // Top right: Desktop
+        { corner: 'bl', action: 3, modifier: 0 }, // Bottom left: Application Windows
         { corner: 'br', action: 13, modifier: 0 }, // Bottom right: Lock Screen
       ];
 
       for (const hotCorner of hotCorners) {
         await execa('defaults', [
-          'write', 'com.apple.dock',
-          `wvous-${hotCorner.corner}-corner`, '-int', hotCorner.action.toString(),
+          'write',
+          'com.apple.dock',
+          `wvous-${hotCorner.corner}-corner`,
+          '-int',
+          hotCorner.action.toString(),
         ]);
-        
+
         await execa('defaults', [
-          'write', 'com.apple.dock',
-          `wvous-${hotCorner.corner}-modifier`, '-int', hotCorner.modifier.toString(),
+          'write',
+          'com.apple.dock',
+          `wvous-${hotCorner.corner}-modifier`,
+          '-int',
+          hotCorner.modifier.toString(),
         ]);
       }
-
     } catch (error) {
       throw new Error(`Failed to setup hot corners: ${error}`);
     }
@@ -227,7 +265,7 @@ export class MacPersonalizer {
     try {
       const terminalProfileContent = this.createTerminalProfile();
       const profilePath = join(homedir(), '.terminal_profile');
-      
+
       await fs.writeFile(profilePath, terminalProfileContent);
 
       // Add to shell profiles
@@ -240,16 +278,18 @@ export class MacPersonalizer {
         try {
           await fs.access(profileFile);
           const content = await fs.readFile(profileFile, 'utf-8');
-          
+
           if (!content.includes('source ~/.terminal_profile')) {
-            await fs.appendFile(profileFile, '\n# Custom terminal profile\nsource ~/.terminal_profile\n');
+            await fs.appendFile(
+              profileFile,
+              '\n# Custom terminal profile\nsource ~/.terminal_profile\n'
+            );
           }
         } catch {
           // Profile file doesn't exist, create it
           await fs.writeFile(profileFile, 'source ~/.terminal_profile\n');
         }
       }
-
     } catch (error) {
       throw new Error(`Failed to setup terminal profile: ${error}`);
     }
@@ -430,34 +470,97 @@ echo ""
 
     try {
       // Finder preferences
-      await execa('defaults', ['write', 'com.apple.finder', 'AppleShowAllFiles', '-bool', 'true']);
-      await execa('defaults', ['write', 'com.apple.finder', 'ShowStatusBar', '-bool', 'true']);
-      await execa('defaults', ['write', 'com.apple.finder', 'ShowPathbar', '-bool', 'true']);
-      
+      await execa('defaults', [
+        'write',
+        'com.apple.finder',
+        'AppleShowAllFiles',
+        '-bool',
+        'true',
+      ]);
+      await execa('defaults', [
+        'write',
+        'com.apple.finder',
+        'ShowStatusBar',
+        '-bool',
+        'true',
+      ]);
+      await execa('defaults', [
+        'write',
+        'com.apple.finder',
+        'ShowPathbar',
+        '-bool',
+        'true',
+      ]);
+
       // Show hidden files
-      await execa('defaults', ['write', 'com.apple.finder', 'AppleShowAllFiles', '-bool', 'true']);
-      
+      await execa('defaults', [
+        'write',
+        'com.apple.finder',
+        'AppleShowAllFiles',
+        '-bool',
+        'true',
+      ]);
+
       // Keyboard preferences
-      await execa('defaults', ['write', 'NSGlobalDomain', 'KeyRepeat', '-int', '2']);
-      await execa('defaults', ['write', 'NSGlobalDomain', 'InitialKeyRepeat', '-int', '15']);
-      
+      await execa('defaults', [
+        'write',
+        'NSGlobalDomain',
+        'KeyRepeat',
+        '-int',
+        '2',
+      ]);
+      await execa('defaults', [
+        'write',
+        'NSGlobalDomain',
+        'InitialKeyRepeat',
+        '-int',
+        '15',
+      ]);
+
       // Trackpad preferences
-      await execa('defaults', ['write', 'com.apple.driver.AppleBluetoothMultitouch.trackpad', 'Clicking', '-bool', 'true']);
-      await execa('defaults', ['write', 'NSGlobalDomain', 'com.apple.mouse.tapBehavior', '-int', '1']);
-      
+      await execa('defaults', [
+        'write',
+        'com.apple.driver.AppleBluetoothMultitouch.trackpad',
+        'Clicking',
+        '-bool',
+        'true',
+      ]);
+      await execa('defaults', [
+        'write',
+        'NSGlobalDomain',
+        'com.apple.mouse.tapBehavior',
+        '-int',
+        '1',
+      ]);
+
       // Screen capture preferences (save to Desktop)
-      await execa('defaults', ['write', 'com.apple.screencapture', 'location', join(homedir(), 'Desktop')]);
-      await execa('defaults', ['write', 'com.apple.screencapture', 'type', 'png']);
-      
+      await execa('defaults', [
+        'write',
+        'com.apple.screencapture',
+        'location',
+        join(homedir(), 'Desktop'),
+      ]);
+      await execa('defaults', [
+        'write',
+        'com.apple.screencapture',
+        'type',
+        'png',
+      ]);
+
       // Menu bar preferences
-      await execa('defaults', ['write', 'com.apple.menuextra.clock', 'DateFormat', '-string', 'EEE MMM d  H:mm']);
-      
+      await execa('defaults', [
+        'write',
+        'com.apple.menuextra.clock',
+        'DateFormat',
+        '-string',
+        'EEE MMM d  H:mm',
+      ]);
+
       // Restart affected applications
       await Promise.allSettled([
         execa('killall', ['Finder']),
         execa('killall', ['SystemUIServer']),
       ]);
-
     } catch (error) {
       throw new Error(`Failed to configure system preferences: ${error}`);
     }
@@ -495,8 +598,10 @@ This directory contains all your development projects and tools.
 Happy coding! 🚀
 `;
 
-      await fs.writeFile(join(homedir(), 'Development', 'README.md'), readmeContent);
-
+      await fs.writeFile(
+        join(homedir(), 'Development', 'README.md'),
+        readmeContent
+      );
     } catch (error) {
       throw new Error(`Failed to setup development directories: ${error}`);
     }
@@ -511,8 +616,14 @@ Happy coding! 🚀
     }
 
     try {
-      const systemInfo = await execa('system_profiler', ['SPSoftwareDataType', '-json']);
-      const hardwareInfo = await execa('system_profiler', ['SPHardwareDataType', '-json']);
+      const systemInfo = await execa('system_profiler', [
+        'SPSoftwareDataType',
+        '-json',
+      ]);
+      const hardwareInfo = await execa('system_profiler', [
+        'SPHardwareDataType',
+        '-json',
+      ]);
 
       return {
         software: JSON.parse(systemInfo.stdout) as Record<string, unknown>,

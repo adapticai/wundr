@@ -413,7 +413,10 @@ export class TrainingPipeline extends EventEmitter {
     // Adjust efficiency based on task complexity - more complex tasks that succeed are more efficient
     const complexityBonus = result.success ? taskComplexity * 0.2 : 0;
 
-    return Math.min(1, (timeEfficiency + successEfficiency) / 2 + complexityBonus);
+    return Math.min(
+      1,
+      (timeEfficiency + successEfficiency) / 2 + complexityBonus
+    );
   }
 
   private getLastTrainingTime(modelId: string): Date | null {

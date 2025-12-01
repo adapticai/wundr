@@ -107,27 +107,45 @@ interface TaskDetails {
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; orchestratorId: string; taskId: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{
+      workspaceSlug: string;
+      orchestratorId: string;
+      taskId: string;
+    }>;
+  }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Get route params
     const resolvedParams = await params;
-    const { workspaceSlug: workspaceId, orchestratorId, taskId } = resolvedParams;
+    const {
+      workspaceSlug: workspaceId,
+      orchestratorId,
+      taskId,
+    } = resolvedParams;
 
     // Validate IDs
     if (!workspaceId || !orchestratorId || !taskId) {
       return NextResponse.json(
-        createErrorResponse('Invalid route parameters', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid route parameters',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -141,8 +159,11 @@ export async function GET(
 
     if (!workspaceMember) {
       return NextResponse.json(
-        createErrorResponse('Access denied to workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Access denied to workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -189,15 +210,21 @@ export async function GET(
     if (!task) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Verify task belongs to specified Orchestrator and workspace
-    if (task.orchestratorId !== orchestratorId || task.workspaceId !== workspaceId) {
+    if (
+      task.orchestratorId !== orchestratorId ||
+      task.workspaceId !== workspaceId
+    ) {
       return NextResponse.json(
-        createErrorResponse('Task does not belong to specified Orchestrator/workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Task does not belong to specified Orchestrator/workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -222,13 +249,14 @@ export async function GET(
 
     // Extract comments from metadata
     const metadata = task.metadata as Record<string, unknown> | null;
-    const comments = (metadata?.comments as Array<{
-      id: string;
-      content: string;
-      authorId: string;
-      authorName: string | null;
-      createdAt: string;
-    }>) || [];
+    const comments =
+      (metadata?.comments as Array<{
+        id: string;
+        content: string;
+        authorId: string;
+        authorName: string | null;
+        createdAt: string;
+      }>) || [];
 
     // Convert ISO strings back to Date objects
     const parsedComments = comments.map(comment => ({
@@ -261,10 +289,16 @@ export async function GET(
       data: taskDetails,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -309,27 +343,45 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; orchestratorId: string; taskId: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{
+      workspaceSlug: string;
+      orchestratorId: string;
+      taskId: string;
+    }>;
+  }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Get route params
     const resolvedParams = await params;
-    const { workspaceSlug: workspaceId, orchestratorId, taskId } = resolvedParams;
+    const {
+      workspaceSlug: workspaceId,
+      orchestratorId,
+      taskId,
+    } = resolvedParams;
 
     // Validate IDs
     if (!workspaceId || !orchestratorId || !taskId) {
       return NextResponse.json(
-        createErrorResponse('Invalid route parameters', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid route parameters',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -343,8 +395,11 @@ export async function PATCH(
 
     if (!workspaceMember) {
       return NextResponse.json(
-        createErrorResponse('Access denied to workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Access denied to workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -362,9 +417,9 @@ export async function PATCH(
         createErrorResponse(
           'Invalid update data',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -376,15 +431,21 @@ export async function PATCH(
     if (!existingTask) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Verify task belongs to specified Orchestrator and workspace
-    if (existingTask.orchestratorId !== orchestratorId || existingTask.workspaceId !== workspaceId) {
+    if (
+      existingTask.orchestratorId !== orchestratorId ||
+      existingTask.workspaceId !== workspaceId
+    ) {
       return NextResponse.json(
-        createErrorResponse('Task does not belong to specified Orchestrator/workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Task does not belong to specified Orchestrator/workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -408,30 +469,37 @@ export async function PATCH(
             createErrorResponse(
               `Invalid status transition from ${currentStatus} to ${newStatus}`,
               TASK_ERROR_CODES.INVALID_STATE_TRANSITION,
-              { allowedTransitions: allowed },
+              { allowedTransitions: allowed }
             ),
-            { status: 400 },
+            { status: 400 }
           );
         }
       }
     }
 
     // Validate assignee exists if being updated
-    if (parseResult.data.assignedToId !== undefined && parseResult.data.assignedToId !== null) {
+    if (
+      parseResult.data.assignedToId !== undefined &&
+      parseResult.data.assignedToId !== null
+    ) {
       const assignee = await prisma.user.findUnique({
         where: { id: parseResult.data.assignedToId },
       });
 
       if (!assignee) {
         return NextResponse.json(
-          createErrorResponse('Assignee not found', TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Assignee not found',
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     // Build update data
-    const existingMetadata = (existingTask.metadata as Record<string, unknown>) || {};
+    const existingMetadata =
+      (existingTask.metadata as Record<string, unknown>) || {};
     let updatedMetadata = { ...existingMetadata };
 
     // Add comment if provided
@@ -453,7 +521,10 @@ export async function PATCH(
         updatedMetadata.hoursSpent = progressUpdate.hoursSpent;
       }
       if (typeof progressUpdate.percentComplete === 'number') {
-        updatedMetadata.percentComplete = Math.max(0, Math.min(100, progressUpdate.percentComplete));
+        updatedMetadata.percentComplete = Math.max(
+          0,
+          Math.min(100, progressUpdate.percentComplete)
+        );
       }
     }
 
@@ -516,10 +587,16 @@ export async function PATCH(
       message: 'Task updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -546,27 +623,45 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; orchestratorId: string; taskId: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{
+      workspaceSlug: string;
+      orchestratorId: string;
+      taskId: string;
+    }>;
+  }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
     // Get route params
     const resolvedParams = await params;
-    const { workspaceSlug: workspaceId, orchestratorId, taskId } = resolvedParams;
+    const {
+      workspaceSlug: workspaceId,
+      orchestratorId,
+      taskId,
+    } = resolvedParams;
 
     // Validate IDs
     if (!workspaceId || !orchestratorId || !taskId) {
       return NextResponse.json(
-        createErrorResponse('Invalid route parameters', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid route parameters',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -585,16 +680,22 @@ export async function DELETE(
 
     if (!workspaceMember) {
       return NextResponse.json(
-        createErrorResponse('Access denied to workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Access denied to workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Require ADMIN or OWNER role for permanent deletion
     if (permanent && !['ADMIN', 'OWNER'].includes(workspaceMember.role)) {
       return NextResponse.json(
-        createErrorResponse('Only admins can permanently delete tasks', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Only admins can permanently delete tasks',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -606,15 +707,21 @@ export async function DELETE(
     if (!task) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Verify task belongs to specified Orchestrator and workspace
-    if (task.orchestratorId !== orchestratorId || task.workspaceId !== workspaceId) {
+    if (
+      task.orchestratorId !== orchestratorId ||
+      task.workspaceId !== workspaceId
+    ) {
       return NextResponse.json(
-        createErrorResponse('Task does not belong to specified Orchestrator/workspace', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Task does not belong to specified Orchestrator/workspace',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -653,10 +760,16 @@ export async function DELETE(
       });
     }
   } catch (error) {
-    console.error('[DELETE /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

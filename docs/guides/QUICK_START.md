@@ -45,6 +45,7 @@ npx claude-flow@alpha sparc init
 ```
 
 This creates:
+
 - `.claude-flow/` - Configuration directory
 - `CLAUDE.md` - Project instructions for Claude Code
 - `.sparc/` - SPARC workflow configuration
@@ -71,6 +72,7 @@ Start a swarm with a researcher and coder to analyze authentication patterns
 ```
 
 Claude Code will:
+
 1. Use MCP to initialize the swarm
 2. Spawn researcher and coder agents
 3. Coordinate their work automatically
@@ -85,6 +87,7 @@ npx claude-flow@alpha sparc tdd "Add user login with email validation"
 ```
 
 This will:
+
 1. **Specification**: Analyze requirements
 2. **Pseudocode**: Design algorithm
 3. **Architecture**: Plan structure
@@ -104,6 +107,7 @@ This will:
 ## Quick Reference Commands
 
 ### SPARC Operations
+
 ```bash
 # List all modes
 npx claude-flow@alpha sparc modes
@@ -116,6 +120,7 @@ npx claude-flow@alpha sparc tdd "<feature>"
 ```
 
 ### Agent Management
+
 ```bash
 # Initialize swarm
 npx claude-flow@alpha swarm init

@@ -3,16 +3,16 @@ name: 🚀 Enterprise Release Pipeline
 on:
   push:
     tags:
-      - 'v*.*.*'
-      - '*.*.*'
+      - "v*.*.*"
+      - "*.*.*"
   release:
     types: [published, released]
   workflow_dispatch:
     inputs:
       release-type:
-        description: 'Release type (patch, minor, major)'
+        description: "Release type (patch, minor, major)"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
           - patch
@@ -20,11 +20,11 @@ on:
           - major
           - prerelease
       pre-release:
-        description: 'Create pre-release'
+        description: "Create pre-release"
         type: boolean
         default: false
       dry-run:
-        description: 'Dry run (skip publishing)'
+        description: "Dry run (skip publishing)"
         type: boolean
         default: false
 
@@ -63,18 +63,18 @@ jobs:
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: 🔍 Validate release conditions
         id: validation
         run: |
           echo "::group::Release Condition Validation"
-          
+
           SHOULD_RELEASE="false"
           IS_PRERELEASE="false"
-          
+
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             SHOULD_RELEASE="true"
             if [[ "${{ github.event.inputs.release-type }}" == "prerelease" || "${{ github.event.inputs.pre-release }}" == "true" ]]; then
@@ -95,10 +95,10 @@ jobs:
             fi
             echo "Tag-based release"
           fi
-          
+
           echo "should-release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
           echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
-          
+
           echo "Should release: $SHOULD_RELEASE"
           echo "Is pre-release: $IS_PRERELEASE"
           echo "::endgroup::"
@@ -108,7 +108,7 @@ jobs:
         if: steps.validation.outputs.should-release == 'true'
         run: |
           echo "::group::Version Generation"
-          
+
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             # Install dependencies for version calculation
             pnpm install --frozen-lockfile --prefer-offline
@@ -131,7 +131,7 @@ jobs:
             VERSION="v$VERSION"
             echo "Current version: $VERSION"
           fi
-          
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Final version: $VERSION"
           echo "::endgroup::"
@@ -141,58 +141,58 @@ jobs:
         if: steps.validation.outputs.should-release == 'true'
         run: |
           echo "::group::Release Notes Generation"
-          
+
           NOTES=$(cat << 'EOF'
           ## 🚀 What's New in ${{ steps.version.outputs.version }}
-          
+
           This release includes improvements, new features, and bug fixes across the Wundr platform.
-          
+
           ### 📦 Installation
-          
+
           ```bash
           # Install globally
           npm install -g @wundr/cli@${{ steps.version.outputs.version }}
-          
+
           # Or with pnpm
           pnpm add -g @wundr/cli@${{ steps.version.outputs.version }}
-          
+
           # Or with yarn
           yarn global add @wundr/cli@${{ steps.version.outputs.version }}
           ```
-          
+
           ### 🔧 Usage
-          
+
           ```bash
           # Get help
           wundr --help
-          
+
           # Set up developer machine
           wundr computer-setup
-          
+
           # Create new project
           wundr create my-awesome-project
-          
+
           # Analyze existing codebase
           wundr analyze ./my-existing-project
           ```
-          
+
           ### 📚 Documentation
-          
+
           - [Getting Started](https://wundr.io/docs/getting-started)
           - [CLI Reference](https://wundr.io/docs/cli)
           - [API Documentation](https://wundr.io/docs/api)
-          
+
           ### 🐛 Issues & Support
-          
+
           - [Report Issues](https://github.com/adapticai/wundr/issues)
           - [Discussions](https://github.com/adapticai/wundr/discussions)
-          
+
           ---
-          
+
           **Full Changelog**: https://github.com/adapticai/wundr/compare/...
           EOF
           )
-          
+
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -203,11 +203,11 @@ jobs:
         if: steps.validation.outputs.should-release == 'true'
         run: |
           echo "::group::Package Detection"
-          
+
           # Find all publishable packages
           PACKAGES=$(find packages -name "package.json" -exec dirname {} \; | sort)
           PACKAGE_LIST=""
-          
+
           for pkg_dir in $PACKAGES; do
             PKG_NAME=$(node -pe "require('./$pkg_dir/package.json').name")
             PKG_PRIVATE=$(node -pe "require('./$pkg_dir/package.json').private || false")
@@ -219,10 +219,10 @@ jobs:
               echo "🔒 Skipping private package: $PKG_NAME ($pkg_dir)"
             fi
           done
-          
+
           # Remove trailing comma
           PACKAGE_LIST=${PACKAGE_LIST%,}
-          
+
           echo "packages=$PACKAGE_LIST" >> $GITHUB_OUTPUT
           echo "Packages to publish: $PACKAGE_LIST"
           echo "::endgroup::"
@@ -247,7 +247,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: 🔧 Install dependencies
@@ -280,7 +280,7 @@ jobs:
         if: matrix.node-version == 20
         run: |
           echo "::group::Package Structure Verification"
-          
+
           # Verify all packages have required files
           for pkg_dir in packages/*; do
             if [[ -d "$pkg_dir" && -f "$pkg_dir/package.json" ]]; then
@@ -328,8 +328,8 @@ jobs:
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: 🔧 Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
@@ -338,20 +338,20 @@ jobs:
         run: |
           echo "::group::Security Vulnerability Scan"
           pnpm audit --audit-level high --json > security-audit.json || true
-          
+
           # Parse audit results
           CRITICAL=$(cat security-audit.json | jq '.metadata.vulnerabilities.critical // 0')
           HIGH=$(cat security-audit.json | jq '.metadata.vulnerabilities.high // 0')
-          
+
           echo "Critical vulnerabilities: $CRITICAL"
           echo "High vulnerabilities: $HIGH"
-          
+
           if [[ $CRITICAL -gt 0 ]]; then
             echo "::error::Critical security vulnerabilities found! Cannot proceed with release."
             cat security-audit.json | jq '.vulnerabilities'
             exit 1
           fi
-          
+
           if [[ $HIGH -gt 3 ]]; then
             echo "::warning::High number of high-severity vulnerabilities: $HIGH"
             echo "Consider addressing these before release."
@@ -361,23 +361,23 @@ jobs:
       - name: 📝 License compliance check
         run: |
           echo "::group::License Compliance Check"
-          
+
           # Install license checker if not already available
           pnpm add --dev license-checker
-          
+
           # Generate license report
           pnpm exec license-checker --summary --excludePrivatePackages --json > licenses.json
-          
+
           # Check for prohibited licenses
           PROHIBITED_LICENSES=("GPL-2.0" "GPL-3.0" "AGPL-1.0" "AGPL-3.0")
-          
+
           for license in "${PROHIBITED_LICENSES[@]}"; do
             if grep -q "$license" licenses.json; then
               echo "::error::Prohibited license found: $license"
               exit 1
             fi
           done
-          
+
           echo "✅ License compliance check passed"
           echo "::endgroup::"
 
@@ -405,8 +405,8 @@ jobs:
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: 🔧 Install and build
         run: |
@@ -417,20 +417,20 @@ jobs:
         run: |
           echo "::group::Creating Release Artifacts"
           mkdir -p release-artifacts
-          
+
           # Create source archive
           git archive --format=tar.gz --prefix=wundr-${{ needs.release-validation.outputs.release-version }}/ \
             HEAD > release-artifacts/wundr-${{ needs.release-validation.outputs.release-version }}-source.tar.gz
-          
+
           # Create build archive
           tar -czf release-artifacts/wundr-${{ needs.release-validation.outputs.release-version }}-build.tar.gz \
             packages/*/dist apps/*/dist apps/*/.next
-          
+
           # Create checksums
           cd release-artifacts
           sha256sum *.tar.gz > checksums.txt
           cd ..
-          
+
           ls -la release-artifacts/
           echo "::endgroup::"
 
@@ -439,7 +439,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ needs.release-validation.outputs.release-version }}
-          name: 'Wundr ${{ needs.release-validation.outputs.release-version }}'
+          name: "Wundr ${{ needs.release-validation.outputs.release-version }}"
           body: ${{ needs.release-validation.outputs.release-notes }}
           draft: false
           prerelease: ${{ needs.release-validation.outputs.is-prerelease }}
@@ -469,9 +469,9 @@ jobs:
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: 🔧 Install and build
         run: |
@@ -483,14 +483,14 @@ jobs:
         run: |
           VERSION="${{ needs.release-validation.outputs.release-version }}"
           VERSION_NO_V=${VERSION#v}
-          
+
           echo "::group::Updating Package Versions to $VERSION_NO_V"
-          
+
           # Find and update the specific package
           PACKAGE_DIR=$(find packages -name "package.json" -exec dirname {} \; | xargs -I {} bash -c '
             if grep -q "\"name\".*\"${{ matrix.package }}\"" {}/package.json; then echo {}; fi
           ')
-          
+
           if [[ -n "$PACKAGE_DIR" ]]; then
             echo "Updating $PACKAGE_DIR to version $VERSION_NO_V"
             cd "$PACKAGE_DIR"
@@ -502,21 +502,21 @@ jobs:
       - name: 🔍 Pre-publish validation
         run: |
           echo "::group::Pre-publish Validation for ${{ matrix.package }}"
-          
+
           PACKAGE_DIR=$(find packages -name "package.json" -exec dirname {} \; | xargs -I {} bash -c '
             if grep -q "\"name\".*\"${{ matrix.package }}\"" {}/package.json; then echo {}; fi
           ')
-          
+
           if [[ -z "$PACKAGE_DIR" ]]; then
             echo "::error::Package ${{ matrix.package }} not found"
             exit 1
           fi
-          
+
           if [[ ! -d "$PACKAGE_DIR/dist" ]]; then
             echo "::error::No build artifacts found for ${{ matrix.package }}"
             exit 1
           fi
-          
+
           echo "✅ Package ${{ matrix.package }} ready for publishing"
           echo "Package directory: $PACKAGE_DIR"
           echo "Build artifacts: $(ls -la $PACKAGE_DIR/dist | wc -l) files"
@@ -525,11 +525,11 @@ jobs:
       - name: 📡 Publish to NPM
         run: |
           echo "::group::Publishing ${{ matrix.package }} to NPM"
-          
+
           PACKAGE_DIR=$(find packages -name "package.json" -exec dirname {} \; | xargs -I {} bash -c '
             if grep -q "\"name\".*\"${{ matrix.package }}\"" {}/package.json; then echo {}; fi
           ')
-          
+
           if [[ -n "$PACKAGE_DIR" && -d "$PACKAGE_DIR/dist" ]]; then
             cd "$PACKAGE_DIR"
             
@@ -557,13 +557,13 @@ jobs:
       - name: 🔍 Verify publication
         run: |
           echo "::group::Verifying NPM Publication"
-          
+
           # Wait a moment for NPM registry to update
           sleep 10
-          
+
           VERSION="${{ needs.release-validation.outputs.release-version }}"
           VERSION_NO_V=${VERSION#v}
-          
+
           # Check if package is available
           if npm view "${{ matrix.package }}@$VERSION_NO_V" version; then
             echo "✅ Package ${{ matrix.package }}@$VERSION_NO_V is available on NPM"
@@ -651,11 +651,11 @@ jobs:
       - name: 🔍 Verify NPM packages
         run: |
           echo "::group::NPM Package Verification"
-          
+
           IFS=',' read -ra PACKAGES <<< "${{ needs.release-validation.outputs.packages-to-publish }}"
           VERSION="${{ needs.release-validation.outputs.release-version }}"
           VERSION_NO_V=${VERSION#v}
-          
+
           for package in "${PACKAGES[@]}"; do
             if [[ -n "$package" ]]; then
               echo "Checking $package@$VERSION_NO_V..."
@@ -702,18 +702,18 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ needs.post-release-validation.result == 'success' && 'success' || 'failure' }}
-          channel: '#releases'
-          author_name: 'Wundr Release Pipeline'
+          channel: "#releases"
+          author_name: "Wundr Release Pipeline"
           text: |
             🚀 **Wundr ${{ needs.release-validation.outputs.release-version }} Released**
-            
+
             📦 **NPM Publishing:** ${{ needs.npm-publish.result }}
             🐳 **Docker Release:** ${{ needs.docker-release.result }}
             🔍 **Validation:** ${{ needs.post-release-validation.result }}
-            
+
             🔗 **GitHub Release:** ${{ needs.create-github-release.outputs.release-url }}
             📚 **Documentation:** https://wundr.io/docs
-            
+
             ${{ needs.release-validation.outputs.is-prerelease == 'true' && '⚠️ This is a pre-release' || '✅ Stable release available' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -726,22 +726,22 @@ jobs:
           server_port: 587
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: '🚀 Wundr ${{ needs.release-validation.outputs.release-version }} Released'
+          subject: "🚀 Wundr ${{ needs.release-validation.outputs.release-version }} Released"
           to: ${{ secrets.TEAM_EMAIL }}
-          from: 'Wundr Releases <releases@wundr.io>'
+          from: "Wundr Releases <releases@wundr.io>"
           body: |
             Wundr ${{ needs.release-validation.outputs.release-version }} has been successfully released!
-            
+
             Release Details:
             - Version: ${{ needs.release-validation.outputs.release-version }}
             - Type: ${{ needs.release-validation.outputs.is-prerelease == 'true' && 'Pre-release' || 'Stable' }}
             - GitHub: ${{ needs.create-github-release.outputs.release-url }}
-            
+
             Status:
             - NPM Publishing: ${{ needs.npm-publish.result }}
             - Docker Release: ${{ needs.docker-release.result }}
-            
+
             Installation:
             npm install -g @wundr/cli@${{ needs.release-validation.outputs.release-version }}
-            
+
             Documentation: https://wundr.io/docs

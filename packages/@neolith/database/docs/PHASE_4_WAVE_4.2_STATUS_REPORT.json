@@ -83,7 +83,11 @@
         "assets_generated": {
           "status": "NOT_STARTED",
           "command": "npx capacitor-assets generate",
-          "prerequisites": ["app_icon_designed", "splash_screen_designed", "capacitor_assets_installed"],
+          "prerequisites": [
+            "app_icon_designed",
+            "splash_screen_designed",
+            "capacitor_assets_installed"
+          ],
           "notes": "Will auto-generate platform-specific assets from source files"
         }
       }
@@ -350,7 +354,12 @@
         "exists": true,
         "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/README.md",
         "status": "COMPREHENSIVE",
-        "covers": ["iOS setup", "Android setup", "Development workflow", "Troubleshooting"]
+        "covers": [
+          "iOS setup",
+          "Android setup",
+          "Development workflow",
+          "Troubleshooting"
+        ]
       },
       "config_verification_report": {
         "exists": true,

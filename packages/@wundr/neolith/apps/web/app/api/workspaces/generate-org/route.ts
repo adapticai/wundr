@@ -26,7 +26,11 @@ import {
   type GenerateOrgInput,
   generateOrgSchema,
 } from '@/lib/validations/workspace-genesis';
-import type { AgentApiResponse, DisciplineApiResponse, OrchestratorApiResponse } from '@/types/api';
+import type {
+  AgentApiResponse,
+  DisciplineApiResponse,
+  OrchestratorApiResponse,
+} from '@/types/api';
 
 // Dynamic imports for org-genesis packages to avoid build-time resolution issues
 // These packages are loaded at runtime when the API is called
@@ -47,7 +51,12 @@ type GenesisResult = any;
 
 // @ts-expect-error Reserved for future strict typing
 type _GenesisResultDetailed = {
-  manifest: { id: string; name: string; description?: string; mission?: string };
+  manifest: {
+    id: string;
+    name: string;
+    description?: string;
+    mission?: string;
+  };
   orchestrators: Array<{
     id: string;
     identity: { name: string; persona?: string };
@@ -182,8 +191,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createGenesisErrorResponse('Authentication required', GENESIS_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createGenesisErrorResponse(
+          'Authentication required',
+          GENESIS_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -195,18 +207,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createGenesisErrorResponse('Invalid JSON body', GENESIS_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createGenesisErrorResponse(
+          'Invalid JSON body',
+          GENESIS_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     const parseResult = generateOrgSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createGenesisErrorResponse('Validation failed', GENESIS_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        createGenesisErrorResponse(
+          'Validation failed',
+          GENESIS_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
@@ -228,9 +247,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'Organization not found or access denied',
-          GENESIS_ERROR_CODES.ORG_NOT_FOUND,
+          GENESIS_ERROR_CODES.ORG_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -238,9 +257,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'Insufficient permissions. Admin or Owner role required.',
-          GENESIS_ERROR_CODES.FORBIDDEN,
+          GENESIS_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -258,9 +277,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'A workspace with this slug already exists in the organization',
-          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS,
+          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -270,7 +289,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log('[generate-org] Starting org-genesis generation...');
 
     // Load org-genesis modules dynamically at runtime
-    const { createGenesisEngine, migrateOrgGenesisResult } = await getOrgGenesisModules();
+    const { createGenesisEngine, migrateOrgGenesisResult } =
+      await getOrgGenesisModules();
 
     const genesisEngine = createGenesisEngine({
       verbose: input.verbose,
@@ -285,7 +305,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           size: input.teamSize as any,
           customContext: `Risk tolerance: ${input.riskTolerance}. Team size preference: ${input.teamSize}.`,
           dryRun: input.dryRun,
-        },
+        }
       );
 
       console.log('[generate-org] Genesis generation complete:', {
@@ -302,9 +322,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           GENESIS_ERROR_CODES.GENERATION_FAILED,
           {
             error: error instanceof Error ? error.message : 'Unknown error',
-          },
+          }
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -323,30 +343,38 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createdAt: new Date().toISOString(),
         schemaVersion: '1.0.0',
       },
-      orchestrators: genesisResult.orchestrators.map((orchestrator: OrchestratorApiResponse) => ({
-        id: orchestrator.id,
-        name: orchestrator.identity?.name || orchestrator.title || 'Unnamed Orchestrator',
-        title: orchestrator.coreDirective,
-        responsibilities: orchestrator.capabilities || [],
-        disciplines: orchestrator.disciplineIds || [],
-        persona: {
-          communicationStyle: 'professional',
-          decisionMakingStyle: 'data-driven',
-          background: orchestrator.identity?.persona || '',
-          traits: [],
-        },
-        kpis: [],
-      })),
-      disciplines: genesisResult.disciplines.map((discipline: DisciplineApiResponse) => ({
-        id: discipline.id,
-        name: discipline.name,
-        description: discipline.description,
-        orchestratorId: discipline.parentOrchestratorId || '',
-        slug: discipline.slug,
-        purpose: discipline.claudeMd?.objectives?.[0] || discipline.description,
-        activities: discipline.hooks?.map((h) => h.description) || [],
-        capabilities: discipline.agentIds || [],
-      })),
+      orchestrators: genesisResult.orchestrators.map(
+        (orchestrator: OrchestratorApiResponse) => ({
+          id: orchestrator.id,
+          name:
+            orchestrator.identity?.name ||
+            orchestrator.title ||
+            'Unnamed Orchestrator',
+          title: orchestrator.coreDirective,
+          responsibilities: orchestrator.capabilities || [],
+          disciplines: orchestrator.disciplineIds || [],
+          persona: {
+            communicationStyle: 'professional',
+            decisionMakingStyle: 'data-driven',
+            background: orchestrator.identity?.persona || '',
+            traits: [],
+          },
+          kpis: [],
+        })
+      ),
+      disciplines: genesisResult.disciplines.map(
+        (discipline: DisciplineApiResponse) => ({
+          id: discipline.id,
+          name: discipline.name,
+          description: discipline.description,
+          orchestratorId: discipline.parentOrchestratorId || '',
+          slug: discipline.slug,
+          purpose:
+            discipline.claudeMd?.objectives?.[0] || discipline.description,
+          activities: discipline.hooks?.map(h => h.description) || [],
+          capabilities: discipline.agentIds || [],
+        })
+      ),
       agents: genesisResult.agents.map((agent: AgentApiResponse) => ({
         id: agent.id,
         name: agent.name,
@@ -391,9 +419,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           GENESIS_ERROR_CODES.MIGRATION_FAILED,
           {
             error: error instanceof Error ? error.message : 'Unknown error',
-          },
+          }
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -403,7 +431,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log('[generate-org] Creating workspace and org structure...');
 
     const workspace = await prisma.$transaction(
-      async (tx) => {
+      async tx => {
         // 8.1. Create Workspace
         const newWorkspace = await tx.workspace.create({
           data: {
@@ -452,8 +480,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const orchestratorMap = new Map<string, string>();
         for (const orchestrator of neolithResult.orchestrators) {
           // Find discipline ID for this Orchestrator
-          const orchestratorDisciplines = neolithResult.disciplines.filter((d: DisciplineApiResponse) =>
-            orchestrator.disciplines.includes(d.id),
+          const orchestratorDisciplines = neolithResult.disciplines.filter(
+            (d: DisciplineApiResponse) =>
+              orchestrator.disciplines.includes(d.id)
           );
           const primaryDisciplineId = orchestratorDisciplines[0]
             ? disciplineMap.get(orchestratorDisciplines[0].id)
@@ -490,7 +519,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               discipline: orchestratorDisciplines[0]?.name || 'General',
               role: orchestrator.title,
               status: 'OFFLINE',
-              capabilities: orchestrator.responsibilities as Prisma.InputJsonValue,
+              capabilities:
+                orchestrator.responsibilities as Prisma.InputJsonValue,
             },
           });
 
@@ -509,7 +539,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // 8.5. Create Channels for Disciplines
         const channelMap = new Map<string, string>();
         for (const discipline of neolithResult.disciplines) {
-          const channelSlug = discipline.slug || discipline.name.toLowerCase().replace(/\s+/g, '-');
+          const channelSlug =
+            discipline.slug ||
+            discipline.name.toLowerCase().replace(/\s+/g, '-');
 
           const channel = await tx.channel.create({
             data: {
@@ -541,7 +573,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           // 8.6. Auto-assign Orchestrator to Discipline Channel
-          const orchestratorUserId = orchestratorMap.get(discipline.orchestratorId);
+          const orchestratorUserId = orchestratorMap.get(
+            discipline.orchestratorId
+          );
           if (orchestratorUserId) {
             await tx.channelMember.create({
               data: {
@@ -629,7 +663,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         maxWait: 30000, // 30 seconds
         timeout: 60000, // 60 seconds
-      },
+      }
     );
 
     // =========================================================================
@@ -663,19 +697,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message: 'Workspace created successfully with organizational structure',
         durationMs: duration,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/workspaces/generate-org] Error:', error);
 
     // Handle Prisma unique constraint errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
       return NextResponse.json(
         createGenesisErrorResponse(
           'A resource with this identifier already exists',
-          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS,
+          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -685,9 +722,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         GENESIS_ERROR_CODES.INTERNAL_ERROR,
         {
           error: error instanceof Error ? error.message : 'Unknown error',
-        },
+        }
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -716,8 +753,8 @@ function getColorForDiscipline(name: string): string {
   const key = name.toLowerCase();
   for (const [k, v] of Object.entries(colorMap)) {
     if (key.includes(k)) {
-return v;
-}
+      return v;
+    }
   }
 
   return '#6B7280'; // gray as default
@@ -743,8 +780,8 @@ function getIconForDiscipline(name: string): string {
   const key = name.toLowerCase();
   for (const [k, v] of Object.entries(iconMap)) {
     if (key.includes(k)) {
-return v;
-}
+      return v;
+    }
   }
 
   return 'folder'; // default icon

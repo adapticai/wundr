@@ -482,4 +482,5 @@ Time: 10 minutes                  Parallel execution
 
 ---
 
-**Note:** These diagrams provide a visual understanding of the git-worktree integration architecture. For detailed implementation, see `/docs/architecture/git-worktree-integration.md`.
+**Note:** These diagrams provide a visual understanding of the git-worktree integration
+architecture. For detailed implementation, see `/docs/architecture/git-worktree-integration.md`.

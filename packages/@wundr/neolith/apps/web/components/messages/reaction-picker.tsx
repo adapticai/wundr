@@ -37,31 +37,33 @@ export const ReactionPicker = memo(function ReactionPicker({
       onSelect(emoji);
       onClose();
     },
-    [onSelect, onClose],
+    [onSelect, onClose]
   );
 
-  const filteredCategories = EMOJI_CATEGORIES.map((category) => ({
+  const filteredCategories = EMOJI_CATEGORIES.map(category => ({
     ...category,
     emojis: searchQuery
-      ? category.emojis.filter((emoji) =>
-          emoji.toLowerCase().includes(searchQuery.toLowerCase()),
+      ? category.emojis.filter(emoji =>
+          emoji.toLowerCase().includes(searchQuery.toLowerCase())
         )
       : category.emojis,
-  })).filter((category) => category.emojis.length > 0);
+  })).filter(category => category.emojis.length > 0);
 
-  const currentCategory = filteredCategories.find((c) => c.id === selectedCategory);
+  const currentCategory = filteredCategories.find(
+    c => c.id === selectedCategory
+  );
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Quick reactions */}
-      <div className="border-b p-3">
-        <div className="flex flex-wrap gap-1">
-          {QUICK_REACTIONS.map((emoji) => (
+      <div className='border-b p-3'>
+        <div className='flex flex-wrap gap-1'>
+          {QUICK_REACTIONS.map(emoji => (
             <button
               key={emoji}
-              type="button"
+              type='button'
               onClick={() => handleEmojiClick(emoji)}
-              className="flex h-10 w-10 items-center justify-center rounded-md text-2xl transition-colors hover:bg-accent"
+              className='flex h-10 w-10 items-center justify-center rounded-md text-2xl transition-colors hover:bg-accent'
               title={`Add ${emoji} reaction`}
             >
               {emoji}
@@ -71,30 +73,30 @@ export const ReactionPicker = memo(function ReactionPicker({
       </div>
 
       {/* Search */}
-      <div className="border-b p-3">
+      <div className='border-b p-3'>
         <input
-          type="text"
-          placeholder="Search emojis..."
+          type='text'
+          placeholder='Search emojis...'
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+          onChange={e => setSearchQuery(e.target.value)}
+          className='w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20'
           autoFocus
         />
       </div>
 
       {/* Category tabs */}
       {!searchQuery && (
-        <div className="flex gap-1 overflow-x-auto border-b p-2 scrollbar-thin">
-          {EMOJI_CATEGORIES.slice(1).map((category) => (
+        <div className='flex gap-1 overflow-x-auto border-b p-2 scrollbar-thin'>
+          {EMOJI_CATEGORIES.slice(1).map(category => (
             <button
               key={category.id}
-              type="button"
+              type='button'
               onClick={() => setSelectedCategory(category.id)}
               className={cn(
                 'shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                 selectedCategory === category.id
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
               title={category.name}
             >
@@ -105,22 +107,22 @@ export const ReactionPicker = memo(function ReactionPicker({
       )}
 
       {/* Emoji grid */}
-      <div className="flex-1 overflow-y-auto p-3 min-h-0">
+      <div className='flex-1 overflow-y-auto p-3 min-h-0'>
         {searchQuery ? (
           filteredCategories.length > 0 ? (
-            <div className="space-y-4">
-              {filteredCategories.map((category) => (
+            <div className='space-y-4'>
+              {filteredCategories.map(category => (
                 <div key={category.id}>
-                  <h4 className="mb-2 text-xs font-semibold text-muted-foreground">
+                  <h4 className='mb-2 text-xs font-semibold text-muted-foreground'>
                     {category.name}
                   </h4>
-                  <div className="grid grid-cols-8 gap-1">
-                    {category.emojis.map((emoji) => (
+                  <div className='grid grid-cols-8 gap-1'>
+                    {category.emojis.map(emoji => (
                       <button
                         key={emoji}
-                        type="button"
+                        type='button'
                         onClick={() => handleEmojiClick(emoji)}
-                        className="flex h-10 w-10 items-center justify-center rounded-md text-2xl transition-colors hover:bg-accent"
+                        className='flex h-10 w-10 items-center justify-center rounded-md text-2xl transition-colors hover:bg-accent'
                         title={emoji}
                       >
                         {emoji}
@@ -131,18 +133,18 @@ export const ReactionPicker = memo(function ReactionPicker({
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-sm text-muted-foreground">
+            <div className='py-8 text-center text-sm text-muted-foreground'>
               No emojis found
             </div>
           )
         ) : currentCategory ? (
-          <div className="grid grid-cols-8 gap-1">
-            {currentCategory.emojis.map((emoji) => (
+          <div className='grid grid-cols-8 gap-1'>
+            {currentCategory.emojis.map(emoji => (
               <button
                 key={emoji}
-                type="button"
+                type='button'
                 onClick={() => handleEmojiClick(emoji)}
-                className="flex h-10 w-10 items-center justify-center rounded-md text-2xl transition-colors hover:bg-accent"
+                className='flex h-10 w-10 items-center justify-center rounded-md text-2xl transition-colors hover:bg-accent'
                 title={emoji}
               >
                 {emoji}
@@ -185,26 +187,26 @@ export const ReactionPickerTrigger = memo(function ReactionPickerTrigger({
       onSelect(emoji);
       setIsOpen(false);
     },
-    [onSelect],
+    [onSelect]
   );
 
   return (
     <div className={className}>
       <button
-        type="button"
+        type='button'
         onClick={() => setIsOpen(true)}
-        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-        aria-label="Add reaction"
+        className='rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground'
+        aria-label='Add reaction'
       >
-        {children || <Smile className="h-4 w-4" />}
+        {children || <Smile className='h-4 w-4' />}
       </button>
 
       <ResponsiveModal open={isOpen} onOpenChange={setIsOpen}>
-        <ResponsiveModalContent className="max-w-md p-0 sm:max-h-[80vh] max-h-[70vh] flex flex-col">
-          <ResponsiveModalHeader className="p-4 pb-0">
+        <ResponsiveModalContent className='max-w-md p-0 sm:max-h-[80vh] max-h-[70vh] flex flex-col'>
+          <ResponsiveModalHeader className='p-4 pb-0'>
             <ResponsiveModalTitle>Add a reaction</ResponsiveModalTitle>
           </ResponsiveModalHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className='flex-1 min-h-0 overflow-hidden'>
             <ReactionPicker
               onSelect={handleSelect}
               onClose={() => setIsOpen(false)}

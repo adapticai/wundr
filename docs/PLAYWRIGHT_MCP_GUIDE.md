@@ -3,6 +3,7 @@
 ## Installation & Setup
 
 ### Current Configuration
+
 - **Package**: `@executeautomation/playwright-mcp-server`
 - **Status**: Connected and Ready
 - **Server Type**: stdio
@@ -18,6 +19,7 @@ claude mcp list
 ```
 
 ### Configuration Location
+
 - Config file: `/Users/iroselli/.claude.json`
 - Server command: `npx @executeautomation/playwright-mcp-server`
 
@@ -28,6 +30,7 @@ claude mcp list
 The Playwright MCP server provides browser automation tools:
 
 ### Navigation Tools
+
 - `playwright_navigate` - Navigate to URL
 - `playwright_goto` - Go to URL with options
 - `playwright_back` - Navigate back
@@ -35,6 +38,7 @@ The Playwright MCP server provides browser automation tools:
 - `playwright_reload` - Reload page
 
 ### Interaction Tools
+
 - `playwright_click` - Click element by selector
 - `playwright_fill` - Fill form input
 - `playwright_type` - Type text
@@ -44,6 +48,7 @@ The Playwright MCP server provides browser automation tools:
 - `playwright_press` - Press keyboard key
 
 ### Information Tools
+
 - `playwright_screenshot` - Capture screenshot
 - `playwright_get_text` - Get element text
 - `playwright_get_html` - Get element HTML
@@ -53,12 +58,14 @@ The Playwright MCP server provides browser automation tools:
 - `playwright_query_selector_all` - Query multiple elements
 
 ### Wait Tools
+
 - `playwright_wait_for_selector` - Wait for element
 - `playwright_wait_for_navigation` - Wait for navigation
 - `playwright_wait_for_load_state` - Wait for load state
 - `playwright_wait_for_timeout` - Wait for duration
 
 ### Session Management
+
 - `playwright_create_context` - Create browser context
 - `playwright_close_context` - Close context
 - `playwright_new_page` - Create new page
@@ -74,12 +81,14 @@ The Playwright MCP server provides browser automation tools:
 ### Available Routes (23 Pages + Index)
 
 #### Authentication Routes
+
 - `/` - Home page (redirects to /login)
 - `/login` - User login
 - `/register` - User registration
 - `/error` - Error page
 
 #### Workspace Routes (Dynamic ID Required)
+
 - `/[workspaceId]/dashboard` - Workspace dashboard
 - `/[workspaceId]/agents` - AI agents management
 - `/[workspaceId]/workflows` - Workflow management
@@ -92,6 +101,7 @@ The Playwright MCP server provides browser automation tools:
 - `/[workspaceId]/analytics` - Analytics dashboard
 
 #### Admin Routes
+
 - `/[workspaceId]/admin` - Admin overview
 - `/[workspaceId]/admin/members` - Member management
 - `/[workspaceId]/admin/roles` - Role management
@@ -101,6 +111,7 @@ The Playwright MCP server provides browser automation tools:
 - `/[workspaceId]/admin/vp-health` - VP health monitoring
 
 #### User Settings Routes
+
 - `/[workspaceId]/settings/profile` - Profile settings
 - `/[workspaceId]/settings/integrations` - Integration settings
 - `/[workspaceId]/user-settings/notifications` - Notification preferences
@@ -147,6 +158,7 @@ describe('Playwright MCP Browser Automation', () => {
 ## Common Workflows
 
 ### Workflow 1: Page Navigation
+
 ```
 1. playwright_navigate("http://localhost:3000/login")
 2. playwright_wait_for_selector(".login-form")
@@ -155,6 +167,7 @@ describe('Playwright MCP Browser Automation', () => {
 ```
 
 ### Workflow 2: Form Submission
+
 ```
 1. playwright_navigate("http://localhost:3000/login")
 2. playwright_fill("input[name='email']", "test@example.com")
@@ -165,6 +178,7 @@ describe('Playwright MCP Browser Automation', () => {
 ```
 
 ### Workflow 3: UI Element Interaction
+
 ```
 1. playwright_navigate("http://localhost:3000/[workspaceId]/dashboard")
 2. playwright_click("button.menu-trigger")
@@ -174,6 +188,7 @@ describe('Playwright MCP Browser Automation', () => {
 ```
 
 ### Workflow 4: Data Extraction
+
 ```
 1. playwright_navigate("http://localhost:3000/[workspaceId]/agents")
 2. playwright_query_selector_all(".agent-card")
@@ -188,20 +203,24 @@ describe('Playwright MCP Browser Automation', () => {
 ### Common Issues & Solutions
 
 #### Issue: Navigation Timeout
-**Cause**: Page takes too long to load
-**Solution**: Use `playwright_wait_for_load_state("networkidle")`
+
+**Cause**: Page takes too long to load **Solution**: Use
+`playwright_wait_for_load_state("networkidle")`
 
 #### Issue: Element Not Found
-**Cause**: Selector incorrect or element not rendered
-**Solution**: Use `playwright_query_selector()` first to verify element exists
+
+**Cause**: Selector incorrect or element not rendered **Solution**: Use
+`playwright_query_selector()` first to verify element exists
 
 #### Issue: Context Lost
-**Cause**: Browser context closed unexpectedly
-**Solution**: Use `playwright_create_context()` to initialize fresh context
+
+**Cause**: Browser context closed unexpectedly **Solution**: Use `playwright_create_context()` to
+initialize fresh context
 
 #### Issue: Cookie/Session Issues
-**Cause**: Missing authentication cookies
-**Solution**: Use `playwright_add_cookies()` to set cookies before navigation
+
+**Cause**: Missing authentication cookies **Solution**: Use `playwright_add_cookies()` to set
+cookies before navigation
 
 ---
 
@@ -218,6 +237,7 @@ describe('Playwright MCP Browser Automation', () => {
 ## Integration with CI/CD
 
 ### GitHub Actions Example
+
 ```yaml
 name: Playwright MCP Tests
 
@@ -241,18 +261,22 @@ jobs:
 ## Troubleshooting
 
 ### Verify Installation
+
 ```bash
 claude mcp list | grep playwright
 # Should show: playwright: npx @executeautomation/playwright-mcp-server - ✓ Connected
 ```
 
 ### Check Server Health
+
 ```bash
 npx @executeautomation/playwright-mcp-server --version
 ```
 
 ### Debug Mode
+
 Enable verbose logging:
+
 ```bash
 DEBUG=playwright:* npm run test
 ```
@@ -282,6 +306,7 @@ DEBUG=playwright:* npm run test
 ## Support & Contributing
 
 For issues or feature requests:
+
 1. Check this guide first
 2. Review Playwright documentation
 3. Open an issue with reproduction steps
@@ -289,6 +314,5 @@ For issues or feature requests:
 
 ---
 
-**Last Updated**: 2025-11-26
-**Playwright MCP Status**: Connected and Ready
-**Neolith Dev Server**: Running on http://localhost:3000
+**Last Updated**: 2025-11-26 **Playwright MCP Status**: Connected and Ready **Neolith Dev Server**:
+Running on http://localhost:3000

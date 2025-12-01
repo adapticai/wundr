@@ -59,7 +59,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -68,9 +68,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -81,9 +81,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid OrchestratorID format',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -97,9 +97,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -110,9 +110,9 @@ export async function POST(
         createCoordinationErrorResponse(
           'Validation failed',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -129,13 +129,14 @@ export async function POST(
       fromVpId,
       input.toOrchestratorId,
       input.taskId,
-      handoffContext,
+      handoffContext
     );
 
     if (!result.success) {
       // Determine appropriate status code based on error
       let statusCode = 500;
-      let errorCode: typeof ORCHESTRATOR_COORDINATION_ERROR_CODES[keyof typeof ORCHESTRATOR_COORDINATION_ERROR_CODES] = ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR;
+      let errorCode: (typeof ORCHESTRATOR_COORDINATION_ERROR_CODES)[keyof typeof ORCHESTRATOR_COORDINATION_ERROR_CODES] =
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR;
 
       if (result.error?.includes('not found')) {
         statusCode = 404;
@@ -145,15 +146,16 @@ export async function POST(
         errorCode = ORCHESTRATOR_COORDINATION_ERROR_CODES.INVALID_OWNERSHIP;
       } else if (result.error?.includes('organization')) {
         statusCode = 400;
-        errorCode = ORCHESTRATOR_COORDINATION_ERROR_CODES.DIFFERENT_ORGANIZATION;
+        errorCode =
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.DIFFERENT_ORGANIZATION;
       }
 
       return NextResponse.json(
         createCoordinationErrorResponse(
           result.error || 'Handoff failed',
-          errorCode,
+          errorCode
         ),
-        { status: statusCode },
+        { status: statusCode }
       );
     }
 
@@ -166,9 +168,9 @@ export async function POST(
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

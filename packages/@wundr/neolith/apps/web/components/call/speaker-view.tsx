@@ -41,7 +41,7 @@ export function SpeakerView({
   // Get unique participants (filter duplicates by sid)
   const participants = useMemo(() => {
     const participantMap = new Map<string, TrackReferenceOrPlaceholder>();
-    tracks.forEach((track) => {
+    tracks.forEach(track => {
       if (track.participant) {
         participantMap.set(track.participant.sid, track);
       }
@@ -55,7 +55,7 @@ export function SpeakerView({
       return participants;
     }
     return participants.filter(
-      (p) => p.participant?.sid !== featuredTrack.participant?.sid,
+      p => p.participant?.sid !== featuredTrack.participant?.sid
     );
   }, [participants, featuredTrack]);
 
@@ -64,10 +64,12 @@ export function SpeakerView({
 
   if (participants.length === 0) {
     return (
-      <div className={clsx('flex items-center justify-center h-full', className)}>
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">No participants yet</p>
-          <p className="text-sm mt-1">Waiting for others to join...</p>
+      <div
+        className={clsx('flex items-center justify-center h-full', className)}
+      >
+        <div className='text-center text-muted-foreground'>
+          <p className='text-lg font-medium'>No participants yet</p>
+          <p className='text-sm mt-1'>Waiting for others to join...</p>
         </div>
       </div>
     );
@@ -75,23 +77,20 @@ export function SpeakerView({
 
   return (
     <div
-      className={clsx(
-        'flex flex-col lg:flex-row h-full gap-2 p-4',
-        className,
-      )}
-      role="region"
-      aria-label="Speaker view"
+      className={clsx('flex flex-col lg:flex-row h-full gap-2 p-4', className)}
+      role='region'
+      aria-label='Speaker view'
     >
       {/* Main featured view */}
-      <div className="flex-1 min-h-0 min-w-0">
+      <div className='flex-1 min-h-0 min-w-0'>
         {displayedFeatured?.participant && (
           <ParticipantTile
             participant={displayedFeatured.participant}
             isLocal={displayedFeatured.participant.isLocal}
             isPinned={displayedFeatured.participant.sid === pinnedParticipantId}
             onPin={onPin}
-            size="large"
-            className="w-full h-full group"
+            size='large'
+            className='w-full h-full group'
           />
         )}
       </div>
@@ -105,24 +104,24 @@ export function SpeakerView({
             'w-full h-32',
             'overflow-x-auto lg:overflow-x-visible',
             'overflow-y-visible lg:overflow-y-auto',
-            'flex-shrink-0',
+            'flex-shrink-0'
           )}
-          role="list"
-          aria-label="Other participants"
+          role='list'
+          aria-label='Other participants'
         >
-          {otherParticipants.map((trackRef) => (
+          {otherParticipants.map(trackRef => (
             <div
               key={trackRef.participant?.sid || 'unknown'}
-              className="flex-shrink-0 lg:flex-shrink"
-              role="listitem"
+              className='flex-shrink-0 lg:flex-shrink'
+              role='listitem'
             >
               <ParticipantTile
                 participant={trackRef.participant!}
                 isLocal={trackRef.participant?.isLocal}
                 isPinned={trackRef.participant?.sid === pinnedParticipantId}
                 onPin={onPin}
-                size="small"
-                className="group w-48 lg:w-full h-full lg:h-36"
+                size='small'
+                className='group w-48 lg:w-full h-full lg:h-36'
               />
             </div>
           ))}

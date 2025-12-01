@@ -11,13 +11,14 @@ module.exports = {
         docs: {
           description: 'Disallow wrapper pattern in class names',
           category: 'Best Practices',
-          recommended: true
+          recommended: true,
         },
         fixable: null,
         schema: [],
         messages: {
-          wrapperPattern: 'Class name "{{name}}" suggests a wrapper pattern. Consider extending the base class or using composition instead.'
-        }
+          wrapperPattern:
+            'Class name "{{name}}" suggests a wrapper pattern. Consider extending the base class or using composition instead.',
+        },
       },
       create(context) {
         const wrapperPatterns = [
@@ -26,7 +27,7 @@ module.exports = {
           /Wrapper$/,
           /Integration$/,
           /Adapter$/,
-          /Proxy$/
+          /Proxy$/,
         ];
 
         return {
@@ -40,14 +41,14 @@ module.exports = {
                 context.report({
                   node: node.id,
                   messageId: 'wrapperPattern',
-                  data: { name: className }
+                  data: { name: className },
                 });
                 break;
               }
             }
-          }
+          },
         };
-      }
+      },
     },
 
     /**
@@ -57,16 +58,17 @@ module.exports = {
       meta: {
         type: 'problem',
         docs: {
-          description: 'Enforce using AppError instead of generic Error or string throws',
+          description:
+            'Enforce using AppError instead of generic Error or string throws',
           category: 'Error Handling',
-          recommended: true
+          recommended: true,
         },
         fixable: 'code',
         schema: [],
         messages: {
           useAppError: 'Use AppError instead of {{type}}',
-          noStringThrow: 'Do not throw string literals. Use AppError instead.'
-        }
+          noStringThrow: 'Do not throw string literals. Use AppError instead.',
+        },
       },
       create(context) {
         return {
@@ -74,7 +76,10 @@ module.exports = {
             const { argument } = node;
 
             // Check for string literals
-            if (argument.type === 'Literal' && typeof argument.value === 'string') {
+            if (
+              argument.type === 'Literal' &&
+              typeof argument.value === 'string'
+            ) {
               context.report({
                 node,
                 messageId: 'noStringThrow',
@@ -83,7 +88,7 @@ module.exports = {
                     node,
                     `throw new AppError('${argument.value}', 'GENERAL_ERROR')`
                   );
-                }
+                },
               });
             }
 
@@ -105,12 +110,12 @@ module.exports = {
                       `new AppError(${context.getSourceCode().getText(errorMessage)}, 'GENERAL_ERROR')`
                     );
                   }
-                }
+                },
               });
             }
-          }
+          },
         };
-      }
+      },
     },
 
     /**
@@ -122,13 +127,14 @@ module.exports = {
         docs: {
           description: 'Disallow duplicate values in enum declarations',
           category: 'Possible Errors',
-          recommended: true
+          recommended: true,
         },
         fixable: null,
         schema: [],
         messages: {
-          duplicateValue: 'Duplicate enum value "{{value}}" already used in {{previousMember}}'
-        }
+          duplicateValue:
+            'Duplicate enum value "{{value}}" already used in {{previousMember}}',
+        },
       },
       create(context) {
         return {
@@ -144,7 +150,10 @@ module.exports = {
                   value = String(member.initializer.value);
                 }
                 // Handle template literals
-                else if (member.initializer.type === 'TemplateLiteral' && member.initializer.expressions.length === 0) {
+                else if (
+                  member.initializer.type === 'TemplateLiteral' &&
+                  member.initializer.expressions.length === 0
+                ) {
                   value = member.initializer.quasis[0].value.raw;
                 }
 
@@ -155,8 +164,8 @@ module.exports = {
                       messageId: 'duplicateValue',
                       data: {
                         value,
-                        previousMember: valueMap.get(value)
-                      }
+                        previousMember: valueMap.get(value),
+                      },
                     });
                   } else {
                     valueMap.set(value, member.id.name);
@@ -164,9 +173,9 @@ module.exports = {
                 }
               }
             });
-          }
+          },
         };
-      }
+      },
     },
 
     /**
@@ -178,13 +187,13 @@ module.exports = {
         docs: {
           description: 'Enforce that service classes extend BaseService',
           category: 'Architecture',
-          recommended: true
+          recommended: true,
         },
         fixable: null,
         schema: [],
         messages: {
-          mustExtendBase: 'Service class "{{name}}" must extend BaseService'
-        }
+          mustExtendBase: 'Service class "{{name}}" must extend BaseService',
+        },
       },
       create(context) {
         return {
@@ -200,13 +209,13 @@ module.exports = {
                 context.report({
                   node: node.id,
                   messageId: 'mustExtendBase',
-                  data: { name: className }
+                  data: { name: className },
                 });
               }
             }
-          }
+          },
         };
-      }
+      },
     },
 
     /**
@@ -218,41 +227,65 @@ module.exports = {
         docs: {
           description: 'Enforce consistent naming for async methods',
           category: 'Stylistic Issues',
-          recommended: true
+          recommended: true,
         },
         fixable: null,
         schema: [],
         messages: {
-          verbFirst: 'Async method "{{name}}" should start with a verb (get, set, fetch, save, etc.)'
-        }
+          verbFirst:
+            'Async method "{{name}}" should start with a verb (get, set, fetch, save, etc.)',
+        },
       },
       create(context) {
         const validPrefixes = [
-          'get', 'set', 'fetch', 'save', 'load', 'create', 'update', 'delete', 'remove',
-          'process', 'handle', 'execute', 'run', 'start', 'stop', 'init', 'cleanup',
-          'validate', 'check', 'verify', 'send', 'receive', 'subscribe', 'unsubscribe'
+          'get',
+          'set',
+          'fetch',
+          'save',
+          'load',
+          'create',
+          'update',
+          'delete',
+          'remove',
+          'process',
+          'handle',
+          'execute',
+          'run',
+          'start',
+          'stop',
+          'init',
+          'cleanup',
+          'validate',
+          'check',
+          'verify',
+          'send',
+          'receive',
+          'subscribe',
+          'unsubscribe',
         ];
 
         return {
           MethodDefinition(node) {
             if (node.value.async && node.key.type === 'Identifier') {
               const methodName = node.key.name;
-              const hasValidPrefix = validPrefixes.some(prefix =>
-                methodName.startsWith(prefix) ||
-                methodName.startsWith(`_${prefix}`) // private methods
+              const hasValidPrefix = validPrefixes.some(
+                prefix =>
+                  methodName.startsWith(prefix) ||
+                  methodName.startsWith(`_${prefix}`) // private methods
               );
 
-              if (!hasValidPrefix && !methodName.startsWith('on')) { // Allow onXxx for event handlers
+              if (!hasValidPrefix && !methodName.startsWith('on')) {
+                // Allow onXxx for event handlers
                 context.report({
                   node: node.key,
                   messageId: 'verbFirst',
-                  data: { name: methodName }
+                  data: { name: methodName },
                 });
               }
             }
-          }
+          },
         };
-      }
+      },
     },
 
     /**
@@ -264,28 +297,45 @@ module.exports = {
         docs: {
           description: 'Prevent direct database access in service layer',
           category: 'Architecture',
-          recommended: true
+          recommended: true,
         },
         fixable: null,
         schema: [],
         messages: {
-          useRepository: 'Direct database access detected. Use a repository instead.'
-        }
+          useRepository:
+            'Direct database access detected. Use a repository instead.',
+        },
       },
       create(context) {
-        const dbKeywords = ['query', 'insert', 'update', 'delete', 'select', 'raw', 'knex', 'sequelize', 'mongoose'];
+        const dbKeywords = [
+          'query',
+          'insert',
+          'update',
+          'delete',
+          'select',
+          'raw',
+          'knex',
+          'sequelize',
+          'mongoose',
+        ];
 
         return {
           MemberExpression(node) {
             const filename = context.getFilename();
 
             // Only check service files
-            if (!filename.includes('service') && !filename.includes('Service')) {
+            if (
+              !filename.includes('service') &&
+              !filename.includes('Service')
+            ) {
               return;
             }
 
             // Skip repository files
-            if (filename.includes('repository') || filename.includes('Repository')) {
+            if (
+              filename.includes('repository') ||
+              filename.includes('Repository')
+            ) {
               return;
             }
 
@@ -296,18 +346,22 @@ module.exports = {
                 // Check if it's a database object
                 if (node.object.type === 'Identifier') {
                   const objectName = node.object.name.toLowerCase();
-                  if (objectName === 'db' || objectName === 'database' || objectName === 'connection') {
+                  if (
+                    objectName === 'db' ||
+                    objectName === 'database' ||
+                    objectName === 'connection'
+                  ) {
                     context.report({
                       node,
-                      messageId: 'useRepository'
+                      messageId: 'useRepository',
                     });
                   }
                 }
               }
             }
-          }
+          },
         };
-      }
+      },
     },
 
     /**
@@ -319,30 +373,33 @@ module.exports = {
         docs: {
           description: 'Enforce maximum number of lines in a file',
           category: 'Stylistic Issues',
-          recommended: true
+          recommended: true,
         },
         fixable: null,
-        schema: [{
-          type: 'object',
-          properties: {
-            max: {
-              type: 'number',
-              default: 300
+        schema: [
+          {
+            type: 'object',
+            properties: {
+              max: {
+                type: 'number',
+                default: 300,
+              },
+              skipBlankLines: {
+                type: 'boolean',
+                default: true,
+              },
+              skipComments: {
+                type: 'boolean',
+                default: true,
+              },
             },
-            skipBlankLines: {
-              type: 'boolean',
-              default: true
-            },
-            skipComments: {
-              type: 'boolean',
-              default: true
-            }
+            additionalProperties: false,
           },
-          additionalProperties: false
-        }],
+        ],
         messages: {
-          tooManyLines: 'File has {{actual}} lines, maximum allowed is {{max}}. Consider splitting into smaller modules.'
-        }
+          tooManyLines:
+            'File has {{actual}} lines, maximum allowed is {{max}}. Consider splitting into smaller modules.',
+        },
       },
       create(context) {
         const options = context.options[0] || {};
@@ -363,9 +420,11 @@ module.exports = {
               // Simple comment detection (not perfect but good enough)
               lines = lines.filter(line => {
                 const trimmed = line.trim();
-                return !trimmed.startsWith('//') &&
+                return (
+                  !trimmed.startsWith('//') &&
                   !trimmed.startsWith('/*') &&
-                  !trimmed.startsWith('*');
+                  !trimmed.startsWith('*')
+                );
               });
             }
 
@@ -375,15 +434,15 @@ module.exports = {
                 messageId: 'tooManyLines',
                 data: {
                   actual: lines.length,
-                  max: maxLines
-                }
+                  max: maxLines,
+                },
               });
             }
-          }
+          },
         };
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 // Export a configuration that uses these rules
@@ -397,7 +456,7 @@ module.exports.configs = {
       '@company/service-must-extend-base': 'error',
       '@company/async-method-naming': 'warn',
       '@company/no-direct-db-access': 'error',
-      '@company/max-file-lines': ['warn', { max: 300 }]
-    }
-  }
+      '@company/max-file-lines': ['warn', { max: 300 }],
+    },
+  },
 };

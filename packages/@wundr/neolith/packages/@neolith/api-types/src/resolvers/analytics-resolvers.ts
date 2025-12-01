@@ -70,7 +70,8 @@ export const AnalyticsPeriod = {
   CUSTOM: 'custom',
 } as const;
 
-export type AnalyticsPeriodValue = (typeof AnalyticsPeriod)[keyof typeof AnalyticsPeriod];
+export type AnalyticsPeriodValue =
+  (typeof AnalyticsPeriod)[keyof typeof AnalyticsPeriod];
 
 /**
  * Trend direction enum values
@@ -81,7 +82,8 @@ export const TrendDirection = {
   STABLE: 'stable',
 } as const;
 
-export type TrendDirectionValue = (typeof TrendDirection)[keyof typeof TrendDirection];
+export type TrendDirectionValue =
+  (typeof TrendDirection)[keyof typeof TrendDirection];
 
 /**
  * Highlight type enum values
@@ -92,7 +94,8 @@ export const HighlightType = {
   NEUTRAL: 'neutral',
 } as const;
 
-export type HighlightTypeValue = (typeof HighlightType)[keyof typeof HighlightType];
+export type HighlightTypeValue =
+  (typeof HighlightType)[keyof typeof HighlightType];
 
 /**
  * Recommendation priority enum values
@@ -103,7 +106,8 @@ export const RecommendationPriority = {
   LOW: 'low',
 } as const;
 
-export type RecommendationPriorityValue = (typeof RecommendationPriority)[keyof typeof RecommendationPriority];
+export type RecommendationPriorityValue =
+  (typeof RecommendationPriority)[keyof typeof RecommendationPriority];
 
 // =============================================================================
 // INTERNAL TYPES
@@ -573,7 +577,11 @@ export const analyticsTypeDefs = `#graphql
 /**
  * Calculate date range based on period
  */
-function calculateDateRange(period: AnalyticsPeriodValue, startDate?: Date, endDate?: Date): DateRange {
+function calculateDateRange(
+  period: AnalyticsPeriodValue,
+  startDate?: Date,
+  endDate?: Date
+): DateRange {
   const end = endDate ?? new Date();
   let start: Date;
 
@@ -612,7 +620,10 @@ function calculateDateRange(period: AnalyticsPeriodValue, startDate?: Date, endD
 /**
  * Calculate trend direction
  */
-function calculateTrend(current: number, previous: number): TrendDirectionValue {
+function calculateTrend(
+  current: number,
+  previous: number
+): TrendDirectionValue {
   const threshold = 0.01; // 1% threshold for stable
   const changePercent = previous > 0 ? (current - previous) / previous : 0;
 
@@ -712,7 +723,9 @@ export const analyticsQueries = {
    */
   analyticsMetrics: async (
     _parent: unknown,
-    { input }: {
+    {
+      input,
+    }: {
       input: {
         workspaceId: string;
         period: AnalyticsPeriodValue;
@@ -741,7 +754,11 @@ export const analyticsQueries = {
     }
 
     // Fallback: return default metrics structure
-    const dateRange = calculateDateRange(input.period, input.startDate, input.endDate);
+    const dateRange = calculateDateRange(
+      input.period,
+      input.startDate,
+      input.endDate
+    );
     return createDefaultMetrics(input.workspaceId, input.period, dateRange);
   },
 
@@ -750,7 +767,9 @@ export const analyticsQueries = {
    */
   analyticsTrend: async (
     _parent: unknown,
-    { input }: {
+    {
+      input,
+    }: {
       input: {
         workspaceId: string;
         metric: string;
@@ -791,7 +810,10 @@ export const analyticsQueries = {
    */
   analyticsInsights: async (
     _parent: unknown,
-    { workspaceId, period }: {
+    {
+      workspaceId,
+      period,
+    }: {
       workspaceId: string;
       period: AnalyticsPeriodValue;
     },
@@ -803,7 +825,10 @@ export const analyticsQueries = {
 
     // If analytics service is available, use it
     if (context.services.analytics) {
-      return context.services.analytics.generateInsightReport(workspaceId, period);
+      return context.services.analytics.generateInsightReport(
+        workspaceId,
+        period
+      );
     }
 
     // Fallback: return empty report
@@ -831,7 +856,8 @@ export const analyticsQueries = {
 
     // If analytics service is available, use it
     if (context.services.analytics) {
-      const stats = await context.services.analytics.getRealTimeStats(workspaceId);
+      const stats =
+        await context.services.analytics.getRealTimeStats(workspaceId);
       return {
         stats,
         timestamp: new Date(),
@@ -864,7 +890,12 @@ export const analyticsMutations = {
    */
   trackAnalyticsEvent: async (
     _parent: unknown,
-    { workspaceId, eventType, eventData, sessionId }: {
+    {
+      workspaceId,
+      eventType,
+      eventData,
+      sessionId,
+    }: {
       workspaceId: string;
       eventType: string;
       eventData?: Record<string, unknown>;
@@ -920,7 +951,8 @@ export const analyticsSubscriptions = {
         let stats: Record<string, unknown>;
 
         if (context.services.analytics) {
-          stats = await context.services.analytics.getRealTimeStats(workspaceId);
+          stats =
+            await context.services.analytics.getRealTimeStats(workspaceId);
         } else {
           stats = {
             activeUsers: 0,
@@ -1045,18 +1077,28 @@ export function createAnalyticsResolvers(context: AnalyticsResolverContext) {
 
   return {
     Query: {
-      analyticsMetrics: (_: unknown, args: Parameters<typeof analyticsQueries.analyticsMetrics>[1]) =>
-        analyticsQueries.analyticsMetrics(_, args, baseContext),
-      analyticsTrend: (_: unknown, args: Parameters<typeof analyticsQueries.analyticsTrend>[1]) =>
-        analyticsQueries.analyticsTrend(_, args, baseContext),
-      analyticsInsights: (_: unknown, args: Parameters<typeof analyticsQueries.analyticsInsights>[1]) =>
-        analyticsQueries.analyticsInsights(_, args, baseContext),
-      analyticsRealTime: (_: unknown, args: Parameters<typeof analyticsQueries.analyticsRealTime>[1]) =>
-        analyticsQueries.analyticsRealTime(_, args, baseContext),
+      analyticsMetrics: (
+        _: unknown,
+        args: Parameters<typeof analyticsQueries.analyticsMetrics>[1]
+      ) => analyticsQueries.analyticsMetrics(_, args, baseContext),
+      analyticsTrend: (
+        _: unknown,
+        args: Parameters<typeof analyticsQueries.analyticsTrend>[1]
+      ) => analyticsQueries.analyticsTrend(_, args, baseContext),
+      analyticsInsights: (
+        _: unknown,
+        args: Parameters<typeof analyticsQueries.analyticsInsights>[1]
+      ) => analyticsQueries.analyticsInsights(_, args, baseContext),
+      analyticsRealTime: (
+        _: unknown,
+        args: Parameters<typeof analyticsQueries.analyticsRealTime>[1]
+      ) => analyticsQueries.analyticsRealTime(_, args, baseContext),
     },
     Mutation: {
-      trackAnalyticsEvent: (_: unknown, args: Parameters<typeof analyticsMutations.trackAnalyticsEvent>[1]) =>
-        analyticsMutations.trackAnalyticsEvent(_, args, baseContext),
+      trackAnalyticsEvent: (
+        _: unknown,
+        args: Parameters<typeof analyticsMutations.trackAnalyticsEvent>[1]
+      ) => analyticsMutations.trackAnalyticsEvent(_, args, baseContext),
     },
     Subscription: analyticsSubscriptions,
     UsageMetrics: UsageMetricsFieldResolvers,

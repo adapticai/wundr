@@ -2,7 +2,8 @@
 
 ## Overview
 
-This guide demonstrates how to use the five integrated MCP tools with Claude Flow to create powerful automated workflows.
+This guide demonstrates how to use the five integrated MCP tools with Claude Flow to create powerful
+automated workflows.
 
 ## Quick Start
 
@@ -41,14 +42,11 @@ nano ~/.claude/.env
 import { MCPWorkflowEngine, WorkflowPatterns } from './src/orchestration/mcp-workflow-engine';
 
 // Create research workflow
-const researchWorkflow = WorkflowPatterns.createResearchPipeline(
-  "AI in Healthcare 2024", 
-  [
-    "https://www.nature.com/articles/ai-healthcare",
-    "https://www.nejm.org/ai-medicine",
-    "https://www.who.int/digital-health"
-  ]
-);
+const researchWorkflow = WorkflowPatterns.createResearchPipeline('AI in Healthcare 2024', [
+  'https://www.nature.com/articles/ai-healthcare',
+  'https://www.nejm.org/ai-medicine',
+  'https://www.who.int/digital-health',
+]);
 
 // Execute workflow
 const engine = new MCPWorkflowEngine(mcpTools, config);
@@ -61,7 +59,7 @@ console.log('Research completed:', execution.results);
 
 ```typescript
 const testSuite = {
-  name: "E-commerce Checkout Flow",
+  name: 'E-commerce Checkout Flow',
   playwrightScript: {
     steps: [
       { action: 'navigate', url: 'https://example-shop.com' },
@@ -69,8 +67,8 @@ const testSuite = {
       { action: 'click', selector: '.add-to-cart' },
       { action: 'navigate', url: 'https://example-shop.com/checkout' },
       { action: 'type', selector: '#email', text: 'test@example.com' },
-      { action: 'click', selector: '.checkout-button' }
-    ]
+      { action: 'click', selector: '.checkout-button' },
+    ],
   },
   validationScript: `
     // Validate checkout completion
@@ -79,7 +77,7 @@ const testSuite = {
       success: !!orderConfirmation,
       orderNumber: orderConfirmation?.textContent.match(/Order #(\\d+)/)?.[1]
     };
-  `
+  `,
 };
 
 const testWorkflow = WorkflowPatterns.createTestingWorkflow(testSuite);
@@ -94,7 +92,7 @@ const monitoringWorkflow = WorkflowPatterns.createMonitoringWorkflow(
   {
     contentChanges: true,
     responseTimeThreshold: 2000,
-    statusCodeCheck: [200, 201, 202]
+    statusCodeCheck: [200, 201, 202],
   }
 );
 
@@ -128,9 +126,9 @@ const scrapedData = await researcher.executeTask({
   parameters: {
     topic: 'Artificial Intelligence 2024',
     sources: ['https://arxiv.org', 'https://ai.google'],
-    depth: 2
+    depth: 2,
   },
-  priority: 'high'
+  priority: 'high',
 });
 
 // Store results
@@ -140,9 +138,9 @@ await contextManager.executeTask({
   description: 'Store research data',
   parameters: {
     data: scrapedData.data,
-    metadata: { category: 'research', topic: 'AI' }
+    metadata: { category: 'research', topic: 'AI' },
   },
-  priority: 'medium'
+  priority: 'medium',
 });
 
 // Analyze findings
@@ -153,31 +151,34 @@ const analysis = await reasoner.executeTask({
   parameters: {
     problem: {
       description: 'Identify key trends in AI development',
-      keywords: ['AI', 'machine learning', 'trends', '2024']
+      keywords: ['AI', 'machine learning', 'trends', '2024'],
     },
-    reasoningModel: 'tree-of-thought'
+    reasoningModel: 'tree-of-thought',
   },
-  priority: 'high'
+  priority: 'high',
 });
 ```
 
 ## Agent Types and Capabilities
 
 ### 1. Firecrawl Research Agent
+
 - **Type**: `firecrawl-research`
-- **Capabilities**: 
+- **Capabilities**:
   - `web-scraping`: Extract content from websites
   - `content-extraction`: Parse and structure web content
   - `site-mapping`: Create comprehensive site maps
   - `pdf-processing`: Extract text from PDF documents
 
 **Tasks**:
+
 - `scrape-website`: Scrape a single website
 - `map-site`: Generate a site map
 - `extract-content`: Extract specific content elements
 - `research-topic`: Multi-source research on a topic
 
 ### 2. Context Manager Agent
+
 - **Type**: `context-manager`
 - **Capabilities**:
   - `context-storage`: Store data with metadata
@@ -186,6 +187,7 @@ const analysis = await reasoner.executeTask({
   - `knowledge-graph`: Build relationship graphs
 
 **Tasks**:
+
 - `store-context`: Store data with metadata
 - `retrieve-context`: Get stored context by ID
 - `search-context`: Search across stored contexts
@@ -193,6 +195,7 @@ const analysis = await reasoner.executeTask({
 - `analyze-relationships`: Analyze context relationships
 
 ### 3. Playwright Automation Agent
+
 - **Type**: `playwright-automation`
 - **Capabilities**:
   - `browser-automation`: Automated browser interactions
@@ -201,12 +204,14 @@ const analysis = await reasoner.executeTask({
   - `performance-testing`: Performance auditing
 
 **Tasks**:
+
 - `run-test`: Execute test scenarios
 - `capture-screenshot`: Take page screenshots
 - `automate-workflow`: Run automation workflows
 - `performance-audit`: Audit page performance
 
 ### 4. Browser Control Agent
+
 - **Type**: `browser-control`
 - **Capabilities**:
   - `real-browser-control`: Control actual Chrome browser
@@ -215,12 +220,14 @@ const analysis = await reasoner.executeTask({
   - `live-interaction`: Real-time browser interaction
 
 **Tasks**:
+
 - `control-browser`: Execute browser commands
 - `capture-state`: Capture current browser state
 - `interact-page`: Interact with page elements
 - `monitor-network`: Monitor network activity
 
 ### 5. Sequential Reasoning Agent
+
 - **Type**: `sequential-reasoning`
 - **Capabilities**:
   - `step-by-step-reasoning`: Structured reasoning process
@@ -229,6 +236,7 @@ const analysis = await reasoner.executeTask({
   - `decision-trees`: Build decision trees
 
 **Tasks**:
+
 - `analyze-problem`: Structured problem analysis
 - `validate-reasoning`: Validate logical reasoning
 - `build-decision-tree`: Create decision frameworks
@@ -239,6 +247,7 @@ const analysis = await reasoner.executeTask({
 ### Tool-Specific Configuration
 
 #### Firecrawl MCP
+
 ```json
 {
   "server": {
@@ -259,6 +268,7 @@ const analysis = await reasoner.executeTask({
 ```
 
 #### Context7 MCP
+
 ```json
 {
   "server": {
@@ -277,6 +287,7 @@ const analysis = await reasoner.executeTask({
 ```
 
 #### Playwright MCP
+
 ```json
 {
   "browsers": {
@@ -295,24 +306,28 @@ const analysis = await reasoner.executeTask({
 ## Common Workflows
 
 ### 1. Content Research Pipeline
+
 1. **Firecrawl** scrapes target websites
 2. **Context7** stores and indexes content
 3. **Sequential Thinking** analyzes patterns
 4. **Context7** stores final analysis
 
 ### 2. UI Testing & Validation
+
 1. **Sequential Thinking** plans test scenarios
 2. **Playwright** executes automated tests
 3. **Browser MCP** validates with real browser
 4. **Context7** stores test results
 
 ### 3. Competitive Analysis
+
 1. **Firecrawl** monitors competitor sites
 2. **Browser MCP** captures screenshots
 3. **Context7** tracks changes over time
 4. **Sequential Thinking** identifies trends
 
 ### 4. Documentation Generation
+
 1. **Firecrawl** extracts API documentation
 2. **Sequential Thinking** structures information
 3. **Context7** builds knowledge graph
@@ -331,8 +346,8 @@ const workflow: MCPWorkflow = {
       action: 'crawl',
       parameters: {
         url: '${BASE_URL}/api/docs',
-        options: { formats: ['markdown'] }
-      }
+        options: { formats: ['markdown'] },
+      },
     },
     {
       id: 'analyze-data',
@@ -340,15 +355,15 @@ const workflow: MCPWorkflow = {
       action: 'analyze',
       parameters: {
         data: '${scrape-data.result}',
-        reasoning_model: 'step-by-step'
-      }
-    }
-  ]
+        reasoning_model: 'step-by-step',
+      },
+    },
+  ],
 };
 
 // Execute with variables
 await engine.executeWorkflow(workflow, {
-  variables: { BASE_URL: 'https://api.example.com' }
+  variables: { BASE_URL: 'https://api.example.com' },
 });
 ```
 
@@ -364,9 +379,9 @@ const robustWorkflow: MCPWorkflow = {
       parameters: { url: 'https://sometimes-down.com' },
       retries: 3,
       timeout: 30000,
-      onFailure: 'continue-workflow'
-    }
-  ]
+      onFailure: 'continue-workflow',
+    },
+  ],
 };
 ```
 
@@ -381,14 +396,14 @@ const parallelWorkflow: MCPWorkflow = {
       tool: 'firecrawl',
       action: 'crawl',
       parameters: { url: 'https://site1.com' },
-      dependencies: [] // No dependencies
+      dependencies: [], // No dependencies
     },
     {
-      id: 'scrape-site-2', 
+      id: 'scrape-site-2',
       tool: 'firecrawl',
       action: 'crawl',
       parameters: { url: 'https://site2.com' },
-      dependencies: [] // No dependencies
+      dependencies: [], // No dependencies
     },
     {
       id: 'combine-results',
@@ -397,12 +412,12 @@ const parallelWorkflow: MCPWorkflow = {
       parameters: {
         data: {
           site1: '${scrape-site-1.result}',
-          site2: '${scrape-site-2.result}'
-        }
+          site2: '${scrape-site-2.result}',
+        },
       },
-      dependencies: ['scrape-site-1', 'scrape-site-2'] // Wait for both
-    }
-  ]
+      dependencies: ['scrape-site-1', 'scrape-site-2'], // Wait for both
+    },
+  ],
 };
 ```
 
@@ -450,6 +465,7 @@ tail -f ~/.claude/logs/mcp/workflow-engine.log
 ### Common Issues
 
 1. **MCP Server Not Responding**
+
    ```bash
    # Restart MCP servers
    claude mcp restart firecrawl
@@ -462,6 +478,7 @@ tail -f ~/.claude/logs/mcp/workflow-engine.log
    - Restart Chrome
 
 3. **Context7 Database Issues**
+
    ```bash
    # Reset Context7 database
    rm -rf ~/.claude/context7/context.db
@@ -477,14 +494,16 @@ tail -f ~/.claude/logs/mcp/workflow-engine.log
 ### Performance Optimization
 
 1. **Limit Concurrent Operations**
+
    ```typescript
    const config: WorkflowEngineConfig = {
      maxConcurrentSteps: 3, // Reduce if system is slow
-     defaultTimeout: 60000,  // Increase for slow networks
+     defaultTimeout: 60000, // Increase for slow networks
    };
    ```
 
 2. **Configure Tool-Specific Limits**
+
    ```json
    {
      "firecrawl": {
@@ -508,27 +527,32 @@ tail -f ~/.claude/logs/mcp/workflow-engine.log
 ## Best Practices
 
 ### 1. Workflow Design
+
 - Keep workflows focused and modular
 - Use meaningful step IDs and descriptions
 - Handle errors gracefully with retries
 - Store intermediate results for debugging
 
 ### 2. Resource Management
+
 - Close browser instances when done
 - Clean up temporary files
 - Monitor memory usage with large datasets
 - Use appropriate timeouts
 
 ### 3. Security
+
 - Never hardcode API keys in workflows
 - Use environment variables for sensitive data
 - Validate input parameters
 - Sanitize scraped content
 
 ### 4. Performance
+
 - Batch similar operations together
 - Use parallel execution where possible
 - Cache frequently accessed data
 - Monitor and optimize slow steps
 
-This comprehensive integration provides a powerful foundation for automated workflows combining web scraping, browser automation, context management, and intelligent reasoning.
+This comprehensive integration provides a powerful foundation for automated workflows combining web
+scraping, browser automation, context management, and intelligent reasoning.

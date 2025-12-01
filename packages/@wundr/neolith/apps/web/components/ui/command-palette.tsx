@@ -32,7 +32,6 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 
-
 interface CommandPaletteProps {
   workspaceId?: string;
 }
@@ -52,7 +51,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(open => !open);
       }
     };
 
@@ -168,18 +167,18 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Type a command or search..." />
+      <CommandInput placeholder='Type a command or search...' />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
 
-        <CommandGroup heading="Quick Actions">
-          {quickActions.map((action) => (
+        <CommandGroup heading='Quick Actions'>
+          {quickActions.map(action => (
             <CommandItem
               key={action.path}
               onSelect={() => navigate(action.path)}
               keywords={action.keywords}
             >
-              <action.icon className="mr-2 h-4 w-4" />
+              <action.icon className='mr-2 h-4 w-4' />
               {action.label}
             </CommandItem>
           ))}
@@ -187,14 +186,14 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Navigation">
-          {navigationActions.map((action) => (
+        <CommandGroup heading='Navigation'>
+          {navigationActions.map(action => (
             <CommandItem
               key={action.path}
               onSelect={() => navigate(action.path)}
               keywords={action.keywords}
             >
-              <action.icon className="mr-2 h-4 w-4" />
+              <action.icon className='mr-2 h-4 w-4' />
               {action.label}
             </CommandItem>
           ))}
@@ -202,14 +201,14 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Settings">
-          {settingsActions.map((action) => (
+        <CommandGroup heading='Settings'>
+          {settingsActions.map(action => (
             <CommandItem
               key={action.path}
               onSelect={() => navigate(action.path)}
               keywords={action.keywords}
             >
-              <action.icon className="mr-2 h-4 w-4" />
+              <action.icon className='mr-2 h-4 w-4' />
               {action.label}
             </CommandItem>
           ))}

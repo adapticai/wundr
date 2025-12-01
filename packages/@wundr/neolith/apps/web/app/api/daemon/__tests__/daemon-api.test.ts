@@ -65,7 +65,13 @@ vi.mock('@neolith/core', () => ({
       daemonId: 'daemon-1',
       orchestratorId: 'orchestrator-1',
       workspaceId: 'ws-1',
-      scopes: ['messages:read', 'messages:write', 'presence:write', 'orchestrator:status', 'orchestrator:config'],
+      scopes: [
+        'messages:read',
+        'messages:write',
+        'presence:write',
+        'orchestrator:status',
+        'orchestrator:config',
+      ],
     }),
     refreshAccessToken: vi.fn().mockResolvedValue({
       accessToken: 'new-access-token',
@@ -139,12 +145,15 @@ describe('Daemon API Routes', () => {
     it('should refresh token', async () => {
       const { POST } = await import('../auth/refresh/route');
 
-      const request = new NextRequest('http://localhost/api/daemon/auth/refresh', {
-        method: 'POST',
-        body: JSON.stringify({
-          refreshToken: 'valid-refresh-token',
-        }),
-      });
+      const request = new NextRequest(
+        'http://localhost/api/daemon/auth/refresh',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            refreshToken: 'valid-refresh-token',
+          }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(200);
@@ -155,7 +164,9 @@ describe('Daemon API Routes', () => {
     it('should require authorization header', async () => {
       const { GET } = await import('../messages/route');
 
-      const request = new NextRequest('http://localhost/api/daemon/messages?channelId=ch-1');
+      const request = new NextRequest(
+        'http://localhost/api/daemon/messages?channelId=ch-1'
+      );
 
       const response = await GET(request);
       expect(response.status).toBe(401);
@@ -164,11 +175,14 @@ describe('Daemon API Routes', () => {
     it('should get messages with valid token', async () => {
       const { GET } = await import('../messages/route');
 
-      const request = new NextRequest('http://localhost/api/daemon/messages?channelId=ch-1', {
-        headers: {
-          authorization: 'Bearer test-token',
-        },
-      });
+      const request = new NextRequest(
+        'http://localhost/api/daemon/messages?channelId=ch-1',
+        {
+          headers: {
+            authorization: 'Bearer test-token',
+          },
+        }
+      );
 
       const response = await GET(request);
       expect(response.status).toBe(200);

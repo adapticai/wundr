@@ -23,11 +23,17 @@ interface GmailAPI {
   users: {
     settings: {
       sendAs: {
-        list: (params: GmailRequestParams) => Promise<{ data: { sendAs: SendAsSetting[] } }>;
-        patch: (params: GmailPatchParams) => Promise<{ data: Record<string, unknown> }>;
+        list: (
+          params: GmailRequestParams
+        ) => Promise<{ data: { sendAs: SendAsSetting[] } }>;
+        patch: (
+          params: GmailPatchParams
+        ) => Promise<{ data: Record<string, unknown> }>;
       };
     };
-    getProfile: (params: GmailRequestParams) => Promise<{ data: { emailAddress: string } }>;
+    getProfile: (
+      params: GmailRequestParams
+    ) => Promise<{ data: { emailAddress: string } }>;
   };
 }
 
@@ -60,11 +66,18 @@ interface OAuth2ClientInstance {
   }) => string;
   getToken: (code: string) => Promise<{ tokens: OAuthTokens }>;
   setCredentials: (tokens: OAuthTokens) => void;
-  on: (event: string, callback: (tokens: OAuthTokens) => void | Promise<void>) => void;
+  on: (
+    event: string,
+    callback: (tokens: OAuthTokens) => void | Promise<void>
+  ) => void;
 }
 
 interface OAuth2ClientConstructor {
-  new (clientId: string, clientSecret: string, redirectUri: string): OAuth2ClientInstance;
+  new (
+    clientId: string,
+    clientSecret: string,
+    redirectUri: string
+  ): OAuth2ClientInstance;
 }
 
 interface OAuthTokens {
@@ -87,7 +100,10 @@ async function tryImport<T>(moduleName: string): Promise<T | null> {
   try {
     // Use Function constructor to prevent static analysis of the import
     // This ensures ESLint's import resolver doesn't try to resolve these optional deps
-    const dynamicImport = new Function('moduleName', 'return import(moduleName)');
+    const dynamicImport = new Function(
+      'moduleName',
+      'return import(moduleName)'
+    );
     return await dynamicImport(moduleName);
   } catch {
     return null;
@@ -101,10 +117,12 @@ async function initializeGoogleAPIs(): Promise<boolean> {
   }
 
   try {
-    const googleapis = await tryImport<{ google: GoogleAPIs['google'] }>('googleapis');
-    const googleAuthLibrary = await tryImport<{ OAuth2Client: OAuth2ClientConstructor }>(
-      'google-auth-library',
+    const googleapis = await tryImport<{ google: GoogleAPIs['google'] }>(
+      'googleapis'
     );
+    const googleAuthLibrary = await tryImport<{
+      OAuth2Client: OAuth2ClientConstructor;
+    }>('google-auth-library');
 
     if (!googleapis || !googleAuthLibrary) {
       throw new Error('Google APIs not available');
@@ -135,7 +153,8 @@ async function initializeGoogleAPIs(): Promise<boolean> {
             patch: () => Promise.resolve({ data: {} }),
           },
         },
-        getProfile: () => Promise.resolve({ data: { emailAddress: 'mock@example.com' } }),
+        getProfile: () =>
+          Promise.resolve({ data: { emailAddress: 'mock@example.com' } }),
       },
     };
     return false;
@@ -225,7 +244,7 @@ export class GmailIntegrationService implements GmailIntegration {
     } catch (error) {
       logger.warn(
         'Gmail configuration check failed:',
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
       return false;
     }
@@ -239,12 +258,14 @@ export class GmailIntegrationService implements GmailIntegration {
 
     if (!this.isAvailable) {
       throw new Error(
-        'Google APIs package (googleapis) is not available. Install it with: npm install googleapis google-auth-library',
+        'Google APIs package (googleapis) is not available. Install it with: npm install googleapis google-auth-library'
       );
     }
 
     if (!profile.email) {
-      throw new Error('Developer profile must include an email address for Gmail integration');
+      throw new Error(
+        'Developer profile must include an email address for Gmail integration'
+      );
     }
 
     try {
@@ -255,7 +276,10 @@ export class GmailIntegrationService implements GmailIntegration {
       // Check if credentials already exist
       let credentials: GmailCredentials;
       try {
-        const credentialsContent = await fs.readFile(this.credentialsPath, 'utf8');
+        const credentialsContent = await fs.readFile(
+          this.credentialsPath,
+          'utf8'
+        );
         credentials = JSON.parse(credentialsContent);
       } catch {
         // If no existing credentials, prompt user to set them up
@@ -271,17 +295,21 @@ export class GmailIntegrationService implements GmailIntegration {
         logger.info('The credentials file should contain:');
         logger.info('- client_id');
         logger.info('- client_secret');
-        logger.info('- redirect_uri (use: http://localhost:3000/oauth/callback)');
+        logger.info(
+          '- redirect_uri (use: http://localhost:3000/oauth/callback)'
+        );
         logger.info('');
 
-        throw new Error('Gmail credentials not found. Please set up OAuth2 credentials first.');
+        throw new Error(
+          'Gmail credentials not found. Please set up OAuth2 credentials first.'
+        );
       }
 
       // Initialize OAuth2 client
       const auth = new OAuth2Client(
         credentials.client_id,
         credentials.client_secret,
-        credentials.redirect_uri || 'http://localhost:3000/oauth/callback',
+        credentials.redirect_uri || 'http://localhost:3000/oauth/callback'
       );
 
       // Check if we have valid tokens
@@ -297,7 +325,9 @@ export class GmailIntegrationService implements GmailIntegration {
         return;
       } catch (_tokenError) {
         // Need to get new tokens
-        logger.info('Gmail tokens expired or invalid, initiating OAuth flow...');
+        logger.info(
+          'Gmail tokens expired or invalid, initiating OAuth flow...'
+        );
       }
 
       // Generate authorization URL
@@ -322,10 +352,14 @@ export class GmailIntegrationService implements GmailIntegration {
 
       // For automated setup, we'd need to implement a local server
       // or use a different flow. For now, we guide the user through manual setup.
-      throw new Error('Manual OAuth authorization required. Please complete the steps above.');
+      throw new Error(
+        'Manual OAuth authorization required. Please complete the steps above.'
+      );
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Failed to configure Gmail integration: ${error.message}`);
+        throw new Error(
+          `Failed to configure Gmail integration: ${error.message}`
+        );
       }
       throw error;
     }
@@ -361,7 +395,8 @@ export class GmailIntegrationService implements GmailIntegration {
 
       // Find the primary email address
       const primarySetting =
-        sendAsSettings.find((setting: SendAsSetting) => setting.isPrimary) || sendAsSettings[0];
+        sendAsSettings.find((setting: SendAsSetting) => setting.isPrimary) ||
+        sendAsSettings[0];
 
       return primarySetting.signature || '';
     } catch (error) {
@@ -402,7 +437,8 @@ export class GmailIntegrationService implements GmailIntegration {
 
       // Find the primary email address
       const primarySetting =
-        sendAsSettings.find((setting: SendAsSetting) => setting.isPrimary) || sendAsSettings[0];
+        sendAsSettings.find((setting: SendAsSetting) => setting.isPrimary) ||
+        sendAsSettings[0];
 
       if (!primarySetting.sendAsEmail) {
         throw new Error('Primary email address not found');
@@ -457,7 +493,8 @@ export class GmailIntegrationService implements GmailIntegration {
 
       // Find the primary email address
       const primarySetting =
-        sendAsSettings.find((setting: SendAsSetting) => setting.isPrimary) || sendAsSettings[0];
+        sendAsSettings.find((setting: SendAsSetting) => setting.isPrimary) ||
+        sendAsSettings[0];
 
       if (!primarySetting.sendAsEmail) {
         throw new Error('Primary email address not found');
@@ -516,7 +553,10 @@ export class GmailIntegrationService implements GmailIntegration {
 
     try {
       // Read credentials
-      const credentialsContent = await fs.readFile(this.credentialsPath, 'utf8');
+      const credentialsContent = await fs.readFile(
+        this.credentialsPath,
+        'utf8'
+      );
       const credentials: GmailCredentials = JSON.parse(credentialsContent);
 
       // Read tokens
@@ -527,7 +567,7 @@ export class GmailIntegrationService implements GmailIntegration {
       const auth = new OAuth2Client(
         credentials.client_id,
         credentials.client_secret,
-        credentials.redirect_uri || 'http://localhost:3000/oauth/callback',
+        credentials.redirect_uri || 'http://localhost:3000/oauth/callback'
       );
 
       auth.setCredentials(tokens);
@@ -552,7 +592,7 @@ export class GmailIntegrationService implements GmailIntegration {
     } catch (error) {
       logger.warn(
         'Failed to get auth client:',
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
       return null;
     }
@@ -570,14 +610,17 @@ export class GmailIntegrationService implements GmailIntegration {
 
     try {
       // Read credentials
-      const credentialsContent = await fs.readFile(this.credentialsPath, 'utf8');
+      const credentialsContent = await fs.readFile(
+        this.credentialsPath,
+        'utf8'
+      );
       const credentials: GmailCredentials = JSON.parse(credentialsContent);
 
       // Create OAuth2 client
       const auth = new OAuth2Client(
         credentials.client_id,
         credentials.client_secret,
-        credentials.redirect_uri || 'http://localhost:3000/oauth/callback',
+        credentials.redirect_uri || 'http://localhost:3000/oauth/callback'
       );
 
       // Exchange authorization code for tokens
@@ -599,7 +642,11 @@ export class GmailIntegrationService implements GmailIntegration {
   /**
    * Test the Gmail connection
    */
-  async testConnection(): Promise<{ success: boolean; email?: string; error?: string }> {
+  async testConnection(): Promise<{
+    success: boolean;
+    email?: string;
+    error?: string;
+  }> {
     await this.ensureInitialized();
 
     if (!this.isAvailable) {

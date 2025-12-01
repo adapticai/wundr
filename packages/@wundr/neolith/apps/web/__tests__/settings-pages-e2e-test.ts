@@ -197,7 +197,9 @@ export async function runSettingsPageTests(page: any) {
       console.log('✅ PASS: All notification switches found');
       results.passed++;
     } else {
-      console.log(`⚠️  PARTIAL: Found ${switchesFound}/${switchSelectors.length} switches`);
+      console.log(
+        `⚠️  PARTIAL: Found ${switchesFound}/${switchSelectors.length} switches`
+      );
       results.passed++; // Partial pass
     }
   } catch (error) {
@@ -225,7 +227,9 @@ export async function runSettingsPageTests(page: any) {
       console.log('✅ PASS: All account toggles found');
       results.passed++;
     } else {
-      console.log(`⚠️  PARTIAL: Found ${togglesFound}/${toggleSelectors.length} toggles`);
+      console.log(
+        `⚠️  PARTIAL: Found ${togglesFound}/${toggleSelectors.length} toggles`
+      );
       results.passed++; // Partial pass
     }
   } catch (error) {
@@ -349,10 +353,14 @@ export async function runSettingsPageTests(page: any) {
 
     const bodyText = await page.textContent('body');
     if (bodyText.includes('404') || bodyText.includes('Not Found')) {
-      console.log('✅ PASS: Notifications page correctly shows 404 (not implemented)');
+      console.log(
+        '✅ PASS: Notifications page correctly shows 404 (not implemented)'
+      );
       results.passed++;
     } else {
-      console.log('⚠️  UNEXPECTED: Notifications page exists or shows different error');
+      console.log(
+        '⚠️  UNEXPECTED: Notifications page exists or shows different error'
+      );
       results.passed++; // Not a failure
     }
 
@@ -370,10 +378,14 @@ export async function runSettingsPageTests(page: any) {
 
     const bodyText = await page.textContent('body');
     if (bodyText.includes('404') || bodyText.includes('Not Found')) {
-      console.log('✅ PASS: Security page correctly shows 404 (not implemented)');
+      console.log(
+        '✅ PASS: Security page correctly shows 404 (not implemented)'
+      );
       results.passed++;
     } else {
-      console.log('⚠️  UNEXPECTED: Security page exists or shows different error');
+      console.log(
+        '⚠️  UNEXPECTED: Security page exists or shows different error'
+      );
       results.passed++; // Not a failure
     }
 
@@ -389,7 +401,9 @@ export async function runSettingsPageTests(page: any) {
 
     // Note: This would require console log monitoring
     // For now, we'll mark as informational
-    console.log('ℹ️  INFO: Console error checking requires mcp__playwright__playwright_console_logs');
+    console.log(
+      'ℹ️  INFO: Console error checking requires mcp__playwright__playwright_console_logs'
+    );
     results.passed++;
   } catch (error) {
     console.log('❌ ERROR:', error);
@@ -443,7 +457,9 @@ export async function runSettingsPageTests(page: any) {
   console.log(`✅ Passed: ${results.passed}`);
   console.log(`❌ Failed: ${results.failed}`);
   console.log(`📊 Total:  ${results.passed + results.failed}`);
-  console.log(`🎯 Success Rate: ${((results.passed / (results.passed + results.failed)) * 100).toFixed(1)}%`);
+  console.log(
+    `🎯 Success Rate: ${((results.passed / (results.passed + results.failed)) * 100).toFixed(1)}%`
+  );
 
   if (results.errors.length > 0) {
     console.log('\n❌ ERRORS:');
@@ -474,7 +490,10 @@ export async function testSettingsNavigation(page: any, workspaceId: string) {
     try {
       await navigateToRoute(page, `/${workspaceId}${path}`);
       await waitForLoadState(page, 'networkidle');
-      await takeScreenshot(page, `nav-${name.toLowerCase().replace(/\s+/g, '-')}`);
+      await takeScreenshot(
+        page,
+        `nav-${name.toLowerCase().replace(/\s+/g, '-')}`
+      );
       console.log(`✅ ${name}: OK`);
     } catch (error) {
       console.log(`❌ ${name}: ${error}`);

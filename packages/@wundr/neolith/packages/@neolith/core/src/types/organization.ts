@@ -495,7 +495,9 @@ export function isChannel(obj: unknown): obj is Channel {
 /**
  * Type guard for CreateChannelInput validation.
  */
-export function isValidCreateChannelInput(input: unknown): input is CreateChannelInput {
+export function isValidCreateChannelInput(
+  input: unknown
+): input is CreateChannelInput {
   if (typeof input !== 'object' || input === null) {
     return false;
   }
@@ -515,7 +517,9 @@ export function isValidCreateChannelInput(input: unknown): input is CreateChanne
 /**
  * Type guard for CreateWorkspaceInput validation.
  */
-export function isValidCreateWorkspaceInput(input: unknown): input is CreateWorkspaceInput {
+export function isValidCreateWorkspaceInput(
+  input: unknown
+): input is CreateWorkspaceInput {
   if (typeof input !== 'object' || input === null) {
     return false;
   }
@@ -558,7 +562,10 @@ export function isValidCreateOrgInput(input: unknown): input is CreateOrgInput {
  * Default list options for organizations.
  */
 export const DEFAULT_ORG_LIST_OPTIONS: Required<
-  Pick<ListOrgsOptions, 'skip' | 'take' | 'orderBy' | 'orderDirection' | 'includeArchived'>
+  Pick<
+    ListOrgsOptions,
+    'skip' | 'take' | 'orderBy' | 'orderDirection' | 'includeArchived'
+  >
 > = {
   skip: 0,
   take: 20,
@@ -571,7 +578,10 @@ export const DEFAULT_ORG_LIST_OPTIONS: Required<
  * Default list options for workspaces.
  */
 export const DEFAULT_WORKSPACE_LIST_OPTIONS: Required<
-  Pick<ListWorkspacesOptions, 'skip' | 'take' | 'orderBy' | 'orderDirection' | 'includeArchived'>
+  Pick<
+    ListWorkspacesOptions,
+    'skip' | 'take' | 'orderBy' | 'orderDirection' | 'includeArchived'
+  >
 > = {
   skip: 0,
   take: 20,
@@ -584,7 +594,10 @@ export const DEFAULT_WORKSPACE_LIST_OPTIONS: Required<
  * Default list options for channels.
  */
 export const DEFAULT_CHANNEL_LIST_OPTIONS: Required<
-  Pick<ChannelListOptions, 'skip' | 'take' | 'orderBy' | 'orderDirection' | 'includeArchived'>
+  Pick<
+    ChannelListOptions,
+    'skip' | 'take' | 'orderBy' | 'orderDirection' | 'includeArchived'
+  >
 > = {
   skip: 0,
   take: 50,
@@ -616,7 +629,11 @@ export const CHANNEL_TYPES = ['PUBLIC', 'PRIVATE', 'DM', 'HUDDLE'] as const;
 /**
  * Valid workspace visibility levels.
  */
-export const WORKSPACE_VISIBILITY_LEVELS = ['PUBLIC', 'PRIVATE', 'INTERNAL'] as const;
+export const WORKSPACE_VISIBILITY_LEVELS = [
+  'PUBLIC',
+  'PRIVATE',
+  'INTERNAL',
+] as const;
 
 /**
  * Valid organization roles.

@@ -1,10 +1,9 @@
 # Git Workflow Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Development Process
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Development Process
 
-This document defines Git branching strategies, commit conventions, and MCP tool integration for repository management.
+This document defines Git branching strategies, commit conventions, and MCP tool integration for
+repository management.
 
 ---
 
@@ -35,13 +34,13 @@ main (or master)
 
 ### Branch Purposes
 
-| Branch | Purpose | Base | Merges To |
-|--------|---------|------|-----------|
-| `main` | Production code | - | - |
-| `develop` | Integration branch | `main` | `main` |
-| `feature/*` | New features | `develop` | `develop` |
-| `bugfix/*` | Bug fixes | `develop` | `develop` |
-| `hotfix/*` | Production fixes | `main` | `main` & `develop` |
+| Branch      | Purpose             | Base      | Merges To          |
+| ----------- | ------------------- | --------- | ------------------ |
+| `main`      | Production code     | -         | -                  |
+| `develop`   | Integration branch  | `main`    | `main`             |
+| `feature/*` | New features        | `develop` | `develop`          |
+| `bugfix/*`  | Bug fixes           | `develop` | `develop`          |
+| `hotfix/*`  | Production fixes    | `main`    | `main` & `develop` |
 | `release/*` | Release preparation | `develop` | `main` & `develop` |
 
 ### Branch Lifecycle
@@ -76,19 +75,20 @@ git push -u origin feature/user-authentication
 
 ### Types
 
-| Type | Purpose | Example |
-|------|---------|---------|
-| `feature` | New functionality | `feature/user-dashboard` |
-| `bugfix` | Bug fix | `bugfix/login-validation` |
-| `hotfix` | Critical production fix | `hotfix/security-patch` |
-| `refactor` | Code restructuring | `refactor/api-endpoints` |
-| `docs` | Documentation | `docs/api-reference` |
-| `test` | Test additions | `test/auth-integration` |
-| `chore` | Maintenance | `chore/update-deps` |
+| Type       | Purpose                 | Example                   |
+| ---------- | ----------------------- | ------------------------- |
+| `feature`  | New functionality       | `feature/user-dashboard`  |
+| `bugfix`   | Bug fix                 | `bugfix/login-validation` |
+| `hotfix`   | Critical production fix | `hotfix/security-patch`   |
+| `refactor` | Code restructuring      | `refactor/api-endpoints`  |
+| `docs`     | Documentation           | `docs/api-reference`      |
+| `test`     | Test additions          | `test/auth-integration`   |
+| `chore`    | Maintenance             | `chore/update-deps`       |
 
 ### Naming Rules
 
 **Good:**
+
 ```
 feature/user-authentication
 bugfix/email-validation
@@ -97,6 +97,7 @@ refactor/database-queries
 ```
 
 **Bad:**
+
 ```
 feature/UserAuthentication   # No PascalCase
 my-feature                   # Missing type prefix
@@ -120,23 +121,24 @@ feature/implement-login-form-with-oauth-and-2fa-support  # Too long
 
 ### Types
 
-| Type | Description | Example |
-|------|-------------|---------|
-| `feat` | New feature | `feat(auth): add OAuth2 login` |
-| `fix` | Bug fix | `fix(api): handle null response` |
-| `docs` | Documentation | `docs(readme): add setup instructions` |
-| `style` | Code style (formatting) | `style(lint): fix indentation` |
-| `refactor` | Code restructuring | `refactor(db): optimize queries` |
-| `test` | Adding tests | `test(auth): add login tests` |
-| `chore` | Maintenance tasks | `chore(deps): update lodash` |
-| `perf` | Performance improvement | `perf(api): add response caching` |
-| `ci` | CI/CD changes | `ci(github): add test workflow` |
-| `build` | Build system changes | `build(webpack): optimize bundle` |
-| `revert` | Revert previous commit | `revert: feat(auth): add OAuth2` |
+| Type       | Description             | Example                                |
+| ---------- | ----------------------- | -------------------------------------- |
+| `feat`     | New feature             | `feat(auth): add OAuth2 login`         |
+| `fix`      | Bug fix                 | `fix(api): handle null response`       |
+| `docs`     | Documentation           | `docs(readme): add setup instructions` |
+| `style`    | Code style (formatting) | `style(lint): fix indentation`         |
+| `refactor` | Code restructuring      | `refactor(db): optimize queries`       |
+| `test`     | Adding tests            | `test(auth): add login tests`          |
+| `chore`    | Maintenance tasks       | `chore(deps): update lodash`           |
+| `perf`     | Performance improvement | `perf(api): add response caching`      |
+| `ci`       | CI/CD changes           | `ci(github): add test workflow`        |
+| `build`    | Build system changes    | `build(webpack): optimize bundle`      |
+| `revert`   | Revert previous commit  | `revert: feat(auth): add OAuth2`       |
 
 ### Scopes
 
 Scopes indicate the area affected:
+
 - `auth`, `api`, `ui`, `db`, `config`
 - Package names in monorepos
 - Feature areas
@@ -196,11 +198,13 @@ git commit -m "chore: update dependencies to latest versions"
 ### PR Title Format
 
 Follow the same format as commits:
+
 ```
 <type>(<scope>): <description>
 ```
 
 Examples:
+
 ```
 feat(auth): implement OAuth2 authentication
 fix(api): resolve race condition in user fetch
@@ -211,18 +215,21 @@ docs(readme): update installation instructions
 
 ```markdown
 ## Summary
+
 Brief description of what this PR does.
 
 ## Changes
+
 - Added OAuth2 provider configuration
 - Implemented token exchange flow
 - Added session persistence
 
 ## Related Issues
-Closes #123
-Related to #456
+
+Closes #123 Related to #456
 
 ## Type of Change
+
 - [x] New feature
 - [ ] Bug fix
 - [ ] Breaking change
@@ -231,12 +238,14 @@ Related to #456
 - [ ] Performance improvement
 
 ## Testing
+
 - [x] Unit tests added/updated
 - [x] Integration tests added/updated
 - [ ] E2E tests added/updated
 - [x] Manual testing completed
 
 ## Checklist
+
 - [x] Code follows project conventions
 - [x] Self-review completed
 - [x] Documentation updated
@@ -245,21 +254,23 @@ Related to #456
 - [x] MCP drift detection passes
 
 ## Screenshots (if applicable)
+
 [Add screenshots here]
 
 ## Additional Notes
+
 [Any additional information]
 ```
 
 ### PR Size Guidelines
 
-| Size | Lines Changed | Review Time |
-|------|---------------|-------------|
-| XS | < 50 | Minutes |
-| S | 50-200 | < 1 hour |
-| M | 200-500 | 1-2 hours |
-| L | 500-1000 | 2-4 hours |
-| XL | > 1000 | Consider splitting |
+| Size | Lines Changed | Review Time        |
+| ---- | ------------- | ------------------ |
+| XS   | < 50          | Minutes            |
+| S    | 50-200        | < 1 hour           |
+| M    | 200-500       | 1-2 hours          |
+| L    | 500-1000      | 2-4 hours          |
+| XL   | > 1000        | Consider splitting |
 
 **Best Practice:** Keep PRs under 400 lines for effective review.
 
@@ -270,24 +281,28 @@ Related to #456
 ### Review Checklist
 
 **Functionality:**
+
 - [ ] Code does what it claims
 - [ ] Edge cases handled
 - [ ] Error handling appropriate
 - [ ] No security vulnerabilities
 
 **Code Quality:**
+
 - [ ] Follows naming conventions
 - [ ] Well-structured and readable
 - [ ] No code duplication
 - [ ] Appropriate abstractions
 
 **Testing:**
+
 - [ ] Adequate test coverage
 - [ ] Tests are meaningful
 - [ ] Edge cases tested
 - [ ] Tests are maintainable
 
 **Documentation:**
+
 - [ ] Complex logic explained
 - [ ] Public APIs documented
 - [ ] README updated if needed
@@ -295,13 +310,15 @@ Related to #456
 ### Review Etiquette
 
 **For Reviewers:**
+
 - Be constructive, not critical
-- Explain *why*, not just *what*
+- Explain _why_, not just _what_
 - Suggest alternatives
 - Acknowledge good work
 - Use "nit:" for minor issues
 
 **For Authors:**
+
 - Respond to all comments
 - Explain decisions when asked
 - Don't take feedback personally
@@ -374,20 +391,25 @@ git push origin develop
 ## [1.2.0] - 2024-01-15
 
 ### Added
+
 - OAuth2 authentication with Google and GitHub (#123)
 - Real-time notifications dashboard (#145)
 
 ### Changed
+
 - Improved API response times by 40% (#167)
 
 ### Fixed
+
 - Login validation error on mobile devices (#134)
 - Race condition in user fetch (#156)
 
 ### Deprecated
+
 - Legacy authentication API (will be removed in v2.0)
 
 ### Security
+
 - Fixed XSS vulnerability in user input (#189)
 ```
 
@@ -398,6 +420,7 @@ git push origin develop
 ### GitHub Integration
 
 **PR Management:**
+
 ```javascript
 // Analyze PR for quality
 mcp__wundr__governance_report {
@@ -412,6 +435,7 @@ mcp__wundr__governance_report {
 ```
 
 **Repository Analysis:**
+
 ```javascript
 // Check for circular dependencies
 mcp__wundr__dependency_analyze {

@@ -46,7 +46,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -55,9 +55,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -68,9 +68,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Invalid file ID format',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -94,9 +94,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'File not found',
-          PROCESSING_ERROR_CODES.FILE_NOT_FOUND,
+          PROCESSING_ERROR_CODES.FILE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -114,15 +114,15 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Not a member of this workspace',
-          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get all processing jobs for this file
     const fileJobs = Array.from(processingJobs.values())
-      .filter((job) => job.fileId === params.id)
+      .filter(job => job.fileId === params.id)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     // Calculate summary statistics
@@ -144,10 +144,10 @@ export async function GET(
 
     // Find currently active job (if any)
     const activeJob = fileJobs.find(
-      (job) =>
+      job =>
         job.status === 'pending' ||
         job.status === 'queued' ||
-        job.status === 'processing',
+        job.status === 'processing'
     );
 
     // Get most recent completed jobs by type
@@ -171,7 +171,7 @@ export async function GET(
     }
 
     // Transform jobs for response
-    const transformedJobs = fileJobs.map((job) => ({
+    const transformedJobs = fileJobs.map(job => ({
       id: job.id,
       type: job.type,
       status: job.status,
@@ -230,9 +230,9 @@ export async function GET(
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

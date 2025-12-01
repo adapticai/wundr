@@ -41,7 +41,11 @@ export function ResizablePanel({
       const savedSize = localStorage.getItem(storageKey);
       if (savedSize) {
         const parsedSize = parseInt(savedSize, 10);
-        if (!isNaN(parsedSize) && parsedSize >= minSize && parsedSize <= maxSize) {
+        if (
+          !isNaN(parsedSize) &&
+          parsedSize >= minSize &&
+          parsedSize <= maxSize
+        ) {
           setSize(parsedSize);
         }
       }
@@ -64,8 +68,8 @@ export function ResizablePanel({
   const handleMouseMove = React.useCallback(
     (e: MouseEvent) => {
       if (!isResizing || !panelRef.current) {
-return;
-}
+        return;
+      }
 
       const panel = panelRef.current;
       const rect = panel.getBoundingClientRect();
@@ -81,7 +85,7 @@ return;
       newSize = Math.max(minSize, Math.min(maxSize, newSize));
       setSize(newSize);
     },
-    [isResizing, side, minSize, maxSize],
+    [isResizing, side, minSize, maxSize]
   );
 
   const handleMouseUp = React.useCallback(() => {
@@ -123,7 +127,7 @@ return;
         className={cn(
           'absolute top-0 bottom-0 w-1 group',
           'hover:bg-primary/20 transition-colors',
-          isResizing && 'bg-primary/30',
+          isResizing && 'bg-primary/30'
         )}
         style={handleStyle}
         onMouseDown={handleMouseDown}
@@ -135,10 +139,10 @@ return;
             'p-1 rounded',
             'opacity-0 group-hover:opacity-100 transition-opacity',
             'bg-background border border-border shadow-sm',
-            isResizing && 'opacity-100',
+            isResizing && 'opacity-100'
           )}
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className='h-4 w-4 text-muted-foreground' />
         </div>
       </div>
     </div>
@@ -177,8 +181,6 @@ export function ResizablePanelMain({
   className,
 }: ResizablePanelMainProps) {
   return (
-    <div className={cn('flex-1 overflow-auto', className)}>
-      {children}
-    </div>
+    <div className={cn('flex-1 overflow-auto', className)}>{children}</div>
   );
 }

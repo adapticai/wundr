@@ -2,35 +2,42 @@
 
 ## Overview
 
-This document provides a comprehensive implementation of MCP (Model Context Protocol) tools integration with Claude Flow and the Wundr ecosystem. The integration includes five specialized MCP tools with complete installation, configuration, and orchestration frameworks.
+This document provides a comprehensive implementation of MCP (Model Context Protocol) tools
+integration with Claude Flow and the Wundr ecosystem. The integration includes five specialized MCP
+tools with complete installation, configuration, and orchestration frameworks.
 
 ## Integrated MCP Tools
 
 ### 1. Firecrawl MCP - Web Scraping & Crawling
+
 - **Purpose**: Advanced web content extraction and site mapping
 - **Capabilities**: Multi-format content extraction, PDF processing, site mapping
 - **Agent Type**: `firecrawl-research`
 - **Use Cases**: Research automation, content monitoring, competitive analysis
 
 ### 2. Context7 MCP - Context Management
+
 - **Purpose**: Intelligent context storage and retrieval with vector embeddings
 - **Capabilities**: Semantic search, knowledge graphs, relationship mapping
 - **Agent Type**: `context-manager`
 - **Use Cases**: Knowledge management, research organization, context retrieval
 
 ### 3. Playwright MCP - Browser Automation
+
 - **Purpose**: Cross-browser automated testing and interaction
 - **Capabilities**: E2E testing, performance auditing, screenshot capture
 - **Agent Type**: `playwright-automation`
 - **Use Cases**: Automated testing, performance monitoring, UI validation
 
 ### 4. Browser MCP - Chrome Integration
+
 - **Purpose**: Real Chrome browser control with extension bridge
 - **Capabilities**: Live browser control, DevTools access, extension communication
 - **Agent Type**: `browser-control`
 - **Use Cases**: Real browser testing, live debugging, extension development
 
 ### 5. Sequential Thinking MCP - MIT Reasoning System
+
 - **Purpose**: Structured reasoning and complex problem solving
 - **Capabilities**: Step-by-step reasoning, logical validation, decision trees
 - **Agent Type**: `sequential-reasoning`
@@ -61,6 +68,7 @@ This document provides a comprehensive implementation of MCP (Model Context Prot
 ### 🎯 Key Features Implemented
 
 #### 1. Complete Installation Framework
+
 - **Automated Setup**: Full installation script with error handling
 - **macOS Chrome Installation**: Automated Chrome download and installation
 - **Browser Extension**: Complete Chrome extension for Browser MCP
@@ -68,18 +76,21 @@ This document provides a comprehensive implementation of MCP (Model Context Prot
 - **Environment Setup**: Secure API key management
 
 #### 2. Agent Integration Patterns
+
 - **5 Specialized Agents**: Each MCP tool has dedicated agent implementation
 - **Task Orchestration**: Comprehensive task execution framework
 - **Event-Driven Architecture**: Real-time event emission and handling
 - **Error Handling**: Robust retry mechanisms and failure recovery
 
 #### 3. Workflow Orchestration Engine
+
 - **Dependency Resolution**: Automatic step dependency management
 - **Parallel Execution**: Concurrent step execution with configurable limits
 - **Variable Interpolation**: Dynamic parameter resolution between steps
 - **Monitoring & Logging**: Comprehensive execution tracking
 
 #### 4. Pre-Built Workflow Patterns
+
 - **Research Pipeline**: Firecrawl → Context7 → Sequential Thinking
 - **Testing Workflow**: Playwright + Browser MCP validation
 - **Monitoring System**: Change detection with alerts
@@ -133,10 +144,10 @@ cp ~/.claude/.env.mcp-tools ~/.claude/.env
 import { WorkflowPatterns, MCPWorkflowEngine } from './src/orchestration/mcp-workflow-engine';
 
 // Create and execute research workflow
-const workflow = WorkflowPatterns.createResearchPipeline(
-  "AI Healthcare 2024",
-  ["https://nature.com/ai", "https://nejm.org/ai"]
-);
+const workflow = WorkflowPatterns.createResearchPipeline('AI Healthcare 2024', [
+  'https://nature.com/ai',
+  'https://nejm.org/ai',
+]);
 
 const engine = new MCPWorkflowEngine(mcpTools, config);
 const result = await engine.executeWorkflow(workflow);
@@ -146,9 +157,11 @@ const result = await engine.executeWorkflow(workflow);
 
 ```typescript
 const testWorkflow = WorkflowPatterns.createTestingWorkflow({
-  name: "E-commerce Flow",
-  playwrightScript: { /* test steps */ },
-  validationScript: "/* validation code */"
+  name: 'E-commerce Flow',
+  playwrightScript: {
+    /* test steps */
+  },
+  validationScript: '/* validation code */',
 });
 
 const testResult = await engine.executeWorkflow(testWorkflow);
@@ -171,6 +184,7 @@ const data = await researcher.executeTask({
 ## Configuration Examples
 
 ### Firecrawl Configuration
+
 ```json
 {
   "server": {
@@ -189,6 +203,7 @@ const data = await researcher.executeTask({
 ```
 
 ### Context7 Configuration
+
 ```json
 {
   "storage": {
@@ -206,21 +221,25 @@ const data = await researcher.executeTask({
 ## Advanced Features
 
 ### 1. Cross-Tool Workflows
+
 - **Data Flow**: Seamless data passing between tools
 - **Context Awareness**: Tools share context through Context7
 - **Intelligent Routing**: Automatic tool selection based on task requirements
 
 ### 2. Error Handling & Recovery
+
 - **Retry Mechanisms**: Configurable retry policies with backoff
 - **Graceful Degradation**: Fallback strategies for tool failures
 - **Health Monitoring**: Continuous tool health checks
 
 ### 3. Performance Optimization
+
 - **Parallel Execution**: Concurrent tool operations
 - **Resource Management**: Memory and connection pooling
 - **Caching Strategies**: Intelligent result caching
 
 ### 4. Security & Compliance
+
 - **API Key Management**: Secure environment variable handling
 - **Sandboxing**: Isolated browser environments
 - **Access Controls**: Fine-grained permission management
@@ -239,6 +258,7 @@ The validation script (`validate-mcp-integration.sh`) performs comprehensive tes
 - ✅ **Integration Tests**: End-to-end workflow validation
 
 ### Expected Output
+
 ```
 ========================================
          MCP INTEGRATION REPORT
@@ -256,17 +276,20 @@ Test Summary:
 ## Integration Benefits
 
 ### 1. Unified Orchestration
+
 - **Single Interface**: All tools accessible through unified API
 - **Workflow Automation**: Complex multi-tool workflows with dependency management
 - **Event-Driven**: Real-time coordination between tools
 
 ### 2. Enhanced Capabilities
+
 - **Research Automation**: Automated web research with analysis
 - **Comprehensive Testing**: Multi-browser testing with real browser validation
 - **Context Intelligence**: Smart context management with semantic search
 - **Reasoning Support**: Structured problem-solving capabilities
 
 ### 3. Developer Experience
+
 - **Type Safety**: Complete TypeScript definitions for all tools
 - **Easy Configuration**: Template-based configuration management
 - **Rich Monitoring**: Detailed execution tracking and debugging
@@ -275,18 +298,21 @@ Test Summary:
 ## Production Readiness
 
 ### Monitoring
+
 - **Health Checks**: Automated tool health monitoring
 - **Performance Metrics**: Response time and success rate tracking
 - **Logging**: Comprehensive logging with structured output
 - **Alerting**: Configurable alerts for failures and performance issues
 
 ### Scalability
+
 - **Horizontal Scaling**: Support for multiple tool instances
 - **Resource Management**: Configurable concurrency limits
 - **Load Balancing**: Automatic request distribution
 - **Caching**: Intelligent result caching for performance
 
 ### Security
+
 - **Environment Isolation**: Sandboxed tool execution
 - **API Key Rotation**: Support for automatic key rotation
 - **Access Controls**: Fine-grained permission management
@@ -295,18 +321,21 @@ Test Summary:
 ## Next Steps
 
 ### 1. Immediate Actions
+
 1. Run installation script: `./scripts/install-mcp-tools.sh`
 2. Configure API keys in `~/.claude/.env`
 3. Install Chrome extension manually
 4. Run validation: `./scripts/validate-mcp-integration.sh`
 
 ### 2. Development Integration
+
 1. Import agent patterns: `import { MCPAgentFactory } from './src/integrations/mcp-agent-patterns'`
 2. Create custom workflows using `WorkflowPatterns`
 3. Implement monitoring using workflow events
 4. Extend with custom agents as needed
 
 ### 3. Production Deployment
+
 1. Set up environment-specific configurations
 2. Configure monitoring and alerting
 3. Implement backup and recovery procedures
@@ -315,15 +344,19 @@ Test Summary:
 ## Support & Troubleshooting
 
 ### Common Issues
+
 - **MCP Server Connection**: Check server status with `claude mcp list`
 - **Chrome Extension**: Verify extension loading in `chrome://extensions/`
 - **API Keys**: Ensure all required keys are set in `~/.claude/.env`
 - **Performance**: Adjust concurrency limits based on system resources
 
 ### Resources
+
 - **Architecture Documentation**: `/docs/architecture/mcp-tools-integration.md`
 - **Usage Guide**: `/docs/mcp-tools-usage-guide.md`
 - **Type Definitions**: `/src/types/mcp-tools.ts`
 - **Agent Patterns**: `/src/integrations/mcp-agent-patterns.ts`
 
-This comprehensive MCP tools integration provides a robust foundation for automated workflows that combine web scraping, browser automation, context management, and intelligent reasoning in a unified, scalable architecture.
+This comprehensive MCP tools integration provides a robust foundation for automated workflows that
+combine web scraping, browser automation, context management, and intelligent reasoning in a
+unified, scalable architecture.

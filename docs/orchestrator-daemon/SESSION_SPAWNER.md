@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Session Spawner module provides programmatic control over Claude Code sessions for the VP-Daemon system. It enables automated spawning, configuration, monitoring, and lifecycle management of Claude Code instances executing VP tasks.
+The Session Spawner module provides programmatic control over Claude Code sessions for the VP-Daemon
+system. It enables automated spawning, configuration, monitoring, and lifecycle management of Claude
+Code instances executing VP tasks.
 
 ## Architecture
 
@@ -38,41 +40,37 @@ const config = {
     identity: {
       name: 'Engineering VP',
       email: 'vp@company.com',
-      role: 'Senior Software Engineer'
+      role: 'Senior Software Engineer',
     },
-    objectives: [
-      'Implement feature X',
-      'Write comprehensive tests',
-      'Update documentation'
-    ],
+    objectives: ['Implement feature X', 'Write comprehensive tests', 'Update documentation'],
     constraints: {
       forbiddenCommands: ['rm -rf', 'git push --force'],
       forbiddenPatterns: [/deploy.*production/i],
-      requiredApprovals: ['deploy', 'publish']
+      requiredApprovals: ['deploy', 'publish'],
     },
     resources: {
       maxTokens: 200000,
       maxExecutionTime: 1800000, // 30 minutes
-      allowedTools: ['read', 'write', 'bash', 'glob', 'grep']
-    }
+      allowedTools: ['read', 'write', 'bash', 'glob', 'grep'],
+    },
   },
   taskContext: {
     taskId: 'TASK-123',
     description: 'Implement user authentication system',
-    priority: 'high'
+    priority: 'high',
   },
   memory: {
     recentActions: [],
     conversationHistory: [],
     preferences: {
       testFramework: 'jest',
-      codeStyle: 'functional'
+      codeStyle: 'functional',
     },
     projectContext: {
-      techStack: ['TypeScript', 'React', 'Node.js']
-    }
+      techStack: ['TypeScript', 'React', 'Node.js'],
+    },
   },
-  timeout: 1800000 // 30 minutes
+  timeout: 1800000, // 30 minutes
 };
 
 // Spawn session
@@ -120,29 +118,37 @@ Example generated configuration:
 
 ```markdown
 # Session: claude-session-abc123
+
 # Task: Implement user authentication
+
 # Priority: high
 
 ## VP Identity
+
 - Name: Engineering VP
 - Email: vp@company.com
 - Role: Senior Software Engineer
 
 ## Objectives
+
 - Implement JWT-based authentication
 - Add password hashing with bcrypt
 - Create login/logout endpoints
 
 ## Constraints
+
 ### Forbidden Commands
+
 - rm -rf
 - git push --force
 
 ### Required Approvals
+
 - deploy
 - npm publish
 
 ## Resource Limits
+
 - Max Tokens: 200000
 - Max Execution Time: 1800000ms
 - Allowed Tools: read, write, bash, glob, grep
@@ -170,7 +176,7 @@ const pool = new SessionPool(spawner, {
   minIdleSessions: 1,
   defaultSessionTimeout: 1800000,
   maxQueueSize: 20,
-  autoRecovery: true
+  autoRecovery: true,
 });
 
 // Request session from pool
@@ -179,15 +185,15 @@ const request = {
   config: sessionConfig,
   priority: 'high',
   queuedAt: new Date(),
-  onAllocated: (sessionId) => {
+  onAllocated: sessionId => {
     console.log(`Session ${sessionId} allocated`);
   },
-  onCompleted: (status) => {
+  onCompleted: status => {
     console.log(`Session completed: ${status.state}`);
   },
-  onFailed: (error) => {
+  onFailed: error => {
     console.error(`Session failed: ${error.message}`);
-  }
+  },
 };
 
 const result = await pool.requestSession(request);
@@ -250,7 +256,7 @@ const recoveryManager = new SessionRecoveryManager(spawner, {
   backoffMultiplier: 2,
   saveCrashDumps: true,
   crashDumpDirectory: '.vp-daemon/crash-dumps',
-  strategy: 'delayed'
+  strategy: 'delayed',
 });
 
 // Monitor recovery events
@@ -361,7 +367,7 @@ const pool = new SessionPool(spawner, {
   maxConcurrentSessions: config.maxSessions,
   defaultSessionTimeout: 1800000,
   maxQueueSize: 1000,
-  autoRecovery: true
+  autoRecovery: true,
 });
 
 const recovery = new SessionRecoveryManager(spawner, {
@@ -370,7 +376,7 @@ const recovery = new SessionRecoveryManager(spawner, {
   retryDelay: 5000,
   backoffMultiplier: 2,
   saveCrashDumps: true,
-  strategy: 'delayed'
+  strategy: 'delayed',
 });
 
 // Handle triage requests
@@ -381,7 +387,7 @@ async function handleTriageRequest(request: TriageRequest) {
     requestId: uuidv4(),
     config: sessionConfig,
     priority: determinePriority(request),
-    queuedAt: new Date()
+    queuedAt: new Date(),
   };
 
   await pool.requestSession(poolRequest);
@@ -452,6 +458,7 @@ async function handleTriageRequest(request: TriageRequest) {
 ## API Reference
 
 See TypeScript interfaces in:
+
 - `/scripts/vp-daemon/claude-session-spawner.ts`
 - `/scripts/vp-daemon/session-pool.ts`
 - `/scripts/vp-daemon/session-recovery.ts`

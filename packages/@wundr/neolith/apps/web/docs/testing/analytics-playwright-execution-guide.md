@@ -1,6 +1,7 @@
 # Analytics Page - Playwright MCP Execution Guide
 
-This guide provides step-by-step instructions for executing UI tests on the Analytics page using Playwright MCP tools.
+This guide provides step-by-step instructions for executing UI tests on the Analytics page using
+Playwright MCP tools.
 
 ---
 
@@ -18,6 +19,7 @@ This guide provides step-by-step instructions for executing UI tests on the Anal
 ### Phase 1: Page Load & Initial State
 
 #### Test 1.1: Navigate to Analytics Page
+
 ```bash
 mcp__playwright__playwright_navigate {
   "url": "http://localhost:3000/ws-1/analytics"
@@ -27,6 +29,7 @@ mcp__playwright__playwright_navigate {
 **Expected**: Successfully navigates to page
 
 #### Test 1.2: Capture Initial Screenshot
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-page-initial-load",
@@ -37,6 +40,7 @@ mcp__playwright__playwright_screenshot {
 **Expected**: Full-page screenshot saved
 
 #### Test 1.3: Verify Page Title
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "h2"
@@ -46,6 +50,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Analytics Dashboard"
 
 #### Test 1.4: Check Console for Errors
+
 ```bash
 mcp__playwright__playwright_console_logs {}
 ```
@@ -57,6 +62,7 @@ mcp__playwright__playwright_console_logs {}
 ### Phase 2: Header Controls Testing
 
 #### Test 2.1: Verify Granularity Buttons
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "button:has-text('Daily')"
@@ -66,6 +72,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Daily"
 
 #### Test 2.2: Click Weekly Button
+
 ```bash
 mcp__playwright__playwright_click {
   "selector": "button:has-text('Weekly')"
@@ -75,6 +82,7 @@ mcp__playwright__playwright_click {
 **Expected**: Button click succeeds
 
 #### Test 2.3: Screenshot After Filter Change
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-weekly-filter"
@@ -84,6 +92,7 @@ mcp__playwright__playwright_screenshot {
 **Expected**: Captures filtered state
 
 #### Test 2.4: Click Monthly Button
+
 ```bash
 mcp__playwright__playwright_click {
   "selector": "button:has-text('Monthly')"
@@ -93,6 +102,7 @@ mcp__playwright__playwright_click {
 **Expected**: Button click succeeds
 
 #### Test 2.5: Verify Export Button Exists
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "button:has-text('Export')"
@@ -106,6 +116,7 @@ mcp__playwright__playwright_get_visible_text {
 ### Phase 3: Metric Cards Verification
 
 #### Test 3.1: Check Total Messages Card
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Total Messages"
@@ -115,6 +126,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Total Messages"
 
 #### Test 3.2: Check Active VPs Card
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Active VPs"
@@ -124,6 +136,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Active VPs"
 
 #### Test 3.3: Check Completed Tasks Card
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Completed Tasks"
@@ -133,6 +146,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Completed Tasks"
 
 #### Test 3.4: Check Workflow Success Rate Card
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Workflow Success Rate"
@@ -142,6 +156,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Workflow Success Rate"
 
 #### Test 3.5: Screenshot Metric Cards Section
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-metric-cards",
@@ -156,6 +171,7 @@ mcp__playwright__playwright_screenshot {
 ### Phase 4: Charts Testing
 
 #### Test 4.1: Verify Messages Chart Title
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Messages Over Time"
@@ -165,6 +181,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Messages Over Time"
 
 #### Test 4.2: Verify Task Completion Chart
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Task Completion"
@@ -174,6 +191,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Task Completion"
 
 #### Test 4.3: Screenshot Charts Section
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-charts",
@@ -188,6 +206,7 @@ mcp__playwright__playwright_screenshot {
 ### Phase 5: Leaderboard & Bar Charts
 
 #### Test 5.1: Check Orchestrator Leaderboard
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Top VPs by Messages"
@@ -197,6 +216,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Top VPs by Messages"
 
 #### Test 5.2: Check Active Channels Chart
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Most Active Channels"
@@ -206,6 +226,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Most Active Channels"
 
 #### Test 5.3: Check Tasks by Status Chart
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Tasks by Status"
@@ -215,6 +236,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Tasks by Status"
 
 #### Test 5.4: Screenshot Analytics Details
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-details-section",
@@ -229,6 +251,7 @@ mcp__playwright__playwright_screenshot {
 ### Phase 6: Summary Cards
 
 #### Test 6.1: Verify Total Members Card
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Total Members"
@@ -238,6 +261,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Total Members"
 
 #### Test 6.2: Verify Channels Card
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Channels >> nth=1"
@@ -247,6 +271,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns "Channels"
 
 #### Test 6.3: Screenshot Summary Section
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-summary-cards",
@@ -261,6 +286,7 @@ mcp__playwright__playwright_screenshot {
 ### Phase 7: Empty State Testing (if applicable)
 
 #### Test 7.1: Navigate to Empty Workspace
+
 ```bash
 mcp__playwright__playwright_navigate {
   "url": "http://localhost:3000/empty-workspace-123/analytics"
@@ -270,6 +296,7 @@ mcp__playwright__playwright_navigate {
 **Expected**: Navigates to empty workspace
 
 #### Test 7.2: Check for Empty State Message
+
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=No analytics data yet"
@@ -279,6 +306,7 @@ mcp__playwright__playwright_get_visible_text {
 **Expected**: Returns empty state message
 
 #### Test 7.3: Screenshot Empty State
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-empty-state"
@@ -292,6 +320,7 @@ mcp__playwright__playwright_screenshot {
 ### Phase 8: Error State Testing
 
 #### Test 8.1: Navigate Back to Valid Workspace
+
 ```bash
 mcp__playwright__playwright_navigate {
   "url": "http://localhost:3000/ws-1/analytics"
@@ -299,6 +328,7 @@ mcp__playwright__playwright_navigate {
 ```
 
 #### Test 8.2: Check Console After Full Journey
+
 ```bash
 mcp__playwright__playwright_console_logs {}
 ```
@@ -310,12 +340,14 @@ mcp__playwright__playwright_console_logs {}
 ### Phase 9: Responsive Testing
 
 #### Test 9.1: Test Mobile View
+
 ```bash
 # Note: Playwright MCP may not support viewport changes directly
 # This would need to be tested in Playwright test code
 ```
 
 #### Test 9.2: Final Full Page Screenshot
+
 ```bash
 mcp__playwright__playwright_screenshot {
   "name": "analytics-final-state",
@@ -350,6 +382,7 @@ After running all tests, you should have:
 ## Pass/Fail Criteria
 
 ### PASS Criteria
+
 - Page loads without errors
 - All text elements visible as expected
 - No console errors
@@ -359,6 +392,7 @@ After running all tests, you should have:
 - Empty state displays correctly (if applicable)
 
 ### FAIL Criteria
+
 - Page fails to load
 - JavaScript console errors present
 - Missing UI elements
@@ -371,24 +405,32 @@ After running all tests, you should have:
 ## Troubleshooting
 
 ### Issue: Page doesn't load
+
 **Solution**:
+
 - Verify dev server is running: `lsof -ti:3000`
 - Check workspace ID exists in database
 - Restart dev server
 
 ### Issue: Playwright MCP not responding
+
 **Solution**:
+
 - Verify connection: `claude mcp list`
 - Restart MCP server: `claude mcp restart playwright`
 
 ### Issue: Screenshots are blank
+
 **Solution**:
+
 - Wait for page load before capturing
 - Check selector accuracy
 - Verify elements are visible
 
 ### Issue: Console errors appear
+
 **Solution**:
+
 - Document the error
 - Check if error is from API failure
 - Verify database has test data
@@ -399,6 +441,7 @@ After running all tests, you should have:
 ## Test Execution Checklist
 
 ### Pre-Execution
+
 - [ ] Dev server running on port 3000
 - [ ] Playwright MCP connected
 - [ ] Test workspace ID ready (ws-1)
@@ -406,6 +449,7 @@ After running all tests, you should have:
 - [ ] Console ready for monitoring
 
 ### During Execution
+
 - [ ] Phase 1: Page Load (5 tests)
 - [ ] Phase 2: Header Controls (5 tests)
 - [ ] Phase 3: Metric Cards (5 tests)
@@ -417,6 +461,7 @@ After running all tests, you should have:
 - [ ] Phase 9: Final Screenshots (2 tests)
 
 ### Post-Execution
+
 - [ ] All screenshots collected
 - [ ] Console logs documented
 - [ ] Pass/fail status determined
@@ -473,24 +518,28 @@ button:has-text("Retry")
 
 ## Notes for QA Engineer
 
-1. **Data Dependency**: Tests require workspace with analytics data. If testing empty state, use a new/clean workspace.
+1. **Data Dependency**: Tests require workspace with analytics data. If testing empty state, use a
+   new/clean workspace.
 
-2. **Timing**: Some elements may load asynchronously. If a test fails, retry after waiting 2-3 seconds.
+2. **Timing**: Some elements may load asynchronously. If a test fails, retry after waiting 2-3
+   seconds.
 
-3. **API Mocking**: For consistent testing, consider mocking API responses to ensure predictable data.
+3. **API Mocking**: For consistent testing, consider mocking API responses to ensure predictable
+   data.
 
-4. **Screenshot Storage**: Playwright MCP stores screenshots in a default location. Verify path before execution.
+4. **Screenshot Storage**: Playwright MCP stores screenshots in a default location. Verify path
+   before execution.
 
 5. **Console Log Analysis**: Filter out info/debug logs to focus on errors and warnings.
 
-6. **Cross-Browser**: Current tests use default browser. For full coverage, repeat on Chrome, Firefox, Safari.
+6. **Cross-Browser**: Current tests use default browser. For full coverage, repeat on Chrome,
+   Firefox, Safari.
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2025-11-27
-**Maintainer**: Agent 10 - QA Engineer
+**Document Version**: 1.0 **Last Updated**: 2025-11-27 **Maintainer**: Agent 10 - QA Engineer
 **Related Documents**:
+
 - `/docs/testing/analytics-page-test-report.md`
 - `/app/(workspace)/[workspaceId]/analytics/page.tsx`
 - `/components/analytics/analytics-dashboard.tsx`

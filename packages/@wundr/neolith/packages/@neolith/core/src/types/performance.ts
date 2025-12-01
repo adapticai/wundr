@@ -33,11 +33,7 @@ export interface CacheStats {
 }
 
 /** Performance metric types */
-export type MetricType =
-  | 'timing'
-  | 'counter'
-  | 'gauge'
-  | 'histogram';
+export type MetricType = 'timing' | 'counter' | 'gauge' | 'histogram';
 
 /**
  * Typed context for performance metrics.
@@ -217,7 +213,14 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
 /** Optimization suggestion */
 export interface OptimizationSuggestion {
   id: string;
-  category: 'images' | 'scripts' | 'styles' | 'fonts' | 'caching' | 'rendering' | 'network';
+  category:
+    | 'images'
+    | 'scripts'
+    | 'styles'
+    | 'fonts'
+    | 'caching'
+    | 'rendering'
+    | 'network';
   priority: 'critical' | 'high' | 'medium' | 'low';
   title: string;
   description: string;
@@ -298,14 +301,18 @@ export interface BaseRequestInfo {
 }
 
 /** Request deduplication config */
-export interface DeduplicationConfig<TRequest extends BaseRequestInfo = BaseRequestInfo> {
+export interface DeduplicationConfig<
+  TRequest extends BaseRequestInfo = BaseRequestInfo,
+> {
   enabled: boolean;
   windowMs: number;
   keyGenerator: (request: TRequest) => string;
 }
 
 /** Rate limiting config */
-export interface RateLimitConfig<TRequest extends BaseRequestInfo = BaseRequestInfo> {
+export interface RateLimitConfig<
+  TRequest extends BaseRequestInfo = BaseRequestInfo,
+> {
   enabled: boolean;
   windowMs: number;
   maxRequests: number;
@@ -325,7 +332,13 @@ export interface VirtualizationConfig {
  * Typed arguments for memoization key generation.
  * Supports common serializable types.
  */
-export type MemoizationArg = string | number | boolean | null | undefined | MemoizationArg[];
+export type MemoizationArg =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | MemoizationArg[];
 
 /**
  * Generic arguments type for memoization - allows any function arguments

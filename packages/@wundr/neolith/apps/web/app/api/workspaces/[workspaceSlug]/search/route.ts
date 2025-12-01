@@ -41,7 +41,14 @@ interface RouteContext {
 /**
  * Search result types
  */
-type SearchType = 'channels' | 'messages' | 'files' | 'users' | 'orchestrators' | 'dms' | 'all';
+type SearchType =
+  | 'channels'
+  | 'messages'
+  | 'files'
+  | 'users'
+  | 'orchestrators'
+  | 'dms'
+  | 'all';
 
 /**
  * Channel search result
@@ -169,7 +176,13 @@ interface DMResult {
 /**
  * Union type for all search results
  */
-type SearchResult = ChannelResult | MessageResult | FileResult | UserResult | OrchestratorResult | DMResult;
+type SearchResult =
+  | ChannelResult
+  | MessageResult
+  | FileResult
+  | UserResult
+  | OrchestratorResult
+  | DMResult;
 
 /**
  * Search response structure
@@ -199,10 +212,10 @@ function highlightText(text: string, query: string): string {
   const terms = query
     .toLowerCase()
     .split(/\s+/)
-    .filter((term) => term.length > 0);
+    .filter(term => term.length > 0);
 
   let highlighted = text;
-  terms.forEach((term) => {
+  terms.forEach(term => {
     const regex = new RegExp(`(${term})`, 'gi');
     highlighted = highlighted.replace(regex, '<mark>$1</mark>');
   });
@@ -228,7 +241,7 @@ function highlightText(text: string, query: string): string {
  */
 async function getAccessibleChannels(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<string[]> {
   // Check workspace membership
   const membership = await prisma.workspaceMember.findUnique({
@@ -253,7 +266,7 @@ async function getAccessibleChannels(
     select: { channelId: true },
   });
 
-  const memberChannelIds = channelMemberships.map((m) => m.channelId);
+  const memberChannelIds = channelMemberships.map(m => m.channelId);
 
   // Get all public channel IDs
   const publicChannels = await prisma.channel.findMany({
@@ -264,7 +277,7 @@ async function getAccessibleChannels(
     select: { id: true },
   });
 
-  const publicChannelIds = publicChannels.map((c) => c.id);
+  const publicChannelIds = publicChannels.map(c => c.id);
 
   // Combine and deduplicate
   const combined = [...memberChannelIds, ...publicChannelIds];
@@ -281,7 +294,7 @@ async function searchChannels(
   channelId?: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: ChannelResult[]; totalCount: number }> {
   const whereClause: Prisma.channelWhereInput = {
     workspaceId,
@@ -313,7 +326,7 @@ async function searchChannels(
     prisma.channel.count({ where: whereClause }),
   ]);
 
-  const results: ChannelResult[] = channels.map((channel) => ({
+  const results: ChannelResult[] = channels.map(channel => ({
     type: 'channel' as const,
     id: channel.id,
     name: channel.name,
@@ -347,13 +360,11 @@ async function searchMessages(
   channelId?: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: MessageResult[]; totalCount: number }> {
   const whereClause: Prisma.messageWhereInput = {
     channel: { workspaceId },
-    channelId: channelId
-      ? channelId
-      : { in: accessibleChannelIds },
+    channelId: channelId ? channelId : { in: accessibleChannelIds },
     isDeleted: false,
     content: { contains: query, mode: 'insensitive' },
   };
@@ -389,7 +400,7 @@ async function searchMessages(
     prisma.message.count({ where: whereClause }),
   ]);
 
-  const results: MessageResult[] = messages.map((message) => ({
+  const results: MessageResult[] = messages.map(message => ({
     type: 'message' as const,
     id: message.id,
     content: message.content,
@@ -421,7 +432,7 @@ async function searchFiles(
   channelId?: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: FileResult[]; totalCount: number }> {
   // Find files attached to messages in accessible channels
   const whereClause: Prisma.fileWhereInput = {
@@ -466,14 +477,14 @@ async function searchFiles(
   ]);
 
   const results: FileResult[] = files
-    .filter((file) => {
+    .filter(file => {
       // Filter by channelId if provided
       if (channelId && file.messageAttachments.length > 0) {
         return file.messageAttachments[0].message.channelId === channelId;
       }
       return true;
     })
-    .map((file) => ({
+    .map(file => ({
       type: 'file' as const,
       id: file.id,
       filename: file.filename,
@@ -506,7 +517,7 @@ async function searchUsers(
   query: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: UserResult[]; totalCount: number }> {
   // Get workspace to find organization
   const workspace = await prisma.workspace.findUnique({
@@ -551,7 +562,7 @@ async function searchUsers(
     prisma.user.count({ where: whereClause }),
   ]);
 
-  const results: UserResult[] = users.map((user) => ({
+  const results: UserResult[] = users.map(user => ({
     type: 'user' as const,
     id: user.id,
     name: user.name,
@@ -564,7 +575,9 @@ async function searchUsers(
       highlighted: {
         name: user.name ? highlightText(user.name, query) : undefined,
         email: highlightText(user.email, query),
-        displayName: user.displayName ? highlightText(user.displayName, query) : undefined,
+        displayName: user.displayName
+          ? highlightText(user.displayName, query)
+          : undefined,
       },
     }),
   }));
@@ -580,7 +593,7 @@ async function searchOrchestrators(
   query: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: OrchestratorResult[]; totalCount: number }> {
   // Get workspace to find organization
   const workspace = await prisma.workspace.findUnique({
@@ -630,7 +643,7 @@ async function searchOrchestrators(
     prisma.user.count({ where: whereClause }),
   ]);
 
-  const results: OrchestratorResult[] = orchestrators.map((user) => ({
+  const results: OrchestratorResult[] = orchestrators.map(user => ({
     type: 'orchestrator' as const,
     id: user.id,
     name: user.name,
@@ -643,9 +656,15 @@ async function searchOrchestrators(
     ...(includeHighlight && {
       highlighted: {
         name: user.name ? highlightText(user.name, query) : undefined,
-        displayName: user.displayName ? highlightText(user.displayName, query) : undefined,
-        discipline: user.orchestrator?.discipline ? highlightText(user.orchestrator.discipline, query) : undefined,
-        role: user.orchestrator?.role ? highlightText(user.orchestrator.role, query) : undefined,
+        displayName: user.displayName
+          ? highlightText(user.displayName, query)
+          : undefined,
+        discipline: user.orchestrator?.discipline
+          ? highlightText(user.orchestrator.discipline, query)
+          : undefined,
+        role: user.orchestrator?.role
+          ? highlightText(user.orchestrator.role, query)
+          : undefined,
       },
     }),
   }));
@@ -662,7 +681,7 @@ async function searchDMs(
   query: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: DMResult[]; totalCount: number }> {
   // Find DM channels where user is a member and name matches query
   const whereClause: Prisma.channelWhereInput = {
@@ -673,9 +692,7 @@ async function searchDMs(
         userId,
       },
     },
-    OR: [
-      { name: { contains: query, mode: 'insensitive' } },
-    ],
+    OR: [{ name: { contains: query, mode: 'insensitive' } }],
   };
 
   const [dms, totalCount] = await Promise.all([
@@ -707,11 +724,11 @@ async function searchDMs(
     prisma.channel.count({ where: whereClause }),
   ]);
 
-  const results: DMResult[] = dms.map((dm) => ({
+  const results: DMResult[] = dms.map(dm => ({
     type: 'dm' as const,
     id: dm.id,
     name: dm.name,
-    participants: dm.channelMembers.map((member) => ({
+    participants: dm.channelMembers.map(member => ({
       id: member.user.id,
       name: member.user.name,
       avatarUrl: member.user.avatarUrl,
@@ -754,15 +771,18 @@ async function searchDMs(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -775,9 +795,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace slug is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -793,9 +813,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -810,9 +830,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Search query (q) is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -821,7 +841,7 @@ export async function GET(
     const channelId = searchParams.get('channelId') || undefined;
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '20', 10),
-      100,
+      100
     );
     const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
     const includeHighlight = searchParams.get('highlight') !== 'false';
@@ -829,25 +849,35 @@ export async function GET(
 
     // Parse types parameter (can be comma-separated list like "users,orchestrators")
     const typesParam = searchParams.get('types');
-    const requestedTypes = typesParam ? typesParam.split(',').map(t => t.trim()) : [type];
+    const requestedTypes = typesParam
+      ? typesParam.split(',').map(t => t.trim())
+      : [type];
 
     // Validate search types
-    const validTypes = ['channels', 'messages', 'files', 'users', 'orchestrators', 'dms', 'all'];
+    const validTypes = [
+      'channels',
+      'messages',
+      'files',
+      'users',
+      'orchestrators',
+      'dms',
+      'all',
+    ];
     const invalidTypes = requestedTypes.filter(t => !validTypes.includes(t));
     if (invalidTypes.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           `Invalid search type(s): ${invalidTypes.join(', ')}. Must be: ${validTypes.join(', ')}`,
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get accessible channels for the user
     const accessibleChannelIds = await getAccessibleChannels(
       workspaceId,
-      session.user.id,
+      session.user.id
     );
 
     // Check workspace membership
@@ -855,9 +885,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -878,7 +908,7 @@ export async function GET(
           channelId,
           isAllTypes ? limitPerType : limit,
           isAllTypes ? offsetPerType : offset,
-          includeHighlight,
+          includeHighlight
         );
       allResults.push(...channelResults);
       totalCount += channelCount;
@@ -893,7 +923,7 @@ export async function GET(
           channelId,
           isAllTypes ? limitPerType : limit,
           isAllTypes ? offsetPerType : offset,
-          includeHighlight,
+          includeHighlight
         );
       allResults.push(...messageResults);
       totalCount += messageCount;
@@ -906,7 +936,7 @@ export async function GET(
         channelId,
         isAllTypes ? limitPerType : limit,
         isAllTypes ? offsetPerType : offset,
-        includeHighlight,
+        includeHighlight
       );
       allResults.push(...fileResults);
       totalCount += fileCount;
@@ -918,20 +948,21 @@ export async function GET(
         query,
         isAllTypes ? limitPerType : limit,
         isAllTypes ? offsetPerType : offset,
-        includeHighlight,
+        includeHighlight
       );
       allResults.push(...userResults);
       totalCount += userCount;
     }
 
     if (isAllTypes || requestedTypes.includes('orchestrators')) {
-      const { results: orchestratorResults, totalCount: orchestratorCount } = await searchOrchestrators(
-        workspaceId,
-        query,
-        isAllTypes ? limitPerType : limit,
-        isAllTypes ? offsetPerType : offset,
-        includeHighlight,
-      );
+      const { results: orchestratorResults, totalCount: orchestratorCount } =
+        await searchOrchestrators(
+          workspaceId,
+          query,
+          isAllTypes ? limitPerType : limit,
+          isAllTypes ? offsetPerType : offset,
+          includeHighlight
+        );
       allResults.push(...orchestratorResults);
       totalCount += orchestratorCount;
     }
@@ -943,7 +974,7 @@ export async function GET(
         query,
         isAllTypes ? limitPerType : limit,
         isAllTypes ? offsetPerType : offset,
-        includeHighlight,
+        includeHighlight
       );
       allResults.push(...dmResults);
       totalCount += dmCount;
@@ -957,7 +988,8 @@ export async function GET(
           if (result.type === 'channel') return result.name;
           if (result.type === 'file') return result.originalName;
           if (result.type === 'user') return result.name ?? result.displayName;
-          if (result.type === 'orchestrator') return result.name ?? result.displayName;
+          if (result.type === 'orchestrator')
+            return result.name ?? result.displayName;
           if (result.type === 'dm') return result.name;
           return null;
         };
@@ -965,8 +997,10 @@ export async function GET(
         // Prioritize exact matches in names/titles
         const aName = getName(a);
         const bName = getName(b);
-        const aExact = aName?.toLowerCase().includes(query.toLowerCase()) ?? false;
-        const bExact = bName?.toLowerCase().includes(query.toLowerCase()) ?? false;
+        const aExact =
+          aName?.toLowerCase().includes(query.toLowerCase()) ?? false;
+        const bExact =
+          bName?.toLowerCase().includes(query.toLowerCase()) ?? false;
 
         if (aExact && !bExact) {
           return -1;
@@ -1001,7 +1035,7 @@ export async function GET(
       const typeCounts = new Map<string, number>();
       const channelCounts = new Map<string, { name: string; count: number }>();
 
-      allResults.forEach((result) => {
+      allResults.forEach(result => {
         // Count by type
         typeCounts.set(result.type, (typeCounts.get(result.type) || 0) + 1);
 
@@ -1057,9 +1091,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred during search',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -246,7 +246,7 @@ export function getPermissionAction(permission: Permission): string {
  */
 export function getPermissionsForResource(resource: string): Permission[] {
   return Object.values(Permission).filter(
-    (p) => getPermissionResource(p) === resource,
+    p => getPermissionResource(p) === resource
   );
 }
 
@@ -254,5 +254,5 @@ export function getPermissionsForResource(resource: string): Permission[] {
  * All permissions as an array (useful for admin roles).
  */
 export const ALL_PERMISSIONS: readonly Permission[] = Object.freeze(
-  Object.values(Permission),
+  Object.values(Permission)
 );

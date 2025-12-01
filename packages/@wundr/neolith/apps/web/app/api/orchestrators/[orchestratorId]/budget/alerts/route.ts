@@ -23,7 +23,11 @@ import {
   BUDGET_ERROR_CODES,
   alertStatusEnum,
 } from '@/lib/validations/token-budget';
-import type { ConfigureAlertsInput, Alert, AlertStatus } from '@/lib/validations/token-budget';
+import type {
+  ConfigureAlertsInput,
+  Alert,
+  AlertStatus,
+} from '@/lib/validations/token-budget';
 
 /**
  * Route context with orchestrator ID parameter
@@ -35,13 +39,16 @@ interface RouteContext {
 /**
  * Helper function to check if user has admin access to an orchestrator
  */
-async function getOrchestratorWithAdminCheck(orchestratorId: string, userId: string) {
+async function getOrchestratorWithAdminCheck(
+  orchestratorId: string,
+  userId: string
+) {
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
@@ -61,12 +68,15 @@ async function getOrchestratorWithAdminCheck(orchestratorId: string, userId: str
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
   const membership = userOrganizations.find(
-    (m) => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -78,11 +88,13 @@ async function getOrchestratorWithAdminCheck(orchestratorId: string, userId: str
 async function getAlertHistory(
   orchestratorId: string,
   limit: number = 50,
-  status?: AlertStatus,
+  status?: AlertStatus
 ): Promise<Alert[]> {
   // This assumes there's a budget_alerts table
   // If not available, this would return empty array or mock data
-  const whereClause: Record<string, unknown> = { orchestrator_id: orchestratorId };
+  const whereClause: Record<string, unknown> = {
+    orchestrator_id: orchestratorId,
+  };
   if (status) {
     whereClause.status = status;
   }
@@ -111,7 +123,7 @@ async function getAlertHistory(
     LIMIT ${limit}
   `;
 
-  return alerts.map((alert) => ({
+  return alerts.map(alert => ({
     id: alert.id,
     orchestratorId: alert.orchestrator_id,
     timeWindow: alert.time_window as Alert['timeWindow'],
@@ -142,15 +154,18 @@ async function getAlertHistory(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', BUDGET_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          BUDGET_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -159,21 +174,27 @@ export async function GET(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid orchestrator ID format', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid orchestrator ID format',
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Get orchestrator with access check (any member can view alerts)
-    const result = await getOrchestratorWithAdminCheck(params.orchestratorId, session.user.id);
+    const result = await getOrchestratorWithAdminCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -190,8 +211,11 @@ export async function GET(
       const statusResult = alertStatusEnum.safeParse(statusParam);
       if (!statusResult.success) {
         return NextResponse.json(
-          createErrorResponse('Invalid status value', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createErrorResponse(
+            'Invalid status value',
+            BUDGET_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
       }
       status = statusResult.data;
@@ -209,16 +233,20 @@ export async function GET(
     });
 
     const charterData = charter?.charterData as Record<string, unknown> | null;
-    const resourceLimits = (charterData?.resourceLimits as Record<string, unknown>) ?? {};
-    const alertConfig = (resourceLimits.budgetAlerts as Record<string, unknown>) ?? {};
+    const resourceLimits =
+      (charterData?.resourceLimits as Record<string, unknown>) ?? {};
+    const alertConfig =
+      (resourceLimits.budgetAlerts as Record<string, unknown>) ?? {};
 
     // Get alert history
     const alerts = await getAlertHistory(orchestrator.id, limit, status);
 
     // Calculate summary statistics
-    const activeAlerts = alerts.filter((a) => a.status === 'ACTIVE').length;
-    const acknowledgedAlerts = alerts.filter((a) => a.status === 'ACKNOWLEDGED').length;
-    const resolvedAlerts = alerts.filter((a) => a.status === 'RESOLVED').length;
+    const activeAlerts = alerts.filter(a => a.status === 'ACTIVE').length;
+    const acknowledgedAlerts = alerts.filter(
+      a => a.status === 'ACKNOWLEDGED'
+    ).length;
+    const resolvedAlerts = alerts.filter(a => a.status === 'RESOLVED').length;
 
     return NextResponse.json({
       data: {
@@ -238,13 +266,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/orchestrators/:orchestratorId/budget/alerts] Error:', error);
+    console.error(
+      '[GET /api/orchestrators/:orchestratorId/budget/alerts] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -261,15 +292,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', BUDGET_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          BUDGET_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -278,8 +312,11 @@ export async function POST(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid orchestrator ID format', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid orchestrator ID format',
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -289,8 +326,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -301,24 +341,27 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: ConfigureAlertsInput = parseResult.data;
 
     // Get orchestrator with admin access check
-    const result = await getOrchestratorWithAdminCheck(params.orchestratorId, session.user.id);
+    const result = await getOrchestratorWithAdminCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -329,9 +372,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to configure alerts',
-          BUDGET_ERROR_CODES.FORBIDDEN,
+          BUDGET_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -346,7 +389,8 @@ export async function POST(
 
     // Prepare updated charter data
     const charterData = (charter?.charterData as Record<string, unknown>) ?? {};
-    const resourceLimits = (charterData.resourceLimits as Record<string, unknown>) ?? {};
+    const resourceLimits =
+      (charterData.resourceLimits as Record<string, unknown>) ?? {};
 
     const updatedAlertConfig = {
       thresholds: input.thresholds,
@@ -363,7 +407,7 @@ export async function POST(
     };
 
     // Create new charter version with updated alert configuration
-    const updatedCharter = await prisma.$transaction(async (tx) => {
+    const updatedCharter = await prisma.$transaction(async tx => {
       // Deactivate current active version
       if (charter) {
         await tx.charterVersion.update({
@@ -396,13 +440,16 @@ export async function POST(
       message: 'Alert configuration updated successfully',
     });
   } catch (error) {
-    console.error('[POST /api/orchestrators/:orchestratorId/budget/alerts] Error:', error);
+    console.error(
+      '[POST /api/orchestrators/:orchestratorId/budget/alerts] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

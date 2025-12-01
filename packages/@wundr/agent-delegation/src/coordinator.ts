@@ -298,7 +298,7 @@ export class HubCoordinator {
     this.auditLog.logAgentTerminated(
       this.config.hubAgentId,
       agentId,
-      'Removed from coordinator',
+      'Removed from coordinator'
     );
 
     return true;
@@ -318,7 +318,7 @@ export class HubCoordinator {
    */
   async delegateTask(
     input: DelegationTaskInput,
-    correlationId?: string,
+    correlationId?: string
   ): Promise<DelegationResult> {
     // Create task
     const task = this.createTask(input);
@@ -327,7 +327,7 @@ export class HubCoordinator {
     await this.auditLog.logDelegationCreated(
       this.config.hubAgentId,
       task,
-      correlationId,
+      correlationId
     );
 
     // Select agent
@@ -344,7 +344,7 @@ export class HubCoordinator {
    * @returns The parallel delegation response
    */
   async delegateParallel(
-    request: ParallelDelegationRequest,
+    request: ParallelDelegationRequest
   ): Promise<ParallelDelegationResponse> {
     const startTime = Date.now();
     const correlationId = request.correlationId ?? uuidv4();
@@ -358,7 +358,7 @@ export class HubCoordinator {
       throw new DelegationError(
         DelegationErrorCode.CONCURRENT_LIMIT_EXCEEDED,
         `Would exceed max parallel delegations (${this.config.maxParallelDelegations})`,
-        { pendingCount, requestedCount: request.tasks.length },
+        { pendingCount, requestedCount: request.tasks.length }
       );
     }
 
@@ -396,14 +396,14 @@ export class HubCoordinator {
         synthesis = await this.synthesizeResults(
           successful,
           this.config.synthesisStrategy,
-          { correlationId },
+          { correlationId }
         );
       } catch (error) {
         await this.auditLog.logError(
           this.config.hubAgentId,
           error as Error,
           { correlationId, phase: 'synthesis' },
-          correlationId,
+          correlationId
         );
       }
     }
@@ -445,7 +445,7 @@ export class HubCoordinator {
     this.auditLog.logDelegationCancelled(
       this.config.hubAgentId,
       taskId,
-      'Manually cancelled',
+      'Manually cancelled'
     );
 
     return true;
@@ -466,7 +466,7 @@ export class HubCoordinator {
   async synthesizeResults(
     results: DelegationResult[],
     strategy?: SynthesisStrategy,
-    context: Record<string, unknown> = {},
+    context: Record<string, unknown> = {}
   ): Promise<SynthesisResult> {
     const correlationId = context['correlationId'] as string | undefined;
     const synthesisStrategy = strategy ?? this.config.synthesisStrategy;
@@ -475,19 +475,19 @@ export class HubCoordinator {
       this.config.hubAgentId,
       results.map(r => r.taskId),
       synthesisStrategy,
-      correlationId,
+      correlationId
     );
 
     const synthesis = await this.resultSynthesizer.synthesize(
       results,
       synthesisStrategy,
-      context,
+      context
     );
 
     await this.auditLog.logSynthesisCompleted(
       this.config.hubAgentId,
       synthesis,
-      correlationId,
+      correlationId
     );
 
     this.metrics.synthesisCount++;
@@ -619,7 +619,7 @@ export class HubCoordinator {
     if (available.length === 0) {
       throw new DelegationError(
         DelegationErrorCode.NO_AVAILABLE_AGENT,
-        'No agents available for task delegation',
+        'No agents available for task delegation'
       );
     }
 
@@ -627,14 +627,14 @@ export class HubCoordinator {
     let candidates = available;
     if (task.requiredCapabilities.length > 0) {
       candidates = available.filter(agent =>
-        task.requiredCapabilities.every(cap => agent.capabilities.includes(cap)),
+        task.requiredCapabilities.every(cap => agent.capabilities.includes(cap))
       );
 
       if (candidates.length === 0) {
         throw new DelegationError(
           DelegationErrorCode.CAPABILITY_MISMATCH,
           'No agent has the required capabilities',
-          { required: task.requiredCapabilities },
+          { required: task.requiredCapabilities }
         );
       }
     }
@@ -658,7 +658,7 @@ export class HubCoordinator {
 
     // Capability match score
     const matchCount = task.requiredCapabilities.filter(cap =>
-      agent.capabilities.includes(cap),
+      agent.capabilities.includes(cap)
     ).length;
     if (task.requiredCapabilities.length > 0) {
       score += (matchCount / task.requiredCapabilities.length) * 50;
@@ -707,7 +707,7 @@ export class HubCoordinator {
   private async executeDelegation(
     task: DelegationTask,
     agent: AgentDefinition,
-    correlationId?: string,
+    correlationId?: string
   ): Promise<DelegationResult> {
     const startTime = Date.now();
 
@@ -716,7 +716,7 @@ export class HubCoordinator {
       this.config.hubAgentId,
       task,
       agent,
-      correlationId,
+      correlationId
     );
 
     // Set up timeout
@@ -728,8 +728,8 @@ export class HubCoordinator {
         reject(
           new DelegationError(
             DelegationErrorCode.TIMEOUT,
-            `Task ${task.id} timed out after ${timeout}ms`,
-          ),
+            `Task ${task.id} timed out after ${timeout}ms`
+          )
         );
       }, timeout);
     });
@@ -748,7 +748,7 @@ export class HubCoordinator {
       this.config.hubAgentId,
       task.id,
       agent.id,
-      correlationId,
+      correlationId
     );
 
     if (this.onTaskStarted) {
@@ -768,7 +768,7 @@ export class HubCoordinator {
         task,
         error as Error,
         agent.id,
-        startTime,
+        startTime
       );
     } finally {
       // Clear timeout
@@ -792,7 +792,7 @@ export class HubCoordinator {
         this.config.hubAgentId,
         result,
         agent,
-        correlationId,
+        correlationId
       );
       if (this.onTaskCompleted) {
         this.onTaskCompleted(result, agent);
@@ -803,7 +803,7 @@ export class HubCoordinator {
         this.config.hubAgentId,
         result,
         agent,
-        correlationId,
+        correlationId
       );
       if (this.onTaskFailed) {
         this.onTaskFailed(result, agent);
@@ -830,7 +830,7 @@ export class HubCoordinator {
    */
   private async executeWithRetry(
     task: DelegationTask,
-    agent: AgentDefinition,
+    agent: AgentDefinition
   ): Promise<DelegationResult> {
     const maxRetries = agent.retryPolicy?.maxRetries ?? this.config.maxRetries;
     const backoffMs = agent.retryPolicy?.backoffMs ?? 1000;
@@ -867,7 +867,7 @@ export class HubCoordinator {
     task: DelegationTask,
     error: Error,
     agentId?: string,
-    startTime?: number,
+    startTime?: number
   ): DelegationResult {
     const now = new Date();
     const start = startTime ? new Date(startTime) : now;
@@ -894,7 +894,7 @@ export class HubCoordinator {
   private async defaultTaskExecutor(
     task: DelegationTask,
     agent: AgentDefinition,
-    _context: Record<string, unknown>,
+    _context: Record<string, unknown>
   ): Promise<DelegationResult> {
     // This is a placeholder - actual implementation would call the agent
     const startTime = new Date();
@@ -951,7 +951,7 @@ export function createHubCoordinator(hubAgentId: string): HubCoordinator {
  */
 export function createHubCoordinatorWithExecutor(
   hubAgentId: string,
-  executor: TaskExecutor,
+  executor: TaskExecutor
 ): HubCoordinator {
   return new HubCoordinator({
     config: { hubAgentId },
@@ -968,7 +968,7 @@ export function createHubCoordinatorWithExecutor(
  */
 export function createParallelCoordinator(
   hubAgentId: string,
-  maxParallel: number = 10,
+  maxParallel: number = 10
 ): HubCoordinator {
   return new HubCoordinator({
     config: {

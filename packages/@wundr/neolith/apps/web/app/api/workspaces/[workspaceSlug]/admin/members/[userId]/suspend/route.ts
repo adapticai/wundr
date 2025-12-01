@@ -19,7 +19,7 @@ import {
   ADMIN_ERROR_CODES,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID and user ID parameters
@@ -39,14 +39,17 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -55,8 +58,11 @@ export async function POST(
     // Cannot suspend self
     if (session.user.id === userId) {
       return NextResponse.json(
-        createAdminErrorResponse('Cannot suspend yourself', ADMIN_ERROR_CODES.CANNOT_SUSPEND_SELF),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Cannot suspend yourself',
+          ADMIN_ERROR_CODES.CANNOT_SUSPEND_SELF
+        ),
+        { status: 400 }
       );
     }
 
@@ -65,39 +71,56 @@ export async function POST(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!adminMembership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(adminMembership.role)) {
+    if (
+      !adminMembership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(adminMembership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Fetch target member
     const member = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId },
-      include: { user: { select: { id: true, name: true, email: true, status: true } } },
+      include: {
+        user: { select: { id: true, name: true, email: true, status: true } },
+      },
     });
 
     if (!member) {
       return NextResponse.json(
-        createAdminErrorResponse('Member not found', ADMIN_ERROR_CODES.MEMBER_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Member not found',
+          ADMIN_ERROR_CODES.MEMBER_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Cannot suspend owner
     if (member.role === 'OWNER') {
       return NextResponse.json(
-        createAdminErrorResponse('Cannot suspend workspace owner', ADMIN_ERROR_CODES.CANNOT_MODIFY_OWNER),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Cannot suspend workspace owner',
+          ADMIN_ERROR_CODES.CANNOT_MODIFY_OWNER
+        ),
+        { status: 403 }
       );
     }
 
     // Check if already suspended
     if (member.user.status === 'SUSPENDED') {
       return NextResponse.json(
-        createAdminErrorResponse('Member is already suspended', ADMIN_ERROR_CODES.MEMBER_ALREADY_SUSPENDED),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Member is already suspended',
+          ADMIN_ERROR_CODES.MEMBER_ALREADY_SUSPENDED
+        ),
+        { status: 400 }
       );
     }
 
@@ -119,9 +142,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -148,10 +171,16 @@ export async function POST(
       reason: reason || null,
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/admin/members/:userId/suspend] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/admin/members/:userId/suspend] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to suspend member', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to suspend member',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

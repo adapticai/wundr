@@ -50,10 +50,10 @@ export function OrchestratorThinkingIndicator({
       className={cn(
         'inline-flex items-center rounded-full bg-primary/10',
         sizes.container,
-        className,
+        className
       )}
-      role="status"
-      aria-live="polite"
+      role='status'
+      aria-live='polite'
       aria-label={`${orchestratorName || 'Orchestrator'} is working`}
     >
       <Bot className={cn('text-primary', sizes.icon)} />
@@ -66,9 +66,11 @@ export function OrchestratorThinkingIndicator({
 
       {showText && (
         <span className={cn('font-medium text-primary', sizes.text)}>
-          {orchestratorName ? `${orchestratorName} is working` : 'Orchestrator is working'}
+          {orchestratorName
+            ? `${orchestratorName} is working`
+            : 'Orchestrator is working'}
           {taskContext && (
-            <span className="text-muted-foreground">: {taskContext}</span>
+            <span className='text-muted-foreground'>: {taskContext}</span>
           )}
         </span>
       )}
@@ -81,26 +83,17 @@ function ThinkingDots({ size }: { size: 'sm' | 'md' | 'lg' }) {
   const sizes = sizeClasses[size];
 
   return (
-    <div className="flex items-center gap-1">
+    <div className='flex items-center gap-1'>
       <span
-        className={cn(
-          'animate-bounce rounded-full bg-primary',
-          sizes.dot,
-        )}
+        className={cn('animate-bounce rounded-full bg-primary', sizes.dot)}
         style={{ animationDelay: '0ms', animationDuration: '1000ms' }}
       />
       <span
-        className={cn(
-          'animate-bounce rounded-full bg-primary',
-          sizes.dot,
-        )}
+        className={cn('animate-bounce rounded-full bg-primary', sizes.dot)}
         style={{ animationDelay: '150ms', animationDuration: '1000ms' }}
       />
       <span
-        className={cn(
-          'animate-bounce rounded-full bg-primary',
-          sizes.dot,
-        )}
+        className={cn('animate-bounce rounded-full bg-primary', sizes.dot)}
         style={{ animationDelay: '300ms', animationDuration: '1000ms' }}
       />
     </div>
@@ -112,17 +105,17 @@ function PulsingDot({ size }: { size: 'sm' | 'md' | 'lg' }) {
   const sizes = sizeClasses[size];
 
   return (
-    <span className="relative flex">
+    <span className='relative flex'>
       <span
         className={cn(
           'absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75',
-          sizes.dot,
+          sizes.dot
         )}
       />
       <span
         className={cn(
           'relative inline-flex rounded-full bg-primary',
-          sizes.dot,
+          sizes.dot
         )}
       />
     </span>
@@ -134,16 +127,18 @@ interface InlineThinkingIndicatorProps {
   className?: string;
 }
 
-export function InlineThinkingIndicator({ className }: InlineThinkingIndicatorProps) {
+export function InlineThinkingIndicator({
+  className,
+}: InlineThinkingIndicatorProps) {
   return (
     <div
       className={cn(
         'inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2',
-        className,
+        className
       )}
     >
-      <Bot className="h-4 w-4 text-muted-foreground" />
-      <ThinkingDots size="sm" />
+      <Bot className='h-4 w-4 text-muted-foreground' />
+      <ThinkingDots size='sm' />
     </div>
   );
 }
@@ -164,7 +159,7 @@ export function TypingIndicator({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % messages.length);
+      setMessageIndex(prev => (prev + 1) % messages.length);
     }, interval);
 
     return () => clearInterval(timer);
@@ -174,14 +169,14 @@ export function TypingIndicator({
     <div
       className={cn(
         'inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2',
-        className,
+        className
       )}
     >
-      <Bot className="h-4 w-4 text-primary" />
-      <span className="text-sm font-medium text-muted-foreground">
+      <Bot className='h-4 w-4 text-primary' />
+      <span className='text-sm font-medium text-muted-foreground'>
         {messages[messageIndex]}
       </span>
-      <ThinkingDots size="sm" />
+      <ThinkingDots size='sm' />
     </div>
   );
 }
@@ -204,31 +199,31 @@ export function ProcessingBanner({
     <div
       className={cn(
         'flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-3',
-        className,
+        className
       )}
     >
-      <div className="flex items-center gap-3">
-        <div className="relative">
-          <Bot className="h-5 w-5 text-primary" />
-          <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+      <div className='flex items-center gap-3'>
+        <div className='relative'>
+          <Bot className='h-5 w-5 text-primary' />
+          <span className='absolute -bottom-1 -right-1 flex h-3 w-3'>
+            <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75' />
+            <span className='relative inline-flex h-3 w-3 rounded-full bg-primary' />
           </span>
         </div>
-        <div className="space-y-0.5">
-          <p className="text-sm font-medium">
+        <div className='space-y-0.5'>
+          <p className='text-sm font-medium'>
             {vpName} is processing your request
           </p>
           {taskName && (
-            <p className="text-xs text-muted-foreground">{taskName}</p>
+            <p className='text-xs text-muted-foreground'>{taskName}</p>
           )}
         </div>
       </div>
       {onCancel && (
         <button
-          type="button"
+          type='button'
           onClick={onCancel}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground"
+          className='text-sm font-medium text-muted-foreground hover:text-foreground'
         >
           Cancel
         </button>

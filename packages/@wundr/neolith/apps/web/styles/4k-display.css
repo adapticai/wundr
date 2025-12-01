@@ -138,11 +138,15 @@
 
   /* Shadow adjustments - more prominent on large screens */
   .ultra-hd\:shadow-lg {
-    box-shadow: 0 12px 24px -6px rgb(0 0 0 / 0.1), 0 6px 12px -3px rgb(0 0 0 / 0.1);
+    box-shadow:
+      0 12px 24px -6px rgb(0 0 0 / 0.1),
+      0 6px 12px -3px rgb(0 0 0 / 0.1);
   }
 
   .ultra-hd\:shadow-xl {
-    box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.15), 0 12px 24px -6px rgb(0 0 0 / 0.1);
+    box-shadow:
+      0 24px 48px -12px rgb(0 0 0 / 0.15),
+      0 12px 24px -6px rgb(0 0 0 / 0.1);
   }
 
   /* Button sizes */
@@ -291,7 +295,9 @@
   .ultra-hd\:hover-lift:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px -6px rgb(0 0 0 / 0.1);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition:
+      transform 0.2s ease-in-out,
+      box-shadow 0.2s ease-in-out;
   }
 }
 

@@ -19,7 +19,11 @@ import {
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
 
-import type { UserPresenceResponse, ChannelPresenceResponse, PresenceStatusType } from '@/lib/validations/presence';
+import type {
+  UserPresenceResponse,
+  ChannelPresenceResponse,
+  PresenceStatusType,
+} from '@/lib/validations/presence';
 import type { UserStatus, Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -45,16 +49,22 @@ interface RouteContext {
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
   if (!lastActiveAt) {
-return false;
-}
+    return false;
+  }
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
 /**
  * Get presence from user preferences
  */
-function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferences {
-  if (typeof preferences === 'object' && preferences !== null && !Array.isArray(preferences)) {
+function getPresenceFromPreferences(
+  preferences: Prisma.JsonValue
+): UserPreferences {
+  if (
+    typeof preferences === 'object' &&
+    preferences !== null &&
+    !Array.isArray(preferences)
+  ) {
     return preferences as UserPreferences;
   }
   return {};
@@ -63,7 +73,10 @@ function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferen
 /**
  * Map Prisma UserStatus to presence status
  */
-function mapUserStatusToPresence(status: UserStatus, prefs: UserPreferences): UserPresenceResponse['status'] {
+function mapUserStatusToPresence(
+  status: UserStatus,
+  prefs: UserPreferences
+): UserPresenceResponse['status'] {
   if (prefs.presenceStatus) {
     return prefs.presenceStatus;
   }
@@ -127,15 +140,18 @@ function buildPresenceResponse(user: {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -144,8 +160,11 @@ export async function POST(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createPresenceErrorResponse('Invalid channel ID format', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createPresenceErrorResponse(
+          'Invalid channel ID format',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -163,9 +182,9 @@ export async function POST(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Must be a channel member to join presence',
-          PRESENCE_ERROR_CODES.FORBIDDEN,
+          PRESENCE_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -196,15 +215,18 @@ export async function POST(
 
     if (!channel) {
       return NextResponse.json(
-        createPresenceErrorResponse('Channel not found', PRESENCE_ERROR_CODES.CHANNEL_NOT_FOUND),
-        { status: 404 },
+        createPresenceErrorResponse(
+          'Channel not found',
+          PRESENCE_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Build presence responses for online users
     const onlineUsers = channel.channelMembers
-      .map((m) => buildPresenceResponse(m.user))
-      .filter((p) => p.isOnline);
+      .map(m => buildPresenceResponse(m.user))
+      .filter(p => p.isOnline);
 
     const response: ChannelPresenceResponse = {
       channelId: params.channelId,
@@ -217,13 +239,16 @@ export async function POST(
       message: 'Joined channel presence',
     });
   } catch (error) {
-    console.error('[POST /api/presence/channels/:channelId/join] Error:', error);
+    console.error(
+      '[POST /api/presence/channels/:channelId/join] Error:',
+      error
+    );
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

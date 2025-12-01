@@ -44,7 +44,7 @@ function generateStandardVariants(
   s3Key: string,
   s3Bucket: string,
   originalWidth: number,
-  originalHeight: number,
+  originalHeight: number
 ): ImageVariant[] {
   const cdnDomain = process.env.CDN_DOMAIN;
   const region = process.env.AWS_REGION ?? 'us-east-1';
@@ -66,17 +66,19 @@ function generateStandardVariants(
     const targetWidth = Math.min(size.width, originalWidth);
     const targetHeight = Math.round(targetWidth / aspectRatio);
 
-    const variantKey = size.name === 'original'
-      ? s3Key
-      : s3Key.replace(/\.[^.]+$/, `-${size.name}.webp`);
+    const variantKey =
+      size.name === 'original'
+        ? s3Key
+        : s3Key.replace(/\.[^.]+$/, `-${size.name}.webp`);
 
     return {
       id: `var_${index}`,
       name: size.name,
       width: targetWidth,
       height: targetHeight,
-      format: size.name === 'original' ? s3Key.split('.').pop() ?? 'jpeg' : 'webp',
-      size: Math.floor((targetWidth * targetHeight * 3 * 0.1)), // Estimate
+      format:
+        size.name === 'original' ? (s3Key.split('.').pop() ?? 'jpeg') : 'webp',
+      size: Math.floor(targetWidth * targetHeight * 3 * 0.1), // Estimate
       url: `${baseUrl}/${variantKey}`,
     };
   });
@@ -125,15 +127,18 @@ function generateStandardVariants(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -142,8 +147,11 @@ export async function GET(
     const paramResult = imageIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid image ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid image ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -164,7 +172,7 @@ export async function GET(
     if (!file) {
       return NextResponse.json(
         createErrorResponse('Image not found', UPLOAD_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -174,9 +182,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'File is not an image',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -186,9 +194,9 @@ export async function GET(
         createErrorResponse(
           'Image is not ready',
           UPLOAD_ERROR_CODES.NOT_FOUND,
-          { status: file.status },
+          { status: file.status }
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -206,9 +214,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -230,14 +238,14 @@ export async function GET(
       file.s3Key,
       file.s3Bucket,
       originalWidth,
-      originalHeight,
+      originalHeight
     );
 
     // Merge custom variants with standard variants (custom takes precedence)
-    const customVariantNames = new Set(customVariants.map((v) => v.name));
+    const customVariantNames = new Set(customVariants.map(v => v.name));
     const mergedVariants = [
       ...customVariants,
-      ...standardVariants.filter((v) => !customVariantNames.has(v.name)),
+      ...standardVariants.filter(v => !customVariantNames.has(v.name)),
     ];
 
     // Extract original info
@@ -259,9 +267,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

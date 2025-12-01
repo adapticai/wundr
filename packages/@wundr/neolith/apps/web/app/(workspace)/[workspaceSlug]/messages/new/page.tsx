@@ -100,7 +100,9 @@ export default function NewMessagePage() {
           const seenIds = new Set<string>(); // Track seen IDs to avoid duplicates
 
           // Filter channels from search results
-          const channels = searchData.filter((item: any) => item.type === 'channel').slice(0, 3);
+          const channels = searchData
+            .filter((item: any) => item.type === 'channel')
+            .slice(0, 3);
           for (const channel of channels) {
             const uniqueKey = `channel-${channel.id}`;
             if (seenIds.has(uniqueKey)) continue;
@@ -110,12 +112,16 @@ export default function NewMessagePage() {
               _originalId: channel.id,
               name: channel.name,
               type: 'channel',
-              subtitle: channel.isPrivate ? 'Private channel' : 'Public channel',
+              subtitle: channel.isPrivate
+                ? 'Private channel'
+                : 'Public channel',
             });
           }
 
           // Filter DMs (group conversations) from search results
-          const dms = searchData.filter((item: any) => item.type === 'dm').slice(0, 3);
+          const dms = searchData
+            .filter((item: any) => item.type === 'dm')
+            .slice(0, 3);
           for (const dm of dms) {
             const uniqueKey = `dm-${dm.id}`;
             if (seenIds.has(uniqueKey)) continue;
@@ -137,7 +143,9 @@ export default function NewMessagePage() {
           }
 
           // Filter users from search results
-          const users = searchData.filter((item: any) => item.type === 'user').slice(0, 5);
+          const users = searchData
+            .filter((item: any) => item.type === 'user')
+            .slice(0, 5);
           for (const user of users) {
             if (user.id === currentUser?.id) continue;
             const uniqueKey = `user-${user.id}`;
@@ -157,7 +165,9 @@ export default function NewMessagePage() {
           }
 
           // Filter orchestrators from search results
-          const orchestrators = searchData.filter((item: any) => item.type === 'orchestrator').slice(0, 3);
+          const orchestrators = searchData
+            .filter((item: any) => item.type === 'orchestrator')
+            .slice(0, 3);
           for (const orch of orchestrators) {
             const uniqueKey = `orchestrator-${orch.id}`;
             if (seenIds.has(uniqueKey)) continue;
@@ -209,7 +219,9 @@ export default function NewMessagePage() {
           const seenIds = new Set<string>(); // Track seen IDs to avoid duplicates
 
           // Filter channels that match from search results
-          const channels = searchData.filter((item: any) => item.type === 'channel');
+          const channels = searchData.filter(
+            (item: any) => item.type === 'channel'
+          );
           for (const channel of channels) {
             const uniqueKey = `channel-${channel.id}`;
             if (seenIds.has(uniqueKey)) continue;
@@ -219,7 +231,9 @@ export default function NewMessagePage() {
               _originalId: channel.id,
               name: channel.name,
               type: 'channel',
-              subtitle: channel.isPrivate ? 'Private channel' : 'Public channel',
+              subtitle: channel.isPrivate
+                ? 'Private channel'
+                : 'Public channel',
             });
           }
 
@@ -250,7 +264,7 @@ export default function NewMessagePage() {
           const users = searchData.filter((item: any) => item.type === 'user');
           for (const user of users) {
             if (user.id === currentUser?.id) continue;
-            if (recipients.some((r) => r.id === user.id)) continue;
+            if (recipients.some(r => r.id === user.id)) continue;
             const uniqueKey = `user-${user.id}`;
             if (seenIds.has(uniqueKey)) continue;
             seenIds.add(uniqueKey);
@@ -270,9 +284,11 @@ export default function NewMessagePage() {
           }
 
           // Filter orchestrators from search results
-          const orchestrators = searchData.filter((item: any) => item.type === 'orchestrator');
+          const orchestrators = searchData.filter(
+            (item: any) => item.type === 'orchestrator'
+          );
           for (const orch of orchestrators) {
-            if (recipients.some((r) => r.id === orch.id)) continue;
+            if (recipients.some(r => r.id === orch.id)) continue;
             const uniqueKey = `orchestrator-${orch.id}`;
             if (seenIds.has(uniqueKey)) continue;
             seenIds.add(uniqueKey);
@@ -289,7 +305,10 @@ export default function NewMessagePage() {
 
           // Check if query looks like an email
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (emailRegex.test(searchQuery) && !recipients.some((r) => r.email === searchQuery)) {
+          if (
+            emailRegex.test(searchQuery) &&
+            !recipients.some(r => r.email === searchQuery)
+          ) {
             results.push({
               id: `email-${searchQuery}`,
               _originalId: searchQuery,
@@ -311,7 +330,13 @@ export default function NewMessagePage() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, workspaceSlug, currentUser?.id, recipients, showInitialSuggestions]);
+  }, [
+    searchQuery,
+    workspaceSlug,
+    currentUser?.id,
+    recipients,
+    showInitialSuggestions,
+  ]);
 
   // Handle result selection
   const handleSelectResult = useCallback(
@@ -331,7 +356,7 @@ export default function NewMessagePage() {
       }
 
       // Add as recipient (use originalId for API calls)
-      setRecipients((prev) => [
+      setRecipients(prev => [
         ...prev,
         {
           id: originalId,
@@ -354,7 +379,7 @@ export default function NewMessagePage() {
 
   // Handle recipient removal
   const handleRemoveRecipient = useCallback((recipientId: string) => {
-    setRecipients((prev) => prev.filter((r) => r.id !== recipientId));
+    setRecipients(prev => prev.filter(r => r.id !== recipientId));
     inputRef.current?.focus();
   }, []);
 
@@ -362,13 +387,15 @@ export default function NewMessagePage() {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Backspace' && !searchQuery && recipients.length > 0) {
-        setRecipients((prev) => prev.slice(0, -1));
+        setRecipients(prev => prev.slice(0, -1));
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setHighlightedIndex((prev) => Math.min(prev + 1, searchResults.length - 1));
+        setHighlightedIndex(prev =>
+          Math.min(prev + 1, searchResults.length - 1)
+        );
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setHighlightedIndex((prev) => Math.max(prev - 1, 0));
+        setHighlightedIndex(prev => Math.max(prev - 1, 0));
       } else if (e.key === 'Enter' && searchResults.length > 0) {
         e.preventDefault();
         handleSelectResult(searchResults[highlightedIndex]);
@@ -377,7 +404,13 @@ export default function NewMessagePage() {
         setSearchResults([]);
       }
     },
-    [searchQuery, recipients.length, searchResults, highlightedIndex, handleSelectResult]
+    [
+      searchQuery,
+      recipients.length,
+      searchResults,
+      highlightedIndex,
+      handleSelectResult,
+    ]
   );
 
   // Handle sending message
@@ -386,8 +419,12 @@ export default function NewMessagePage() {
       if (recipients.length === 0 || !currentUser) return;
 
       try {
-        const recipientIds = recipients.filter((r) => r.type !== 'email').map((r) => r.id);
-        const emailInvites = recipients.filter((r) => r.type === 'email').map((r) => r.email!);
+        const recipientIds = recipients
+          .filter(r => r.type !== 'email')
+          .map(r => r.id);
+        const emailInvites = recipients
+          .filter(r => r.type === 'email')
+          .map(r => r.email!);
 
         const response = await fetch('/api/conversations', {
           method: 'POST',
@@ -422,29 +459,31 @@ export default function NewMessagePage() {
 
   if (isAuthLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <LoadingSpinner size='lg' />
       </div>
     );
   }
 
   if (!currentUser) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">Please sign in to send messages.</p>
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <p className='text-muted-foreground'>
+          Please sign in to send messages.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* Header */}
-      <div className="flex h-12 items-center justify-between border-b px-4">
-        <h1 className="font-semibold">New message</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className='flex h-12 items-center justify-between border-b px-4'>
+        <h1 className='font-semibold'>New message</h1>
+        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
           {lastSaved && (
             <>
-              <Check className="h-3.5 w-3.5" />
+              <Check className='h-3.5 w-3.5' />
               <span>Saved a moment ago</span>
             </>
           )}
@@ -452,7 +491,7 @@ export default function NewMessagePage() {
       </div>
 
       {/* To: Field */}
-      <div className="border-b px-4 py-2">
+      <div className='border-b px-4 py-2'>
         <div
           className={cn(
             'flex flex-wrap items-center gap-2 rounded-md border bg-background px-3 py-2 transition-colors',
@@ -460,10 +499,10 @@ export default function NewMessagePage() {
           )}
           onClick={() => inputRef.current?.focus()}
         >
-          <span className="text-sm font-medium text-muted-foreground">To:</span>
+          <span className='text-sm font-medium text-muted-foreground'>To:</span>
 
           {/* Recipient chips */}
-          {recipients.map((recipient) => (
+          {recipients.map(recipient => (
             <RecipientChip
               key={recipient.id}
               recipient={recipient}
@@ -472,12 +511,12 @@ export default function NewMessagePage() {
           ))}
 
           {/* Search input */}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className='relative flex-1 min-w-[200px]'>
             <Input
               ref={inputRef}
-              type="text"
+              type='text'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               onKeyDown={handleKeyDown}
@@ -486,21 +525,21 @@ export default function NewMessagePage() {
                   ? '#a-channel, @somebody or somebody@example.com'
                   : ''
               }
-              className="border-0 p-0 h-7 focus-visible:ring-0 shadow-none"
+              className='border-0 p-0 h-7 focus-visible:ring-0 shadow-none'
             />
 
             {/* Search dropdown */}
             {(searchResults.length > 0 || isSearching) && isFocused && (
               <div
                 ref={resultsRef}
-                className="absolute left-0 top-full mt-1 w-[450px] rounded-md border bg-popover shadow-lg z-50"
+                className='absolute left-0 top-full mt-1 w-[450px] rounded-md border bg-popover shadow-lg z-50'
               >
                 {isSearching ? (
-                  <div className="flex items-center justify-center py-4">
-                    <LoadingSpinner size="sm" />
+                  <div className='flex items-center justify-center py-4'>
+                    <LoadingSpinner size='sm' />
                   </div>
                 ) : (
-                  <div className="max-h-[350px] overflow-y-auto py-1">
+                  <div className='max-h-[350px] overflow-y-auto py-1'>
                     {searchResults.map((result, index) => (
                       <SearchResultItem
                         key={result.id}
@@ -519,19 +558,20 @@ export default function NewMessagePage() {
 
       {/* Profile Card - Single recipient */}
       {recipients.length === 1 && (
-        <SingleRecipientCard recipient={recipients[0]} workspaceSlug={workspaceSlug} />
+        <SingleRecipientCard
+          recipient={recipients[0]}
+          workspaceSlug={workspaceSlug}
+        />
       )}
 
       {/* Multi-participant intro */}
-      {recipients.length > 1 && (
-        <MultiRecipientIntro recipients={recipients} />
-      )}
+      {recipients.length > 1 && <MultiRecipientIntro recipients={recipients} />}
 
       {/* Empty state when no recipients */}
       {recipients.length === 0 && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center text-muted-foreground">
-            <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
+        <div className='flex-1 flex items-center justify-center'>
+          <div className='text-center text-muted-foreground'>
+            <Users className='mx-auto h-12 w-12 mb-4 opacity-50' />
             <p>Add recipients to start a conversation</p>
           </div>
         </div>
@@ -539,11 +579,11 @@ export default function NewMessagePage() {
 
       {/* Message input */}
       {recipients.length > 0 && (
-        <div className="mt-auto">
+        <div className='mt-auto'>
           <MessageInput
-            channelId="new"
+            channelId='new'
             currentUser={currentUser}
-            placeholder={`Message ${recipients.map((r) => r.name.split(' ')[0]).join(', ')}`}
+            placeholder={`Message ${recipients.map(r => r.name.split(' ')[0]).join(', ')}`}
             onSend={handleSendMessage}
           />
         </div>
@@ -551,11 +591,11 @@ export default function NewMessagePage() {
 
       {/* Message input (disabled) when no recipients */}
       {recipients.length === 0 && (
-        <div className="mt-auto">
+        <div className='mt-auto'>
           <MessageInput
-            channelId="new"
+            channelId='new'
             currentUser={currentUser}
-            placeholder="Start a new message"
+            placeholder='Start a new message'
             onSend={handleSendMessage}
             disabled
           />
@@ -576,29 +616,29 @@ function RecipientChip({
   onRemove: () => void;
 }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-full bg-accent px-2 py-1 text-sm">
+    <div className='flex items-center gap-1.5 rounded-full bg-accent px-2 py-1 text-sm'>
       {recipient.type === 'user' && recipient.image ? (
-        <Avatar className="h-4 w-4">
+        <Avatar className='h-4 w-4'>
           <AvatarImage src={recipient.image} alt={recipient.name} />
-          <AvatarFallback className="text-[10px]">
+          <AvatarFallback className='text-[10px]'>
             {getInitials(recipient.name)}
           </AvatarFallback>
         </Avatar>
       ) : recipient.type === 'orchestrator' ? (
-        <Bot className="h-3 w-3" />
+        <Bot className='h-3 w-3' />
       ) : (
-        <Mail className="h-3 w-3" />
+        <Mail className='h-3 w-3' />
       )}
-      <span className="max-w-[150px] truncate">{recipient.name}</span>
+      <span className='max-w-[150px] truncate'>{recipient.name}</span>
       <button
-        type="button"
-        onClick={(e) => {
+        type='button'
+        onClick={e => {
           e.stopPropagation();
           onRemove();
         }}
-        className="rounded-full p-0.5 hover:bg-background/50 transition-colors"
+        className='rounded-full p-0.5 hover:bg-background/50 transition-colors'
       >
-        <X className="h-3 w-3" />
+        <X className='h-3 w-3' />
       </button>
     </div>
   );
@@ -627,21 +667,27 @@ function SearchResultItem({
     switch (result.type) {
       case 'channel':
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
-            <Hash className="h-5 w-5 text-muted-foreground" />
+          <div className='flex h-9 w-9 items-center justify-center rounded-md bg-muted'>
+            <Hash className='h-5 w-5 text-muted-foreground' />
           </div>
         );
       case 'group_dm':
         return (
-          <div className="flex -space-x-2">
+          <div className='flex -space-x-2'>
             {result.participants?.slice(0, 2).map((p, i) => (
-              <Avatar key={p.id} className="h-7 w-7 border-2 border-popover" style={{ zIndex: 2 - i }}>
+              <Avatar
+                key={p.id}
+                className='h-7 w-7 border-2 border-popover'
+                style={{ zIndex: 2 - i }}
+              >
                 <AvatarImage src={p.image || undefined} alt={p.name} />
-                <AvatarFallback className="text-[10px]">{getInitials(p.name)}</AvatarFallback>
+                <AvatarFallback className='text-[10px]'>
+                  {getInitials(p.name)}
+                </AvatarFallback>
               </Avatar>
             ))}
             {(result.participantCount || 0) > 2 && (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-popover bg-muted text-[10px] font-medium">
+              <div className='flex h-7 w-7 items-center justify-center rounded-full border-2 border-popover bg-muted text-[10px] font-medium'>
                 {result.participantCount}
               </div>
             )}
@@ -649,20 +695,20 @@ function SearchResultItem({
         );
       case 'orchestrator':
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-            <Bot className="h-5 w-5 text-primary" />
+          <div className='flex h-9 w-9 items-center justify-center rounded-md bg-primary/10'>
+            <Bot className='h-5 w-5 text-primary' />
           </div>
         );
       case 'email':
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10">
-            <Mail className="h-5 w-5 text-blue-500" />
+          <div className='flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10'>
+            <Mail className='h-5 w-5 text-blue-500' />
           </div>
         );
       default:
         return (
-          <div className="relative">
-            <Avatar className="h-9 w-9">
+          <div className='relative'>
+            <Avatar className='h-9 w-9'>
               <AvatarImage src={result.image || undefined} alt={result.name} />
               <AvatarFallback>{getInitials(result.name)}</AvatarFallback>
             </Avatar>
@@ -681,7 +727,7 @@ function SearchResultItem({
 
   return (
     <button
-      type="button"
+      type='button'
       onClick={onSelect}
       className={cn(
         'flex w-full items-center gap-3 px-3 py-2 text-left transition-colors',
@@ -689,15 +735,17 @@ function SearchResultItem({
       )}
     >
       {renderIcon()}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium truncate">{result.name}</span>
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-center gap-2'>
+          <span className='font-medium truncate'>{result.name}</span>
           {result.status === 'online' && (
-            <span className="text-xs text-green-600">Active</span>
+            <span className='text-xs text-green-600'>Active</span>
           )}
         </div>
         {result.subtitle && (
-          <div className="text-sm text-muted-foreground truncate">{result.subtitle}</div>
+          <div className='text-sm text-muted-foreground truncate'>
+            {result.subtitle}
+          </div>
         )}
       </div>
     </button>
@@ -717,32 +765,36 @@ function SingleRecipientCard({
   const router = useRouter();
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+    <div className='flex-1 flex flex-col items-center justify-center px-4 py-8'>
       {/* Large avatar */}
-      <Avatar className="h-32 w-32 mb-4">
+      <Avatar className='h-32 w-32 mb-4'>
         <AvatarImage src={recipient.image || undefined} alt={recipient.name} />
-        <AvatarFallback className="text-4xl">{getInitials(recipient.name)}</AvatarFallback>
+        <AvatarFallback className='text-4xl'>
+          {getInitials(recipient.name)}
+        </AvatarFallback>
       </Avatar>
 
       {/* Name and status */}
-      <div className="flex items-center gap-2 mb-1">
-        <h2 className="text-xl font-semibold">{recipient.name}</h2>
+      <div className='flex items-center gap-2 mb-1'>
+        <h2 className='text-xl font-semibold'>{recipient.name}</h2>
         {recipient.status === 'online' && (
-          <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+          <span className='h-2.5 w-2.5 rounded-full bg-green-500' />
         )}
       </div>
 
       {/* Title/role */}
       {recipient.title && (
-        <p className="text-muted-foreground mb-4">{recipient.title}</p>
+        <p className='text-muted-foreground mb-4'>{recipient.title}</p>
       )}
 
       {/* Description */}
-      <p className="text-center text-muted-foreground mb-4 max-w-md">
+      <p className='text-center text-muted-foreground mb-4 max-w-md'>
         This conversation is just between you and{' '}
         <button
-          onClick={() => router.push(`/${workspaceSlug}/profile/${recipient.id}`)}
-          className="text-primary hover:underline"
+          onClick={() =>
+            router.push(`/${workspaceSlug}/profile/${recipient.id}`)
+          }
+          className='text-primary hover:underline'
         >
           @{recipient.name}
         </button>
@@ -751,7 +803,7 @@ function SingleRecipientCard({
 
       {/* View profile button */}
       <Button
-        variant="secondary"
+        variant='secondary'
         onClick={() => router.push(`/${workspaceSlug}/profile/${recipient.id}`)}
       >
         View profile
@@ -759,8 +811,8 @@ function SingleRecipientCard({
 
       {/* Notification status */}
       {recipient.notificationStatus === 'paused' && (
-        <div className="flex items-center gap-2 mt-6 text-sm text-muted-foreground">
-          <BellOff className="h-4 w-4" />
+        <div className='flex items-center gap-2 mt-6 text-sm text-muted-foreground'>
+          <BellOff className='h-4 w-4' />
           <span>{recipient.name} has paused their notifications</span>
         </div>
       )}
@@ -771,34 +823,35 @@ function SingleRecipientCard({
 /**
  * Multi-recipient intro (Slack-style side-by-side avatars)
  */
-function MultiRecipientIntro({
-  recipients,
-}: {
-  recipients: Recipient[];
-}) {
+function MultiRecipientIntro({ recipients }: { recipients: Recipient[] }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+    <div className='flex-1 flex flex-col items-center justify-center px-4 py-8'>
       {/* Side-by-side avatars (not stacked) */}
-      <div className="flex gap-2 mb-6">
-        {recipients.slice(0, 4).map((recipient) => (
-          <Avatar key={recipient.id} className="h-16 w-16">
-            <AvatarImage src={recipient.image || undefined} alt={recipient.name} />
-            <AvatarFallback className="text-xl">{getInitials(recipient.name)}</AvatarFallback>
+      <div className='flex gap-2 mb-6'>
+        {recipients.slice(0, 4).map(recipient => (
+          <Avatar key={recipient.id} className='h-16 w-16'>
+            <AvatarImage
+              src={recipient.image || undefined}
+              alt={recipient.name}
+            />
+            <AvatarFallback className='text-xl'>
+              {getInitials(recipient.name)}
+            </AvatarFallback>
           </Avatar>
         ))}
         {recipients.length > 4 && (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-medium">
+          <div className='flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-medium'>
             +{recipients.length - 4}
           </div>
         )}
       </div>
 
       {/* Description with @mentions */}
-      <p className="text-center text-muted-foreground mb-4 max-w-md">
+      <p className='text-center text-muted-foreground mb-4 max-w-md'>
         This is the very beginning of your direct message history with{' '}
         {recipients.map((r, i) => (
           <span key={r.id}>
-            <span className="text-primary">@{r.name}</span>
+            <span className='text-primary'>@{r.name}</span>
             {i < recipients.length - 2 && ', '}
             {i === recipients.length - 2 && ' and '}
           </span>
@@ -807,10 +860,13 @@ function MultiRecipientIntro({
       </p>
 
       {/* Notification info */}
-      <p className="text-sm text-muted-foreground">
-        You'll be notified for <span className="font-medium">every new message</span> in this
+      <p className='text-sm text-muted-foreground'>
+        You'll be notified for{' '}
+        <span className='font-medium'>every new message</span> in this
         conversation.{' '}
-        <button className="text-primary hover:underline">Change this setting</button>
+        <button className='text-primary hover:underline'>
+          Change this setting
+        </button>
       </p>
     </div>
   );

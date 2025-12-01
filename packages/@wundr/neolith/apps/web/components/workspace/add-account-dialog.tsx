@@ -62,7 +62,7 @@ export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className='sm:max-w-md'>
         <DialogHeader>
           <DialogTitle>Add Account</DialogTitle>
           <DialogDescription>
@@ -70,56 +70,62 @@ export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className='space-y-4 py-4'>
           {/* Info Banner */}
-          <div className="rounded-md bg-muted p-3 text-sm">
-            <p className="font-medium mb-1">Feature Coming Soon</p>
-            <p className="text-muted-foreground">
-              Account linking is not yet available. To access workspaces from another account,
-              please sign out and sign in with that account.
+          <div className='rounded-md bg-muted p-3 text-sm'>
+            <p className='font-medium mb-1'>Feature Coming Soon</p>
+            <p className='text-muted-foreground'>
+              Account linking is not yet available. To access workspaces from
+              another account, please sign out and sign in with that account.
             </p>
           </div>
 
           {/* OAuth Provider Buttons (Disabled) */}
-          <div className="space-y-3 opacity-50">
+          <div className='space-y-3 opacity-50'>
             <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={() => {/* TODO: Implement account linking */}}
+              variant='outline'
+              size='lg'
+              className='w-full'
+              onClick={() => {
+                /* TODO: Implement account linking */
+              }}
               disabled={true}
             >
-              <GitHubIcon className="mr-2 h-5 w-5" />
+              <GitHubIcon className='mr-2 h-5 w-5' />
               Link GitHub Account
             </Button>
 
             <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={() => {/* TODO: Implement account linking */}}
+              variant='outline'
+              size='lg'
+              className='w-full'
+              onClick={() => {
+                /* TODO: Implement account linking */
+              }}
               disabled={true}
             >
-              <GoogleIcon className="mr-2 h-5 w-5" />
+              <GoogleIcon className='mr-2 h-5 w-5' />
               Link Google Account
             </Button>
 
             <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={() => {/* TODO: Implement account linking */}}
+              variant='outline'
+              size='lg'
+              className='w-full'
+              onClick={() => {
+                /* TODO: Implement account linking */
+              }}
               disabled={true}
             >
-              <Mail className="mr-2 h-5 w-5" />
+              <Mail className='mr-2 h-5 w-5' />
               Link Email Account
             </Button>
           </div>
 
           {/* Current Workaround Instructions */}
-          <div className="rounded-md border border-border p-3 text-sm space-y-2">
-            <p className="font-medium">Current Workaround:</p>
-            <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+          <div className='rounded-md border border-border p-3 text-sm space-y-2'>
+            <p className='font-medium'>Current Workaround:</p>
+            <ol className='list-decimal list-inside space-y-1 text-muted-foreground'>
               <li>Click your profile menu in the top right</li>
               <li>Select "Sign out"</li>
               <li>Sign in with a different account</li>
@@ -129,7 +135,7 @@ export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant='outline' onClick={onClose}>
             Close
           </Button>
         </DialogFooter>

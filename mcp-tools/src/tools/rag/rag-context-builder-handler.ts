@@ -60,12 +60,15 @@ export class RagContextBuilderHandler {
         query,
         additionalPaths,
         includeCode,
-        includeDocs,
+        includeDocs
       );
       chunks.push(...fileChunks);
     }
 
-    if (storeName && (sources.includes('store') || sources.includes('combined'))) {
+    if (
+      storeName &&
+      (sources.includes('store') || sources.includes('combined'))
+    ) {
       const storeChunks = await this.gatherStoreContext(query, storeName);
       chunks.push(...storeChunks);
     }
@@ -75,7 +78,10 @@ export class RagContextBuilderHandler {
 
     // Build final context
     const context = this.formatContext(selectedChunks, format);
-    const totalTokens = selectedChunks.reduce((sum, c) => sum + c.tokenCount, 0);
+    const totalTokens = selectedChunks.reduce(
+      (sum, c) => sum + c.tokenCount,
+      0
+    );
 
     // Calculate quality metrics
     const quality = this.calculateQuality(selectedChunks);
@@ -104,13 +110,22 @@ export class RagContextBuilderHandler {
     query: string,
     paths?: string[],
     includeCode?: boolean,
-    includeDocs?: boolean,
+    includeDocs?: boolean
   ): Promise<ContextChunk[]> {
     const chunks: ContextChunk[] = [];
     const searchPaths = paths || [process.cwd()];
     const queryTerms = query.toLowerCase().split(/\s+/);
 
-    const codeExtensions = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java'];
+    const codeExtensions = [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.py',
+      '.go',
+      '.rs',
+      '.java',
+    ];
     const docExtensions = ['.md', '.txt', '.rst', '.json', '.yaml', '.yml'];
 
     for (const searchPath of searchPaths) {
@@ -157,7 +172,7 @@ export class RagContextBuilderHandler {
    */
   private async gatherStoreContext(
     query: string,
-    storeName: string,
+    storeName: string
   ): Promise<ContextChunk[]> {
     const chunks: ContextChunk[] = [];
     const storePath = path.join(RAG_STORE_DIR, `${storeName}.json`);
@@ -196,7 +211,7 @@ export class RagContextBuilderHandler {
   private selectChunks(
     chunks: ContextChunk[],
     strategy: string,
-    maxTokens: number,
+    maxTokens: number
   ): ContextChunk[] {
     // Sort based on strategy
     let sorted: ContextChunk[];
@@ -310,7 +325,8 @@ export class RagContextBuilderHandler {
       return { relevanceScore: 0, diversityScore: 0, coverageScore: 0 };
     }
 
-    const avgRelevance = chunks.reduce((sum, c) => sum + c.relevance, 0) / chunks.length;
+    const avgRelevance =
+      chunks.reduce((sum, c) => sum + c.relevance, 0) / chunks.length;
 
     const uniqueDirs = new Set(chunks.map(c => path.dirname(c.source)));
     const diversityScore = Math.min(1, uniqueDirs.size / 5);
@@ -345,7 +361,10 @@ export class RagContextBuilderHandler {
   /**
    * Extract relevant snippet from content
    */
-  private extractRelevantSnippet(content: string, queryTerms: string[]): string {
+  private extractRelevantSnippet(
+    content: string,
+    queryTerms: string[]
+  ): string {
     const lines = content.split('\n');
     const matchingLines: number[] = [];
 

@@ -27,7 +27,11 @@ import {
  * Error thrown for local storage operations.
  */
 export class LocalStorageError extends GenesisError {
-  constructor(message: string, code: string, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, 500, metadata);
     this.name = 'LocalStorageError';
   }
@@ -41,7 +45,7 @@ export class StorageUnavailableError extends LocalStorageError {
     super(
       `Storage backend '${backend}' is not available`,
       'STORAGE_UNAVAILABLE',
-      { backend },
+      { backend }
     );
     this.name = 'StorageUnavailableError';
   }
@@ -55,7 +59,7 @@ export class StorageQuotaExceededError extends LocalStorageError {
     super(
       `Storage quota exceeded: required ${requiredSize} bytes, available ${availableSize} bytes`,
       'STORAGE_QUOTA_EXCEEDED',
-      { requiredSize, availableSize },
+      { requiredSize, availableSize }
     );
     this.name = 'StorageQuotaExceededError';
   }
@@ -69,7 +73,7 @@ export class StorageOperationError extends LocalStorageError {
     super(
       `Storage operation '${operation}' failed for key '${key}': ${originalError?.message ?? 'Unknown error'}`,
       'STORAGE_OPERATION_FAILED',
-      { operation, key, originalError: originalError?.message },
+      { operation, key, originalError: originalError?.message }
     );
     this.name = 'StorageOperationError';
   }
@@ -207,7 +211,6 @@ export interface LocalStorageService {
 const STORE_NAME = 'keyvalue';
 const METADATA_STORE_NAME = 'metadata';
 
-
 /**
  * IndexedDB-based storage backend.
  */
@@ -231,10 +234,12 @@ class IndexedDBStorageBackend {
       const request = indexedDB.open(this.config.dbName, this.config.dbVersion);
 
       request.onerror = () => {
-        reject(new LocalStorageError(
-          `Failed to open IndexedDB: ${request.error?.message ?? 'Unknown error'}`,
-          'INDEXEDDB_OPEN_FAILED',
-        ));
+        reject(
+          new LocalStorageError(
+            `Failed to open IndexedDB: ${request.error?.message ?? 'Unknown error'}`,
+            'INDEXEDDB_OPEN_FAILED'
+          )
+        );
       };
 
       request.onsuccess = () => {
@@ -266,7 +271,7 @@ class IndexedDBStorageBackend {
     if (!this.db) {
       throw new LocalStorageError(
         'IndexedDB not initialized. Call initialize() first.',
-        'INDEXEDDB_NOT_INITIALIZED',
+        'INDEXEDDB_NOT_INITIALIZED'
       );
     }
     return this.db;
@@ -279,7 +284,10 @@ class IndexedDBStorageBackend {
     const db = this.ensureOpen();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME, METADATA_STORE_NAME], 'readonly');
+      const transaction = db.transaction(
+        [STORE_NAME, METADATA_STORE_NAME],
+        'readonly'
+      );
       const store = transaction.objectStore(STORE_NAME);
       const metaStore = transaction.objectStore(METADATA_STORE_NAME);
 
@@ -287,7 +295,9 @@ class IndexedDBStorageBackend {
       const metaRequest = metaStore.get(key);
 
       transaction.onerror = () => {
-        reject(new StorageOperationError('get', key, transaction.error ?? undefined));
+        reject(
+          new StorageOperationError('get', key, transaction.error ?? undefined)
+        );
       };
 
       transaction.oncomplete = () => {
@@ -323,11 +333,18 @@ class IndexedDBStorageBackend {
   /**
    * Sets a value for a key.
    */
-  async set<T>(key: string, value: T, metadata: StorageMetadata): Promise<void> {
+  async set<T>(
+    key: string,
+    value: T,
+    metadata: StorageMetadata
+  ): Promise<void> {
     const db = this.ensureOpen();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME, METADATA_STORE_NAME], 'readwrite');
+      const transaction = db.transaction(
+        [STORE_NAME, METADATA_STORE_NAME],
+        'readwrite'
+      );
       const store = transaction.objectStore(STORE_NAME);
       const metaStore = transaction.objectStore(METADATA_STORE_NAME);
 
@@ -335,7 +352,9 @@ class IndexedDBStorageBackend {
       metaStore.put(metadata, key);
 
       transaction.onerror = () => {
-        reject(new StorageOperationError('set', key, transaction.error ?? undefined));
+        reject(
+          new StorageOperationError('set', key, transaction.error ?? undefined)
+        );
       };
 
       transaction.oncomplete = () => {
@@ -351,7 +370,10 @@ class IndexedDBStorageBackend {
     const db = this.ensureOpen();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME, METADATA_STORE_NAME], 'readwrite');
+      const transaction = db.transaction(
+        [STORE_NAME, METADATA_STORE_NAME],
+        'readwrite'
+      );
       const store = transaction.objectStore(STORE_NAME);
       const metaStore = transaction.objectStore(METADATA_STORE_NAME);
 
@@ -359,7 +381,13 @@ class IndexedDBStorageBackend {
       metaStore.delete(key);
 
       transaction.onerror = () => {
-        reject(new StorageOperationError('delete', key, transaction.error ?? undefined));
+        reject(
+          new StorageOperationError(
+            'delete',
+            key,
+            transaction.error ?? undefined
+          )
+        );
       };
 
       transaction.oncomplete = () => {
@@ -380,7 +408,9 @@ class IndexedDBStorageBackend {
       const request = store.count(key);
 
       request.onerror = () => {
-        reject(new StorageOperationError('has', key, request.error ?? undefined));
+        reject(
+          new StorageOperationError('has', key, request.error ?? undefined)
+        );
       };
 
       request.onsuccess = () => {
@@ -401,10 +431,12 @@ class IndexedDBStorageBackend {
       const request = store.getAllKeys();
 
       request.onerror = () => {
-        reject(new LocalStorageError(
-          `Failed to get all keys: ${request.error?.message ?? 'Unknown error'}`,
-          'GET_ALL_KEYS_FAILED',
-        ));
+        reject(
+          new LocalStorageError(
+            `Failed to get all keys: ${request.error?.message ?? 'Unknown error'}`,
+            'GET_ALL_KEYS_FAILED'
+          )
+        );
       };
 
       request.onsuccess = () => {
@@ -426,10 +458,12 @@ class IndexedDBStorageBackend {
       const result = new Map<string, StorageMetadata>();
 
       request.onerror = () => {
-        reject(new LocalStorageError(
-          `Failed to get all metadata: ${request.error?.message ?? 'Unknown error'}`,
-          'GET_ALL_METADATA_FAILED',
-        ));
+        reject(
+          new LocalStorageError(
+            `Failed to get all metadata: ${request.error?.message ?? 'Unknown error'}`,
+            'GET_ALL_METADATA_FAILED'
+          )
+        );
       };
 
       request.onsuccess = () => {
@@ -451,7 +485,10 @@ class IndexedDBStorageBackend {
     const db = this.ensureOpen();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME, METADATA_STORE_NAME], 'readwrite');
+      const transaction = db.transaction(
+        [STORE_NAME, METADATA_STORE_NAME],
+        'readwrite'
+      );
       const store = transaction.objectStore(STORE_NAME);
       const metaStore = transaction.objectStore(METADATA_STORE_NAME);
 
@@ -459,10 +496,12 @@ class IndexedDBStorageBackend {
       metaStore.clear();
 
       transaction.onerror = () => {
-        reject(new LocalStorageError(
-          `Failed to clear storage: ${transaction.error?.message ?? 'Unknown error'}`,
-          'CLEAR_STORAGE_FAILED',
-        ));
+        reject(
+          new LocalStorageError(
+            `Failed to clear storage: ${transaction.error?.message ?? 'Unknown error'}`,
+            'CLEAR_STORAGE_FAILED'
+          )
+        );
       };
 
       transaction.oncomplete = () => {
@@ -517,7 +556,11 @@ class MemoryStorageBackend {
     };
   }
 
-  async set<T>(key: string, value: T, metadata: StorageMetadata): Promise<void> {
+  async set<T>(
+    key: string,
+    value: T,
+    metadata: StorageMetadata
+  ): Promise<void> {
     this.store.set(key, value);
     this.metadata.set(key, metadata);
   }
@@ -612,7 +655,7 @@ export class LocalStorageServiceImpl implements LocalStorageService {
     if (!this.backend) {
       throw new LocalStorageError(
         'LocalStorageService not initialized. Call initialize() first.',
-        'SERVICE_NOT_INITIALIZED',
+        'SERVICE_NOT_INITIALIZED'
       );
     }
     return this.backend;
@@ -638,7 +681,11 @@ export class LocalStorageServiceImpl implements LocalStorageService {
   /**
    * Sets a value for a key.
    */
-  async set<T>(key: string, value: T, options: StorageOptions = {}): Promise<void> {
+  async set<T>(
+    key: string,
+    value: T,
+    options: StorageOptions = {}
+  ): Promise<void> {
     const backend = this.ensureInitialized();
 
     const serialized = JSON.stringify(value);
@@ -660,7 +707,10 @@ export class LocalStorageServiceImpl implements LocalStorageService {
     // Check quota if max size is configured
     if (this.config.maxStorageSize) {
       const currentSize = await this.getCacheSize();
-      const availableSize = this.config.maxStorageSize - currentSize + (existing?.metadata.size ?? 0);
+      const availableSize =
+        this.config.maxStorageSize -
+        currentSize +
+        (existing?.metadata.size ?? 0);
 
       if (size > availableSize) {
         throw new StorageQuotaExceededError(size, availableSize);
@@ -694,12 +744,12 @@ export class LocalStorageServiceImpl implements LocalStorageService {
     const result = new Map<string, T>();
 
     await Promise.all(
-      keys.map(async (key) => {
+      keys.map(async key => {
         const item = await backend.get<T>(key);
         if (item !== null) {
           result.set(key, item.value);
         }
-      }),
+      })
     );
 
     return result;
@@ -708,7 +758,10 @@ export class LocalStorageServiceImpl implements LocalStorageService {
   /**
    * Sets multiple key-value pairs.
    */
-  async setMany<T>(entries: Map<string, T>, options: StorageOptions = {}): Promise<void> {
+  async setMany<T>(
+    entries: Map<string, T>,
+    options: StorageOptions = {}
+  ): Promise<void> {
     const backend = this.ensureInitialized();
 
     const setPromises: Promise<void>[] = [];
@@ -735,7 +788,7 @@ export class LocalStorageServiceImpl implements LocalStorageService {
    */
   async deleteMany(keys: string[]): Promise<void> {
     const backend = this.ensureInitialized();
-    await Promise.all(keys.map((key) => backend.delete(key)));
+    await Promise.all(keys.map(key => backend.delete(key)));
   }
 
   /**
@@ -749,7 +802,7 @@ export class LocalStorageServiceImpl implements LocalStorageService {
       return allKeys;
     }
 
-    return allKeys.filter((key) => key.startsWith(prefix));
+    return allKeys.filter(key => key.startsWith(prefix));
   }
 
   /**
@@ -795,7 +848,7 @@ export class LocalStorageServiceImpl implements LocalStorageService {
       }
     }
 
-    await Promise.all(keysToDelete.map((key) => backend.delete(key)));
+    await Promise.all(keysToDelete.map(key => backend.delete(key)));
 
     return {
       removedCount: keysToDelete.length,
@@ -824,7 +877,7 @@ export class LocalStorageServiceImpl implements LocalStorageService {
       }
     }
 
-    await Promise.all(keysToDelete.map((key) => backend.delete(key)));
+    await Promise.all(keysToDelete.map(key => backend.delete(key)));
 
     return {
       removedCount: keysToDelete.length,
@@ -859,7 +912,9 @@ export class LocalStorageServiceImpl implements LocalStorageService {
     }
 
     const availableQuota = this.config.maxStorageSize;
-    const usedPercentage = availableQuota ? (totalSize / availableQuota) * 100 : 0;
+    const usedPercentage = availableQuota
+      ? (totalSize / availableQuota) * 100
+      : 0;
 
     return {
       itemCount: metadata.size,
@@ -910,7 +965,7 @@ export class LocalStorageServiceImpl implements LocalStorageService {
  * ```
  */
 export function createLocalStorageService(
-  config: Partial<LocalStorageConfig> = {},
+  config: Partial<LocalStorageConfig> = {}
 ): LocalStorageServiceImpl {
   return new LocalStorageServiceImpl(config);
 }
@@ -983,7 +1038,7 @@ export function parseStorageKey(key: string): string[] {
  */
 export function createNamespacedStorage(
   service: LocalStorageService,
-  namespace: string,
+  namespace: string
 ): {
   get: <T>(key: string) => Promise<T | null>;
   set: <T>(key: string, value: T, options?: StorageOptions) => Promise<void>;
@@ -1000,7 +1055,7 @@ export function createNamespacedStorage(
     delete: (key: string) => service.delete(`${prefix}${key}`),
     getKeys: async () => {
       const keys = await service.getKeys(prefix);
-      return keys.map((k) => k.slice(prefix.length));
+      return keys.map(k => k.slice(prefix.length));
     },
     clear: async () => {
       const keys = await service.getKeys(prefix);

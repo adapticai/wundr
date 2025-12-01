@@ -83,14 +83,14 @@ function generateInviteToken(): string {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -103,8 +103,11 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', ORG_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -120,8 +123,11 @@ export async function GET(
 
     if (!workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('You are not a member of this workspace', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You are not a member of this workspace',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -151,31 +157,45 @@ export async function GET(
 
     if (!conversation) {
       return NextResponse.json(
-        createErrorResponse('Conversation not found', ORG_ERROR_CODES.CHANNEL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Conversation not found',
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     if (conversation.type !== 'DM') {
       return NextResponse.json(
-        createErrorResponse('This endpoint is only for DM conversations', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'This endpoint is only for DM conversations',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (conversation.workspaceId !== workspace.id) {
       return NextResponse.json(
-        createErrorResponse('Conversation does not belong to this workspace', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Conversation does not belong to this workspace',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Verify user is a member of the conversation
-    const isMember = conversation.channelMembers.some(m => m.userId === session.user.id);
+    const isMember = conversation.channelMembers.some(
+      m => m.userId === session.user.id
+    );
     if (!isMember) {
       return NextResponse.json(
-        createErrorResponse('You are not a member of this conversation', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You are not a member of this conversation',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -197,10 +217,16 @@ export async function GET(
       total: members.length,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceSlug]/conversations/[conversationId]/members] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceSlug]/conversations/[conversationId]/members] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('Failed to fetch conversation members', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'Failed to fetch conversation members',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -219,14 +245,14 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -238,8 +264,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -248,8 +277,11 @@ export async function POST(
     // Validate at least one member is being added
     if (userIds.length === 0 && emails.length === 0) {
       return NextResponse.json(
-        createErrorResponse('At least one userId or email is required', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'At least one userId or email is required',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -266,8 +298,11 @@ export async function POST(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', ORG_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -292,8 +327,11 @@ export async function POST(
 
     if (!workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('You are not a member of this workspace', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You are not a member of this workspace',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -311,31 +349,45 @@ export async function POST(
 
     if (!conversation) {
       return NextResponse.json(
-        createErrorResponse('Conversation not found', ORG_ERROR_CODES.CHANNEL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Conversation not found',
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     if (conversation.type !== 'DM') {
       return NextResponse.json(
-        createErrorResponse('This endpoint is only for DM conversations', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'This endpoint is only for DM conversations',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (conversation.workspaceId !== workspace.id) {
       return NextResponse.json(
-        createErrorResponse('Conversation does not belong to this workspace', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Conversation does not belong to this workspace',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Verify user is a member of the conversation
-    const isMember = conversation.channelMembers.some(m => m.userId === session.user.id);
+    const isMember = conversation.channelMembers.some(
+      m => m.userId === session.user.id
+    );
     if (!isMember) {
       return NextResponse.json(
-        createErrorResponse('You are not a member of this conversation', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You are not a member of this conversation',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -356,21 +408,24 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             `Some users are not workspace members: ${invalidUserIds.join(', ')}`,
-            ORG_ERROR_CODES.USER_NOT_FOUND,
+            ORG_ERROR_CODES.USER_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
       // Filter out users who are already members
-      const existingMemberIds = new Set(conversation.channelMembers.map(m => m.userId));
+      const existingMemberIds = new Set(
+        conversation.channelMembers.map(m => m.userId)
+      );
       const usersToAdd = userIds.filter(id => !existingMemberIds.has(id));
       newMembers.push(...usersToAdd);
     }
 
     // Process email invites
     const emailInvites: WorkspaceInvite[] = [];
-    const emailResults: { email: string; success: boolean; error?: string }[] = [];
+    const emailResults: { email: string; success: boolean; error?: string }[] =
+      [];
 
     if (emails.length > 0) {
       // Check if any email is already a workspace member
@@ -392,7 +447,9 @@ export async function POST(
       const newEmails = emails.filter(e => !existingEmailSet.has(e));
 
       // For existing members, add them to the conversation if not already in it
-      const existingMemberIds = new Set(conversation.channelMembers.map(m => m.userId));
+      const existingMemberIds = new Set(
+        conversation.channelMembers.map(m => m.userId)
+      );
       for (const member of existingMembers) {
         if (!existingMemberIds.has(member.userId)) {
           newMembers.push(member.userId);
@@ -441,7 +498,8 @@ export async function POST(
         });
 
         // Send invitation emails
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const workspaceName = workspace.name || 'Neolith Workspace';
 
         for (const invite of emailInvites) {
@@ -450,11 +508,15 @@ export async function POST(
 
             const emailResult: EmailResponse = await sendInvitationEmail({
               email: invite.email,
-              inviterName: workspaceMembership.user.name || workspaceMembership.user.email || 'Team member',
+              inviterName:
+                workspaceMembership.user.name ||
+                workspaceMembership.user.email ||
+                'Team member',
               workspaceName,
               invitationUrl,
               role: invite.role,
-              message: invite.message || `You've been invited to join a conversation`,
+              message:
+                invite.message || `You've been invited to join a conversation`,
             });
 
             emailResults.push({
@@ -464,10 +526,16 @@ export async function POST(
             });
 
             if (!emailResult.success) {
-              console.error(`[Conversation Members] Failed to send email to ${invite.email}:`, emailResult.error);
+              console.error(
+                `[Conversation Members] Failed to send email to ${invite.email}:`,
+                emailResult.error
+              );
             }
           } catch (error) {
-            console.error(`[Conversation Members] Exception sending email to ${invite.email}:`, error);
+            console.error(
+              `[Conversation Members] Exception sending email to ${invite.email}:`,
+              error
+            );
             emailResults.push({
               email: invite.email,
               success: false,
@@ -562,10 +630,16 @@ export async function POST(
 
     return NextResponse.json(responseData, { status: 201 });
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceSlug]/conversations/[conversationId]/members] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceSlug]/conversations/[conversationId]/members] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('Failed to add members to conversation', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'Failed to add members to conversation',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -67,7 +67,13 @@ const DEFAULT_SECTIONS: MobileSidebarSection[] = [
     title: 'Text Channels',
     channels: [
       { id: 'general', name: 'general', icon: Hash, type: 'text' },
-      { id: 'announcements', name: 'announcements', icon: Hash, type: 'text', unread: 2 },
+      {
+        id: 'announcements',
+        name: 'announcements',
+        icon: Hash,
+        type: 'text',
+        unread: 2,
+      },
     ],
     defaultOpen: true,
   },
@@ -90,14 +96,14 @@ const DEFAULT_USER: MobileSidebarUser = {
 
 function getChannelIcon(channel: MobileSidebarChannel): LucideIcon {
   if (channel.icon) {
-return channel.icon;
-}
+    return channel.icon;
+  }
   if (channel.type === 'voice') {
-return Volume2;
-}
+    return Volume2;
+  }
   if (channel.type === 'private') {
-return Lock;
-}
+    return Lock;
+  }
   return Hash;
 }
 
@@ -141,11 +147,11 @@ export function MobileSidebar({
 }: MobileSidebarProps) {
   const pathname = usePathname();
   const [openSections, setOpenSections] = React.useState<Set<string>>(
-    new Set(sections.filter((s) => s.defaultOpen).map((s) => s.id)),
+    new Set(sections.filter(s => s.defaultOpen).map(s => s.id))
   );
 
   const toggleSection = React.useCallback((sectionId: string) => {
-    setOpenSections((prev) => {
+    setOpenSections(prev => {
       const next = new Set(prev);
       if (next.has(sectionId)) {
         next.delete(sectionId);
@@ -162,20 +168,15 @@ export function MobileSidebar({
         onChannelClick(channelId);
       }
     },
-    [onChannelClick],
+    [onChannelClick]
   );
 
   return (
-    <div
-      className={cn(
-        'flex flex-col h-full bg-background',
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col h-full bg-background', className)}>
       {/* Scrollable channel list */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-2 space-y-2">
-          {sections.map((section) => {
+      <div className='flex-1 overflow-y-auto'>
+        <div className='p-2 space-y-2'>
+          {sections.map(section => {
             const isOpen = openSections.has(section.id);
 
             return (
@@ -192,21 +193,21 @@ export function MobileSidebar({
                     'text-sm font-semibold text-muted-foreground',
                     'hover:text-foreground transition-colors',
                     'rounded-md hover:bg-accent',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   )}
                 >
-                  <span className="uppercase tracking-wider text-xs">
+                  <span className='uppercase tracking-wider text-xs'>
                     {section.title}
                   </span>
                   {isOpen ? (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className='h-4 w-4' />
                   ) : (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className='h-4 w-4' />
                   )}
                 </CollapsibleTrigger>
 
-                <CollapsibleContent className="space-y-1 pt-1">
-                  {section.channels.map((channel) => {
+                <CollapsibleContent className='space-y-1 pt-1'>
+                  {section.channels.map(channel => {
                     const Icon = getChannelIcon(channel);
                     const isActive =
                       pathname === `/channels/${channel.id}` ||
@@ -225,13 +226,13 @@ export function MobileSidebar({
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           isActive
                             ? 'bg-accent text-accent-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                         )}
                         aria-label={channel.name}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                        <span className="flex-1 text-left truncate">
+                        <Icon className='h-5 w-5 shrink-0' aria-hidden='true' />
+                        <span className='flex-1 text-left truncate'>
                           {channel.name}
                         </span>
                         {channel.unread !== undefined && channel.unread > 0 && (
@@ -240,7 +241,7 @@ export function MobileSidebar({
                               'flex items-center justify-center',
                               'min-w-[20px] h-5 px-1.5',
                               'text-xs font-bold text-white',
-                              'bg-primary rounded-full',
+                              'bg-primary rounded-full'
                             )}
                             aria-label={`${channel.unread} unread messages`}
                           >
@@ -258,15 +259,15 @@ export function MobileSidebar({
       </div>
 
       {/* User menu at bottom */}
-      <div className="border-t border-border p-2 mt-auto">
-        <div className="flex items-center gap-3 p-2">
-          <div className="relative">
-            <Avatar className="h-10 w-10">
+      <div className='border-t border-border p-2 mt-auto'>
+        <div className='flex items-center gap-3 p-2'>
+          <div className='relative'>
+            <Avatar className='h-10 w-10'>
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback>
                 {user.name
                   .split(' ')
-                  .map((n) => n[0])
+                  .map(n => n[0])
                   .join('')
                   .toUpperCase()}
               </AvatarFallback>
@@ -276,36 +277,38 @@ export function MobileSidebar({
                 className={cn(
                   'absolute bottom-0 right-0',
                   'w-3 h-3 rounded-full border-2 border-background',
-                  getStatusColor(user.status),
+                  getStatusColor(user.status)
                 )}
                 aria-label={`Status: ${user.status}`}
               />
             )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate">{user.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          <div className='flex-1 min-w-0'>
+            <p className='text-sm font-semibold truncate'>{user.name}</p>
+            <p className='text-xs text-muted-foreground truncate'>
+              {user.email}
+            </p>
           </div>
 
-          <div className="flex gap-1">
+          <div className='flex gap-1'>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
+              variant='ghost'
+              size='icon'
+              className='h-9 w-9'
               onClick={onUserMenuClick}
-              aria-label="User settings"
+              aria-label='User settings'
             >
-              <Settings className="h-4 w-4" />
+              <Settings className='h-4 w-4' />
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
+              variant='ghost'
+              size='icon'
+              className='h-9 w-9'
               onClick={onLogoutClick}
-              aria-label="Logout"
+              aria-label='Logout'
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className='h-4 w-4' />
             </Button>
           </div>
         </div>
@@ -339,15 +342,15 @@ export function MobileSidebarItem({
 }: MobileSidebarItemProps) {
   const content = (
     <>
-      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-      <span className="flex-1 text-left truncate">{label}</span>
+      <Icon className='h-5 w-5 shrink-0' aria-hidden='true' />
+      <span className='flex-1 text-left truncate'>{label}</span>
       {badge !== undefined && (
         <span
           className={cn(
             'flex items-center justify-center',
             'min-w-[20px] h-5 px-1.5',
             'text-xs font-bold text-white',
-            'bg-primary rounded-full',
+            'bg-primary rounded-full'
           )}
           aria-label={`${badge} notifications`}
         >
@@ -367,12 +370,16 @@ export function MobileSidebarItem({
     isActive
       ? 'bg-accent text-accent-foreground'
       : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-    className,
+    className
   );
 
   if (href) {
     return (
-      <Link href={href} className={baseClasses} aria-current={isActive ? 'page' : undefined}>
+      <Link
+        href={href}
+        className={baseClasses}
+        aria-current={isActive ? 'page' : undefined}
+      >
         {content}
       </Link>
     );

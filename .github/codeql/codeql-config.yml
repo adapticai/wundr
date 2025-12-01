@@ -7,13 +7,13 @@ disable-default-queries: false
 queries:
   - name: security-and-quality
     uses: security-and-quality
-  - name: security-experimental 
+  - name: security-experimental
     uses: security-experimental
 
 # Specify paths to analyze
 paths:
   - "packages/*/src"
-  - "apps/*/src" 
+  - "apps/*/src"
   - "src"
   - "scripts"
 

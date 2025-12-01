@@ -40,13 +40,13 @@ export const WelcomeEmail = ({
           <EmailHeader />
 
           <Section style={contentSection}>
-            <EmailText variant="h1">Welcome to Neolith</EmailText>
+            <EmailText variant='h1'>Welcome to Neolith</EmailText>
 
             <EmailText>Hello {username},</EmailText>
 
             <EmailText>
-              Thank you for signing up for Neolith! We&apos;re excited to have you on
-              board.
+              Thank you for signing up for Neolith! We&apos;re excited to have
+              you on board.
             </EmailText>
 
             <EmailText>
@@ -62,13 +62,12 @@ export const WelcomeEmail = ({
             </ul>
 
             <Section style={buttonContainer}>
-              <EmailButton href={loginUrl}>
-                Get Started
-              </EmailButton>
+              <EmailButton href={loginUrl}>Get Started</EmailButton>
             </Section>
 
-            <EmailText variant="small">
-              If you didn&apos;t create this account, you can safely ignore this email.
+            <EmailText variant='small'>
+              If you didn&apos;t create this account, you can safely ignore this
+              email.
             </EmailText>
           </Section>
 

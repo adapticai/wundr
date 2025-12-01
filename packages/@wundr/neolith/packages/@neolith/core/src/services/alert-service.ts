@@ -242,9 +242,18 @@ export class OrchestratorNotFoundError extends AlertServiceError {
 export interface AlertService {
   // Health checks
   checkBudgetExhaustion(orchestratorId: string): Promise<Alert | null>;
-  checkHighErrorRate(orchestratorId: string, threshold?: number): Promise<Alert | null>;
-  checkSessionFailures(orchestratorId: string, threshold?: number): Promise<Alert | null>;
-  checkLatencySpike(orchestratorId: string, threshold?: number): Promise<Alert | null>;
+  checkHighErrorRate(
+    orchestratorId: string,
+    threshold?: number
+  ): Promise<Alert | null>;
+  checkSessionFailures(
+    orchestratorId: string,
+    threshold?: number
+  ): Promise<Alert | null>;
+  checkLatencySpike(
+    orchestratorId: string,
+    threshold?: number
+  ): Promise<Alert | null>;
   checkNodeHealth(nodeId: string): Promise<Alert | null>;
 
   // Alert management
@@ -252,15 +261,27 @@ export interface AlertService {
   acknowledgeAlert(alertId: string, userId: string): Promise<Alert>;
   resolveAlert(alertId: string, userId: string): Promise<Alert>;
   getActiveAlerts(filters?: AlertFilters): Promise<Alert[]>;
-  getAlertHistory(filters?: AlertFilters, pagination?: PaginationOptions): Promise<PaginatedAlerts>;
+  getAlertHistory(
+    filters?: AlertFilters,
+    pagination?: PaginationOptions
+  ): Promise<PaginatedAlerts>;
 
   // Rule evaluation
   evaluateAllRules(orchestratorId: string): Promise<Alert[]>;
 
   // Utility methods
-  getBudgetUsage(orchestratorId: string, period?: 'hourly' | 'daily' | 'monthly'): Promise<BudgetUsage>;
-  getErrorRate(orchestratorId: string, timeWindowMs?: number): Promise<ErrorRateStats>;
-  getSessionFailures(orchestratorId: string, timeWindowMs?: number): Promise<SessionFailureStats>;
+  getBudgetUsage(
+    orchestratorId: string,
+    period?: 'hourly' | 'daily' | 'monthly'
+  ): Promise<BudgetUsage>;
+  getErrorRate(
+    orchestratorId: string,
+    timeWindowMs?: number
+  ): Promise<ErrorRateStats>;
+  getSessionFailures(
+    orchestratorId: string,
+    timeWindowMs?: number
+  ): Promise<SessionFailureStats>;
 }
 
 // =============================================================================
@@ -314,7 +335,11 @@ export class AlertServiceImpl implements AlertService {
     }
 
     // Check for duplicate alerts
-    const existingAlert = await this.findExistingAlert(orchestratorId, 'budget_exhaustion', level);
+    const existingAlert = await this.findExistingAlert(
+      orchestratorId,
+      'budget_exhaustion',
+      level
+    );
     if (existingAlert) {
       return existingAlert;
     }
@@ -338,7 +363,10 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Check if error rate exceeds threshold
    */
-  async checkHighErrorRate(orchestratorId: string, threshold?: number): Promise<Alert | null> {
+  async checkHighErrorRate(
+    orchestratorId: string,
+    threshold?: number
+  ): Promise<Alert | null> {
     await this.verifyOrchestrator(orchestratorId);
 
     const errorThreshold = threshold ?? this.thresholds.errorRateCritical;
@@ -361,7 +389,11 @@ export class AlertServiceImpl implements AlertService {
       return null;
     }
 
-    const existingAlert = await this.findExistingAlert(orchestratorId, 'error_rate', level);
+    const existingAlert = await this.findExistingAlert(
+      orchestratorId,
+      'error_rate',
+      level
+    );
     if (existingAlert) {
       return existingAlert;
     }
@@ -384,7 +416,10 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Check if session failures exceed threshold
    */
-  async checkSessionFailures(orchestratorId: string, threshold?: number): Promise<Alert | null> {
+  async checkSessionFailures(
+    orchestratorId: string,
+    threshold?: number
+  ): Promise<Alert | null> {
     await this.verifyOrchestrator(orchestratorId);
 
     const failureThreshold = threshold ?? this.thresholds.sessionFailureCount;
@@ -395,8 +430,13 @@ export class AlertServiceImpl implements AlertService {
       return null;
     }
 
-    const level: AlertLevel = stats.failureCount >= failureThreshold * 2 ? 'critical' : 'warning';
-    const existingAlert = await this.findExistingAlert(orchestratorId, 'session_failure', level);
+    const level: AlertLevel =
+      stats.failureCount >= failureThreshold * 2 ? 'critical' : 'warning';
+    const existingAlert = await this.findExistingAlert(
+      orchestratorId,
+      'session_failure',
+      level
+    );
     if (existingAlert) {
       return existingAlert;
     }
@@ -418,7 +458,10 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Check if latency exceeds threshold
    */
-  async checkLatencySpike(orchestratorId: string, threshold?: number): Promise<Alert | null> {
+  async checkLatencySpike(
+    orchestratorId: string,
+    threshold?: number
+  ): Promise<Alert | null> {
     await this.verifyOrchestrator(orchestratorId);
 
     const latencyThreshold = threshold ?? this.thresholds.latencySpikeMs;
@@ -448,8 +491,13 @@ export class AlertServiceImpl implements AlertService {
       return null;
     }
 
-    const level: AlertLevel = avgLatency >= latencyThreshold * 2 ? 'critical' : 'warning';
-    const existingAlert = await this.findExistingAlert(orchestratorId, 'latency_spike', level);
+    const level: AlertLevel =
+      avgLatency >= latencyThreshold * 2 ? 'critical' : 'warning';
+    const existingAlert = await this.findExistingAlert(
+      orchestratorId,
+      'latency_spike',
+      level
+    );
     if (existingAlert) {
       return existingAlert;
     }
@@ -482,7 +530,8 @@ export class AlertServiceImpl implements AlertService {
       throw new OrchestratorNotFoundError(nodeId);
     }
 
-    const isHealthy = orchestrator.status === 'ONLINE' || orchestrator.status === 'BUSY';
+    const isHealthy =
+      orchestrator.status === 'ONLINE' || orchestrator.status === 'BUSY';
     const lastHeartbeat = orchestrator.updatedAt;
     const timeSinceHeartbeat = Date.now() - lastHeartbeat.getTime();
 
@@ -495,7 +544,11 @@ export class AlertServiceImpl implements AlertService {
     }
 
     const level: AlertLevel = isStale ? 'critical' : 'warning';
-    const existingAlert = await this.findExistingAlert(nodeId, 'node_health', level);
+    const existingAlert = await this.findExistingAlert(
+      nodeId,
+      'node_health',
+      level
+    );
     if (existingAlert) {
       return existingAlert;
     }
@@ -611,7 +664,7 @@ export class AlertServiceImpl implements AlertService {
       orderBy: [{ createdAt: 'desc' }, { level: 'desc' }],
     });
 
-    return alerts.map((alert) => this.mapAlertToOutput(alert));
+    return alerts.map(alert => this.mapAlertToOutput(alert));
   }
 
   /**
@@ -619,7 +672,7 @@ export class AlertServiceImpl implements AlertService {
    */
   async getAlertHistory(
     filters?: AlertFilters,
-    pagination?: PaginationOptions,
+    pagination?: PaginationOptions
   ): Promise<PaginatedAlerts> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
@@ -639,7 +692,7 @@ export class AlertServiceImpl implements AlertService {
     ]);
 
     return {
-      alerts: alerts.map((alert) => this.mapAlertToOutput(alert)),
+      alerts: alerts.map(alert => this.mapAlertToOutput(alert)),
       total,
       page,
       limit,
@@ -677,18 +730,24 @@ export class AlertServiceImpl implements AlertService {
    */
   async getBudgetUsage(
     orchestratorId: string,
-    period: 'hourly' | 'daily' | 'monthly' = 'hourly',
+    period: 'hourly' | 'daily' | 'monthly' = 'hourly'
   ): Promise<BudgetUsage> {
     const config = await this.db.budgetConfig.findUnique({
       where: { orchestratorId },
     });
 
     if (!config) {
-      throw new AlertServiceError(`Budget config not found for orchestrator: ${orchestratorId}`);
+      throw new AlertServiceError(
+        `Budget config not found for orchestrator: ${orchestratorId}`
+      );
     }
 
     const limit =
-      period === 'hourly' ? config.hourlyLimit : period === 'daily' ? config.dailyLimit : config.monthlyLimit;
+      period === 'hourly'
+        ? config.hourlyLimit
+        : period === 'daily'
+          ? config.dailyLimit
+          : config.monthlyLimit;
 
     // Calculate time window
     const now = new Date();
@@ -709,7 +768,10 @@ export class AlertServiceImpl implements AlertService {
       },
     });
 
-    const totalUsage = usageRecords.reduce((sum, record) => sum + record.totalTokens, 0);
+    const totalUsage = usageRecords.reduce(
+      (sum, record) => sum + record.totalTokens,
+      0
+    );
     const percentage = (totalUsage / limit) * 100;
 
     return {
@@ -724,7 +786,10 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Get error rate for an orchestrator
    */
-  async getErrorRate(orchestratorId: string, timeWindowMs: number = 60 * 60 * 1000): Promise<ErrorRateStats> {
+  async getErrorRate(
+    orchestratorId: string,
+    timeWindowMs: number = 60 * 60 * 1000
+  ): Promise<ErrorRateStats> {
     const periodStart = new Date(Date.now() - timeWindowMs);
 
     // This is a simplified implementation
@@ -752,7 +817,10 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Get session failure statistics
    */
-  async getSessionFailures(orchestratorId: string, _timeWindowMs: number = 60 * 60 * 1000): Promise<SessionFailureStats> {
+  async getSessionFailures(
+    orchestratorId: string,
+    _timeWindowMs: number = 60 * 60 * 1000
+  ): Promise<SessionFailureStats> {
     // This is a simplified implementation
     // In a real system, you'd track session failures in a dedicated table
     const totalSessions = await this.db.sessionManager.count({
@@ -791,7 +859,7 @@ export class AlertServiceImpl implements AlertService {
   private async findExistingAlert(
     orchestratorId: string,
     type: AlertType,
-    level: AlertLevel,
+    level: AlertLevel
   ): Promise<Alert | null> {
     const recentAlerts = await this.db.budgetAlert.findMany({
       where: {
@@ -816,7 +884,10 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Auto-resolve alerts when condition is no longer met
    */
-  private async autoResolveAlerts(orchestratorId: string, _type: AlertType): Promise<void> {
+  private async autoResolveAlerts(
+    orchestratorId: string,
+    _type: AlertType
+  ): Promise<void> {
     // Auto-acknowledge old alerts when condition resolves
     await this.db.budgetAlert.updateMany({
       where: {
@@ -872,7 +943,9 @@ export class AlertServiceImpl implements AlertService {
     }
 
     if (filters.level) {
-      where.level = Array.isArray(filters.level) ? { in: filters.level } : filters.level;
+      where.level = Array.isArray(filters.level)
+        ? { in: filters.level }
+        : filters.level;
     }
 
     if (typeof filters.acknowledged === 'boolean') {
@@ -905,7 +978,11 @@ export class AlertServiceImpl implements AlertService {
   /**
    * Map database alert to output format
    */
-  private mapAlertToOutput(alert: any, type?: AlertType, metadata?: Record<string, unknown>): Alert {
+  private mapAlertToOutput(
+    alert: any,
+    type?: AlertType,
+    metadata?: Record<string, unknown>
+  ): Alert {
     return {
       id: alert.id,
       orchestratorId: alert.orchestratorId,
@@ -933,7 +1010,10 @@ export class AlertServiceImpl implements AlertService {
 /**
  * Create a new alert service instance
  */
-export function createAlertService(database?: PrismaClient, thresholds?: Partial<AlertThresholds>): AlertServiceImpl {
+export function createAlertService(
+  database?: PrismaClient,
+  thresholds?: Partial<AlertThresholds>
+): AlertServiceImpl {
   return new AlertServiceImpl(database, thresholds);
 }
 
@@ -945,7 +1025,10 @@ let alertServiceInstance: AlertServiceImpl | null = null;
 /**
  * Get or create the global alert service instance
  */
-export function getAlertService(database?: PrismaClient, thresholds?: Partial<AlertThresholds>): AlertServiceImpl {
+export function getAlertService(
+  database?: PrismaClient,
+  thresholds?: Partial<AlertThresholds>
+): AlertServiceImpl {
   if (!alertServiceInstance) {
     alertServiceInstance = createAlertService(database, thresholds);
   }

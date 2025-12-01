@@ -3,19 +3,19 @@ name: CD Pipeline
 on:
   push:
     branches: [master]
-    tags: ['v*.*.*']
+    tags: ["v*.*.*"]
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
           - production
       skip_tests:
-        description: 'Skip test execution'
+        description: "Skip test execution"
         required: false
         default: false
         type: boolean
@@ -92,7 +92,7 @@ jobs:
       - name: Configure kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.28.0'
+          version: "v1.28.0"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -109,10 +109,10 @@ jobs:
         run: |
           # Substitute environment variables
           envsubst < k8s/deployment.yaml | kubectl apply -f -
-          
+
           # Wait for rollout
           kubectl rollout status deployment/wundr-staging -n wundr-staging --timeout=600s
-          
+
           # Verify deployment
           kubectl get pods -n wundr-staging -l app=wundr,environment=staging
         env:
@@ -125,10 +125,10 @@ jobs:
         run: |
           # Wait for service to be ready
           sleep 60
-          
+
           # Basic health check
           curl -f https://staging.wundr.io/health || exit 1
-          
+
           # API health check  
           curl -f https://staging.wundr.io/api/health || exit 1
 
@@ -159,7 +159,7 @@ jobs:
       - name: Configure kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.28.0'
+          version: "v1.28.0"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -168,7 +168,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Update kubeconfig  
+      - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME_PROD }} --region ${{ secrets.AWS_REGION }}
 
@@ -177,27 +177,27 @@ jobs:
           # Create new deployment version
           export DEPLOYMENT_COLOR=$(kubectl get deployment wundr-production -n wundr-production -o jsonpath='{.metadata.labels.color}' || echo "blue")
           export NEW_COLOR=$([ "$DEPLOYMENT_COLOR" = "blue" ] && echo "green" || echo "blue")
-          
+
           echo "Current color: $DEPLOYMENT_COLOR, deploying to: $NEW_COLOR"
-          
+
           # Deploy new version
           envsubst < k8s/deployment.yaml | sed "s/wundr-production/wundr-production-$NEW_COLOR/" | kubectl apply -f -
-          
+
           # Wait for new deployment
           kubectl rollout status deployment/wundr-production-$NEW_COLOR -n wundr-production --timeout=600s
-          
+
           # Test new deployment
           kubectl port-forward -n wundr-production svc/wundr-service-$NEW_COLOR 8080:80 &
           sleep 30
           curl -f http://localhost:8080/health || exit 1
-          
+
           # Switch traffic
           kubectl patch service wundr-service -n wundr-production -p '{"spec":{"selector":{"color":"'$NEW_COLOR'"}}}'
-          
+
           # Clean up old deployment (after verification period)
           sleep 300  # Wait 5 minutes
           kubectl delete deployment wundr-production-$DEPLOYMENT_COLOR -n wundr-production || true
-          
+
         env:
           ENVIRONMENT: production
           IMAGE: ${{ needs.build-push.outputs.image-tag }}
@@ -209,7 +209,7 @@ jobs:
           # Comprehensive health checks
           curl -f https://wundr.io/health || exit 1
           curl -f https://wundr.io/api/health || exit 1
-          
+
           # Performance validation
           curl -f https://wundr.io/metrics || exit 1
 
@@ -248,7 +248,7 @@ jobs:
       - name: Configure kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.28.0'
+          version: "v1.28.0"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -260,7 +260,7 @@ jobs:
       - name: Emergency rollback
         run: |
           aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME_PROD }} --region ${{ secrets.AWS_REGION }}
-          
+
           # Rollback to previous deployment
           kubectl rollout undo deployment/wundr-production -n wundr-production
           kubectl rollout status deployment/wundr-production -n wundr-production --timeout=300s

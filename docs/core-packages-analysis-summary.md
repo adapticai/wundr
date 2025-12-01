@@ -1,7 +1,7 @@
 # Core Packages Analysis Summary
 
-**Analysis Date:** 2025-11-30
-**Packages Analyzed:** @wundr.io/core (v1.0.6) and @wundr.io/core-simple (v1.0.1)
+**Analysis Date:** 2025-11-30 **Packages Analyzed:** @wundr.io/core (v1.0.6) and
+@wundr.io/core-simple (v1.0.1)
 
 ## Executive Summary
 
@@ -10,21 +10,24 @@ The Wundr platform has two core packages with significantly different scopes:
 - **@wundr.io/core**: Comprehensive, production-ready utilities (6,005 lines of code)
 - **@wundr.io/core-simple**: Minimal business logic layer (22 lines of code)
 
-The @wundr/core package provides a solid foundation for building orchestrators and agents with production-grade logging, event-driven architecture, error handling, and performance monitoring. However, it lacks orchestration-specific utilities like state machines, task queues, and agent lifecycle management.
+The @wundr/core package provides a solid foundation for building orchestrators and agents with
+production-grade logging, event-driven architecture, error handling, and performance monitoring.
+However, it lacks orchestration-specific utilities like state machines, task queues, and agent
+lifecycle management.
 
 ## Package Comparison
 
-| Feature | @wundr/core | core-simple |
-|---------|-------------|-------------|
-| **Lines of Code** | 6,005 | 22 |
-| **Dependencies** | 5 (winston, chalk, zod, uuid, eventemitter3) | 3 (zod, uuid, eventemitter3) |
-| **Logging** | ✅ Production-grade (Winston) | ❌ None |
-| **Events** | ✅ Full EventBus | ❌ None |
-| **Error Handling** | ✅ Comprehensive | ❌ None |
-| **Validation** | ✅ Zod integration | ❌ None |
-| **Performance** | ✅ Extensive utilities | ❌ None |
-| **RAG** | ✅ Full RAG utilities | ❌ None |
-| **Purpose** | Platform foundation | Business logic |
+| Feature            | @wundr/core                                  | core-simple                  |
+| ------------------ | -------------------------------------------- | ---------------------------- |
+| **Lines of Code**  | 6,005                                        | 22                           |
+| **Dependencies**   | 5 (winston, chalk, zod, uuid, eventemitter3) | 3 (zod, uuid, eventemitter3) |
+| **Logging**        | ✅ Production-grade (Winston)                | ❌ None                      |
+| **Events**         | ✅ Full EventBus                             | ❌ None                      |
+| **Error Handling** | ✅ Comprehensive                             | ❌ None                      |
+| **Validation**     | ✅ Zod integration                           | ❌ None                      |
+| **Performance**    | ✅ Extensive utilities                       | ❌ None                      |
+| **RAG**            | ✅ Full RAG utilities                        | ❌ None                      |
+| **Purpose**        | Platform foundation                          | Business logic               |
 
 ## Key Capabilities for Orchestrators
 
@@ -34,12 +37,13 @@ The EventBus provides type-safe pub/sub messaging perfect for agent coordination
 
 ```typescript
 const events = getEventBus();
-events.on<TaskPayload>('agent:task:completed', async (event) => {
+events.on<TaskPayload>('agent:task:completed', async event => {
   orchestrator.handleAgentCompletion(event.payload);
 });
 ```
 
 **Features:**
+
 - Type-safe event payloads
 - Event history tracking
 - Automatic error handling
@@ -56,6 +60,7 @@ const agentLogger = orchestratorLogger.child({ agent: 'analyzer', agentId: '123'
 ```
 
 **Features:**
+
 - Multiple output formats (json, simple, detailed)
 - Colorized console output
 - File output support
@@ -68,13 +73,17 @@ Comprehensive timing and metrics:
 
 ```typescript
 const aggregator = new PerformanceAggregator('orchestrator');
-const { result, metrics } = await measureTime(async () => {
-  return await agent.execute(task);
-}, { label: 'agent-execution' });
+const { result, metrics } = await measureTime(
+  async () => {
+    return await agent.execute(task);
+  },
+  { label: 'agent-execution' }
+);
 aggregator.addMetrics(metrics);
 ```
 
 **Features:**
+
 - Timer with marks for multi-phase operations
 - Memory usage tracking
 - Performance aggregation (p95, p99, stddev)
@@ -89,17 +98,18 @@ Essential for managing agent concurrency:
 // Retry with backoff
 await retry(async () => agent.execute(task), {
   attempts: 3,
-  backoff: 'exponential'
+  backoff: 'exponential',
 });
 
 // Batch processing
 await batchProcess(tasks, task => agent.execute(task), {
   batchSize: 10,
-  concurrency: 3
+  concurrency: 3,
 });
 ```
 
 **Features:**
+
 - Retry logic (linear/exponential backoff)
 - Timeout handling
 - Batch processing with concurrency control
@@ -126,6 +136,7 @@ if (isSuccess(result)) {
 ```
 
 **Features:**
+
 - Structured error hierarchy
 - Error context with metadata
 - Result pattern for functional error handling
@@ -139,13 +150,14 @@ Zod integration for type-safe validation:
 const AgentConfigSchema = z.object({
   agentId: z.string().uuid(),
   maxConcurrency: z.number().min(1).max(10),
-  timeout: z.number().positive()
+  timeout: z.number().positive(),
 });
 
 const result = validateWithSchema(AgentConfigSchema, config);
 ```
 
 **Features:**
+
 - Schema-based validation
 - Common validation patterns (email, URL, UUID, semver)
 - Type guards
@@ -154,6 +166,7 @@ const result = validateWithSchema(AgentConfigSchema, config);
 ## Shared Utilities
 
 ### String Utilities
+
 - Case conversion: `toCamelCase`, `toPascalCase`, `toKebabCase`, `toSnakeCase`
 - Manipulation: `truncate`, `pad`, `trim`, `template`
 - Generation: `randomString`
@@ -161,12 +174,14 @@ const result = validateWithSchema(AgentConfigSchema, config);
 - Utilities: `capitalize`, `pluralize`, `wordCount`
 
 ### Object Utilities
+
 - Deep operations: `deepClone`, `deepMerge`
 - Nested access: `getNestedValue`, `setNestedValue`
 - Filtering: `pick`, `omit`, `removeEmpty`
 - Transformation: `flatten`, `unflatten`
 
 ### Type Guards
+
 - Primitive checks: `isString`, `isNumber`, `isBoolean`, `isDate`
 - Structure checks: `isObject`, `isArray`, `isFunction`
 - Nullability: `isNull`, `isUndefined`
@@ -245,6 +260,7 @@ type TypeGuard<T> = (value: unknown): value is T;
 ### Web Client Types
 
 Comprehensive UI component types (600+ lines):
+
 - Charts and visualizations
 - Dashboard metrics
 - Forms and tables
@@ -261,7 +277,7 @@ Full RAG (Retrieval-Augmented Generation) support:
 await initProjectRag(projectPath, {
   includePatterns: ['**/*.ts', '**/*.tsx'],
   excludePatterns: ['**/node_modules/**'],
-  chunkingConfig: { maxSize: 1000, overlap: 200 }
+  chunkingConfig: { maxSize: 1000, overlap: 200 },
 });
 
 // Sync changes
@@ -272,6 +288,7 @@ const report = await validateProjectRag(projectPath);
 ```
 
 **Features:**
+
 - Project initialization with framework detection
 - Incremental syncing
 - Validation and health checks
@@ -286,7 +303,7 @@ const report = await validateProjectRag(projectPath);
 const logger = createLogger();
 const events = getEventBus();
 
-events.on('agent:error', (event) => {
+events.on('agent:error', event => {
   logger.error('Agent error occurred', event.payload);
 });
 ```
@@ -300,7 +317,7 @@ const duration = timer.stop();
 
 events.emit('performance:measured', {
   operation: 'agent-execution',
-  duration
+  duration,
 });
 ```
 
@@ -310,9 +327,11 @@ events.emit('performance:measured', {
 function validateAndExecute(config: unknown): Result<Output, ValidationError> {
   const validation = validateWithSchema(ConfigSchema, config);
   if (!validation.success) {
-    return failure(new ValidationError('Invalid config', {
-      errors: validation.errors
-    }));
+    return failure(
+      new ValidationError('Invalid config', {
+        errors: validation.errors,
+      })
+    );
   }
   return success(execute(validation.data));
 }
@@ -328,7 +347,10 @@ const orchestratorLogger = createLogger({ level: 'debug' });
 class Agent {
   private logger: Logger;
 
-  constructor(private id: string, parentLogger: Logger) {
+  constructor(
+    private id: string,
+    parentLogger: Logger
+  ) {
     this.logger = parentLogger.child({ agentId: id });
   }
 
@@ -342,12 +364,12 @@ class Agent {
 
 ```typescript
 // Decouple orchestrator from agents via events
-events.on('task:available', (event) => {
+events.on('task:available', event => {
   const agent = selectAgent(event.payload.task);
   agent.execute(event.payload.task);
 });
 
-events.on('agent:completed', (event) => {
+events.on('agent:completed', event => {
   orchestrator.handleCompletion(event.payload);
 });
 ```
@@ -358,10 +380,10 @@ events.on('agent:completed', (event) => {
 const aggregator = new PerformanceAggregator('orchestrator');
 
 async function executeWithTracking(agent: Agent, task: Task) {
-  const { result, metrics } = await measureTime(
-    async () => agent.execute(task),
-    { label: `agent-${agent.id}`, metadata: { taskId: task.id } }
-  );
+  const { result, metrics } = await measureTime(async () => agent.execute(task), {
+    label: `agent-${agent.id}`,
+    metadata: { taskId: task.id },
+  });
 
   aggregator.addMetrics(metrics);
   return result;
@@ -383,12 +405,12 @@ if (isFailure(result)) {
   logger.error('Agent execution failed', {
     error: result.error,
     agentId: agent.id,
-    taskId: task.id
+    taskId: task.id,
   });
 
   events.emit('agent:failed', {
     agentId: agent.id,
-    error: result.error
+    error: result.error,
   });
 
   // Retry or route to different agent
@@ -402,14 +424,14 @@ const tasks = await loadTasks();
 
 const results = await batchProcess(
   tasks,
-  async (task) => {
+  async task => {
     const agent = await allocateAgent();
     return await agent.execute(task);
   },
   {
     batchSize: 20,
     concurrency: 5,
-    delayBetweenBatches: 100
+    delayBetweenBatches: 100,
   }
 );
 ```
@@ -421,40 +443,34 @@ const results = await batchProcess(
 ```typescript
 // 1. Task Queue
 class TaskQueue<T> {
-  constructor(options: {
-    concurrency: number;
-    priority?: (task: T) => number;
-  }) {}
+  constructor(options: { concurrency: number; priority?: (task: T) => number }) {}
 
-  enqueue(task: T, priority?: number): Promise<void>
-  dequeue(): Promise<T | null>
-  size(): number
-  clear(): void
+  enqueue(task: T, priority?: number): Promise<void>;
+  dequeue(): Promise<T | null>;
+  size(): number;
+  clear(): void;
 }
 
 // 2. State Machine
 class StateMachine<TState extends string, TEvent extends string> {
-  constructor(config: {
-    initial: TState;
-    states: Record<TState, StateConfig<TState, TEvent>>;
-  }) {}
+  constructor(config: { initial: TState; states: Record<TState, StateConfig<TState, TEvent>> }) {}
 
-  transition(event: TEvent): Result<TState, StateError>
-  getState(): TState
-  can(event: TEvent): boolean
-  on(event: TEvent, handler: TransitionHandler): void
+  transition(event: TEvent): Result<TState, StateError>;
+  getState(): TState;
+  can(event: TEvent): boolean;
+  on(event: TEvent, handler: TransitionHandler): void;
 }
 
 // 3. Agent Lifecycle
 abstract class Agent<TInput, TOutput> {
-  abstract initialize(): Promise<void>
-  abstract execute(input: TInput): Promise<TOutput>
-  abstract shutdown(): Promise<void>
+  abstract initialize(): Promise<void>;
+  abstract execute(input: TInput): Promise<TOutput>;
+  abstract shutdown(): Promise<void>;
 
-  health(): Promise<HealthStatus>
-  pause(): Promise<void>
-  resume(): Promise<void>
-  getState(): AgentState
+  health(): Promise<HealthStatus>;
+  pause(): Promise<void>;
+  resume(): Promise<void>;
+  getState(): AgentState;
 }
 ```
 
@@ -463,31 +479,27 @@ abstract class Agent<TInput, TOutput> {
 ```typescript
 // 4. Circuit Breaker
 class CircuitBreaker<T> {
-  constructor(options: {
-    threshold: number;
-    timeout: number;
-    resetTimeout: number;
-  }) {}
+  constructor(options: { threshold: number; timeout: number; resetTimeout: number }) {}
 
-  execute(fn: () => Promise<T>): Promise<T>
-  getState(): 'CLOSED' | 'OPEN' | 'HALF_OPEN'
-  reset(): void
+  execute(fn: () => Promise<T>): Promise<T>;
+  getState(): 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  reset(): void;
 }
 
 // 5. Distributed Tracing
 interface Tracer {
-  startSpan(name: string, parent?: Span): Span
-  inject(span: Span, carrier: Record<string, string>): void
-  extract(carrier: Record<string, string>): Span | null
+  startSpan(name: string, parent?: Span): Span;
+  inject(span: Span, carrier: Record<string, string>): void;
+  extract(carrier: Record<string, string>): Span | null;
 }
 
 // 6. Metrics
 class Metrics {
-  counter(name: string, labels?: Record<string, string>): Counter
-  gauge(name: string, labels?: Record<string, string>): Gauge
-  histogram(name: string, labels?: Record<string, string>): Histogram
+  counter(name: string, labels?: Record<string, string>): Counter;
+  gauge(name: string, labels?: Record<string, string>): Gauge;
+  histogram(name: string, labels?: Record<string, string>): Histogram;
 
-  export(): string // Prometheus format
+  export(): string; // Prometheus format
 }
 ```
 
@@ -496,24 +508,24 @@ class Metrics {
 ```typescript
 // 7. Message Broker
 interface MessageBroker {
-  publish(topic: string, message: unknown): Promise<void>
-  subscribe(topic: string, handler: MessageHandler): Promise<void>
-  unsubscribe(topic: string): Promise<void>
+  publish(topic: string, message: unknown): Promise<void>;
+  subscribe(topic: string, handler: MessageHandler): Promise<void>;
+  unsubscribe(topic: string): Promise<void>;
 }
 
 // 8. Distributed Lock
 interface DistributedLock {
-  acquire(key: string, ttl: number): Promise<boolean>
-  release(key: string): Promise<void>
-  extend(key: string, ttl: number): Promise<boolean>
+  acquire(key: string, ttl: number): Promise<boolean>;
+  release(key: string): Promise<void>;
+  extend(key: string, ttl: number): Promise<boolean>;
 }
 
 // 9. Service Discovery
 interface ServiceRegistry {
-  register(service: ServiceInfo): Promise<void>
-  deregister(serviceId: string): Promise<void>
-  discover(serviceName: string): Promise<ServiceInfo[]>
-  watch(serviceName: string, handler: ServiceChangeHandler): void
+  register(service: ServiceInfo): Promise<void>;
+  deregister(serviceId: string): Promise<void>;
+  discover(serviceName: string): Promise<ServiceInfo[]>;
+  watch(serviceName: string, handler: ServiceChangeHandler): void;
 }
 ```
 
@@ -546,6 +558,7 @@ interface ServiceRegistry {
 ## Conclusion
 
 The @wundr/core package provides an **excellent foundation** for building orchestrators with:
+
 - Production-ready logging
 - Type-safe event system
 - Comprehensive error handling
@@ -553,6 +566,7 @@ The @wundr/core package provides an **excellent foundation** for building orches
 - Async utilities
 
 However, it requires **orchestration-specific additions** to be truly powerful:
+
 - State machines for workflow management
 - Task queues for work distribution
 - Agent lifecycle management
@@ -560,6 +574,7 @@ However, it requires **orchestration-specific additions** to be truly powerful:
 - Distributed coordination primitives
 
 **Next Steps:**
+
 1. Use existing utilities for logging, events, and performance
 2. Build orchestration layer on top (state machines, task queues)
 3. Add resilience patterns for production readiness
@@ -568,6 +583,5 @@ However, it requires **orchestration-specific additions** to be truly powerful:
 
 ---
 
-**Report Generated:** 2025-11-30
-**Analysis Tool:** Claude Code (Sonnet 4.5)
-**Full JSON Report:** /Users/iroselli/wundr/docs/core-packages-analysis.json
+**Report Generated:** 2025-11-30 **Analysis Tool:** Claude Code (Sonnet 4.5) **Full JSON Report:**
+/Users/iroselli/wundr/docs/core-packages-analysis.json

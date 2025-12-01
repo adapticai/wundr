@@ -40,6 +40,7 @@ import { FilePreview } from '@neolith/ui';
 Preview component for images with thumbnail and lightbox functionality.
 
 **Features:**
+
 - Thumbnail preview with configurable max height
 - Click to open full-size image in modal
 - Download button
@@ -50,12 +51,12 @@ Preview component for images with thumbnail and lightbox functionality.
 import { ImagePreview } from '@neolith/ui';
 
 <ImagePreview
-  filename="sunset.jpg"
-  fileUrl="/uploads/sunset.jpg"
+  filename='sunset.jpg'
+  fileUrl='/uploads/sunset.jpg'
   fileSize={2048000}
-  alt="Beautiful sunset"
+  alt='Beautiful sunset'
   maxThumbnailHeight={300}
-/>
+/>;
 ```
 
 ### VideoPreview
@@ -63,6 +64,7 @@ import { ImagePreview } from '@neolith/ui';
 Video player preview with thumbnail and play button.
 
 **Features:**
+
 - Optional thumbnail image
 - Play button overlay
 - Native HTML5 video controls
@@ -73,12 +75,12 @@ Video player preview with thumbnail and play button.
 import { VideoPreview } from '@neolith/ui';
 
 <VideoPreview
-  filename="demo.mp4"
-  fileUrl="/uploads/demo.mp4"
+  filename='demo.mp4'
+  fileUrl='/uploads/demo.mp4'
   fileSize={10485760}
-  thumbnailUrl="/uploads/demo-thumb.jpg"
+  thumbnailUrl='/uploads/demo-thumb.jpg'
   maxHeight={400}
-/>
+/>;
 ```
 
 ### AudioPreview
@@ -86,6 +88,7 @@ import { VideoPreview } from '@neolith/ui';
 Audio player with waveform-style display.
 
 **Features:**
+
 - Music icon with gradient background
 - Native HTML5 audio controls
 - Download button
@@ -94,11 +97,7 @@ Audio player with waveform-style display.
 ```tsx
 import { AudioPreview } from '@neolith/ui';
 
-<AudioPreview
-  filename="song.mp3"
-  fileUrl="/uploads/song.mp3"
-  fileSize={3145728}
-/>
+<AudioPreview filename='song.mp3' fileUrl='/uploads/song.mp3' fileSize={3145728} />;
 ```
 
 ### DocumentPreview
@@ -106,6 +105,7 @@ import { AudioPreview } from '@neolith/ui';
 Preview for PDFs and other document types.
 
 **Features:**
+
 - Color-coded icons by document type
 - Optional PDF embedding
 - Open in new tab button (for PDFs)
@@ -137,6 +137,7 @@ import { DocumentPreview } from '@neolith/ui';
 Fallback component for files that don't have specialized previews.
 
 **Features:**
+
 - File type icon (document, code, archive, generic)
 - Extension badge
 - File size display
@@ -146,11 +147,11 @@ Fallback component for files that don't have specialized previews.
 import { GenericFilePreview } from '@neolith/ui';
 
 <GenericFilePreview
-  filename="archive.zip"
-  fileUrl="/uploads/archive.zip"
+  filename='archive.zip'
+  fileUrl='/uploads/archive.zip'
   fileSize={5242880}
-  mimeType="application/zip"
-/>
+  mimeType='application/zip'
+/>;
 ```
 
 ## Utility Functions
@@ -232,21 +233,22 @@ The components automatically detect file types based on:
 - **Videos**: mp4, webm, ogg, mov, avi, mkv, flv, wmv
 - **Audio**: mp3, wav, ogg, flac, aac, m4a, wma
 - **Documents**: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, rtf, odt
-- **Code**: js, jsx, ts, tsx, py, java, c, cpp, h, cs, php, rb, go, rs, swift, kt, scala, html, css, scss, json, xml, yml, yaml, md, sql
+- **Code**: js, jsx, ts, tsx, py, java, c, cpp, h, cs, php, rb, go, rs, swift, kt, scala, html, css,
+  scss, json, xml, yml, yaml, md, sql
 - **Archives**: zip, rar, 7z, tar, gz, bz2, xz
 
 ## Common Props
 
 All preview components share these common props:
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `filename` | string | Yes | Name of the file |
-| `fileUrl` | string | Yes | URL to the file |
-| `fileSize` | number | No | File size in bytes |
-| `mimeType` | string | No | MIME type of the file |
-| `onDownload` | () => void | No | Custom download handler |
-| `className` | string | No | Additional CSS classes |
+| Prop         | Type       | Required | Description             |
+| ------------ | ---------- | -------- | ----------------------- |
+| `filename`   | string     | Yes      | Name of the file        |
+| `fileUrl`    | string     | Yes      | URL to the file         |
+| `fileSize`   | number     | No       | File size in bytes      |
+| `mimeType`   | string     | No       | MIME type of the file   |
+| `onDownload` | () => void | No       | Custom download handler |
+| `className`  | string     | No       | Additional CSS classes  |
 
 ## Upload States
 
@@ -296,8 +298,8 @@ The components are built with accessibility in mind:
 ```tsx
 function MessageAttachments({ attachments }: { attachments: Attachment[] }) {
   return (
-    <div className="space-y-2">
-      {attachments.map((attachment) => (
+    <div className='space-y-2'>
+      {attachments.map(attachment => (
         <FilePreview
           key={attachment.id}
           filename={attachment.filename}
@@ -323,7 +325,7 @@ function FileUploader() {
   const handleUpload = async (file: File) => {
     setFile(file);
     try {
-      await uploadFile(file, (progress) => setProgress(progress));
+      await uploadFile(file, progress => setProgress(progress));
     } catch (err) {
       setError('Upload failed');
     }
@@ -331,7 +333,7 @@ function FileUploader() {
 
   return (
     <div>
-      <input type="file" onChange={(e) => handleUpload(e.target.files?.[0])} />
+      <input type='file' onChange={e => handleUpload(e.target.files?.[0])} />
       {file && (
         <FilePreview
           filename={file.name}

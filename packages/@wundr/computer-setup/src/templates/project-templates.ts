@@ -10,8 +10,6 @@ import type { DeveloperProfile } from '../types/index.js';
 
 const logger = new Logger({ name: 'project-templates' });
 
-
-
 export interface ProjectTemplateOptions {
   projectPath: string;
   profile: DeveloperProfile;
@@ -27,38 +25,61 @@ export interface ProjectTemplateOptions {
 /**
  * Create templates for a new project based on developer profile and project type
  */
-export async function createProjectTemplates(options: ProjectTemplateOptions): Promise<void> {
+export async function createProjectTemplates(
+  options: ProjectTemplateOptions
+): Promise<void> {
   const templateManager = new TemplateManager();
-  
-  logger.info(chalk.blue(`\n🏗️  Setting up templates for ${options.projectType} project`));
-  
+
+  logger.info(
+    chalk.blue(`\n🏗️  Setting up templates for ${options.projectType} project`)
+  );
+
   const context = createTemplateContext(options);
-  
+
   // Generate configuration files based on project type
   const configs = getConfigsForProjectType(options.projectType, options);
-  
+
   try {
-    await templateManager.generateConfigs(options.projectPath, context, configs);
-    
+    await templateManager.generateConfigs(
+      options.projectPath,
+      context,
+      configs
+    );
+
     if (options.includeDocker) {
-      await generateDockerTemplates(templateManager, options.projectPath, context);
+      await generateDockerTemplates(
+        templateManager,
+        options.projectPath,
+        context
+      );
     }
-    
+
     if (options.includeGitHub) {
-      await generateGitHubTemplates(templateManager, options.projectPath, context);
+      await generateGitHubTemplates(
+        templateManager,
+        options.projectPath,
+        context
+      );
     }
-    
+
     if (options.includeSlack) {
-      await generateSlackTemplates(templateManager, options.projectPath, context);
+      await generateSlackTemplates(
+        templateManager,
+        options.projectPath,
+        context
+      );
     }
-    
+
     if (options.includeClaudeFlow) {
-      await generateClaudeFlowTemplates(templateManager, options.projectPath, context);
+      await generateClaudeFlowTemplates(
+        templateManager,
+        options.projectPath,
+        context
+      );
     }
-    
+
     logger.info(chalk.green('✅ Project templates created successfully!'));
     printNextSteps(options);
-    
   } catch (error) {
     logger.error(chalk.red('❌ Failed to create project templates:'), error);
     throw error;
@@ -68,9 +89,11 @@ export async function createProjectTemplates(options: ProjectTemplateOptions): P
 /**
  * Create template context from options
  */
-function createTemplateContext(options: ProjectTemplateOptions): TemplateContext {
+function createTemplateContext(
+  options: ProjectTemplateOptions
+): TemplateContext {
   const projectName = path.basename(options.projectPath);
-  
+
   return {
     profile: options.profile,
     project: {
@@ -96,9 +119,12 @@ function createTemplateContext(options: ProjectTemplateOptions): TemplateContext
 /**
  * Get configuration files for project type
  */
-function getConfigsForProjectType(projectType: string, _options: ProjectTemplateOptions): string[] {
+function getConfigsForProjectType(
+  projectType: string,
+  _options: ProjectTemplateOptions
+): string[] {
   const configs = ['prettier'];
-  
+
   switch (projectType) {
     case 'node':
       configs.push('eslint', 'jest', 'tsconfig-node');
@@ -120,7 +146,7 @@ function getConfigsForProjectType(projectType: string, _options: ProjectTemplate
     default:
       configs.push('eslint', 'jest', 'tsconfig-base');
   }
-  
+
   return configs;
 }
 
@@ -130,22 +156,22 @@ function getConfigsForProjectType(projectType: string, _options: ProjectTemplate
 async function generateDockerTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext,
+  context: TemplateContext
 ): Promise<void> {
   logger.info(chalk.blue('🐳 Generating Docker templates...'));
-  
+
   await templateManager.copyTemplate(
     'docker/Dockerfile.node',
     path.join(projectPath, 'Dockerfile'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
-  
+
   await templateManager.copyTemplate(
     'docker/docker-compose.yml',
     path.join(projectPath, 'docker-compose.yml'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
 }
 
@@ -155,40 +181,40 @@ async function generateDockerTemplates(
 async function generateGitHubTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext,
+  context: TemplateContext
 ): Promise<void> {
   logger.info(chalk.blue('📁 Generating GitHub templates...'));
-  
+
   const githubDir = path.join(projectPath, '.github');
   const issueTemplateDir = path.join(githubDir, 'ISSUE_TEMPLATE');
-  
+
   // Ensure directories exist
   await templateManager.copyTemplate(
     'github/ISSUE_TEMPLATE/bug_report.md',
     path.join(issueTemplateDir, 'bug_report.md'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
-  
+
   await templateManager.copyTemplate(
     'github/ISSUE_TEMPLATE/feature_request.md',
     path.join(issueTemplateDir, 'feature_request.md'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
-  
+
   await templateManager.copyTemplate(
     'github/ISSUE_TEMPLATE/config.yml',
     path.join(issueTemplateDir, 'config.yml'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
-  
+
   await templateManager.copyTemplate(
     'github/pull_request_template.md',
     path.join(githubDir, 'pull_request_template.md'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
 }
 
@@ -198,31 +224,31 @@ async function generateGitHubTemplates(
 async function generateSlackTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext,
+  context: TemplateContext
 ): Promise<void> {
   logger.info(chalk.blue('💬 Generating Slack integration templates...'));
-  
+
   const slackDir = path.join(projectPath, 'slack');
-  
+
   await templateManager.copyTemplate(
     'slack/manifest.json',
     path.join(slackDir, 'manifest.json'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
-  
+
   await templateManager.copyTemplate(
     'slack/github-integration.js',
     path.join(slackDir, 'github-integration.js'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
-  
+
   await templateManager.copyTemplate(
     'slack/webhook-handler.js',
     path.join(slackDir, 'webhook-handler.js'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
 }
 
@@ -232,55 +258,64 @@ async function generateSlackTemplates(
 async function generateClaudeFlowTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext,
+  context: TemplateContext
 ): Promise<void> {
   logger.info(chalk.blue('🤖 Generating Claude Flow configuration...'));
-  
+
   await templateManager.copyTemplate(
     'claude-flow/swarm.config.js',
     path.join(projectPath, 'claude-flow.config.js'),
     context,
-    { overwrite: true, verbose: true },
+    { overwrite: true, verbose: true }
   );
 }
 
 /**
  * Get preferred package manager from profile
  */
-function getPreferredPackageManager(profile: DeveloperProfile): 'npm' | 'pnpm' | 'yarn' {
+function getPreferredPackageManager(
+  profile: DeveloperProfile
+): 'npm' | 'pnpm' | 'yarn' {
   if (profile.tools.packageManagers?.pnpm) {
-return 'pnpm';
-}
+    return 'pnpm';
+  }
   if (profile.tools.packageManagers?.yarn) {
-return 'yarn';
-}
+    return 'yarn';
+  }
   return 'npm';
 }
 
 /**
  * Get custom variables for template context
  */
-function getCustomVariables(options: ProjectTemplateOptions): TemplateContext['customVariables'] {
+function getCustomVariables(
+  options: ProjectTemplateOptions
+): TemplateContext['customVariables'] {
   return {
     // ESLint configuration
     ECMA_VERSION: 2022,
-    BROWSER_ENVIRONMENT: options.projectType === 'react' || options.projectType === 'vue',
+    BROWSER_ENVIRONMENT:
+      options.projectType === 'react' || options.projectType === 'vue',
     NODE_ENVIRONMENT: true,
     JEST_ENVIRONMENT: true,
     REACT_PROJECT: options.projectType === 'react',
     STRICT_TYPE_CHECKING: true,
     SECURITY_RULES: true,
-    
+
     // TypeScript configuration
     TARGET: 'ES2022',
-    LIBS: options.projectType === 'react' ? ['ES2022', 'DOM', 'DOM.Iterable'] : ['ES2022'],
+    LIBS:
+      options.projectType === 'react'
+        ? ['ES2022', 'DOM', 'DOM.Iterable']
+        : ['ES2022'],
     MODULE: 'NodeNext',
     MODULE_RESOLUTION: 'NodeNext',
-    JSX_SUPPORT: options.projectType === 'react' || options.projectType === 'vue',
+    JSX_SUPPORT:
+      options.projectType === 'react' || options.projectType === 'vue',
     JSX: 'react-jsx',
     STRICT: true,
     NO_IMPLICIT_ANY: true,
-    
+
     // Jest configuration
     JEST_PRESET: 'ts-jest',
     TEST_ENVIRONMENT: options.projectType === 'react' ? 'jsdom' : 'node',
@@ -294,7 +329,7 @@ function getCustomVariables(options: ProjectTemplateOptions): TemplateContext['c
     FUNCTIONS_THRESHOLD: 80,
     LINES_THRESHOLD: 80,
     STATEMENTS_THRESHOLD: 80,
-    
+
     // Prettier configuration
     PRINT_WIDTH: 100,
     TAB_WIDTH: 2,
@@ -306,25 +341,25 @@ function getCustomVariables(options: ProjectTemplateOptions): TemplateContext['c
     BRACKET_SPACING: true,
     ARROW_PARENS: 'avoid',
     END_OF_LINE: 'lf',
-    
+
     // Docker configuration
     NODE_VERSION: 'lts',
     BUILD_OUTPUT_DIR: 'dist',
     ENTRY_POINT: 'index.js',
     PORT: 3000,
-    
+
     // GitHub configuration
     ASSIGNEES: options.profile.team ? `@${options.profile.team}` : '',
     ORGANIZATION: options.profile.team || 'Your Organization',
     SUPPORT_URL: 'https://github.com/your-org/discussions',
     DOCS_URL: 'https://docs.your-org.com',
-    
+
     // Slack configuration
     BOT_NAME: `${path.basename(options.projectPath)} Bot`,
     BOT_DESCRIPTION: `Bot for ${path.basename(options.projectPath)} development team`,
     BOT_COLOR: '#4A154B',
     BOT_DISPLAY_NAME: 'DevBot',
-    
+
     // Claude Flow configuration
     CLAUDE_MODEL: 'claude-sonnet-4-20250514',
     TEMPERATURE: 0.7,
@@ -344,7 +379,7 @@ function getCustomVariables(options: ProjectTemplateOptions): TemplateContext['c
 function printNextSteps(options: ProjectTemplateOptions): void {
   logger.info(chalk.cyan('\n📋 Next steps:'));
   logger.info(chalk.white('1. Install dependencies:'));
-  
+
   const packageManager = getPreferredPackageManager(options.profile);
   logger.info(chalk.gray(`   cd ${path.basename(options.projectPath)}`));
   logger.info(chalk.gray(`   ${packageManager} install`));
@@ -356,12 +391,16 @@ function printNextSteps(options: ProjectTemplateOptions): void {
 
   if (options.includeGitHub) {
     logger.info(chalk.white('3. Initialize Git repository:'));
-    logger.info(chalk.gray('   git init && git add . && git commit -m "Initial commit"'));
+    logger.info(
+      chalk.gray('   git init && git add . && git commit -m "Initial commit"')
+    );
   }
 
   if (options.includeSlack) {
     logger.info(chalk.white('4. Configure Slack integration:'));
-    logger.info(chalk.gray('   - Update slack/manifest.json with your app details'));
+    logger.info(
+      chalk.gray('   - Update slack/manifest.json with your app details')
+    );
     logger.info(chalk.gray('   - Set up environment variables for Slack bot'));
   }
 

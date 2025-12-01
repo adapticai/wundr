@@ -34,7 +34,9 @@ pnpm dev
 ## Common Issues
 
 ### Missing dependencies
+
 Run `pnpm install` from the monorepo root, not individual packages.
 
 ### Multiple lockfiles warning
+
 Remove any `package-lock.json` files and use only `pnpm-lock.yaml`.

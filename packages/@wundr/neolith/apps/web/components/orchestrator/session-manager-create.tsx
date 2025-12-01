@@ -96,7 +96,9 @@ export function SessionManagerCreate({
       toast({
         title: 'Error',
         description:
-          error instanceof Error ? error.message : 'Failed to create session manager',
+          error instanceof Error
+            ? error.message
+            : 'Failed to create session manager',
         variant: 'destructive',
       });
     } finally {
@@ -106,85 +108,92 @@ export function SessionManagerCreate({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className='sm:max-w-[500px]'>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create Session Manager</DialogTitle>
             <DialogDescription>
-              Session Managers orchestrate Claude Code/Flow sessions with up to 20 subagents.
+              Session Managers orchestrate Claude Code/Flow sessions with up to
+              20 subagents.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">
-                Name <span className="text-destructive">*</span>
+          <div className='grid gap-4 py-4'>
+            <div className='grid gap-2'>
+              <Label htmlFor='name'>
+                Name <span className='text-destructive'>*</span>
               </Label>
               <Input
-                id="name"
+                id='name'
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Engineering Session Manager"
+                onChange={e =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder='Engineering Session Manager'
                 disabled={loading}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+            <div className='grid gap-2'>
+              <Label htmlFor='description'>Description</Label>
               <Textarea
-                id="description"
+                id='description'
                 value={formData.description}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Manages engineering tasks and code development"
+                placeholder='Manages engineering tasks and code development'
                 rows={2}
                 disabled={loading}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="charterId">
-                Charter ID <span className="text-destructive">*</span>
+            <div className='grid gap-2'>
+              <Label htmlFor='charterId'>
+                Charter ID <span className='text-destructive'>*</span>
               </Label>
               <Input
-                id="charterId"
+                id='charterId'
                 value={formData.charterId}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, charterId: e.target.value })
                 }
-                placeholder="engineering-sm-v1"
+                placeholder='engineering-sm-v1'
                 disabled={loading}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="disciplineId">Discipline ID</Label>
+            <div className='grid gap-2'>
+              <Label htmlFor='disciplineId'>Discipline ID</Label>
               <Input
-                id="disciplineId"
+                id='disciplineId'
                 value={formData.disciplineId}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, disciplineId: e.target.value })
                 }
-                placeholder="engineering"
+                placeholder='engineering'
                 disabled={loading}
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label htmlFor="isGlobal">Global (available to all orchestrators)</Label>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor='isGlobal'>
+                Global (available to all orchestrators)
+              </Label>
               <Switch
-                id="isGlobal"
+                id='isGlobal'
                 checked={formData.isGlobal}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setFormData({ ...formData, isGlobal: checked })
                 }
                 disabled={loading}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label>Max Concurrent Subagents: {formData.maxConcurrentSubagents}</Label>
+            <div className='grid gap-2'>
+              <Label>
+                Max Concurrent Subagents: {formData.maxConcurrentSubagents}
+              </Label>
               <Slider
                 value={[formData.maxConcurrentSubagents]}
                 onValueChange={([value]) =>
@@ -197,9 +206,10 @@ export function SessionManagerCreate({
               />
             </div>
 
-            <div className="grid gap-2">
+            <div className='grid gap-2'>
               <Label>
-                Token Budget Per Hour: {formData.tokenBudgetPerHour.toLocaleString()}
+                Token Budget Per Hour:{' '}
+                {formData.tokenBudgetPerHour.toLocaleString()}
               </Label>
               <Slider
                 value={[formData.tokenBudgetPerHour]}
@@ -216,15 +226,15 @@ export function SessionManagerCreate({
 
           <DialogFooter>
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type='submit' disabled={loading}>
+              {loading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
               Create Session Manager
             </Button>
           </DialogFooter>

@@ -1,6 +1,7 @@
 # Claude Flow Troubleshooting Guide
 
-Comprehensive guide to diagnosing and fixing common issues with Claude Code and Claude Flow integration.
+Comprehensive guide to diagnosing and fixing common issues with Claude Code and Claude Flow
+integration.
 
 ## Table of Contents
 
@@ -33,6 +34,7 @@ npx claude-flow@alpha system-info
 ```
 
 Expected output:
+
 ```
 ✓ Node.js version: 18.0.0 or higher
 ✓ Claude Flow installed: v2.0.0
@@ -49,6 +51,7 @@ Expected output:
 ### Issue: `npx claude-flow@alpha` command not found
 
 **Symptoms**:
+
 ```bash
 $ npx claude-flow@alpha --version
 npx: installed 0 in 0.123s
@@ -56,6 +59,7 @@ Command not found: claude-flow@alpha
 ```
 
 **Solution**:
+
 ```bash
 # Clear npm cache
 npm cache clean --force
@@ -74,11 +78,13 @@ npm config get registry
 ### Issue: Permission errors during installation
 
 **Symptoms**:
+
 ```
 Error: EACCES: permission denied
 ```
 
 **Solution**:
+
 ```bash
 # Fix npm permissions (Mac/Linux)
 sudo chown -R $(whoami) ~/.npm
@@ -95,6 +101,7 @@ echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
 ### Issue: Version mismatch
 
 **Symptoms**:
+
 ```
 Warning: Claude Flow version mismatch
 Expected: >=2.0.0
@@ -102,6 +109,7 @@ Found: 1.x.x
 ```
 
 **Solution**:
+
 ```bash
 # Uninstall old version
 npm uninstall -g claude-flow
@@ -118,12 +126,14 @@ npx claude-flow@alpha --version
 ### Issue: MCP server not starting
 
 **Symptoms**:
+
 ```bash
 $ claude mcp list
 Error: MCP server 'claude-flow' not responding
 ```
 
 **Solution**:
+
 ```bash
 # Remove existing MCP server
 claude mcp remove claude-flow
@@ -142,10 +152,12 @@ claude mcp status claude-flow
 ### Issue: MCP tools not available
 
 **Symptoms**:
+
 - MCP tools don't appear in Claude Code
 - "Tool not found" errors
 
 **Solution**:
+
 ```bash
 # Check MCP server logs
 claude mcp logs claude-flow
@@ -163,11 +175,13 @@ cat ~/.config/claude-code/mcp.json
 ### Issue: MCP connection timeout
 
 **Symptoms**:
+
 ```
 Error: MCP connection timeout after 30s
 ```
 
 **Solution**:
+
 ```bash
 # Increase timeout in MCP config
 # Edit ~/.config/claude-code/mcp.json
@@ -189,12 +203,14 @@ Error: MCP connection timeout after 30s
 ### Issue: Agent not spawning
 
 **Symptoms**:
+
 ```
 Error: Failed to spawn agent 'coder'
 Agent initialization timeout
 ```
 
 **Solution**:
+
 ```bash
 # Check agent configuration
 npx claude-flow@alpha agent list --all
@@ -212,10 +228,12 @@ npx claude-flow@alpha agent spawn --type coder --debug
 ### Issue: Agent performance degradation
 
 **Symptoms**:
+
 - Slow response times
 - Tasks taking longer than usual
 
 **Solution**:
+
 ```bash
 # Check agent metrics
 npx claude-flow@alpha agent metrics --all
@@ -233,12 +251,14 @@ npx claude-flow@alpha agent restart --all
 ### Issue: Agent coordination failures
 
 **Symptoms**:
+
 ```
 Error: Agent coordination failed
 Agents not communicating
 ```
 
 **Solution**:
+
 ```bash
 # Check swarm status
 npx claude-flow@alpha swarm status
@@ -264,6 +284,7 @@ Error: SPARC mode 'invalid-mode' not found
 ```
 
 **Solution**:
+
 ```bash
 # List available modes
 npx claude-flow@alpha sparc modes
@@ -279,6 +300,7 @@ Error: Agent type 'invalid-agent' not available
 ```
 
 **Solution**:
+
 ```bash
 # List available agent types
 npx claude-flow@alpha agent types
@@ -295,6 +317,7 @@ Invalid value for 'agents.timeout'
 ```
 
 **Solution**:
+
 ```bash
 # Validate configuration
 npx claude-flow@alpha config validate
@@ -330,12 +353,7 @@ npx claude-flow@alpha sparc tdd "task" --debug
     "enabled": true,
     "level": "verbose",
     "logFile": ".claude-flow/debug.log",
-    "modules": [
-      "agents",
-      "memory",
-      "hooks",
-      "sparc"
-    ]
+    "modules": ["agents", "memory", "hooks", "sparc"]
   }
 }
 ```
@@ -409,10 +427,12 @@ Troubleshooting steps:
 7. ✅ **Ask for help with details**
 
 **Next Steps**:
+
 - [Migration Guide](./MIGRATION.md)
 - [API Reference](../reference/API.md)
 - [Quick Start](./QUICK_START.md)
 
 ---
 
-**Remember**: Most issues can be resolved by restarting MCP server, clearing cache, or reinstalling. When in doubt, run diagnostics!
+**Remember**: Most issues can be resolved by restarting MCP server, clearing cache, or reinstalling.
+When in doubt, run diagnostics!

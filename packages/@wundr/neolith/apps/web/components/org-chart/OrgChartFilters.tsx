@@ -53,50 +53,61 @@ export function OrgChartFilters({
   onClearFilters,
   className,
 }: OrgChartFiltersProps) {
-  const activeFilterCount = selectedDisciplines.length + selectedStatuses.length;
+  const activeFilterCount =
+    selectedDisciplines.length + selectedStatuses.length;
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
-            size="sm"
-            className="bg-stone-900 border-stone-800 text-stone-100 hover:bg-stone-800"
+            variant='outline'
+            size='sm'
+            className='bg-stone-900 border-stone-800 text-stone-100 hover:bg-stone-800'
           >
-            <Filter className="h-4 w-4 mr-2" />
+            <Filter className='h-4 w-4 mr-2' />
             Filters
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-stone-700 text-stone-100">
+              <Badge
+                variant='secondary'
+                className='ml-2 bg-stone-700 text-stone-100'
+              >
                 {activeFilterCount}
               </Badge>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56 bg-stone-900 border-stone-800">
-          <DropdownMenuLabel className="text-stone-100">Discipline</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-stone-800" />
-          {DISCIPLINES.map((discipline) => (
+        <DropdownMenuContent
+          align='start'
+          className='w-56 bg-stone-900 border-stone-800'
+        >
+          <DropdownMenuLabel className='text-stone-100'>
+            Discipline
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className='bg-stone-800' />
+          {DISCIPLINES.map(discipline => (
             <DropdownMenuCheckboxItem
               key={discipline}
               checked={selectedDisciplines.includes(discipline)}
               onCheckedChange={() => onDisciplineToggle(discipline)}
-              className="text-stone-300 focus:bg-stone-800 focus:text-stone-100"
+              className='text-stone-300 focus:bg-stone-800 focus:text-stone-100'
             >
               {discipline}
             </DropdownMenuCheckboxItem>
           ))}
-          <DropdownMenuSeparator className="bg-stone-800" />
-          <DropdownMenuLabel className="text-stone-100">Status</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-stone-800" />
-          {STATUSES.map((status) => (
+          <DropdownMenuSeparator className='bg-stone-800' />
+          <DropdownMenuLabel className='text-stone-100'>
+            Status
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className='bg-stone-800' />
+          {STATUSES.map(status => (
             <DropdownMenuCheckboxItem
               key={status.value}
               checked={selectedStatuses.includes(status.value)}
               onCheckedChange={() => onStatusToggle(status.value)}
-              className="text-stone-300 focus:bg-stone-800 focus:text-stone-100"
+              className='text-stone-300 focus:bg-stone-800 focus:text-stone-100'
             >
-              <div className="flex items-center gap-2">
+              <div className='flex items-center gap-2'>
                 <div className={cn('h-2 w-2 rounded-full', status.color)} />
                 {status.label}
               </div>
@@ -107,10 +118,10 @@ export function OrgChartFilters({
 
       {activeFilterCount > 0 && (
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={onClearFilters}
-          className="text-stone-400 hover:text-stone-100 hover:bg-stone-800"
+          className='text-stone-400 hover:text-stone-100 hover:bg-stone-800'
         >
           Clear filters
         </Button>

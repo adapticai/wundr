@@ -1,6 +1,11 @@
 'use client';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { OrchestratorStatus } from '@/types/orchestrator';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
@@ -37,31 +42,31 @@ export function OrchestratorStatusBadge({
         config.bgColor,
         config.color,
         sizeClasses[size],
-        className,
+        className
       )}
-      role="status"
+      role='status'
       aria-label={`Status: ${config.label}`}
     >
       {showPulse && status === 'ONLINE' && (
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+        <span className='relative flex h-2 w-2'>
+          <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75' />
+          <span className='relative inline-flex h-2 w-2 rounded-full bg-green-500' />
         </span>
       )}
       {showPulse && status === 'BUSY' && (
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-yellow-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-500" />
+        <span className='relative flex h-2 w-2'>
+          <span className='absolute inline-flex h-full w-full animate-pulse rounded-full bg-yellow-400 opacity-75' />
+          <span className='relative inline-flex h-2 w-2 rounded-full bg-yellow-500' />
         </span>
       )}
       {showPulse && status === 'AWAY' && (
-        <span className="relative flex h-2 w-2">
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
+        <span className='relative flex h-2 w-2'>
+          <span className='relative inline-flex h-2 w-2 rounded-full bg-orange-500' />
         </span>
       )}
       {showPulse && status === 'OFFLINE' && (
-        <span className="relative flex h-2 w-2">
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-400" />
+        <span className='relative flex h-2 w-2'>
+          <span className='relative inline-flex h-2 w-2 rounded-full bg-gray-400' />
         </span>
       )}
       {config.label}
@@ -74,8 +79,8 @@ export function OrchestratorStatusBadge({
         <Tooltip>
           <TooltipTrigger asChild>{badge}</TooltipTrigger>
           <TooltipContent>
-            <p className="text-sm">
-              <span className="font-medium">Current task:</span> {currentTask}
+            <p className='text-sm'>
+              <span className='font-medium'>Current task:</span> {currentTask}
             </p>
           </TooltipContent>
         </Tooltip>
@@ -117,14 +122,16 @@ export function OrchestratorStatusDot({
   return (
     <span
       className={cn('relative inline-flex', dotSizeClasses[size], className)}
-      role="status"
+      role='status'
       aria-label={`Status: ${ORCHESTRATOR_STATUS_CONFIG[status].label}`}
     >
       {isAnimated && (
         <span
           className={cn(
             'absolute inline-flex h-full w-full rounded-full opacity-75',
-            status === 'ONLINE' ? 'animate-ping bg-green-400' : 'animate-pulse bg-yellow-400',
+            status === 'ONLINE'
+              ? 'animate-ping bg-green-400'
+              : 'animate-pulse bg-yellow-400'
           )}
         />
       )}
@@ -132,7 +139,7 @@ export function OrchestratorStatusDot({
         className={cn(
           'relative inline-flex rounded-full',
           dotSizeClasses[size],
-          statusDotColors[status],
+          statusDotColors[status]
         )}
       />
     </span>

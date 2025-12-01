@@ -14,7 +14,14 @@ export type TimeRange = 'today' | 'week' | 'month' | 'all';
 /**
  * Activity type filter options
  */
-export type ActivityType = 'message' | 'task' | 'workflow' | 'member' | 'file' | 'channel' | 'all';
+export type ActivityType =
+  | 'message'
+  | 'task'
+  | 'workflow'
+  | 'member'
+  | 'file'
+  | 'channel'
+  | 'all';
 
 /**
  * Member statistics
@@ -287,7 +294,7 @@ export interface UseDashboardReturn {
  */
 export function useDashboardStats(
   workspaceId: string,
-  options: DashboardStatsOptions = {},
+  options: DashboardStatsOptions = {}
 ): UseDashboardStatsReturn {
   const {
     timeRange: initialTimeRange = 'all',
@@ -299,7 +306,9 @@ export function useDashboardStats(
 
   const [timeRange, setTimeRange] = useState<TimeRange>(initialTimeRange);
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [metadata, setMetadata] = useState<DashboardStatsResponse['metadata'] | null>(null);
+  const [metadata, setMetadata] = useState<
+    DashboardStatsResponse['metadata'] | null
+  >(null);
   const [isLoading, setIsLoading] = useState(enabled);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -328,22 +337,26 @@ export function useDashboardStats(
 
         const response = await fetch(
           `/api/workspaces/${workspaceId}/dashboard/stats?${params.toString()}`,
-          { signal: abortController.signal },
+          { signal: abortController.signal }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error?.message || 'Failed to fetch dashboard statistics');
+          throw new Error(
+            errorData.error?.message || 'Failed to fetch dashboard statistics'
+          );
         }
 
         const result: DashboardStatsResponse = await response.json();
 
         // Transform timestamps from strings to Date objects
         if (result.data.recentActivity) {
-          result.data.recentActivity = result.data.recentActivity.map(activity => ({
-            ...activity,
-            timestamp: new Date(activity.timestamp),
-          }));
+          result.data.recentActivity = result.data.recentActivity.map(
+            activity => ({
+              ...activity,
+              timestamp: new Date(activity.timestamp),
+            })
+          );
         }
 
         setStats(result.data);
@@ -362,7 +375,7 @@ export function useDashboardStats(
         setIsRefreshing(false);
       }
     },
-    [workspaceId, timeRange, includeActivity, activityLimit, enabled],
+    [workspaceId, timeRange, includeActivity, activityLimit, enabled]
   );
 
   // Initial fetch and refetch on dependencies change
@@ -458,7 +471,7 @@ export function useDashboardStats(
  */
 export function useDashboardActivity(
   workspaceId: string,
-  options: DashboardActivityOptions = {},
+  options: DashboardActivityOptions = {}
 ): UseDashboardActivityReturn {
   const {
     limit = 20,
@@ -521,12 +534,14 @@ export function useDashboardActivity(
 
         const response = await fetch(
           `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`,
-          { signal: abortController.signal },
+          { signal: abortController.signal }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error?.message || 'Failed to fetch dashboard activity');
+          throw new Error(
+            errorData.error?.message || 'Failed to fetch dashboard activity'
+          );
         }
 
         const result: DashboardActivityResponse = await response.json();
@@ -563,7 +578,7 @@ export function useDashboardActivity(
         setIsLoadingMore(false);
       }
     },
-    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId, enabled],
+    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId, enabled]
   );
 
   // Initial fetch and refetch on dependencies change
@@ -678,7 +693,7 @@ export function useDashboardActivity(
 export function useDashboard(
   workspaceId: string,
   statsOptions: DashboardStatsOptions = {},
-  activityOptions: DashboardActivityOptions = {},
+  activityOptions: DashboardActivityOptions = {}
 ): UseDashboardReturn {
   const stats = useDashboardStats(workspaceId, statsOptions);
   const activity = useDashboardActivity(workspaceId, activityOptions);

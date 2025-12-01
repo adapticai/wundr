@@ -4,7 +4,13 @@ import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -91,7 +97,9 @@ export default function WebhooksSettingsPage() {
 
   // Delivery History Dialog State
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
-  const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null);
+  const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(
+    null
+  );
   const [deliveryLogs, setDeliveryLogs] = useState<DeliveryLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
@@ -110,7 +118,8 @@ export default function WebhooksSettingsPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load webhooks',
+        description:
+          error instanceof Error ? error.message : 'Failed to load webhooks',
         variant: 'destructive',
       });
     } finally {
@@ -173,12 +182,15 @@ export default function WebhooksSettingsPage() {
       setIsDialogOpen(false);
       toast({
         title: 'Success',
-        description: editingWebhook ? 'Webhook updated successfully' : 'Webhook created successfully',
+        description: editingWebhook
+          ? 'Webhook updated successfully'
+          : 'Webhook created successfully',
       });
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save webhook',
+        description:
+          error instanceof Error ? error.message : 'Failed to save webhook',
         variant: 'destructive',
       });
     } finally {
@@ -190,9 +202,12 @@ export default function WebhooksSettingsPage() {
     if (!confirm('Are you sure you want to delete this webhook?')) return;
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -207,7 +222,8 @@ export default function WebhooksSettingsPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete webhook',
+        description:
+          error instanceof Error ? error.message : 'Failed to delete webhook',
         variant: 'destructive',
       });
     }
@@ -216,9 +232,12 @@ export default function WebhooksSettingsPage() {
   const handleTestWebhook = async (webhookId: string) => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/test`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/test`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -233,7 +252,8 @@ export default function WebhooksSettingsPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to test webhook',
+        description:
+          error instanceof Error ? error.message : 'Failed to test webhook',
         variant: 'destructive',
       });
     } finally {
@@ -247,14 +267,19 @@ export default function WebhooksSettingsPage() {
     setIsLoadingLogs(true);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/deliveries`);
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/deliveries`
+      );
       if (!response.ok) throw new Error('Failed to load delivery logs');
       const data = await response.json();
       setDeliveryLogs(data.deliveries || []);
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load delivery history',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to load delivery history',
         variant: 'destructive',
       });
     } finally {
@@ -263,14 +288,14 @@ export default function WebhooksSettingsPage() {
   };
 
   const toggleEvent = (event: string) => {
-    setFormEvents((prev) =>
-      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event]
+    setFormEvents(prev =>
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
     );
   };
 
   const generateSecret = () => {
     return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map((b) => b.toString(16).padStart(2, '0'))
+      .map(b => b.toString(16).padStart(2, '0'))
       .join('');
   };
 
@@ -279,20 +304,20 @@ export default function WebhooksSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h1 className="text-2xl font-bold">Webhooks</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className='text-2xl font-bold'>Webhooks</h1>
+        <p className='mt-1 text-muted-foreground'>
           Manage outgoing webhooks for workspace events
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className='flex items-center justify-between'>
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
+              <CardTitle className='flex items-center gap-2'>
+                <Globe className='h-5 w-5' />
                 Configured Webhooks
               </CardTitle>
               <CardDescription>
@@ -300,18 +325,20 @@ export default function WebhooksSettingsPage() {
               </CardDescription>
             </div>
             <Button onClick={openCreateDialog}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Add Webhook
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {webhooks.length === 0 ? (
-            <div className="text-center py-12">
-              <Globe className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground mb-4">No webhooks configured yet</p>
-              <Button onClick={openCreateDialog} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
+            <div className='text-center py-12'>
+              <Globe className='h-12 w-12 mx-auto text-muted-foreground mb-3' />
+              <p className='text-muted-foreground mb-4'>
+                No webhooks configured yet
+              </p>
+              <Button onClick={openCreateDialog} variant='outline'>
+                <Plus className='h-4 w-4 mr-2' />
                 Create Your First Webhook
               </Button>
             </div>
@@ -324,24 +351,28 @@ export default function WebhooksSettingsPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>Deliveries</TableHead>
                   <TableHead>Last Delivery</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {webhooks.map((webhook) => (
+                {webhooks.map(webhook => (
                   <TableRow key={webhook.id}>
-                    <TableCell className="font-mono text-sm max-w-xs truncate">
+                    <TableCell className='font-mono text-sm max-w-xs truncate'>
                       {webhook.url}
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {webhook.events.slice(0, 2).map((event) => (
-                          <Badge key={event} variant="secondary" className="text-xs">
+                      <div className='flex flex-wrap gap-1'>
+                        {webhook.events.slice(0, 2).map(event => (
+                          <Badge
+                            key={event}
+                            variant='secondary'
+                            className='text-xs'
+                          >
                             {event}
                           </Badge>
                         ))}
                         {webhook.events.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant='outline' className='text-xs'>
                             +{webhook.events.length - 2}
                           </Badge>
                         )}
@@ -349,57 +380,57 @@ export default function WebhooksSettingsPage() {
                     </TableCell>
                     <TableCell>
                       {webhook.active ? (
-                        <Badge variant="default" className="gap-1">
-                          <CheckCircle2 className="h-3 w-3" />
+                        <Badge variant='default' className='gap-1'>
+                          <CheckCircle2 className='h-3 w-3' />
                           Active
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1">
-                          <XCircle className="h-3 w-3" />
+                        <Badge variant='secondary' className='gap-1'>
+                          <XCircle className='h-3 w-3' />
                           Inactive
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell>{webhook.deliveryCount || 0}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className='text-sm text-muted-foreground'>
                       {webhook.lastDelivery
                         ? new Date(webhook.lastDelivery).toLocaleString()
                         : 'Never'}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center justify-end gap-1">
+                      <div className='flex items-center justify-end gap-1'>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleViewDeliveries(webhook.id)}
-                          title="View delivery history"
+                          title='View delivery history'
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className='h-4 w-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleTestWebhook(webhook.id)}
                           disabled={isSaving}
-                          title="Send test payload"
+                          title='Send test payload'
                         >
-                          <Send className="h-4 w-4" />
+                          <Send className='h-4 w-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => openEditDialog(webhook)}
-                          title="Edit webhook"
+                          title='Edit webhook'
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className='h-4 w-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleDeleteWebhook(webhook.id)}
-                          title="Delete webhook"
+                          title='Delete webhook'
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Trash2 className='h-4 w-4 text-red-500' />
                         </Button>
                       </div>
                     </TableCell>
@@ -413,7 +444,7 @@ export default function WebhooksSettingsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle>
               {editingWebhook ? 'Edit Webhook' : 'Create Webhook'}
@@ -423,93 +454,93 @@ export default function WebhooksSettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="webhook-url">Webhook URL</Label>
+          <div className='space-y-6 py-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='webhook-url'>Webhook URL</Label>
               <Input
-                id="webhook-url"
-                type="url"
+                id='webhook-url'
+                type='url'
                 value={formUrl}
-                onChange={(e) => setFormUrl(e.target.value)}
-                placeholder="https://example.com/webhook"
+                onChange={e => setFormUrl(e.target.value)}
+                placeholder='https://example.com/webhook'
               />
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 The URL that will receive POST requests for subscribed events
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Events</Label>
-              <div className="grid grid-cols-2 gap-2 p-4 border rounded-lg max-h-64 overflow-y-auto">
-                {AVAILABLE_EVENTS.map((event) => (
+              <div className='grid grid-cols-2 gap-2 p-4 border rounded-lg max-h-64 overflow-y-auto'>
+                {AVAILABLE_EVENTS.map(event => (
                   <label
                     key={event}
-                    className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-muted"
+                    className='flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-muted'
                   >
                     <input
-                      type="checkbox"
+                      type='checkbox'
                       checked={formEvents.includes(event)}
                       onChange={() => toggleEvent(event)}
-                      className="h-4 w-4"
+                      className='h-4 w-4'
                     />
-                    <span className="text-sm">{event}</span>
+                    <span className='text-sm'>{event}</span>
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Select which events should trigger this webhook
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="webhook-secret">Secret</Label>
-              <div className="flex gap-2">
+            <div className='space-y-2'>
+              <Label htmlFor='webhook-secret'>Secret</Label>
+              <div className='flex gap-2'>
                 <Input
-                  id="webhook-secret"
-                  type="text"
+                  id='webhook-secret'
+                  type='text'
                   value={formSecret}
-                  onChange={(e) => setFormSecret(e.target.value)}
-                  className="font-mono text-xs"
+                  onChange={e => setFormSecret(e.target.value)}
+                  className='font-mono text-xs'
                   readOnly
                 />
                 <Button
-                  variant="outline"
+                  variant='outline'
                   onClick={() => setFormSecret(generateSecret())}
-                  type="button"
+                  type='button'
                 >
                   Generate
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Used to sign webhook payloads for verification
               </p>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <Label htmlFor="webhook-active" className="text-base">
+            <div className='flex items-center justify-between rounded-lg border p-4'>
+              <div className='space-y-0.5'>
+                <Label htmlFor='webhook-active' className='text-base'>
                   Active
                 </Label>
-                <p className="text-sm text-muted-foreground">
+                <p className='text-sm text-muted-foreground'>
                   Enable or disable this webhook
                 </p>
               </div>
               <Button
-                type="button"
-                role="switch"
+                type='button'
+                role='switch'
                 aria-checked={formActive}
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => setFormActive(!formActive)}
                 className={cn(
                   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                  formActive ? 'bg-primary' : 'bg-muted',
+                  formActive ? 'bg-primary' : 'bg-muted'
                 )}
               >
                 <span
                   className={cn(
                     'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    formActive ? 'translate-x-6' : 'translate-x-1',
+                    formActive ? 'translate-x-6' : 'translate-x-1'
                   )}
                 />
               </Button>
@@ -517,17 +548,19 @@ export default function WebhooksSettingsPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant='outline' onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleSaveWebhook} disabled={isSaving}>
               {isSaving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className='h-4 w-4 mr-2 animate-spin' />
                   Saving...
                 </>
+              ) : editingWebhook ? (
+                'Update Webhook'
               ) : (
-                editingWebhook ? 'Update Webhook' : 'Create Webhook'
+                'Create Webhook'
               )}
             </Button>
           </DialogFooter>
@@ -536,7 +569,7 @@ export default function WebhooksSettingsPage() {
 
       {/* Delivery History Dialog */}
       <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle>Delivery History</DialogTitle>
             <DialogDescription>
@@ -544,14 +577,14 @@ export default function WebhooksSettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className='py-4'>
             {isLoadingLogs ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className='flex items-center justify-center py-12'>
+                <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
               </div>
             ) : deliveryLogs.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No deliveries yet</p>
+              <div className='text-center py-12'>
+                <p className='text-muted-foreground'>No deliveries yet</p>
               </div>
             ) : (
               <Table>
@@ -565,27 +598,31 @@ export default function WebhooksSettingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {deliveryLogs.map((log) => (
+                  {deliveryLogs.map(log => (
                     <TableRow key={log.id}>
-                      <TableCell className="text-sm">
+                      <TableCell className='text-sm'>
                         {new Date(log.timestamp).toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant='secondary' className='text-xs'>
                           {log.event}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={log.status >= 200 && log.status < 300 ? 'default' : 'destructive'}
+                          variant={
+                            log.status >= 200 && log.status < 300
+                              ? 'default'
+                              : 'destructive'
+                          }
                         >
                           {log.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className='text-sm text-muted-foreground'>
                         {log.duration}ms
                       </TableCell>
-                      <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
+                      <TableCell className='max-w-xs truncate text-xs text-muted-foreground'>
                         {log.response}
                       </TableCell>
                     </TableRow>
@@ -602,20 +639,20 @@ export default function WebhooksSettingsPage() {
 
 function WebhooksSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <div className="h-8 w-64 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-96 animate-pulse rounded bg-muted" />
+    <div className='space-y-6'>
+      <div className='space-y-2'>
+        <div className='h-8 w-64 animate-pulse rounded bg-muted' />
+        <div className='h-4 w-96 animate-pulse rounded bg-muted' />
       </div>
       <Card>
         <CardHeader>
-          <div className="h-6 w-48 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-full animate-pulse rounded bg-muted" />
+          <div className='h-6 w-48 animate-pulse rounded bg-muted' />
+          <div className='h-4 w-full animate-pulse rounded bg-muted' />
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="h-10 w-full animate-pulse rounded bg-muted" />
-          <div className="h-10 w-full animate-pulse rounded bg-muted" />
-          <div className="h-10 w-full animate-pulse rounded bg-muted" />
+        <CardContent className='space-y-4'>
+          <div className='h-10 w-full animate-pulse rounded bg-muted' />
+          <div className='h-10 w-full animate-pulse rounded bg-muted' />
+          <div className='h-10 w-full animate-pulse rounded bg-muted' />
         </CardContent>
       </Card>
     </div>

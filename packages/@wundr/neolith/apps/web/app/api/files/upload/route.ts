@@ -76,7 +76,7 @@ function generateS3Key(workspaceId: string, filename: string): string {
  */
 async function uploadToLocalStorage(
   file: File,
-  s3Key: string,
+  s3Key: string
 ): Promise<{ success: boolean; localPath?: string; error?: string }> {
   try {
     const fs = await import('fs/promises');
@@ -116,7 +116,7 @@ async function uploadToLocalStorage(
 async function uploadToS3(
   file: File,
   s3Key: string,
-  s3Bucket: string,
+  s3Bucket: string
 ): Promise<{ success: boolean; localPath?: string; error?: string }> {
   // Check if S3 credentials are configured
   const hasS3Credentials =
@@ -126,7 +126,9 @@ async function uploadToS3(
 
   if (!hasS3Credentials) {
     // Fallback to local storage in development
-    console.warn('[uploadToS3] S3 credentials not configured, using local storage fallback');
+    console.warn(
+      '[uploadToS3] S3 credentials not configured, using local storage fallback'
+    );
     return uploadToLocalStorage(file, s3Key);
   }
 
@@ -136,7 +138,9 @@ async function uploadToS3(
 
     if (!s3Module) {
       // In development without AWS SDK, use local storage
-      console.warn('[uploadToS3] AWS SDK not available, using local storage fallback');
+      console.warn(
+        '[uploadToS3] AWS SDK not available, using local storage fallback'
+      );
       return uploadToLocalStorage(file, s3Key);
     }
 
@@ -174,7 +178,9 @@ async function uploadToS3(
     console.error('[uploadToS3] Error:', error);
     // Fallback to local storage on S3 error in development
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[uploadToS3] S3 upload failed, falling back to local storage');
+      console.warn(
+        '[uploadToS3] S3 upload failed, falling back to local storage'
+      );
       return uploadToLocalStorage(file, s3Key);
     }
     return {
@@ -190,7 +196,9 @@ async function uploadToS3(
  * @param workspaceIdOrSlug - Workspace ID or slug to resolve
  * @returns Workspace ID or null if not found
  */
-async function resolveWorkspaceId(workspaceIdOrSlug: string): Promise<string | null> {
+async function resolveWorkspaceId(
+  workspaceIdOrSlug: string
+): Promise<string | null> {
   // First try to find by ID
   const workspaceById = await prisma.workspace.findUnique({
     where: { id: workspaceIdOrSlug },
@@ -289,8 +297,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -304,8 +315,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         body = await request.json();
       } catch {
         return NextResponse.json(
-          createErrorResponse('Invalid JSON body', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createErrorResponse(
+            'Invalid JSON body',
+            UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
       }
 
@@ -315,9 +329,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           createErrorResponse(
             'Invalid request parameters',
             UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-            { errors: parseResult.error.flatten().fieldErrors },
+            { errors: parseResult.error.flatten().fieldErrors }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -337,9 +351,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Not a member of this workspace',
-            UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+            UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
           ),
-          { status: 403 },
+          { status: 403 }
         );
       }
 
@@ -348,9 +362,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             `File type '${input.mimeType}' is not allowed`,
-            UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED,
+            UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -361,9 +375,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           createErrorResponse(
             `File size exceeds maximum allowed for ${getFileCategory(input.mimeType)} files`,
             UPLOAD_ERROR_CODES.FILE_TOO_LARGE,
-            { maxSize },
+            { maxSize }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -437,8 +451,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       formData = await request.formData();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid form data', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid form data',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -451,40 +468,55 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Validate file
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        createErrorResponse('File is required', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'File is required',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate workspace ID
     if (!workspaceId || typeof workspaceId !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Workspace ID is required', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Workspace ID is required',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate optional channel ID format
     if (channelId && typeof channelId !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate optional message ID format
     if (messageId && typeof messageId !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Invalid message ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid message ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate file is not empty
     if (file.size === 0) {
       return NextResponse.json(
-        createErrorResponse('File cannot be empty', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'File cannot be empty',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -497,9 +529,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           {
             providedType: file.type,
             hint: 'Supported types: images, documents, audio, video, and archives',
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -516,16 +548,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             maxSize,
             category,
             useMultipart: file.size > MULTIPART_UPLOAD_THRESHOLD,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Suggest multipart upload for large files
     if (file.size > MULTIPART_UPLOAD_THRESHOLD) {
       console.warn(
-        `[POST /api/files/upload] Large file detected (${file.size} bytes). Consider using multipart upload.`,
+        `[POST /api/files/upload] Large file detected (${file.size} bytes). Consider using multipart upload.`
       );
     }
 
@@ -535,40 +567,50 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check workspace membership
-    const membership = await checkWorkspaceMembership(resolvedWorkspaceId, session.user.id);
+    const membership = await checkWorkspaceMembership(
+      resolvedWorkspaceId,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Generate S3 key and bucket
     // Use STORAGE_BUCKET (consistent with hasS3Credentials check) or AWS_S3_BUCKET_NAME as fallback
-    const s3Bucket = process.env.STORAGE_BUCKET || process.env.AWS_S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || 'genesis-uploads';
+    const s3Bucket =
+      process.env.STORAGE_BUCKET ||
+      process.env.AWS_S3_BUCKET_NAME ||
+      process.env.AWS_S3_BUCKET ||
+      'genesis-uploads';
     const s3Key = generateS3Key(resolvedWorkspaceId, file.name);
 
     // Upload to S3 or local storage
     const uploadResult = await uploadToS3(file, s3Key, s3Bucket);
     if (!uploadResult.success) {
-      console.error('[POST /api/files/upload] Upload failed:', uploadResult.error);
+      console.error(
+        '[POST /api/files/upload] Upload failed:',
+        uploadResult.error
+      );
       return NextResponse.json(
         createErrorResponse(
           'Failed to upload file to storage',
           UPLOAD_ERROR_CODES.UPLOAD_FAILED,
-          { error: uploadResult.error },
+          { error: uploadResult.error }
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -586,8 +628,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       uploadType: isLocalStorage ? 'local' : 'direct',
       uploadedAt: new Date().toISOString(),
       ...(isLocalStorage && { localPath: uploadResult.localPath }),
-      ...(channelId && typeof channelId === 'string' && { channelId: channelId as string }),
-      ...(messageId && typeof messageId === 'string' && { messageId: messageId as string }),
+      ...(channelId &&
+        typeof channelId === 'string' && { channelId: channelId as string }),
+      ...(messageId &&
+        typeof messageId === 'string' && { messageId: messageId as string }),
     };
 
     // Create file record in database
@@ -648,14 +692,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: { file: responseData },
         message: 'File uploaded successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/files/upload] Error:', error);
 
     // Handle specific Prisma errors
     if (error && typeof error === 'object' && 'code' in error) {
-      const prismaError = error as { code: string; meta?: Record<string, unknown> };
+      const prismaError = error as {
+        code: string;
+        meta?: Record<string, unknown>;
+      };
 
       if (prismaError.code === 'P2003') {
         // Foreign key constraint violation
@@ -663,16 +710,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           createErrorResponse(
             'Invalid workspace, channel, or message ID',
             UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-            { error: 'Referenced resource does not exist' },
+            { error: 'Referenced resource does not exist' }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', UPLOAD_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -2,32 +2,41 @@
 
 ## Overview
 
-The Wundr Dynamic CLAUDE.md Generator System is a comprehensive solution for automatically configuring Claude Code integration in any git repository. It intelligently detects project types, analyzes code quality, and generates tailored CLAUDE.md configurations with optimized agent swarms and MCP tool integration.
+The Wundr Dynamic CLAUDE.md Generator System is a comprehensive solution for automatically
+configuring Claude Code integration in any git repository. It intelligently detects project types,
+analyzes code quality, and generates tailored CLAUDE.md configurations with optimized agent swarms
+and MCP tool integration.
 
 ## ✨ Key Features
 
 ### 🔍 Intelligent Project Detection
-- **Automatic Type Detection**: React, Next.js, Node.js, TypeScript, Python, Monorepo, CLI, Full-Stack
+
+- **Automatic Type Detection**: React, Next.js, Node.js, TypeScript, Python, Monorepo, CLI,
+  Full-Stack
 - **Structure Analysis**: Identifies directories, file types, frameworks, and build tools
 - **Dependency Analysis**: Extracts metadata from package.json and other configuration files
 
 ### 📊 Comprehensive Quality Auditing
+
 - **Security Scanning**: Identifies vulnerable dependencies and exposed secrets
 - **Quality Standards**: Analyzes linting, type checking, testing, and formatting setup
 - **Performance Analysis**: Detects heavy dependencies and optimization opportunities
 - **Scoring System**: 100-point quality score with detailed breakdown
 
 ### 🤖 Smart Agent Configuration
+
 - **Project-Specific Agents**: Specialized agents based on project type
 - **Topology Optimization**: Mesh, hierarchical, or adaptive swarm structures
 - **Scaling Logic**: Optimal agent count based on project complexity
 
 ### 🔧 MCP Tools Auto-Configuration
+
 - **Intelligent Tool Selection**: Relevant MCP tools for each project type
 - **Configuration Templates**: Pre-configured tool settings
 - **Integration Automation**: Seamless setup with Claude Desktop
 
 ### 📄 Dynamic Template Generation
+
 - **Context-Aware Templates**: CLAUDE.md templates adapted to project specifics
 - **Build System Integration**: Automatic command detection and configuration
 - **Quality Standards Documentation**: Real-time quality status reporting
@@ -60,6 +69,7 @@ wundr help-claude
 ### Core Commands
 
 #### `wundr init`
+
 Quick CLAUDE.md generation for current directory.
 
 ```bash
@@ -69,6 +79,7 @@ wundr init --interactive     # Interactive mode
 ```
 
 #### `wundr claude-init`
+
 Full initialization with comprehensive options.
 
 ```bash
@@ -80,6 +91,7 @@ wundr claude-init --output-dir ./docs   # Custom output directory
 ```
 
 #### `wundr claude-audit`
+
 Comprehensive repository quality audit.
 
 ```bash
@@ -91,6 +103,7 @@ wundr claude-audit --fix                # Show fix recommendations
 ```
 
 #### `wundr claude-setup`
+
 Complete setup with all tools and configuration.
 
 ```bash
@@ -115,16 +128,16 @@ wcs  # wundr claude-setup
 
 ### Supported Project Types
 
-| Type | Detection Criteria | Specialized Agents |
-|------|-------------------|-------------------|
-| **React** | `react` dependency, components directory | `ui-designer`, `accessibility-tester`, `performance-optimizer` |
-| **Next.js** | `next` dependency, pages directory | `ui-designer`, `ssr-specialist`, `seo-analyzer` |
-| **Node.js** | `package.json` present, server patterns | `api-designer`, `security-auditor`, `database-architect` |
-| **TypeScript** | `tsconfig.json`, TypeScript dependencies | `type-specialist`, `compiler-expert` |
-| **Monorepo** | `workspaces`, packages directory, Turbo/Lerna | `package-coordinator`, `build-orchestrator`, `version-manager` |
-| **CLI** | `bin` field, CLI patterns | `ux-designer`, `help-writer`, `platform-tester` |
-| **Full-Stack** | Client + server directories, mixed dependencies | `api-designer`, `ui-designer`, `integration-tester` |
-| **Library** | `main` field, publishable package | `api-designer`, `compatibility-tester`, `documentation-writer` |
+| Type           | Detection Criteria                              | Specialized Agents                                             |
+| -------------- | ----------------------------------------------- | -------------------------------------------------------------- |
+| **React**      | `react` dependency, components directory        | `ui-designer`, `accessibility-tester`, `performance-optimizer` |
+| **Next.js**    | `next` dependency, pages directory              | `ui-designer`, `ssr-specialist`, `seo-analyzer`                |
+| **Node.js**    | `package.json` present, server patterns         | `api-designer`, `security-auditor`, `database-architect`       |
+| **TypeScript** | `tsconfig.json`, TypeScript dependencies        | `type-specialist`, `compiler-expert`                           |
+| **Monorepo**   | `workspaces`, packages directory, Turbo/Lerna   | `package-coordinator`, `build-orchestrator`, `version-manager` |
+| **CLI**        | `bin` field, CLI patterns                       | `ux-designer`, `help-writer`, `platform-tester`                |
+| **Full-Stack** | Client + server directories, mixed dependencies | `api-designer`, `ui-designer`, `integration-tester`            |
+| **Library**    | `main` field, publishable package               | `api-designer`, `compatibility-tester`, `documentation-writer` |
 
 ### Detection Logic
 
@@ -142,27 +155,32 @@ function isReact(packageData: PackageJsonData | null): boolean {
 ### Quality Categories
 
 #### 🛡️ Security (Weight: 25%)
+
 - **Vulnerable Dependencies**: Known security issues
 - **Secret Detection**: Exposed API keys, tokens, passwords
 - **Configuration Security**: Missing .gitignore, .env.example
 
 #### 🔍 Quality Standards (Weight: 30%)
+
 - **Linting**: ESLint configuration and rules
 - **Type Checking**: TypeScript strict mode and coverage
 - **Testing**: Framework setup, coverage thresholds
 - **Formatting**: Prettier, code consistency
 
 #### 🏗️ Structure (Weight: 20%)
+
 - **Project Organization**: Source directories, build outputs
 - **Configuration Files**: Proper setup and maintenance
 - **Documentation**: README, CHANGELOG, API docs
 
 #### 📚 Documentation (Weight: 15%)
+
 - **README Quality**: Comprehensive project description
 - **Code Documentation**: Comments, JSDoc, type annotations
 - **Change Tracking**: CHANGELOG.md, version history
 
 #### ⚡ Performance (Weight: 10%)
+
 - **Bundle Analysis**: Heavy dependencies identification
 - **Build Optimization**: Proper build tool configuration
 - **Runtime Optimization**: Performance best practices
@@ -172,7 +190,7 @@ function isReact(packageData: PackageJsonData | null): boolean {
 ```
 Score Ranges:
 • 90-100: Excellent - Production ready
-• 70-89:  Good - Minor improvements needed  
+• 70-89:  Good - Minor improvements needed
 • 50-69:  Fair - Several issues to address
 • 0-49:   Poor - Major improvements required
 ```
@@ -203,8 +221,9 @@ Overall Score: 87/100
 ## 🤖 Agent Configuration System
 
 ### Base Agents (Always Included)
+
 - **coder**: Implementation and development
-- **reviewer**: Code review and quality assurance  
+- **reviewer**: Code review and quality assurance
 - **tester**: Test creation and validation
 - **planner**: Project planning and architecture
 - **researcher**: Requirements analysis and research
@@ -212,21 +231,24 @@ Overall Score: 87/100
 ### Specialized Agent Selection
 
 #### Project-Specific Logic
+
 ```typescript
 const agentMap = {
-  'react': ['ui-designer', 'accessibility-tester', 'performance-optimizer'],
-  'monorepo': ['package-coordinator', 'build-orchestrator', 'version-manager'],
-  'nodejs': ['api-designer', 'security-auditor', 'database-architect'],
-  'cli': ['ux-designer', 'help-writer', 'platform-tester']
+  react: ['ui-designer', 'accessibility-tester', 'performance-optimizer'],
+  monorepo: ['package-coordinator', 'build-orchestrator', 'version-manager'],
+  nodejs: ['api-designer', 'security-auditor', 'database-architect'],
+  cli: ['ux-designer', 'help-writer', 'platform-tester'],
 };
 ```
 
 #### Topology Selection
+
 - **Mesh**: Best for small to medium projects (< 8 agents)
-- **Hierarchical**: Optimal for monorepos and complex projects  
+- **Hierarchical**: Optimal for monorepos and complex projects
 - **Adaptive**: Dynamic topology based on task complexity
 
 ### Agent Scaling
+
 ```
 Project Complexity → Agent Count
 • Simple (1-5 files): 4-6 agents
@@ -240,6 +262,7 @@ Project Complexity → Agent Count
 ### Common Tools (All Projects)
 
 #### drift_detection
+
 ```json
 {
   "name": "drift_detection",
@@ -256,9 +279,10 @@ Project Complexity → Agent Count
 ```
 
 #### pattern_standardize
+
 ```json
 {
-  "name": "pattern_standardize", 
+  "name": "pattern_standardize",
   "description": "Automatically standardize code patterns",
   "config": {
     "enabled": true,
@@ -268,6 +292,7 @@ Project Complexity → Agent Count
 ```
 
 #### dependency_analyze
+
 ```json
 {
   "name": "dependency_analyze",
@@ -282,6 +307,7 @@ Project Complexity → Agent Count
 ```
 
 #### test_baseline
+
 ```json
 {
   "name": "test_baseline",
@@ -297,12 +323,15 @@ Project Complexity → Agent Count
 ### Project-Specific Tools
 
 #### Monorepo Projects
+
 - **monorepo_manage**: Package coordination and build optimization
 
-#### React/Frontend Projects  
+#### React/Frontend Projects
+
 - **ui_analyzer**: Component accessibility and performance analysis
 
 #### CLI Projects
+
 - **cli_tester**: Cross-platform command testing
 
 ## 📄 Generated CLAUDE.md Structure
@@ -325,48 +354,61 @@ Project Complexity → Agent Count
 ### Dynamic Content Examples
 
 #### React Project CLAUDE.md
+
 ```markdown
 ## Project Overview
+
 This is a React Application built with React, using Vite for build processes.
 
 **Frontend Application**:
+
 - Component-based architecture
 - Modern React patterns and hooks
 - Responsive design principles
 
 ## 🤖 Agent Configuration
+
 ### Specialized Agents for React Application
+
 `ui-designer`, `accessibility-tester`, `performance-optimizer`
 
 ### Frontend-Specific Agents
+
 - `ui-designer`: Component design and styling
 - `accessibility-tester`: A11y compliance
 - `performance-optimizer`: Bundle analysis and optimization
 ```
 
 #### Monorepo Project CLAUDE.md
+
 ```markdown
-## Project Overview  
+## Project Overview
+
 This is a Monorepo built with TypeScript, using Turbo for build processes.
 
 **Monorepo Structure**:
+
 - Multiple packages managed together
 - Workspace-based dependency management
 - Shared tooling and configurations
 
 ## 🤖 Agent Configuration
+
 ### Specialized Agents for Monorepo
+
 `package-coordinator`, `build-orchestrator`, `version-manager`
 
 ### Monorepo-Specific Agents
+
 - `package-coordinator`: Cross-package dependency management
-- `build-orchestrator`: Optimized build ordering  
+- `build-orchestrator`: Optimized build ordering
 - `version-manager`: Semantic versioning coordination
 ```
 
 ## 🔄 Workflow Examples
 
 ### New Project Setup
+
 ```bash
 # Navigate to new project
 cd my-new-project
@@ -382,6 +424,7 @@ wundr claude-setup --interactive
 ```
 
 ### Existing Project Integration
+
 ```bash
 # Audit first
 wundr claude-audit --detailed --output audit-report.txt
@@ -394,6 +437,7 @@ wundr claude-init --interactive --audit
 ```
 
 ### Monorepo Setup
+
 ```bash
 # Full monorepo setup with template
 wundr claude-setup --template=monorepo
@@ -403,6 +447,7 @@ wundr claude-audit --json > monorepo-audit.json
 ```
 
 ### CI/CD Integration
+
 ```bash
 # Add to CI pipeline
 name: Claude Code Audit
@@ -421,11 +466,12 @@ jobs:
 ## 🧪 Testing & Validation
 
 ### Unit Tests
+
 ```bash
 # Run generator tests
 npm test src/tests/claude-generator.test.ts
 
-# Run CLI tests  
+# Run CLI tests
 npm test src/tests/cli-commands.test.ts
 
 # Full test suite
@@ -433,6 +479,7 @@ npm test
 ```
 
 ### Integration Testing
+
 ```bash
 # Test on sample projects
 mkdir test-projects && cd test-projects
@@ -449,6 +496,7 @@ npm init -y && wundr claude-init
 ## 🔧 Configuration & Customization
 
 ### Global Configuration
+
 Location: `~/.wundr/config.json`
 
 ```json
@@ -473,30 +521,34 @@ Location: `~/.wundr/config.json`
 ```
 
 ### Project Templates
+
 Location: `~/.wundr/templates/`
 
 Custom templates can be added for specific project types or organization standards.
 
 ### Quality Thresholds
+
 ```typescript
 // Customize in quality-analyzer.ts
 const QUALITY_THRESHOLDS = {
   coverage: 80,
   complexity: 10,
   duplication: 5,
-  security: 'strict'
+  security: 'strict',
 };
 ```
 
 ## 📈 Performance & Metrics
 
 ### Benchmarks
+
 - **Project Detection**: < 100ms for typical projects
-- **Quality Analysis**: < 500ms for most codebases  
+- **Quality Analysis**: < 500ms for most codebases
 - **CLAUDE.md Generation**: < 200ms
 - **Full Setup**: < 2 minutes including Claude Flow
 
 ### Memory Usage
+
 - **Base System**: ~50MB RAM
 - **Large Monorepo**: ~200MB RAM during analysis
 - **Concurrent Operations**: Optimized for parallel execution
@@ -504,6 +556,7 @@ const QUALITY_THRESHOLDS = {
 ## 🤝 Contributing
 
 ### Development Setup
+
 ```bash
 git clone https://github.com/adapticai/wundr.git
 cd wundr
@@ -518,6 +571,7 @@ npm test
 ```
 
 ### Adding New Project Types
+
 1. Update `ProjectDetector.ts` with detection logic
 2. Add specialized agents in `claude-config-generator.ts`
 3. Create MCP tool configurations
@@ -525,6 +579,7 @@ npm test
 5. Write tests in `claude-generator.test.ts`
 
 ### Adding New Quality Checks
+
 1. Extend `QualityAnalyzer.ts` with new analysis
 2. Update `RepositoryAuditor.ts` for scoring
 3. Add recommendations in audit logic
@@ -540,6 +595,7 @@ npm test
 ## 🗺️ Roadmap
 
 ### Planned Features
+
 - [ ] Python project type support with Poetry/pip detection
 - [ ] Rust project integration with Cargo
 - [ ] Docker/Kubernetes configuration detection
@@ -550,6 +606,7 @@ npm test
 - [ ] VS Code extension for inline configuration
 
 ### Version History
+
 - **v1.0.0**: Initial release with core functionality
 - **v1.1.0**: Enhanced project detection and quality analysis
 - **v1.2.0**: MCP tools auto-configuration
@@ -557,4 +614,5 @@ npm test
 
 ---
 
-**The Wundr Dynamic CLAUDE.md Generator System transforms any repository into a Claude Code optimized workspace with intelligent analysis and configuration.**
+**The Wundr Dynamic CLAUDE.md Generator System transforms any repository into a Claude Code
+optimized workspace with intelligent analysis and configuration.**

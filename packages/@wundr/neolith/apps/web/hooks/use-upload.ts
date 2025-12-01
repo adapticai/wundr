@@ -91,7 +91,9 @@ function generateUploadId(): string {
 /**
  * Hook for managing file uploads with progress tracking, cancellation, and retry support
  */
-export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn {
+export function useFileUpload(
+  options: UploadOptions = {}
+): UseFileUploadReturn {
   const {
     channelId,
     maxSize = DEFAULT_MAX_FILE_SIZE,
@@ -106,10 +108,16 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
   const [isPaused, setIsPaused] = useState(false);
   const uploadQueueRef = useRef<Map<string, AbortController>>(new Map());
 
-  const isUploading = useMemo(() => uploads.some((u) => u.status === 'uploading'), [uploads]);
+  const isUploading = useMemo(
+    () => uploads.some(u => u.status === 'uploading'),
+    [uploads]
+  );
   const progress = useMemo(
-    () => (uploads.length > 0 ? uploads.reduce((acc, u) => acc + u.progress, 0) / uploads.length : 0),
-    [uploads],
+    () =>
+      uploads.length > 0
+        ? uploads.reduce((acc, u) => acc + u.progress, 0) / uploads.length
+        : 0,
+    [uploads]
   );
 
   /**
@@ -137,7 +145,7 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
 
       return null;
     },
-    [maxSize, accept],
+    [maxSize, accept]
   );
 
   /**
@@ -150,10 +158,12 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
 
       try {
         // Update status to uploading
-        setUploads((prev) =>
-          prev.map((u) =>
-            u.id === uploadState.id ? { ...u, status: 'uploading' as const, abortController } : u,
-          ),
+        setUploads(prev =>
+          prev.map(u =>
+            u.id === uploadState.id
+              ? { ...u, status: 'uploading' as const, abortController }
+              : u
+          )
         );
 
         // Simulate getting a signed URL (replace with actual API call)
@@ -170,13 +180,17 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
         const xhr = new XMLHttpRequest();
 
         const uploadPromise = new Promise<string>((resolve, reject) => {
-          xhr.upload.onprogress = (event) => {
+          xhr.upload.onprogress = event => {
             if (event.lengthComputable) {
-              const percentComplete = Math.round((event.loaded / event.total) * 100);
-              setUploads((prev) =>
-                prev.map((u) =>
-                  u.id === uploadState.id ? { ...u, progress: percentComplete } : u,
-                ),
+              const percentComplete = Math.round(
+                (event.loaded / event.total) * 100
+              );
+              setUploads(prev =>
+                prev.map(u =>
+                  u.id === uploadState.id
+                    ? { ...u, progress: percentComplete }
+                    : u
+                )
               );
               onProgress?.(uploadState.id, percentComplete);
             }
@@ -219,31 +233,34 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
         const url = await uploadPromise;
 
         // Update status to completed
-        setUploads((prev) =>
-          prev.map((u) =>
+        setUploads(prev =>
+          prev.map(u =>
             u.id === uploadState.id
               ? { ...u, status: 'completed' as const, progress: 100, url }
-              : u,
-          ),
+              : u
+          )
         );
 
         onComplete?.(uploadState.id, url);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Upload failed';
 
         if (errorMessage === 'Upload cancelled') {
-          setUploads((prev) =>
-            prev.map((u) =>
-              u.id === uploadState.id ? { ...u, status: 'cancelled' as const } : u,
-            ),
+          setUploads(prev =>
+            prev.map(u =>
+              u.id === uploadState.id
+                ? { ...u, status: 'cancelled' as const }
+                : u
+            )
           );
         } else {
-          setUploads((prev) =>
-            prev.map((u) =>
+          setUploads(prev =>
+            prev.map(u =>
               u.id === uploadState.id
                 ? { ...u, status: 'error' as const, error: errorMessage }
-                : u,
-            ),
+                : u
+            )
           );
           onError?.(uploadState.id, errorMessage);
         }
@@ -251,7 +268,7 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
         uploadQueueRef.current.delete(uploadState.id);
       }
     },
-    [channelId, onProgress, onComplete, onError],
+    [channelId, onProgress, onComplete, onError]
   );
 
   /**
@@ -261,7 +278,7 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
     (files: File[]) => {
       const validFiles = files.slice(0, maxFiles);
 
-      const newUploads: UploadState[] = validFiles.map((file) => {
+      const newUploads: UploadState[] = validFiles.map(file => {
         const validationError = validateFile(file);
 
         return {
@@ -277,18 +294,18 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
         };
       });
 
-      setUploads((prev) => [...prev, ...newUploads]);
+      setUploads(prev => [...prev, ...newUploads]);
 
       // Start uploading valid files
       if (!isPaused) {
         newUploads
-          .filter((u) => u.status === 'pending')
-          .forEach((uploadState) => {
+          .filter(u => u.status === 'pending')
+          .forEach(uploadState => {
             uploadFile(uploadState);
           });
       }
     },
-    [maxFiles, validateFile, isPaused, uploadFile],
+    [maxFiles, validateFile, isPaused, uploadFile]
   );
 
   /**
@@ -299,8 +316,10 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
     if (controller) {
       controller.abort();
     }
-    setUploads((prev) =>
-      prev.map((u) => (u.id === fileId ? { ...u, status: 'cancelled' as const } : u)),
+    setUploads(prev =>
+      prev.map(u =>
+        u.id === fileId ? { ...u, status: 'cancelled' as const } : u
+      )
     );
   }, []);
 
@@ -308,15 +327,15 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    * Cancel all uploads
    */
   const cancelAll = useCallback(() => {
-    uploadQueueRef.current.forEach((controller) => {
+    uploadQueueRef.current.forEach(controller => {
       controller.abort();
     });
-    setUploads((prev) =>
-      prev.map((u) =>
+    setUploads(prev =>
+      prev.map(u =>
         u.status === 'uploading' || u.status === 'pending'
           ? { ...u, status: 'cancelled' as const }
-          : u,
-      ),
+          : u
+      )
     );
   }, []);
 
@@ -324,13 +343,15 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    * Retry failed uploads
    */
   const retryFailed = useCallback(() => {
-    setUploads((prev) => {
-      const failedUploads = prev.filter((u) => u.status === 'error');
-      failedUploads.forEach((uploadState) => {
+    setUploads(prev => {
+      const failedUploads = prev.filter(u => u.status === 'error');
+      failedUploads.forEach(uploadState => {
         uploadFile(uploadState);
       });
-      return prev.map((u) =>
-        u.status === 'error' ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
+      return prev.map(u =>
+        u.status === 'error'
+          ? { ...u, status: 'pending' as const, progress: 0, error: undefined }
+          : u
       );
     });
   }, [uploadFile]);
@@ -340,18 +361,25 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    */
   const retry = useCallback(
     (fileId: string) => {
-      setUploads((prev) => {
-        const uploadState = prev.find((u) => u.id === fileId);
+      setUploads(prev => {
+        const uploadState = prev.find(u => u.id === fileId);
         if (uploadState && uploadState.status === 'error') {
           uploadFile(uploadState);
-          return prev.map((u) =>
-            u.id === fileId ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
+          return prev.map(u =>
+            u.id === fileId
+              ? {
+                  ...u,
+                  status: 'pending' as const,
+                  progress: 0,
+                  error: undefined,
+                }
+              : u
           );
         }
         return prev;
       });
     },
-    [uploadFile],
+    [uploadFile]
   );
 
   /**
@@ -362,15 +390,15 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
     if (controller) {
       controller.abort();
     }
-    setUploads((prev) => prev.filter((u) => u.id !== fileId));
+    setUploads(prev => prev.filter(u => u.id !== fileId));
   }, []);
 
   /**
    * Clear all completed/failed uploads
    */
   const clearCompleted = useCallback(() => {
-    setUploads((prev) =>
-      prev.filter((u) => u.status === 'uploading' || u.status === 'pending'),
+    setUploads(prev =>
+      prev.filter(u => u.status === 'uploading' || u.status === 'pending')
     );
   }, []);
 
@@ -379,13 +407,13 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    */
   const pauseAll = useCallback(() => {
     setIsPaused(true);
-    uploadQueueRef.current.forEach((controller) => {
+    uploadQueueRef.current.forEach(controller => {
       controller.abort();
     });
-    setUploads((prev) =>
-      prev.map((u) =>
-        u.status === 'uploading' ? { ...u, status: 'pending' as const } : u,
-      ),
+    setUploads(prev =>
+      prev.map(u =>
+        u.status === 'uploading' ? { ...u, status: 'pending' as const } : u
+      )
     );
   }, []);
 
@@ -394,10 +422,10 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
    */
   const resumeAll = useCallback(() => {
     setIsPaused(false);
-    setUploads((prev) => {
+    setUploads(prev => {
       prev
-        .filter((u) => u.status === 'pending')
-        .forEach((uploadState) => {
+        .filter(u => u.status === 'pending')
+        .forEach(uploadState => {
           uploadFile(uploadState);
         });
       return prev;
@@ -408,7 +436,7 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
   useEffect(() => {
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      uploadQueueRef.current.forEach((controller) => {
+      uploadQueueRef.current.forEach(controller => {
         controller.abort();
       });
     };
@@ -480,7 +508,8 @@ export function useSignedUpload(channelId: string): UseSignedUploadReturn {
         if (err instanceof Error && err.name === 'AbortError') {
           throw err;
         }
-        const errorMessage = err instanceof Error ? err.message : 'Failed to get upload URL';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to get upload URL';
         setError(errorMessage);
         throw err;
       } finally {
@@ -490,7 +519,7 @@ export function useSignedUpload(channelId: string): UseSignedUploadReturn {
         setIsLoading(false);
       }
     },
-    [channelId],
+    [channelId]
   );
 
   // Cleanup on unmount
@@ -562,7 +591,7 @@ export function useChannelFiles(channelId: string): UseChannelFilesReturn {
         if (reset) {
           setFiles(data.files);
         } else {
-          setFiles((prev) => [...prev, ...data.files]);
+          setFiles(prev => [...prev, ...data.files]);
         }
 
         setHasMore(data.hasMore);
@@ -571,7 +600,8 @@ export function useChannelFiles(channelId: string): UseChannelFilesReturn {
         if (err instanceof Error && err.name === 'AbortError') {
           return;
         }
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch files';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to fetch files';
         setError(errorMessage);
       } finally {
         if (abortControllerRef.current === abortController) {
@@ -581,7 +611,7 @@ export function useChannelFiles(channelId: string): UseChannelFilesReturn {
         setIsLoading(false);
       }
     },
-    [channelId, cursor, hasMore],
+    [channelId, cursor, hasMore]
   );
 
   const loadMore = useCallback(() => {

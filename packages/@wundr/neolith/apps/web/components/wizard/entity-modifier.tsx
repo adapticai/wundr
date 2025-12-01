@@ -94,7 +94,9 @@ export function EntityModifier({
 }: EntityModifierProps) {
   const [messages, setMessages] = React.useState<ModifierMessage[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [suggestedChanges, setSuggestedChanges] = React.useState<SuggestedChanges | undefined>();
+  const [suggestedChanges, setSuggestedChanges] = React.useState<
+    SuggestedChanges | undefined
+  >();
   const [activeTab, setActiveTab] = React.useState<'chat' | 'review'>('chat');
   const [isApplying, setIsApplying] = React.useState(false);
   const [, setModificationHistory] = React.useState<SuggestedChanges[]>([]);
@@ -136,7 +138,7 @@ export function EntityModifier({
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
@@ -151,7 +153,7 @@ export function EntityModifier({
           entityId,
           currentData,
           messages: [...messages, userMessage],
-          conversationHistory: messages.map((m) => ({
+          conversationHistory: messages.map(m => ({
             role: m.role,
             content: m.content,
           })),
@@ -172,12 +174,12 @@ export function EntityModifier({
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
 
       // Update suggested changes if provided
       if (result.suggestedChanges) {
         setSuggestedChanges(result.suggestedChanges);
-        setModificationHistory((prev) => [...prev, result.suggestedChanges]);
+        setModificationHistory(prev => [...prev, result.suggestedChanges]);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -190,7 +192,7 @@ export function EntityModifier({
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +225,7 @@ export function EntityModifier({
         content: 'Failed to apply changes. Please try again.',
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorMessage]);
       setActiveTab('chat');
     } finally {
       setIsApplying(false);
@@ -244,7 +246,7 @@ export function EntityModifier({
       content: 'Suggestions cleared. You can continue describing changes.',
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, undoMessage]);
+    setMessages(prev => [...prev, undoMessage]);
   };
 
   /**
@@ -263,22 +265,25 @@ export function EntityModifier({
   }, [currentData, suggestedChanges]);
 
   return (
-    <Card className="flex h-[80vh] flex-col overflow-hidden">
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'chat' | 'review')}>
+    <Card className='flex h-[80vh] flex-col overflow-hidden'>
+      <Tabs
+        value={activeTab}
+        onValueChange={v => setActiveTab(v as 'chat' | 'review')}
+      >
         {/* Header */}
-        <div className="border-b px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className='border-b px-6 py-4'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h2 className="text-lg font-semibold">
+              <h2 className='text-lg font-semibold'>
                 Modify {getEntityDisplayName(entityType)}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 {currentData.name}
               </p>
             </div>
-            <TabsList className="grid w-[300px] grid-cols-2">
-              <TabsTrigger value="chat">Conversation</TabsTrigger>
-              <TabsTrigger value="review" disabled={!suggestedChanges}>
+            <TabsList className='grid w-[300px] grid-cols-2'>
+              <TabsTrigger value='chat'>Conversation</TabsTrigger>
+              <TabsTrigger value='review' disabled={!suggestedChanges}>
                 Review Changes
               </TabsTrigger>
             </TabsList>
@@ -286,12 +291,12 @@ export function EntityModifier({
         </div>
 
         {/* Chat View */}
-        <TabsContent value="chat" className="m-0 flex h-full flex-col">
-          <div className="flex flex-1 gap-4 overflow-hidden">
+        <TabsContent value='chat' className='m-0 flex h-full flex-col'>
+          <div className='flex flex-1 gap-4 overflow-hidden'>
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="space-y-4">
-                {messages.map((message) => (
+            <div className='flex-1 overflow-y-auto px-6 py-4'>
+              <div className='space-y-4'>
+                {messages.map(message => (
                   <ChatMessage
                     key={message.id}
                     role={message.role}
@@ -302,8 +307,8 @@ export function EntityModifier({
 
                 {isLoading && (
                   <ChatMessage
-                    role="assistant"
-                    content="Analyzing your request..."
+                    role='assistant'
+                    content='Analyzing your request...'
                     isStreaming={true}
                   />
                 )}
@@ -313,17 +318,17 @@ export function EntityModifier({
             </div>
 
             {/* Current State Sidebar */}
-            <div className="w-80 border-l bg-muted/30 px-4 py-4 overflow-y-auto">
-              <h3 className="mb-3 text-sm font-semibold">Current State</h3>
+            <div className='w-80 border-l bg-muted/30 px-4 py-4 overflow-y-auto'>
+              <h3 className='mb-3 text-sm font-semibold'>Current State</h3>
               <CurrentStateView data={currentData} entityType={entityType} />
 
               {suggestedChanges && (
                 <>
-                  <div className="my-4 border-t" />
-                  <h3 className="mb-3 text-sm font-semibold text-primary">
+                  <div className='my-4 border-t' />
+                  <h3 className='mb-3 text-sm font-semibold text-primary'>
                     Suggested Changes ({suggestedChanges.modifications.length})
                   </h3>
-                  <div className="space-y-2">
+                  <div className='space-y-2'>
                     {suggestedChanges.modifications.map((mod, idx) => (
                       <ModificationBadge key={idx} modification={mod} />
                     ))}
@@ -343,7 +348,7 @@ export function EntityModifier({
         </TabsContent>
 
         {/* Review View */}
-        <TabsContent value="review" className="m-0 h-full overflow-hidden">
+        <TabsContent value='review' className='m-0 h-full overflow-hidden'>
           {suggestedChanges && (
             <ReviewChanges
               entityType={entityType}
@@ -375,15 +380,15 @@ function CurrentStateView({
   const displayFields = ['name', 'description', 'role', 'status', 'discipline'];
 
   return (
-    <div className="space-y-3 text-sm">
+    <div className='space-y-3 text-sm'>
       {displayFields
-        .filter((field) => data[field] !== undefined && data[field] !== null)
-        .map((field) => (
+        .filter(field => data[field] !== undefined && data[field] !== null)
+        .map(field => (
           <div key={field}>
-            <div className="text-xs font-medium text-muted-foreground">
+            <div className='text-xs font-medium text-muted-foreground'>
               {field.charAt(0).toUpperCase() + field.slice(1)}
             </div>
-            <div className="mt-0.5 text-foreground">
+            <div className='mt-0.5 text-foreground'>
               {typeof data[field] === 'string'
                 ? data[field]
                 : JSON.stringify(data[field])}
@@ -399,14 +404,12 @@ function CurrentStateView({
  */
 function ModificationBadge({ modification }: { modification: Modification }) {
   return (
-    <div className="rounded-md border bg-background p-2 text-xs">
-      <div className="font-medium text-primary">
-        {modification.field}
-      </div>
-      <div className="mt-1 text-muted-foreground line-through">
+    <div className='rounded-md border bg-background p-2 text-xs'>
+      <div className='font-medium text-primary'>{modification.field}</div>
+      <div className='mt-1 text-muted-foreground line-through'>
         {String(modification.oldValue).slice(0, 50)}
       </div>
-      <div className="mt-1 text-foreground">
+      <div className='mt-1 text-foreground'>
         {String(modification.newValue).slice(0, 50)}
       </div>
     </div>
@@ -436,14 +439,14 @@ function ReviewChanges({
   isApplying: boolean;
 }) {
   return (
-    <div className="flex h-full flex-col">
+    <div className='flex h-full flex-col'>
       {/* Header */}
-      <div className="border-b px-6 py-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
+      <div className='border-b px-6 py-4'>
+        <div className='flex items-center gap-2'>
+          <Sparkles className='h-5 w-5 text-primary' />
           <div>
-            <h2 className="text-lg font-semibold">Review Suggested Changes</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className='text-lg font-semibold'>Review Suggested Changes</h2>
+            <p className='text-sm text-muted-foreground'>
               {suggestedChanges.summary}
             </p>
           </div>
@@ -451,43 +454,45 @@ function ReviewChanges({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <div className="mx-auto max-w-5xl space-y-6">
+      <div className='flex-1 overflow-y-auto px-6 py-4'>
+        <div className='mx-auto max-w-5xl space-y-6'>
           {/* AI Reasoning */}
           <Alert>
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className='h-4 w-4' />
             <AlertDescription>{suggestedChanges.reasoning}</AlertDescription>
           </Alert>
 
           {/* Before/After Comparison */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className='grid gap-6 md:grid-cols-2'>
             {/* Before */}
-            <div className="space-y-3">
-              <h3 className="flex items-center gap-2 text-sm font-semibold">
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <div className='space-y-3'>
+              <h3 className='flex items-center gap-2 text-sm font-semibold'>
+                <AlertCircle className='h-4 w-4 text-muted-foreground' />
                 Current State
               </h3>
-              <Card className="p-4">
+              <Card className='p-4'>
                 <EntityDataDisplay data={currentData} />
               </Card>
             </div>
 
             {/* After */}
-            <div className="space-y-3">
-              <h3 className="flex items-center gap-2 text-sm font-semibold">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
+            <div className='space-y-3'>
+              <h3 className='flex items-center gap-2 text-sm font-semibold'>
+                <CheckCircle2 className='h-4 w-4 text-primary' />
                 After Changes
               </h3>
-              <Card className="border-primary p-4">
+              <Card className='border-primary p-4'>
                 <EntityDataDisplay data={previewData} highlightChanges={true} />
               </Card>
             </div>
           </div>
 
           {/* Detailed Modifications */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">Changes ({suggestedChanges.modifications.length})</h3>
-            <div className="space-y-3">
+          <div className='space-y-3'>
+            <h3 className='text-sm font-semibold'>
+              Changes ({suggestedChanges.modifications.length})
+            </h3>
+            <div className='space-y-3'>
               {suggestedChanges.modifications.map((mod, idx) => (
                 <ModificationDetail key={idx} modification={mod} />
               ))}
@@ -497,32 +502,32 @@ function ReviewChanges({
       </div>
 
       {/* Footer */}
-      <div className="border-t px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className='border-t px-6 py-4'>
+        <div className='flex items-center justify-between'>
           <Button
-            type="button"
-            variant="ghost"
+            type='button'
+            variant='ghost'
             onClick={onCancel}
             disabled={isApplying}
           >
             Cancel
           </Button>
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               onClick={onUndo}
               disabled={isApplying}
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
+              <RotateCcw className='mr-2 h-4 w-4' />
               Start Over
             </Button>
-            <Button type="button" onClick={onApply} disabled={isApplying}>
+            <Button type='button' onClick={onApply} disabled={isApplying}>
               {isApplying ? (
                 <>Applying...</>
               ) : (
                 <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  <CheckCircle2 className='mr-2 h-4 w-4' />
                   Apply Changes
                 </>
               )}
@@ -544,14 +549,15 @@ function EntityDataDisplay({
   data: EntityData;
   highlightChanges?: boolean;
 }) {
-  const displayFields = Object.keys(data).filter((key) => key !== 'id');
+  const displayFields = Object.keys(data).filter(key => key !== 'id');
 
   return (
-    <div className="space-y-3 text-sm">
-      {displayFields.map((field) => (
+    <div className='space-y-3 text-sm'>
+      {displayFields.map(field => (
         <div key={field}>
-          <div className="text-xs font-medium text-muted-foreground">
-            {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+          <div className='text-xs font-medium text-muted-foreground'>
+            {field.charAt(0).toUpperCase() +
+              field.slice(1).replace(/([A-Z])/g, ' $1')}
           </div>
           <div
             className={cn(
@@ -574,22 +580,26 @@ function EntityDataDisplay({
  */
 function ModificationDetail({ modification }: { modification: Modification }) {
   return (
-    <Card className="p-4">
-      <div className="space-y-2">
-        <div className="flex items-start justify-between">
-          <div className="font-medium">{modification.field}</div>
-          <div className="text-xs text-muted-foreground">{modification.reason}</div>
+    <Card className='p-4'>
+      <div className='space-y-2'>
+        <div className='flex items-start justify-between'>
+          <div className='font-medium'>{modification.field}</div>
+          <div className='text-xs text-muted-foreground'>
+            {modification.reason}
+          </div>
         </div>
-        <div className="grid gap-2 text-sm md:grid-cols-2">
+        <div className='grid gap-2 text-sm md:grid-cols-2'>
           <div>
-            <div className="text-xs font-medium text-muted-foreground">Before</div>
-            <div className="mt-1 rounded bg-muted p-2 line-through">
+            <div className='text-xs font-medium text-muted-foreground'>
+              Before
+            </div>
+            <div className='mt-1 rounded bg-muted p-2 line-through'>
               {String(modification.oldValue)}
             </div>
           </div>
           <div>
-            <div className="text-xs font-medium text-primary">After</div>
-            <div className="mt-1 rounded border border-primary bg-primary/5 p-2">
+            <div className='text-xs font-medium text-primary'>After</div>
+            <div className='mt-1 rounded border border-primary bg-primary/5 p-2'>
               {String(modification.newValue)}
             </div>
           </div>

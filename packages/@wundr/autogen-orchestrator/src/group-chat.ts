@@ -101,7 +101,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
     const validationResult = GroupChatConfigSchema.safeParse(config);
     if (!validationResult.success) {
       throw new Error(
-        `Invalid GroupChatConfig: ${validationResult.error.message}`,
+        `Invalid GroupChatConfig: ${validationResult.error.message}`
       );
     }
 
@@ -125,13 +125,13 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
 
     // Initialize managers
     this.speakerManager = new SpeakerSelectionManager(
-      config.speakerSelectionMethod,
+      config.speakerSelectionMethod
     );
     this.terminationManager = new TerminationManager(
-      config.terminationConditions || [],
+      config.terminationConditions || []
     );
     this.nestedChatManager = new NestedChatManager(
-      config.nestedChatConfigs || [],
+      config.nestedChatConfigs || []
     );
 
     // Initialize metrics
@@ -171,7 +171,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
           nestedChatId,
           result: nestedResult,
         });
-      },
+      }
     );
   }
 
@@ -232,7 +232,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
    * @returns Chat result
    */
   private async runConversationLoop(
-    options: StartChatOptions,
+    options: StartChatOptions
   ): Promise<ChatResult> {
     const maxRounds = this.config.maxRounds || 100;
     const maxMessages = this.config.maxMessages || 1000;
@@ -242,7 +242,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
       const terminationResult = await this.terminationManager.evaluate(
         this.messages,
         Array.from(this.participants.values()),
-        this.context,
+        this.context
       );
 
       if (terminationResult.shouldTerminate) {
@@ -253,14 +253,14 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
       if (this.context.currentRound >= maxRounds) {
         return this.endChat(
           'terminated',
-          `Maximum rounds reached: ${maxRounds}`,
+          `Maximum rounds reached: ${maxRounds}`
         );
       }
 
       if (this.messages.length >= maxMessages) {
         return this.endChat(
           'terminated',
-          `Maximum messages reached: ${maxMessages}`,
+          `Maximum messages reached: ${maxMessages}`
         );
       }
 
@@ -281,7 +281,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
           Array.from(this.participants.values()),
           this.messages,
           this.context,
-          this.config.speakerSelectionConfig,
+          this.config.speakerSelectionConfig
         );
 
         this.context.previousSpeaker = this.context.currentSpeaker;
@@ -335,7 +335,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
    * @returns Generated response content
    */
   private async generateResponse(
-    participant: ChatParticipant,
+    participant: ChatParticipant
   ): Promise<string | null> {
     const startTime = Date.now();
 
@@ -349,7 +349,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
         response = await this.responseGenerator(
           participant,
           this.messages,
-          this.context,
+          this.context
         );
       } else {
         // Default placeholder response
@@ -371,7 +371,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(
-        `Error generating response for ${participant.name}: ${errorMessage}`,
+        `Error generating response for ${participant.name}: ${errorMessage}`
       );
 
       return null;
@@ -402,7 +402,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
   private updateMetrics(
     participantName: string,
     latencyMs: number,
-    tokenEstimate: number,
+    tokenEstimate: number
   ): void {
     // Update per-participant metrics
     this.metrics.messagesPerParticipant[participantName] =
@@ -431,7 +431,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
     const triggeredConfig = this.nestedChatManager.checkTrigger(
       message,
       Array.from(this.participants.values()),
-      this.context,
+      this.context
     );
 
     if (triggeredConfig) {
@@ -446,14 +446,14 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
    */
   private async runNestedChat(
     config: NestedChatConfig,
-    triggerMessageId: string,
+    triggerMessageId: string
   ): Promise<void> {
     const nestedChatId = this.nestedChatManager.startNestedChat(
       config,
       this.chatId,
       triggerMessageId,
       Array.from(this.participants.values()),
-      this.context,
+      this.context
     );
 
     // Run nested chat rounds
@@ -475,19 +475,19 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
       const selectionResult = await this.speakerManager.selectSpeaker(
         nestedState.participants,
         nestedState.messages,
-        nestedContext,
+        nestedContext
       );
 
       // Generate response
       const participant = nestedState.participants.find(
-        p => p.name === selectionResult.speaker,
+        p => p.name === selectionResult.speaker
       );
 
       if (participant && this.responseGenerator) {
         const response = await this.responseGenerator(
           participant,
           nestedState.messages,
-          nestedContext,
+          nestedContext
         );
 
         if (response) {
@@ -510,7 +510,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
     const result = await this.nestedChatManager.endNestedChat(
       nestedChatId,
       'completed',
-      `Completed after ${round} rounds`,
+      `Completed after ${round} rounds`
     );
 
     this.nestedResults.push(result);
@@ -587,7 +587,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
   removeParticipant(name: string): void {
     this.participants.delete(name);
     this.context.activeParticipants = this.context.activeParticipants.filter(
-      n => n !== name,
+      n => n !== name
     );
   }
 
@@ -740,7 +740,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
     type: T,
     data: T extends keyof ChatEventDataMap
       ? ChatEventDataMap[T]
-      : Record<string, unknown>,
+      : Record<string, unknown>
   ): void {
     const event: ChatEvent<T> = {
       type,
@@ -808,7 +808,7 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
    */
   updateState<T extends string | number | boolean | object | null>(
     key: string,
-    value: T,
+    value: T
   ): void {
     this.context.state[key] = value;
   }
@@ -866,7 +866,7 @@ export class GroupChatBuilder {
    * @param method - Selection method
    */
   withSpeakerSelection(
-    method: GroupChatConfig['speakerSelectionMethod'],
+    method: GroupChatConfig['speakerSelectionMethod']
   ): this {
     this.config.speakerSelectionMethod = method;
     return this;
@@ -967,7 +967,7 @@ export class GroupChatBuilder {
 export function createParticipant(
   name: string,
   systemPrompt: string,
-  capabilities: string[] = [],
+  capabilities: string[] = []
 ): ChatParticipant {
   return {
     id: uuidv4(),

@@ -4,7 +4,8 @@ This document outlines the monorepo best practices and tooling implemented in th
 
 ## Overview
 
-The Wundr repository has been restructured to follow modern monorepo best practices with the following key improvements:
+The Wundr repository has been restructured to follow modern monorepo best practices with the
+following key improvements:
 
 - **pnpm workspaces** for efficient package management
 - **Shared configurations** for ESLint, Prettier, Jest, and TypeScript
@@ -78,6 +79,7 @@ pnpm create:package
 ```
 
 This will prompt you for:
+
 - Package name
 - Description
 - Package type (library or application)
@@ -125,7 +127,7 @@ const baseConfig = require('@wundr/jest-config');
 
 module.exports = {
   ...baseConfig,
-  displayName: 'package-name'
+  displayName: 'package-name',
 };
 ```
 
@@ -155,6 +157,7 @@ All packages extend the base TypeScript configuration:
 ### Path Mappings
 
 The following path mappings are available:
+
 - `@/*` → `src/*`
 - `@config/*` → `config/*`
 - `@tests/*` → `tests/*`
@@ -210,14 +213,11 @@ When migrating existing code to the monorepo structure:
 
 ### Common Issues
 
-**Issue**: Dependencies not resolving
-**Solution**: Run `pnpm install` from the root directory
+**Issue**: Dependencies not resolving **Solution**: Run `pnpm install` from the root directory
 
-**Issue**: Type errors in IDE
-**Solution**: Restart TypeScript service in your editor
+**Issue**: Type errors in IDE **Solution**: Restart TypeScript service in your editor
 
-**Issue**: Pre-commit hooks not running
-**Solution**: Run `pnpm prepare` to reinstall hooks
+**Issue**: Pre-commit hooks not running **Solution**: Run `pnpm prepare` to reinstall hooks
 
 ## Next Steps
 

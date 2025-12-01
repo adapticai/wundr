@@ -58,7 +58,7 @@ export class LiveKitError extends GenesisError {
     message: string,
     code: string = 'LIVEKIT_ERROR',
     statusCode: number = 500,
-    details?: Record<string, unknown>,
+    details?: Record<string, unknown>
   ) {
     super(message, code, statusCode, details);
     this.name = 'LiveKitError';
@@ -70,12 +70,7 @@ export class LiveKitError extends GenesisError {
  */
 export class RoomNotFoundError extends LiveKitError {
   constructor(roomName: string) {
-    super(
-      `Room not found: ${roomName}`,
-      'ROOM_NOT_FOUND',
-      404,
-      { roomName },
-    );
+    super(`Room not found: ${roomName}`, 'ROOM_NOT_FOUND', 404, { roomName });
     this.name = 'RoomNotFoundError';
   }
 }
@@ -85,12 +80,9 @@ export class RoomNotFoundError extends LiveKitError {
  */
 export class RoomAlreadyExistsError extends LiveKitError {
   constructor(roomName: string) {
-    super(
-      `Room already exists: ${roomName}`,
-      'ROOM_ALREADY_EXISTS',
-      409,
-      { roomName },
-    );
+    super(`Room already exists: ${roomName}`, 'ROOM_ALREADY_EXISTS', 409, {
+      roomName,
+    });
     this.name = 'RoomAlreadyExistsError';
   }
 }
@@ -104,7 +96,7 @@ export class ParticipantNotFoundError extends LiveKitError {
       `Participant not found: ${identity} in room ${roomName}`,
       'PARTICIPANT_NOT_FOUND',
       404,
-      { roomName, identity },
+      { roomName, identity }
     );
     this.name = 'ParticipantNotFoundError';
   }
@@ -129,7 +121,7 @@ export class TokenGenerationError extends LiveKitError {
       `Failed to generate token: ${reason}`,
       'TOKEN_GENERATION_ERROR',
       500,
-      { reason },
+      { reason }
     );
     this.name = 'TokenGenerationError';
   }
@@ -140,12 +132,10 @@ export class TokenGenerationError extends LiveKitError {
  */
 export class RecordingError extends LiveKitError {
   constructor(operation: string, reason: string) {
-    super(
-      `Recording ${operation} failed: ${reason}`,
-      'RECORDING_ERROR',
-      500,
-      { operation, reason },
-    );
+    super(`Recording ${operation} failed: ${reason}`, 'RECORDING_ERROR', 500, {
+      operation,
+      reason,
+    });
     this.name = 'RecordingError';
   }
 }
@@ -230,7 +220,10 @@ export interface LiveKitService {
    * @param roomName - Room name
    * @returns Token generation result
    */
-  generateHostToken(identity: string, roomName: string): Promise<TokenGenerationResult>;
+  generateHostToken(
+    identity: string,
+    roomName: string
+  ): Promise<TokenGenerationResult>;
 
   /**
    * Generates a guest token with limited permissions.
@@ -239,7 +232,10 @@ export interface LiveKitService {
    * @param roomName - Room name
    * @returns Token generation result
    */
-  generateGuestToken(identity: string, roomName: string): Promise<TokenGenerationResult>;
+  generateGuestToken(
+    identity: string,
+    roomName: string
+  ): Promise<TokenGenerationResult>;
 
   /**
    * Generates a viewer-only token (subscribe only).
@@ -248,7 +244,10 @@ export interface LiveKitService {
    * @param roomName - Room name
    * @returns Token generation result
    */
-  generateViewerToken(identity: string, roomName: string): Promise<TokenGenerationResult>;
+  generateViewerToken(
+    identity: string,
+    roomName: string
+  ): Promise<TokenGenerationResult>;
 
   // ==========================================================================
   // Participant Management
@@ -261,7 +260,10 @@ export interface LiveKitService {
    * @param identity - Participant identity
    * @returns The participant or null if not found
    */
-  getParticipant(roomName: string, identity: string): Promise<Participant | null>;
+  getParticipant(
+    roomName: string,
+    identity: string
+  ): Promise<Participant | null>;
 
   /**
    * Lists all participants in a room.
@@ -386,13 +388,13 @@ export class LiveKitServiceImpl implements LiveKitService {
     this.roomService = new RoomServiceClient(
       this.config.url,
       this.config.apiKey,
-      this.config.apiSecret,
+      this.config.apiSecret
     );
 
     this.egressClient = new EgressClient(
       this.config.url,
       this.config.apiKey,
-      this.config.apiSecret,
+      this.config.apiSecret
     );
   }
 
@@ -413,7 +415,8 @@ export class LiveKitServiceImpl implements LiveKitService {
       const room = await this.roomService.createRoom({
         name: options.name,
         emptyTimeout: options.emptyTimeout ?? this.config.defaultEmptyTimeout,
-        maxParticipants: options.maxParticipants ?? this.config.defaultMaxParticipants,
+        maxParticipants:
+          options.maxParticipants ?? this.config.defaultMaxParticipants,
         metadata: options.metadata,
         departureTimeout: options.departureTimeout,
       });
@@ -427,7 +430,7 @@ export class LiveKitServiceImpl implements LiveKitService {
         `Failed to create room: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'ROOM_CREATE_ERROR',
         500,
-        { roomName: options.name },
+        { roomName: options.name }
       );
     }
   }
@@ -443,7 +446,7 @@ export class LiveKitServiceImpl implements LiveKitService {
         `Failed to delete room: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'ROOM_DELETE_ERROR',
         500,
-        { roomName },
+        { roomName }
       );
     }
   }
@@ -454,12 +457,12 @@ export class LiveKitServiceImpl implements LiveKitService {
   async listRooms(): Promise<Room[]> {
     try {
       const rooms = await this.roomService.listRooms();
-      return rooms.map((room) => this.mapRoom(room));
+      return rooms.map(room => this.mapRoom(room));
     } catch (error) {
       throw new LiveKitError(
         `Failed to list rooms: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'ROOM_LIST_ERROR',
-        500,
+        500
       );
     }
   }
@@ -487,7 +490,10 @@ export class LiveKitServiceImpl implements LiveKitService {
   /**
    * Updates room metadata.
    */
-  async updateRoom(roomName: string, options: UpdateRoomOptions): Promise<Room> {
+  async updateRoom(
+    roomName: string,
+    options: UpdateRoomOptions
+  ): Promise<Room> {
     try {
       const room = await this.getRoom(roomName);
       if (!room) {
@@ -496,7 +502,7 @@ export class LiveKitServiceImpl implements LiveKitService {
 
       const updatedRoom = await this.roomService.updateRoomMetadata(
         roomName,
-        options.metadata ?? '',
+        options.metadata ?? ''
       );
 
       return this.mapRoom(updatedRoom);
@@ -508,7 +514,7 @@ export class LiveKitServiceImpl implements LiveKitService {
         `Failed to update room: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'ROOM_UPDATE_ERROR',
         500,
-        { roomName },
+        { roomName }
       );
     }
   }
@@ -523,7 +529,7 @@ export class LiveKitServiceImpl implements LiveKitService {
   async generateToken(
     identity: string,
     roomName: string,
-    options?: TokenOptions,
+    options?: TokenOptions
   ): Promise<TokenGenerationResult> {
     try {
       const mergedOptions = { ...DEFAULT_TOKEN_OPTIONS, ...options };
@@ -542,7 +548,8 @@ export class LiveKitServiceImpl implements LiveKitService {
         canPublish: mergedOptions.canPublish,
         canSubscribe: mergedOptions.canSubscribe,
         canPublishData: mergedOptions.canPublishData,
-        canPublishSources: mergedOptions.canPublishSources as VideoGrant['canPublishSources'],
+        canPublishSources:
+          mergedOptions.canPublishSources as VideoGrant['canPublishSources'],
         roomAdmin: mergedOptions.roomAdmin,
         roomRecord: mergedOptions.roomRecord,
         hidden: mergedOptions.hidden,
@@ -561,7 +568,7 @@ export class LiveKitServiceImpl implements LiveKitService {
       };
     } catch (error) {
       throw new TokenGenerationError(
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   }
@@ -569,21 +576,30 @@ export class LiveKitServiceImpl implements LiveKitService {
   /**
    * Generates a host token with full permissions.
    */
-  async generateHostToken(identity: string, roomName: string): Promise<TokenGenerationResult> {
+  async generateHostToken(
+    identity: string,
+    roomName: string
+  ): Promise<TokenGenerationResult> {
     return this.generateToken(identity, roomName, HOST_TOKEN_OPTIONS);
   }
 
   /**
    * Generates a guest token with limited permissions.
    */
-  async generateGuestToken(identity: string, roomName: string): Promise<TokenGenerationResult> {
+  async generateGuestToken(
+    identity: string,
+    roomName: string
+  ): Promise<TokenGenerationResult> {
     return this.generateToken(identity, roomName, GUEST_TOKEN_OPTIONS);
   }
 
   /**
    * Generates a viewer-only token.
    */
-  async generateViewerToken(identity: string, roomName: string): Promise<TokenGenerationResult> {
+  async generateViewerToken(
+    identity: string,
+    roomName: string
+  ): Promise<TokenGenerationResult> {
     return this.generateToken(identity, roomName, {
       canPublish: false,
       canSubscribe: true,
@@ -600,9 +616,15 @@ export class LiveKitServiceImpl implements LiveKitService {
   /**
    * Gets a participant by identity.
    */
-  async getParticipant(roomName: string, identity: string): Promise<Participant | null> {
+  async getParticipant(
+    roomName: string,
+    identity: string
+  ): Promise<Participant | null> {
     try {
-      const participant = await this.roomService.getParticipant(roomName, identity);
+      const participant = await this.roomService.getParticipant(
+        roomName,
+        identity
+      );
       return this.mapParticipant(participant);
     } catch (_error) {
       // LiveKit throws when participant not found
@@ -616,13 +638,13 @@ export class LiveKitServiceImpl implements LiveKitService {
   async listParticipants(roomName: string): Promise<Participant[]> {
     try {
       const participants = await this.roomService.listParticipants(roomName);
-      return participants.map((p) => this.mapParticipant(p));
+      return participants.map(p => this.mapParticipant(p));
     } catch (error) {
       throw new LiveKitError(
         `Failed to list participants: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'PARTICIPANT_LIST_ERROR',
         500,
-        { roomName },
+        { roomName }
       );
     }
   }
@@ -646,7 +668,7 @@ export class LiveKitServiceImpl implements LiveKitService {
         `Failed to remove participant: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'PARTICIPANT_REMOVE_ERROR',
         500,
-        { roomName, identity },
+        { roomName, identity }
       );
     }
   }
@@ -657,7 +679,7 @@ export class LiveKitServiceImpl implements LiveKitService {
   async muteParticipant(
     roomName: string,
     identity: string,
-    trackType: TrackType,
+    trackType: TrackType
   ): Promise<void> {
     try {
       const participant = await this.getParticipant(roomName, identity);
@@ -666,9 +688,14 @@ export class LiveKitServiceImpl implements LiveKitService {
       }
 
       // Find the track to mute based on type
-      const track = participant.tracks.find((t) => t.type === trackType);
+      const track = participant.tracks.find(t => t.type === trackType);
       if (track) {
-        await this.roomService.mutePublishedTrack(roomName, identity, track.sid, true);
+        await this.roomService.mutePublishedTrack(
+          roomName,
+          identity,
+          track.sid,
+          true
+        );
       }
     } catch (error) {
       if (error instanceof LiveKitError) {
@@ -678,7 +705,7 @@ export class LiveKitServiceImpl implements LiveKitService {
         `Failed to mute participant: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'PARTICIPANT_MUTE_ERROR',
         500,
-        { roomName, identity, trackType },
+        { roomName, identity, trackType }
       );
     }
   }
@@ -689,13 +716,13 @@ export class LiveKitServiceImpl implements LiveKitService {
   async updateParticipant(
     roomName: string,
     identity: string,
-    metadata: string,
+    metadata: string
   ): Promise<Participant> {
     try {
       const participant = await this.roomService.updateParticipant(
         roomName,
         identity,
-        metadata,
+        metadata
       );
       return this.mapParticipant(participant);
     } catch (error) {
@@ -703,7 +730,7 @@ export class LiveKitServiceImpl implements LiveKitService {
         `Failed to update participant: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'PARTICIPANT_UPDATE_ERROR',
         500,
-        { roomName, identity },
+        { roomName, identity }
       );
     }
   }
@@ -715,7 +742,10 @@ export class LiveKitServiceImpl implements LiveKitService {
   /**
    * Starts recording a room.
    */
-  async startRecording(roomName: string, options?: RecordingOptions): Promise<string> {
+  async startRecording(
+    roomName: string,
+    options?: RecordingOptions
+  ): Promise<string> {
     try {
       const room = await this.getRoom(roomName);
       if (!room) {
@@ -755,7 +785,7 @@ export class LiveKitServiceImpl implements LiveKitService {
       const egress = await this.egressClient.startRoomCompositeEgress(
         roomName,
         fileOutput,
-        compositeOptions,
+        compositeOptions
       );
 
       return egress.egressId;
@@ -765,7 +795,7 @@ export class LiveKitServiceImpl implements LiveKitService {
       }
       throw new RecordingError(
         'start',
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   }
@@ -779,7 +809,7 @@ export class LiveKitServiceImpl implements LiveKitService {
     } catch (error) {
       throw new RecordingError(
         'stop',
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   }
@@ -790,13 +820,13 @@ export class LiveKitServiceImpl implements LiveKitService {
   async listRecordings(roomName: string): Promise<Recording[]> {
     try {
       const egresses = await this.egressClient.listEgress({ roomName });
-      return egresses.map((e) => this.mapRecording(e, roomName));
+      return egresses.map(e => this.mapRecording(e, roomName));
     } catch (error) {
       throw new LiveKitError(
         `Failed to list recordings: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'RECORDING_LIST_ERROR',
         500,
-        { roomName },
+        { roomName }
       );
     }
   }
@@ -828,11 +858,7 @@ export class LiveKitServiceImpl implements LiveKitService {
    * Checks if the service is properly configured.
    */
   isConfigured(): boolean {
-    return !!(
-      this.config.url &&
-      this.config.apiKey &&
-      this.config.apiSecret
-    );
+    return !!(this.config.url && this.config.apiKey && this.config.apiSecret);
   }
 
   /**
@@ -916,7 +942,7 @@ export class LiveKitServiceImpl implements LiveKitService {
       identity: sdkParticipant.identity,
       name: sdkParticipant.name || undefined,
       state: this.mapParticipantState(sdkParticipant.state),
-      tracks: sdkParticipant.tracks.map((t) => this.mapTrack(t)),
+      tracks: sdkParticipant.tracks.map(t => this.mapTrack(t)),
       metadata: sdkParticipant.metadata || undefined,
       joinedAt: new Date(Number(sdkParticipant.joinedAt) * 1000),
       isPublisher: sdkParticipant.isPublisher,
@@ -1012,14 +1038,16 @@ export class LiveKitServiceImpl implements LiveKitService {
       endedAt?: bigint;
       error?: string;
     },
-    defaultRoomName: string,
+    defaultRoomName: string
   ): Recording {
     return {
       egressId: egress.egressId,
       roomName: egress.roomName || defaultRoomName,
       status: this.mapRecordingStatus(egress.status),
       startedAt: new Date(Number(egress.startedAt) * 1000),
-      endedAt: egress.endedAt ? new Date(Number(egress.endedAt) * 1000) : undefined,
+      endedAt: egress.endedAt
+        ? new Date(Number(egress.endedAt) * 1000)
+        : undefined,
       error: egress.error,
     };
   }
@@ -1049,7 +1077,10 @@ export class LiveKitServiceImpl implements LiveKitService {
    */
   private logError(message: string, error: unknown): void {
     // eslint-disable-next-line no-console
-    console.error(`[LiveKitService] ${message}:`, error instanceof Error ? error.message : error);
+    console.error(
+      `[LiveKitService] ${message}:`,
+      error instanceof Error ? error.message : error
+    );
   }
 }
 
@@ -1081,7 +1112,9 @@ export class LiveKitServiceImpl implements LiveKitService {
  * const { token } = liveKitService.generateToken('user-1', 'meeting-123');
  * ```
  */
-export function createLiveKitService(config: LiveKitConfig): LiveKitServiceImpl {
+export function createLiveKitService(
+  config: LiveKitConfig
+): LiveKitServiceImpl {
   return new LiveKitServiceImpl(config);
 }
 
@@ -1107,22 +1140,37 @@ export function createLiveKitServiceFromEnv(): LiveKitServiceImpl {
   const apiSecret = process.env.LIVEKIT_API_SECRET;
 
   if (!url) {
-    throw new LiveKitConfigError('LIVEKIT_URL environment variable is required');
+    throw new LiveKitConfigError(
+      'LIVEKIT_URL environment variable is required'
+    );
   }
   if (!apiKey) {
-    throw new LiveKitConfigError('LIVEKIT_API_KEY environment variable is required');
+    throw new LiveKitConfigError(
+      'LIVEKIT_API_KEY environment variable is required'
+    );
   }
   if (!apiSecret) {
-    throw new LiveKitConfigError('LIVEKIT_API_SECRET environment variable is required');
+    throw new LiveKitConfigError(
+      'LIVEKIT_API_SECRET environment variable is required'
+    );
   }
 
   return createLiveKitService({
     url,
     apiKey,
     apiSecret,
-    defaultTokenTtl: parseInt(process.env.LIVEKIT_DEFAULT_TOKEN_TTL ?? '3600', 10),
-    defaultEmptyTimeout: parseInt(process.env.LIVEKIT_DEFAULT_EMPTY_TIMEOUT ?? '300', 10),
-    defaultMaxParticipants: parseInt(process.env.LIVEKIT_DEFAULT_MAX_PARTICIPANTS ?? '100', 10),
+    defaultTokenTtl: parseInt(
+      process.env.LIVEKIT_DEFAULT_TOKEN_TTL ?? '3600',
+      10
+    ),
+    defaultEmptyTimeout: parseInt(
+      process.env.LIVEKIT_DEFAULT_EMPTY_TIMEOUT ?? '300',
+      10
+    ),
+    defaultMaxParticipants: parseInt(
+      process.env.LIVEKIT_DEFAULT_MAX_PARTICIPANTS ?? '100',
+      10
+    ),
   });
 }
 
@@ -1156,7 +1204,9 @@ export function getLiveKitService(): LiveKitServiceImpl {
 export const liveKitService = new Proxy({} as LiveKitServiceImpl, {
   get(_target, prop) {
     const service = getLiveKitService();
-    const value = (service as unknown as Record<string | symbol, unknown>)[prop];
+    const value = (service as unknown as Record<string | symbol, unknown>)[
+      prop
+    ];
     if (typeof value === 'function') {
       return value.bind(service);
     }

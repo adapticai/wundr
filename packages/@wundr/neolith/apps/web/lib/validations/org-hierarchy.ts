@@ -16,7 +16,12 @@ import { z } from 'zod';
 /**
  * Organization hierarchy node type enum
  */
-export const orgHierarchyNodeTypeEnum = z.enum(['workspace', 'discipline', 'vp', 'orchestrator']);
+export const orgHierarchyNodeTypeEnum = z.enum([
+  'workspace',
+  'discipline',
+  'vp',
+  'orchestrator',
+]);
 export type OrgHierarchyNodeType = z.infer<typeof orgHierarchyNodeTypeEnum>;
 
 /**
@@ -110,7 +115,7 @@ export const orgHierarchyNodeSchema: z.ZodType<{
 
     /** Additional node-specific data */
     data: z.union([vpNodeDataSchema, workspaceNodeDataSchema]).optional(),
-  }),
+  })
 );
 
 export type OrgHierarchyNode = z.infer<typeof orgHierarchyNodeSchema>;

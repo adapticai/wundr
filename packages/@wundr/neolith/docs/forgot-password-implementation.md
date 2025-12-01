@@ -1,19 +1,20 @@
 # Forgot Password Implementation Summary
 
-**Date:** November 26, 2025
-**Wave:** 8.5
-**Status:** ✅ COMPLETED
+**Date:** November 26, 2025 **Wave:** 8.5 **Status:** ✅ COMPLETED
 
 ## Overview
 
-Implemented the forgot-password flow to allow users to request password reset emails. The implementation includes a user-facing page and a secure API endpoint.
+Implemented the forgot-password flow to allow users to request password reset emails. The
+implementation includes a user-facing page and a secure API endpoint.
 
 ## Files Created
 
 ### 1. Frontend Page
+
 **File:** `/packages/@wundr/neolith/apps/web/app/(auth)/forgot-password/page.tsx`
 
 **Features:**
+
 - Clean, responsive UI matching existing auth pages (login, register)
 - Email input field with validation
 - Submit button with loading state
@@ -23,6 +24,7 @@ Implemented the forgot-password flow to allow users to request password reset em
 - Dark mode support via Tailwind CSS
 
 **UI Components Used:**
+
 - `@neolith/ui` Button and Input components
 - Consistent styling with `space-y-6` layout
 - Muted foreground text for descriptions
@@ -30,9 +32,11 @@ Implemented the forgot-password flow to allow users to request password reset em
 - Destructive error message styling
 
 ### 2. API Endpoint
+
 **File:** `/packages/@wundr/neolith/apps/web/app/api/auth/forgot-password/route.ts`
 
 **Features:**
+
 - POST endpoint at `/api/auth/forgot-password`
 - Email validation using Zod schema
 - Secure token generation using crypto.randomBytes(32)
@@ -43,6 +47,7 @@ Implemented the forgot-password flow to allow users to request password reset em
 - Development logging for reset URLs (to be replaced with email service)
 
 **Security Measures:**
+
 1. **No Email Enumeration:** Always returns success response regardless of whether email exists
 2. **Secure Token Generation:** Uses crypto.randomBytes(32) for high entropy
 3. **Token Hashing:** Stores SHA-256 hash, not plaintext token
@@ -50,22 +55,21 @@ Implemented the forgot-password flow to allow users to request password reset em
 5. **Input Validation:** Strict email format validation
 
 **Database Storage:**
+
 - Uses existing `Account` table with `provider: 'credentials'`
 - Stores hashed token in `access_token` field
 - Stores expiration timestamp in `expires_at` field (Unix timestamp)
 - Updates existing account or creates new one as needed
 
 ### 3. Validation Schema
+
 **File:** `/packages/@wundr/neolith/apps/web/lib/validations/auth.ts` (updated)
 
 **Added:**
+
 ```typescript
 export const forgotPasswordSchema = z.object({
-  email: z.string()
-    .min(1, 'Email is required')
-    .email('Invalid email format')
-    .toLowerCase()
-    .trim(),
+  email: z.string().min(1, 'Email is required').email('Invalid email format').toLowerCase().trim(),
 });
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
@@ -74,6 +78,7 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 ## API Contract
 
 ### Request
+
 ```http
 POST /api/auth/forgot-password
 Content-Type: application/json
@@ -84,6 +89,7 @@ Content-Type: application/json
 ```
 
 ### Success Response (200 OK)
+
 ```json
 {
   "message": "If an account exists with that email, we've sent password reset instructions."
@@ -91,6 +97,7 @@ Content-Type: application/json
 ```
 
 ### Error Response (400 Bad Request)
+
 ```json
 {
   "error": "Invalid email format",
@@ -118,12 +125,14 @@ Content-Type: application/json
 ## Testing
 
 ### Validation Tests
+
 - ✅ Valid email format passes
 - ✅ Invalid email formats rejected
 - ✅ Empty email rejected
 - ✅ Email normalized (lowercase, trimmed)
 
 ### Security Tests
+
 - ✅ Non-existent email returns success (no enumeration)
 - ✅ Existing email returns success
 - ✅ Token is hashed before storage
@@ -140,6 +149,7 @@ The current implementation logs reset URLs to console for development. To comple
    - Mailgun
 
 2. **Implement Email Service:**
+
    ```typescript
    await sendPasswordResetEmail({
      to: user.email,

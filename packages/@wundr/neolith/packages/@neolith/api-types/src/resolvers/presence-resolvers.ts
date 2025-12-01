@@ -8,7 +8,6 @@
  * @module @genesis/api-types/resolvers/presence-resolvers
  */
 
-
 import type { Prisma, PrismaClient, UserStatus } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
@@ -28,7 +27,8 @@ export const PresenceStatus = {
   Offline: 'OFFLINE',
 } as const;
 
-export type PresenceStatusType = (typeof PresenceStatus)[keyof typeof PresenceStatus];
+export type PresenceStatusType =
+  (typeof PresenceStatus)[keyof typeof PresenceStatus];
 
 /**
  * Orchestrator status enum for Orchestrator presence (matches VPStatus in schema)
@@ -40,7 +40,8 @@ export const OrchestratorPresenceStatus = {
   Away: 'AWAY',
 } as const;
 
-export type OrchestratorPresenceStatusType = (typeof OrchestratorPresenceStatus)[keyof typeof OrchestratorPresenceStatus];
+export type OrchestratorPresenceStatusType =
+  (typeof OrchestratorPresenceStatus)[keyof typeof OrchestratorPresenceStatus];
 
 /**
  * User role for authorization checks
@@ -76,7 +77,11 @@ export interface PresenceService {
   /** Get multiple users presence */
   getMultiplePresence(userIds: string[]): Promise<UserPresence[]>;
   /** Set user status */
-  setStatus(userId: string, status: PresenceStatusType, customStatus?: string): Promise<UserPresence>;
+  setStatus(
+    userId: string,
+    status: PresenceStatusType,
+    customStatus?: string
+  ): Promise<UserPresence>;
   /** Check if user is rate limited */
   isRateLimited(userId: string, action: string): Promise<boolean>;
 }
@@ -274,8 +279,14 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * @param preferences - User preferences JSON
  * @returns Presence status or null
  */
-function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferences {
-  if (typeof preferences === 'object' && preferences !== null && !Array.isArray(preferences)) {
+function getPresenceFromPreferences(
+  preferences: Prisma.JsonValue
+): UserPreferences {
+  if (
+    typeof preferences === 'object' &&
+    preferences !== null &&
+    !Array.isArray(preferences)
+  ) {
     return preferences as UserPreferences;
   }
   return {};
@@ -288,7 +299,10 @@ function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferen
  * @param preferences - User preferences with presence info
  * @returns PresenceStatusType
  */
-function mapUserStatusToPresence(status: UserStatus, preferences: UserPreferences): PresenceStatusType {
+function mapUserStatusToPresence(
+  status: UserStatus,
+  preferences: UserPreferences
+): PresenceStatusType {
   // Check if user has set a specific presence status
   if (preferences.presenceStatus) {
     return preferences.presenceStatus;
@@ -530,7 +544,8 @@ export const presenceQueries = {
 
     // Check if user is a member of the channel
     const isMember = channel.channelMembers.some(
-      (m: typeof channel.channelMembers[number]) => m.userId === context.user.id
+      (m: (typeof channel.channelMembers)[number]) =>
+        m.userId === context.user.id
     );
 
     // For private channels, only members can see presence
@@ -542,7 +557,9 @@ export const presenceQueries = {
 
     // Get online users
     const onlineUsers = channel.channelMembers
-      .map((m: typeof channel.channelMembers[number]) => buildUserPresence(m.user))
+      .map((m: (typeof channel.channelMembers)[number]) =>
+        buildUserPresence(m.user)
+      )
       .filter((p: UserPresence) => p.isOnline);
 
     return {
@@ -608,8 +625,7 @@ export const presenceQueries = {
 
     // Determine if Orchestrator is healthy (online and recent activity)
     const isHealthy =
-      orch.status === 'ONLINE' &&
-      isUserOnline(orch.user.lastActiveAt);
+      orch.status === 'ONLINE' && isUserOnline(orch.user.lastActiveAt);
 
     return {
       orchestratorId: orch.id,
@@ -685,7 +701,9 @@ export const presenceQueries = {
     });
 
     // Get message counts for all VPs
-    const vpUserIds = orchestrators.map((vp: typeof orchestrators[number]) => vp.userId);
+    const vpUserIds = orchestrators.map(
+      (vp: (typeof orchestrators)[number]) => vp.userId
+    );
     const messageCounts = await context.prisma.message.groupBy({
       by: ['authorId'],
       where: { authorId: { in: vpUserIds } },
@@ -693,10 +711,13 @@ export const presenceQueries = {
     });
 
     const messageCountMap = new Map(
-      messageCounts.map((mc: typeof messageCounts[number]) => [mc.authorId, mc._count?.id ?? 0])
+      messageCounts.map((mc: (typeof messageCounts)[number]) => [
+        mc.authorId,
+        mc._count?.id ?? 0,
+      ])
     );
 
-    return orchestrators.map((vp: typeof orchestrators[number]) => ({
+    return orchestrators.map((vp: (typeof orchestrators)[number]) => ({
       orchestratorId: vp.id,
       userId: vp.userId,
       status: vp.status as OrchestratorPresenceStatusType,
@@ -773,7 +794,9 @@ export const presenceMutations = {
       select: { preferences: true },
     });
 
-    const currentPrefs = getPresenceFromPreferences(currentUser?.preferences ?? {});
+    const currentPrefs = getPresenceFromPreferences(
+      currentUser?.preferences ?? {}
+    );
 
     // Update user status and preferences
     const user = await context.prisma.user.update({
@@ -798,9 +821,12 @@ export const presenceMutations = {
     const presence = buildUserPresence(user);
 
     // Publish presence change event
-    await context.pubsub.publish(`${USER_PRESENCE_CHANGED}_${context.user.id}`, {
-      userPresenceChanged: presence,
-    });
+    await context.pubsub.publish(
+      `${USER_PRESENCE_CHANGED}_${context.user.id}`,
+      {
+        userPresenceChanged: presence,
+      }
+    );
 
     return createPresenceSuccessPayload(presence);
   },
@@ -844,7 +870,9 @@ export const presenceMutations = {
       select: { preferences: true },
     });
 
-    const currentPrefs = getPresenceFromPreferences(currentUser?.preferences ?? {});
+    const currentPrefs = getPresenceFromPreferences(
+      currentUser?.preferences ?? {}
+    );
 
     // Update user to clear custom status from preferences
     const user = await context.prisma.user.update({
@@ -867,9 +895,12 @@ export const presenceMutations = {
     const presence = buildUserPresence(user);
 
     // Publish presence change event
-    await context.pubsub.publish(`${USER_PRESENCE_CHANGED}_${context.user.id}`, {
-      userPresenceChanged: presence,
-    });
+    await context.pubsub.publish(
+      `${USER_PRESENCE_CHANGED}_${context.user.id}`,
+      {
+        userPresenceChanged: presence,
+      }
+    );
 
     return createPresenceSuccessPayload(presence);
   },
@@ -920,7 +951,12 @@ export const presenceMutations = {
     if (!membership) {
       return {
         presence: null,
-        errors: [{ code: 'FORBIDDEN', message: 'Must be a channel member to join presence' }],
+        errors: [
+          {
+            code: 'FORBIDDEN',
+            message: 'Must be a channel member to join presence',
+          },
+        ],
       };
     }
 
@@ -957,7 +993,9 @@ export const presenceMutations = {
     }
 
     const onlineUsers = channel.channelMembers
-      .map((m: typeof channel.channelMembers[number]) => buildUserPresence(m.user))
+      .map((m: (typeof channel.channelMembers)[number]) =>
+        buildUserPresence(m.user)
+      )
       .filter((p: UserPresence) => p.isOnline);
 
     const presence: ChannelPresence = {
@@ -1043,7 +1081,9 @@ export const presenceMutations = {
 
     // Filter out the current user from online users
     const onlineUsers = channel.channelMembers
-      .map((m: typeof channel.channelMembers[number]) => buildUserPresence(m.user))
+      .map((m: (typeof channel.channelMembers)[number]) =>
+        buildUserPresence(m.user)
+      )
       .filter((p: UserPresence) => p.isOnline && p.userId !== context.user.id);
 
     const presence: ChannelPresence = {
@@ -1114,7 +1154,7 @@ export const presenceSubscriptions = {
       }
 
       // Subscribe to all user presence channels
-      const triggers = args.userIds.map((id) => `${USER_PRESENCE_CHANGED}_${id}`);
+      const triggers = args.userIds.map(id => `${USER_PRESENCE_CHANGED}_${id}`);
       return context.pubsub.asyncIterator(triggers);
     },
   },
@@ -1167,9 +1207,12 @@ export const presenceSubscriptions = {
       });
 
       if (!membership) {
-        throw new GraphQLError('Must be a channel member to subscribe to presence', {
-          extensions: { code: 'FORBIDDEN' },
-        });
+        throw new GraphQLError(
+          'Must be a channel member to subscribe to presence',
+          {
+            extensions: { code: 'FORBIDDEN' },
+          }
+        );
       }
 
       // Subscribe to join and leave events
@@ -1231,7 +1274,9 @@ export const presenceSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${ORCHESTRATOR_PRESENCE_CHANGED}_${args.organizationId}`);
+      return context.pubsub.asyncIterator(
+        `${ORCHESTRATOR_PRESENCE_CHANGED}_${args.organizationId}`
+      );
     },
   },
 };

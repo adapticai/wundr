@@ -5,7 +5,10 @@
  * for chat completions, streaming, and tool use.
  */
 
-import { AnthropicClient, ANTHROPIC_MODELS } from '../src/llm/providers/anthropic';
+import {
+  AnthropicClient,
+  ANTHROPIC_MODELS,
+} from '../src/llm/providers/anthropic';
 import type { ToolDefinition } from '../src/llm/client';
 
 // Initialize the client
@@ -17,9 +20,7 @@ const client = new AnthropicClient({
 async function simpleChatExample() {
   const response = await client.chat({
     model: ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
-    messages: [
-      { role: 'user', content: 'What is the capital of France?' },
-    ],
+    messages: [{ role: 'user', content: 'What is the capital of France?' }],
     maxTokens: 1024,
   });
 
@@ -31,9 +32,7 @@ async function simpleChatExample() {
 async function streamingChatExample() {
   const stream = client.chatStream({
     model: ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
-    messages: [
-      { role: 'user', content: 'Write a short poem about AI' },
-    ],
+    messages: [{ role: 'user', content: 'Write a short poem about AI' }],
     maxTokens: 500,
   });
 
@@ -114,9 +113,7 @@ async function conversationWithToolsExample() {
   // First message
   const firstResponse = await client.chat({
     model: ANTHROPIC_MODELS.CLAUDE_3_5_SONNET,
-    messages: [
-      { role: 'user', content: 'What is 42 * 137?' },
-    ],
+    messages: [{ role: 'user', content: 'What is 42 * 137?' }],
     tools,
     maxTokens: 1024,
   });
@@ -155,7 +152,10 @@ async function conversationWithToolsExample() {
 // Example 5: Count tokens
 async function tokenCountingExample() {
   const text = 'This is a test message for token counting.';
-  const tokens = await client.countTokens(text, ANTHROPIC_MODELS.CLAUDE_3_5_SONNET);
+  const tokens = await client.countTokens(
+    text,
+    ANTHROPIC_MODELS.CLAUDE_3_5_SONNET
+  );
 
   console.log('Text:', text);
   console.log('Estimated tokens:', tokens);

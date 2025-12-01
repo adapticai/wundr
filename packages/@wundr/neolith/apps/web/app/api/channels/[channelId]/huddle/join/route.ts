@@ -39,7 +39,7 @@ async function generateLiveKitToken(
   roomName: string,
   identity: string,
   name: string,
-  audioOnly: boolean = false,
+  audioOnly: boolean = false
 ): Promise<string> {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -48,26 +48,32 @@ async function generateLiveKitToken(
     throw new Error('LiveKit API credentials not configured');
   }
 
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const header = Buffer.from(
+    JSON.stringify({ alg: 'HS256', typ: 'JWT' })
+  ).toString('base64url');
   const now = Math.floor(Date.now() / 1000);
   const exp = now + 6 * 60 * 60; // 6 hours
 
-  const payload = Buffer.from(JSON.stringify({
-    iss: apiKey,
-    sub: identity,
-    name,
-    iat: now,
-    exp,
-    nbf: now,
-    video: {
-      roomJoin: true,
-      room: roomName,
-      canPublish: true,
-      canSubscribe: true,
-      canPublishData: true,
-      canPublishSources: audioOnly ? ['microphone'] : ['camera', 'microphone', 'screen_share'],
-    },
-  })).toString('base64url');
+  const payload = Buffer.from(
+    JSON.stringify({
+      iss: apiKey,
+      sub: identity,
+      name,
+      iat: now,
+      exp,
+      nbf: now,
+      video: {
+        roomJoin: true,
+        room: roomName,
+        canPublish: true,
+        canSubscribe: true,
+        canPublishData: true,
+        canPublishSources: audioOnly
+          ? ['microphone']
+          : ['camera', 'microphone', 'screen_share'],
+      },
+    })
+  ).toString('base64url');
 
   const crypto = await import('crypto');
   const signature = crypto
@@ -89,15 +95,18 @@ async function generateLiveKitToken(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -122,9 +131,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -147,9 +156,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -157,9 +166,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot join huddle in archived channel',
-          ORG_ERROR_CODES.CHANNEL_ARCHIVED,
+          ORG_ERROR_CODES.CHANNEL_ARCHIVED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -177,23 +186,25 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a member of this channel to join the huddle',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get active huddle from channel settings
-    const settings = channel.settings as { activeHuddle?: { id: string; roomName: string; status: string } } | null;
+    const settings = channel.settings as {
+      activeHuddle?: { id: string; roomName: string; status: string };
+    } | null;
     const activeHuddle = settings?.activeHuddle;
 
     if (!activeHuddle || activeHuddle.status !== 'active') {
       return NextResponse.json(
         createErrorResponse(
           'No active huddle in this channel',
-          CALL_ERROR_CODES.HUDDLE_NOT_FOUND,
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -203,7 +214,8 @@ export async function POST(
       select: { id: true, name: true, displayName: true },
     });
 
-    const participantName = displayName ?? user?.displayName ?? user?.name ?? 'Anonymous';
+    const participantName =
+      displayName ?? user?.displayName ?? user?.name ?? 'Anonymous';
     const participantIdentity = session.user.id;
 
     // Generate LiveKit token
@@ -213,16 +225,19 @@ export async function POST(
         activeHuddle.roomName,
         participantIdentity,
         participantName,
-        audioOnly ?? false,
+        audioOnly ?? false
       );
     } catch (error) {
-      console.error('[POST /api/channels/:channelId/huddle/join] LiveKit token error:', error);
+      console.error(
+        '[POST /api/channels/:channelId/huddle/join] LiveKit token error:',
+        error
+      );
       return NextResponse.json(
         createErrorResponse(
           'Failed to generate access token',
-          CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR,
+          CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -243,8 +258,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/channels/:channelId/huddle/join] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

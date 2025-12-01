@@ -53,7 +53,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -76,21 +76,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const searchParams = request.nextUrl.searchParams;
     const statusFilter = searchParams.get('status') as StatusFilter | null;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('limit') || '20', 10))
+    );
     const sortBy = (searchParams.get('sortBy') || 'lastActivity') as SortField;
     const sortOrder = (searchParams.get('sortOrder') || 'desc') as SortOrder;
 
     // Build where clause for status filter
     const statusMap: Record<string, any> = {
-      'online': 'ONLINE',
-      'offline': 'OFFLINE',
-      'busy': 'BUSY',
-      'away': 'AWAY',
+      online: 'ONLINE',
+      offline: 'OFFLINE',
+      busy: 'BUSY',
+      away: 'AWAY',
     };
 
-    const where = statusFilter && statusMap[statusFilter]
-      ? { status: statusMap[statusFilter] as any }
-      : {};
+    const where =
+      statusFilter && statusMap[statusFilter]
+        ? { status: statusMap[statusFilter] as any }
+        : {};
 
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -139,35 +143,39 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Fetch token usage and error counts for each orchestrator
     const orchestratorIds = orchestrators.map(o => o.id);
 
-    const [tokenUsageByOrchestrator, errorCountsByOrchestrator] = await Promise.all([
-      // Get hourly token usage for each orchestrator
-      prisma.tokenUsage.groupBy({
-        by: ['orchestratorId'],
-        where: {
-          orchestratorId: { in: orchestratorIds },
-          createdAt: { gte: oneHourAgo },
-        },
-        _sum: {
-          totalTokens: true,
-        },
-      }),
+    const [tokenUsageByOrchestrator, errorCountsByOrchestrator] =
+      await Promise.all([
+        // Get hourly token usage for each orchestrator
+        prisma.tokenUsage.groupBy({
+          by: ['orchestratorId'],
+          where: {
+            orchestratorId: { in: orchestratorIds },
+            createdAt: { gte: oneHourAgo },
+          },
+          _sum: {
+            totalTokens: true,
+          },
+        }),
 
-      // Get error counts from audit logs
-      prisma.auditLog.groupBy({
-        by: ['actorId'],
-        where: {
-          actorId: { in: orchestratorIds },
-          actorType: 'orchestrator',
-          severity: { in: ['error', 'critical'] },
-          createdAt: { gte: oneDayAgo },
-        },
-        _count: true,
-      }),
-    ]);
+        // Get error counts from audit logs
+        prisma.auditLog.groupBy({
+          by: ['actorId'],
+          where: {
+            actorId: { in: orchestratorIds },
+            actorType: 'orchestrator',
+            severity: { in: ['error', 'critical'] },
+            createdAt: { gte: oneDayAgo },
+          },
+          _count: true,
+        }),
+      ]);
 
     // Create lookup maps
     const tokenUsageMap = new Map(
-      tokenUsageByOrchestrator.map(t => [t.orchestratorId, t._sum.totalTokens || 0])
+      tokenUsageByOrchestrator.map(t => [
+        t.orchestratorId,
+        t._sum.totalTokens || 0,
+      ])
     );
 
     const errorCountMap = new Map(
@@ -175,51 +183,56 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
 
     // Transform to health status objects
-    let healthStatuses: OrchestratorHealthStatus[] = orchestrators.map(orchestrator => {
-      const tokenUsed = tokenUsageMap.get(orchestrator.id) || 0;
-      const tokenLimit = orchestrator.budgetConfig?.hourlyLimit || 100000;
-      const tokenPercent = (tokenUsed / tokenLimit) * 100;
-      const errorCount = errorCountMap.get(orchestrator.id) || 0;
+    let healthStatuses: OrchestratorHealthStatus[] = orchestrators.map(
+      orchestrator => {
+        const tokenUsed = tokenUsageMap.get(orchestrator.id) || 0;
+        const tokenLimit = orchestrator.budgetConfig?.hourlyLimit || 100000;
+        const tokenPercent = (tokenUsed / tokenLimit) * 100;
+        const errorCount = errorCountMap.get(orchestrator.id) || 0;
 
-      // Map Prisma status to health status
-      let healthStatus: 'online' | 'offline' | 'error' | 'degraded';
+        // Map Prisma status to health status
+        let healthStatus: 'online' | 'offline' | 'error' | 'degraded';
 
-      switch (orchestrator.status) {
-        case 'ONLINE':
-          // Degrade status if token budget is critical or has many errors
-          if (tokenPercent > 95 || errorCount > 10) {
-            healthStatus = 'error';
-          } else if (tokenPercent > 80 || errorCount > 5) {
+        switch (orchestrator.status) {
+          case 'ONLINE':
+            // Degrade status if token budget is critical or has many errors
+            if (tokenPercent > 95 || errorCount > 10) {
+              healthStatus = 'error';
+            } else if (tokenPercent > 80 || errorCount > 5) {
+              healthStatus = 'degraded';
+            } else {
+              healthStatus = 'online';
+            }
+            break;
+          case 'BUSY':
+            healthStatus = errorCount > 5 ? 'degraded' : 'online';
+            break;
+          case 'AWAY':
             healthStatus = 'degraded';
-          } else {
-            healthStatus = 'online';
-          }
-          break;
-        case 'BUSY':
-          healthStatus = errorCount > 5 ? 'degraded' : 'online';
-          break;
-        case 'AWAY':
-          healthStatus = 'degraded';
-          break;
-        default: // OFFLINE
-          healthStatus = 'offline';
-      }
+            break;
+          default: // OFFLINE
+            healthStatus = 'offline';
+        }
 
-      return {
-        id: orchestrator.id,
-        name: orchestrator.user?.displayName || orchestrator.user?.name || orchestrator.role,
-        status: healthStatus,
-        sessions: orchestrator.sessionManagers.length,
-        tokenBudget: {
-          used: tokenUsed,
-          limit: tokenLimit,
-          percent: Math.round(tokenPercent * 100) / 100,
-        },
-        lastActivity: orchestrator.updatedAt.toISOString(),
-        responseTime: 0, // TODO: Implement actual response time tracking
-        errorCount: errorCountMap.get(orchestrator.id) || 0,
-      };
-    });
+        return {
+          id: orchestrator.id,
+          name:
+            orchestrator.user?.displayName ||
+            orchestrator.user?.name ||
+            orchestrator.role,
+          status: healthStatus,
+          sessions: orchestrator.sessionManagers.length,
+          tokenBudget: {
+            used: tokenUsed,
+            limit: tokenLimit,
+            percent: Math.round(tokenPercent * 100) / 100,
+          },
+          lastActivity: orchestrator.updatedAt.toISOString(),
+          responseTime: 0, // TODO: Implement actual response time tracking
+          errorCount: errorCountMap.get(orchestrator.id) || 0,
+        };
+      }
+    );
 
     // Apply sorting
     if (sortBy === 'errorCount') {
@@ -230,9 +243,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     } else if (sortBy === 'sessions') {
       healthStatuses.sort((a, b) =>
-        sortOrder === 'asc'
-          ? a.sessions - b.sessions
-          : b.sessions - a.sessions
+        sortOrder === 'asc' ? a.sessions - b.sessions : b.sessions - a.sessions
       );
     } else if (sortBy === 'tokenUsage') {
       healthStatuses.sort((a, b) =>
@@ -263,7 +274,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health/orchestrators] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

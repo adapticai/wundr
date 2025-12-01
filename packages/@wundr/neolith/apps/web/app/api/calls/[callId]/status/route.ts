@@ -41,15 +41,18 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,27 +61,32 @@ export async function GET(
     const parseResult = callIdParamSchema.safeParse(params);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     const { callId } = parseResult.data;
 
     // Get call details with creator and participant info
-    const calls = await prisma.$queryRaw<Array<{
-      id: string;
-      channel_id: string;
-      type: string;
-      status: string;
-      room_name: string;
-      started_at: Date | null;
-      ended_at: Date | null;
-      created_at: Date;
-      created_by_id: string;
-      creator_name: string | null;
-      participant_count: number;
-    }>>`
+    const calls = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        channel_id: string;
+        type: string;
+        status: string;
+        room_name: string;
+        started_at: Date | null;
+        ended_at: Date | null;
+        created_at: Date;
+        created_by_id: string;
+        creator_name: string | null;
+        participant_count: number;
+      }>
+    >`
       SELECT
         c.id,
         c.channel_id,
@@ -100,7 +108,7 @@ export async function GET(
     if (calls.length === 0) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -118,8 +126,11 @@ export async function GET(
 
     if (!channelMember) {
       return NextResponse.json(
-        createErrorResponse('Not authorized to view this call', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Not authorized to view this call',
+          CALL_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -146,8 +157,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/calls/:callId/status] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

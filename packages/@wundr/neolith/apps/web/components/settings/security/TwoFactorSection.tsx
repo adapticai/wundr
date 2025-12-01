@@ -30,7 +30,8 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
   const [verificationCode, setVerificationCode] = useState('');
 
   // Mock QR code and backup codes - replace with real implementation
-  const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Wundr:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Wundr';
+  const qrCodeUrl =
+    'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Wundr:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Wundr';
   const secretKey = 'JBSWY3DPEHPK3PXP';
   const backupCodes = [
     '1234-5678-9012',
@@ -91,18 +92,18 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="two-factor">Two-Factor Authentication</Label>
-            <p className="text-sm text-muted-foreground">
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <div className='space-y-0.5'>
+            <Label htmlFor='two-factor'>Two-Factor Authentication</Label>
+            <p className='text-sm text-muted-foreground'>
               Add an extra layer of security with authenticator app
             </p>
           </div>
           <Switch
-            id="two-factor"
+            id='two-factor'
             checked={enabled}
-            onCheckedChange={(checked) => {
+            onCheckedChange={checked => {
               if (checked) {
                 handleEnable2FA();
               } else {
@@ -114,24 +115,24 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
 
         {enabled && (
           <Alert>
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck className='h-4 w-4' />
             <AlertTitle>Two-factor authentication is enabled</AlertTitle>
             <AlertDescription>
               Your account is protected with an authenticator app.
-              <div className="mt-3 flex gap-3">
+              <div className='mt-3 flex gap-3'>
                 <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0 text-xs"
+                  variant='link'
+                  size='sm'
+                  className='h-auto p-0 text-xs'
                   onClick={() => setShowBackupCodes(true)}
                 >
                   View backup codes
                 </Button>
-                <span className="text-muted-foreground">·</span>
+                <span className='text-muted-foreground'>·</span>
                 <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0 text-xs"
+                  variant='link'
+                  size='sm'
+                  className='h-auto p-0 text-xs'
                   onClick={handleEnable2FA}
                 >
                   Reconfigure
@@ -147,7 +148,9 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {setupStep === 'qr' ? 'Set up two-factor authentication' : 'Verify your code'}
+              {setupStep === 'qr'
+                ? 'Set up two-factor authentication'
+                : 'Verify your code'}
             </DialogTitle>
             <DialogDescription>
               {setupStep === 'qr'
@@ -157,36 +160,40 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
           </DialogHeader>
 
           {setupStep === 'qr' ? (
-            <div className="space-y-4 py-4">
-              <div className="flex justify-center">
-                <div className="rounded-lg border p-4 bg-white">
-                  <img src={qrCodeUrl} alt="QR Code" className="h-48 w-48" />
+            <div className='space-y-4 py-4'>
+              <div className='flex justify-center'>
+                <div className='rounded-lg border p-4 bg-white'>
+                  <img src={qrCodeUrl} alt='QR Code' className='h-48 w-48' />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Or enter this code manually</Label>
-                <div className="flex gap-2">
-                  <Input value={secretKey} readOnly className="font-mono" />
+                <div className='flex gap-2'>
+                  <Input value={secretKey} readOnly className='font-mono' />
                   <Button
-                    variant="outline"
-                    size="icon"
+                    variant='outline'
+                    size='icon'
                     onClick={() => copyToClipboard(secretKey)}
                   >
-                    <Copy className="h-4 w-4" />
+                    <Copy className='h-4 w-4' />
                   </Button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="verification-code">Verification code</Label>
+            <div className='space-y-4 py-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='verification-code'>Verification code</Label>
                 <Input
-                  id="verification-code"
+                  id='verification-code'
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="000000"
-                  className="text-center text-2xl tracking-widest font-mono"
+                  onChange={e =>
+                    setVerificationCode(
+                      e.target.value.replace(/\D/g, '').slice(0, 6)
+                    )
+                  }
+                  placeholder='000000'
+                  className='text-center text-2xl tracking-widest font-mono'
                   maxLength={6}
                 />
               </div>
@@ -196,21 +203,20 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
           <DialogFooter>
             {setupStep === 'qr' ? (
               <>
-                <Button variant="outline" onClick={() => setShowSetupModal(false)}>
+                <Button
+                  variant='outline'
+                  onClick={() => setShowSetupModal(false)}
+                >
                   Cancel
                 </Button>
-                <Button onClick={() => setSetupStep('verify')}>
-                  Continue
-                </Button>
+                <Button onClick={() => setSetupStep('verify')}>Continue</Button>
               </>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setSetupStep('qr')}>
+                <Button variant='outline' onClick={() => setSetupStep('qr')}>
                   Back
                 </Button>
-                <Button onClick={handleVerify2FA}>
-                  Verify & Enable
-                </Button>
+                <Button onClick={handleVerify2FA}>Verify & Enable</Button>
               </>
             )}
           </DialogFooter>
@@ -223,16 +229,17 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
           <DialogHeader>
             <DialogTitle>Backup Codes</DialogTitle>
             <DialogDescription>
-              Save these codes in a secure place. Each code can only be used once.
+              Save these codes in a secure place. Each code can only be used
+              once.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-2">
+          <div className='space-y-4 py-4'>
+            <div className='grid grid-cols-2 gap-2'>
               {backupCodes.map((code, index) => (
                 <div
                   key={index}
-                  className="rounded-lg border bg-muted p-3 text-center font-mono text-sm"
+                  className='rounded-lg border bg-muted p-3 text-center font-mono text-sm'
                 >
                   {code}
                 </div>
@@ -241,13 +248,11 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={downloadBackupCodes}>
-              <Download className="mr-2 h-4 w-4" />
+            <Button variant='outline' onClick={downloadBackupCodes}>
+              <Download className='mr-2 h-4 w-4' />
               Download
             </Button>
-            <Button onClick={() => setShowBackupCodes(false)}>
-              Done
-            </Button>
+            <Button onClick={() => setShowBackupCodes(false)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

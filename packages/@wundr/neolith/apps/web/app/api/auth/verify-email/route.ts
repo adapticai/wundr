@@ -18,7 +18,10 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/email';
-import { AUTH_ERROR_CODES, createAuthErrorResponse } from '@/lib/validations/auth';
+import {
+  AUTH_ERROR_CODES,
+  createAuthErrorResponse,
+} from '@/lib/validations/auth';
 
 import type { NextRequest } from 'next/server';
 
@@ -28,10 +31,7 @@ const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const TOKEN_EXPIRATION_HOURS = 24;
 
 // In-memory rate limiting store (in production, use Redis or similar)
-const rateLimitStore = new Map<
-  string,
-  { count: number; resetAt: number }
->();
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
 /**
  * Check rate limit for a given identifier
@@ -121,9 +121,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!token || typeof token !== 'string') {
       // Redirect to login with error
       const baseUrl = new URL(request.url).origin;
-      return NextResponse.redirect(
-        `${baseUrl}/login?error=missing_token`,
-      );
+      return NextResponse.redirect(`${baseUrl}/login?error=missing_token`);
     }
 
     // Look up verification token in database
@@ -136,9 +134,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!verificationToken) {
       // Invalid token
       const baseUrl = new URL(request.url).origin;
-      return NextResponse.redirect(
-        `${baseUrl}/login?error=invalid_token`,
-      );
+      return NextResponse.redirect(`${baseUrl}/login?error=invalid_token`);
     }
 
     // Check if token has expired (24 hours)
@@ -152,9 +148,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       const baseUrl = new URL(request.url).origin;
-      return NextResponse.redirect(
-        `${baseUrl}/login?error=expired_token`,
-      );
+      return NextResponse.redirect(`${baseUrl}/login?error=expired_token`);
     }
 
     // Find user by email (identifier in verification token)
@@ -173,9 +167,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       const baseUrl = new URL(request.url).origin;
-      return NextResponse.redirect(
-        `${baseUrl}/login?error=user_not_found`,
-      );
+      return NextResponse.redirect(`${baseUrl}/login?error=user_not_found`);
     }
 
     // Check if email is already verified
@@ -188,9 +180,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       const baseUrl = new URL(request.url).origin;
-      return NextResponse.redirect(
-        `${baseUrl}/login?verified=already`,
-      );
+      return NextResponse.redirect(`${baseUrl}/login?verified=already`);
     }
 
     // Update user's emailVerified field and delete token in a transaction
@@ -212,16 +202,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Log success (audit trail)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[GET /api/auth/verify-email] Email verified for user: ${user.email}`);
+      console.log(
+        `[GET /api/auth/verify-email] Email verified for user: ${user.email}`
+      );
     } else {
       console.log('[GET /api/auth/verify-email] Email verification successful');
     }
 
     // Redirect to login page with success message
     const baseUrl = new URL(request.url).origin;
-    return NextResponse.redirect(
-      `${baseUrl}/login?verified=true`,
-    );
+    return NextResponse.redirect(`${baseUrl}/login?verified=true`);
   } catch (error) {
     // Log error
     if (process.env.NODE_ENV === 'development') {
@@ -232,9 +222,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Redirect to login with error
     const baseUrl = new URL(request.url).origin;
-    return NextResponse.redirect(
-      `${baseUrl}/login?error=verification_failed`,
-    );
+    return NextResponse.redirect(`${baseUrl}/login?error=verification_failed`);
   }
 }
 
@@ -288,9 +276,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'You must be logged in to resend verification email',
-          AUTH_ERROR_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -307,9 +295,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'User not found',
-          AUTH_ERROR_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -319,7 +307,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           message: 'Your email is already verified.',
         },
-        { status: 200 },
+        { status: 200 }
       );
     }
 
@@ -330,10 +318,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Rate limit exceeded. You can request a new verification email 3 times per hour.',
-          AUTH_ERROR_CODES.RATE_LIMIT_EXCEEDED,
+          AUTH_ERROR_CODES.RATE_LIMITED,
           {
             resetAt: resetDate.toISOString(),
-          },
+          }
         ),
         {
           status: 429,
@@ -342,13 +330,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': resetDate.toISOString(),
           },
-        },
+        }
       );
     }
 
     // Generate new verification token
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000
+    );
 
     // Delete any existing verification tokens for this user
     await prisma.verificationToken.deleteMany({
@@ -371,12 +361,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
     // Send verification email
-    const emailResult = await sendVerificationEmail(user.email, verificationUrl);
+    const emailResult = await sendVerificationEmail(
+      user.email,
+      verificationUrl
+    );
 
     if (!emailResult.success) {
       // Log email send failure
       if (process.env.NODE_ENV === 'development') {
-        console.error('[POST /api/auth/verify-email] Failed to send email:', emailResult.error);
+        console.error(
+          '[POST /api/auth/verify-email] Failed to send email:',
+          emailResult.error
+        );
       } else {
         console.error('[POST /api/auth/verify-email] Email delivery failed');
       }
@@ -384,22 +380,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Failed to send verification email. Please try again later.',
-          AUTH_ERROR_CODES.INTERNAL_ERROR,
+          AUTH_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     // Log success
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[POST /api/auth/verify-email] Verification email sent to: ${user.email}`);
+      console.log(
+        `[POST /api/auth/verify-email] Verification email sent to: ${user.email}`
+      );
     } else {
       console.log('[POST /api/auth/verify-email] Verification email sent');
     }
 
     return NextResponse.json(
       {
-        message: 'Verification email sent successfully. Please check your inbox.',
+        message:
+          'Verification email sent successfully. Please check your inbox.',
         expiresAt: expiresAt.toISOString(),
       },
       {
@@ -409,7 +408,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           'X-RateLimit-Remaining': rateLimit.remaining.toString(),
           'X-RateLimit-Reset': new Date(rateLimit.resetAt).toISOString(),
         },
-      },
+      }
     );
   } catch (error) {
     // Log error
@@ -422,9 +421,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createAuthErrorResponse(
         'An internal error occurred',
-        AUTH_ERROR_CODES.INTERNAL_ERROR,
+        AUTH_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

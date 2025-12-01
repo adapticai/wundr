@@ -84,7 +84,7 @@ async function main(): Promise<void> {
   // Seed users
   console.log('Creating test users...');
   const users = await Promise.all(
-    SEED_DATA.users.map(async (userData) => {
+    SEED_DATA.users.map(async userData => {
       const user = await prisma.user.upsert({
         where: { email: userData.email },
         update: {
@@ -109,11 +109,13 @@ async function main(): Promise<void> {
   // Log workspace info (for when Workspace model is enabled)
   console.log('\nWorkspace configuration (ready for Phase 1):');
   console.log(`  - Name: ${SEED_DATA.workspace.name}`);
-  console.log(`  - Channels: ${SEED_DATA.workspace.channels.map((c) => c.name).join(', ')}`);
+  console.log(
+    `  - Channels: ${SEED_DATA.workspace.channels.map(c => c.name).join(', ')}`
+  );
 
   // Log disciplines info (for when Discipline model is enabled)
   console.log('\nDiscipline configuration (ready for Phase 1):');
-  SEED_DATA.disciplines.forEach((d) => {
+  SEED_DATA.disciplines.forEach(d => {
     console.log(`  - ${d.name}: ${d.description}`);
   });
 
@@ -134,7 +136,7 @@ export async function cleanup(): Promise<void> {
   const deletedUsers = await prisma.user.deleteMany({
     where: {
       email: {
-        in: SEED_DATA.users.map((u) => u.email),
+        in: SEED_DATA.users.map(u => u.email),
       },
     },
   });
@@ -155,7 +157,7 @@ main()
   .then(async () => {
     await prisma.$disconnect();
   })
-  .catch(async (error) => {
+  .catch(async error => {
     console.error('Seed failed:', error);
     await prisma.$disconnect();
     process.exit(1);

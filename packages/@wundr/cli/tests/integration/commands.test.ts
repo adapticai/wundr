@@ -19,11 +19,12 @@ describe('Command Integration Tests', () => {
   describe('Init Commands Integration', () => {
     test('should initialize new project', async () => {
       const program = cli.createProgram();
-      
+
       // Test project initialization
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'project'
+        'init',
+        'project',
       ]);
 
       // Would verify .wundr directory creation and config files
@@ -33,7 +34,8 @@ describe('Command Integration Tests', () => {
     test('should initialize monorepo structure', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'monorepo'
+        'init',
+        'monorepo',
       ]);
 
       expect(result.code).toBe(0);
@@ -42,7 +44,8 @@ describe('Command Integration Tests', () => {
     test('should create configuration file', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'config'
+        'init',
+        'config',
       ]);
 
       expect(result.code).toBe(0);
@@ -53,9 +56,12 @@ describe('Command Integration Tests', () => {
     test('should create React component', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'create', 'component', 'TestComponent',
-        '--type', 'react',
-        '--with-tests'
+        'create',
+        'component',
+        'TestComponent',
+        '--type',
+        'react',
+        '--with-tests',
       ]);
 
       expect(result.code).toBe(0);
@@ -64,8 +70,11 @@ describe('Command Integration Tests', () => {
     test('should create service', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'create', 'service', 'TestService',
-        '--framework', 'express'
+        'create',
+        'service',
+        'TestService',
+        '--framework',
+        'express',
       ]);
 
       expect(result.code).toBe(0);
@@ -74,8 +83,11 @@ describe('Command Integration Tests', () => {
     test('should create package in monorepo', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'create', 'package', 'test-package',
-        '--type', 'library'
+        'create',
+        'package',
+        'test-package',
+        '--type',
+        'library',
       ]);
 
       expect(result.code).toBe(0);
@@ -86,7 +98,8 @@ describe('Command Integration Tests', () => {
     test('should analyze dependencies', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'deps'
+        'analyze',
+        'deps',
       ]);
 
       expect(result.code).toBe(0);
@@ -95,8 +108,10 @@ describe('Command Integration Tests', () => {
     test('should analyze code quality', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'quality',
-        '--format', 'json'
+        'analyze',
+        'quality',
+        '--format',
+        'json',
       ]);
 
       expect(result.code).toBe(0);
@@ -105,8 +120,9 @@ describe('Command Integration Tests', () => {
     test('should perform security analysis', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'security',
-        '--fix'
+        'analyze',
+        'security',
+        '--fix',
       ]);
 
       expect(result.code).toBe(0);
@@ -117,7 +133,10 @@ describe('Command Integration Tests', () => {
     test('should add governance rules', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'govern', 'rules', 'add', 'no-console'
+        'govern',
+        'rules',
+        'add',
+        'no-console',
       ]);
 
       expect(result.code).toBe(0);
@@ -126,7 +145,8 @@ describe('Command Integration Tests', () => {
     test('should check governance compliance', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'govern', 'check'
+        'govern',
+        'check',
       ]);
 
       expect(result.code).toBe(0);
@@ -135,8 +155,12 @@ describe('Command Integration Tests', () => {
     test('should create quality gate', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'govern', 'gate', 'create', 'default',
-        '--conditions', 'coverage>80,complexity<10'
+        'govern',
+        'gate',
+        'create',
+        'default',
+        '--conditions',
+        'coverage>80,complexity<10',
       ]);
 
       expect(result.code).toBe(0);
@@ -147,7 +171,11 @@ describe('Command Integration Tests', () => {
     test('should configure AI provider', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'ai', 'config', 'set', 'provider', 'claude'
+        'ai',
+        'config',
+        'set',
+        'provider',
+        'claude',
       ]);
 
       expect(result.code).toBe(0);
@@ -156,8 +184,11 @@ describe('Command Integration Tests', () => {
     test('should generate code with AI', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'ai', 'generate', 'component',
-        '--prompt', 'Create a button component'
+        'ai',
+        'generate',
+        'component',
+        '--prompt',
+        'Create a button component',
       ]);
 
       expect(result.code).toBe(0);
@@ -166,7 +197,9 @@ describe('Command Integration Tests', () => {
     test('should review code with AI', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'ai', 'review', 'src/index.ts'
+        'ai',
+        'review',
+        'src/index.ts',
       ]);
 
       expect(result.code).toBe(0);
@@ -175,11 +208,17 @@ describe('Command Integration Tests', () => {
 
   describe('Dashboard Commands Integration', () => {
     test('should start dashboard server', async () => {
-      const result = await testHelper.runCommand('node', [
-        path.join(__dirname, '../../dist/index.js'),
-        'dashboard', 'start',
-        '--port', '3001'
-      ], { timeout: 5000 });
+      const result = await testHelper.runCommand(
+        'node',
+        [
+          path.join(__dirname, '../../dist/index.js'),
+          'dashboard',
+          'start',
+          '--port',
+          '3001',
+        ],
+        { timeout: 5000 }
+      );
 
       // Dashboard start might not complete immediately
       expect([0, null]).toContain(result.code);
@@ -188,7 +227,11 @@ describe('Command Integration Tests', () => {
     test('should configure dashboard', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'dashboard', 'config', 'set', 'theme', 'dark'
+        'dashboard',
+        'config',
+        'set',
+        'theme',
+        'dark',
       ]);
 
       expect(result.code).toBe(0);
@@ -203,20 +246,33 @@ describe('Command Integration Tests', () => {
         ['npm test']
       );
 
-      const result = await testHelper.runCommand('node', [
-        path.join(__dirname, '../../dist/index.js'),
-        'watch', 'config', 'load', watchConfig
-      ], { timeout: 2000 });
+      const result = await testHelper.runCommand(
+        'node',
+        [
+          path.join(__dirname, '../../dist/index.js'),
+          'watch',
+          'config',
+          'load',
+          watchConfig,
+        ],
+        { timeout: 2000 }
+      );
 
       expect([0, null]).toContain(result.code);
     });
 
     test('should watch tests', async () => {
-      const result = await testHelper.runCommand('node', [
-        path.join(__dirname, '../../dist/index.js'),
-        'watch', 'test',
-        '--framework', 'jest'
-      ], { timeout: 2000 });
+      const result = await testHelper.runCommand(
+        'node',
+        [
+          path.join(__dirname, '../../dist/index.js'),
+          'watch',
+          'test',
+          '--framework',
+          'jest',
+        ],
+        { timeout: 2000 }
+      );
 
       expect([0, null]).toContain(result.code);
     });
@@ -227,12 +283,14 @@ describe('Command Integration Tests', () => {
       const jobPath = await testHelper.createBatchJob('test-batch', [
         'echo "Starting batch job"',
         'npm --version',
-        'echo "Batch job completed"'
+        'echo "Batch job completed"',
       ]);
 
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'batch', 'run', jobPath
+        'batch',
+        'run',
+        jobPath,
       ]);
 
       expect(result.code).toBe(0);
@@ -240,12 +298,14 @@ describe('Command Integration Tests', () => {
 
     test('should validate batch job', async () => {
       const jobPath = await testHelper.createBatchJob('validate-job', [
-        'echo "validation test"'
+        'echo "validation test"',
       ]);
 
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'batch', 'validate', jobPath
+        'batch',
+        'validate',
+        jobPath,
       ]);
 
       expect(result.code).toBe(0);
@@ -256,8 +316,11 @@ describe('Command Integration Tests', () => {
     test('should ask single question', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'chat', 'ask', 'What is TypeScript?',
-        '--model', 'mock'
+        'chat',
+        'ask',
+        'What is TypeScript?',
+        '--model',
+        'mock',
       ]);
 
       expect(result.code).toBe(0);
@@ -266,8 +329,11 @@ describe('Command Integration Tests', () => {
     test('should chat with file', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'chat', 'file', 'src/index.ts',
-        '--action', 'explain'
+        'chat',
+        'file',
+        'src/index.ts',
+        '--action',
+        'explain',
       ]);
 
       expect(result.code).toBe(0);
@@ -278,7 +344,8 @@ describe('Command Integration Tests', () => {
     test('should list installed plugins', async () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'list'
+        'plugins',
+        'list',
       ]);
 
       expect(result.code).toBe(0);
@@ -289,7 +356,9 @@ describe('Command Integration Tests', () => {
 
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'install', pluginPath
+        'plugins',
+        'install',
+        pluginPath,
       ]);
 
       expect(result.code).toBe(0);
@@ -300,12 +369,16 @@ describe('Command Integration Tests', () => {
 
       await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'install', pluginPath
+        'plugins',
+        'install',
+        pluginPath,
       ]);
 
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'enable', 'enable-plugin'
+        'plugins',
+        'enable',
+        'enable-plugin',
       ]);
 
       expect(result.code).toBe(0);
@@ -315,25 +388,29 @@ describe('Command Integration Tests', () => {
   describe('Command Chaining and Workflows', () => {
     test('should execute complete workflow', async () => {
       // Test a complete workflow: init -> create -> analyze -> govern
-      
+
       // Initialize project
       let result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'project'
+        'init',
+        'project',
       ]);
       expect(result.code).toBe(0);
 
       // Create component
       result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'create', 'component', 'WorkflowTest'
+        'create',
+        'component',
+        'WorkflowTest',
       ]);
       expect(result.code).toBe(0);
 
       // Analyze code
       result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'quality'
+        'analyze',
+        'quality',
       ]);
       expect(result.code).toBe(0);
     });
@@ -342,7 +419,8 @@ describe('Command Integration Tests', () => {
       // Some commands require others to be run first
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'govern', 'check'
+        'govern',
+        'check',
       ]);
 
       // Should handle gracefully even if no rules are configured
@@ -355,7 +433,8 @@ describe('Command Integration Tests', () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
         '--verbose',
-        'init', 'project'
+        'init',
+        'project',
       ]);
 
       expect(result.code).toBe(0);
@@ -365,7 +444,9 @@ describe('Command Integration Tests', () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
         '--dry-run',
-        'create', 'component', 'DryRunTest'
+        'create',
+        'component',
+        'DryRunTest',
       ]);
 
       expect(result.code).toBe(0);
@@ -376,8 +457,10 @@ describe('Command Integration Tests', () => {
 
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        '--config', configPath,
-        'init', 'project'
+        '--config',
+        configPath,
+        'init',
+        'project',
       ]);
 
       expect(result.code).toBe(0);
@@ -387,7 +470,7 @@ describe('Command Integration Tests', () => {
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
         '--no-color',
-        'help'
+        'help',
       ]);
 
       expect(result.code).toBe(0);

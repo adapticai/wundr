@@ -64,7 +64,7 @@ const SeverityBadge: React.FC<{ severity: AlertSeverity }> = ({ severity }) => {
 
   return (
     <Badge variant={variant} className={cn('gap-1', className)}>
-      <Icon className="h-3 w-3" />
+      <Icon className='h-3 w-3' />
       {label}
     </Badge>
   );
@@ -119,32 +119,32 @@ const AlertItem: React.FC<AlertItemProps> = ({ alert, onAcknowledge }) => {
           alert.acknowledged && 'opacity-60'
         )}
       >
-        <div className="flex-1 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2">
+        <div className='flex-1 space-y-2'>
+          <div className='flex items-start justify-between gap-2'>
+            <div className='flex items-center gap-2'>
               <SeverityBadge severity={alert.severity} />
               {alert.acknowledged && (
-                <Badge variant="outline" className="gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
+                <Badge variant='outline' className='gap-1'>
+                  <CheckCircle2 className='h-3 w-3' />
                   Acknowledged
                 </Badge>
               )}
             </div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
+            <span className='text-xs text-muted-foreground whitespace-nowrap'>
               {formatTimestamp(alert.timestamp)}
             </span>
           </div>
-          <p className="text-sm">{alert.message}</p>
+          <p className='text-sm'>{alert.message}</p>
           {alert.orchestratorName && (
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               Orchestrator: {alert.orchestratorName}
             </p>
           )}
         </div>
         {!alert.acknowledged && onAcknowledge && (
           <Button
-            size="sm"
-            variant="outline"
+            size='sm'
+            variant='outline'
             onClick={() => setShowConfirmDialog(true)}
           >
             Acknowledge
@@ -157,7 +157,8 @@ const AlertItem: React.FC<AlertItemProps> = ({ alert, onAcknowledge }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Acknowledge Alert</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to acknowledge this alert? This action will mark the alert as reviewed.
+              Are you sure you want to acknowledge this alert? This action will
+              mark the alert as reviewed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -177,19 +178,21 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
   onAcknowledge,
   className,
 }) => {
-  const [selectedSeverity, setSelectedSeverity] = React.useState<AlertSeverity | 'all'>('all');
+  const [selectedSeverity, setSelectedSeverity] = React.useState<
+    AlertSeverity | 'all'
+  >('all');
 
   const filteredAlerts = React.useMemo(() => {
     if (selectedSeverity === 'all') return alerts;
-    return alerts.filter((alert) => alert.severity === selectedSeverity);
+    return alerts.filter(alert => alert.severity === selectedSeverity);
   }, [alerts, selectedSeverity]);
 
   const alertCounts = React.useMemo(() => {
     return {
       all: alerts.length,
-      critical: alerts.filter((a) => a.severity === 'critical').length,
-      warning: alerts.filter((a) => a.severity === 'warning').length,
-      info: alerts.filter((a) => a.severity === 'info').length,
+      critical: alerts.filter(a => a.severity === 'critical').length,
+      warning: alerts.filter(a => a.severity === 'warning').length,
+      info: alerts.filter(a => a.severity === 'info').length,
     };
   }, [alerts]);
 
@@ -214,25 +217,37 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className='flex items-center justify-between'>
           <CardTitle>System Alerts</CardTitle>
-          <div className="flex gap-2">
-            <FilterButton severity="all" label="All" count={alertCounts.all} />
-            <FilterButton severity="critical" label="Critical" count={alertCounts.critical} />
-            <FilterButton severity="warning" label="Warning" count={alertCounts.warning} />
-            <FilterButton severity="info" label="Info" count={alertCounts.info} />
+          <div className='flex gap-2'>
+            <FilterButton severity='all' label='All' count={alertCounts.all} />
+            <FilterButton
+              severity='critical'
+              label='Critical'
+              count={alertCounts.critical}
+            />
+            <FilterButton
+              severity='warning'
+              label='Warning'
+              count={alertCounts.warning}
+            />
+            <FilterButton
+              severity='info'
+              label='Info'
+              count={alertCounts.info}
+            />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {filteredAlerts.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Info className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <div className='text-center py-8 text-muted-foreground'>
+              <Info className='h-12 w-12 mx-auto mb-2 opacity-50' />
               <p>No alerts to display</p>
             </div>
           ) : (
-            filteredAlerts.map((alert) => (
+            filteredAlerts.map(alert => (
               <AlertItem
                 key={alert.id}
                 alert={alert}

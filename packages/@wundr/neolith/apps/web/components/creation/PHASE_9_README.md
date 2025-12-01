@@ -2,7 +2,9 @@
 
 ## Overview
 
-Phase 9 implements a conversational interface powered by LLMs to create entities (Orchestrators, Workflows, Channels, etc.) through natural language conversations. Users can chat with an AI assistant that guides them through the creation process and generates entity specifications.
+Phase 9 implements a conversational interface powered by LLMs to create entities (Orchestrators,
+Workflows, Channels, etc.) through natural language conversations. Users can chat with an AI
+assistant that guides them through the creation process and generates entity specifications.
 
 ## Components Created
 
@@ -23,6 +25,7 @@ Phase 9 implements a conversational interface powered by LLMs to create entities
 ## File Locations
 
 All files are located in:
+
 ```
 /Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/creation/
 ```
@@ -34,6 +37,7 @@ All files are located in:
 **Purpose:** Chat-based interface for creating entities via LLM conversation
 
 **Features:**
+
 - Streaming LLM responses
 - Context-aware conversation based on entity type
 - Automatic spec generation
@@ -44,6 +48,7 @@ All files are located in:
 - Initial greeting messages tailored per entity type
 
 **Props:**
+
 ```typescript
 interface ConversationalCreatorProps {
   entityType: EntityType;
@@ -60,6 +65,7 @@ interface ConversationalCreatorProps {
 **Purpose:** Main modal orchestrating the entire creation flow
 
 **Features:**
+
 - Toggle between conversation and form modes
 - Handles entity creation API calls
 - Success/error handling
@@ -68,6 +74,7 @@ interface ConversationalCreatorProps {
 - Supports editing existing specs
 
 **Props:**
+
 ```typescript
 interface CreationModalProps {
   entityType: EntityType;
@@ -80,8 +87,8 @@ interface CreationModalProps {
 }
 ```
 
-**API Integration:**
-The modal calls appropriate creation APIs:
+**API Integration:** The modal calls appropriate creation APIs:
+
 - `/api/workspaces` - Create workspace
 - `/api/orchestrators` - Create orchestrator
 - `/api/session-managers` - Create session manager
@@ -94,6 +101,7 @@ The modal calls appropriate creation APIs:
 **Purpose:** Form for reviewing and editing generated entity specifications
 
 **Features:**
+
 - Editable fields for all spec properties
 - Real-time validation with error messages
 - Confidence indicator (high/medium/low)
@@ -105,6 +113,7 @@ The modal calls appropriate creation APIs:
 - Accessible form with ARIA labels
 
 **Props:**
+
 ```typescript
 interface SpecReviewFormProps {
   entityType: EntityType;
@@ -121,6 +130,7 @@ interface SpecReviewFormProps {
 **Purpose:** Selector for choosing which type of entity to create
 
 **Features:**
+
 - Visual cards or list layout (grid/list variants)
 - Icons and descriptions for each entity type
 - Keyboard navigation support
@@ -129,6 +139,7 @@ interface SpecReviewFormProps {
 - Color-coded icons per entity type
 
 **Props:**
+
 ```typescript
 interface EntityTypeSelectorProps {
   onSelect: (entityType: EntityType) => void;
@@ -139,6 +150,7 @@ interface EntityTypeSelectorProps {
 ```
 
 **Entity Types Supported:**
+
 - Orchestrator (Blue) - Autonomous agent with charter
 - Session Manager (Purple) - Monitors channels
 - Subagent (Green) - Specialized worker
@@ -151,6 +163,7 @@ interface EntityTypeSelectorProps {
 **Purpose:** Reusable component for displaying chat messages
 
 **Features:**
+
 - User/assistant/system message types
 - Avatar display with icons
 - Smart timestamp formatting ("Just now", "X mins ago", time)
@@ -159,6 +172,7 @@ interface EntityTypeSelectorProps {
 - Accessible with role attributes
 
 **Props:**
+
 ```typescript
 interface ChatMessageProps {
   role: 'user' | 'assistant' | 'system';
@@ -184,16 +198,14 @@ export function CreateOrchestratorButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        Create Orchestrator
-      </Button>
+      <Button onClick={() => setOpen(true)}>Create Orchestrator</Button>
 
       <CreationModal
-        entityType="orchestrator"
-        workspaceId="workspace-123"
+        entityType='orchestrator'
+        workspaceId='workspace-123'
         open={open}
         onOpenChange={setOpen}
-        onCreated={(entity) => {
+        onCreated={entity => {
           console.log('Created:', entity);
           // Navigate or show success
         }}
@@ -209,11 +221,7 @@ export function CreateOrchestratorButton() {
 'use client';
 
 import { useState } from 'react';
-import {
-  EntityTypeSelector,
-  CreationModal,
-  type EntityType,
-} from '@/components/creation';
+import { EntityTypeSelector, CreationModal, type EntityType } from '@/components/creation';
 
 export function CreateEntityFlow() {
   const [selectedType, setSelectedType] = useState<EntityType | null>(null);
@@ -225,13 +233,13 @@ export function CreateEntityFlow() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Create New Entity</h1>
+    <div className='space-y-6'>
+      <h1 className='text-2xl font-bold'>Create New Entity</h1>
 
       <EntityTypeSelector
         onSelect={handleSelect}
         selected={selectedType || undefined}
-        variant="grid"
+        variant='grid'
       />
 
       {selectedType && (
@@ -239,7 +247,7 @@ export function CreateEntityFlow() {
           entityType={selectedType}
           open={showModal}
           onOpenChange={setShowModal}
-          onCreated={(entity) => {
+          onCreated={entity => {
             // Handle success
           }}
         />
@@ -255,16 +263,16 @@ export function CreateEntityFlow() {
 import { ConversationalCreator } from '@/components/creation';
 
 <ConversationalCreator
-  entityType="workflow"
-  workspaceId="workspace-123"
-  onSpecGenerated={(spec) => {
+  entityType='workflow'
+  workspaceId='workspace-123'
+  onSpecGenerated={spec => {
     console.log('Generated spec:', spec);
     // Switch to form view or process spec
   }}
   onCancel={() => {
     // Handle cancellation
   }}
-/>
+/>;
 ```
 
 ## Type Definitions
@@ -288,11 +296,11 @@ interface EntitySpec {
   entityType: EntityType;
   name: string;
   description: string;
-  role?: string;              // For agents
-  charter?: string;           // For agents
-  confidence: number;         // 0-1 confidence level
-  missingFields: string[];    // Fields needing more info
-  suggestions: string[];      // AI suggestions
+  role?: string; // For agents
+  charter?: string; // For agents
+  confidence: number; // 0-1 confidence level
+  missingFields: string[]; // Fields needing more info
+  suggestions: string[]; // AI suggestions
   properties?: Record<string, unknown>;
 }
 ```
@@ -300,18 +308,21 @@ interface EntitySpec {
 ## Styling & Design
 
 ### UI Framework
+
 - **Components:** shadcn/ui (Radix UI primitives)
 - **Styling:** Tailwind CSS
 - **Icons:** lucide-react
 - **Theme:** Supports dark/light mode via next-themes
 
 ### Responsive Design
+
 - Mobile-first approach
 - Breakpoints: sm, md, lg, xl
 - Touch-friendly targets (min 44x44px)
 - Responsive modals and forms
 
 ### Accessibility
+
 - ARIA labels on all interactive elements
 - Keyboard navigation (Tab, Enter, Escape)
 - Screen reader friendly
@@ -321,6 +332,7 @@ interface EntitySpec {
 ## Integration Requirements
 
 ### Dependencies (Already Installed)
+
 - `react` & `react-dom`
 - `lucide-react` - Icons
 - `@radix-ui/*` - UI primitives
@@ -329,6 +341,7 @@ interface EntitySpec {
 - `typescript` - Type safety
 
 ### Optional Dependencies (For Full LLM Integration)
+
 ```bash
 npm install ai openai
 # or
@@ -362,10 +375,7 @@ export async function POST(req: Request) {
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
-    messages: [
-      { role: 'system', content: getSystemPrompt(entityType) },
-      ...messages,
-    ],
+    messages: [{ role: 'system', content: getSystemPrompt(entityType) }, ...messages],
     stream: true,
   });
 
@@ -425,6 +435,7 @@ test('create orchestrator flow', async ({ page }) => {
 ## Performance Considerations
 
 ### Optimizations Implemented
+
 - Lazy loading of modal content
 - Debounced input (for search/filter features)
 - Auto-scroll with smooth behavior
@@ -432,6 +443,7 @@ test('create orchestrator flow', async ({ page }) => {
 - Efficient state management
 
 ### Bundle Size
+
 - Total component size: ~50KB (uncompressed)
 - Tree-shakeable exports
 - No heavy dependencies
@@ -445,7 +457,8 @@ test('create orchestrator flow', async ({ page }) => {
 
 ## Known Limitations
 
-1. **LLM Integration:** Components use a mock hook for LLM integration. You'll need to implement actual AI SDK integration.
+1. **LLM Integration:** Components use a mock hook for LLM integration. You'll need to implement
+   actual AI SDK integration.
 
 2. **API Endpoints:** Creation APIs need to be implemented on the backend.
 

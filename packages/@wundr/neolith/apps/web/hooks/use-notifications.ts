@@ -25,13 +25,7 @@
  * ```
  */
 
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import type {
   Notification as AppNotification,
@@ -111,7 +105,7 @@ export interface UseNotificationsReturn {
  * ```
  */
 export function useNotifications(
-  options: UseNotificationsOptions = {},
+  options: UseNotificationsOptions = {}
 ): UseNotificationsReturn {
   const { enabled = true, pollInterval = 30000 } = options;
 
@@ -125,17 +119,23 @@ export function useNotifications(
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read).length,
-    [notifications],
+    () => notifications.filter(n => !n.read).length,
+    [notifications]
   );
 
   // Type guard for notification type
-  const isValidNotificationType = (type: string): type is AppNotification['type'] => {
-    return ['message', 'mention', 'reaction', 'system'].includes(type.toLowerCase());
+  const isValidNotificationType = (
+    type: string
+  ): type is AppNotification['type'] => {
+    return ['message', 'mention', 'reaction', 'system'].includes(
+      type.toLowerCase()
+    );
   };
 
   // Type guard for notification priority
-  const isValidNotificationPriority = (priority: string): priority is AppNotification['priority'] => {
+  const isValidNotificationPriority = (
+    priority: string
+  ): priority is AppNotification['priority'] => {
     return ['low', 'normal', 'high', 'urgent'].includes(priority.toLowerCase());
   };
 
@@ -143,8 +143,8 @@ export function useNotifications(
   const fetchNotifications = useCallback(
     async (refresh = false) => {
       if (!enabled) {
-return;
-}
+        return;
+      }
 
       try {
         // Cancel any in-flight requests
@@ -163,9 +163,12 @@ return;
         }
         params.set('limit', '20');
 
-        const response = await fetch(`/api/notifications?${params.toString()}`, {
-          signal: abortControllerRef.current.signal,
-        });
+        const response = await fetch(
+          `/api/notifications?${params.toString()}`,
+          {
+            signal: abortControllerRef.current.signal,
+          }
+        );
 
         if (!response.ok) {
           throw new Error('Failed to fetch notifications');
@@ -174,29 +177,37 @@ return;
         const result = await response.json();
         // API returns { data: [...], pagination: {...} }
         const notificationsData = result.data || [];
-        const newNotifications = notificationsData.map((n: AppNotification & { type: string; priority: string }) => {
-          const normalizedType = n.type?.toLowerCase() || 'system';
-          const normalizedPriority = n.priority?.toLowerCase() || 'normal';
+        const newNotifications = notificationsData.map(
+          (n: AppNotification & { type: string; priority: string }) => {
+            const normalizedType = n.type?.toLowerCase() || 'system';
+            const normalizedPriority = n.priority?.toLowerCase() || 'normal';
 
-          return {
-            ...n,
-            // Map database type to frontend type with validation
-            type: isValidNotificationType(normalizedType) ? normalizedType : 'system',
-            priority: isValidNotificationPriority(normalizedPriority) ? normalizedPriority : 'normal',
-            createdAt: new Date(n.createdAt),
-          };
-        });
+            return {
+              ...n,
+              // Map database type to frontend type with validation
+              type: isValidNotificationType(normalizedType)
+                ? normalizedType
+                : 'system',
+              priority: isValidNotificationPriority(normalizedPriority)
+                ? normalizedPriority
+                : 'normal',
+              createdAt: new Date(n.createdAt),
+            };
+          }
+        );
 
         if (refresh) {
           setNotifications(newNotifications);
         } else {
-          setNotifications((prev) => [...prev, ...newNotifications]);
+          setNotifications(prev => [...prev, ...newNotifications]);
         }
 
         // Handle pagination
         const pagination = result.pagination;
         if (pagination) {
-          setCursor(pagination.hasNextPage ? String(pagination.page + 1) : null);
+          setCursor(
+            pagination.hasNextPage ? String(pagination.page + 1) : null
+          );
           setHasMore(pagination.hasNextPage);
         } else {
           setCursor(null);
@@ -212,14 +223,14 @@ return;
         setIsLoading(false);
       }
     },
-    [enabled, cursor],
+    [enabled, cursor]
   );
 
   // Initial fetch and polling
   useEffect(() => {
     if (!enabled) {
-return;
-}
+      return;
+    }
 
     fetchNotifications(true);
 
@@ -250,8 +261,8 @@ return;
         throw new Error('Failed to mark notification as read');
       }
 
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      setNotifications(prev =>
+        prev.map(n => (n.id === id ? { ...n, read: true } : n))
       );
     } catch (err) {
       console.error('Error marking notification as read:', err);
@@ -270,7 +281,7 @@ return;
         throw new Error('Failed to mark all notifications as read');
       }
 
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
       throw err;
@@ -288,7 +299,7 @@ return;
         throw new Error('Failed to dismiss notification');
       }
 
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setNotifications(prev => prev.filter(n => n.id !== id));
     } catch (err) {
       console.error('Error dismissing notification:', err);
       throw err;
@@ -298,8 +309,8 @@ return;
   // Load more notifications
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoading) {
-return;
-}
+      return;
+    }
     await fetchNotifications(false);
   }, [hasMore, isLoading, fetchNotifications]);
 
@@ -377,7 +388,9 @@ export interface UsePushNotificationsReturn {
 export function usePushNotifications(): UsePushNotificationsReturn {
   const [isSupported, setIsSupported] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission | null>(null);
+  const [permission, setPermission] = useState<NotificationPermission | null>(
+    null
+  );
 
   // Check support on mount
   useEffect(() => {
@@ -398,8 +411,8 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   // Request permission
   const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!isSupported) {
-return false;
-}
+      return false;
+    }
 
     try {
       const result = await Notification.requestPermission();
@@ -415,8 +428,8 @@ return false;
   // Subscribe to push notifications
   const subscribeToPush = useCallback(async () => {
     if (!isSupported || !isEnabled) {
-return;
-}
+      return;
+    }
 
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -453,8 +466,8 @@ return;
   // Unsubscribe from push notifications
   const unsubscribeFromPush = useCallback(async () => {
     if (!isSupported) {
-return;
-}
+      return;
+    }
 
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -512,9 +525,14 @@ export interface UseOfflineStatusReturn {
   /** Force sync all queued actions immediately */
   forceSync: () => Promise<void>;
   /** Resolve a sync conflict by choosing local, server, or merged data */
-  resolveConflict: (id: string, resolution: 'local' | 'server' | 'merge') => Promise<void>;
+  resolveConflict: (
+    id: string,
+    resolution: 'local' | 'server' | 'merge'
+  ) => Promise<void>;
   /** Queue an action to be synced when online */
-  queueAction: (action: Omit<QueuedAction, 'id' | 'createdAt' | 'retryCount'>) => void;
+  queueAction: (
+    action: Omit<QueuedAction, 'id' | 'createdAt' | 'retryCount'>
+  ) => void;
 }
 
 const QUEUED_ACTIONS_KEY = 'neolith-queued-actions';
@@ -577,7 +595,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
           parsed.map((a: QueuedAction) => ({
             ...a,
             createdAt: new Date(a.createdAt),
-          })),
+          }))
         );
       }
     } catch {
@@ -648,7 +666,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
       }
 
       setQueuedActions(failedActions);
-      setConflicts((prev) => [...prev, ...newConflicts]);
+      setConflicts(prev => [...prev, ...newConflicts]);
 
       if (newConflicts.length > 0) {
         setSyncStatus('conflict');
@@ -696,23 +714,23 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
         retryCount: 0,
       };
 
-      setQueuedActions((prev) => [...prev, newAction]);
+      setQueuedActions(prev => [...prev, newAction]);
 
       // Try to sync immediately if online
       if (isOnline) {
         void forceSync();
       }
     },
-    [isOnline, forceSync],
+    [isOnline, forceSync]
   );
 
   // Resolve a conflict
   const resolveConflict = useCallback(
     async (id: string, resolution: 'local' | 'server' | 'merge') => {
-      const conflict = conflicts.find((c) => c.id === id);
+      const conflict = conflicts.find(c => c.id === id);
       if (!conflict) {
-return;
-}
+        return;
+      }
 
       try {
         const response = await fetch('/api/sync/resolve', {
@@ -730,7 +748,7 @@ return;
           throw new Error('Failed to resolve conflict');
         }
 
-        setConflicts((prev) => prev.filter((c) => c.id !== id));
+        setConflicts(prev => prev.filter(c => c.id !== id));
 
         // Update sync status
         if (conflicts.length === 1) {
@@ -741,7 +759,7 @@ return;
         throw err;
       }
     },
-    [conflicts],
+    [conflicts]
   );
 
   return {
@@ -845,8 +863,8 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
   const updateSettings = useCallback(
     async (updates: Partial<NotificationSettings>) => {
       if (!settings) {
-return;
-}
+        return;
+      }
 
       const newSettings = { ...settings, ...updates };
 
@@ -871,33 +889,33 @@ return;
         throw err;
       }
     },
-    [settings],
+    [settings]
   );
 
   // Mute channel
   const muteChannel = useCallback(
     async (channelId: string) => {
       if (!settings) {
-return;
-}
+        return;
+      }
 
       const newMuted = [...settings.mutedChannels, channelId];
       await updateSettings({ mutedChannels: newMuted });
     },
-    [settings, updateSettings],
+    [settings, updateSettings]
   );
 
   // Unmute channel
   const unmuteChannel = useCallback(
     async (channelId: string) => {
       if (!settings) {
-return;
-}
+        return;
+      }
 
-      const newMuted = settings.mutedChannels.filter((id) => id !== channelId);
+      const newMuted = settings.mutedChannels.filter(id => id !== channelId);
       await updateSettings({ mutedChannels: newMuted });
     },
-    [settings, updateSettings],
+    [settings, updateSettings]
   );
 
   // Send test notification

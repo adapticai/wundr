@@ -21,7 +21,7 @@ import {
   type AdminActionType,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -41,14 +41,17 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -60,10 +63,16 @@ export async function GET(
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -85,9 +94,9 @@ export async function GET(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -114,30 +123,32 @@ export async function GET(
       const whereClause = whereConditions.join(' AND ');
 
       // Query admin actions
-      const actionsResult = await prisma.$queryRawUnsafe<Array<{
-        id: string;
-        action: string;
-        actor_id: string;
-        target_type: string | null;
-        target_id: string | null;
-        target_name: string | null;
-        metadata: unknown;
-        ip_address: string | null;
-        user_agent: string | null;
-        created_at: Date;
-      }>>(
+      const actionsResult = await prisma.$queryRawUnsafe<
+        Array<{
+          id: string;
+          action: string;
+          actor_id: string;
+          target_type: string | null;
+          target_id: string | null;
+          target_name: string | null;
+          metadata: unknown;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: Date;
+        }>
+      >(
         `SELECT id, action, actor_id, target_type, target_id, target_name, metadata, ip_address, user_agent, created_at
          FROM admin_actions
          WHERE ${whereClause}
          ORDER BY created_at DESC
          LIMIT ${limit}
-         OFFSET ${offset}`,
+         OFFSET ${offset}`
       );
 
       // Get total count
-      const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-        `SELECT COUNT(*) as count FROM admin_actions WHERE ${whereClause}`,
-      );
+      const countResult = await prisma.$queryRawUnsafe<
+        Array<{ count: bigint }>
+      >(`SELECT COUNT(*) as count FROM admin_actions WHERE ${whereClause}`);
       const total = Number(countResult[0]?.count || 0);
 
       // Fetch actor details
@@ -153,7 +164,11 @@ export async function GET(
         id: a.id,
         action: a.action as AdminActionType,
         actorId: a.actor_id,
-        actor: actorMap.get(a.actor_id) || { id: a.actor_id, name: null, email: null },
+        actor: actorMap.get(a.actor_id) || {
+          id: a.actor_id,
+          name: null,
+          email: null,
+        },
         targetType: a.target_type,
         targetId: a.target_id,
         targetName: a.target_name,
@@ -167,7 +182,8 @@ export async function GET(
     } catch {
       // admin_actions table doesn't exist yet
       // Return empty actions from workspace settings as fallback
-      const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+      const settings =
+        (membership.workspace.settings as Record<string, unknown>) || {};
       const activityLog = (settings.activityLog as AdminAction[]) || [];
 
       // Apply filters
@@ -181,15 +197,22 @@ export async function GET(
       }
       if (from) {
         const fromDate = new Date(from);
-        filteredActions = filteredActions.filter(a => new Date(a.createdAt) >= fromDate);
+        filteredActions = filteredActions.filter(
+          a => new Date(a.createdAt) >= fromDate
+        );
       }
       if (to) {
         const toDate = new Date(to);
-        filteredActions = filteredActions.filter(a => new Date(a.createdAt) <= toDate);
+        filteredActions = filteredActions.filter(
+          a => new Date(a.createdAt) <= toDate
+        );
       }
 
       // Sort by date descending
-      filteredActions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      filteredActions.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
 
       const total = filteredActions.length;
       const paginatedActions = filteredActions.slice(offset, offset + limit);
@@ -197,10 +220,16 @@ export async function GET(
       return NextResponse.json({ actions: paginatedActions, total });
     }
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/admin/activity] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/admin/activity] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch activity log', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch activity log',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

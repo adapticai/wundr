@@ -7,7 +7,7 @@ import {
   Hash,
   UserPlus,
   Workflow,
-  Search
+  Search,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -63,7 +63,9 @@ export function QuickActionsWidget({
       onSearchClick();
     } else {
       // Focus global search input if available
-      const searchInput = document.querySelector<HTMLInputElement>('[data-global-search]');
+      const searchInput = document.querySelector<HTMLInputElement>(
+        '[data-global-search]'
+      );
       if (searchInput) {
         searchInput.focus();
       }
@@ -73,38 +75,38 @@ export function QuickActionsWidget({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Quick Actions</CardTitle>
+        <CardTitle className='text-lg'>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
+        <div className='grid grid-cols-2 gap-3'>
           <ActionButton
-            icon={<MessageSquarePlus className="h-5 w-5" />}
-            label="New Message"
+            icon={<MessageSquarePlus className='h-5 w-5' />}
+            label='New Message'
             onClick={handleNewMessage}
-            shortcut="⌘K"
+            shortcut='⌘K'
           />
           <ActionButton
-            icon={<Hash className="h-5 w-5" />}
-            label="Create Channel"
+            icon={<Hash className='h-5 w-5' />}
+            label='Create Channel'
             onClick={handleCreateChannel}
           />
           <ActionButton
-            icon={<UserPlus className="h-5 w-5" />}
-            label="Invite Member"
+            icon={<UserPlus className='h-5 w-5' />}
+            label='Invite Member'
             onClick={handleInviteMember}
           />
           {canCreateWorkflow && (
             <ActionButton
-              icon={<Workflow className="h-5 w-5" />}
-              label="New Workflow"
+              icon={<Workflow className='h-5 w-5' />}
+              label='New Workflow'
               onClick={handleNewWorkflow}
             />
           )}
           <ActionButton
-            icon={<Search className="h-5 w-5" />}
-            label="Search"
+            icon={<Search className='h-5 w-5' />}
+            label='Search'
             onClick={handleSearch}
-            shortcut="⌘/"
+            shortcut='⌘/'
           />
         </div>
       </CardContent>
@@ -122,15 +124,17 @@ interface ActionButtonProps {
 function ActionButton({ icon, label, onClick, shortcut }: ActionButtonProps) {
   return (
     <Button
-      variant="outline"
-      className="flex flex-col items-center justify-center h-24 gap-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+      variant='outline'
+      className='flex flex-col items-center justify-center h-24 gap-2 hover:bg-accent hover:text-accent-foreground transition-colors'
       onClick={onClick}
       aria-label={shortcut ? `${label} (${shortcut})` : label}
     >
-      <div className="text-muted-foreground">{icon}</div>
-      <span className="text-xs font-medium text-center leading-tight">{label}</span>
+      <div className='text-muted-foreground'>{icon}</div>
+      <span className='text-xs font-medium text-center leading-tight'>
+        {label}
+      </span>
       {shortcut && (
-        <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded">
+        <kbd className='hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded'>
           {shortcut}
         </kbd>
       )}

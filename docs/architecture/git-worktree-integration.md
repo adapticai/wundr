@@ -2,9 +2,12 @@
 
 ## Executive Summary
 
-This architectural specification defines a comprehensive git-worktree isolation strategy for Claude Code subagents, enabling true parallel execution without file conflicts, merge issues, or coordination overhead.
+This architectural specification defines a comprehensive git-worktree isolation strategy for Claude
+Code subagents, enabling true parallel execution without file conflicts, merge issues, or
+coordination overhead.
 
 **Key Benefits:**
+
 - 🔄 **True Parallelism**: Each agent works in isolated worktree
 - 🛡️ **Zero Conflicts**: File-level isolation prevents concurrent edit conflicts
 - ⚡ **Performance**: 2.8-4.4x speed improvement through parallel operations
@@ -45,6 +48,7 @@ project-root/
 ```
 
 **Key Properties:**
+
 - Each worktree has its own working directory and branch
 - All worktrees share the same `.git` repository (objects, refs, config)
 - Agents cannot interfere with each other's file operations
@@ -73,8 +77,7 @@ project-root/
 
 ### Phase 1: Initialization
 
-**When:** Before spawning parallel agents
-**Who:** Coordinator/main Claude Code instance
+**When:** Before spawning parallel agents **Who:** Coordinator/main Claude Code instance
 
 ```bash
 #!/bin/bash
@@ -100,8 +103,7 @@ echo "✅ Worktree infrastructure initialized at ${WORKTREE_BASE}"
 
 ### Phase 2: Agent Worktree Creation
 
-**When:** Immediately before spawning each agent
-**Who:** Task orchestrator or individual agent
+**When:** Immediately before spawning each agent **Who:** Task orchestrator or individual agent
 
 ```bash
 #!/bin/bash
@@ -161,8 +163,7 @@ fi
 
 ### Phase 3: Agent Work Execution
 
-**When:** During agent task execution
-**Who:** Individual agent
+**When:** During agent task execution **Who:** Individual agent
 
 ```bash
 #!/bin/bash
@@ -200,8 +201,7 @@ fi
 
 ### Phase 4: Merge and Integration
 
-**When:** After agent completes work
-**Who:** Coordinator or merge manager
+**When:** After agent completes work **Who:** Coordinator or merge manager
 
 ```bash
 #!/bin/bash
@@ -253,8 +253,7 @@ fi
 
 ### Phase 5: Cleanup
 
-**When:** After successful merge or when aborting agent work
-**Who:** Coordinator or cleanup manager
+**When:** After successful merge or when aborting agent work **Who:** Coordinator or cleanup manager
 
 ```bash
 #!/bin/bash
@@ -319,6 +318,7 @@ echo "✅ Cleanup complete"
 **Format:** `{agent-type}-{task-identifier}-{sequence}`
 
 **Examples:**
+
 ```
 coder-auth-001          # First coder task for auth feature
 tester-auth-002         # Tester task for auth tests
@@ -328,6 +328,7 @@ architect-system-005    # Architect task for system design
 ```
 
 **Rules:**
+
 - Use kebab-case for all components
 - Keep agent-type consistent with MCP agent types
 - Task identifier should be descriptive but concise (max 20 chars)
@@ -339,6 +340,7 @@ architect-system-005    # Architect task for system design
 **Format:** `agents/{agent-type}/{task-identifier}-{sequence}`
 
 **Examples:**
+
 ```
 agents/coder/auth-001
 agents/tester/auth-002
@@ -347,6 +349,7 @@ agents/architect/system-005
 ```
 
 **Rules:**
+
 - All lowercase
 - Forward slashes for hierarchy
 - Matches worktree naming pattern
@@ -836,16 +839,16 @@ cd "${REPO_ROOT}"
 
 ### When to Use Worktrees vs Shared Workspace
 
-| Criteria | Use Worktrees | Use Shared Workspace |
-|----------|---------------|----------------------|
-| **Number of agents** | 2+ parallel agents | Single agent |
-| **File overlap** | Agents edit same files | Agents edit different files |
-| **Execution mode** | Parallel/concurrent | Sequential |
-| **Task duration** | Long-running (>1 min) | Quick tasks (<1 min) |
-| **Coordination complexity** | High (multiple features) | Low (single feature) |
-| **Merge frequency** | Batch merge at end | Continuous integration |
-| **Resource availability** | Sufficient disk space | Limited disk space |
-| **Risk tolerance** | Low (isolation needed) | High (can handle conflicts) |
+| Criteria                    | Use Worktrees            | Use Shared Workspace        |
+| --------------------------- | ------------------------ | --------------------------- |
+| **Number of agents**        | 2+ parallel agents       | Single agent                |
+| **File overlap**            | Agents edit same files   | Agents edit different files |
+| **Execution mode**          | Parallel/concurrent      | Sequential                  |
+| **Task duration**           | Long-running (>1 min)    | Quick tasks (<1 min)        |
+| **Coordination complexity** | High (multiple features) | Low (single feature)        |
+| **Merge frequency**         | Batch merge at end       | Continuous integration      |
+| **Resource availability**   | Sufficient disk space    | Limited disk space          |
+| **Risk tolerance**          | Low (isolation needed)   | High (can handle conflicts) |
 
 ### Detailed Decision Tree
 
@@ -1839,7 +1842,10 @@ echo "✅ Development cycle complete"
 
 ## Conclusion
 
-This git-worktree integration strategy enables Claude Code subagents to work in true isolation, eliminating conflicts while maintaining code quality and merge integrity. By following these patterns, your agent swarms can achieve 2.8-4.4x performance improvements through safe parallel execution.
+This git-worktree integration strategy enables Claude Code subagents to work in true isolation,
+eliminating conflicts while maintaining code quality and merge integrity. By following these
+patterns, your agent swarms can achieve 2.8-4.4x performance improvements through safe parallel
+execution.
 
 **Key Takeaways:**
 
@@ -1854,7 +1860,5 @@ For questions or improvements, see: `/Users/iroselli/wundr/docs/architecture/`
 
 ---
 
-**Document Version:** 1.0.0
-**Last Updated:** 2025-11-21
-**Author:** Claude Code System Architect
+**Document Version:** 1.0.0 **Last Updated:** 2025-11-21 **Author:** Claude Code System Architect
 **Status:** Production Ready

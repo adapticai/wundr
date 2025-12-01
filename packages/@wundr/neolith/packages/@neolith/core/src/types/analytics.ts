@@ -139,7 +139,11 @@ export interface UserMetrics {
   weeklyActiveUsers: number;
   monthlyActiveUsers: number;
   averageSessionDuration: number;
-  topContributors: Array<{ userId: string; userName: string; messageCount: number }>;
+  topContributors: Array<{
+    userId: string;
+    userName: string;
+    messageCount: number;
+  }>;
 }
 
 export interface ChannelMetrics {
@@ -147,7 +151,12 @@ export interface ChannelMetrics {
   public: number;
   private: number;
   newChannels: number;
-  mostActive: Array<{ channelId: string; channelName: string; messageCount: number; memberCount: number }>;
+  mostActive: Array<{
+    channelId: string;
+    channelName: string;
+    messageCount: number;
+    memberCount: number;
+  }>;
   averageMessagesPerChannel: number;
 }
 
@@ -155,7 +164,12 @@ export interface FileMetrics {
   totalUploaded: number;
   totalSize: number;
   byType: Array<{ type: string; count: number; size: number }>;
-  topUploaders: Array<{ userId: string; userName: string; count: number; size: number }>;
+  topUploaders: Array<{
+    userId: string;
+    userName: string;
+    count: number;
+    size: number;
+  }>;
   averageSizeBytes: number;
 }
 
@@ -184,7 +198,13 @@ export interface OrchestratorMetrics {
   }>;
 }
 
-export type AnalyticsPeriod = 'day' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
+export type AnalyticsPeriod =
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'quarter'
+  | 'year'
+  | 'custom';
 
 export interface AnalyticsQuery {
   workspaceId: string;
@@ -309,7 +329,9 @@ export interface InsightRecommendation {
 /**
  * Type guard to check if value is a valid AnalyticsEventType
  */
-export function isAnalyticsEventType(value: unknown): value is AnalyticsEventType {
+export function isAnalyticsEventType(
+  value: unknown
+): value is AnalyticsEventType {
   const validTypes: AnalyticsEventType[] = [
     'message.sent',
     'message.received',
@@ -333,15 +355,27 @@ export function isAnalyticsEventType(value: unknown): value is AnalyticsEventTyp
     'user.login',
     'user.logout',
   ];
-  return typeof value === 'string' && validTypes.includes(value as AnalyticsEventType);
+  return (
+    typeof value === 'string' &&
+    validTypes.includes(value as AnalyticsEventType)
+  );
 }
 
 /**
  * Type guard to check if value is a valid AnalyticsPeriod
  */
 export function isAnalyticsPeriod(value: unknown): value is AnalyticsPeriod {
-  const validPeriods: AnalyticsPeriod[] = ['day', 'week', 'month', 'quarter', 'year', 'custom'];
-  return typeof value === 'string' && validPeriods.includes(value as AnalyticsPeriod);
+  const validPeriods: AnalyticsPeriod[] = [
+    'day',
+    'week',
+    'month',
+    'quarter',
+    'year',
+    'custom',
+  ];
+  return (
+    typeof value === 'string' && validPeriods.includes(value as AnalyticsPeriod)
+  );
 }
 
 /**
@@ -349,8 +383,8 @@ export function isAnalyticsPeriod(value: unknown): value is AnalyticsPeriod {
  */
 export function isTrendData(value: unknown): value is TrendData {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const t = value as TrendData;
   return (
     typeof t.current === 'number' &&
@@ -366,8 +400,8 @@ return false;
  */
 export function isAnalyticsQuery(value: unknown): value is AnalyticsQuery {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const q = value as AnalyticsQuery;
   return typeof q.workspaceId === 'string' && isAnalyticsPeriod(q.period);
 }
@@ -388,10 +422,12 @@ export const DEFAULT_ANALYTICS_QUERY: Partial<AnalyticsQuery> = {
  * Redis key patterns for analytics data
  */
 export const ANALYTICS_REDIS_KEYS = {
-  dailyEvents: (workspaceId: string, date: string) => `analytics:${workspaceId}:daily:${date}`,
+  dailyEvents: (workspaceId: string, date: string) =>
+    `analytics:${workspaceId}:daily:${date}`,
   hourlyEvents: (workspaceId: string, date: string, hour: number) =>
     `analytics:${workspaceId}:hourly:${date}:${hour}`,
-  activeUsers: (workspaceId: string, date: string) => `analytics:${workspaceId}:active:${date}`,
+  activeUsers: (workspaceId: string, date: string) =>
+    `analytics:${workspaceId}:active:${date}`,
   realTimeStats: (workspaceId: string) => `analytics:${workspaceId}:realtime`,
 } as const;
 
@@ -414,7 +450,14 @@ export const ANALYTICS_REDIS_TTL_SECONDS = 86400 * 7;
  * Event categories for grouping analytics
  */
 export const ANALYTICS_EVENT_CATEGORIES = {
-  messaging: ['message.sent', 'message.received', 'message.edited', 'message.deleted', 'reaction.added', 'thread.created'],
+  messaging: [
+    'message.sent',
+    'message.received',
+    'message.edited',
+    'message.deleted',
+    'reaction.added',
+    'thread.created',
+  ],
   files: ['file.uploaded', 'file.downloaded'],
   channels: ['channel.created', 'channel.joined', 'channel.left'],
   calls: ['call.started', 'call.joined', 'call.ended'],

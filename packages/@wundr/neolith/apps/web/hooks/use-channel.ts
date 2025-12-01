@@ -138,9 +138,15 @@ export interface UseChannelMembersReturn {
  */
 export interface UseChannelMutationsReturn {
   /** Create a new channel */
-  createChannel: (workspaceId: string, input: CreateChannelInput) => Promise<Channel | null>;
+  createChannel: (
+    workspaceId: string,
+    input: CreateChannelInput
+  ) => Promise<Channel | null>;
   /** Update a channel */
-  updateChannel: (channelId: string, input: UpdateChannelInput) => Promise<Channel | null>;
+  updateChannel: (
+    channelId: string,
+    input: UpdateChannelInput
+  ) => Promise<Channel | null>;
   /** Delete a channel */
   deleteChannel: (channelId: string) => Promise<boolean>;
   /** Archive a channel */
@@ -150,11 +156,19 @@ export interface UseChannelMutationsReturn {
   /** Leave a channel */
   leaveChannel: (channelId: string) => Promise<boolean>;
   /** Invite members to a channel */
-  inviteMembers: (channelId: string, userIds: string[], role?: 'admin' | 'member') => Promise<boolean>;
+  inviteMembers: (
+    channelId: string,
+    userIds: string[],
+    role?: 'admin' | 'member'
+  ) => Promise<boolean>;
   /** Remove a member from a channel */
   removeMember: (channelId: string, userId: string) => Promise<boolean>;
   /** Change a member's role */
-  changeMemberRole: (channelId: string, userId: string, role: 'admin' | 'member') => Promise<boolean>;
+  changeMemberRole: (
+    channelId: string,
+    userId: string,
+    role: 'admin' | 'member'
+  ) => Promise<boolean>;
   /** Whether a mutation is in progress */
   isLoading: boolean;
   /** Error if mutation failed */
@@ -184,7 +198,9 @@ export interface UseDirectMessagesReturn {
   /** Refetch direct messages */
   refetch: () => Promise<void>;
   /** Create a new direct message channel */
-  createDirectMessage: (userIds: string[]) => Promise<DirectMessageChannel | null>;
+  createDirectMessage: (
+    userIds: string[]
+  ) => Promise<DirectMessageChannel | null>;
 }
 
 /**
@@ -245,8 +261,12 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch channels' }));
-        throw new Error(errorData.error || errorData.message || 'Failed to fetch channels');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to fetch channels' }));
+        throw new Error(
+          errorData.error || errorData.message || 'Failed to fetch channels'
+        );
       }
 
       const result: ApiResponse<ChannelApiResponse[]> = await response.json();
@@ -255,34 +275,38 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
       // Normalize API response to match frontend types
       // API returns uppercase types (PUBLIC, PRIVATE), frontend expects lowercase (public, private)
       setChannels(
-        channelsData.map((c): Channel => ({
-          id: c.id,
-          name: c.name,
-          description: c.description,
-          type: c.type?.toLowerCase() as Channel['type'],
-          workspaceId: c.workspaceId || workspaceId,
-          createdById: c.createdById || '',
-          createdAt: new Date(c.createdAt),
-          updatedAt: new Date(c.updatedAt),
-          memberCount: c.memberCount ?? c.members?.length ?? 0,
-          unreadCount: c.unreadCount ?? 0,
-          isStarred: c.isStarred,
-          isArchived: c.isArchived,
-          members: (c.members || []).map((m): ChannelMember => ({
-            id: m.id,
-            userId: m.userId,
-            channelId: c.id,
-            role: (m.role as ChannelMember['role']) || 'member',
-            joinedAt: new Date(m.joinedAt),
-            user: {
-              id: m.user.id,
-              name: m.user.displayName || m.user.name || 'Unknown',
-              image: m.user.avatarUrl || m.user.image,
-              email: m.user.email || '',
-              status: (m.user.status as User['status']) || 'offline',
-            },
-          })),
-        })),
+        channelsData.map(
+          (c): Channel => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            type: c.type?.toLowerCase() as Channel['type'],
+            workspaceId: c.workspaceId || workspaceId,
+            createdById: c.createdById || '',
+            createdAt: new Date(c.createdAt),
+            updatedAt: new Date(c.updatedAt),
+            memberCount: c.memberCount ?? c.members?.length ?? 0,
+            unreadCount: c.unreadCount ?? 0,
+            isStarred: c.isStarred,
+            isArchived: c.isArchived,
+            members: (c.members || []).map(
+              (m): ChannelMember => ({
+                id: m.id,
+                userId: m.userId,
+                channelId: c.id,
+                role: (m.role as ChannelMember['role']) || 'member',
+                joinedAt: new Date(m.joinedAt),
+                user: {
+                  id: m.user.id,
+                  name: m.user.displayName || m.user.name || 'Unknown',
+                  image: m.user.avatarUrl || m.user.image,
+                  email: m.user.email || '',
+                  status: (m.user.status as User['status']) || 'offline',
+                },
+              })
+            ),
+          })
+        )
       );
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -301,9 +325,11 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
 
   // Categorize channels
   const { publicChannels, privateChannels, starredChannels } = useMemo(() => {
-    const starred = channels.filter((c) => c.isStarred);
-    const publicCh = channels.filter((c) => c.type === 'public' && !c.isStarred);
-    const privateCh = channels.filter((c) => c.type === 'private' && !c.isStarred);
+    const starred = channels.filter(c => c.isStarred);
+    const publicCh = channels.filter(c => c.type === 'public' && !c.isStarred);
+    const privateCh = channels.filter(
+      c => c.type === 'private' && !c.isStarred
+    );
 
     return {
       starredChannels: starred,
@@ -347,8 +373,12 @@ export function useChannel(channelId: string): UseChannelReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch channel' }));
-        throw new Error(errorData.error || errorData.message || 'Failed to fetch channel');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to fetch channel' }));
+        throw new Error(
+          errorData.error || errorData.message || 'Failed to fetch channel'
+        );
       }
 
       const result: ApiResponse<ChannelApiResponse> = await response.json();
@@ -372,20 +402,22 @@ export function useChannel(channelId: string): UseChannelReturn {
         unreadCount: c.unreadCount ?? 0,
         isStarred: c.isStarred,
         isArchived: c.isArchived,
-        members: (c.members || []).map((m): ChannelMember => ({
-          id: m.id,
-          userId: m.userId,
-          channelId: c.id,
-          role: (m.role as ChannelMember['role']) || 'member',
-          joinedAt: new Date(m.joinedAt),
-          user: {
-            id: m.user.id,
-            name: m.user.displayName || m.user.name || 'Unknown',
-            image: m.user.avatarUrl || m.user.image,
-            email: m.user.email || '',
-            status: (m.user.status as User['status']) || 'offline',
-          },
-        })),
+        members: (c.members || []).map(
+          (m): ChannelMember => ({
+            id: m.id,
+            userId: m.userId,
+            channelId: c.id,
+            role: (m.role as ChannelMember['role']) || 'member',
+            joinedAt: new Date(m.joinedAt),
+            user: {
+              id: m.user.id,
+              name: m.user.displayName || m.user.name || 'Unknown',
+              image: m.user.avatarUrl || m.user.image,
+              email: m.user.email || '',
+              status: (m.user.status as User['status']) || 'offline',
+            },
+          })
+        ),
       });
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -435,28 +467,36 @@ export function useChannelMembers(channelId: string): UseChannelMembersReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch members' }));
-        throw new Error(errorData.error || errorData.message || 'Failed to fetch members');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to fetch members' }));
+        throw new Error(
+          errorData.error || errorData.message || 'Failed to fetch members'
+        );
       }
 
-      const result: ApiResponse<ChannelMemberApiResponse[]> & { members?: ChannelMemberApiResponse[] } = await response.json();
+      const result: ApiResponse<ChannelMemberApiResponse[]> & {
+        members?: ChannelMemberApiResponse[];
+      } = await response.json();
       const membersData = result.data || result.members || [];
 
       setMembers(
-        membersData.map((m): ChannelMember => ({
-          id: m.id,
-          userId: m.userId,
-          channelId: channelId,
-          role: (m.role as ChannelMember['role']) || 'member',
-          joinedAt: new Date(m.joinedAt),
-          user: {
-            id: m.user.id,
-            name: m.user.displayName || m.user.name || 'Unknown',
-            image: m.user.avatarUrl || m.user.image,
-            email: m.user.email || '',
-            status: (m.user.status as User['status']) || 'offline',
-          },
-        })),
+        membersData.map(
+          (m): ChannelMember => ({
+            id: m.id,
+            userId: m.userId,
+            channelId: channelId,
+            role: (m.role as ChannelMember['role']) || 'member',
+            joinedAt: new Date(m.joinedAt),
+            user: {
+              id: m.user.id,
+              name: m.user.displayName || m.user.name || 'Unknown',
+              image: m.user.avatarUrl || m.user.image,
+              email: m.user.email || '',
+              status: (m.user.status as User['status']) || 'offline',
+            },
+          })
+        )
       );
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -476,9 +516,14 @@ export function useChannelMembers(channelId: string): UseChannelMembersReturn {
   // Separate online and offline members
   const { onlineMembers, offlineMembers } = useMemo(() => {
     const online = members.filter(
-      (m) => m.user.status === 'online' || m.user.status === 'busy' || m.user.status === 'away',
+      m =>
+        m.user.status === 'online' ||
+        m.user.status === 'busy' ||
+        m.user.status === 'away'
     );
-    const offline = members.filter((m) => m.user.status === 'offline' || !m.user.status);
+    const offline = members.filter(
+      m => m.user.status === 'offline' || !m.user.status
+    );
 
     return { onlineMembers: online, offlineMembers: offline };
   }, [members]);
@@ -501,7 +546,10 @@ export function useChannelMutations(): UseChannelMutationsReturn {
   const [error, setError] = useState<Error | null>(null);
 
   const createChannel = useCallback(
-    async (workspaceId: string, input: CreateChannelInput): Promise<Channel | null> => {
+    async (
+      workspaceId: string,
+      input: CreateChannelInput
+    ): Promise<Channel | null> => {
       setIsLoading(true);
       setError(null);
 
@@ -509,7 +557,11 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         // Transform type to uppercase for API
         const apiInput = {
           ...input,
-          type: input.type?.toUpperCase() as 'PUBLIC' | 'PRIVATE' | 'DM' | 'HUDDLE',
+          type: input.type?.toUpperCase() as
+            | 'PUBLIC'
+            | 'PRIVATE'
+            | 'DM'
+            | 'HUDDLE',
           workspaceId,
         };
 
@@ -520,8 +572,12 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Failed to create channel' }));
-          throw new Error(errorData.error || errorData.message || 'Failed to create channel');
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: 'Failed to create channel' }));
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to create channel'
+          );
         }
 
         const result: ApiResponse<ChannelApiResponse> = await response.json();
@@ -535,29 +591,33 @@ export function useChannelMutations(): UseChannelMutationsReturn {
           id: channelData.id,
           name: channelData.name,
           description: channelData.description,
-          type: (channelData.type?.toLowerCase() as Channel['type']) || 'public',
+          type:
+            (channelData.type?.toLowerCase() as Channel['type']) || 'public',
           workspaceId: channelData.workspaceId || workspaceId,
           createdById: channelData.createdById || '',
           createdAt: new Date(channelData.createdAt),
           updatedAt: new Date(channelData.updatedAt),
-          memberCount: channelData.memberCount ?? channelData.members?.length ?? 0,
+          memberCount:
+            channelData.memberCount ?? channelData.members?.length ?? 0,
           unreadCount: channelData.unreadCount ?? 0,
           isStarred: channelData.isStarred,
           isArchived: channelData.isArchived,
-          members: (channelData.members || []).map((m): ChannelMember => ({
-            id: m.id,
-            userId: m.userId,
-            channelId: channelData.id,
-            role: (m.role as ChannelMember['role']) || 'member',
-            joinedAt: new Date(m.joinedAt),
-            user: {
-              id: m.user.id,
-              name: m.user.displayName || m.user.name || 'Unknown',
-              image: m.user.avatarUrl || m.user.image,
-              email: m.user.email || '',
-              status: (m.user.status as User['status']) || 'offline',
-            },
-          })),
+          members: (channelData.members || []).map(
+            (m): ChannelMember => ({
+              id: m.id,
+              userId: m.userId,
+              channelId: channelData.id,
+              role: (m.role as ChannelMember['role']) || 'member',
+              joinedAt: new Date(m.joinedAt),
+              user: {
+                id: m.user.id,
+                name: m.user.displayName || m.user.name || 'Unknown',
+                image: m.user.avatarUrl || m.user.image,
+                email: m.user.email || '',
+                status: (m.user.status as User['status']) || 'offline',
+              },
+            })
+          ),
         };
         return channel;
       } catch (err) {
@@ -567,11 +627,14 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const updateChannel = useCallback(
-    async (channelId: string, input: UpdateChannelInput): Promise<Channel | null> => {
+    async (
+      channelId: string,
+      input: UpdateChannelInput
+    ): Promise<Channel | null> => {
       setIsLoading(true);
       setError(null);
 
@@ -583,8 +646,12 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Failed to update channel' }));
-          throw new Error(errorData.error || errorData.message || 'Failed to update channel');
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: 'Failed to update channel' }));
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to update channel'
+          );
         }
 
         const result: ApiResponse<ChannelApiResponse> = await response.json();
@@ -598,29 +665,33 @@ export function useChannelMutations(): UseChannelMutationsReturn {
           id: channelData.id,
           name: channelData.name,
           description: channelData.description,
-          type: (channelData.type?.toLowerCase() as Channel['type']) || 'public',
+          type:
+            (channelData.type?.toLowerCase() as Channel['type']) || 'public',
           workspaceId: channelData.workspaceId || '',
           createdById: channelData.createdById || '',
           createdAt: new Date(channelData.createdAt),
           updatedAt: new Date(channelData.updatedAt),
-          memberCount: channelData.memberCount ?? channelData.members?.length ?? 0,
+          memberCount:
+            channelData.memberCount ?? channelData.members?.length ?? 0,
           unreadCount: channelData.unreadCount ?? 0,
           isStarred: channelData.isStarred,
           isArchived: channelData.isArchived,
-          members: (channelData.members || []).map((m): ChannelMember => ({
-            id: m.id,
-            userId: m.userId,
-            channelId: channelData.id,
-            role: (m.role as ChannelMember['role']) || 'member',
-            joinedAt: new Date(m.joinedAt),
-            user: {
-              id: m.user.id,
-              name: m.user.displayName || m.user.name || 'Unknown',
-              image: m.user.avatarUrl || m.user.image,
-              email: m.user.email || '',
-              status: (m.user.status as User['status']) || 'offline',
-            },
-          })),
+          members: (channelData.members || []).map(
+            (m): ChannelMember => ({
+              id: m.id,
+              userId: m.userId,
+              channelId: channelData.id,
+              role: (m.role as ChannelMember['role']) || 'member',
+              joinedAt: new Date(m.joinedAt),
+              user: {
+                id: m.user.id,
+                name: m.user.displayName || m.user.name || 'Unknown',
+                image: m.user.avatarUrl || m.user.image,
+                email: m.user.email || '',
+                status: (m.user.status as User['status']) || 'offline',
+              },
+            })
+          ),
         };
         return channel;
       } catch (err) {
@@ -630,56 +701,62 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
-  const deleteChannel = useCallback(async (channelId: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
+  const deleteChannel = useCallback(
+    async (channelId: string): Promise<boolean> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/channels/${channelId}`, {
-        method: 'DELETE',
-      });
+      try {
+        const response = await fetch(`/api/channels/${channelId}`, {
+          method: 'DELETE',
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete channel');
+        if (!response.ok) {
+          throw new Error('Failed to delete channel');
+        }
+
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        return false;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    []
+  );
 
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const archiveChannel = useCallback(
+    async (channelId: string): Promise<boolean> => {
+      setIsLoading(true);
+      setError(null);
 
-  const archiveChannel = useCallback(async (channelId: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
+      try {
+        // Archive via PATCH to update isArchived field
+        const response = await fetch(`/api/channels/${channelId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isArchived: true }),
+        });
 
-    try {
-      // Archive via PATCH to update isArchived field
-      const response = await fetch(`/api/channels/${channelId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isArchived: true }),
-      });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to archive channel');
+        }
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to archive channel');
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const toggleStar = useCallback(
     async (channelId: string, isStarred: boolean): Promise<boolean> => {
@@ -703,54 +780,21 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
-  const leaveChannel = useCallback(async (channelId: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/channels/${channelId}/leave`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to leave channel');
-      }
-
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const inviteMembers = useCallback(
-    async (channelId: string, userIds: string[], role: 'admin' | 'member' = 'member'): Promise<boolean> => {
+  const leaveChannel = useCallback(
+    async (channelId: string): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // API expects single userId, so we need to make multiple requests
-        const promises = userIds.map((userId) =>
-          fetch(`/api/channels/${channelId}/members`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, role }),
-          }),
-        );
+        const response = await fetch(`/api/channels/${channelId}/leave`, {
+          method: 'POST',
+        });
 
-        const responses = await Promise.all(promises);
-
-        // Check if all succeeded
-        const allSucceeded = responses.every((r) => r.ok);
-        if (!allSucceeded) {
-          const failedResponses = responses.filter((r) => !r.ok);
-          const errors = await Promise.all(failedResponses.map((r) => r.json()));
-          throw new Error(errors[0]?.message || 'Failed to invite some members');
+        if (!response.ok) {
+          throw new Error('Failed to leave channel');
         }
 
         return true;
@@ -761,7 +805,49 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
+  );
+
+  const inviteMembers = useCallback(
+    async (
+      channelId: string,
+      userIds: string[],
+      role: 'admin' | 'member' = 'member'
+    ): Promise<boolean> => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // API expects single userId, so we need to make multiple requests
+        const promises = userIds.map(userId =>
+          fetch(`/api/channels/${channelId}/members`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, role }),
+          })
+        );
+
+        const responses = await Promise.all(promises);
+
+        // Check if all succeeded
+        const allSucceeded = responses.every(r => r.ok);
+        if (!allSucceeded) {
+          const failedResponses = responses.filter(r => !r.ok);
+          const errors = await Promise.all(failedResponses.map(r => r.json()));
+          throw new Error(
+            errors[0]?.message || 'Failed to invite some members'
+          );
+        }
+
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
   );
 
   const removeMember = useCallback(
@@ -770,9 +856,12 @@ export function useChannelMutations(): UseChannelMutationsReturn {
       setError(null);
 
       try {
-        const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
-          method: 'DELETE',
-        });
+        const response = await fetch(
+          `/api/channels/${channelId}/members/${userId}`,
+          {
+            method: 'DELETE',
+          }
+        );
 
         if (!response.ok) {
           const error = await response.json();
@@ -787,11 +876,15 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const changeMemberRole = useCallback(
-    async (channelId: string, userId: string, role: 'admin' | 'member'): Promise<boolean> => {
+    async (
+      channelId: string,
+      userId: string,
+      role: 'admin' | 'member'
+    ): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
 
@@ -799,11 +892,14 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         // Convert lowercase role to uppercase for API
         const apiRole = role.toUpperCase() as 'ADMIN' | 'MEMBER';
 
-        const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: apiRole }),
-        });
+        const response = await fetch(
+          `/api/channels/${channelId}/members/${userId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: apiRole }),
+          }
+        );
 
         if (!response.ok) {
           const error = await response.json();
@@ -818,7 +914,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {
@@ -839,7 +935,10 @@ export function useChannelMutations(): UseChannelMutationsReturn {
 /**
  * Hook for user permissions in a channel
  */
-export function useChannelPermissions(channelId: string, currentUserId: string): UseChannelPermissionsReturn {
+export function useChannelPermissions(
+  channelId: string,
+  currentUserId: string
+): UseChannelPermissionsReturn {
   const [permissions, setPermissions] = useState<ChannelPermissions>({
     canEdit: false,
     canDelete: false,
@@ -894,8 +993,12 @@ export function useChannelPermissions(channelId: string, currentUserId: string):
 /**
  * Hook for direct messages
  */
-export function useDirectMessages(workspaceId: string): UseDirectMessagesReturn {
-  const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>([]);
+export function useDirectMessages(
+  workspaceId: string
+): UseDirectMessagesReturn {
+  const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -915,8 +1018,14 @@ export function useDirectMessages(workspaceId: string): UseDirectMessagesReturn 
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch direct messages' }));
-        throw new Error(errorData.error || errorData.message || 'Failed to fetch direct messages');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to fetch direct messages' }));
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to fetch direct messages'
+        );
       }
 
       const result: ApiResponse<DirectMessageChannel[]> = await response.json();
@@ -951,14 +1060,14 @@ export function useDirectMessages(workspaceId: string): UseDirectMessagesReturn 
 
         const result = await response.json();
         const dmChannel = result.data;
-        setDirectMessages((prev) => [dmChannel, ...prev]);
+        setDirectMessages(prev => [dmChannel, ...prev]);
         return dmChannel;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -973,7 +1082,9 @@ export function useDirectMessages(workspaceId: string): UseDirectMessagesReturn 
 /**
  * Hook for searching workspace users
  */
-export function useWorkspaceUsers(workspaceId: string): UseWorkspaceUsersReturn {
+export function useWorkspaceUsers(
+  workspaceId: string
+): UseWorkspaceUsersReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -988,7 +1099,7 @@ export function useWorkspaceUsers(workspaceId: string): UseWorkspaceUsersReturn 
 
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`,
+          `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`
         );
         if (!response.ok) {
           throw new Error('Failed to search users');
@@ -1002,13 +1113,13 @@ export function useWorkspaceUsers(workspaceId: string): UseWorkspaceUsersReturn 
         setIsLoading(false);
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   const fetchAllUsers = useCallback(async () => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
 
@@ -1041,7 +1152,7 @@ return;
  */
 export function useWorkspaceMembersForDM(
   workspaceId: string,
-  currentUserId: string | undefined,
+  currentUserId: string | undefined
 ): UseWorkspaceMembersForDMReturn {
   const [members, setMembers] = useState<WorkspaceMemberForDM[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -1061,16 +1172,27 @@ export function useWorkspaceMembersForDM(
     try {
       // Fetch both workspace members and existing DMs in parallel
       const [membersResponse, dmsResponse] = await Promise.all([
-        fetch(`/api/workspaces/${workspaceId}/members`, { signal: abortController.signal }),
-        fetch(`/api/workspaces/${workspaceId}/dm`, { signal: abortController.signal }),
+        fetch(`/api/workspaces/${workspaceId}/members`, {
+          signal: abortController.signal,
+        }),
+        fetch(`/api/workspaces/${workspaceId}/dm`, {
+          signal: abortController.signal,
+        }),
       ]);
 
       if (!membersResponse.ok) {
-        const errorData = await membersResponse.json().catch(() => ({ error: 'Failed to fetch workspace members' }));
-        throw new Error(errorData.error || errorData.message || 'Failed to fetch workspace members');
+        const errorData = await membersResponse
+          .json()
+          .catch(() => ({ error: 'Failed to fetch workspace members' }));
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to fetch workspace members'
+        );
       }
 
-      const membersData: ApiResponse<WorkspaceMemberApiResponse[]> = await membersResponse.json();
+      const membersData: ApiResponse<WorkspaceMemberApiResponse[]> =
+        await membersResponse.json();
       const dmsData: ApiResponse<DirectMessageChannel[]> = dmsResponse.ok
         ? await dmsResponse.json()
         : { data: [] };
@@ -1079,17 +1201,22 @@ export function useWorkspaceMembersForDM(
       const existingDMs: DirectMessageChannel[] = dmsData.data || [];
 
       // Create a map of userId -> DM channel info
-      const dmByUserId = new Map<string, {
-        dmId: string;
-        lastMessageAt: Date | null;
-        unreadCount: number;
-        isSelfDM: boolean;
-      }>();
+      const dmByUserId = new Map<
+        string,
+        {
+          dmId: string;
+          lastMessageAt: Date | null;
+          unreadCount: number;
+          isSelfDM: boolean;
+        }
+      >();
 
       for (const dm of existingDMs) {
         const dmInfo = {
           dmId: dm.id,
-          lastMessageAt: dm.lastMessage?.createdAt ? new Date(dm.lastMessage.createdAt) : null,
+          lastMessageAt: dm.lastMessage?.createdAt
+            ? new Date(dm.lastMessage.createdAt)
+            : null,
           unreadCount: dm.unreadCount || 0,
           isSelfDM: dm.isSelfDM || false,
         };
@@ -1114,25 +1241,27 @@ export function useWorkspaceMembersForDM(
       }
 
       // Transform workspace members to WorkspaceMemberForDM format
-      const transformedMembers: WorkspaceMemberForDM[] = workspaceMembers.map((member): WorkspaceMemberForDM => {
-        const user = member.user || member;
-        const userId = (user.id || member.userId || '') as string;
-        const dmInfo = dmByUserId.get(userId);
+      const transformedMembers: WorkspaceMemberForDM[] = workspaceMembers.map(
+        (member): WorkspaceMemberForDM => {
+          const user = member.user || member;
+          const userId = (user.id || member.userId || '') as string;
+          const dmInfo = dmByUserId.get(userId);
 
-        return {
-          id: (member.id || `member-${userId}`) as string,
-          userId,
-          name: ((user.displayName || user.name || 'Unknown') as string),
-          displayName: user.displayName as string | undefined,
-          email: user.email as string | undefined,
-          avatarUrl: (user.avatarUrl || user.image) as string | undefined,
-          status: user.status as string | undefined,
-          isOrchestrator: (user.isOrchestrator || false) as boolean,
-          existingDMId: dmInfo?.dmId || null,
-          lastMessageAt: dmInfo?.lastMessageAt || null,
-          unreadCount: dmInfo?.unreadCount || 0,
-        };
-      });
+          return {
+            id: (member.id || `member-${userId}`) as string,
+            userId,
+            name: (user.displayName || user.name || 'Unknown') as string,
+            displayName: user.displayName as string | undefined,
+            email: user.email as string | undefined,
+            avatarUrl: (user.avatarUrl || user.image) as string | undefined,
+            status: user.status as string | undefined,
+            isOrchestrator: (user.isOrchestrator || false) as boolean,
+            existingDMId: dmInfo?.dmId || null,
+            lastMessageAt: dmInfo?.lastMessageAt || null,
+            unreadCount: dmInfo?.unreadCount || 0,
+          };
+        }
+      );
 
       setMembers(transformedMembers);
     } catch (err) {
@@ -1153,14 +1282,14 @@ export function useWorkspaceMembersForDM(
   // Categorize members
   const { currentUserMember, membersWithDM, membersWithoutDM } = useMemo(() => {
     // Find current user
-    const currentUser = members.find((m) => m.userId === currentUserId) || null;
+    const currentUser = members.find(m => m.userId === currentUserId) || null;
 
     // Other members (excluding current user)
-    const otherMembers = members.filter((m) => m.userId !== currentUserId);
+    const otherMembers = members.filter(m => m.userId !== currentUserId);
 
     // Members with existing DMs - sorted by most recent message
     const withDM = otherMembers
-      .filter((m) => m.existingDMId)
+      .filter(m => m.existingDMId)
       .sort((a, b) => {
         if (!a.lastMessageAt && !b.lastMessageAt) return 0;
         if (!a.lastMessageAt) return 1;
@@ -1170,7 +1299,7 @@ export function useWorkspaceMembersForDM(
 
     // Members without existing DMs - sorted alphabetically by name
     const withoutDM = otherMembers
-      .filter((m) => !m.existingDMId)
+      .filter(m => !m.existingDMId)
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return {

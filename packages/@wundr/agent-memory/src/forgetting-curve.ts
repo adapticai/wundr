@@ -115,7 +115,7 @@ export class ForgettingCurve {
   calculateRetention(
     initialStrength: number,
     elapsedMs: number,
-    accessCount: number = 0,
+    accessCount: number = 0
   ): number {
     // Stability increases with access count (spaced repetition effect)
     const stability = 1 + accessCount * 0.5;
@@ -141,7 +141,7 @@ export class ForgettingCurve {
    */
   applyDecay(
     memory: Memory,
-    currentTime: number = Date.now(),
+    currentTime: number = Date.now()
   ): ForgettingResult {
     const timeSinceAccess =
       currentTime - memory.metadata.lastAccessedAt.getTime();
@@ -162,7 +162,7 @@ export class ForgettingCurve {
     const newStrength = this.calculateRetention(
       this.config.initialStrength,
       timeSinceAccess,
-      memory.metadata.accessCount,
+      memory.metadata.accessCount
     );
 
     // Apply the new strength to the memory
@@ -201,7 +201,7 @@ export class ForgettingCurve {
    */
   applyDecayBatch(
     memories: Memory[],
-    currentTime: number = Date.now(),
+    currentTime: number = Date.now()
   ): BatchForgettingResult {
     const startTime = Date.now();
     const results: ForgettingResult[] = [];
@@ -305,7 +305,7 @@ export class ForgettingCurve {
    */
   getMemoriesDueForReview(
     memories: Memory[],
-    currentTime: number = Date.now(),
+    currentTime: number = Date.now()
   ): Memory[] {
     return memories.filter(memory => {
       const schedule = this.repetitionSchedules.get(memory.id);
@@ -324,7 +324,7 @@ export class ForgettingCurve {
    */
   updateRepetitionSchedule(
     memoryId: string,
-    wasSuccessful: boolean = true,
+    wasSuccessful: boolean = true
   ): void {
     let schedule = this.repetitionSchedules.get(memoryId);
 
@@ -345,7 +345,7 @@ export class ForgettingCurve {
       // Increase interval (SM-2 algorithm inspired)
       schedule.easeFactor = Math.max(
         1.3,
-        schedule.easeFactor + (0.1 - (5 - 4) * (0.08 + (5 - 4) * 0.02)),
+        schedule.easeFactor + (0.1 - (5 - 4) * (0.08 + (5 - 4) * 0.02))
       );
       schedule.intervalMs = schedule.intervalMs * schedule.easeFactor;
     } else {
@@ -367,7 +367,7 @@ export class ForgettingCurve {
    */
   calculateImportance(
     memory: Memory,
-    currentTime: number = Date.now(),
+    currentTime: number = Date.now()
   ): number {
     if (memory.metadata.pinned) {
       return 1.0;
@@ -384,7 +384,7 @@ export class ForgettingCurve {
     // Access count component (logarithmic scale)
     const accessScore = Math.min(
       1,
-      Math.log(memory.metadata.accessCount + 1) / 3,
+      Math.log(memory.metadata.accessCount + 1) / 3
     );
 
     // Recency component (decay over 7 days)
@@ -413,7 +413,7 @@ export class ForgettingCurve {
    */
   sortByImportance(
     memories: Memory[],
-    currentTime: number = Date.now(),
+    currentTime: number = Date.now()
   ): Memory[] {
     return [...memories].sort((a, b) => {
       const importanceA = this.calculateImportance(a, currentTime);
@@ -436,7 +436,7 @@ export class ForgettingCurve {
     initialStrength: number = 1.0,
     durationHours: number = 168, // 1 week
     accessCount: number = 0,
-    intervalHours: number = 1,
+    intervalHours: number = 1
   ): [number, number][] {
     const results: [number, number][] = [];
 
@@ -445,7 +445,7 @@ export class ForgettingCurve {
       const strength = this.calculateRetention(
         initialStrength,
         elapsedMs,
-        accessCount,
+        accessCount
       );
       results.push([hour, strength]);
     }

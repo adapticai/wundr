@@ -5,26 +5,31 @@
 The easiest way to run computer setup scripts without building:
 
 ### 1. Check What's Installed
+
 ```bash
 npx tsx packages/@wundr/computer-setup/dev.ts check-tools
 ```
 
 ### 2. List Available Profiles
+
 ```bash
 npx tsx packages/@wundr/computer-setup/dev.ts list-profiles
 ```
 
 ### 3. Show Profile Details
+
 ```bash
 npx tsx packages/@wundr/computer-setup/dev.ts show-profile frontend
 ```
 
 ### 4. Dry Run a Profile (Safe)
+
 ```bash
 npx tsx packages/@wundr/computer-setup/dev.ts dry-run frontend
 ```
 
 ### 5. Validate System
+
 ```bash
 npx tsx packages/@wundr/computer-setup/dev.ts validate
 ```
@@ -60,6 +65,7 @@ pnpm add validate-npm-package-name
 ## Direct Commands (No Scripts)
 
 ### Computer Setup Dev Commands
+
 ```bash
 # Validate system
 npx tsx packages/@wundr/computer-setup/dev.ts validate
@@ -78,6 +84,7 @@ npx tsx packages/@wundr/computer-setup/dev.ts dry-run frontend
 ```
 
 ### Create Projects (once dependencies are installed)
+
 ```bash
 # Note: This requires dependencies to be installed
 npx tsx packages/@wundr/cli/src/index.ts create frontend my-app
@@ -88,17 +95,22 @@ npx tsx packages/@wundr/cli/src/index.ts create monorepo my-platform
 ## Common Issues & Solutions
 
 ### Issue: "tsx: command not found"
+
 **Solution**: npx will auto-install tsx when needed
 
 ### Issue: "Cannot find module '@wundr/...'"
+
 **Solution**: The packages need to be built first:
+
 ```bash
 cd packages/@wundr/core && npm run build
 cd packages/@wundr/plugin-system && npm run build
 ```
 
 ### Issue: "Cannot find module 'validate-npm-package-name'"
+
 **Solution**: Install missing dependencies:
+
 ```bash
 cd packages/@wundr/project-templates
 pnpm add validate-npm-package-name
@@ -113,6 +125,7 @@ npx tsx packages/@wundr/computer-setup/dev.ts check-tools
 ```
 
 You should see a list of installed tools like:
+
 - ✅ Git
 - ✅ Node.js
 - ✅ VS Code

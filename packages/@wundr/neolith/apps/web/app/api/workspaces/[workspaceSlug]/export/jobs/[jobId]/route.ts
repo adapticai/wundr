@@ -26,15 +26,12 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; jobId: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; jobId: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug: workspaceId, jobId } = await params;
@@ -50,7 +47,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -62,7 +59,7 @@ export async function GET(
     if (!job) {
       return NextResponse.json(
         { error: 'Export job not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -70,7 +67,7 @@ export async function GET(
     if (job.workspaceId !== workspaceId) {
       return NextResponse.json(
         { error: 'Export job not found in this workspace' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -108,7 +105,7 @@ export async function GET(
     console.error('Export job status error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch export job status' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -122,15 +119,12 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; jobId: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; jobId: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug: workspaceId, jobId } = await params;
@@ -146,7 +140,7 @@ export async function DELETE(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -154,7 +148,7 @@ export async function DELETE(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can delete export jobs' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -166,7 +160,7 @@ export async function DELETE(
     if (!job) {
       return NextResponse.json(
         { error: 'Export job not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -174,7 +168,7 @@ export async function DELETE(
     if (job.workspaceId !== workspaceId) {
       return NextResponse.json(
         { error: 'Export job not found in this workspace' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -193,7 +187,7 @@ export async function DELETE(
     console.error('Export job deletion error:', error);
     return NextResponse.json(
       { error: 'Failed to delete export job' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

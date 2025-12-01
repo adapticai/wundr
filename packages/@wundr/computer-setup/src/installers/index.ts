@@ -91,7 +91,9 @@ export class InstallerRegistry {
    */
   register(name: string, installer: BaseInstaller): void {
     if (!installer.isSupported(this.platform)) {
-      throw new Error(`Installer ${name} is not supported on ${this.platform.os}`);
+      throw new Error(
+        `Installer ${name} is not supported on ${this.platform.os}`
+      );
     }
     this.installers.set(name, installer);
   }
@@ -204,8 +206,8 @@ export class InstallerRegistry {
   async getSystemSteps(platform: SetupPlatform): Promise<SetupStep[]> {
     const installer = this.installers.get('platform');
     if (!installer) {
-return [];
-}
+      return [];
+    }
     return installer.getSteps({} as DeveloperProfile, platform);
   }
 
@@ -245,8 +247,8 @@ return [];
   async getDockerSteps(): Promise<SetupStep[]> {
     const installer = this.installers.get('docker');
     if (!installer) {
-return [];
-}
+      return [];
+    }
     return installer.getSteps({} as DeveloperProfile, this.platform);
   }
 
@@ -256,8 +258,8 @@ return [];
   async getClaudeCodeSteps(): Promise<SetupStep[]> {
     const installer = this.installers.get('claude');
     if (!installer) {
-return [];
-}
+      return [];
+    }
     return installer.getSteps({} as DeveloperProfile, this.platform);
   }
 
@@ -306,14 +308,16 @@ return [];
    */
   async validateAll(): Promise<Record<string, boolean>> {
     const results: Record<string, boolean> = {};
-    
-    const promises = Array.from(this.installers.entries()).map(async ([name, installer]) => {
-      try {
-        results[name] = await installer.validate();
-      } catch {
-        results[name] = false;
+
+    const promises = Array.from(this.installers.entries()).map(
+      async ([name, installer]) => {
+        try {
+          results[name] = await installer.validate();
+        } catch {
+          results[name] = false;
+        }
       }
-    });
+    );
 
     await Promise.all(promises);
     return results;
@@ -330,15 +334,17 @@ return [];
     const installedTools: Record<string, string> = {};
     const missingTools: string[] = [];
 
-    const promises = Array.from(this.installers.entries()).map(async ([name, installer]) => {
-      const isInstalled = await installer.isInstalled();
-      if (isInstalled) {
-        const version = await installer.getVersion();
-        installedTools[name] = version || 'unknown';
-      } else {
-        missingTools.push(name);
+    const promises = Array.from(this.installers.entries()).map(
+      async ([name, installer]) => {
+        const isInstalled = await installer.isInstalled();
+        if (isInstalled) {
+          const version = await installer.getVersion();
+          installedTools[name] = version || 'unknown';
+        } else {
+          missingTools.push(name);
+        }
       }
-    });
+    );
 
     await Promise.all(promises);
 

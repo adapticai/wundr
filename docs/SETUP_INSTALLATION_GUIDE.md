@@ -2,7 +2,8 @@
 
 ## ✅ What Was Fixed
 
-The `@wundr.io/computer-setup` package now properly installs Claude Code and Claude Flow for **any user**, not just the Wundr development environment.
+The `@wundr.io/computer-setup` package now properly installs Claude Code and Claude Flow for **any
+user**, not just the Wundr development environment.
 
 ### Key Improvements
 
@@ -194,16 +195,19 @@ alias claude='npx @anthropic-ai/claude-code'
 **Solutions:**
 
 1. **Restart terminal** - Shell config needs to reload
+
    ```bash
    source ~/.zshrc  # or source ~/.bashrc
    ```
 
 2. **Check if wrapper exists**
+
    ```bash
    ls -l /usr/local/bin/claude
    ```
 
 3. **Manual wrapper installation** (if failed during setup)
+
    ```bash
    # The setup script leaves wrapper at /tmp/claude-wrapper.sh
    sudo mv /tmp/claude-wrapper.sh /usr/local/bin/claude
@@ -218,6 +222,7 @@ alias claude='npx @anthropic-ai/claude-code'
 ### Issue: Agent files not installed
 
 **Verify bundled resources:**
+
 ```bash
 # Check if resources are bundled in package
 ls -la packages/@wundr/computer-setup/resources/agents/
@@ -225,6 +230,7 @@ ls -la packages/@wundr/computer-setup/resources/agents/
 ```
 
 **Re-run installation:**
+
 ```bash
 pnpm --filter @wundr.io/computer-setup run setup --profile fullstack
 ```
@@ -232,11 +238,13 @@ pnpm --filter @wundr.io/computer-setup run setup --profile fullstack
 ### Issue: MCP servers not working
 
 **Check settings:**
+
 ```bash
 cat ~/.claude/settings.json | jq '.mcpServers'
 ```
 
 **Test Claude Flow directly:**
+
 ```bash
 npx claude-flow@alpha --version
 npx claude-flow@alpha mcp start
@@ -312,6 +320,7 @@ claude --version
 ## 🎉 Success!
 
 You should now have:
+
 - ✅ Claude Code CLI working globally
 - ✅ Claude Flow configured with MCP
 - ✅ 65 specialized agents installed

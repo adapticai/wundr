@@ -12,10 +12,10 @@ console.log('========================\n');
 // Simple analysis without TypeScript AST
 function simpleAnalyze(targetDir) {
   console.log(`Analyzing: ${targetDir}\n`);
-  
+
   const files = [];
   const entities = [];
-  
+
   // Mock data for demonstration
   const mockReport = {
     timestamp: new Date().toISOString(),
@@ -30,8 +30,8 @@ function simpleAnalyze(targetDir) {
       maintainabilityIndex: 85,
       technicalDebt: {
         score: 80,
-        estimatedHours: 4
-      }
+        estimatedHours: 4,
+      },
     },
     duplicates: [
       {
@@ -41,12 +41,12 @@ function simpleAnalyze(targetDir) {
         severity: 'medium',
         entities: [
           { name: 'UserData', file: 'sample-code.ts', line: 6 },
-          { name: 'UserInfo', file: 'sample-code.ts', line: 12 }
+          { name: 'UserInfo', file: 'sample-code.ts', line: 12 },
         ],
         structuralMatch: true,
         semanticMatch: false,
-        similarity: 1.0
-      }
+        similarity: 1.0,
+      },
     ],
     recommendations: [
       {
@@ -57,8 +57,8 @@ function simpleAnalyze(targetDir) {
         description: 'Found 2 duplicate interfaces that could be consolidated',
         impact: 'Reduces code duplication and maintenance burden',
         effort: 'medium',
-        estimatedTimeHours: 3
-      }
+        estimatedTimeHours: 3,
+      },
     ],
     performance: {
       analysisTime: 150,
@@ -66,10 +66,10 @@ function simpleAnalyze(targetDir) {
       entitiesPerSecond: 53,
       memoryUsage: { peak: 25165824, average: 25165824 },
       cacheHits: 0,
-      cacheSize: 0
-    }
+      cacheSize: 0,
+    },
   };
-  
+
   return mockReport;
 }
 
@@ -88,7 +88,9 @@ console.log(`- Analysis time: ${report.performance.analysisTime}ms`);
 if (report.duplicates.length > 0) {
   console.log('\n🔄 Duplicates Found:');
   report.duplicates.forEach((cluster, index) => {
-    console.log(`${index + 1}. ${cluster.entities.length} duplicate ${cluster.type}s (${cluster.severity})`);
+    console.log(
+      `${index + 1}. ${cluster.entities.length} duplicate ${cluster.type}s (${cluster.severity})`
+    );
     cluster.entities.forEach(entity => {
       console.log(`   - ${entity.name} in ${path.basename(entity.file)}`);
     });

@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -38,9 +38,19 @@ export async function GET(
       redis: redis as unknown as AnalyticsRedisClient,
     });
 
-    const period = (searchParams.get('period') || 'month') as 'day' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
-    const startDate = searchParams.get('from') ? new Date(searchParams.get('from')!) : undefined;
-    const endDate = searchParams.get('to') ? new Date(searchParams.get('to')!) : undefined;
+    const period = (searchParams.get('period') || 'month') as
+      | 'day'
+      | 'week'
+      | 'month'
+      | 'quarter'
+      | 'year'
+      | 'custom';
+    const startDate = searchParams.get('from')
+      ? new Date(searchParams.get('from')!)
+      : undefined;
+    const endDate = searchParams.get('to')
+      ? new Date(searchParams.get('to')!)
+      : undefined;
 
     const metrics = await analyticsService.getMetrics({
       workspaceId,
@@ -52,6 +62,9 @@ export async function GET(
     return NextResponse.json(metrics);
   } catch (error) {
     console.error('Analytics metrics error:', error);
-    return NextResponse.json({ error: 'Failed to fetch metrics' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch metrics' },
+      { status: 500 }
+    );
   }
 }

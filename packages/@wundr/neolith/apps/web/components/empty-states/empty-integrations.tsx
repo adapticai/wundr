@@ -18,8 +18,8 @@ export function EmptyIntegrations({
   return (
     <EmptyState
       icon={Plug}
-      title="No integrations yet"
-      description="Connect your favorite tools and services to extend your workflow capabilities."
+      title='No integrations yet'
+      description='Connect your favorite tools and services to extend your workflow capabilities.'
       action={
         onBrowseIntegrations
           ? {

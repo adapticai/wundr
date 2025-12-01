@@ -133,7 +133,10 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   // User needs to be either an org owner/admin or workspace member
-  if (!workspaceMembership && !['OWNER', 'ADMIN'].includes(orgMembership.role)) {
+  if (
+    !workspaceMembership &&
+    !['OWNER', 'ADMIN'].includes(orgMembership.role)
+  ) {
     return null;
   }
 
@@ -153,7 +156,7 @@ async function fetchMessageActivities(
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
   userId: string | undefined,
-  limit: number,
+  limit: number
 ): Promise<ActivityEntry[]> {
   const where: Prisma.messageWhereInput = {
     channel: {
@@ -198,7 +201,7 @@ async function fetchMessageActivities(
     },
   });
 
-  return messages.map((msg) => ({
+  return messages.map(msg => ({
     id: `msg_${msg.id}`,
     type: 'message' as ActivityType,
     action: 'posted',
@@ -237,15 +240,12 @@ async function fetchTaskActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number,
+  limit: number
 ): Promise<ActivityEntry[]> {
   const where: Prisma.taskWhereInput = {
     workspaceId,
     ...(userId && {
-      OR: [
-        { createdById: userId },
-        { assignedToId: userId },
-      ],
+      OR: [{ createdById: userId }, { assignedToId: userId }],
     }),
     ...(dateFrom && { createdAt: { gte: dateFrom } }),
     ...(dateTo && { createdAt: { lte: dateTo } }),
@@ -291,7 +291,7 @@ async function fetchTaskActivities(
     },
   });
 
-  return tasks.map((task) => {
+  return tasks.map(task => {
     let action = 'created';
     let actorId = task.createdAt;
 
@@ -330,16 +330,20 @@ async function fetchTaskActivities(
         priority: task.priority,
         status: task.status,
         dueDate: task.dueDate?.toISOString(),
-        assignedTo: task.assignedTo ? {
-          id: task.assignedTo.id,
-          name: task.assignedTo.name || task.assignedTo.displayName,
-          isOrchestrator: task.assignedTo.isOrchestrator,
-        } : null,
-        orchestrator: task.orchestrator ? {
-          id: task.orchestrator.id,
-          role: task.orchestrator.role,
-          discipline: task.orchestrator.discipline,
-        } : null,
+        assignedTo: task.assignedTo
+          ? {
+              id: task.assignedTo.id,
+              name: task.assignedTo.name || task.assignedTo.displayName,
+              isOrchestrator: task.assignedTo.isOrchestrator,
+            }
+          : null,
+        orchestrator: task.orchestrator
+          ? {
+              id: task.orchestrator.id,
+              role: task.orchestrator.role,
+              discipline: task.orchestrator.discipline,
+            }
+          : null,
       },
       timestamp: actorId,
     };
@@ -354,7 +358,7 @@ async function fetchWorkflowActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number,
+  limit: number
 ): Promise<ActivityEntry[]> {
   // Get recent workflow executions
   const executions = await prisma.workflowExecution.findMany({
@@ -378,7 +382,7 @@ async function fetchWorkflowActivities(
   });
 
   // Get user info for triggered by
-  const userIds = Array.from(new Set(executions.map((e) => e.triggeredBy)));
+  const userIds = Array.from(new Set(executions.map(e => e.triggeredBy)));
   const users = await prisma.user.findMany({
     where: { id: { in: userIds } },
     select: {
@@ -390,17 +394,18 @@ async function fetchWorkflowActivities(
       email: true,
     },
   });
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  const userMap = new Map(users.map(u => [u.id, u]));
 
   return executions
-    .filter((exec) => userMap.has(exec.triggeredBy))
-    .map((exec) => {
+    .filter(exec => userMap.has(exec.triggeredBy))
+    .map(exec => {
       const user = userMap.get(exec.triggeredBy)!;
 
       return {
         id: `workflow_${exec.id}`,
         type: 'workflow' as ActivityType,
-        action: exec.status === 'COMPLETED' ? 'executed' : exec.status.toLowerCase(),
+        action:
+          exec.status === 'COMPLETED' ? 'executed' : exec.status.toLowerCase(),
         actor: {
           id: user.id,
           name: user.name,
@@ -435,7 +440,7 @@ async function fetchMemberActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number,
+  limit: number
 ): Promise<ActivityEntry[]> {
   const where: Prisma.workspaceMemberWhereInput = {
     workspaceId,
@@ -468,7 +473,7 @@ async function fetchMemberActivities(
     },
   });
 
-  return members.map((member) => ({
+  return members.map(member => ({
     id: `member_${member.id}`,
     type: 'member' as ActivityType,
     action: 'joined',
@@ -500,7 +505,7 @@ async function fetchFileActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number,
+  limit: number
 ): Promise<ActivityEntry[]> {
   const where: Prisma.fileWhereInput = {
     workspaceId,
@@ -527,7 +532,7 @@ async function fetchFileActivities(
     },
   });
 
-  return files.map((file) => ({
+  return files.map(file => ({
     id: `file_${file.id}`,
     type: 'file' as ActivityType,
     action: 'uploaded',
@@ -564,7 +569,7 @@ async function fetchChannelActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number,
+  limit: number
 ): Promise<ActivityEntry[]> {
   const where: Prisma.channelWhereInput = {
     workspaceId,
@@ -592,8 +597,8 @@ async function fetchChannelActivities(
   });
 
   return channels
-    .filter((ch) => ch.createdBy)
-    .map((channel) => ({
+    .filter(ch => ch.createdBy)
+    .map(channel => ({
       id: `channel_${channel.id}`,
       type: 'channel' as ActivityType,
       action: channel.isArchived ? 'archived' : 'created',
@@ -648,16 +653,13 @@ async function fetchChannelActivities(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get workspace ID from params
@@ -668,7 +670,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -682,11 +684,12 @@ export async function GET(
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { limit, cursor, type, dateFrom, dateTo, channelId, userId } = parseResult.data;
+    const { limit, cursor, type, dateFrom, dateTo, channelId, userId } =
+      parseResult.data;
 
     // Parse date filters
     const dateFromFilter = dateFrom ? new Date(dateFrom) : undefined;
@@ -694,23 +697,62 @@ export async function GET(
     const cursorDate = cursor ? new Date(cursor) : undefined;
 
     // Apply cursor as additional date filter
-    const effectiveDateTo = cursorDate && (!dateToFilter || cursorDate < dateToFilter)
-      ? cursorDate
-      : dateToFilter;
+    const effectiveDateTo =
+      cursorDate && (!dateToFilter || cursorDate < dateToFilter)
+        ? cursorDate
+        : dateToFilter;
 
     // Fetch activities based on type filter
     let activities: ActivityEntry[] = [];
 
     if (type === 'all') {
       // Fetch from all sources in parallel
-      const [messages, tasks, workflows, members, files, channels] = await Promise.all([
-        fetchMessageActivities(workspaceId, channelId, dateFromFilter, effectiveDateTo, userId, limit),
-        fetchTaskActivities(workspaceId, userId, dateFromFilter, effectiveDateTo, limit),
-        fetchWorkflowActivities(workspaceId, userId, dateFromFilter, effectiveDateTo, limit),
-        fetchMemberActivities(workspaceId, userId, dateFromFilter, effectiveDateTo, limit),
-        fetchFileActivities(workspaceId, userId, dateFromFilter, effectiveDateTo, limit),
-        fetchChannelActivities(workspaceId, userId, dateFromFilter, effectiveDateTo, limit),
-      ]);
+      const [messages, tasks, workflows, members, files, channels] =
+        await Promise.all([
+          fetchMessageActivities(
+            workspaceId,
+            channelId,
+            dateFromFilter,
+            effectiveDateTo,
+            userId,
+            limit
+          ),
+          fetchTaskActivities(
+            workspaceId,
+            userId,
+            dateFromFilter,
+            effectiveDateTo,
+            limit
+          ),
+          fetchWorkflowActivities(
+            workspaceId,
+            userId,
+            dateFromFilter,
+            effectiveDateTo,
+            limit
+          ),
+          fetchMemberActivities(
+            workspaceId,
+            userId,
+            dateFromFilter,
+            effectiveDateTo,
+            limit
+          ),
+          fetchFileActivities(
+            workspaceId,
+            userId,
+            dateFromFilter,
+            effectiveDateTo,
+            limit
+          ),
+          fetchChannelActivities(
+            workspaceId,
+            userId,
+            dateFromFilter,
+            effectiveDateTo,
+            limit
+          ),
+        ]);
 
       activities = [
         ...messages,
@@ -730,7 +772,7 @@ export async function GET(
             dateFromFilter,
             effectiveDateTo,
             userId,
-            limit,
+            limit
           );
           break;
         case 'task':
@@ -739,7 +781,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit,
+            limit
           );
           break;
         case 'workflow':
@@ -748,7 +790,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit,
+            limit
           );
           break;
         case 'member':
@@ -757,7 +799,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit,
+            limit
           );
           break;
         case 'file':
@@ -766,7 +808,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit,
+            limit
           );
           break;
         case 'channel':
@@ -775,7 +817,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit,
+            limit
           );
           break;
       }
@@ -787,9 +829,10 @@ export async function GET(
     // Apply limit and determine next cursor
     const hasMore = activities.length > limit;
     const resultActivities = activities.slice(0, limit);
-    const nextCursor = hasMore && resultActivities.length > 0
-      ? resultActivities[resultActivities.length - 1].timestamp.toISOString()
-      : null;
+    const nextCursor =
+      hasMore && resultActivities.length > 0
+        ? resultActivities[resultActivities.length - 1].timestamp.toISOString()
+        : null;
 
     return NextResponse.json({
       data: resultActivities,
@@ -806,10 +849,13 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/dashboard/activity] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/dashboard/activity] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to fetch dashboard activity' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

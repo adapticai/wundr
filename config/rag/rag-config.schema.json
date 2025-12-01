@@ -146,10 +146,7 @@
       "logLevel": "debug",
       "similarityThreshold": 0.8,
       "maxResults": 20,
-      "excludePatterns": [
-        "**/legacy/**",
-        "**/deprecated/**"
-      ],
+      "excludePatterns": ["**/legacy/**", "**/deprecated/**"],
       "includeCategories": ["code", "tests"]
     }
   ],

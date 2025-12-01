@@ -1,6 +1,7 @@
 # Orchestrator Work Engine - Quick Reference
 
 ## Service Location
+
 ```
 /apps/web/lib/services/orchestrator-work-engine-service.ts
 ```
@@ -8,6 +9,7 @@
 ## Core Functions
 
 ### 1. selectNextTask
+
 **Purpose:** Select the highest priority task for a Orchestrator
 
 ```typescript
@@ -19,12 +21,13 @@ function selectNextTask(
     requireTags?: string[];
     limit?: number;
   }
-): Promise<Task | null>
+): Promise<Task | null>;
 ```
 
 **Returns:** Next task to execute or null if no eligible tasks
 
 **Algorithm:**
+
 - Filters by Orchestrator availability (ONLINE/BUSY)
 - Checks dependency resolution
 - Scores by priority + deadline urgency
@@ -33,16 +36,15 @@ function selectNextTask(
 ---
 
 ### 2. prepareTaskContext
+
 **Purpose:** Gather comprehensive context for task execution
 
 ```typescript
-function prepareTaskContext(
-  vpId: string,
-  taskId: string
-): Promise<TaskExecutionContext>
+function prepareTaskContext(vpId: string, taskId: string): Promise<TaskExecutionContext>;
 ```
 
 **Returns:** Complete execution context including:
+
 - Task details
 - Orchestrator charter and capabilities
 - Dependency status
@@ -52,16 +54,15 @@ function prepareTaskContext(
 ---
 
 ### 3. executeTask
+
 **Purpose:** Start task execution (main entry point for daemon)
 
 ```typescript
-function executeTask(
-  vpId: string,
-  taskId: string
-): Promise<TaskExecutionResult>
+function executeTask(vpId: string, taskId: string): Promise<TaskExecutionResult>;
 ```
 
 **Flow:**
+
 1. Validates task can transition to IN_PROGRESS
 2. Prepares execution context
 3. Updates task status
@@ -70,12 +71,11 @@ function executeTask(
 ---
 
 ### 4. updateTaskProgress
+
 **Purpose:** Update task progress during execution
 
 ```typescript
-function updateTaskProgress(
-  update: TaskProgressUpdate
-): Promise<void>
+function updateTaskProgress(update: TaskProgressUpdate): Promise<void>;
 
 interface TaskProgressUpdate {
   taskId: string;
@@ -91,6 +91,7 @@ interface TaskProgressUpdate {
 ---
 
 ### 5. completeTask
+
 **Purpose:** Mark task as complete with results
 
 ```typescript
@@ -107,10 +108,11 @@ function completeTask(
     };
     artifacts?: { type: string; content: any }[];
   }
-): Promise<void>
+): Promise<void>;
 ```
 
 **Side Effects:**
+
 - Updates task status (DONE/BLOCKED)
 - Stores execution result
 - Unblocks dependent tasks if completed
@@ -118,6 +120,7 @@ function completeTask(
 ---
 
 ### 6. getVPExecutionStats
+
 **Purpose:** Get execution statistics for a Orchestrator
 
 ```typescript
@@ -130,7 +133,7 @@ function getVPExecutionStats(
   failedTasks: number;
   successRate: string;
   averageCompletionTime: number;
-}>
+}>;
 ```
 
 ---
@@ -138,10 +141,10 @@ function getVPExecutionStats(
 ## Priority Weights
 
 ```typescript
-CRITICAL: 1000
-HIGH:     100
-MEDIUM:   10
-LOW:      1
+CRITICAL: 1000;
+HIGH: 100;
+MEDIUM: 10;
+LOW: 1;
 ```
 
 ## Deadline Boost Multipliers
@@ -170,7 +173,7 @@ import {
   selectNextTask,
   executeTask,
   updateTaskProgress,
-  completeTask
+  completeTask,
 } from '@/lib/services/orchestrator-work-engine-service';
 
 // 1. Select next task
@@ -216,9 +219,7 @@ await completeTask(task.id, {
     completedAt: new Date(),
     duration: Date.now() - startTime.getTime(),
   },
-  artifacts: [
-    { type: 'code', content: 'path/to/file.ts' },
-  ],
+  artifacts: [{ type: 'code', content: 'path/to/file.ts' }],
 });
 ```
 
@@ -226,13 +227,13 @@ await completeTask(task.id, {
 
 ### Common Errors
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `VP not found` | Invalid Orchestrator ID | Verify Orchestrator exists |
-| `Task not found` | Invalid task ID | Verify task exists |
-| `not assigned to VP` | Task belongs to different Orchestrator | Check task ownership |
-| `Dependencies not met` | Blocked dependencies | Wait for dependencies |
-| `Progress must be 0-100` | Invalid progress value | Validate range |
+| Error                    | Cause                                  | Solution                   |
+| ------------------------ | -------------------------------------- | -------------------------- |
+| `VP not found`           | Invalid Orchestrator ID                | Verify Orchestrator exists |
+| `Task not found`         | Invalid task ID                        | Verify task exists         |
+| `not assigned to VP`     | Task belongs to different Orchestrator | Check task ownership       |
+| `Dependencies not met`   | Blocked dependencies                   | Wait for dependencies      |
+| `Progress must be 0-100` | Invalid progress value                 | Validate range             |
 
 ## Integration with Daemon
 
@@ -264,7 +265,6 @@ async function daemonLoop(vpId: string) {
         status: 'completed',
         metrics: { startedAt: new Date() },
       });
-
     } catch (error) {
       console.error('Daemon error:', error);
       await sleep(10000); // Wait 10s on error
@@ -276,12 +276,14 @@ async function daemonLoop(vpId: string) {
 ## Testing
 
 ### Run Tests
+
 ```bash
 cd apps/web
 npm test lib/services/__tests__/orchestrator-work-engine-service.test.ts
 ```
 
 ### Type Check
+
 ```bash
 npx tsc --noEmit lib/services/orchestrator-work-engine-service.ts
 ```
@@ -304,6 +306,7 @@ npx tsc --noEmit lib/services/orchestrator-work-engine-service.ts
 ---
 
 **Quick Import:**
+
 ```typescript
 import {
   selectNextTask,

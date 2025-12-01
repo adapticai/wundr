@@ -41,9 +41,19 @@ export type CallStatus = 'pending' | 'active' | 'ended' | 'failed';
 
 export type ParticipantRole = 'host' | 'co_host' | 'participant' | 'viewer';
 
-export type ParticipantStatus = 'invited' | 'joining' | 'connected' | 'reconnecting' | 'left';
+export type ParticipantStatus =
+  | 'invited'
+  | 'joining'
+  | 'connected'
+  | 'reconnecting'
+  | 'left';
 
-export type RecordingStatus = 'not_started' | 'recording' | 'paused' | 'stopped' | 'failed';
+export type RecordingStatus =
+  | 'not_started'
+  | 'recording'
+  | 'paused'
+  | 'stopped'
+  | 'failed';
 
 // =============================================================================
 // CALL INTERFACES
@@ -252,7 +262,7 @@ export function createMockEndedCall(overrides?: Partial<Call>): Call {
  */
 export function createMockScheduledCall(
   scheduledAt: Date,
-  overrides?: Partial<Call>,
+  overrides?: Partial<Call>
 ): Call {
   return createMockCall({
     status: 'pending',
@@ -267,7 +277,7 @@ export function createMockScheduledCall(
  */
 export function createMockCallList(
   count: number,
-  overrides?: Partial<Call>,
+  overrides?: Partial<Call>
 ): Call[] {
   return Array.from({ length: count }, () => createMockCall(overrides));
 }
@@ -311,7 +321,7 @@ export function createMockHuddle(overrides?: Partial<Huddle>): Huddle {
  */
 export function createMockActiveHuddle(
   participantCount = 3,
-  overrides?: Partial<Huddle>,
+  overrides?: Partial<Huddle>
 ): Huddle {
   return createMockHuddle({
     isActive: true,
@@ -327,13 +337,13 @@ export function createMockActiveHuddle(
  */
 export function createMockHuddleList(
   count: number,
-  overrides?: Partial<Huddle>,
+  overrides?: Partial<Huddle>
 ): Huddle[] {
   return Array.from({ length: count }, (_, i) =>
     createMockHuddle({
       name: `Huddle ${i + 1}`,
       ...overrides,
-    }),
+    })
   );
 }
 
@@ -345,7 +355,7 @@ export function createMockHuddleList(
  * Create a mock call participant
  */
 export function createMockCallParticipant(
-  overrides?: Partial<CallParticipant>,
+  overrides?: Partial<CallParticipant>
 ): CallParticipant {
   const id = overrides?.id ?? generateCallTestId('participant');
   const userId = overrides?.userId ?? generateCallTestId('user');
@@ -378,7 +388,7 @@ export function createMockCallParticipant(
  * Create a mock connected participant
  */
 export function createMockConnectedParticipant(
-  overrides?: Partial<CallParticipant>,
+  overrides?: Partial<CallParticipant>
 ): CallParticipant {
   return createMockCallParticipant({
     status: 'connected',
@@ -392,7 +402,7 @@ export function createMockConnectedParticipant(
  * Create a mock host participant
  */
 export function createMockHostParticipant(
-  overrides?: Partial<CallParticipant>,
+  overrides?: Partial<CallParticipant>
 ): CallParticipant {
   return createMockConnectedParticipant({
     role: 'host',
@@ -406,14 +416,14 @@ export function createMockHostParticipant(
 export function createMockCallParticipantList(
   callId: string,
   count: number,
-  overrides?: Partial<CallParticipant>,
+  overrides?: Partial<CallParticipant>
 ): CallParticipant[] {
   return Array.from({ length: count }, (_, i) =>
     createMockConnectedParticipant({
       callId,
       role: i === 0 ? 'host' : 'participant',
       ...overrides,
-    }),
+    })
   );
 }
 
@@ -444,7 +454,9 @@ export function createMockJoinToken(overrides?: Partial<JoinToken>): JoinToken {
     jti: `token_${Date.now()}`,
   };
 
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64');
+  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+    'base64'
+  );
   const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.mock-signature`;
 
   return {
@@ -467,7 +479,9 @@ export function createMockJoinToken(overrides?: Partial<JoinToken>): JoinToken {
 /**
  * Create a mock viewer-only join token (no publish)
  */
-export function createMockViewerToken(overrides?: Partial<JoinToken>): JoinToken {
+export function createMockViewerToken(
+  overrides?: Partial<JoinToken>
+): JoinToken {
   const token = createMockJoinToken(overrides);
   token.grants.canPublish = false;
   return token;
@@ -480,7 +494,9 @@ export function createMockViewerToken(overrides?: Partial<JoinToken>): JoinToken
 /**
  * Create a mock call summary
  */
-export function createMockCallSummary(overrides?: Partial<CallSummary>): CallSummary {
+export function createMockCallSummary(
+  overrides?: Partial<CallSummary>
+): CallSummary {
   return {
     callId: overrides?.callId ?? generateCallTestId('call'),
     totalParticipants: 5,
@@ -498,7 +514,7 @@ export function createMockCallSummary(overrides?: Partial<CallSummary>): CallSum
  */
 export function createMockCallSummaryWithRecording(
   callId: string,
-  overrides?: Partial<CallSummary>,
+  overrides?: Partial<CallSummary>
 ): CallSummary {
   return createMockCallSummary({
     callId,
@@ -516,7 +532,7 @@ export function createMockCallSummaryWithRecording(
  * Create mock call creation input
  */
 export function createMockCreateCallInput(
-  overrides?: Partial<CreateCallInput>,
+  overrides?: Partial<CreateCallInput>
 ): CreateCallInput {
   return {
     channelId: generateCallTestId('channel'),
@@ -529,7 +545,7 @@ export function createMockCreateCallInput(
  * Create mock huddle creation input
  */
 export function createMockCreateHuddleInput(
-  overrides?: Partial<CreateHuddleInput>,
+  overrides?: Partial<CreateHuddleInput>
 ): CreateHuddleInput {
   return {
     channelId: generateCallTestId('channel'),

@@ -89,17 +89,22 @@ export default async function OrchestratorSettingsPage({ params }: PageProps) {
   }
 
   const resolvedParams = await params;
-  const data = await getOrchestratorData(resolvedParams.orchestratorId, session.user.id);
+  const data = await getOrchestratorData(
+    resolvedParams.orchestratorId,
+    session.user.id
+  );
 
   if (!data) {
     notFound();
   }
 
   return (
-    <div className="container mx-auto max-w-6xl py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Orchestrator Settings</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className='container mx-auto max-w-6xl py-8 px-4'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold tracking-tight'>
+          Orchestrator Settings
+        </h1>
+        <p className='text-muted-foreground mt-2'>
           Configure your orchestrator capabilities, triggers, and behavior
         </p>
       </div>

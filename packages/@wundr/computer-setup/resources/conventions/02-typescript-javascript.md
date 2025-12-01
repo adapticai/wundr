@@ -1,8 +1,6 @@
 # TypeScript/JavaScript Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Language Conventions
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Language Conventions
 
 This document defines TypeScript and JavaScript coding standards with MCP tool integration.
 
@@ -48,6 +46,7 @@ This document defines TypeScript and JavaScript coding standards with MCP tool i
 ### Strict Mode Requirements
 
 **ALWAYS enable:**
+
 - `strict: true`
 - `noImplicitAny: true`
 - `strictNullChecks: true`
@@ -59,6 +58,7 @@ This document defines TypeScript and JavaScript coding standards with MCP tool i
 ### Interface vs Type
 
 **Use `interface` for object shapes:**
+
 ```typescript
 // Good: interfaces for objects
 interface User {
@@ -75,6 +75,7 @@ interface UserService {
 ```
 
 **Use `type` for unions, intersections, and utilities:**
+
 ```typescript
 // Good: types for unions and complex types
 type Status = 'pending' | 'active' | 'inactive';
@@ -86,6 +87,7 @@ type AsyncResult<T> = Promise<Result<T>>;
 ### Generic Types
 
 **Define reusable generic types:**
+
 ```typescript
 // API Response wrapper
 interface ApiResponse<T> {
@@ -100,9 +102,7 @@ interface ApiResponse<T> {
 }
 
 // Result type for operations
-type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };
 
 // Usage
 async function fetchUser(id: string): Promise<ApiResponse<User>> {
@@ -113,6 +113,7 @@ async function fetchUser(id: string): Promise<ApiResponse<User>> {
 ### Type Inference
 
 **Let TypeScript infer when obvious:**
+
 ```typescript
 // Good: inference is clear
 const name = 'John';
@@ -136,6 +137,7 @@ const name: string = 'John'; // Type is obvious
 ### Variable Declarations
 
 **Prefer `const`, then `let`, NEVER `var`:**
+
 ```typescript
 // Good
 const immutableValue = 'constant';
@@ -148,6 +150,7 @@ var legacyValue = 'deprecated'; // NEVER use var
 ### Function Declarations
 
 **Top-level functions: use declarations:**
+
 ```typescript
 // Good: function declaration for top-level
 function calculateTotal(items: Item[]): number {
@@ -156,6 +159,7 @@ function calculateTotal(items: Item[]): number {
 ```
 
 **Callbacks and inline: use arrow functions:**
+
 ```typescript
 // Good: arrow functions for callbacks
 const doubled = numbers.map(n => n * 2);
@@ -166,6 +170,7 @@ const onClick = (event: MouseEvent) => {
 ```
 
 **Methods: use method shorthand:**
+
 ```typescript
 // Good: method shorthand in objects/classes
 const service = {
@@ -178,6 +183,7 @@ const service = {
 ### Function Parameters
 
 **Limit to 3 parameters, use objects for more:**
+
 ```typescript
 // Good: object parameter for many options
 interface CreateUserOptions {
@@ -225,7 +231,8 @@ async function fetchUser(id: string): Promise<User> {
 
 // Avoid: promise chains
 function fetchUser(id: string): Promise<User> {
-  return apiClient.get(`/users/${id}`)
+  return apiClient
+    .get(`/users/${id}`)
     .then(response => response.data)
     .catch(error => {
       logger.error('Failed to fetch user', { id, error });
@@ -272,6 +279,7 @@ async function fetchMultipleUsers(ids: string[]): Promise<User[]> {
 ### Import Order
 
 Organize imports in this order:
+
 1. External dependencies (React, libraries)
 2. Internal modules (services, utils)
 3. Relative imports (components, hooks)
@@ -305,6 +313,7 @@ import styles from './Component.module.css';
 ### Export Patterns
 
 **Named exports (preferred):**
+
 ```typescript
 // services/user.ts
 export function getUser(id: string): Promise<User> {}
@@ -313,6 +322,7 @@ export const USER_CACHE_TTL = 3600;
 ```
 
 **Default exports for components:**
+
 ```typescript
 // components/UserProfile.tsx
 export default function UserProfile({ user }: UserProfileProps) {
@@ -321,6 +331,7 @@ export default function UserProfile({ user }: UserProfileProps) {
 ```
 
 **Barrel exports:**
+
 ```typescript
 // components/index.ts
 export { default as UserProfile } from './UserProfile';
@@ -338,6 +349,7 @@ export { Card } from './Card';
 Use MCP tools to enforce TypeScript patterns:
 
 **Check and Fix Patterns:**
+
 ```javascript
 // Check for pattern violations
 mcp__wundr__pattern_standardize {
@@ -366,13 +378,13 @@ mcp__wundr__pattern_standardize {
 
 **Pattern Rules Explained:**
 
-| Rule | What it does | Example |
-|------|-------------|---------|
-| `async-await-pattern` | Converts `.then()` chains to async/await | `.then(x => x)` -> `await` |
-| `import-ordering` | Sorts imports by category | Groups external, internal, relative |
-| `naming-conventions` | Fixes naming violations | `user_name` -> `userName` |
-| `optional-chaining` | Uses `?.` where applicable | `obj && obj.prop` -> `obj?.prop` |
-| `type-assertions` | Uses `as` keyword | `<Type>value` -> `value as Type` |
+| Rule                  | What it does                             | Example                             |
+| --------------------- | ---------------------------------------- | ----------------------------------- |
+| `async-await-pattern` | Converts `.then()` chains to async/await | `.then(x => x)` -> `await`          |
+| `import-ordering`     | Sorts imports by category                | Groups external, internal, relative |
+| `naming-conventions`  | Fixes naming violations                  | `user_name` -> `userName`           |
+| `optional-chaining`   | Uses `?.` where applicable               | `obj && obj.prop` -> `obj?.prop`    |
+| `type-assertions`     | Uses `as` keyword                        | `<Type>value` -> `value as Type`    |
 
 ### Quality Monitoring
 
@@ -436,23 +448,19 @@ module.exports = {
     '@typescript-eslint/prefer-nullish-coalescing': 'error',
 
     // Imports
-    'import/order': ['error', {
-      'groups': [
-        'builtin',
-        'external',
-        'internal',
-        'parent',
-        'sibling',
-        'type',
-      ],
-      'newlines-between': 'always',
-    }],
+    'import/order': [
+      'error',
+      {
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'type'],
+        'newlines-between': 'always',
+      },
+    ],
     'import/no-cycle': 'error',
 
     // Code style
     'prefer-const': 'error',
     'no-var': 'error',
-    'eqeqeq': ['error', 'always'],
+    eqeqeq: ['error', 'always'],
   },
 };
 ```

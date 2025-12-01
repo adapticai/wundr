@@ -1,7 +1,14 @@
 'use client';
 
 import { Button } from '@neolith/ui';
-import { CheckCircle, XCircle, Clock, Mail, Users, AlertCircle } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Mail,
+  Users,
+  AlertCircle,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -177,7 +184,9 @@ export default function InvitePage({ params }: InvitePageProps) {
             Invitation Expired
           </h2>
           <p className='text-sm text-muted-foreground'>
-            This invitation to <span className='font-medium'>{invitation.workspaceName}</span> has expired.
+            This invitation to{' '}
+            <span className='font-medium'>{invitation.workspaceName}</span> has
+            expired.
           </p>
           <p className='text-xs text-muted-foreground'>
             Please contact the workspace admin for a new invitation.
@@ -206,7 +215,9 @@ export default function InvitePage({ params }: InvitePageProps) {
             Invitation Revoked
           </h2>
           <p className='text-sm text-muted-foreground'>
-            This invitation to <span className='font-medium'>{invitation.workspaceName}</span> has been revoked.
+            This invitation to{' '}
+            <span className='font-medium'>{invitation.workspaceName}</span> has
+            been revoked.
           </p>
           <p className='text-xs text-muted-foreground'>
             Please contact the workspace admin if you believe this is an error.
@@ -252,7 +263,8 @@ export default function InvitePage({ params }: InvitePageProps) {
   /**
    * Check if user's email matches invitation email
    */
-  const emailMatches = session?.user?.email?.toLowerCase() === invitation?.email.toLowerCase();
+  const emailMatches =
+    session?.user?.email?.toLowerCase() === invitation?.email.toLowerCase();
 
   /**
    * Render valid invitation
@@ -279,7 +291,9 @@ export default function InvitePage({ params }: InvitePageProps) {
             <Users className='h-5 w-5 text-muted-foreground mt-0.5' />
             <div>
               <p className='text-sm font-medium'>Workspace</p>
-              <p className='text-sm text-muted-foreground'>{invitation?.workspaceName}</p>
+              <p className='text-sm text-muted-foreground'>
+                {invitation?.workspaceName}
+              </p>
             </div>
           </div>
 
@@ -287,7 +301,9 @@ export default function InvitePage({ params }: InvitePageProps) {
             <Mail className='h-5 w-5 text-muted-foreground mt-0.5' />
             <div>
               <p className='text-sm font-medium'>Invited Email</p>
-              <p className='text-sm text-muted-foreground'>{invitation?.email}</p>
+              <p className='text-sm text-muted-foreground'>
+                {invitation?.email}
+              </p>
             </div>
           </div>
 
@@ -308,7 +324,9 @@ export default function InvitePage({ params }: InvitePageProps) {
             <AlertCircle className='h-5 w-5 text-muted-foreground mt-0.5' />
             <div>
               <p className='text-sm font-medium'>Role</p>
-              <p className='text-sm text-muted-foreground capitalize'>{invitation?.role.toLowerCase()}</p>
+              <p className='text-sm text-muted-foreground capitalize'>
+                {invitation?.role.toLowerCase()}
+              </p>
             </div>
           </div>
 
@@ -317,13 +335,14 @@ export default function InvitePage({ params }: InvitePageProps) {
             <div>
               <p className='text-sm font-medium'>Expires</p>
               <p className='text-sm text-muted-foreground'>
-                {invitation?.expiresAt && new Date(invitation.expiresAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {invitation?.expiresAt &&
+                  new Date(invitation.expiresAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
               </p>
             </div>
           </div>
@@ -343,9 +362,11 @@ export default function InvitePage({ params }: InvitePageProps) {
           <div className='flex items-start gap-2'>
             <AlertCircle className='h-4 w-4 mt-0.5 flex-shrink-0' />
             <p>
-              This invitation was sent to <span className='font-medium'>{invitation?.email}</span>,
-              but you&apos;re logged in as <span className='font-medium'>{session.user.email}</span>.
-              You may need to log in with the invited email address.
+              This invitation was sent to{' '}
+              <span className='font-medium'>{invitation?.email}</span>, but
+              you&apos;re logged in as{' '}
+              <span className='font-medium'>{session.user.email}</span>. You may
+              need to log in with the invited email address.
             </p>
           </div>
         </div>
@@ -382,7 +403,8 @@ export default function InvitePage({ params }: InvitePageProps) {
 
       {/* Footer */}
       <p className='text-center text-xs text-muted-foreground'>
-        By accepting this invitation, you will gain access to the workspace and its resources.
+        By accepting this invitation, you will gain access to the workspace and
+        its resources.
       </p>
     </div>
   );

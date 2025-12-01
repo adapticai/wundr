@@ -16,7 +16,10 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 import type { NextRequest } from 'next/server';
-import type { CreateDeploymentInput, DeploymentFilters } from '@/types/deployment';
+import type {
+  CreateDeploymentInput,
+  DeploymentFilters,
+} from '@/types/deployment';
 
 /**
  * Route context with workspaceId parameter
@@ -41,7 +44,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -49,7 +52,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -60,7 +63,9 @@ export async function GET(
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const filters: DeploymentFilters = {
-      status: searchParams.get('status') as DeploymentFilters['status'] | undefined,
+      status: searchParams.get('status') as
+        | DeploymentFilters['status']
+        | undefined,
       environment: searchParams.get('environment') as
         | DeploymentFilters['environment']
         | undefined,
@@ -107,12 +112,16 @@ export async function GET(
     });
 
     // Transform to frontend format
-    const transformedDeployments = deployments.map((d) => ({
+    const transformedDeployments = deployments.map(d => ({
       id: d.id,
       workspaceId: d.workspaceId,
       name: d.name,
       description: d.description,
-      type: d.type.toLowerCase() as 'service' | 'agent' | 'workflow' | 'integration',
+      type: d.type.toLowerCase() as
+        | 'service'
+        | 'agent'
+        | 'workflow'
+        | 'integration',
       status: (() => {
         const statusMap: Record<string, string> = {
           PENDING: 'deploying',
@@ -122,9 +131,12 @@ export async function GET(
           FAILED: 'failed',
           STOPPED: 'stopped',
         };
-        return (
-          statusMap[d.status] || d.status.toLowerCase()
-        ) as 'deploying' | 'running' | 'stopped' | 'failed' | 'updating';
+        return (statusMap[d.status] || d.status.toLowerCase()) as
+          | 'deploying'
+          | 'running'
+          | 'stopped'
+          | 'failed'
+          | 'updating';
       })(),
       environment: d.environment.toLowerCase() as
         | 'production'
@@ -171,7 +183,7 @@ export async function GET(
     console.error('Error fetching deployments:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -200,7 +212,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -208,7 +220,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -221,17 +233,14 @@ export async function POST(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Validate required fields
     if (!body.name || !body.type || !body.environment || !body.config) {
       return NextResponse.json(
         { error: 'Missing required fields' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -241,7 +250,11 @@ export async function POST(
         workspaceId,
         name: body.name,
         description: body.description ?? null,
-        type: body.type.toUpperCase() as 'SERVICE' | 'AGENT' | 'WORKFLOW' | 'INTEGRATION',
+        type: body.type.toUpperCase() as
+          | 'SERVICE'
+          | 'AGENT'
+          | 'WORKFLOW'
+          | 'INTEGRATION',
         status: 'DEPLOYING',
         environment: body.environment.toUpperCase() as
           | 'DEVELOPMENT'
@@ -249,17 +262,21 @@ export async function POST(
           | 'PRODUCTION',
         version: 'v1.0.0',
         config: JSON.parse(JSON.stringify(body.config ?? {})),
-        health: JSON.parse(JSON.stringify({
-          status: 'unknown',
-          lastCheck: null,
-          uptime: 0,
-        })),
-        stats: JSON.parse(JSON.stringify({
-          requests: 0,
-          errors: 0,
-          latencyP50: 0,
-          latencyP99: 0,
-        })),
+        health: JSON.parse(
+          JSON.stringify({
+            status: 'unknown',
+            lastCheck: null,
+            uptime: 0,
+          })
+        ),
+        stats: JSON.parse(
+          JSON.stringify({
+            requests: 0,
+            errors: 0,
+            latencyP50: 0,
+            latencyP99: 0,
+          })
+        ),
         createdById: session.user.id,
       },
     });
@@ -318,13 +335,13 @@ export async function POST(
         deployment: transformedDeployment,
         message: 'Deployment created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('Error creating deployment:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -16,8 +16,8 @@ export function EmptyMembers({ onInviteMembers }: EmptyMembersProps) {
   return (
     <EmptyState
       icon={Users}
-      title="No team members yet"
-      description="Invite team members to collaborate and work together on projects."
+      title='No team members yet'
+      description='Invite team members to collaborate and work together on projects.'
       action={
         onInviteMembers
           ? {

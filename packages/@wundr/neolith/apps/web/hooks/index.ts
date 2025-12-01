@@ -69,14 +69,21 @@ export type {
 // =============================================================================
 // OrchestratorHooks
 // =============================================================================
-export { useOrchestrator, useOrchestrators, useOrchestratorMutations } from './use-orchestrator';
+export {
+  useOrchestrator,
+  useOrchestrators,
+  useOrchestratorMutations,
+} from './use-orchestrator';
 export type {
   UseOrchestratorReturn,
   UseOrchestratorsReturn,
   UseOrchestratorMutationsReturn,
 } from './use-orchestrator';
 
-export { useOrchestratorPresence, useMultipleOrchestratorPresence } from './use-orchestrator-presence';
+export {
+  useOrchestratorPresence,
+  useMultipleOrchestratorPresence,
+} from './use-orchestrator-presence';
 export type {
   OrchestratorPresenceData,
   UseOrchestratorPresenceOptions,
@@ -231,7 +238,11 @@ export type {
 // =============================================================================
 // Dashboard Hooks
 // =============================================================================
-export { useDashboard, useDashboardStats, useDashboardActivity } from './use-dashboard';
+export {
+  useDashboard,
+  useDashboardStats,
+  useDashboardActivity,
+} from './use-dashboard';
 export type {
   TimeRange,
   ActivityType,

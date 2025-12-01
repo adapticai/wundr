@@ -2,19 +2,21 @@
 
 ## 🎉 Summary
 
-Successfully fixed the wundr computer-setup to install corrected Claude Flow templates with **verified working MCP tool names** instead of the broken ones from `claude-flow hive-mind spawn`.
+Successfully fixed the wundr computer-setup to install corrected Claude Flow templates with
+**verified working MCP tool names** instead of the broken ones from `claude-flow hive-mind spawn`.
 
 ## ❌ Problem Identified
 
-The `claude-flow hive-mind spawn` command generates prompts with **fictional MCP tool names** that don't exist:
+The `claude-flow hive-mind spawn` command generates prompts with **fictional MCP tool names** that
+don't exist:
 
-| Broken Tools (Don't Exist) | Correct Tools (Actually Available) |
-|----------------------------|-------------------------------------|
-| `mcp__claude-flow__queen_command` | `mcp__claude-flow__task_orchestrate` |
-| `mcp__claude-flow__memory_share` | `mcp__claude-flow__memory_usage` |
-| `mcp__claude-flow__consensus_vote` | `mcp__claude-flow__daa_consensus` |
-| `mcp__claude-flow__swarm_think` | `mcp__claude-flow__neural_patterns` |
-| `mcp__claude-flow__queen_monitor` | `mcp__claude-flow__swarm_status` |
+| Broken Tools (Don't Exist)         | Correct Tools (Actually Available)   |
+| ---------------------------------- | ------------------------------------ |
+| `mcp__claude-flow__queen_command`  | `mcp__claude-flow__task_orchestrate` |
+| `mcp__claude-flow__memory_share`   | `mcp__claude-flow__memory_usage`     |
+| `mcp__claude-flow__consensus_vote` | `mcp__claude-flow__daa_consensus`    |
+| `mcp__claude-flow__swarm_think`    | `mcp__claude-flow__neural_patterns`  |
+| `mcp__claude-flow__queen_monitor`  | `mcp__claude-flow__swarm_status`     |
 
 ## ✅ Solution Implemented
 
@@ -25,19 +27,22 @@ The `claude-flow hive-mind spawn` command generates prompts with **fictional MCP
 - ✅ **hive-swarm.md** - General-purpose hive mind with flexible agent count
 - ✅ **hive-strategic.md** - Enterprise-scale with 20 workers, Byzantine consensus
 
-Both templates use **only verified tool names** from the actual claude-flow MCP server (87 tools available).
+Both templates use **only verified tool names** from the actual claude-flow MCP server (87 tools
+available).
 
 ### 2. Updated Computer Setup Installer
 
 **File:** `packages/@wundr/computer-setup/src/installers/claude-installer.ts`
 
 **Changes:**
+
 1. Added `bundledCommandsDir` to resource directories (line 24)
 2. Added `setupCommands()` function (lines 649-673) to copy slash commands
 3. Added setup step for slash commands (lines 131-142)
 4. Integrated into install flow (line 180)
 
 **Result:** When `wundr computer-setup` runs, it now:
+
 - Creates `~/.claude/commands/` directory
 - Copies corrected hive-swarm templates from package resources
 - Makes `/hive-swarm` and `/hive-strategic` available globally
@@ -47,6 +52,7 @@ Both templates use **only verified tool names** from the actual claude-flow MCP 
 **Problem:** Node.js version mismatch causing `claude-flow` commands to fail
 
 **Solution:**
+
 ```bash
 rm -rf ~/.npm/_npx/*
 npm install -g claude-flow@alpha
@@ -59,43 +65,51 @@ npm install -g claude-flow@alpha
 ### Complete MCP Tools Available (87 total)
 
 #### 🐝 Swarm Coordination (12 tools)
+
 - `swarm_init`, `agent_spawn`, `task_orchestrate`, `swarm_status`
 - `agent_list`, `agent_metrics`, `swarm_monitor`, `topology_optimize`
 - `load_balance`, `coordination_sync`, `swarm_scale`, `swarm_destroy`
 
 #### 💾 Memory & Persistence (12 tools)
+
 - `memory_usage` ⚠️ **NOT** `memory_store`/`memory_retrieve`
 - `memory_search`, `memory_persist`, `memory_namespace`
 - `memory_backup`, `memory_restore`, `memory_compress`, `memory_sync`
 - `cache_manage`, `state_snapshot`, `context_restore`, `memory_analytics`
 
 #### 🧠 Neural Networks (15 tools)
+
 - `neural_status`, `neural_train`, `neural_patterns`, `neural_predict`
 - `model_load`, `model_save`, `wasm_optimize`, `inference_run`
 - `pattern_recognize`, `cognitive_analyze`, `learning_adapt`
 - `neural_compress`, `ensemble_create`, `transfer_learn`, `neural_explain`
 
 #### 📊 Analysis & Monitoring (13 tools)
+
 - `task_status`, `task_results`, `benchmark_run`, `bottleneck_analyze`
 - `performance_report`, `token_usage`, `metrics_collect`, `trend_analysis`
 - `cost_analysis`, `quality_assess`, `error_analysis`, `usage_stats`, `health_check`
 
 #### 🔧 Workflow & Automation (11 tools)
+
 - `workflow_create`, `workflow_execute`, `workflow_export`, `sparc_mode`
 - `automation_setup`, `pipeline_create`, `scheduler_manage`, `trigger_setup`
 - `workflow_template`, `batch_process`, `parallel_execute`
 
 #### 🐙 GitHub Integration (8 tools)
+
 - `github_repo_analyze`, `github_pr_manage`, `github_issue_track`
 - `github_release_coord`, `github_workflow_auto`, `github_code_review`
 - `github_sync_coord`, `github_metrics`
 
 #### 🤖 Dynamic Agent Architecture (8 tools)
+
 - `daa_agent_create`, `daa_capability_match`, `daa_resource_alloc`
 - `daa_lifecycle_manage`, `daa_communication`, `daa_consensus` ⚠️ **NOT** `consensus_vote`
 - `daa_fault_tolerance`, `daa_optimization`
 
 #### ⚙️ System & Utilities (8 tools)
+
 - `terminal_execute`, `config_manage`, `features_detect`, `security_scan`
 - `backup_create`, `restore_system`, `log_analysis`, `diagnostic_run`
 
@@ -115,6 +129,7 @@ wundr computer-setup
 ### Available Slash Commands
 
 **Option 1: General Purpose**
+
 ```
 /hive-swarm
 
@@ -122,6 +137,7 @@ Objective: Your task here
 ```
 
 **Option 2: Enterprise Strategic (20 workers, Byzantine consensus)**
+
 ```
 /hive-strategic
 
@@ -207,6 +223,5 @@ npx claude-flow@alpha mcp tools --category=swarm
 
 **Status:** ✅ **COMPLETE** - Ready for deployment
 
-**Built:** ✅ `pnpm build` succeeded
-**Verified:** ✅ Commands in resources directory
-**Tested:** ✅ better-sqlite3 fixed, MCP server connected
+**Built:** ✅ `pnpm build` succeeded **Verified:** ✅ Commands in resources directory **Tested:** ✅
+better-sqlite3 fixed, MCP server connected

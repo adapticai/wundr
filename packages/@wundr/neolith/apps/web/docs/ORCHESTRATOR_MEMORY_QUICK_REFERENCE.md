@@ -1,6 +1,7 @@
 # Orchestrator Memory Service - Quick Reference
 
 ## Import
+
 ```typescript
 import {
   saveConversationMemory,
@@ -25,6 +26,7 @@ import type {
 ## Quick Examples
 
 ### Save Conversation
+
 ```typescript
 await saveConversationMemory(
   'vp_abc123',
@@ -38,6 +40,7 @@ await saveConversationMemory(
 ```
 
 ### Save Task Result
+
 ```typescript
 await saveTaskMemory(
   'vp_abc123',
@@ -52,15 +55,17 @@ await saveTaskMemory(
 ```
 
 ### Retrieve Relevant Memories
+
 ```typescript
-const memories = await retrieveMemory(
-  'vp_abc123',
-  'deployment configuration',
-  { type: 'TASK', limit: 5, minImportance: 6 }
-);
+const memories = await retrieveMemory('vp_abc123', 'deployment configuration', {
+  type: 'TASK',
+  limit: 5,
+  minImportance: 6,
+});
 ```
 
 ### Search with Filters
+
 ```typescript
 const result = await searchMemory('vp_abc123', {
   type: ['CONVERSATION', 'TASK'],
@@ -74,16 +79,17 @@ const result = await searchMemory('vp_abc123', {
 ```
 
 ### Clean Up Old Memories
+
 ```typescript
 const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-const { deleted, preserved } = await pruneOldMemory(
-  'vp_abc123',
-  thirtyDaysAgo,
-  { preserveImportant: true, minImportanceThreshold: 8 }
-);
+const { deleted, preserved } = await pruneOldMemory('vp_abc123', thirtyDaysAgo, {
+  preserveImportant: true,
+  minImportanceThreshold: 8,
+});
 ```
 
 ## Memory Types
+
 - `CONVERSATION` - Chat/message history
 - `TASK` - Task execution results
 - `LEARNING` - Learned patterns/insights
@@ -91,12 +97,14 @@ const { deleted, preserved } = await pruneOldMemory(
 - `DECISION` - Decision rationale
 
 ## Importance Scale
+
 - 1-3: Low importance (can be pruned easily)
 - 4-6: Medium importance (standard memories)
 - 7-9: High importance (preserve during cleanup)
 - 10: Critical importance (never auto-delete)
 
 ## Pagination
+
 ```typescript
 // Page 1
 const page1 = await searchMemory('vp_abc123', { limit: 20, offset: 0 });
@@ -108,11 +116,14 @@ console.log(`Total: ${page1.total}, Has more: ${page1.hasMore}`);
 ```
 
 ## Access Tracking
+
 Every `retrieveMemory` call automatically:
+
 - Increments `accessCount`
 - Updates `lastAccessedAt`
 
 Use for importance adjustment:
+
 ```typescript
 const stats = await getMemoryStats('vp_abc123');
 // High accessCount = frequently used = important
@@ -120,7 +131,8 @@ const stats = await getMemoryStats('vp_abc123');
 
 ## Best Practices
 
-1. **Set appropriate importance**: Higher for critical learnings (7-9), lower for routine conversations (4-6)
+1. **Set appropriate importance**: Higher for critical learnings (7-9), lower for routine
+   conversations (4-6)
 2. **Use keywords**: Help retrieval accuracy and speed
 3. **Regular cleanup**: Schedule `pruneOldMemory` to prevent database bloat
 4. **Link context**: Always set `channelId` or `taskId` when relevant
@@ -136,6 +148,7 @@ const stats = await getMemoryStats('vp_abc123');
 - Batch similar operations
 
 ## Error Handling
+
 ```typescript
 try {
   const memory = await saveConversationMemory(vpId, channelId, messages);
@@ -149,7 +162,9 @@ try {
 ```
 
 ## Database Schema
+
 See `/packages/@neolith/database/prisma/schema.prisma`:
+
 - Model: `VPMemory`
 - Enum: `MemoryType`
 - Relations: `VP.memories[]`, `Workspace.orchestratorMemories[]`

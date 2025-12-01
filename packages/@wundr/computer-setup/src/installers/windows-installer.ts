@@ -33,7 +33,10 @@ export class WindowsInstaller implements BaseInstaller {
 
   async getVersion(): Promise<string | null> {
     try {
-      const { stdout } = await execa('powershell', ['-Command', 'Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion | ConvertTo-Json']);
+      const { stdout } = await execa('powershell', [
+        '-Command',
+        'Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion | ConvertTo-Json',
+      ]);
       const info = JSON.parse(stdout);
       return `${info.WindowsProductName} ${info.WindowsVersion}`;
     } catch {
@@ -41,27 +44,33 @@ export class WindowsInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    _platform: SetupPlatform
+  ): Promise<void> {
     // Install Windows Subsystem for Linux (WSL2)
     await this.installWSL2();
-    
+
     // Install Chocolatey package manager
     await this.installChocolatey();
-    
+
     // Install Scoop package manager (for user-space packages)
     await this.installScoop();
-    
+
     // Install essential packages
     await this.installEssentialPackages();
-    
+
     // Install development tools
     await this.installDevelopmentTools(profile);
-    
+
     // Configure Windows settings
     await this.configureWindows(profile);
   }
 
-  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+  async configure(
+    profile: DeveloperProfile,
+    _platform: SetupPlatform
+  ): Promise<void> {
     await this.configureWindows(profile);
     await this.configurePowerShell(profile);
     await this.configureWSL(profile);
@@ -180,12 +189,20 @@ export class WindowsInstaller implements BaseInstaller {
   private async setupDeveloperMode(): Promise<void> {
     try {
       // Enable Developer Mode via registry
-      const regCommand = 'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"';
-      await execa('powershell', ['-Command', `Start-Process powershell -ArgumentList '-Command "${regCommand}"' -Verb RunAs`]);
+      const regCommand =
+        'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"';
+      await execa('powershell', [
+        '-Command',
+        `Start-Process powershell -ArgumentList '-Command "${regCommand}"' -Verb RunAs`,
+      ]);
 
-      this.logger.info('Developer Mode enabled. You may need to restart your computer for changes to take effect.');
+      this.logger.info(
+        'Developer Mode enabled. You may need to restart your computer for changes to take effect.'
+      );
     } catch (_error) {
-      this.logger.warn('Failed to enable Developer Mode automatically. Please enable it manually in Windows Settings.');
+      this.logger.warn(
+        'Failed to enable Developer Mode automatically. Please enable it manually in Windows Settings.'
+      );
     }
   }
 
@@ -198,20 +215,31 @@ export class WindowsInstaller implements BaseInstaller {
       this.logger.info('Installing WSL2...');
 
       // Enable Windows Subsystem for Linux
-      await execa('powershell', ['-Command', 'Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart']);
+      await execa('powershell', [
+        '-Command',
+        'Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart',
+      ]);
 
       // Enable Virtual Machine Platform
-      await execa('powershell', ['-Command', 'Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart']);
+      await execa('powershell', [
+        '-Command',
+        'Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart',
+      ]);
 
       // Set WSL 2 as default version
       await execa('wsl', ['--set-default-version', '2']);
 
       // Install Ubuntu (most common distribution)
-      await execa('powershell', ['-Command', 'Invoke-WebRequest -Uri https://aka.ms/wslubuntu2204 -OutFile Ubuntu.appx -UseBasicParsing']);
+      await execa('powershell', [
+        '-Command',
+        'Invoke-WebRequest -Uri https://aka.ms/wslubuntu2204 -OutFile Ubuntu.appx -UseBasicParsing',
+      ]);
       await execa('powershell', ['-Command', 'Add-AppxPackage .\\Ubuntu.appx']);
       await execa('powershell', ['-Command', 'Remove-Item .\\Ubuntu.appx']);
 
-      this.logger.info('WSL2 installation complete. Please restart your computer and run Ubuntu from the Start menu to complete setup.');
+      this.logger.info(
+        'WSL2 installation complete. Please restart your computer and run Ubuntu from the Start menu to complete setup.'
+      );
     }
   }
 
@@ -221,7 +249,8 @@ export class WindowsInstaller implements BaseInstaller {
       this.logger.info('Chocolatey is already installed');
     } catch {
       this.logger.info('Installing Chocolatey...');
-      const installScript = 'Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString(\'https://community.chocolatey.org/install.ps1\'))';
+      const installScript =
+        "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))";
       await execa('powershell', ['-Command', installScript]);
     }
   }
@@ -234,7 +263,10 @@ export class WindowsInstaller implements BaseInstaller {
       this.logger.info('Installing Scoop...');
 
       // Set execution policy for current user
-      await execa('powershell', ['-Command', 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser']);
+      await execa('powershell', [
+        '-Command',
+        'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser',
+      ]);
 
       // Install Scoop
       const installScript = 'irm get.scoop.sh | iex';
@@ -289,7 +321,9 @@ export class WindowsInstaller implements BaseInstaller {
     }
   }
 
-  private async installDevelopmentTools(profile: DeveloperProfile): Promise<void> {
+  private async installDevelopmentTools(
+    profile: DeveloperProfile
+  ): Promise<void> {
     // Install role-specific tools
     switch (profile.role) {
       case 'frontend':
@@ -314,12 +348,10 @@ export class WindowsInstaller implements BaseInstaller {
     await this.installCommonDevTools(profile);
   }
 
-  private async installFrontendTools(_profile: DeveloperProfile): Promise<void> {
-    const packages = [
-      'googlechrome',
-      'firefox',
-      'microsoft-edge',
-    ];
+  private async installFrontendTools(
+    _profile: DeveloperProfile
+  ): Promise<void> {
+    const packages = ['googlechrome', 'firefox', 'microsoft-edge'];
 
     for (const pkg of packages) {
       try {
@@ -331,11 +363,7 @@ export class WindowsInstaller implements BaseInstaller {
   }
 
   private async installBackendTools(_profile: DeveloperProfile): Promise<void> {
-    const packages = [
-      'postman',
-      'dbeaver',
-      'redis-desktop-manager',
-    ];
+    const packages = ['postman', 'dbeaver', 'redis-desktop-manager'];
 
     for (const pkg of packages) {
       try {
@@ -366,10 +394,7 @@ export class WindowsInstaller implements BaseInstaller {
   }
 
   private async installMobileTools(_profile: DeveloperProfile): Promise<void> {
-    const packages = [
-      'androidstudio',
-      'adb',
-    ];
+    const packages = ['androidstudio', 'adb'];
 
     for (const pkg of packages) {
       try {
@@ -381,11 +406,7 @@ export class WindowsInstaller implements BaseInstaller {
   }
 
   private async installMLTools(_profile: DeveloperProfile): Promise<void> {
-    const packages = [
-      'python',
-      'anaconda3',
-      'jupyter',
-    ];
+    const packages = ['python', 'anaconda3', 'jupyter'];
 
     for (const pkg of packages) {
       try {
@@ -396,7 +417,9 @@ export class WindowsInstaller implements BaseInstaller {
     }
   }
 
-  private async installCommonDevTools(profile: DeveloperProfile): Promise<void> {
+  private async installCommonDevTools(
+    profile: DeveloperProfile
+  ): Promise<void> {
     const packages = ['windows-terminal'];
 
     // Editor-specific installation
@@ -445,10 +468,10 @@ export class WindowsInstaller implements BaseInstaller {
     const registryCommands = [
       // Show file extensions
       'reg add "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f',
-      
+
       // Show hidden files
       'reg add "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "Hidden" /t REG_DWORD /d 1 /f',
-      
+
       // Disable Windows Defender real-time protection for development folders (requires admin)
       // Note: This is optional and should be used carefully
     ];
@@ -464,26 +487,33 @@ export class WindowsInstaller implements BaseInstaller {
 
   private async configurePowerShell(_profile: DeveloperProfile): Promise<void> {
     // Install PowerShell modules
-    const modules = [
-      'posh-git',
-      'oh-my-posh',
-      'PSReadLine',
-    ];
+    const modules = ['posh-git', 'oh-my-posh', 'PSReadLine'];
 
     for (const module of modules) {
       try {
-        await execa('powershell', ['-Command', `Install-Module -Name ${module} -Force -SkipPublisherCheck`]);
+        await execa('powershell', [
+          '-Command',
+          `Install-Module -Name ${module} -Force -SkipPublisherCheck`,
+        ]);
       } catch (error) {
-        this.logger.warn(`Failed to install PowerShell module ${module}:`, error);
+        this.logger.warn(
+          `Failed to install PowerShell module ${module}:`,
+          error
+        );
       }
     }
 
     // Create PowerShell profile
-    const profilePath = path.join(os.homedir(), 'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1');
+    const profilePath = path.join(
+      os.homedir(),
+      'Documents',
+      'PowerShell',
+      'Microsoft.PowerShell_profile.ps1'
+    );
     const profileDir = path.dirname(profilePath);
-    
+
     await fs.ensureDir(profileDir);
-    
+
     const profileContent = `
 # PowerShell Profile for Development
 
@@ -537,7 +567,9 @@ default=${profile.name.toLowerCase().replace(/\s+/g, '')}
 
       await fs.writeFile(wslConfigPath, wslConfig.trim());
 
-      this.logger.info('WSL configuration complete. Consider setting up your preferred Linux distribution.');
+      this.logger.info(
+        'WSL configuration complete. Consider setting up your preferred Linux distribution.'
+      );
     } catch (error) {
       this.logger.warn('WSL configuration failed:', error);
     }
@@ -546,7 +578,10 @@ default=${profile.name.toLowerCase().replace(/\s+/g, '')}
   // Validation methods
   private async validateDeveloperMode(): Promise<boolean> {
     try {
-      const { stdout } = await execa('powershell', ['-Command', 'Get-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense"']);
+      const { stdout } = await execa('powershell', [
+        '-Command',
+        'Get-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense"',
+      ]);
       return stdout.includes('1');
     } catch {
       return false;
@@ -582,7 +617,7 @@ default=${profile.name.toLowerCase().replace(/\s+/g, '')}
 
   private async validateEssentialPackages(): Promise<boolean> {
     const essentialTools = ['git', 'curl', 'gh'];
-    
+
     for (const tool of essentialTools) {
       try {
         await which(tool);
@@ -590,11 +625,13 @@ default=${profile.name.toLowerCase().replace(/\s+/g, '')}
         return false;
       }
     }
-    
+
     return true;
   }
 
-  private async validateDevelopmentTools(profile: DeveloperProfile): Promise<boolean> {
+  private async validateDevelopmentTools(
+    profile: DeveloperProfile
+  ): Promise<boolean> {
     // Basic validation - check if editor is installed
     const editor = profile.preferences?.editor || 'vscode';
     switch (editor) {
@@ -612,7 +649,12 @@ default=${profile.name.toLowerCase().replace(/\s+/g, '')}
 
   private async validatePowerShellConfig(): Promise<boolean> {
     try {
-      const profilePath = path.join(os.homedir(), 'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1');
+      const profilePath = path.join(
+        os.homedir(),
+        'Documents',
+        'PowerShell',
+        'Microsoft.PowerShell_profile.ps1'
+      );
       return await fs.pathExists(profilePath);
     } catch {
       return false;

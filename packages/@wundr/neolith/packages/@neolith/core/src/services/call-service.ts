@@ -17,12 +17,8 @@ import {
   RoomNotFoundError,
 } from './livekit-service';
 
-import type {
-  LiveKitServiceImpl} from './livekit-service';
-import type {
-  Participant,
-  RecordingOptions,
-} from '../types/livekit';
+import type { LiveKitServiceImpl } from './livekit-service';
+import type { Participant, RecordingOptions } from '../types/livekit';
 
 // =============================================================================
 // Types
@@ -262,12 +258,7 @@ export interface PaginatedCallResult {
  */
 export class CallNotFoundError extends GenesisError {
   constructor(callId: string) {
-    super(
-      `Call not found: ${callId}`,
-      'CALL_NOT_FOUND',
-      404,
-      { callId },
-    );
+    super(`Call not found: ${callId}`, 'CALL_NOT_FOUND', 404, { callId });
     this.name = 'CallNotFoundError';
   }
 }
@@ -281,7 +272,7 @@ export class ActiveCallExistsError extends GenesisError {
       `An active call already exists in channel: ${channelId}`,
       'ACTIVE_CALL_EXISTS',
       409,
-      { channelId },
+      { channelId }
     );
     this.name = 'ActiveCallExistsError';
   }
@@ -292,12 +283,9 @@ export class ActiveCallExistsError extends GenesisError {
  */
 export class HuddleNotFoundError extends GenesisError {
   constructor(huddleId: string) {
-    super(
-      `Huddle not found: ${huddleId}`,
-      'HUDDLE_NOT_FOUND',
-      404,
-      { huddleId },
-    );
+    super(`Huddle not found: ${huddleId}`, 'HUDDLE_NOT_FOUND', 404, {
+      huddleId,
+    });
     this.name = 'HuddleNotFoundError';
   }
 }
@@ -311,7 +299,7 @@ export class CallOperationError extends GenesisError {
       `Call operation '${operation}' failed: ${reason}`,
       'CALL_OPERATION_ERROR',
       500,
-      { operation, reason },
+      { operation, reason }
     );
     this.name = 'CallOperationError';
   }
@@ -418,7 +406,11 @@ export interface CallService {
    * @param name - Display name
    * @returns Join token with LiveKit credentials
    */
-  joinHuddle(huddleId: string, userId: string, name?: string): Promise<JoinToken>;
+  joinHuddle(
+    huddleId: string,
+    userId: string,
+    name?: string
+  ): Promise<JoinToken>;
 
   /**
    * Leaves a huddle.
@@ -475,7 +467,10 @@ export interface CallService {
    * @param options - History query options
    * @returns Paginated call history
    */
-  getCallHistory(channelId: string, options?: HistoryOptions): Promise<PaginatedCallResult>;
+  getCallHistory(
+    channelId: string,
+    options?: HistoryOptions
+  ): Promise<PaginatedCallResult>;
 }
 
 // =============================================================================
@@ -510,7 +505,10 @@ export class CallServiceImpl implements CallService {
   /**
    * Creates a new call in a channel.
    */
-  async createCall(channelId: string, options: CreateCallOptions): Promise<Call> {
+  async createCall(
+    channelId: string,
+    options: CreateCallOptions
+  ): Promise<Call> {
     // Check for existing active call
     const activeCallId = this.channelActiveCalls.get(channelId);
     if (activeCallId) {
@@ -559,7 +557,7 @@ export class CallServiceImpl implements CallService {
       }
       throw new CallOperationError(
         'createCall',
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   }
@@ -617,7 +615,11 @@ export class CallServiceImpl implements CallService {
   /**
    * Joins a call and gets a token.
    */
-  async joinCall(callId: string, userId: string, name?: string): Promise<JoinToken> {
+  async joinCall(
+    callId: string,
+    userId: string,
+    name?: string
+  ): Promise<JoinToken> {
     const call = this.calls.get(callId);
     if (!call) {
       throw new CallNotFoundError(callId);
@@ -628,12 +630,16 @@ export class CallServiceImpl implements CallService {
     }
 
     // Generate token
-    const tokenResult = await this.liveKitService.generateToken(userId, call.roomName, {
-      name,
-      canPublish: true,
-      canSubscribe: true,
-      canPublishData: true,
-    });
+    const tokenResult = await this.liveKitService.generateToken(
+      userId,
+      call.roomName,
+      {
+        name,
+        canPublish: true,
+        canSubscribe: true,
+        canPublishData: true,
+      }
+    );
 
     // Add participant if not already present
     if (!call.participantIds.includes(userId)) {
@@ -658,7 +664,7 @@ export class CallServiceImpl implements CallService {
     }
 
     // Remove participant
-    call.participantIds = call.participantIds.filter((id) => id !== userId);
+    call.participantIds = call.participantIds.filter(id => id !== userId);
 
     // Try to remove from LiveKit room
     try {
@@ -700,7 +706,10 @@ export class CallServiceImpl implements CallService {
   /**
    * Creates a persistent huddle room.
    */
-  async createHuddle(workspaceId: string, options: HuddleOptions): Promise<Huddle> {
+  async createHuddle(
+    workspaceId: string,
+    options: HuddleOptions
+  ): Promise<Huddle> {
     const huddleId = createId();
     const roomName = `huddle-${huddleId}`;
 
@@ -740,7 +749,7 @@ export class CallServiceImpl implements CallService {
       }
       throw new CallOperationError(
         'createHuddle',
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   }
@@ -755,7 +764,11 @@ export class CallServiceImpl implements CallService {
   /**
    * Joins a huddle and gets a token.
    */
-  async joinHuddle(huddleId: string, userId: string, name?: string): Promise<JoinToken> {
+  async joinHuddle(
+    huddleId: string,
+    userId: string,
+    name?: string
+  ): Promise<JoinToken> {
     const huddle = this.huddles.get(huddleId);
     if (!huddle) {
       throw new HuddleNotFoundError(huddleId);
@@ -776,12 +789,16 @@ export class CallServiceImpl implements CallService {
     }
 
     // Generate token
-    const tokenResult = await this.liveKitService.generateToken(userId, huddle.roomName, {
-      name,
-      canPublish: true,
-      canSubscribe: true,
-      canPublishData: true,
-    });
+    const tokenResult = await this.liveKitService.generateToken(
+      userId,
+      huddle.roomName,
+      {
+        name,
+        canPublish: true,
+        canSubscribe: true,
+        canPublishData: true,
+      }
+    );
 
     // Add participant if not already present
     if (!huddle.participantIds.includes(userId)) {
@@ -807,7 +824,7 @@ export class CallServiceImpl implements CallService {
     }
 
     // Remove participant
-    huddle.participantIds = huddle.participantIds.filter((id) => id !== userId);
+    huddle.participantIds = huddle.participantIds.filter(id => id !== userId);
     huddle.lastActivityAt = new Date();
 
     // Try to remove from LiveKit room
@@ -830,7 +847,7 @@ export class CallServiceImpl implements CallService {
   async listHuddles(workspaceId: string): Promise<Huddle[]> {
     const huddles: Huddle[] = [];
 
-    this.huddles.forEach((huddle) => {
+    this.huddles.forEach(huddle => {
       if (huddle.workspaceId === workspaceId && huddle.status !== 'archived') {
         huddles.push(huddle);
       }
@@ -866,7 +883,10 @@ export class CallServiceImpl implements CallService {
   /**
    * Starts recording a call.
    */
-  async startRecording(callId: string, options?: RecordingOptions): Promise<string> {
+  async startRecording(
+    callId: string,
+    options?: RecordingOptions
+  ): Promise<string> {
     const call = this.calls.get(callId);
     if (!call) {
       throw new CallNotFoundError(callId);
@@ -876,7 +896,10 @@ export class CallServiceImpl implements CallService {
       throw new CallOperationError('startRecording', 'Call is not active');
     }
 
-    const egressId = await this.liveKitService.startRecording(call.roomName, options);
+    const egressId = await this.liveKitService.startRecording(
+      call.roomName,
+      options
+    );
 
     // Track recording
     if (!call.recordingIds) {
@@ -908,7 +931,7 @@ export class CallServiceImpl implements CallService {
    */
   async getCallHistory(
     channelId: string,
-    options?: HistoryOptions,
+    options?: HistoryOptions
   ): Promise<PaginatedCallResult> {
     const limit = options?.limit ?? 20;
     const offset = options?.offset ?? 0;
@@ -916,7 +939,7 @@ export class CallServiceImpl implements CallService {
     let calls: Call[] = [];
 
     // Filter calls by channel
-    this.calls.forEach((call) => {
+    this.calls.forEach(call => {
       if (call.channelId === channelId) {
         // Apply filters
         if (options?.status && call.status !== options.status) {
@@ -959,7 +982,10 @@ export class CallServiceImpl implements CallService {
    */
   private logError(message: string, error: unknown): void {
     // eslint-disable-next-line no-console
-    console.error(`[CallService] ${message}:`, error instanceof Error ? error.message : error);
+    console.error(
+      `[CallService] ${message}:`,
+      error instanceof Error ? error.message : error
+    );
   }
 }
 
@@ -990,7 +1016,9 @@ export class CallServiceImpl implements CallService {
  * // (client-side code)
  * ```
  */
-export function createCallService(liveKitService?: LiveKitServiceImpl): CallServiceImpl {
+export function createCallService(
+  liveKitService?: LiveKitServiceImpl
+): CallServiceImpl {
   return new CallServiceImpl(liveKitService);
 }
 
@@ -1023,7 +1051,9 @@ export function getCallService(): CallServiceImpl {
 export const callService = new Proxy({} as CallServiceImpl, {
   get(_target, prop) {
     const service = getCallService();
-    const value = (service as unknown as Record<string | symbol, unknown>)[prop];
+    const value = (service as unknown as Record<string | symbol, unknown>)[
+      prop
+    ];
     if (typeof value === 'function') {
       return value.bind(service);
     }

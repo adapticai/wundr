@@ -1,10 +1,9 @@
 # Error Handling Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Code Quality
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Code Quality
 
-This document defines error handling patterns, error types, and MCP tool integration for consistent error management.
+This document defines error handling patterns, error types, and MCP tool integration for consistent
+error management.
 
 ---
 
@@ -237,9 +236,7 @@ async function getUser(id: string): Promise<User> {
 
 ```typescript
 // Alternative: Result type for explicit error handling
-type Result<T, E = AppError> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+type Result<T, E = AppError> = { success: true; data: T } | { success: false; error: E };
 
 async function getUserSafe(id: string): Promise<Result<User>> {
   try {
@@ -308,10 +305,7 @@ function validateUserInput(input: unknown): CreateUserInput {
 
 ```typescript
 // Wrap async operations with error boundary
-async function withErrorBoundary<T>(
-  operation: () => Promise<T>,
-  context: string
-): Promise<T> {
+async function withErrorBoundary<T>(operation: () => Promise<T>, context: string): Promise<T> {
   try {
     return await operation();
   } catch (error) {
@@ -325,10 +319,7 @@ async function withErrorBoundary<T>(
 }
 
 // Usage
-const user = await withErrorBoundary(
-  () => userService.getUser(id),
-  'Fetching user'
-);
+const user = await withErrorBoundary(() => userService.getUser(id), 'Fetching user');
 ```
 
 ---
@@ -337,12 +328,12 @@ const user = await withErrorBoundary(
 
 ### Log Levels
 
-| Level | When to Use | Example |
-|-------|-------------|---------|
+| Level   | When to Use                          | Example                    |
+| ------- | ------------------------------------ | -------------------------- |
 | `error` | Errors requiring immediate attention | Database connection failed |
-| `warn` | Potential issues, degraded service | Rate limit approaching |
-| `info` | Notable events, audit trail | User logged in |
-| `debug` | Debugging information | Request payload |
+| `warn`  | Potential issues, degraded service   | Rate limit approaching     |
+| `info`  | Notable events, audit trail          | User logged in             |
+| `debug` | Debugging information                | Request payload            |
 
 ### Structured Logging
 
@@ -423,12 +414,7 @@ interface ApiErrorResponse {
 
 ```typescript
 // Express error handler
-function errorHandler(
-  error: unknown,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+function errorHandler(error: unknown, req: Request, res: Response, next: NextFunction): void {
   const requestId = req.headers['x-request-id'] as string;
 
   if (error instanceof AppError) {
@@ -484,6 +470,7 @@ function errorHandler(
 ### Pattern Standardization
 
 **Check and Fix Error Handling:**
+
 ```javascript
 // Check for consistent error handling
 mcp__wundr__pattern_standardize {
@@ -504,6 +491,7 @@ mcp__wundr__pattern_standardize {
 ```
 
 **Review Manual Fixes Needed:**
+
 ```javascript
 // Find error patterns needing manual attention
 mcp__wundr__pattern_standardize {

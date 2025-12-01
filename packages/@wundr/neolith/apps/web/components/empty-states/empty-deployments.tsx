@@ -16,8 +16,8 @@ export function EmptyDeployments({ onDeploy }: EmptyDeploymentsProps) {
   return (
     <EmptyState
       icon={Rocket}
-      title="No deployments yet"
-      description="Deploy your first Orchestrator or workflow to start automating tasks."
+      title='No deployments yet'
+      description='Deploy your first Orchestrator or workflow to start automating tasks.'
       action={
         onDeploy
           ? {

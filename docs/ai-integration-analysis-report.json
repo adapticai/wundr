@@ -147,9 +147,22 @@
         "testing": ["test_baseline"],
         "config": ["claude_config"],
         "coordination": ["swarm_init", "agent_spawn", "task_orchestrate"],
-        "monitoring": ["swarm_status", "agent_list", "agent_metrics", "task_status", "task_results", "memory_usage"],
+        "monitoring": [
+          "swarm_status",
+          "agent_list",
+          "agent_metrics",
+          "task_status",
+          "task_results",
+          "memory_usage"
+        ],
         "neural": ["neural_status", "neural_train", "neural_patterns"],
-        "github": ["github_swarm", "repo_analyze", "pr_enhance", "issue_triage", "code_review"],
+        "github": [
+          "github_swarm",
+          "repo_analyze",
+          "pr_enhance",
+          "issue_triage",
+          "code_review"
+        ],
         "system": ["benchmark_run", "features_detect", "swarm_monitor"]
       },
       "toolRegistry": "src/core/MCPToolsRegistry.ts",
@@ -175,9 +188,9 @@
         "type": "task-classification",
         "architecture": {
           "layers": [
-            {"type": "dense", "size": 128, "activation": "relu"},
-            {"type": "dropout", "size": 128, "dropout": 0.3},
-            {"type": "dense", "size": 64, "activation": "softmax"}
+            { "type": "dense", "size": 128, "activation": "relu" },
+            { "type": "dropout", "size": 128, "dropout": 0.3 },
+            { "type": "dense", "size": 64, "activation": "softmax" }
           ],
           "optimizer": {
             "type": "adam",
@@ -194,9 +207,9 @@
         "type": "agent-selection",
         "architecture": {
           "layers": [
-            {"type": "dense", "size": 256, "activation": "relu"},
-            {"type": "batch_norm", "size": 256},
-            {"type": "dense", "size": 1, "activation": "sigmoid"}
+            { "type": "dense", "size": 256, "activation": "relu" },
+            { "type": "batch_norm", "size": 256 },
+            { "type": "dense", "size": 1, "activation": "sigmoid" }
           ],
           "optimizer": {
             "type": "adam",
@@ -211,9 +224,9 @@
         "type": "performance-prediction",
         "architecture": {
           "layers": [
-            {"type": "lstm", "size": 128, "activation": "tanh"},
-            {"type": "dense", "size": 64, "activation": "relu"},
-            {"type": "dense", "size": 1, "activation": "linear"}
+            { "type": "lstm", "size": 128, "activation": "tanh" },
+            { "type": "dense", "size": 64, "activation": "relu" },
+            { "type": "dense", "size": 1, "activation": "linear" }
           ],
           "optimizer": {
             "type": "rmsprop",
@@ -228,9 +241,9 @@
         "type": "pattern-recognition",
         "architecture": {
           "layers": [
-            {"type": "conv1d", "size": 64, "filters": 64, "kernelSize": 3},
-            {"type": "pool", "size": 32, "poolSize": 2},
-            {"type": "dense", "size": 10, "activation": "softmax"}
+            { "type": "conv1d", "size": 64, "filters": 64, "kernelSize": 3 },
+            { "type": "pool", "size": 32, "poolSize": 2 },
+            { "type": "dense", "size": 10, "activation": "softmax" }
           ],
           "optimizer": {
             "type": "sgd",
@@ -503,8 +516,11 @@
               "parameters": {
                 "type": "object",
                 "properties": {
-                  "operation": {"type": "string", "enum": ["check", "baseline", "trends"]},
-                  "path": {"type": "string", "description": "Path to analyze"}
+                  "operation": {
+                    "type": "string",
+                    "enum": ["check", "baseline", "trends"]
+                  },
+                  "path": { "type": "string", "description": "Path to analyze" }
                 },
                 "required": ["operation"]
               }
@@ -541,7 +557,12 @@
                       "maxTokens": 8192,
                       "temperature": 1.0,
                       "contextWindow": 200000,
-                      "capabilities": ["chat", "function-calling", "streaming", "vision"]
+                      "capabilities": [
+                        "chat",
+                        "function-calling",
+                        "streaming",
+                        "vision"
+                      ]
                     }
                   }
                 }
@@ -597,10 +618,7 @@
         "title": "Add Advanced Retry Strategies",
         "description": "Implement robust error handling for LLM API calls",
         "implementation": {
-          "files": [
-            "src/llm/RetryHandler.ts",
-            "src/llm/CircuitBreaker.ts"
-          ],
+          "files": ["src/llm/RetryHandler.ts", "src/llm/CircuitBreaker.ts"],
           "strategies": [
             "Exponential backoff with jitter",
             "Circuit breaker for cascading failures",
@@ -615,9 +633,7 @@
         "title": "Add Dynamic Model Selection",
         "description": "Automatically select best model based on task complexity and budget",
         "implementation": {
-          "files": [
-            "src/llm/ModelSelector.ts"
-          ],
+          "files": ["src/llm/ModelSelector.ts"],
           "algorithm": "Score models based on task complexity, latency requirements, budget constraints, and required capabilities",
           "example": "Simple tasks → gpt-5-mini, Complex tasks → claude-3-5-sonnet, Vision tasks → claude-3-5-sonnet"
         },

@@ -13,7 +13,10 @@ export class GovernanceReportHandler {
   private reportsDir: string;
 
   constructor() {
-    this.scriptPath = path.resolve(process.cwd(), 'scripts/governance/weekly-report-generator.ts');
+    this.scriptPath = path.resolve(
+      process.cwd(),
+      'scripts/governance/weekly-report-generator.ts'
+    );
     this.reportsDir = path.join(process.cwd(), '.governance/reports');
   }
 
@@ -24,22 +27,24 @@ export class GovernanceReportHandler {
       switch (reportType) {
         case 'weekly':
           return this.generateWeeklyReport(format);
-        
+
         case 'drift':
           return this.generateDriftReport(format);
-        
+
         case 'quality':
           return this.generateQualityReport(format, period);
-        
+
         case 'compliance':
           return this.generateComplianceReport(format);
-        
+
         default:
           throw new Error(`Unknown report type: ${reportType}`);
       }
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Governance report generation failed: ${error.message}`);
+        throw new Error(
+          `Governance report generation failed: ${error.message}`
+        );
       }
       throw error;
     }
@@ -56,56 +61,75 @@ export class GovernanceReportHandler {
     });
 
     const reportPath = this.findLatestReport('weekly');
-    
-    return JSON.stringify({
-      success: true,
-      reportType: 'weekly',
-      format,
-      reportPath,
-      summary: {
-        period: 'Last 7 days',
-        totalCommits: this.extractMetric(output, 'commits', 0),
-        filesChanged: this.extractMetric(output, 'files changed', 0),
-        newIssues: this.extractMetric(output, 'new issues', 0),
-        resolvedIssues: this.extractMetric(output, 'resolved issues', 0),
+
+    return JSON.stringify(
+      {
+        success: true,
+        reportType: 'weekly',
+        format,
+        reportPath,
+        summary: {
+          period: 'Last 7 days',
+          totalCommits: this.extractMetric(output, 'commits', 0),
+          filesChanged: this.extractMetric(output, 'files changed', 0),
+          newIssues: this.extractMetric(output, 'new issues', 0),
+          resolvedIssues: this.extractMetric(output, 'resolved issues', 0),
+        },
+        highlights: [
+          'Code quality metrics tracked',
+          'Governance compliance assessed',
+          'Team productivity measured',
+        ],
+        message: 'Weekly governance report generated successfully',
+        details: output,
       },
-      highlights: [
-        'Code quality metrics tracked',
-        'Governance compliance assessed',
-        'Team productivity measured',
-      ],
-      message: 'Weekly governance report generated successfully',
-      details: output,
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private generateDriftReport(format: string): string {
     // Use drift detection tool
-    const driftOutput = execSync('npx ts-node scripts/governance/drift-detection.ts detect', {
-      encoding: 'utf-8',
-      cwd: process.cwd(),
-    }).toString();
+    const driftOutput = execSync(
+      'npx ts-node scripts/governance/drift-detection.ts detect',
+      {
+        encoding: 'utf-8',
+        cwd: process.cwd(),
+      }
+    ).toString();
 
     const severityMatch = driftOutput.match(/Severity: (\w+)/);
     const severity = severityMatch ? severityMatch[1].toLowerCase() : 'unknown';
 
-    return JSON.stringify({
-      success: true,
-      reportType: 'drift',
-      format,
-      driftStatus: {
-        severity,
-        hasIssues: severity !== 'none',
-        requiresAction: ['high', 'critical'].includes(severity),
+    return JSON.stringify(
+      {
+        success: true,
+        reportType: 'drift',
+        format,
+        driftStatus: {
+          severity,
+          hasIssues: severity !== 'none',
+          requiresAction: ['high', 'critical'].includes(severity),
+        },
+        metrics: {
+          newDuplicates: this.extractMetric(driftOutput, 'new duplicates', 0),
+          complexityIncrease: this.extractMetric(
+            driftOutput,
+            'complexity increase',
+            0
+          ),
+          newCircularDeps: this.extractMetric(
+            driftOutput,
+            'circular dependencies',
+            0
+          ),
+        },
+        recommendations: this.extractRecommendations(driftOutput),
+        message: `Drift report generated with ${severity} severity`,
       },
-      metrics: {
-        newDuplicates: this.extractMetric(driftOutput, 'new duplicates', 0),
-        complexityIncrease: this.extractMetric(driftOutput, 'complexity increase', 0),
-        newCircularDeps: this.extractMetric(driftOutput, 'circular dependencies', 0),
-      },
-      recommendations: this.extractRecommendations(driftOutput),
-      message: `Drift report generated with ${severity} severity`,
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private generateQualityReport(format: string, period: string): string {
@@ -140,25 +164,29 @@ export class GovernanceReportHandler {
 
     const reportPath = this.saveReport('quality', metrics, format);
 
-    return JSON.stringify({
-      success: true,
-      reportType: 'quality',
-      format,
-      period,
-      reportPath,
-      metrics,
-      summary: {
-        overallHealth: 'Good',
-        score: 85,
-        trend: 'Improving',
-        actionItems: [
-          'Address 2 high-priority issues',
-          'Improve E2E test coverage',
-          'Reduce complexity in 3 modules',
-        ],
+    return JSON.stringify(
+      {
+        success: true,
+        reportType: 'quality',
+        format,
+        period,
+        reportPath,
+        metrics,
+        summary: {
+          overallHealth: 'Good',
+          score: 85,
+          trend: 'Improving',
+          actionItems: [
+            'Address 2 high-priority issues',
+            'Improve E2E test coverage',
+            'Reduce complexity in 3 modules',
+          ],
+        },
+        message: 'Quality report generated successfully',
       },
-      message: 'Quality report generated successfully',
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private generateComplianceReport(format: string): string {
@@ -205,21 +233,25 @@ export class GovernanceReportHandler {
 
     const reportPath = this.saveReport('compliance', compliance, format);
 
-    return JSON.stringify({
-      success: true,
-      reportType: 'compliance',
-      format,
-      reportPath,
-      compliance,
-      summary: {
-        status: 'PASSING',
-        score: 89.1,
-        violations: 18,
-        requiresAction: compliance.violations.total > 10,
+    return JSON.stringify(
+      {
+        success: true,
+        reportType: 'compliance',
+        format,
+        reportPath,
+        compliance,
+        summary: {
+          status: 'PASSING',
+          score: 89.1,
+          violations: 18,
+          requiresAction: compliance.violations.total > 10,
+        },
+        nextSteps: compliance.recommendations,
+        message: 'Compliance report generated successfully',
       },
-      nextSteps: compliance.recommendations,
-      message: 'Compliance report generated successfully',
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private generateMockWeeklyReport(format: string): string {
@@ -255,14 +287,18 @@ export class GovernanceReportHandler {
 
     const reportPath = this.saveReport('weekly', mockData, format);
 
-    return JSON.stringify({
-      success: true,
-      reportType: 'weekly',
-      format,
-      reportPath,
-      data: mockData,
-      message: 'Weekly report generated from current metrics',
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        reportType: 'weekly',
+        format,
+        reportPath,
+        data: mockData,
+        message: 'Weekly report generated from current metrics',
+      },
+      null,
+      2
+    );
   }
 
   private findLatestReport(type: string): string | null {
@@ -271,7 +307,8 @@ export class GovernanceReportHandler {
       return null;
     }
 
-    const files = fs.readdirSync(this.reportsDir)
+    const files = fs
+      .readdirSync(this.reportsDir)
       .filter(f => f.includes(type) && f.endsWith('.md'))
       .sort()
       .reverse();
@@ -289,20 +326,20 @@ export class GovernanceReportHandler {
     const filepath = path.join(this.reportsDir, filename);
 
     let content: string;
-    
+
     switch (format) {
       case 'json':
         content = JSON.stringify(data, null, 2);
         break;
-      
+
       case 'markdown':
         content = this.formatAsMarkdown(type, data);
         break;
-      
+
       case 'html':
         content = this.formatAsHtml(type, data);
         break;
-      
+
       default:
         content = JSON.stringify(data, null, 2);
     }
@@ -313,7 +350,7 @@ export class GovernanceReportHandler {
 
   private formatAsMarkdown(type: string, data: any): string {
     const title = type.charAt(0).toUpperCase() + type.slice(1);
-    
+
     return `# ${title} Governance Report
 
 Generated: ${new Date().toISOString()}
@@ -328,7 +365,7 @@ ${JSON.stringify(data, null, 2)}
 
   private formatAsHtml(type: string, data: any): string {
     const title = type.charAt(0).toUpperCase() + type.slice(1);
-    
+
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -346,7 +383,11 @@ ${JSON.stringify(data, null, 2)}
 </html>`;
   }
 
-  private extractMetric(output: string, keyword: string, defaultValue: number): number {
+  private extractMetric(
+    output: string,
+    keyword: string,
+    defaultValue: number
+  ): number {
     const regex = new RegExp(`(\\d+)\\s*${keyword}`, 'i');
     const match = output.match(regex);
     return match ? parseInt(match[1], 10) : defaultValue;

@@ -9,14 +9,13 @@ import * as path from 'path';
 
 import * as fs from 'fs-extra';
 
-
 import { getLogger } from '../utils/logger';
 
-import type { 
-  DeveloperProfile, 
+import type {
+  DeveloperProfile,
   SetupPlatform,
   InstalledTool,
-  CredentialSetup, 
+  CredentialSetup,
 } from '../types';
 
 const logger = getLogger('computer-setup:validator');
@@ -49,7 +48,9 @@ export class SetupValidator {
     const nodeVersion = process.version;
     const majorVersion = parseInt(nodeVersion.slice(1).split('.')[0]);
     if (majorVersion < 18) {
-      logger.error(`Node.js version ${nodeVersion} is too old. Minimum required: v18.0.0`);
+      logger.error(
+        `Node.js version ${nodeVersion} is too old. Minimum required: v18.0.0`
+      );
       return false;
     }
 
@@ -62,10 +63,12 @@ export class SetupValidator {
   async checkDiskSpace(requiredBytes: number): Promise<boolean> {
     try {
       const homeDir = os.homedir();
-      
+
       if (process.platform === 'win32') {
         // Windows disk space check
-        const output = execSync(`wmic logicaldisk where caption="${homeDir.charAt(0)}:" get size,freespace`).toString();
+        const output = execSync(
+          `wmic logicaldisk where caption="${homeDir.charAt(0)}:" get size,freespace`
+        ).toString();
         const lines = output.trim().split('\n');
         if (lines.length >= 2) {
           const values = lines[1].trim().split(/\s+/);
@@ -86,7 +89,7 @@ export class SetupValidator {
     } catch (error) {
       logger.warn('Could not check disk space', error);
     }
-    
+
     return true; // Assume sufficient space if check fails
   }
 
@@ -135,20 +138,26 @@ export class SetupValidator {
    */
   async validateFullSetup(profile: DeveloperProfile): Promise<boolean> {
     logger.info('Validating full setup');
-    
+
     const validations: Array<() => Promise<boolean>> = [];
 
     // Validate Git
-    validations.push(() => this.validateGit(profile.preferences.gitConfig.userName));
+    validations.push(() =>
+      this.validateGit(profile.preferences.gitConfig.userName)
+    );
 
     // Validate Node.js
     if (profile.tools?.languages?.node) {
-      validations.push(() => this.validateNode(profile.tools!.languages!.node!.defaultVersion));
+      validations.push(() =>
+        this.validateNode(profile.tools!.languages!.node!.defaultVersion)
+      );
     }
 
     // Validate Python
     if (profile.tools?.languages?.python) {
-      validations.push(() => this.validatePython(profile.tools!.languages!.python!.defaultVersion));
+      validations.push(() =>
+        this.validatePython(profile.tools!.languages!.python!.defaultVersion)
+      );
     }
 
     // Validate Docker
@@ -177,9 +186,13 @@ export class SetupValidator {
 
       // Check user configuration
       if (expectedUser) {
-        const userName = execSync('git config --global user.name').toString().trim();
+        const userName = execSync('git config --global user.name')
+          .toString()
+          .trim();
         if (userName !== expectedUser) {
-          logger.warn(`Git user mismatch. Expected: ${expectedUser}, Found: ${userName}`);
+          logger.warn(
+            `Git user mismatch. Expected: ${expectedUser}, Found: ${userName}`
+          );
           return false;
         }
       }
@@ -203,7 +216,9 @@ export class SetupValidator {
       if (expectedVersion) {
         const major = version.slice(1).split('.')[0];
         if (!expectedVersion.includes(major)) {
-          logger.warn(`Node version mismatch. Expected: v${expectedVersion}, Found: ${version}`);
+          logger.warn(
+            `Node version mismatch. Expected: v${expectedVersion}, Found: ${version}`
+          );
           return false;
         }
       }
@@ -250,7 +265,9 @@ export class SetupValidator {
       if (expectedVersion) {
         const versionMatch = version.match(/(\d+\.\d+)/);
         if (versionMatch && !expectedVersion.includes(versionMatch[1])) {
-          logger.warn(`Python version mismatch. Expected: ${expectedVersion}, Found: ${versionMatch[1]}`);
+          logger.warn(
+            `Python version mismatch. Expected: ${expectedVersion}, Found: ${versionMatch[1]}`
+          );
           return false;
         }
       }
@@ -276,9 +293,16 @@ export class SetupValidator {
 
       // Check Docker Compose
       try {
-        const composeVersion = execSync('docker compose version').toString().trim();
+        const composeVersion = execSync('docker compose version')
+          .toString()
+          .trim();
         logger.info(`Docker Compose version: ${composeVersion}`);
-        this.recordInstalledTool('docker-compose', composeVersion, 'docker', 'container');
+        this.recordInstalledTool(
+          'docker-compose',
+          composeVersion,
+          'docker',
+          'container'
+        );
       } catch {
         logger.warn('Docker Compose not found');
       }
@@ -328,11 +352,17 @@ export class SetupValidator {
    */
   async validateVSCode(): Promise<boolean> {
     try {
-      const version = execSync('code --version').toString().split('\n')[0].trim();
+      const version = execSync('code --version')
+        .toString()
+        .split('\n')[0]
+        .trim();
       logger.info(`VS Code version: ${version}`);
 
       // Check installed extensions
-      const extensions = execSync('code --list-extensions').toString().trim().split('\n');
+      const extensions = execSync('code --list-extensions')
+        .toString()
+        .trim()
+        .split('\n');
       logger.info(`VS Code extensions: ${extensions.length} installed`);
 
       this.recordInstalledTool('vscode', version, 'code', 'editor');
@@ -371,14 +401,14 @@ export class SetupValidator {
         const keyPath = path.join(sshDir, keyFile);
         if (await fs.pathExists(keyPath)) {
           logger.info(`SSH key found: ${keyFile}`);
-          
+
           this.credentialSetups.push({
             service: 'ssh',
             type: 'ssh',
             stored: true,
             location: keyPath,
           });
-          
+
           return true;
         }
       }
@@ -409,10 +439,10 @@ export class SetupValidator {
    * Record an installed tool
    */
   private recordInstalledTool(
-    name: string, 
-    version: string, 
-    location: string, 
-    category: string,
+    name: string,
+    version: string,
+    location: string,
+    category: string
   ): void {
     this.installedTools.set(name, {
       name,

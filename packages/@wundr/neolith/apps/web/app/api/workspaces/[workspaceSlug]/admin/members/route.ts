@@ -40,14 +40,17 @@ interface RouteContext {
  */
 export async function GET(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,10 +61,16 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -82,9 +91,9 @@ export async function GET(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -95,12 +104,13 @@ export async function GET(
 
     if (roleId) {
       // Map role ID to role name (simplified for now)
-      const roleMap: Record<string, Prisma.workspaceMemberWhereInput['role']> = {
-        'system-role-0': 'OWNER',
-        'system-role-1': 'ADMIN',
-        'system-role-2': 'MEMBER',
-        'system-role-3': 'GUEST',
-      };
+      const roleMap: Record<string, Prisma.workspaceMemberWhereInput['role']> =
+        {
+          'system-role-0': 'OWNER',
+          'system-role-1': 'ADMIN',
+          'system-role-2': 'MEMBER',
+          'system-role-3': 'GUEST',
+        };
       if (roleMap[roleId]) {
         where.role = roleMap[roleId];
       }
@@ -133,10 +143,7 @@ export async function GET(
             },
           },
         },
-        orderBy: [
-          { role: 'asc' },
-          { joinedAt: 'asc' },
-        ],
+        orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
         skip: offset,
         take: limit,
       }),
@@ -144,40 +151,42 @@ export async function GET(
     ]);
 
     // Map members to response format
-    const memberInfos = members.map(m => {
-      // Determine member status based on user status
-      let memberStatus: MemberStatus = 'ACTIVE';
-      if (m.user.status === 'SUSPENDED') {
-        memberStatus = 'SUSPENDED';
-      } else if (m.user.status === 'PENDING') {
-        memberStatus = 'PENDING';
-      }
+    const memberInfos = members
+      .map(m => {
+        // Determine member status based on user status
+        let memberStatus: MemberStatus = 'ACTIVE';
+        if (m.user.status === 'SUSPENDED') {
+          memberStatus = 'SUSPENDED';
+        } else if (m.user.status === 'PENDING') {
+          memberStatus = 'PENDING';
+        }
 
-      // Filter by status if specified
-      if (status && memberStatus !== status) {
-        return null;
-      }
+        // Filter by status if specified
+        if (status && memberStatus !== status) {
+          return null;
+        }
 
-      return {
-        id: m.id,
-        userId: m.userId,
-        user: {
-          id: m.user.id,
-          name: m.user.name,
-          email: m.user.email,
-          displayName: m.user.displayName,
-          avatarUrl: m.user.avatarUrl,
-          isOrchestrator: m.user.isOrchestrator,
-        },
-        role: m.role,
-        roleId: null, // Would be populated from custom roles
-        status: memberStatus,
-        customFields: {},
-        joinedAt: m.joinedAt,
-        suspendedAt: null,
-        suspendReason: null,
-      };
-    }).filter(Boolean);
+        return {
+          id: m.id,
+          userId: m.userId,
+          user: {
+            id: m.user.id,
+            name: m.user.name,
+            email: m.user.email,
+            displayName: m.user.displayName,
+            avatarUrl: m.user.avatarUrl,
+            isOrchestrator: m.user.isOrchestrator,
+          },
+          role: m.role,
+          roleId: null, // Would be populated from custom roles
+          status: memberStatus,
+          customFields: {},
+          joinedAt: m.joinedAt,
+          suspendedAt: null,
+          suspendReason: null,
+        };
+      })
+      .filter(Boolean);
 
     return NextResponse.json({
       members: memberInfos,
@@ -187,8 +196,11 @@ export async function GET(
     });
   } catch (_error) {
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch members', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch members',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -1,27 +1,37 @@
 # Orchestrator Renaming Summary
 
 ## Overview
-Complete renaming of Orchestrator (Virtual Person) terminology to Orchestrator throughout the @neolith/core package.
+
+Complete renaming of Orchestrator (Virtual Person) terminology to Orchestrator throughout the
+@neolith/core package.
 
 ## Files Renamed
 
 ### Type Definitions
+
 - `src/types/vp.ts` → `src/types/orchestrator.ts` ✅ Created
 
 ### Services
-- `src/services/orchestrator-service.ts` → `src/services/orchestrator-service.ts` ⚠️ File exists but empty (needs content)
+
+- `src/services/orchestrator-service.ts` → `src/services/orchestrator-service.ts` ⚠️ File exists but
+  empty (needs content)
 
 ### Tests
-- `src/services/__tests__/orchestrator-service.test.ts` → `src/services/__tests__/orchestrator-service.test.ts` ✅ Exists
+
+- `src/services/__tests__/orchestrator-service.test.ts` →
+  `src/services/__tests__/orchestrator-service.test.ts` ✅ Exists
 
 ### Test Utilities
-- `src/test-utils/orchestrator-factories.ts` → `src/test-utils/orchestrator-factories.ts` ✅ Exists (needs content updates)
+
+- `src/test-utils/orchestrator-factories.ts` → `src/test-utils/orchestrator-factories.ts` ✅ Exists
+  (needs content updates)
 
 ## Type Name Changes
 
 ### Core Types
+
 - `VPWithUser` → `OrchestratorWithUser`
-- `VPCharter` → `OrchestratorCharter`  
+- `VPCharter` → `OrchestratorCharter`
 - `VPPersonality` → `OrchestratorPersonality`
 - `VPCommunicationPreferences` → `OrchestratorCommunicationPreferences`
 - `VPOperationalConfig` → `OrchestratorOperationalConfig`
@@ -30,28 +40,34 @@ Complete renaming of Orchestrator (Virtual Person) terminology to Orchestrator t
 - `VPServiceAccountConfig` → `OrchestratorServiceAccountConfig`
 
 ### Input Types
+
 - `CreateVPInput` → `CreateOrchestratorInput`
 - `UpdateVPInput` → `UpdateOrchestratorInput`
 
 ### Query Types
+
 - `ListVPsOptions` → `ListOrchestratorsOptions`
 - `PaginatedVPResult` → `PaginatedOrchestratorResult`
 
 ### Event Types
+
 - `VPEventType` → `OrchestratorEventType`
 - `VPEvent` → `OrchestratorEvent`
 
 ## Class and Function Name Changes
 
 ### Service Classes
+
 - `VPService` → `OrchestratorService`
 - `VPServiceImpl` → `OrchestratorServiceImpl`
 
 ### Factory Functions
+
 - `createVPService()` → `createOrchestratorService()`
 - `vpService` → `orchestratorService`
 
 ### Service Methods
+
 - `createVP()` → `createOrchestrator()`
 - `getVP()` → `getOrchestrator()`
 - `getVPBySlug()` → `getOrchestratorBySlug()`
@@ -63,6 +79,7 @@ Complete renaming of Orchestrator (Virtual Person) terminology to Orchestrator t
 - `deactivateVP()` → `deactivateOrchestrator()`
 
 ### Test Factories
+
 - `createMockVP()` → `createMockOrchestrator()`
 - `createMockVPWithUser()` → `createMockOrchestratorWithUser()`
 - `createMockVPList()` → `createMockOrchestratorList()`
@@ -71,10 +88,12 @@ Complete renaming of Orchestrator (Virtual Person) terminology to Orchestrator t
 - `createMockUpdateVPInput()` → `createMockUpdateOrchestratorInput()`
 
 ### Type Guards
+
 - `isVPCharter()` → `isOrchestratorCharter()`
 - `isVPServiceAccountConfig()` → `isOrchestratorServiceAccountConfig()`
 
 ### Constants
+
 - `DEFAULT_VP_CHARTER` → `DEFAULT_ORCHESTRATOR_CHARTER`
 
 ## Variable Name Changes
@@ -113,4 +132,3 @@ Complete renaming of Orchestrator (Virtual Person) terminology to Orchestrator t
 - Only code-level naming is updated for clarity
 - All functionality remains identical
 - Migration maintains backward compatibility at DB level
-

@@ -25,7 +25,8 @@ export const MessageContentType = {
   Code: 'CODE',
 } as const;
 
-export type MessageContentType = (typeof MessageContentType)[keyof typeof MessageContentType];
+export type MessageContentType =
+  (typeof MessageContentType)[keyof typeof MessageContentType];
 
 /**
  * Message delivery status
@@ -572,6 +573,10 @@ export function isDeleted(message: Message): boolean {
 /**
  * Type guard for MessageContentType
  */
-export function isMessageContentType(value: string): value is MessageContentType {
-  return Object.values(MessageContentType).includes(value as MessageContentType);
+export function isMessageContentType(
+  value: string
+): value is MessageContentType {
+  return Object.values(MessageContentType).includes(
+    value as MessageContentType
+  );
 }

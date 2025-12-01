@@ -1,10 +1,12 @@
 # Getting Started with Wundr
 
-Welcome to Wundr! This comprehensive guide will help you set up and start using the Wundr platform for intelligent code analysis, refactoring, and development workflow optimization.
+Welcome to Wundr! This comprehensive guide will help you set up and start using the Wundr platform
+for intelligent code analysis, refactoring, and development workflow optimization.
 
 ## 🎯 What You'll Learn
 
 By the end of this guide, you'll be able to:
+
 - Install and configure Wundr for your project
 - Run your first code analysis
 - Navigate the interactive dashboard
@@ -16,17 +18,20 @@ By the end of this guide, you'll be able to:
 Before you begin, ensure you have:
 
 ### System Requirements
+
 - **Node.js 18+** (LTS recommended)
 - **npm 8+** or **pnpm 8+** (we recommend pnpm for monorepos)
 - **Git** (for repository analysis and version control integration)
 - **8GB+ RAM** (recommended for analyzing large codebases)
 
 ### Operating System Support
+
 - **macOS** (Intel and Apple Silicon)
 - **Linux** (Ubuntu, Debian, RHEL, and derivatives)
 - **Windows** (Windows 10/11 with PowerShell or WSL2)
 
 ### Optional but Recommended
+
 - **Claude API Key** (for AI-powered features)
 - **GitHub Token** (for repository integrations)
 - **Slack Webhook URL** (for team notifications)
@@ -139,7 +144,7 @@ wundr analyze --verbose --debug
 After analysis completes, you'll see a summary like this:
 
 ```
-🔍 Analysis Complete! 
+🔍 Analysis Complete!
 
 📊 Summary:
    • Files analyzed: 1,247
@@ -310,11 +315,7 @@ Customize Wundr to fit your team's specific needs:
   },
   "analysis": {
     "targetPath": "./src",
-    "excludePatterns": [
-      "node_modules/**",
-      "dist/**",
-      "**/*.test.ts"
-    ],
+    "excludePatterns": ["node_modules/**", "dist/**", "**/*.test.ts"],
     "complexity": {
       "maxCyclomatic": 10,
       "maxCognitive": 15
@@ -407,15 +408,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install Wundr
         run: npm install -g @adapticai/wundr
-      
+
       - name: Run Analysis
         run: wundr analyze --ci --fail-on-issues
         env:
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-      
+
       - name: Upload Results
         uses: actions/upload-artifact@v3
         with:
@@ -484,26 +485,31 @@ wundr dashboard --clear-cache
 
 1. **Documentation**: Visit [docs.wundr.io](https://docs.wundr.io) for comprehensive guides
 2. **Community**: Join our [Discord community](https://discord.gg/wundr) for real-time help
-3. **GitHub Issues**: Report bugs at [github.com/adapticai/wundr/issues](https://github.com/adapticai/wundr/issues)
-4. **Enterprise Support**: Contact [enterprise@adaptic.ai](mailto:enterprise@adaptic.ai) for professional support
+3. **GitHub Issues**: Report bugs at
+   [github.com/adapticai/wundr/issues](https://github.com/adapticai/wundr/issues)
+4. **Enterprise Support**: Contact [enterprise@adaptic.ai](mailto:enterprise@adaptic.ai) for
+   professional support
 
 ## 🎉 You're Ready to Go!
 
 Congratulations! You now have Wundr set up and running. Here's what you can do next:
 
 ### Immediate Next Steps
+
 1. **Explore the dashboard** to understand your codebase better
 2. **Try AI-powered features** to get intelligent suggestions
 3. **Set up quality monitoring** to track improvements over time
 4. **Configure team integrations** for collaborative development
 
 ### Learning Resources
+
 - [CLI Reference Guide](../packages/@wundr/cli/README.md) - Complete command documentation
 - [Dashboard User Guide](../packages/@wundr/dashboard/README.md) - Web interface features
 - [AI Integration Guide](./AI_INTEGRATION.md) - Advanced AI features
 - [Best Practices](./BEST_PRACTICES.md) - Recommended usage patterns
 
 ### Community and Support
+
 - Follow [@WundrAI](https://twitter.com/WundrAI) for updates and tips
 - Join our [Discord community](https://discord.gg/wundr) for discussions
 - Subscribe to our [newsletter](https://wundr.io/newsletter) for tutorials

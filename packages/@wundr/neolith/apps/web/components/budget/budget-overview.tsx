@@ -1,7 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -72,10 +78,17 @@ const getUsageColorClass = (percentage: number): string => {
   return 'bg-green-500';
 };
 
-export function BudgetOverview({ usage, className, onViewChange }: BudgetOverviewProps) {
-  const [selectedView, setSelectedView] = React.useState<'hourly' | 'daily' | 'monthly'>(usage.period);
+export function BudgetOverview({
+  usage,
+  className,
+  onViewChange,
+}: BudgetOverviewProps) {
+  const [selectedView, setSelectedView] = React.useState<
+    'hourly' | 'daily' | 'monthly'
+  >(usage.period);
 
-  const usagePercentage = usage.limit > 0 ? (usage.current / usage.limit) * 100 : 0;
+  const usagePercentage =
+    usage.limit > 0 ? (usage.current / usage.limit) * 100 : 0;
   const colorVariant = getUsageColor(usagePercentage);
   const progressColorClass = getUsageColorClass(usagePercentage);
 
@@ -87,15 +100,15 @@ export function BudgetOverview({ usage, className, onViewChange }: BudgetOvervie
   return (
     <Card className={cn('w-full', className)}>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className='flex items-center justify-between'>
           <div>
             <CardTitle>Token Budget</CardTitle>
             <CardDescription>
               Current usage for {usage.period} period
             </CardDescription>
           </div>
-          <div className="flex gap-1">
-            {(['hourly', 'daily', 'monthly'] as const).map((view) => (
+          <div className='flex gap-1'>
+            {(['hourly', 'daily', 'monthly'] as const).map(view => (
               <button
                 key={view}
                 onClick={() => handleViewChange(view)}
@@ -112,19 +125,23 @@ export function BudgetOverview({ usage, className, onViewChange }: BudgetOvervie
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className='space-y-6'>
         {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">
+        <div className='space-y-2'>
+          <div className='flex items-center justify-between text-sm'>
+            <span className='font-medium'>
               {formatTokens(usage.current)} / {formatTokens(usage.limit)}
             </span>
-            <Badge variant={colorVariant === 'destructive' ? 'destructive' : 'default'}>
+            <Badge
+              variant={
+                colorVariant === 'destructive' ? 'destructive' : 'default'
+              }
+            >
               {usagePercentage.toFixed(1)}%
             </Badge>
           </div>
-          <div className="relative">
-            <Progress value={usagePercentage} className="h-3" />
+          <div className='relative'>
+            <Progress value={usagePercentage} className='h-3' />
             <div
               className={cn(
                 'absolute top-0 left-0 h-3 rounded-full transition-all',
@@ -136,15 +153,17 @@ export function BudgetOverview({ usage, className, onViewChange }: BudgetOvervie
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className='grid grid-cols-2 gap-4'>
           {/* Projected Exhaustion */}
           {usage.projectedExhaustion && (
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Projected Exhaustion</p>
-              <p className="text-sm font-medium">
+            <div className='space-y-1'>
+              <p className='text-xs text-muted-foreground'>
+                Projected Exhaustion
+              </p>
+              <p className='text-sm font-medium'>
                 {formatTimeRemaining(usage.projectedExhaustion)}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 {usage.projectedExhaustion.toLocaleString('en-US', {
                   month: 'short',
                   day: 'numeric',
@@ -157,38 +176,52 @@ export function BudgetOverview({ usage, className, onViewChange }: BudgetOvervie
 
           {/* Cost Estimate */}
           {usage.costEstimate !== undefined && (
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Estimated Cost</p>
-              <p className="text-sm font-medium">{formatCost(usage.costEstimate)}</p>
-              <p className="text-xs text-muted-foreground">
+            <div className='space-y-1'>
+              <p className='text-xs text-muted-foreground'>Estimated Cost</p>
+              <p className='text-sm font-medium'>
+                {formatCost(usage.costEstimate)}
+              </p>
+              <p className='text-xs text-muted-foreground'>
                 {formatCost(usage.costEstimate / usage.current)} per 1K tokens
               </p>
             </div>
           )}
 
           {/* Tokens Remaining */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Tokens Remaining</p>
-            <p className="text-sm font-medium">
+          <div className='space-y-1'>
+            <p className='text-xs text-muted-foreground'>Tokens Remaining</p>
+            <p className='text-sm font-medium'>
               {formatTokens(Math.max(0, usage.limit - usage.current))}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {((Math.max(0, usage.limit - usage.current) / usage.limit) * 100).toFixed(1)}% available
+            <p className='text-xs text-muted-foreground'>
+              {(
+                (Math.max(0, usage.limit - usage.current) / usage.limit) *
+                100
+              ).toFixed(1)}
+              % available
             </p>
           </div>
 
           {/* Usage Rate */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Status</p>
-            <div className="flex items-center gap-2">
+          <div className='space-y-1'>
+            <p className='text-xs text-muted-foreground'>Status</p>
+            <div className='flex items-center gap-2'>
               <div
                 className={cn(
                   'h-2 w-2 rounded-full',
-                  usagePercentage >= 90 ? 'bg-destructive' : usagePercentage >= 75 ? 'bg-yellow-500' : 'bg-green-500'
+                  usagePercentage >= 90
+                    ? 'bg-destructive'
+                    : usagePercentage >= 75
+                      ? 'bg-yellow-500'
+                      : 'bg-green-500'
                 )}
               />
-              <p className="text-sm font-medium">
-                {usagePercentage >= 90 ? 'Critical' : usagePercentage >= 75 ? 'Warning' : 'Healthy'}
+              <p className='text-sm font-medium'>
+                {usagePercentage >= 90
+                  ? 'Critical'
+                  : usagePercentage >= 75
+                    ? 'Warning'
+                    : 'Healthy'}
               </p>
             </div>
           </div>

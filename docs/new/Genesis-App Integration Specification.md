@@ -2,12 +2,12 @@
 
 ## Document Metadata
 
-| Field | Value |
-|-------|-------|
-| **Version** | 1.0.0 |
-| **Created** | 2025-11-24 |
-| **Status** | Draft |
-| **Authors** | Wundr Architecture Team |
+| Field            | Value                                  |
+| ---------------- | -------------------------------------- |
+| **Version**      | 1.0.0                                  |
+| **Created**      | 2025-11-24                             |
+| **Status**       | Draft                                  |
+| **Authors**      | Wundr Architecture Team                |
 | **Related Docs** | Slack Clone Feature Backlog & Setup.md |
 
 ---
@@ -16,24 +16,30 @@
 
 ### 1.1 Overview
 
-The **Genesis-App** is an enterprise communication platform that extends the original Slack-clone specification with deep integration into the Wundr ecosystem. It serves as a **dual-purpose platform**:
+The **Genesis-App** is an enterprise communication platform that extends the original Slack-clone
+specification with deep integration into the Wundr ecosystem. It serves as a **dual-purpose
+platform**:
 
-1. **Human-Facing Communication Hub**: A full-featured Slack-like experience (PWA, mobile, desktop) for enterprise teams
-2. **VP-Daemon Integration Layer**: Programmatic API enabling Virtual Principal (VP) agents to participate as first-class citizens
+1. **Human-Facing Communication Hub**: A full-featured Slack-like experience (PWA, mobile, desktop)
+   for enterprise teams
+2. **VP-Daemon Integration Layer**: Programmatic API enabling Virtual Principal (VP) agents to
+   participate as first-class citizens
 
 ### 1.2 Key Integration Points
 
-| Integration | Source Package | Purpose |
-|-------------|---------------|---------|
-| **Org-Genesis** | `@wundr/org-genesis` | Automated organizational structure generation during workspace setup |
-| **VP-Daemon** | `@wundr/computer-setup` | Machine-level supervisor daemon connectivity |
-| **Slack-Agent** | `@wundr/slack-agent` | Reference implementation for VP communication patterns |
+| Integration     | Source Package          | Purpose                                                              |
+| --------------- | ----------------------- | -------------------------------------------------------------------- |
+| **Org-Genesis** | `@wundr/org-genesis`    | Automated organizational structure generation during workspace setup |
+| **VP-Daemon**   | `@wundr/computer-setup` | Machine-level supervisor daemon connectivity                         |
+| **Slack-Agent** | `@wundr/slack-agent`    | Reference implementation for VP communication patterns               |
 
 ### 1.3 Strategic Goals
 
-1. **Seamless Org Provisioning**: Transform the conversational org-genesis experience into workspace creation
+1. **Seamless Org Provisioning**: Transform the conversational org-genesis experience into workspace
+   creation
 2. **Agent-First Architecture**: VP agents operate as indistinguishable users within the platform
-3. **Dual-Channel Support**: VP-Daemons can connect to both real Slack AND genesis-app simultaneously
+3. **Dual-Channel Support**: VP-Daemons can connect to both real Slack AND genesis-app
+   simultaneously
 4. **Package Reusability**: Extract common interfaces for cross-platform communication clients
 
 ---
@@ -159,18 +165,18 @@ genesis-app/
 
 ### 2.3 Technology Stack
 
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| **Frontend** | Next.js 14+ (App Router) | Server components, streaming, optimal DX |
-| **UI Library** | Shadcn/ui + Radix | Accessible, customizable, TypeScript-first |
-| **Mobile** | Capacitor | Web-to-native bridge with plugin ecosystem |
-| **Desktop** | Electron | Full native API access for screen sharing |
-| **API** | Apollo Server 4 + GraphQL | Strong typing, subscriptions, federation-ready |
-| **Database** | PostgreSQL + Prisma | Type-safe ORM, migrations, connection pooling |
-| **Real-time** | Redis PubSub + graphql-ws | Horizontal scaling, presence management |
-| **Voice/Video** | LiveKit | Open-source, scalable WebRTC infrastructure |
-| **Auth** | Auth.js (NextAuth) v5 | Flexible providers, session management |
-| **Build** | Turborepo + pnpm | Monorepo caching, workspace management |
+| Layer           | Technology                | Rationale                                      |
+| --------------- | ------------------------- | ---------------------------------------------- |
+| **Frontend**    | Next.js 14+ (App Router)  | Server components, streaming, optimal DX       |
+| **UI Library**  | Shadcn/ui + Radix         | Accessible, customizable, TypeScript-first     |
+| **Mobile**      | Capacitor                 | Web-to-native bridge with plugin ecosystem     |
+| **Desktop**     | Electron                  | Full native API access for screen sharing      |
+| **API**         | Apollo Server 4 + GraphQL | Strong typing, subscriptions, federation-ready |
+| **Database**    | PostgreSQL + Prisma       | Type-safe ORM, migrations, connection pooling  |
+| **Real-time**   | Redis PubSub + graphql-ws | Horizontal scaling, presence management        |
+| **Voice/Video** | LiveKit                   | Open-source, scalable WebRTC infrastructure    |
+| **Auth**        | Auth.js (NextAuth) v5     | Flexible providers, session management         |
+| **Build**       | Turborepo + pnpm          | Monorepo caching, workspace management         |
 
 ---
 
@@ -178,7 +184,8 @@ genesis-app/
 
 ### 3.1 Core Schema (From Original Backlog)
 
-The original backlog defines these core models. We extend them for org-genesis and VP-daemon integration.
+The original backlog defines these core models. We extend them for org-genesis and VP-daemon
+integration.
 
 ### 3.2 Extended Prisma Schema
 
@@ -685,15 +692,16 @@ model AuditLog {
 
 #### Task 0.1: Monorepo Initialization
 
-| Item | Specification |
-|------|---------------|
-| **Package Manager** | pnpm with workspace configuration |
-| **Build System** | Turborepo with remote caching |
-| **TypeScript** | Strict mode, path aliases, shared config |
-| **Linting** | ESLint with Next.js, Prettier integration |
-| **Styling** | Tailwind CSS with shared config package |
+| Item                | Specification                             |
+| ------------------- | ----------------------------------------- |
+| **Package Manager** | pnpm with workspace configuration         |
+| **Build System**    | Turborepo with remote caching             |
+| **TypeScript**      | Strict mode, path aliases, shared config  |
+| **Linting**         | ESLint with Next.js, Prettier integration |
+| **Styling**         | Tailwind CSS with shared config package   |
 
 **Deliverables**:
+
 - `pnpm-workspace.yaml` configuration
 - `turbo.json` with pipeline definitions
 - `@genesis/typescript-config` package
@@ -702,14 +710,15 @@ model AuditLog {
 
 #### Task 0.2: Database & ORM
 
-| Item | Specification |
-|------|---------------|
-| **Database** | PostgreSQL 15+ |
-| **Cache/PubSub** | Redis 7+ |
-| **ORM** | Prisma 5+ with singleton pattern |
-| **Migrations** | Prisma Migrate with CI integration |
+| Item             | Specification                      |
+| ---------------- | ---------------------------------- |
+| **Database**     | PostgreSQL 15+                     |
+| **Cache/PubSub** | Redis 7+                           |
+| **ORM**          | Prisma 5+ with singleton pattern   |
+| **Migrations**   | Prisma Migrate with CI integration |
 
 **Deliverables**:
+
 - `docker-compose.yml` with Postgres + Redis
 - `@genesis/database` package with Prisma schema
 - Singleton client implementation for serverless
@@ -717,15 +726,16 @@ model AuditLog {
 
 #### Task 0.3: GraphQL Server
 
-| Item | Specification |
-|------|---------------|
-| **Server** | Apollo Server 4 |
-| **HTTP Transport** | Next.js API route (`/api/graphql`) |
-| **WS Transport** | Separate Node.js service or `graphql-ws` |
-| **PubSub** | `graphql-redis-subscriptions` |
-| **Code Generation** | GraphQL Code Generator |
+| Item                | Specification                            |
+| ------------------- | ---------------------------------------- |
+| **Server**          | Apollo Server 4                          |
+| **HTTP Transport**  | Next.js API route (`/api/graphql`)       |
+| **WS Transport**    | Separate Node.js service or `graphql-ws` |
+| **PubSub**          | `graphql-redis-subscriptions`            |
+| **Code Generation** | GraphQL Code Generator                   |
 
 **Deliverables**:
+
 - Apollo Server configuration
 - Redis PubSub integration
 - Type generation pipeline
@@ -733,31 +743,34 @@ model AuditLog {
 
 #### Task 0.4: Native Wrappers
 
-| Item | Specification |
-|------|---------------|
-| **Desktop** | Electron with `electron-builder` |
-| **Mobile** | Capacitor with iOS/Android targets |
-| **IPC** | Context-isolated preload scripts |
+| Item        | Specification                      |
+| ----------- | ---------------------------------- |
+| **Desktop** | Electron with `electron-builder`   |
+| **Mobile**  | Capacitor with iOS/Android targets |
+| **IPC**     | Context-isolated preload scripts   |
 
 **Deliverables**:
+
 - `apps/desktop` with Electron configuration
 - Capacitor configuration in `apps/web`
 - Build scripts for all platforms
 
 #### Task 0.5: CI/CD Pipeline
 
-| Item | Specification |
-|------|---------------|
-| **CI Platform** | GitHub Actions |
-| **Testing** | Vitest for unit, Playwright for E2E |
-| **Deployment** | Vercel (web), Railway (API), GitHub Releases (desktop) |
+| Item            | Specification                                          |
+| --------------- | ------------------------------------------------------ |
+| **CI Platform** | GitHub Actions                                         |
+| **Testing**     | Vitest for unit, Playwright for E2E                    |
+| **Deployment**  | Vercel (web), Railway (API), GitHub Releases (desktop) |
 
 **Deliverables**:
+
 - GitHub Actions workflows
 - Automated testing on PR
 - Release automation for desktop builds
 
 **Acceptance Criteria**:
+
 - [ ] `pnpm install` succeeds at root
 - [ ] `pnpm build` produces cached artifacts
 - [ ] `docker-compose up -d` starts all services
@@ -773,6 +786,7 @@ model AuditLog {
 #### Task 0.5.1: Schema Migration
 
 Create the extended Prisma schema (as defined in Section 3.2) with:
+
 - VP-related enums and models
 - Org-genesis integration fields on Workspace
 - ServiceAccount model for daemon auth
@@ -792,9 +806,9 @@ export async function migrateOrgGenesisResult(
   workspaceId: string,
   manifest: OrganizationManifest,
   orchestrators: VPCharter[],
-  disciplines: DisciplinePack[],
+  disciplines: DisciplinePack[]
 ): Promise<void> {
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     // 1. Update workspace with org manifest
     await tx.workspace.update({
       where: { id: workspaceId },
@@ -875,6 +889,7 @@ export async function migrateOrgGenesisResult(
 ```
 
 **Acceptance Criteria**:
+
 - [ ] `pnpm db:migrate` applies all schema changes
 - [ ] Migration script creates VP users from org-genesis output
 - [ ] Discipline channels are auto-generated
@@ -889,6 +904,7 @@ export async function migrateOrgGenesisResult(
 #### Feature 1.1: Human Authentication (NextAuth)
 
 As specified in original backlog:
+
 - Google OAuth provider
 - Email magic link provider
 - Session persistence
@@ -897,15 +913,18 @@ As specified in original backlog:
 #### Feature 1.2: Native Mobile Authentication
 
 As specified in original backlog:
+
 - Deep link registration (iOS/Android)
 - Manual token exchange flow
 - Capacitor Secure Storage integration
 
 #### Feature 1.3: Org-Genesis Workspace Wizard
 
-**User Story**: As a workspace creator, I want to use org-genesis to define my organizational structure during workspace setup.
+**User Story**: As a workspace creator, I want to use org-genesis to define my organizational
+structure during workspace setup.
 
 **UI Flow**:
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    CREATE WORKSPACE                              │
@@ -949,6 +968,7 @@ As specified in original backlog:
 ```
 
 **GraphQL Schema**:
+
 ```graphql
 input CreateWorkspaceWithGenesisInput {
   # Standard workspace fields
@@ -1005,6 +1025,7 @@ type Mutation {
 ```
 
 **Resolver Implementation**:
+
 ```typescript
 // apps/web/app/api/graphql/resolvers/workspace.ts
 
@@ -1015,7 +1036,7 @@ export const workspaceMutations = {
   createWorkspaceWithGenesis: async (
     _: unknown,
     { input }: { input: CreateWorkspaceWithGenesisInput },
-    context: GraphQLContext,
+    context: GraphQLContext
   ) => {
     // 1. Verify user is authenticated
     if (!context.user) {
@@ -1060,7 +1081,7 @@ export const workspaceMutations = {
       workspace.id,
       genesisResult.manifest,
       genesisResult.vps,
-      genesisResult.disciplines,
+      genesisResult.disciplines
     );
 
     // 6. Fetch and return results
@@ -1085,6 +1106,7 @@ export const workspaceMutations = {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Org-Genesis wizard collects all configuration
 - [ ] GenesisEngine runs and generates structure
 - [ ] VP users created with type='VP_AGENT'
@@ -1100,6 +1122,7 @@ export const workspaceMutations = {
 #### Feature 1.5.1: VP User Creation
 
 When org-genesis generates VPs, automatically create:
+
 1. User record with `type='VP_AGENT'`
 2. VPMapping linking user to charter
 3. WorkspaceMember with appropriate role
@@ -1123,7 +1146,7 @@ export async function createServiceAccountForVP(
   prisma: PrismaClient,
   vpUserId: string,
   workspaceId: string,
-  vpName: string,
+  vpName: string
 ): Promise<GeneratedServiceAccount> {
   // Generate a secure API key
   const apiKey = `gsk_${randomBytes(32).toString('base64url')}`;
@@ -1193,6 +1216,7 @@ After workspace creation, show credentials for each VP:
 ```
 
 **Acceptance Criteria**:
+
 - [ ] VP users have ServiceAccounts created
 - [ ] API keys shown once and downloadable as .env
 - [ ] Service accounts have appropriate scopes
@@ -1249,6 +1273,7 @@ type DaemonMessageMeta {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Messages render in real-time
 - [ ] Threads work correctly
 - [ ] Offline queue persists and flushes
@@ -1263,6 +1288,7 @@ type DaemonMessageMeta {
 #### Feature 3.1: Granular RBAC (Original)
 
 As specified in original backlog with org-genesis integration:
+
 - Roles from `OrgGovernanceConfig` map to RBAC
 - VP users default to MEMBER role
 - ExecutiveVpIds get elevated permissions
@@ -1276,6 +1302,7 @@ As specified in original backlog with org-genesis integration:
 #### Feature 3.3: Auto-Generated Channel Management (NEW)
 
 Channels created from org-genesis disciplines:
+
 - Show "Auto-generated from org-genesis" badge
 - Link to discipline metadata
 - Prevent deletion (only archive)
@@ -1302,6 +1329,7 @@ type DisciplineMapping {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] RBAC enforced via GraphQL Shield
 - [ ] Auto-generated channels identified
 - [ ] Discipline metadata accessible
@@ -1316,6 +1344,7 @@ type DisciplineMapping {
 #### Feature 3.5.1: Heartbeat-Based Presence (Original)
 
 As specified in original backlog:
+
 - Redis keys with TTL
 - Keyspace notifications
 - Throttled status broadcasts
@@ -1346,6 +1375,7 @@ enum PresenceStatus {
 ```
 
 **Implementation**:
+
 ```typescript
 // apps/web/app/api/daemon/presence/route.ts
 
@@ -1358,22 +1388,26 @@ export async function POST(request: Request) {
   await redis.setex(
     `presence:${vpUser.id}`,
     45, // 45 second TTL
-    JSON.stringify({ presence, statusText, statusEmoji, isDaemonControlled: true }),
+    JSON.stringify({ presence, statusText, statusEmoji, isDaemonControlled: true })
   );
 
   // Publish presence change
-  await redis.publish('USER_PRESENCE_CHANGE', JSON.stringify({
-    userId: vpUser.id,
-    presence,
-    statusText,
-    statusEmoji,
-  }));
+  await redis.publish(
+    'USER_PRESENCE_CHANGE',
+    JSON.stringify({
+      userId: vpUser.id,
+      presence,
+      statusText,
+      statusEmoji,
+    })
+  );
 
   return Response.json({ success: true });
 }
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Human presence via WebSocket heartbeat
 - [ ] Daemon presence via REST API
 - [ ] Presence changes broadcast to all clients
@@ -1386,12 +1420,14 @@ export async function POST(request: Request) {
 **Objective**: Implement file upload/download with S3.
 
 As specified in original backlog:
+
 - Direct-to-S3 uploads via pre-signed URLs
 - Image optimization with Lambda
 - Thumbnail generation
 - File retention policies
 
 **VP-Daemon Extension**:
+
 - Daemons can upload files via API
 - File attribution shows daemon metadata
 - Quota tracking per service account
@@ -1403,12 +1439,14 @@ As specified in original backlog:
 **Objective**: Implement WebRTC-based huddles with LiveKit.
 
 As specified in original backlog:
+
 - One-click audio huddles
 - LiveKit token generation
 - Voice activity detection
 - Desktop screen sharing via Electron
 
 **VP-Daemon Consideration**:
+
 - VP agents do NOT participate in audio/video (they're text-only)
 - VPs can trigger huddle notifications via messages
 
@@ -1419,6 +1457,7 @@ As specified in original backlog:
 **Objective**: Complete native platform integration.
 
 As specified in original backlog:
+
 - Push notifications (FCM/APNs)
 - Deep links
 - Electron tray/dock badges
@@ -1431,11 +1470,13 @@ As specified in original backlog:
 **Objective**: Implement enterprise-grade features.
 
 As specified in original backlog:
+
 - Full-text search with modifiers
 - Audit logging
 - File retention policies
 
 **Org-Genesis Integration**:
+
 - Audit log captures org-genesis events
 - Search includes org metadata
 - Governance config from org-genesis enforced
@@ -1449,6 +1490,7 @@ As specified in original backlog:
 #### Feature 8.1: Machine Service Account Authentication
 
 **Authentication Flow**:
+
 ```
 ┌─────────────┐                         ┌─────────────┐
 │  VP-Daemon  │                         │ Genesis-App │
@@ -1472,6 +1514,7 @@ As specified in original backlog:
 ```
 
 **API Endpoints**:
+
 ```typescript
 // Authentication
 POST /api/daemon/auth
@@ -1520,6 +1563,7 @@ WS /api/daemon/events
 #### Feature 8.2: Daemon Event Subscriptions
 
 **WebSocket Protocol**:
+
 ```typescript
 // Connection
 ws://genesis-app.example.com/api/daemon/events
@@ -1552,24 +1596,26 @@ Headers: { Authorization: "Bearer eyJhbG..." }
 #### Feature 8.3: Rate Limiting & Quotas
 
 **Configuration**:
+
 ```typescript
 interface RateLimitConfig {
   // Per-minute limits
-  messagesPerMinute: number;      // Default: 60
-  reactionsPerMinute: number;     // Default: 100
-  fileUploadsPerMinute: number;   // Default: 10
+  messagesPerMinute: number; // Default: 60
+  reactionsPerMinute: number; // Default: 100
+  fileUploadsPerMinute: number; // Default: 10
 
   // Burst limits
-  burstMessages: number;          // Default: 10
-  burstReactions: number;         // Default: 20
+  burstMessages: number; // Default: 10
+  burstReactions: number; // Default: 20
 
   // Monthly quotas
-  monthlyTokenBudget?: number;    // null = unlimited
-  monthlyFileSizeMb?: number;     // null = unlimited
+  monthlyTokenBudget?: number; // null = unlimited
+  monthlyFileSizeMb?: number; // null = unlimited
 }
 ```
 
 **Acceptance Criteria**:
+
 - [ ] API key authentication works
 - [ ] JWT tokens issued with correct scopes
 - [ ] All messaging APIs functional
@@ -1604,7 +1650,12 @@ export interface CommunicationClient {
   // Messaging
   sendMessage(channel: string, text: string, options?: MessageOptions): Promise<MessageResult>;
   sendDM(userId: string, text: string): Promise<MessageResult>;
-  replyToThread(channel: string, threadTs: string, text: string, broadcast?: boolean): Promise<MessageResult>;
+  replyToThread(
+    channel: string,
+    threadTs: string,
+    text: string,
+    broadcast?: boolean
+  ): Promise<MessageResult>;
   editMessage(channel: string, ts: string, newText: string): Promise<void>;
   deleteMessage(channel: string, ts: string): Promise<void>;
 
@@ -1661,6 +1712,7 @@ export interface HealthCheckResult {
 #### Feature 9.2: Create @wundr/genesis-client Package
 
 **Package Structure**:
+
 ```
 packages/@wundr/genesis-client/
 ├── package.json
@@ -1688,11 +1740,16 @@ packages/@wundr/genesis-client/
 ```
 
 **Main Client Implementation**:
+
 ```typescript
 // packages/@wundr/genesis-client/src/genesis-client.ts
 
 import { EventEmitter } from 'events';
-import type { CommunicationClient, MessageOptions, MessageResult } from '@wundr/communication-client';
+import type {
+  CommunicationClient,
+  MessageOptions,
+  MessageResult,
+} from '@wundr/communication-client';
 
 export interface GenesisClientConfig {
   /** Genesis-App API endpoint */
@@ -1720,7 +1777,9 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
     super();
     this.config = config;
     this.tokenManager = new TokenManager(config.apiEndpoint, config.apiKey);
-    this.wsClient = new WebSocketClient(config.wsEndpoint || config.apiEndpoint.replace('http', 'ws'));
+    this.wsClient = new WebSocketClient(
+      config.wsEndpoint || config.apiEndpoint.replace('http', 'ws')
+    );
     this.offlineQueue = new OfflineQueue({ enabled: config.offlineSupport ?? true });
   }
 
@@ -1755,7 +1814,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
   async sendMessage(
     channel: string,
     text: string,
-    options?: MessageOptions,
+    options?: MessageOptions
   ): Promise<MessageResult> {
     if (!this.isConnected && this.config.offlineSupport) {
       return this.offlineQueue.enqueue('sendMessage', { channel, text, options });
@@ -1766,7 +1825,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
   private async sendMessageInternal(
     channel: string,
     text: string,
-    options?: MessageOptions,
+    options?: MessageOptions
   ): Promise<MessageResult> {
     const response = await this.apiCall('POST', '/messages', {
       channelId: channel,
@@ -1788,7 +1847,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
     const response = await fetch(`${this.config.apiEndpoint}${path}`, {
       method,
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -1802,9 +1861,9 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
   }
 
   private setupEventHandlers(): void {
-    this.wsClient.on('message', (event) => this.emit('message', event));
-    this.wsClient.on('mention', (event) => this.emit('mention', event));
-    this.wsClient.on('reaction_added', (event) => this.emit('reaction_added', event));
+    this.wsClient.on('message', event => this.emit('message', event));
+    this.wsClient.on('mention', event => this.emit('mention', event));
+    this.wsClient.on('reaction_added', event => this.emit('reaction_added', event));
     // ... other events
   }
 }
@@ -1890,15 +1949,11 @@ export class VPCommunicationManager {
   }
 
   async startAll(): Promise<void> {
-    await Promise.all(
-      Array.from(this.clients.values()).map(client => client.start())
-    );
+    await Promise.all(Array.from(this.clients.values()).map(client => client.start()));
   }
 
   async stopAll(): Promise<void> {
-    await Promise.all(
-      Array.from(this.clients.values()).map(client => client.stop())
-    );
+    await Promise.all(Array.from(this.clients.values()).map(client => client.stop()));
   }
 
   // Get primary client
@@ -1930,6 +1985,7 @@ export class VPCommunicationManager {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] CommunicationClient interface extracted
 - [ ] @wundr/genesis-client package created
 - [ ] GenesisClient implements full interface
@@ -2317,18 +2373,19 @@ components:
 
 ### 6.1 Existing Wundr Package Updates
 
-| Package | Change Type | Description |
-|---------|-------------|-------------|
-| `@wundr/org-genesis` | Extension | Add `toGenesisApp()` export method |
-| `@wundr/slack-agent` | Refactor | Extract interface to `@wundr/communication-client` |
-| `@wundr/computer-setup` | Extension | Add genesis-app integration template |
-| NEW: `@wundr/communication-client` | New | Shared interface package |
-| NEW: `@wundr/genesis-client` | New | Genesis-App client SDK |
-| NEW: `@wundr/vp-communication` | New | Multi-channel manager |
+| Package                            | Change Type | Description                                        |
+| ---------------------------------- | ----------- | -------------------------------------------------- |
+| `@wundr/org-genesis`               | Extension   | Add `toGenesisApp()` export method                 |
+| `@wundr/slack-agent`               | Refactor    | Extract interface to `@wundr/communication-client` |
+| `@wundr/computer-setup`            | Extension   | Add genesis-app integration template               |
+| NEW: `@wundr/communication-client` | New         | Shared interface package                           |
+| NEW: `@wundr/genesis-client`       | New         | Genesis-App client SDK                             |
+| NEW: `@wundr/vp-communication`     | New         | Multi-channel manager                              |
 
 ### 6.2 Breaking Changes
 
 **None** - All changes are additive:
+
 - Existing Slack integration continues to work
 - New genesis-app integration is opt-in
 - Interface extraction doesn't change existing exports
@@ -2345,14 +2402,14 @@ components:
 
 ### 7.1 Service Account Security
 
-| Measure | Implementation |
-|---------|----------------|
-| **API Key Storage** | bcrypt hash only stored in DB |
-| **Key Rotation** | Regenerate via admin API, invalidates old key |
-| **Scope Limitation** | JWT contains explicit scope list |
-| **Rate Limiting** | Per-account limits enforced |
-| **IP Allowlisting** | Optional per-account IP restrictions |
-| **Audit Logging** | All daemon actions logged |
+| Measure              | Implementation                                |
+| -------------------- | --------------------------------------------- |
+| **API Key Storage**  | bcrypt hash only stored in DB                 |
+| **Key Rotation**     | Regenerate via admin API, invalidates old key |
+| **Scope Limitation** | JWT contains explicit scope list              |
+| **Rate Limiting**    | Per-account limits enforced                   |
+| **IP Allowlisting**  | Optional per-account IP restrictions          |
+| **Audit Logging**    | All daemon actions logged                     |
 
 ### 7.2 Authentication Flow Security
 
@@ -2399,23 +2456,25 @@ components:
 
 ### 8.1 Test Categories
 
-| Category | Tool | Coverage Target |
-|----------|------|-----------------|
-| Unit Tests | Vitest | 80% code coverage |
-| Integration Tests | Vitest + Supertest | All API endpoints |
-| E2E Tests | Playwright | Critical user journeys |
-| Load Tests | k6 | 1000 concurrent connections |
-| Security Tests | OWASP ZAP | All auth endpoints |
+| Category          | Tool               | Coverage Target             |
+| ----------------- | ------------------ | --------------------------- |
+| Unit Tests        | Vitest             | 80% code coverage           |
+| Integration Tests | Vitest + Supertest | All API endpoints           |
+| E2E Tests         | Playwright         | Critical user journeys      |
+| Load Tests        | k6                 | 1000 concurrent connections |
+| Security Tests    | OWASP ZAP          | All auth endpoints          |
 
 ### 8.2 Key Test Scenarios
 
 **Org-Genesis Integration**:
+
 - [ ] Workspace creation with org-genesis
 - [ ] VP user provisioning
 - [ ] Discipline channel auto-generation
 - [ ] Service account creation
 
 **VP-Daemon Gateway**:
+
 - [ ] API key authentication
 - [ ] JWT token refresh
 - [ ] Message send/receive
@@ -2424,6 +2483,7 @@ components:
 - [ ] Offline queue flush
 
 **Multi-Channel Communication**:
+
 - [ ] Simultaneous Slack + Genesis connection
 - [ ] Message broadcast to both channels
 - [ ] Graceful degradation on channel failure
@@ -2480,13 +2540,13 @@ const metrics = {
 
 ### 9.3 Alerting
 
-| Alert | Condition | Severity |
-|-------|-----------|----------|
-| Daemon Auth Failures | >10/min | Warning |
-| Rate Limit Exceeded | >100/min | Warning |
-| WebSocket Disconnections | >50/min | Critical |
-| Message Latency | P99 > 500ms | Warning |
-| Database Connection | Pool exhausted | Critical |
+| Alert                    | Condition      | Severity |
+| ------------------------ | -------------- | -------- |
+| Daemon Auth Failures     | >10/min        | Warning  |
+| Rate Limit Exceeded      | >100/min       | Warning  |
+| WebSocket Disconnections | >50/min        | Critical |
+| Message Latency          | P99 > 500ms    | Warning  |
+| Database Connection      | Pool exhausted | Critical |
 
 ---
 
@@ -2494,18 +2554,16 @@ const metrics = {
 
 ### 10.1 Overview
 
-This module defines the complete file pipeline enabling files uploaded to Genesis-App to flow through to VP-Daemons and ultimately be processed within Claude Code / Claude Flow sessions.
+This module defines the complete file pipeline enabling files uploaded to Genesis-App to flow
+through to VP-Daemons and ultimately be processed within Claude Code / Claude Flow sessions.
 
-**Supported File Types**:
-| Category | Extensions | Processing |
-|----------|------------|------------|
-| Documents | `.pdf`, `.docx`, `.doc`, `.odt` | Text extraction + OCR |
-| Spreadsheets | `.xlsx`, `.xls`, `.csv`, `.ods` | Structured data extraction |
-| Images | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg` | Vision API / OCR |
-| Code | `.ts`, `.js`, `.py`, `.go`, `.rs`, `.java`, etc. | Direct text |
-| Archives | `.zip`, `.tar.gz` | Extraction + recursive processing |
-| Data | `.json`, `.yaml`, `.xml`, `.toml` | Direct text |
-| Text | `.txt`, `.md`, `.rtf` | Direct text |
+**Supported File Types**: | Category | Extensions | Processing |
+|----------|------------|------------| | Documents | `.pdf`, `.docx`, `.doc`, `.odt` | Text
+extraction + OCR | | Spreadsheets | `.xlsx`, `.xls`, `.csv`, `.ods` | Structured data extraction | |
+Images | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg` | Vision API / OCR | | Code | `.ts`,
+`.js`, `.py`, `.go`, `.rs`, `.java`, etc. | Direct text | | Archives | `.zip`, `.tar.gz` |
+Extraction + recursive processing | | Data | `.json`, `.yaml`, `.xml`, `.toml` | Direct text | |
+Text | `.txt`, `.md`, `.rtf` | Direct text |
 
 ### 10.2 File Pipeline Architecture
 
@@ -2786,20 +2844,20 @@ export interface FileProcessorConfig {
   s3Region: string;
 
   // Processing limits
-  maxFileSizeMb: number;           // Default: 100MB
-  maxPagesPerPdf: number;          // Default: 500
-  maxRowsPerSpreadsheet: number;   // Default: 100000
+  maxFileSizeMb: number; // Default: 100MB
+  maxPagesPerPdf: number; // Default: 500
+  maxRowsPerSpreadsheet: number; // Default: 100000
 
   // OCR settings
   ocrEnabled: boolean;
-  ocrLanguages: string[];          // Default: ['eng']
+  ocrLanguages: string[]; // Default: ['eng']
 
   // Token budgeting
-  maxExtractedTokens: number;      // Default: 50000
+  maxExtractedTokens: number; // Default: 50000
 
   // Queue settings
-  concurrency: number;             // Default: 5
-  jobTimeout: number;              // Default: 300000 (5 min)
+  concurrency: number; // Default: 5
+  jobTimeout: number; // Default: 300000 (5 min)
 }
 
 export const defaultConfig: FileProcessorConfig = {
@@ -2891,12 +2949,13 @@ export async function processXlsx(buffer: Buffer): Promise<ProcessorResult> {
   let totalRows = 0;
   let maxColumns = 0;
 
-  workbook.eachSheet((worksheet) => {
+  workbook.eachSheet(worksheet => {
     sheetNames.push(worksheet.name);
     const rows: unknown[][] = [];
 
     worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber <= 10000) { // Limit rows per sheet
+      if (rowNumber <= 10000) {
+        // Limit rows per sheet
         rows.push(row.values as unknown[]);
         totalRows++;
         maxColumns = Math.max(maxColumns, (row.values as unknown[]).length);
@@ -2934,7 +2993,7 @@ export async function processXlsx(buffer: Buffer): Promise<ProcessorResult> {
 export async function processImage(
   buffer: Buffer,
   mimeType: string,
-  ocrEnabled: boolean = true,
+  ocrEnabled: boolean = true
 ): Promise<ProcessorResult> {
   // Get image metadata
   const metadata = await sharp(buffer).metadata();
@@ -3056,7 +3115,7 @@ export const fileProcessingWorker = new Worker<FileProcessingJob>(
         await uploadToS3(
           extractedJsonKey,
           Buffer.from(JSON.stringify(result.extractedJson, null, 2)),
-          'application/json',
+          'application/json'
         );
       }
 
@@ -3083,7 +3142,6 @@ export const fileProcessingWorker = new Worker<FileProcessingJob>(
 
       // Publish event for daemons
       await publishFileProcessedEvent(fileId);
-
     } catch (error) {
       await prisma.file.update({
         where: { id: fileId },
@@ -3098,7 +3156,7 @@ export const fileProcessingWorker = new Worker<FileProcessingJob>(
   {
     connection: { url: process.env.REDIS_URL },
     concurrency: 5,
-  },
+  }
 );
 ```
 
@@ -3112,11 +3170,11 @@ import * as path from 'path';
 import { EventEmitter } from 'events';
 
 export interface FileSyncConfig {
-  cacheDir: string;                    // Default: ~/vp-daemon/files/cache
-  sessionDir: string;                  // Default: ~/vp-daemon/files/sessions
-  maxCacheSizeMb: number;              // Default: 1000 (1GB)
-  autoSync: boolean;                   // Default: true
-  syncOnFileShared: boolean;           // Default: true
+  cacheDir: string; // Default: ~/vp-daemon/files/cache
+  sessionDir: string; // Default: ~/vp-daemon/files/sessions
+  maxCacheSizeMb: number; // Default: 1000 (1GB)
+  autoSync: boolean; // Default: true
+  syncOnFileShared: boolean; // Default: true
 }
 
 export interface SyncedFile {
@@ -3156,7 +3214,7 @@ export class FileSyncService extends EventEmitter {
 
     // Subscribe to file events
     if (this.config.syncOnFileShared) {
-      this.client.onEvent('file.shared', async (event) => {
+      this.client.onEvent('file.shared', async event => {
         if (this.config.autoSync) {
           await this.syncFile(event.fileId);
         }
@@ -3205,10 +3263,7 @@ export class FileSyncService extends EventEmitter {
     }
 
     // Save metadata
-    await fs.writeFile(
-      path.join(fileDir, 'metadata.json'),
-      JSON.stringify(fileMeta, null, 2),
-    );
+    await fs.writeFile(path.join(fileDir, 'metadata.json'), JSON.stringify(fileMeta, null, 2));
 
     const syncedFile: SyncedFile = {
       fileId,
@@ -3236,7 +3291,7 @@ export class FileSyncService extends EventEmitter {
   async prepareSessionFiles(
     sessionId: string,
     fileIds: string[],
-    options: SessionFileOptions = {},
+    options: SessionFileOptions = {}
   ): Promise<SessionFileContext> {
     const sessionDir = path.join(this.config.sessionDir, sessionId);
     const contextDir = path.join(sessionDir, 'context');
@@ -3280,7 +3335,7 @@ export class FileSyncService extends EventEmitter {
         localPath: sessionFilePath,
         textContent,
         truncated,
-        tokensUsed: truncated ? (tokenBudget - totalTokens) : syncedFile.estimatedTokens,
+        tokensUsed: truncated ? tokenBudget - totalTokens : syncedFile.estimatedTokens,
       });
     }
 
@@ -3312,7 +3367,7 @@ export class FileSyncService extends EventEmitter {
         md += file.textContent;
         md += '\n</file_content>\n\n';
       } else {
-        md += '\nUse the Read tool to access this file\'s contents.\n\n';
+        md += "\nUse the Read tool to access this file's contents.\n\n";
       }
     }
 
@@ -3323,10 +3378,18 @@ export class FileSyncService extends EventEmitter {
   }
 
   // Cache management methods
-  private async loadCacheIndex(): Promise<void> { /* ... */ }
-  private async updateCacheIndex(fileId: string, file: SyncedFile): Promise<void> { /* ... */ }
-  private async updateAccessTime(fileId: string): Promise<void> { /* ... */ }
-  private async enforceCacheLimit(): Promise<void> { /* ... */ }
+  private async loadCacheIndex(): Promise<void> {
+    /* ... */
+  }
+  private async updateCacheIndex(fileId: string, file: SyncedFile): Promise<void> {
+    /* ... */
+  }
+  private async updateAccessTime(fileId: string): Promise<void> {
+    /* ... */
+  }
+  private async enforceCacheLimit(): Promise<void> {
+    /* ... */
+  }
 }
 
 export interface SessionFileOptions {
@@ -3394,11 +3457,9 @@ export class SessionSpawner {
     // Prepare files if any
     let fileContext: SessionFileContext | null = null;
     if (fileIds.length > 0) {
-      fileContext = await this.fileSyncService.prepareSessionFiles(
-        sessionId,
-        fileIds,
-        { tokenBudget },
-      );
+      fileContext = await this.fileSyncService.prepareSessionFiles(sessionId, fileIds, {
+        tokenBudget,
+      });
     }
 
     // Create session working directory
@@ -3415,10 +3476,7 @@ export class SessionSpawner {
       await fs.mkdir(filesDir, { recursive: true });
 
       for (const file of fileContext.files) {
-        await fs.copyFile(
-          file.localPath,
-          path.join(filesDir, file.filename),
-        );
+        await fs.copyFile(file.localPath, path.join(filesDir, file.filename));
       }
     }
 
@@ -3429,24 +3487,24 @@ export class SessionSpawner {
     }
 
     // Spawn Claude Code process
-    const claudeProcess = spawn('claude', [
-      '--print',
-      '--dangerously-skip-permissions',
-      '-p', enhancedPrompt,
-    ], {
-      cwd: sessionDir,
-      env: {
-        ...process.env,
-        CLAUDE_SESSION_ID: sessionId,
-      },
-    });
+    const claudeProcess = spawn(
+      'claude',
+      ['--print', '--dangerously-skip-permissions', '-p', enhancedPrompt],
+      {
+        cwd: sessionDir,
+        env: {
+          ...process.env,
+          CLAUDE_SESSION_ID: sessionId,
+        },
+      }
+    );
 
     return new ClaudeSession(sessionId, claudeProcess, fileContext);
   }
 
   private async generateSessionClaudeMd(
     archetype: string,
-    fileContext: SessionFileContext | null,
+    fileContext: SessionFileContext | null
   ): Promise<string> {
     // Load archetype template
     const archetypeConfig = await this.loadArchetype(archetype);
@@ -3463,10 +3521,7 @@ export class SessionSpawner {
     return claudeMd;
   }
 
-  private buildPromptWithFileContext(
-    prompt: string,
-    fileContext: SessionFileContext,
-  ): string {
+  private buildPromptWithFileContext(prompt: string, fileContext: SessionFileContext): string {
     const fileList = fileContext.files
       .map(f => `- ${f.filename} (${f.tokensUsed} tokens)`)
       .join('\n');
@@ -3501,7 +3556,7 @@ import * as path from 'path';
 export function createFileServer(sessionDir: string): Server {
   const server = new Server(
     { name: 'genesis-file-server', version: '1.0.0' },
-    { capabilities: { tools: {} } },
+    { capabilities: { tools: {} } }
   );
 
   // List available files
@@ -3553,7 +3608,7 @@ export function createFileServer(sessionDir: string): Server {
   }));
 
   // Handle tool calls
-  server.setRequestHandler('tools/call', async (request) => {
+  server.setRequestHandler('tools/call', async request => {
     const { name, arguments: args } = request.params;
     const filesDir = path.join(sessionDir, 'files');
 
@@ -3561,10 +3616,10 @@ export function createFileServer(sessionDir: string): Server {
       case 'list_session_files': {
         const files = await fs.readdir(filesDir);
         const fileInfos = await Promise.all(
-          files.map(async (f) => {
+          files.map(async f => {
             const stat = await fs.stat(path.join(filesDir, f));
             return { name: f, size: stat.size, modified: stat.mtime };
-          }),
+          })
         );
         return { content: [{ type: 'text', text: JSON.stringify(fileInfos, null, 2) }] };
       }
@@ -3596,7 +3651,7 @@ export function createFileServer(sessionDir: string): Server {
           sessionDir,
           'context',
           filename.replace(/\.[^.]+$/, ''),
-          'metadata.json',
+          'metadata.json'
         );
         let metadata = {};
         try {
@@ -3604,15 +3659,21 @@ export function createFileServer(sessionDir: string): Server {
         } catch {}
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              name: filename,
-              size: stat.size,
-              modified: stat.mtime,
-              ...metadata,
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  name: filename,
+                  size: stat.size,
+                  modified: stat.mtime,
+                  ...metadata,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
 
@@ -3635,10 +3696,16 @@ export function createFileServer(sessionDir: string): Server {
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ totalMatches: matches.length, matches: matches.slice(0, 50) }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                { totalMatches: matches.length, matches: matches.slice(0, 50) },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
 
@@ -3707,7 +3774,7 @@ export async function GET(request: NextRequest) {
 // GET /api/daemon/files/[fileId] - Get file metadata
 export async function GETFileMetadata(
   request: NextRequest,
-  { params }: { params: { fileId: string } },
+  { params }: { params: { fileId: string } }
 ) {
   const { serviceAccount, vpUser } = await authenticateDaemon(request);
 
@@ -3738,7 +3805,7 @@ export async function GETFileMetadata(
 // GET /api/daemon/files/[fileId]/download - Download file
 export async function GETFileDownload(
   request: NextRequest,
-  { params }: { params: { fileId: string } },
+  { params }: { params: { fileId: string } }
 ) {
   const { serviceAccount, vpUser } = await authenticateDaemon(request);
 
@@ -3787,7 +3854,7 @@ export async function GETFileDownload(
 // POST /api/daemon/files/[fileId]/sync - Mark file as synced by daemon
 export async function POSTFileSync(
   request: NextRequest,
-  { params }: { params: { fileId: string } },
+  { params }: { params: { fileId: string } }
 ) {
   const { serviceAccount, vpUser } = await authenticateDaemon(request);
 
@@ -3834,50 +3901,51 @@ export async function POSTFileSync(
 
 #### Phase 4.5: File Processing Pipeline (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **4.5.1** | File Processing Queue | As a system, I need to process uploaded files asynchronously to extract text, generate thumbnails, and prepare for Claude consumption | P0 |
-| **4.5.2** | PDF Text Extraction | As a VP, when a PDF is shared, I need the text extracted so I can analyze it in Claude | P0 |
-| **4.5.3** | XLSX/CSV Parsing | As a VP, when a spreadsheet is shared, I need structured data extracted (sheets, rows, columns) | P0 |
-| **4.5.4** | DOCX/DOC Extraction | As a VP, when a Word document is shared, I need the text extracted | P0 |
-| **4.5.5** | Image OCR | As a VP, when an image with text is shared, I need OCR to extract readable text | P1 |
-| **4.5.6** | Thumbnail Generation | As a user, I want to see thumbnails of uploaded files in the UI | P1 |
-| **4.5.7** | Token Estimation | As a VP-Daemon, I need to know estimated tokens for each file to budget context | P0 |
+| ID        | Feature               | User Story                                                                                                                            | Priority |
+| --------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| **4.5.1** | File Processing Queue | As a system, I need to process uploaded files asynchronously to extract text, generate thumbnails, and prepare for Claude consumption | P0       |
+| **4.5.2** | PDF Text Extraction   | As a VP, when a PDF is shared, I need the text extracted so I can analyze it in Claude                                                | P0       |
+| **4.5.3** | XLSX/CSV Parsing      | As a VP, when a spreadsheet is shared, I need structured data extracted (sheets, rows, columns)                                       | P0       |
+| **4.5.4** | DOCX/DOC Extraction   | As a VP, when a Word document is shared, I need the text extracted                                                                    | P0       |
+| **4.5.5** | Image OCR             | As a VP, when an image with text is shared, I need OCR to extract readable text                                                       | P1       |
+| **4.5.6** | Thumbnail Generation  | As a user, I want to see thumbnails of uploaded files in the UI                                                                       | P1       |
+| **4.5.7** | Token Estimation      | As a VP-Daemon, I need to know estimated tokens for each file to budget context                                                       | P0       |
 
 #### Phase 8.5: Daemon File Sync (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **8.5.1** | File Sync Service | As a VP-Daemon, I need to sync files from Genesis-App to local cache | P0 |
-| **8.5.2** | Automatic Sync on Share | As a VP-Daemon, when a file is shared in my channel, I want it auto-synced | P1 |
-| **8.5.3** | LRU Cache Management | As a VP-Daemon, I need cache eviction to stay within disk limits | P1 |
-| **8.5.4** | File Metadata API | As a VP-Daemon, I need API to get file metadata before downloading | P0 |
-| **8.5.5** | Download Variants API | As a VP-Daemon, I need to download original, extracted text, or JSON variants | P0 |
-| **8.5.6** | Sync Status Tracking | As Genesis-App, I need to track which daemons have synced which files | P2 |
+| ID        | Feature                 | User Story                                                                    | Priority |
+| --------- | ----------------------- | ----------------------------------------------------------------------------- | -------- |
+| **8.5.1** | File Sync Service       | As a VP-Daemon, I need to sync files from Genesis-App to local cache          | P0       |
+| **8.5.2** | Automatic Sync on Share | As a VP-Daemon, when a file is shared in my channel, I want it auto-synced    | P1       |
+| **8.5.3** | LRU Cache Management    | As a VP-Daemon, I need cache eviction to stay within disk limits              | P1       |
+| **8.5.4** | File Metadata API       | As a VP-Daemon, I need API to get file metadata before downloading            | P0       |
+| **8.5.5** | Download Variants API   | As a VP-Daemon, I need to download original, extracted text, or JSON variants | P0       |
+| **8.5.6** | Sync Status Tracking    | As Genesis-App, I need to track which daemons have synced which files         | P2       |
 
 #### Phase 8.6: Claude Session File Injection (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **8.6.1** | Session File Preparation | As a VP-Daemon, I need to prepare files for a Claude session with token budgeting | P0 |
-| **8.6.2** | CLAUDE.md Context Injection | As a VP-Daemon, I need to inject file summaries/content into session CLAUDE.md | P0 |
-| **8.6.3** | Working Directory Files | As a VP-Daemon, I need to copy files to session working directory for Read tool access | P0 |
-| **8.6.4** | MCP File Server | As a VP-Daemon, I need MCP server for streaming large files to Claude | P1 |
-| **8.6.5** | Token Budget Enforcement | As a VP-Daemon, I need to truncate large files to fit token budget | P0 |
-| **8.6.6** | Session File Tracking | As Genesis-App, I need to track which files were used in which sessions | P2 |
+| ID        | Feature                     | User Story                                                                             | Priority |
+| --------- | --------------------------- | -------------------------------------------------------------------------------------- | -------- |
+| **8.6.1** | Session File Preparation    | As a VP-Daemon, I need to prepare files for a Claude session with token budgeting      | P0       |
+| **8.6.2** | CLAUDE.md Context Injection | As a VP-Daemon, I need to inject file summaries/content into session CLAUDE.md         | P0       |
+| **8.6.3** | Working Directory Files     | As a VP-Daemon, I need to copy files to session working directory for Read tool access | P0       |
+| **8.6.4** | MCP File Server             | As a VP-Daemon, I need MCP server for streaming large files to Claude                  | P1       |
+| **8.6.5** | Token Budget Enforcement    | As a VP-Daemon, I need to truncate large files to fit token budget                     | P0       |
+| **8.6.6** | Session File Tracking       | As Genesis-App, I need to track which files were used in which sessions                | P2       |
 
 #### Phase 9.5: Wundr File Integration (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **9.5.1** | @wundr/genesis-client File Methods | As a developer, I need file download/sync methods in genesis-client | P0 |
-| **9.5.2** | @wundr/file-processor Package | As Genesis-App, I need reusable file processing utilities | P1 |
-| **9.5.3** | VP-Daemon File Sync Integration | As VP-Daemon installer, I need to set up file sync directories | P1 |
-| **9.5.4** | Cross-Platform File Support | As a VP, files from Slack should also be processable | P2 |
+| ID        | Feature                            | User Story                                                          | Priority |
+| --------- | ---------------------------------- | ------------------------------------------------------------------- | -------- |
+| **9.5.1** | @wundr/genesis-client File Methods | As a developer, I need file download/sync methods in genesis-client | P0       |
+| **9.5.2** | @wundr/file-processor Package      | As Genesis-App, I need reusable file processing utilities           | P1       |
+| **9.5.3** | VP-Daemon File Sync Integration    | As VP-Daemon installer, I need to set up file sync directories      | P1       |
+| **9.5.4** | Cross-Platform File Support        | As a VP, files from Slack should also be processable                | P2       |
 
 ### 10.9 File Pipeline Test Scenarios
 
 **File Processing**:
+
 - [ ] PDF upload triggers text extraction
 - [ ] XLSX upload extracts all sheets to JSON
 - [ ] Image with text triggers OCR
@@ -3885,12 +3953,14 @@ export async function POSTFileSync(
 - [ ] Processing failure is recorded and retried
 
 **Daemon File Sync**:
+
 - [ ] File shared in channel triggers sync event
 - [ ] Daemon downloads original + extracted text
 - [ ] Cache LRU eviction works correctly
 - [ ] Sync status tracked in database
 
 **Claude Session Injection**:
+
 - [ ] Files copied to session working directory
 - [ ] CLAUDE.md includes file context
 - [ ] Token budget enforced (files truncated)
@@ -3905,18 +3975,16 @@ export async function POSTFileSync(
 
 VP agents need to share files back to Genesis-App conversations. This includes:
 
-1. **Session-Generated Files**: Files created during Claude Code/Flow sessions (code, reports, exports)
+1. **Session-Generated Files**: Files created during Claude Code/Flow sessions (code, reports,
+   exports)
 2. **Processed Outputs**: Analysis results, transformed data, generated documents
 3. **Attachments to Messages**: Files shared as part of conversation responses
 
-**Use Cases**:
-| Scenario | Example |
-|----------|---------|
-| **Code Delivery** | VP Engineering generates a PR diff and shares the patch file |
-| **Report Generation** | VP Legal creates a compliance report PDF from analysis |
-| **Data Export** | VP Finance exports processed spreadsheet with formulas |
-| **Document Creation** | VP HR generates an offer letter from template |
-| **Artifact Sharing** | Any VP shares session artifacts with human collaborators |
+**Use Cases**: | Scenario | Example | |----------|---------| | **Code Delivery** | VP Engineering
+generates a PR diff and shares the patch file | | **Report Generation** | VP Legal creates a
+compliance report PDF from analysis | | **Data Export** | VP Finance exports processed spreadsheet
+with formulas | | **Document Creation** | VP HR generates an offer letter from template | |
+**Artifact Sharing** | Any VP shares session artifacts with human collaborators |
 
 ### 10.10.2 Outbound File Architecture
 
@@ -4028,17 +4096,14 @@ export async function POST(request: NextRequest) {
     filename,
     contentType,
     sizeBytes,
-    sessionId,        // Optional: associate with Claude session
-    channelId,        // Optional: target channel for sharing
-    description,      // Optional: file description
+    sessionId, // Optional: associate with Claude session
+    channelId, // Optional: target channel for sharing
+    description, // Optional: file description
   } = body;
 
   // Validate file size (max 100MB)
   if (sizeBytes > 100 * 1024 * 1024) {
-    return NextResponse.json(
-      { error: 'File too large. Maximum size is 100MB.' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'File too large. Maximum size is 100MB.' }, { status: 400 });
   }
 
   // Validate channel access if specified
@@ -4099,10 +4164,13 @@ export async function POST(request: NextRequest) {
 function getFileType(mimeType: string, filename: string): string {
   if (mimeType.startsWith('image/')) return 'IMAGE';
   if (mimeType === 'application/pdf') return 'DOCUMENT';
-  if (mimeType.includes('spreadsheet') || filename.match(/\.(xlsx?|csv|ods)$/i)) return 'SPREADSHEET';
+  if (mimeType.includes('spreadsheet') || filename.match(/\.(xlsx?|csv|ods)$/i))
+    return 'SPREADSHEET';
   if (mimeType.includes('document') || filename.match(/\.(docx?|odt|rtf)$/i)) return 'DOCUMENT';
-  if (mimeType.startsWith('text/') || filename.match(/\.(ts|js|py|go|rs|java|md|txt)$/i)) return 'TEXT';
-  if (mimeType === 'application/json' || filename.match(/\.(json|yaml|yml|xml|toml)$/i)) return 'DATA';
+  if (mimeType.startsWith('text/') || filename.match(/\.(ts|js|py|go|rs|java|md|txt)$/i))
+    return 'TEXT';
+  if (mimeType === 'application/json' || filename.match(/\.(json|yaml|yml|xml|toml)$/i))
+    return 'DATA';
   if (mimeType.includes('zip') || filename.match(/\.(zip|tar|gz|rar)$/i)) return 'ARCHIVE';
   return 'OTHER';
 }
@@ -4125,10 +4193,7 @@ function sanitizeFilename(filename: string): string {
  *
  * Mark file upload as complete and trigger processing
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { fileId: string } },
-) {
+export async function POST(request: NextRequest, { params }: { params: { fileId: string } }) {
   const { serviceAccount, vpUser } = await authenticateDaemon(request);
 
   const file = await prisma.file.findUnique({
@@ -4181,18 +4246,15 @@ export async function POST(
  *
  * Share a file to a channel or DM, optionally with a message
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { fileId: string } },
-) {
+export async function POST(request: NextRequest, { params }: { params: { fileId: string } }) {
   const { serviceAccount, vpUser } = await authenticateDaemon(request);
 
   const body = await request.json();
   const {
-    channelId,           // Required: target channel
-    messageText,         // Optional: accompanying message
-    threadTs,            // Optional: reply to thread
-    mentionUserIds,      // Optional: users to mention
+    channelId, // Required: target channel
+    messageText, // Optional: accompanying message
+    threadTs, // Optional: reply to thread
+    mentionUserIds, // Optional: users to mention
   } = body;
 
   const file = await prisma.file.findUnique({
@@ -4238,20 +4300,23 @@ export async function POST(
   });
 
   // Publish real-time event
-  await redis.publish(`channel:${channelId}:messages`, JSON.stringify({
-    type: 'MESSAGE_CREATED',
-    message: {
-      ...message,
-      file: {
-        id: file.id,
-        filename: file.filename,
-        mimeType: file.mimeType,
-        sizeBytes: file.sizeBytes,
-        thumbnailKey: file.thumbnailKey,
-        processingStatus: file.processingStatus,
+  await redis.publish(
+    `channel:${channelId}:messages`,
+    JSON.stringify({
+      type: 'MESSAGE_CREATED',
+      message: {
+        ...message,
+        file: {
+          id: file.id,
+          filename: file.filename,
+          mimeType: file.mimeType,
+          sizeBytes: file.sizeBytes,
+          thumbnailKey: file.thumbnailKey,
+          processingStatus: file.processingStatus,
+        },
       },
-    },
-  }));
+    })
+  );
 
   // Handle mentions
   if (mentionUserIds?.length > 0) {
@@ -4326,13 +4391,7 @@ const DEFAULT_CONFIG: OutputHandlerConfig = {
     '**/exports/**/*',
     '**/reports/**/*',
   ],
-  excludePatterns: [
-    '**/node_modules/**',
-    '**/.git/**',
-    '**/.*',
-    '**/*.log',
-    '**/CLAUDE.md',
-  ],
+  excludePatterns: ['**/node_modules/**', '**/.git/**', '**/.*', '**/*.log', '**/CLAUDE.md'],
   maxFileSize: 100 * 1024 * 1024, // 100MB
   autoShareOnComplete: false,
   watchMode: false,
@@ -4378,9 +4437,9 @@ export class OutputHandler extends EventEmitter {
     });
 
     this.watcher
-      .on('add', (filePath) => this.onFileCreated(filePath))
-      .on('change', (filePath) => this.onFileModified(filePath))
-      .on('error', (error) => this.emit('error', error));
+      .on('add', filePath => this.onFileCreated(filePath))
+      .on('change', filePath => this.onFileModified(filePath))
+      .on('error', error => this.emit('error', error));
   }
 
   /**
@@ -4476,7 +4535,7 @@ export class OutputHandler extends EventEmitter {
    */
   async uploadAndShare(
     outputFile: OutputFile,
-    options: ShareOptions,
+    options: ShareOptions
   ): Promise<{ fileId: string; messageId: string }> {
     // Upload the file first
     const { fileId } = await this.uploadFile(outputFile);
@@ -4498,7 +4557,7 @@ export class OutputHandler extends EventEmitter {
    */
   async uploadSessionOutputs(
     sessionId: string,
-    options?: { shareToChannel?: string; autoShare?: boolean },
+    options?: { shareToChannel?: string; autoShare?: boolean }
   ): Promise<{ uploaded: string[]; failed: string[] }> {
     const outputs = await this.scanSessionOutputs(sessionId);
     const uploaded: string[] = [];
@@ -4558,12 +4617,12 @@ export class OutputHandler extends EventEmitter {
 
     // Check include patterns
     const matchesInclude = this.config.includePatterns.some(pattern =>
-      this.matchGlob(file.localPath, pattern),
+      this.matchGlob(file.localPath, pattern)
     );
 
     // Check exclude patterns
     const matchesExclude = this.config.excludePatterns.some(pattern =>
-      this.matchGlob(file.localPath, pattern),
+      this.matchGlob(file.localPath, pattern)
     );
 
     return matchesInclude && !matchesExclude;
@@ -4599,10 +4658,7 @@ export class OutputHandler extends EventEmitter {
 
   private matchGlob(filePath: string, pattern: string): boolean {
     // Simplified glob matching (use minimatch in production)
-    const regexPattern = pattern
-      .replace(/\*\*/g, '.*')
-      .replace(/\*/g, '[^/]*')
-      .replace(/\?/g, '.');
+    const regexPattern = pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\?/g, '.');
     return new RegExp(regexPattern).test(filePath);
   }
 
@@ -4677,7 +4733,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
       messageText?: string;
       threadTs?: string;
       mentionUserIds?: string[];
-    },
+    }
   ): Promise<{ messageId: string; fileId: string }> {
     return this.apiCall('POST', `/files/${fileId}/share`, options);
   }
@@ -4691,7 +4747,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
       channelId?: string;
       messageText?: string;
       threadTs?: string;
-    },
+    }
   ): Promise<{ fileId: string; messageId?: string }> {
     const stat = await fs.stat(filePath);
     const filename = path.basename(filePath);
@@ -4744,7 +4800,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
     channelId: string,
     text: string,
     filePath: string,
-    options?: { threadTs?: string },
+    options?: { threadTs?: string }
   ): Promise<{ messageId: string; fileId: string }> {
     const { fileId } = await this.uploadFile(filePath);
 
@@ -4767,10 +4823,7 @@ export class GenesisClient extends EventEmitter implements CommunicationClient {
 export class SessionSpawner {
   private readonly outputHandler: OutputHandler;
 
-  constructor(
-    fileSyncService: FileSyncService,
-    outputHandler: OutputHandler,
-  ) {
+  constructor(fileSyncService: FileSyncService, outputHandler: OutputHandler) {
     this.fileSyncService = fileSyncService;
     this.outputHandler = outputHandler;
   }
@@ -4784,7 +4837,9 @@ export class SessionSpawner {
 
     // Add output instructions to CLAUDE.md
     const claudeMd = await this.generateSessionClaudeMd(archetype, fileContext);
-    const claudeMdWithOutput = claudeMd + `
+    const claudeMdWithOutput =
+      claudeMd +
+      `
 
 ## Output Files
 
@@ -4805,10 +4860,16 @@ Write "./output/summary-report.md" with the human-readable summary
     await fs.writeFile(path.join(sessionDir, 'CLAUDE.md'), claudeMdWithOutput);
 
     // Spawn Claude process
-    const claudeProcess = spawn('claude', [/* ... */], {
-      cwd: sessionDir,
-      env: { ...process.env, CLAUDE_SESSION_ID: sessionId },
-    });
+    const claudeProcess = spawn(
+      'claude',
+      [
+        /* ... */
+      ],
+      {
+        cwd: sessionDir,
+        env: { ...process.env, CLAUDE_SESSION_ID: sessionId },
+      }
+    );
 
     const session = new ClaudeSession(sessionId, claudeProcess, fileContext);
 
@@ -4825,18 +4886,15 @@ Write "./output/summary-report.md" with the human-readable summary
    */
   private async handleSessionComplete(
     sessionId: string,
-    options: SpawnSessionOptions,
+    options: SpawnSessionOptions
   ): Promise<void> {
     if (!options.outputChannelId) return;
 
     try {
-      const { uploaded, failed } = await this.outputHandler.uploadSessionOutputs(
-        sessionId,
-        {
-          shareToChannel: options.outputChannelId,
-          autoShare: true,
-        },
-      );
+      const { uploaded, failed } = await this.outputHandler.uploadSessionOutputs(sessionId, {
+        shareToChannel: options.outputChannelId,
+        autoShare: true,
+      });
 
       if (uploaded.length > 0) {
         console.log(`Session ${sessionId}: Uploaded ${uploaded.length} output files`);
@@ -4861,8 +4919,8 @@ export interface SpawnSessionOptions {
   injectionMethod?: 'context' | 'working_dir' | 'mcp' | 'all';
 
   // NEW: Output handling
-  outputChannelId?: string;      // Channel to share outputs to
-  autoUploadOutputs?: boolean;   // Auto-upload on session complete
+  outputChannelId?: string; // Channel to share outputs to
+  autoUploadOutputs?: boolean; // Auto-upload on session complete
 }
 ```
 
@@ -4870,40 +4928,41 @@ export interface SpawnSessionOptions {
 
 #### Phase 8.7: Daemon File Upload (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **8.7.1** | File Upload Request API | As a VP-Daemon, I need to request pre-signed URLs for uploading files | P0 |
-| **8.7.2** | Direct S3 Upload | As a VP-Daemon, I need to upload files directly to S3 using pre-signed URLs | P0 |
-| **8.7.3** | Upload Completion API | As a VP-Daemon, I need to notify Genesis-App when upload is complete | P0 |
-| **8.7.4** | File Share API | As a VP-Daemon, I need to share uploaded files to channels/DMs | P0 |
-| **8.7.5** | Upload Progress Events | As a VP-Daemon, I want to emit progress events during large uploads | P2 |
-| **8.7.6** | Chunked Upload Support | As a VP-Daemon, I need to upload large files in chunks for reliability | P2 |
+| ID        | Feature                 | User Story                                                                  | Priority |
+| --------- | ----------------------- | --------------------------------------------------------------------------- | -------- |
+| **8.7.1** | File Upload Request API | As a VP-Daemon, I need to request pre-signed URLs for uploading files       | P0       |
+| **8.7.2** | Direct S3 Upload        | As a VP-Daemon, I need to upload files directly to S3 using pre-signed URLs | P0       |
+| **8.7.3** | Upload Completion API   | As a VP-Daemon, I need to notify Genesis-App when upload is complete        | P0       |
+| **8.7.4** | File Share API          | As a VP-Daemon, I need to share uploaded files to channels/DMs              | P0       |
+| **8.7.5** | Upload Progress Events  | As a VP-Daemon, I want to emit progress events during large uploads         | P2       |
+| **8.7.6** | Chunked Upload Support  | As a VP-Daemon, I need to upload large files in chunks for reliability      | P2       |
 
 #### Phase 8.8: Session Output Handling (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **8.8.1** | Output Directory Convention | As Claude, I need a designated output directory for shareable files | P0 |
-| **8.8.2** | Output File Scanner | As VP-Daemon, I need to scan session output directories for files | P0 |
-| **8.8.3** | Auto-Upload on Session Complete | As VP-Daemon, I want outputs auto-uploaded when sessions complete | P1 |
-| **8.8.4** | File Watch Mode | As VP-Daemon, I want real-time detection of new output files | P2 |
-| **8.8.5** | Output Filtering Rules | As VP-Daemon, I need to filter which outputs to upload (by pattern/size) | P1 |
-| **8.8.6** | Batch Output Sharing | As VP-Daemon, I need to share multiple outputs in a single message | P2 |
+| ID        | Feature                         | User Story                                                               | Priority |
+| --------- | ------------------------------- | ------------------------------------------------------------------------ | -------- |
+| **8.8.1** | Output Directory Convention     | As Claude, I need a designated output directory for shareable files      | P0       |
+| **8.8.2** | Output File Scanner             | As VP-Daemon, I need to scan session output directories for files        | P0       |
+| **8.8.3** | Auto-Upload on Session Complete | As VP-Daemon, I want outputs auto-uploaded when sessions complete        | P1       |
+| **8.8.4** | File Watch Mode                 | As VP-Daemon, I want real-time detection of new output files             | P2       |
+| **8.8.5** | Output Filtering Rules          | As VP-Daemon, I need to filter which outputs to upload (by pattern/size) | P1       |
+| **8.8.6** | Batch Output Sharing            | As VP-Daemon, I need to share multiple outputs in a single message       | P2       |
 
 #### Phase 8.9: Multi-Party File Sharing (NEW)
 
-| ID | Feature | User Story | Priority |
-|----|---------|------------|----------|
-| **8.9.1** | Channel File Sharing | As a VP, I need to share files to public/private channels | P0 |
-| **8.9.2** | DM File Sharing | As a VP, I need to share files in direct messages | P0 |
-| **8.9.3** | Thread File Replies | As a VP, I need to share files as thread replies | P1 |
-| **8.9.4** | File with Mentions | As a VP, I need to share files with @mentions to notify users | P1 |
-| **8.9.5** | Multi-Channel Broadcast | As a VP, I need to share the same file to multiple channels | P2 |
-| **8.9.6** | File Access Permissions | As Genesis-App, I need to enforce channel membership for file access | P0 |
+| ID        | Feature                 | User Story                                                           | Priority |
+| --------- | ----------------------- | -------------------------------------------------------------------- | -------- |
+| **8.9.1** | Channel File Sharing    | As a VP, I need to share files to public/private channels            | P0       |
+| **8.9.2** | DM File Sharing         | As a VP, I need to share files in direct messages                    | P0       |
+| **8.9.3** | Thread File Replies     | As a VP, I need to share files as thread replies                     | P1       |
+| **8.9.4** | File with Mentions      | As a VP, I need to share files with @mentions to notify users        | P1       |
+| **8.9.5** | Multi-Channel Broadcast | As a VP, I need to share the same file to multiple channels          | P2       |
+| **8.9.6** | File Access Permissions | As Genesis-App, I need to enforce channel membership for file access | P0       |
 
 ### 10.10.8 Test Scenarios: Outbound Files
 
 **File Upload**:
+
 - [ ] VP-Daemon requests upload URL successfully
 - [ ] File uploads directly to S3 via pre-signed URL
 - [ ] Upload completion triggers processing
@@ -4912,6 +4971,7 @@ export interface SpawnSessionOptions {
 - [ ] Unauthorized upload attempt fails
 
 **Session Outputs**:
+
 - [ ] Files in ./output/ directory are detected
 - [ ] Session completion triggers output upload
 - [ ] Multiple outputs uploaded in sequence
@@ -4919,6 +4979,7 @@ export interface SpawnSessionOptions {
 - [ ] Output filtering excludes .log and .git files
 
 **Channel Sharing**:
+
 - [ ] File shared to channel appears in conversation
 - [ ] File shared with message text displays correctly
 - [ ] Thread reply with file works
@@ -4991,15 +5052,15 @@ VP_EMAIL="cto@acme.genesis.local"
 
 ### Appendix B: Glossary
 
-| Term | Definition |
-|------|------------|
-| **Genesis-App** | The Slack-clone enterprise communication platform |
-| **VP (Virtual Principal)** | Tier-1 AI agent representing an executive role |
-| **VP-Daemon** | Machine-level supervisor process managing VP sessions |
-| **Discipline** | Functional area within an organization (e.g., Engineering, Legal) |
-| **Service Account** | Machine credentials for VP-Daemon authentication |
-| **Org-Genesis** | Wundr package for generating organizational structures |
-| **CommunicationClient** | Shared interface for Slack/Genesis-App clients |
+| Term                       | Definition                                                        |
+| -------------------------- | ----------------------------------------------------------------- |
+| **Genesis-App**            | The Slack-clone enterprise communication platform                 |
+| **VP (Virtual Principal)** | Tier-1 AI agent representing an executive role                    |
+| **VP-Daemon**              | Machine-level supervisor process managing VP sessions             |
+| **Discipline**             | Functional area within an organization (e.g., Engineering, Legal) |
+| **Service Account**        | Machine credentials for VP-Daemon authentication                  |
+| **Org-Genesis**            | Wundr package for generating organizational structures            |
+| **CommunicationClient**    | Shared interface for Slack/Genesis-App clients                    |
 
 ### Appendix C: Related Documentation
 
@@ -5012,10 +5073,11 @@ VP_EMAIL="cto@acme.genesis.local"
 
 ## Document History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0.0 | 2024-11-24 | Architecture Team | Initial specification |
+| Version | Date       | Author            | Changes               |
+| ------- | ---------- | ----------------- | --------------------- |
+| 1.0.0   | 2024-11-24 | Architecture Team | Initial specification |
 
 ---
 
-*This document is part of the Wundr Genesis-App project. For questions or contributions, see the project repository.*
+_This document is part of the Wundr Genesis-App project. For questions or contributions, see the
+project repository._

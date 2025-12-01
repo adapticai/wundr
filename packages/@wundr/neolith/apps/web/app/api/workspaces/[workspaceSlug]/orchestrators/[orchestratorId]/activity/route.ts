@@ -15,7 +15,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createErrorResponse, ORCHESTRATOR_ERROR_CODES } from '@/lib/validations/orchestrator';
+import {
+  createErrorResponse,
+  ORCHESTRATOR_ERROR_CODES,
+} from '@/lib/validations/orchestrator';
 
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
@@ -71,7 +74,7 @@ interface ActivityDetails {
 async function getOrchestratorWithWorkspaceAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   // First, verify workspace exists and user has access
   const workspace = await prisma.workspace.findUnique({
@@ -173,15 +176,18 @@ function getMemoryTypeForActivity(activityType: ActivityType): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -192,21 +198,28 @@ export async function GET(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Get Orchestrator with access check
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -214,7 +227,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '50', 10),
-      100,
+      100
     );
     const cursor = searchParams.get('cursor') || undefined;
     const activityTypes = searchParams.get('type')?.split(',') || undefined;
@@ -232,9 +245,9 @@ export async function GET(
     if (activityTypes && activityTypes.length > 0) {
       // Map activity types to memory types
       const memoryTypes = new Set(
-        activityTypes.map((type) =>
-          getMemoryTypeForActivity(type as ActivityType),
-        ),
+        activityTypes.map(type =>
+          getMemoryTypeForActivity(type as ActivityType)
+        )
       );
       where.memoryType = { in: Array.from(memoryTypes) };
     }
@@ -279,7 +292,7 @@ export async function GET(
 
     // Filter by channelId or taskId if provided (from metadata)
     if (channelId || taskId) {
-      items = items.filter((activity) => {
+      items = items.filter(activity => {
         const metadata = activity.metadata as Record<string, unknown> | null;
         if (!metadata || typeof metadata !== 'object') {
           return false;
@@ -297,28 +310,36 @@ export async function GET(
     const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
     // Transform activities to include activity type from metadata
-    const formattedActivities = items.map((activity) => {
-      const metadata = activity.metadata as ActivityDetails | Record<string, unknown> | null;
+    const formattedActivities = items.map(activity => {
+      const metadata = activity.metadata as
+        | ActivityDetails
+        | Record<string, unknown>
+        | null;
 
       return {
         id: activity.id,
-        type: (metadata && typeof metadata === 'object' && 'type' in metadata)
-          ? metadata.type
-          : 'SYSTEM_EVENT',
-        description: metadata && typeof metadata === 'object' && 'summary' in metadata
-          ? String(metadata.summary)
-          : activity.content,
+        type:
+          metadata && typeof metadata === 'object' && 'type' in metadata
+            ? metadata.type
+            : 'SYSTEM_EVENT',
+        description:
+          metadata && typeof metadata === 'object' && 'summary' in metadata
+            ? String(metadata.summary)
+            : activity.content,
         details: metadata || {},
-        channelId: metadata && typeof metadata === 'object' && 'channelId' in metadata
-          ? String(metadata.channelId)
-          : undefined,
-        taskId: metadata && typeof metadata === 'object' && 'taskId' in metadata
-          ? String(metadata.taskId)
-          : undefined,
+        channelId:
+          metadata && typeof metadata === 'object' && 'channelId' in metadata
+            ? String(metadata.channelId)
+            : undefined,
+        taskId:
+          metadata && typeof metadata === 'object' && 'taskId' in metadata
+            ? String(metadata.taskId)
+            : undefined,
         importance: activity.importance,
-        keywords: metadata && typeof metadata === 'object' && 'keywords' in metadata
-          ? (metadata.keywords as string[])
-          : [],
+        keywords:
+          metadata && typeof metadata === 'object' && 'keywords' in metadata
+            ? (metadata.keywords as string[])
+            : [],
         timestamp: activity.createdAt,
         updatedAt: activity.updatedAt,
       };
@@ -335,13 +356,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/activity] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/activity] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -368,15 +392,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -387,8 +414,11 @@ export async function POST(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -398,8 +428,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -413,9 +446,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Missing required fields: type and description',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -430,29 +463,35 @@ export async function POST(
     };
 
     // Get Orchestrator with access check
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check permissions: either admin/owner OR the Orchestrator's own service account
-    const isOrchestratorServiceAccount = session.user.isOrchestrator && session.user.id === result.orchestrator.userId;
+    const isOrchestratorServiceAccount =
+      session.user.isOrchestrator &&
+      session.user.id === result.orchestrator.userId;
     const hasAdminAccess = result.role === 'OWNER' || result.role === 'ADMIN';
 
     if (!isOrchestratorServiceAccount && !hasAdminAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to log activity for this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -461,9 +500,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           `Invalid activity type. Must be one of: ${Object.values(ACTIVITY_TYPES).join(', ')}`,
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -474,7 +513,7 @@ export async function POST(
     const keywords = input.description
       .toLowerCase()
       .split(/\s+/)
-      .filter((word) => word.length > 3)
+      .filter(word => word.length > 3)
       .slice(0, 10);
 
     // Create activity metadata
@@ -518,26 +557,34 @@ export async function POST(
     });
 
     // Format response
-    const metadata = activity.metadata as ActivityDetails | Record<string, unknown> | null;
+    const metadata = activity.metadata as
+      | ActivityDetails
+      | Record<string, unknown>
+      | null;
     const formattedActivity = {
       id: activity.id,
-      type: (metadata && typeof metadata === 'object' && 'type' in metadata)
-        ? metadata.type
-        : input.type,
-      description: metadata && typeof metadata === 'object' && 'summary' in metadata
-        ? String(metadata.summary)
-        : activity.content,
+      type:
+        metadata && typeof metadata === 'object' && 'type' in metadata
+          ? metadata.type
+          : input.type,
+      description:
+        metadata && typeof metadata === 'object' && 'summary' in metadata
+          ? String(metadata.summary)
+          : activity.content,
       details: metadata || {},
-      channelId: metadata && typeof metadata === 'object' && 'channelId' in metadata
-        ? String(metadata.channelId)
-        : undefined,
-      taskId: metadata && typeof metadata === 'object' && 'taskId' in metadata
-        ? String(metadata.taskId)
-        : undefined,
+      channelId:
+        metadata && typeof metadata === 'object' && 'channelId' in metadata
+          ? String(metadata.channelId)
+          : undefined,
+      taskId:
+        metadata && typeof metadata === 'object' && 'taskId' in metadata
+          ? String(metadata.taskId)
+          : undefined,
       importance: activity.importance,
-      keywords: metadata && typeof metadata === 'object' && 'keywords' in metadata
-        ? (metadata.keywords as string[])
-        : keywords,
+      keywords:
+        metadata && typeof metadata === 'object' && 'keywords' in metadata
+          ? (metadata.keywords as string[])
+          : keywords,
       timestamp: activity.createdAt,
       updatedAt: activity.updatedAt,
     };
@@ -547,16 +594,19 @@ export async function POST(
         data: formattedActivity,
         message: 'Activity logged successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/activity] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/activity] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

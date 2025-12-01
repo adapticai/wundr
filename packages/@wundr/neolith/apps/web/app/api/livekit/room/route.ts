@@ -33,8 +33,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -44,8 +47,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -59,8 +65,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Room name is required', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Room name is required',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -73,18 +82,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       metadata,
     });
 
-    return NextResponse.json({
-      data: {
-        name: room.name,
-        sid: room.sid,
-        maxParticipants: room.maxParticipants,
-        emptyTimeout: room.emptyTimeout,
-        creationTime: room.creationTime,
-        numParticipants: room.numParticipants,
-        metadata: room.metadata,
+    return NextResponse.json(
+      {
+        data: {
+          name: room.name,
+          sid: room.sid,
+          maxParticipants: room.maxParticipants,
+          emptyTimeout: room.emptyTimeout,
+          creationTime: room.creationTime,
+          numParticipants: room.numParticipants,
+          metadata: room.metadata,
+        },
+        message: 'Room created successfully',
       },
-      message: 'Room created successfully',
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[POST /api/livekit/room] Error:', error);
 
@@ -92,21 +104,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Error) {
       if (error.name === 'RoomAlreadyExistsError') {
         return NextResponse.json(
-          createErrorResponse(error.message, CALL_ERROR_CODES.ROOM_ALREADY_EXISTS),
-          { status: 409 },
+          createErrorResponse(
+            error.message,
+            CALL_ERROR_CODES.ROOM_ALREADY_EXISTS
+          ),
+          { status: 409 }
         );
       }
       if (error.name === 'LiveKitConfigError') {
         return NextResponse.json(
-          createErrorResponse('LiveKit not configured', CALL_ERROR_CODES.LIVEKIT_CONFIG_ERROR),
-          { status: 500 },
+          createErrorResponse(
+            'LiveKit not configured',
+            CALL_ERROR_CODES.LIVEKIT_CONFIG_ERROR
+          ),
+          { status: 500 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -125,8 +146,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -135,7 +159,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const rooms = await liveKitService.listRooms();
 
     return NextResponse.json({
-      data: rooms.map((room) => ({
+      data: rooms.map(room => ({
         name: room.name,
         sid: room.sid,
         maxParticipants: room.maxParticipants,
@@ -150,8 +174,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/livekit/room] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -2,14 +2,15 @@
 
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 
-import { MessageListSkeleton, MessageLoadingIndicator } from '@/components/skeletons';
+import {
+  MessageListSkeleton,
+  MessageLoadingIndicator,
+} from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 import { MessageItem } from './message-item';
 
 import type { Message, User } from '@/types/chat';
-
-
 
 /**
  * Props for the MessageList component
@@ -87,8 +88,8 @@ export function MessageList({
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) {
-return;
-}
+      return;
+    }
 
     const { scrollTop, scrollHeight, clientHeight } = container;
 
@@ -113,12 +114,18 @@ return;
     // Detect if user is at bottom for auto-scroll (more precise threshold)
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 30;
     setAutoScroll(isAtBottom);
-    setShowScrollButton(!isAtBottom && scrollHeight - scrollTop - clientHeight > 150);
+    setShowScrollButton(
+      !isAtBottom && scrollHeight - scrollTop - clientHeight > 150
+    );
 
     // Update visible range for virtualization with improved calculation
-    const scrollOffset = Math.max(0, scrollTop - BUFFER_SIZE * ITEM_HEIGHT_ESTIMATE);
+    const scrollOffset = Math.max(
+      0,
+      scrollTop - BUFFER_SIZE * ITEM_HEIGHT_ESTIMATE
+    );
     const startIndex = Math.floor(scrollOffset / ITEM_HEIGHT_ESTIMATE);
-    const visibleCount = Math.ceil(clientHeight / ITEM_HEIGHT_ESTIMATE) + BUFFER_SIZE * 2;
+    const visibleCount =
+      Math.ceil(clientHeight / ITEM_HEIGHT_ESTIMATE) + BUFFER_SIZE * 2;
     const endIndex = Math.min(messages.length, startIndex + visibleCount);
 
     setVisibleRange({ start: startIndex, end: endIndex });
@@ -141,8 +148,8 @@ return;
   useEffect(() => {
     const container = containerRef.current;
     if (!container) {
-return;
-}
+      return;
+    }
 
     const messageCountChanged = messages.length !== lastMessageCountRef.current;
     const messagesAdded = messages.length > lastMessageCountRef.current;
@@ -157,14 +164,21 @@ return;
       } else if (!isLoadingMore && previouslyLoading && lastScrollTop > 0) {
         // Messages loaded at top - restore scroll position with offset
         // This prevents the jarring jump when loading older messages
-        const newScrollTop = container.scrollHeight - (container.clientHeight + lastScrollTop);
+        const newScrollTop =
+          container.scrollHeight - (container.clientHeight + lastScrollTop);
         container.scrollTop = newScrollTop;
         setLastScrollTop(0);
       }
     }
 
     lastMessageCountRef.current = messages.length;
-  }, [messages.length, autoScroll, scrollToBottom, isLoadingMore, lastScrollTop]);
+  }, [
+    messages.length,
+    autoScroll,
+    scrollToBottom,
+    isLoadingMore,
+    lastScrollTop,
+  ]);
 
   // Initial scroll to bottom
   useEffect(() => {
@@ -177,8 +191,8 @@ return;
   useEffect(() => {
     const container = containerRef.current;
     if (!container) {
-return;
-}
+      return;
+    }
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
@@ -189,7 +203,9 @@ return;
     return messages.map((message, index) => {
       const prevMessage = index > 0 ? messages[index - 1] : null;
       const currentDate = new Date(message.createdAt).toDateString();
-      const prevDate = prevMessage ? new Date(prevMessage.createdAt).toDateString() : null;
+      const prevDate = prevMessage
+        ? new Date(prevMessage.createdAt).toDateString()
+        : null;
       const showDateSeparator = currentDate !== prevDate;
 
       // Determine unread separator
@@ -224,7 +240,10 @@ return;
     }
     return {
       top: visibleRange.start * ITEM_HEIGHT_ESTIMATE,
-      bottom: Math.max(0, (messages.length - visibleRange.end) * ITEM_HEIGHT_ESTIMATE),
+      bottom: Math.max(
+        0,
+        (messages.length - visibleRange.end) * ITEM_HEIGHT_ESTIMATE
+      ),
     };
   }, [messages.length, visibleRange]);
 
@@ -235,11 +254,13 @@ return;
   if (messages.length === 0) {
     return (
       <div className={cn('flex flex-1 items-center justify-center', className)}>
-        <div className="text-center">
-          <MessageEmptyIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-lg font-medium text-foreground">No messages yet</p>
-          <p className="text-sm text-muted-foreground">
-            {isThreadView ? 'Start the conversation by replying.' : 'Be the first to send a message!'}
+        <div className='text-center'>
+          <MessageEmptyIcon className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+          <p className='text-lg font-medium text-foreground'>No messages yet</p>
+          <p className='text-sm text-muted-foreground'>
+            {isThreadView
+              ? 'Start the conversation by replying.'
+              : 'Be the first to send a message!'}
           </p>
         </div>
       </div>
@@ -250,10 +271,10 @@ return;
     <div className={cn('relative flex-1 overflow-hidden', className)}>
       <div
         ref={containerRef}
-        className="h-full overflow-y-auto"
-        role="log"
-        aria-live="polite"
-        aria-label="Message list"
+        className='h-full overflow-y-auto'
+        role='log'
+        aria-live='polite'
+        aria-label='Message list'
       >
         {/* Loading more indicator */}
         {isLoadingMore && <MessageLoadingIndicator />}
@@ -262,25 +283,29 @@ return;
         {spacerHeights.top > 0 && <div style={{ height: spacerHeights.top }} />}
 
         {/* Messages */}
-        {visibleMessages.map(({ message, showDateSeparator, isUnreadSeparator }) => (
-          <MessageItem
-            key={message.id}
-            message={message}
-            currentUser={currentUser}
-            workspaceSlug={workspaceSlug}
-            showDateSeparator={showDateSeparator}
-            isUnreadSeparator={isUnreadSeparator || false}
-            onReply={onReply}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onReaction={onReaction}
-            onOpenThread={onOpenThread}
-            isThreadView={isThreadView}
-          />
-        ))}
+        {visibleMessages.map(
+          ({ message, showDateSeparator, isUnreadSeparator }) => (
+            <MessageItem
+              key={message.id}
+              message={message}
+              currentUser={currentUser}
+              workspaceSlug={workspaceSlug}
+              showDateSeparator={showDateSeparator}
+              isUnreadSeparator={isUnreadSeparator || false}
+              onReply={onReply}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onReaction={onReaction}
+              onOpenThread={onOpenThread}
+              isThreadView={isThreadView}
+            />
+          )
+        )}
 
         {/* Bottom spacer for virtualization */}
-        {spacerHeights.bottom > 0 && <div style={{ height: spacerHeights.bottom }} />}
+        {spacerHeights.bottom > 0 && (
+          <div style={{ height: spacerHeights.bottom }} />
+        )}
 
         {/* Scroll anchor */}
         <div ref={bottomRef} />
@@ -289,13 +314,15 @@ return;
       {/* Scroll to bottom button */}
       {showScrollButton && (
         <button
-          type="button"
+          type='button'
           onClick={() => scrollToBottom()}
-          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-opacity hover:bg-primary/90"
+          className='absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-opacity hover:bg-primary/90'
         >
           <ScrollDownIcon />
           <span>
-            {unreadCount > 0 ? `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}` : 'Jump to latest'}
+            {unreadCount > 0
+              ? `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`
+              : 'Jump to latest'}
           </span>
         </button>
       )}
@@ -307,23 +334,32 @@ function MessageEmptyIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
     </svg>
   );
 }
 
 function ScrollDownIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 5v14" />
-      <path d="m19 12-7 7-7-7" />
+    <svg
+      width='16'
+      height='16'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <path d='M12 5v14' />
+      <path d='m19 12-7 7-7-7' />
     </svg>
   );
 }

@@ -3,7 +3,13 @@
 import { AlertCircle } from 'lucide-react';
 import React from 'react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 import { OrgNode, OrgNodeSkeleton } from './OrgNode';
@@ -21,7 +27,11 @@ import type { OrgChartProps } from './types';
  * - Responsive grid layout
  * - Drill-down to Orchestrator details
  */
-export function OrgHierarchyChart({ hierarchy, onNodeClick, className }: OrgChartProps) {
+export function OrgHierarchyChart({
+  hierarchy,
+  onNodeClick,
+  className,
+}: OrgChartProps) {
   return (
     <div className={cn('w-full', className)}>
       <Card>
@@ -32,8 +42,12 @@ export function OrgHierarchyChart({ hierarchy, onNodeClick, className }: OrgChar
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            <OrgNodeRenderer node={hierarchy} depth={0} onNodeClick={onNodeClick} />
+          <div className='space-y-6'>
+            <OrgNodeRenderer
+              node={hierarchy}
+              depth={0}
+              onNodeClick={onNodeClick}
+            />
           </div>
         </CardContent>
       </Card>
@@ -77,11 +91,11 @@ export function OrgHierarchyChartSkeleton() {
         <CardDescription>Loading organization structure...</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <OrgNodeSkeleton type="organization" />
-          <div className="ml-8 space-y-3">
-            <OrgNodeSkeleton type="workspace" />
-            <OrgNodeSkeleton type="workspace" />
+        <div className='space-y-4'>
+          <OrgNodeSkeleton type='organization' />
+          <div className='ml-8 space-y-3'>
+            <OrgNodeSkeleton type='workspace' />
+            <OrgNodeSkeleton type='workspace' />
           </div>
         </div>
       </CardContent>
@@ -92,19 +106,23 @@ export function OrgHierarchyChartSkeleton() {
 /**
  * Empty state when no organization data exists
  */
-export function OrgHierarchyChartEmpty({ message = 'No organization data available' }: { message?: string }) {
+export function OrgHierarchyChartEmpty({
+  message = 'No organization data available',
+}: {
+  message?: string;
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Organization Hierarchy</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="rounded-full bg-muted p-4 mb-4">
-            <AlertCircle className="h-8 w-8 text-muted-foreground" />
+        <div className='flex flex-col items-center justify-center py-12 text-center'>
+          <div className='rounded-full bg-muted p-4 mb-4'>
+            <AlertCircle className='h-8 w-8 text-muted-foreground' />
           </div>
-          <h3 className="text-lg font-semibold mb-2">No Organization Found</h3>
-          <p className="text-sm text-muted-foreground max-w-md">{message}</p>
+          <h3 className='text-lg font-semibold mb-2'>No Organization Found</h3>
+          <p className='text-sm text-muted-foreground max-w-md'>{message}</p>
         </div>
       </CardContent>
     </Card>
@@ -121,12 +139,14 @@ export function OrgHierarchyChartError({ error }: { error: string }) {
         <CardTitle>Organization Hierarchy</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="rounded-full bg-destructive/10 p-4 mb-4">
-            <AlertCircle className="h-8 w-8 text-destructive" />
+        <div className='flex flex-col items-center justify-center py-12 text-center'>
+          <div className='rounded-full bg-destructive/10 p-4 mb-4'>
+            <AlertCircle className='h-8 w-8 text-destructive' />
           </div>
-          <h3 className="text-lg font-semibold mb-2 text-destructive">Error Loading Organization</h3>
-          <p className="text-sm text-muted-foreground max-w-md">{error}</p>
+          <h3 className='text-lg font-semibold mb-2 text-destructive'>
+            Error Loading Organization
+          </h3>
+          <p className='text-sm text-muted-foreground max-w-md'>{error}</p>
         </div>
       </CardContent>
     </Card>

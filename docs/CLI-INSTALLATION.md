@@ -1,13 +1,13 @@
 # Wundr CLI Installation Guide
 
-**Version:** 1.0.0
-**Package:** `@wundr.io/cli`
+**Version:** 1.0.0 **Package:** `@wundr.io/cli`
 
 ---
 
 ## 📦 Installation Options
 
-The Wundr CLI provides the `wundr` command for all Wundr platform operations. Choose the installation method that best suits your needs:
+The Wundr CLI provides the `wundr` command for all Wundr platform operations. Choose the
+installation method that best suits your needs:
 
 ### Option 1: Global Installation via npm (Recommended)
 
@@ -18,6 +18,7 @@ npm install -g @wundr.io/cli
 ```
 
 After installation, verify:
+
 ```bash
 wundr --version
 wundr --help
@@ -33,9 +34,11 @@ cd packages/@wundr/cli
 pnpm link --global
 ```
 
-This creates a symlink to your local development version. Changes to the source code will be immediately available (after rebuild).
+This creates a symlink to your local development version. Changes to the source code will be
+immediately available (after rebuild).
 
 Verify:
+
 ```bash
 which wundr
 # Should show: /Users/[user]/.local/share/pnpm/wundr
@@ -52,6 +55,7 @@ npx @wundr.io/cli <command>
 ```
 
 Example:
+
 ```bash
 npx @wundr.io/cli claude-setup optimize
 npx @wundr.io/cli computer-setup --profile fullstack
@@ -69,6 +73,7 @@ npx tsx packages/@wundr/cli/src/index.ts <command>
 ```
 
 Example:
+
 ```bash
 npx tsx packages/@wundr/cli/src/index.ts claude-setup optimize
 ```
@@ -93,6 +98,7 @@ wundr claude-setup --help
 ```
 
 Expected output:
+
 ```
 ██╗    ██╗██╗   ██╗███╗   ██╗██████╗ ██████╗
 ██║    ██║██║   ██║████╗  ██║██╔══██╗██╔══██╗
@@ -111,6 +117,7 @@ The Intelligent CLI-Based Coding Agents Orchestrator v1.0.0
 Once installed, you have access to all Wundr commands:
 
 ### Computer Setup
+
 ```bash
 wundr computer-setup              # Interactive setup wizard
 wundr computer-setup --profile fullstack
@@ -118,6 +125,7 @@ wundr computer-setup validate
 ```
 
 ### Claude Code Setup
+
 ```bash
 wundr claude-setup                # Complete Claude ecosystem
 wundr claude-setup optimize       # Standalone optimizations
@@ -127,6 +135,7 @@ wundr claude-setup validate       # Validate installation
 ```
 
 ### Project Creation
+
 ```bash
 wundr create frontend my-app      # Next.js project
 wundr create backend my-api       # Fastify API
@@ -134,6 +143,7 @@ wundr create monorepo my-platform # Turborepo
 ```
 
 ### Code Analysis
+
 ```bash
 wundr analyze                     # Analyze codebase
 wundr govern baseline             # Create governance baseline
@@ -151,6 +161,7 @@ wundr govern check                # Check for drift
 **Solution:**
 
 For npm global install:
+
 ```bash
 # Check npm global bin directory
 npm config get prefix
@@ -160,6 +171,7 @@ export PATH="$PATH:$(npm config get prefix)/bin"
 ```
 
 For pnpm link:
+
 ```bash
 # Check pnpm global bin directory
 pnpm bin -g
@@ -169,6 +181,7 @@ export PATH="$PATH:$(pnpm bin -g)"
 ```
 
 Then restart your terminal:
+
 ```bash
 exec $SHELL
 ```
@@ -203,11 +216,13 @@ npm install -g @wundr.io/cli
 ## 🔄 Updating
 
 ### Global Installation
+
 ```bash
 npm update -g @wundr.io/cli
 ```
 
 ### Development Link
+
 ```bash
 cd packages/@wundr/cli
 git pull origin main
@@ -222,16 +237,19 @@ The symlink will automatically use the updated version.
 ## 🗑️ Uninstallation
 
 ### Global Installation
+
 ```bash
 npm uninstall -g @wundr.io/cli
 ```
 
 ### Development Link
+
 ```bash
 pnpm unlink --global @wundr.io/cli
 ```
 
 Verify removal:
+
 ```bash
 which wundr
 # Should return: wundr not found

@@ -60,7 +60,7 @@ export function OrchestratorCreationExample() {
       {mode === 'idle' && (
         <button
           onClick={handleStartCreation}
-          className="rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+          className='rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90'
         >
           Create New Orchestrator
         </button>
@@ -69,8 +69,8 @@ export function OrchestratorCreationExample() {
       {/* Conversational creation dialog */}
       {mode === 'chat' && (
         <ConversationalCreator
-          entityType="orchestrator"
-          workspaceId="workspace-123"
+          entityType='orchestrator'
+          workspaceId='workspace-123'
           onSpecGenerated={handleSpecGenerated}
           onCancel={handleCancel}
           open={mode === 'chat'}
@@ -79,44 +79,44 @@ export function OrchestratorCreationExample() {
 
       {/* Form view (placeholder) */}
       {mode === 'form' && spec && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-2xl rounded-lg bg-background p-6">
-            <h2 className="mb-4 text-2xl font-bold">
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+          <div className='w-full max-w-2xl rounded-lg bg-background p-6'>
+            <h2 className='mb-4 text-2xl font-bold'>
               Review OrchestratorConfiguration
             </h2>
 
             {/* This would be replaced with your actual form component */}
-            <div className="space-y-4">
+            <div className='space-y-4'>
               <div>
-                <label className="text-sm font-medium">Name</label>
+                <label className='text-sm font-medium'>Name</label>
                 <input
-                  type="text"
+                  type='text'
                   defaultValue={spec.name}
-                  className="w-full rounded-md border px-3 py-2"
+                  className='w-full rounded-md border px-3 py-2'
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium">Role</label>
+                <label className='text-sm font-medium'>Role</label>
                 <input
-                  type="text"
+                  type='text'
                   defaultValue={spec.role}
-                  className="w-full rounded-md border px-3 py-2"
+                  className='w-full rounded-md border px-3 py-2'
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium">Charter</label>
+                <label className='text-sm font-medium'>Charter</label>
                 <textarea
                   defaultValue={spec.charter}
                   rows={4}
-                  className="w-full rounded-md border px-3 py-2"
+                  className='w-full rounded-md border px-3 py-2'
                 />
               </div>
 
               {/* Missing fields warning */}
               {spec.missingFields.length > 0 && (
-                <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+                <div className='rounded-md bg-yellow-50 p-3 text-sm text-yellow-800'>
                   <strong>Missing fields:</strong>{' '}
                   {spec.missingFields.join(', ')}
                 </div>
@@ -124,9 +124,9 @@ export function OrchestratorCreationExample() {
 
               {/* Suggestions */}
               {spec.suggestions.length > 0 && (
-                <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+                <div className='rounded-md bg-blue-50 p-3 text-sm text-blue-800'>
                   <strong>Suggestions:</strong>
-                  <ul className="mt-1 list-inside list-disc">
+                  <ul className='mt-1 list-inside list-disc'>
                     {spec.suggestions.map((suggestion, i) => (
                       <li key={i}>{suggestion}</li>
                     ))}
@@ -135,23 +135,23 @@ export function OrchestratorCreationExample() {
               )}
             </div>
 
-            <div className="mt-6 flex justify-between">
+            <div className='mt-6 flex justify-between'>
               <button
                 onClick={() => setMode('chat')}
-                className="rounded-md border px-4 py-2 hover:bg-accent"
+                className='rounded-md border px-4 py-2 hover:bg-accent'
               >
                 Back to Chat
               </button>
-              <div className="space-x-2">
+              <div className='space-x-2'>
                 <button
                   onClick={handleCancel}
-                  className="rounded-md border px-4 py-2 hover:bg-accent"
+                  className='rounded-md border px-4 py-2 hover:bg-accent'
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleFormSubmit(spec)}
-                  className="rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+                  className='rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90'
                 >
                   Create Orchestrator
                 </button>
@@ -174,22 +174,22 @@ export function MultiEntityCreationExample() {
 
   return (
     <div>
-      <div className="flex gap-2">
+      <div className='flex gap-2'>
         <button
           onClick={() => setEntityType('orchestrator')}
-          className="rounded-md bg-primary px-4 py-2 text-primary-foreground"
+          className='rounded-md bg-primary px-4 py-2 text-primary-foreground'
         >
           Create Orchestrator
         </button>
         <button
           onClick={() => setEntityType('workflow')}
-          className="rounded-md bg-primary px-4 py-2 text-primary-foreground"
+          className='rounded-md bg-primary px-4 py-2 text-primary-foreground'
         >
           Create Workflow
         </button>
         <button
           onClick={() => setEntityType('channel')}
-          className="rounded-md bg-primary px-4 py-2 text-primary-foreground"
+          className='rounded-md bg-primary px-4 py-2 text-primary-foreground'
         >
           Create Channel
         </button>
@@ -198,8 +198,8 @@ export function MultiEntityCreationExample() {
       {entityType && (
         <ConversationalCreator
           entityType={entityType}
-          workspaceId="workspace-123"
-          onSpecGenerated={(spec) => {
+          workspaceId='workspace-123'
+          onSpecGenerated={spec => {
             console.log('Generated spec:', spec);
             setEntityType(null);
           }}
@@ -233,17 +233,17 @@ export function EditEntityExample() {
     <div>
       <button
         onClick={() => setIsEditing(true)}
-        className="rounded-md border px-4 py-2 hover:bg-accent"
+        className='rounded-md border px-4 py-2 hover:bg-accent'
       >
         Modify Orchestrator with AI
       </button>
 
       {isEditing && (
         <ConversationalCreator
-          entityType="orchestrator"
-          workspaceId="workspace-123"
+          entityType='orchestrator'
+          workspaceId='workspace-123'
           existingSpec={existingOrchestratorSpec}
-          onSpecGenerated={(spec) => {
+          onSpecGenerated={spec => {
             console.log('Updated spec:', spec);
             setIsEditing(false);
           }}

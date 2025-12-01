@@ -103,7 +103,7 @@ export class MemoryMonitor extends EventEmitter {
       maxSnapshots?: number;
       outputDir?: string;
       thresholds?: Partial<MemoryThresholds>;
-    } = {},
+    } = {}
   ) {
     super();
 
@@ -129,8 +129,8 @@ export class MemoryMonitor extends EventEmitter {
    */
   async startMonitoring(): Promise<void> {
     if (this.isMonitoring) {
-return;
-}
+      return;
+    }
 
     this.isMonitoring = true;
     await fs.ensureDir(this.outputDir);
@@ -155,8 +155,8 @@ return;
    */
   stopMonitoring(): void {
     if (!this.isMonitoring) {
-return;
-}
+      return;
+    }
 
     this.isMonitoring = false;
 
@@ -285,8 +285,8 @@ return;
    */
   private analyzeMemoryTrends(): void {
     if (this.snapshots.length < 10) {
-return;
-} // Need minimum samples
+      return;
+    } // Need minimum samples
 
     const leakAnalysis = this.detectMemoryLeaks();
 
@@ -333,7 +333,7 @@ return;
     const recommendations = this.generateRecommendations(
       severity,
       growthRate,
-      trendDirection,
+      trendDirection
     );
 
     return {
@@ -356,8 +356,8 @@ return;
   } {
     const n = values.length;
     if (n < 2) {
-return { slope: 0, intercept: 0, correlation: 0 };
-}
+      return { slope: 0, intercept: 0, correlation: 0 };
+    }
 
     const x = Array.from({ length: n }, (_, i) => i);
     const sumX = x.reduce((a, b) => a + b, 0);
@@ -372,7 +372,7 @@ return { slope: 0, intercept: 0, correlation: 0 };
     // Calculate correlation coefficient
     const numerator = n * sumXY - sumX * sumY;
     const denominator = Math.sqrt(
-      (n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY),
+      (n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY)
     );
     const correlation = denominator !== 0 ? numerator / denominator : 0;
 
@@ -384,20 +384,20 @@ return { slope: 0, intercept: 0, correlation: 0 };
    */
   calculateGrowthRate(): number {
     if (this.snapshots.length < 2) {
-return 0;
-}
+      return 0;
+    }
 
     const recent = this.snapshots.slice(-10); // Last 10 snapshots
     if (recent.length < 2) {
-return 0;
-}
+      return 0;
+    }
 
     const firstSnapshot = recent[0];
     const lastSnapshot = recent[recent.length - 1];
 
     if (!firstSnapshot || !lastSnapshot) {
-return 0;
-}
+      return 0;
+    }
 
     const heapDiff = lastSnapshot.heapUsed - firstSnapshot.heapUsed;
     const timeDiff = (lastSnapshot.timestamp - firstSnapshot.timestamp) / 1000; // seconds
@@ -419,58 +419,58 @@ return 0;
   private generateRecommendations(
     severity: string,
     growthRate: number,
-    trend: string,
+    trend: string
   ): string[] {
     const recommendations: string[] = [];
 
     if (severity === 'critical') {
       recommendations.push(
-        'URGENT: Memory usage is critical. Consider restarting the application.',
+        'URGENT: Memory usage is critical. Consider restarting the application.'
       );
       recommendations.push(
-        'Take heap snapshot for detailed analysis of memory usage.',
+        'Take heap snapshot for detailed analysis of memory usage.'
       );
     }
 
     if (trend === 'growing') {
       recommendations.push(
-        'Memory usage is steadily increasing. Check for memory leaks.',
+        'Memory usage is steadily increasing. Check for memory leaks.'
       );
       recommendations.push(
-        'Review recent code changes that might cause memory retention.',
+        'Review recent code changes that might cause memory retention.'
       );
     }
 
     if (growthRate > 1024 * 1024) {
       // 1MB/s
       recommendations.push(
-        'High memory growth rate detected. Profile memory allocations.',
+        'High memory growth rate detected. Profile memory allocations.'
       );
       recommendations.push(
-        'Consider implementing object pooling for frequently created objects.',
+        'Consider implementing object pooling for frequently created objects.'
       );
     }
 
     if (this.gcStats.averageDuration > 100) {
       // 100ms
       recommendations.push(
-        'GC pauses are long. Consider tuning Node.js GC parameters.',
+        'GC pauses are long. Consider tuning Node.js GC parameters.'
       );
       recommendations.push(
-        'Reduce object allocation frequency to minimize GC pressure.',
+        'Reduce object allocation frequency to minimize GC pressure.'
       );
     }
 
     // General recommendations
     recommendations.push(
-      'Enable --expose-gc flag to manually trigger garbage collection.',
+      'Enable --expose-gc flag to manually trigger garbage collection.'
     );
     recommendations.push(
-      'Use WeakMap and WeakSet for temporary object references.',
+      'Use WeakMap and WeakSet for temporary object references.'
     );
     recommendations.push('Implement streaming for large data processing.');
     recommendations.push(
-      'Monitor and limit cache sizes to prevent unbounded growth.',
+      'Monitor and limit cache sizes to prevent unbounded growth.'
     );
 
     return recommendations;
@@ -518,7 +518,7 @@ return 0;
   private setupGCObserver(): void {
     try {
       // Use performance observer for GC tracking
-      this.gcObserver = new PerformanceObserver((list) => {
+      this.gcObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
 
         entries.forEach((entry: PerformanceEntry) => {
@@ -575,7 +575,9 @@ return 0;
       const filepath = path.join(this.outputDir, filename);
 
       const snapshot = v8.getHeapSnapshot();
-      const writeStream = fs.createWriteStream(filepath) as NodeJS.WritableStream;
+      const writeStream = fs.createWriteStream(
+        filepath
+      ) as NodeJS.WritableStream;
 
       await new Promise<void>((resolve, reject) => {
         snapshot.pipe(writeStream);
@@ -599,7 +601,7 @@ return 0;
       this.snapshots[this.snapshots.length - 1] || this.takeSnapshot();
     const peak = this.snapshots.reduce(
       (max, snapshot) => (snapshot.heapUsed > max.heapUsed ? snapshot : max),
-      current,
+      current
     );
 
     const average = this.calculateAverages();
@@ -637,7 +639,7 @@ return 0;
         heapTotal: acc.heapTotal + snapshot.heapTotal,
         rss: acc.rss + snapshot.rss,
       }),
-      { heapUsed: 0, heapTotal: 0, rss: 0 },
+      { heapUsed: 0, heapTotal: 0, rss: 0 }
     );
 
     const count = this.snapshots.length;
@@ -653,8 +655,8 @@ return 0;
    */
   private getMonitoringDuration(): number {
     if (this.snapshots.length < 2) {
-return 0;
-}
+      return 0;
+    }
     const lastSnapshot = this.snapshots[this.snapshots.length - 1];
     const firstSnapshot = this.snapshots[0];
     return lastSnapshot?.timestamp && firstSnapshot?.timestamp
@@ -678,7 +680,7 @@ return 0;
       const rows = this.snapshots
         .map(
           s =>
-            `${s.timestamp},${s.heapUsed},${s.heapTotal},${s.external},${s.arrayBuffers},${s.rss},${s.cpu}`,
+            `${s.timestamp},${s.heapUsed},${s.heapTotal},${s.external},${s.arrayBuffers},${s.rss},${s.cpu}`
         )
         .join('\n');
       content = headers + rows;
@@ -697,7 +699,7 @@ return 0;
           metrics: this.getMetrics(),
         },
         null,
-        2,
+        2
       );
     }
 

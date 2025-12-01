@@ -1,6 +1,7 @@
 # Token Budget Dashboard Components
 
-Production-quality React components for visualizing and managing LLM token budgets in the Neolith application.
+Production-quality React components for visualizing and managing LLM token budgets in the Neolith
+application.
 
 ## Components
 
@@ -9,6 +10,7 @@ Production-quality React components for visualizing and managing LLM token budge
 Displays current token usage against budget limits with progress visualization.
 
 **Features:**
+
 - Multi-period views (hourly, daily, monthly)
 - Color-coded progress bar based on usage percentage
 - Projected budget exhaustion time
@@ -16,6 +18,7 @@ Displays current token usage against budget limits with progress visualization.
 - Real-time usage statistics
 
 **Props:**
+
 ```typescript
 interface BudgetOverviewProps {
   usage: BudgetUsage;
@@ -33,6 +36,7 @@ interface BudgetUsage {
 ```
 
 **Usage:**
+
 ```tsx
 import { BudgetOverview } from '@/components/budget';
 
@@ -42,10 +46,10 @@ import { BudgetOverview } from '@/components/budget';
     limit: 1000000,
     period: 'daily',
     projectedExhaustion: new Date(Date.now() + 3600000),
-    costEstimate: 0.15
+    costEstimate: 0.15,
   }}
-  onViewChange={(view) => console.log('View changed to:', view)}
-/>
+  onViewChange={view => console.log('View changed to:', view)}
+/>;
 ```
 
 ### 2. UsageChart
@@ -53,6 +57,7 @@ import { BudgetOverview } from '@/components/budget';
 Interactive line chart showing token consumption trends over time.
 
 **Features:**
+
 - Multiple data series (input, output, total tokens)
 - Interactive legend with hover effects
 - Responsive recharts implementation
@@ -60,6 +65,7 @@ Interactive line chart showing token consumption trends over time.
 - Time-based formatting (hourly/daily/monthly)
 
 **Props:**
+
 ```typescript
 interface UsageChartProps {
   data: UsageDataPoint[];
@@ -77,6 +83,7 @@ interface UsageDataPoint {
 ```
 
 **Usage:**
+
 ```tsx
 import { UsageChart } from '@/components/budget';
 
@@ -85,16 +92,12 @@ const data = [
     timestamp: new Date('2025-11-30T00:00:00'),
     inputTokens: 10000,
     outputTokens: 5000,
-    totalTokens: 15000
+    totalTokens: 15000,
   },
   // ... more data points
 ];
 
-<UsageChart
-  data={data}
-  showComparison={true}
-  previousPeriodData={previousPeriodData}
-/>
+<UsageChart data={data} showComparison={true} previousPeriodData={previousPeriodData} />;
 ```
 
 ### 3. BudgetAlerts
@@ -102,6 +105,7 @@ const data = [
 Alert management system for budget threshold notifications.
 
 **Features:**
+
 - Severity-based alerts (info, warning, critical)
 - Active/acknowledged alert separation
 - Configurable thresholds dialog
@@ -109,6 +113,7 @@ Alert management system for budget threshold notifications.
 - Relative time formatting
 
 **Props:**
+
 ```typescript
 interface BudgetAlertsProps {
   alerts: BudgetAlert[];
@@ -136,6 +141,7 @@ interface AlertThresholds {
 ```
 
 **Usage:**
+
 ```tsx
 import { BudgetAlerts } from '@/components/budget';
 
@@ -147,17 +153,17 @@ const alerts = [
     timestamp: new Date(),
     acknowledged: false,
     threshold: 90,
-    currentValue: 95
-  }
+    currentValue: 95,
+  },
 ];
 
 <BudgetAlerts
   alerts={alerts}
   thresholds={{ warningThreshold: 75, criticalThreshold: 90 }}
-  onAcknowledge={(id) => console.log('Acknowledged:', id)}
-  onDismiss={(id) => console.log('Dismissed:', id)}
-  onUpdateThresholds={(thresholds) => console.log('Updated:', thresholds)}
-/>
+  onAcknowledge={id => console.log('Acknowledged:', id)}
+  onDismiss={id => console.log('Dismissed:', id)}
+  onUpdateThresholds={thresholds => console.log('Updated:', thresholds)}
+/>;
 ```
 
 ### 4. BudgetSettings
@@ -165,6 +171,7 @@ const alerts = [
 Configuration interface for budget limits and alert thresholds.
 
 **Features:**
+
 - Hierarchical budget limits (hourly, daily, monthly)
 - Alert threshold configuration
 - Auto-pause toggle
@@ -172,6 +179,7 @@ Configuration interface for budget limits and alert thresholds.
 - Save/reset functionality
 
 **Props:**
+
 ```typescript
 interface BudgetSettingsProps {
   config: BudgetConfiguration;
@@ -192,6 +200,7 @@ interface BudgetConfiguration {
 ```
 
 **Usage:**
+
 ```tsx
 import { BudgetSettings } from '@/components/budget';
 
@@ -202,22 +211,24 @@ import { BudgetSettings } from '@/components/budget';
     monthlyLimit: 10000000,
     autoPauseEnabled: true,
     warningThreshold: 75,
-    criticalThreshold: 90
+    criticalThreshold: 90,
   }}
-  onSave={(config) => console.log('Saving:', config)}
+  onSave={config => console.log('Saving:', config)}
   onReset={() => console.log('Reset to defaults')}
   isSaving={false}
-/>
+/>;
 ```
 
 ## Color Coding
 
 ### Usage Percentage Colors
+
 - **Green (Success)**: 0-74% usage
 - **Yellow (Warning)**: 75-89% usage
 - **Red (Critical)**: 90-100% usage
 
 ### Alert Severity Colors
+
 - **Info**: Blue
 - **Warning**: Yellow
 - **Critical**: Red
@@ -235,6 +246,7 @@ The BudgetSettings component enforces the following validation:
 ## Dependencies
 
 All components use shadcn/ui primitives:
+
 - Card, CardContent, CardDescription, CardHeader, CardTitle
 - Progress
 - Badge
@@ -246,6 +258,7 @@ All components use shadcn/ui primitives:
 - Separator
 
 Charts use recharts:
+
 - LineChart
 - Line
 - XAxis, YAxis
@@ -280,7 +293,7 @@ import {
   type BudgetUsage,
   type UsageDataPoint,
   type BudgetAlert,
-  type BudgetConfiguration
+  type BudgetConfiguration,
 } from '@/components/budget';
 
 export default function BudgetDashboard() {
@@ -289,7 +302,7 @@ export default function BudgetDashboard() {
     limit: 1000000,
     period: 'daily',
     projectedExhaustion: new Date(Date.now() + 7200000),
-    costEstimate: 0.15
+    costEstimate: 0.15,
   });
 
   const [chartData, setChartData] = useState<UsageDataPoint[]>([
@@ -306,24 +319,22 @@ export default function BudgetDashboard() {
     monthlyLimit: 10000000,
     autoPauseEnabled: true,
     warningThreshold: 75,
-    criticalThreshold: 90
+    criticalThreshold: 90,
   });
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="grid gap-6 md:grid-cols-2">
+    <div className='space-y-6 p-6'>
+      <div className='grid gap-6 md:grid-cols-2'>
         <BudgetOverview usage={usage} />
         <BudgetAlerts
           alerts={alerts}
           thresholds={{
             warningThreshold: config.warningThreshold,
-            criticalThreshold: config.criticalThreshold
+            criticalThreshold: config.criticalThreshold,
           }}
-          onAcknowledge={(id) => {
-            setAlerts((prev) =>
-              prev.map((alert) =>
-                alert.id === id ? { ...alert, acknowledged: true } : alert
-              )
+          onAcknowledge={id => {
+            setAlerts(prev =>
+              prev.map(alert => (alert.id === id ? { ...alert, acknowledged: true } : alert))
             );
           }}
         />
@@ -331,7 +342,7 @@ export default function BudgetDashboard() {
       <UsageChart data={chartData} />
       <BudgetSettings
         config={config}
-        onSave={(newConfig) => {
+        onSave={newConfig => {
           setConfig(newConfig);
           // API call to save config
         }}
@@ -359,13 +370,14 @@ import type {
   AlertThresholds,
   BudgetAlertsProps,
   BudgetConfiguration,
-  BudgetSettingsProps
+  BudgetSettingsProps,
 } from '@/components/budget';
 ```
 
 ## Styling
 
-Components use Tailwind CSS and follow the shadcn/ui design system. All components accept a `className` prop for custom styling.
+Components use Tailwind CSS and follow the shadcn/ui design system. All components accept a
+`className` prop for custom styling.
 
 ## Accessibility
 

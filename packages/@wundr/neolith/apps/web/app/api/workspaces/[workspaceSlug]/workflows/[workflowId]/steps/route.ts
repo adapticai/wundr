@@ -85,7 +85,7 @@ const reorderStepsSchema = z.object({
       id: z.string().min(1),
       /** New position (0-indexed) */
       position: z.number().int().min(0),
-    }),
+    })
   ),
 });
 
@@ -119,7 +119,7 @@ interface WorkflowStep {
 async function getWorkflowWithAccess(
   workspaceId: string,
   workflowId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -181,15 +181,18 @@ async function getWorkflowWithAccess(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -198,28 +201,36 @@ export async function GET(
     const { workspaceSlug: workspaceId, workflowId } = params;
 
     // Get workflow with access check
-    const result = await getWorkflowWithAccess(workspaceId, workflowId, session.user.id);
+    const result = await getWorkflowWithAccess(
+      workspaceId,
+      workflowId,
+      session.user.id
+    );
 
     if ('error' in result) {
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     // Parse actions from workflow
-    const actions = (result.workflow?.actions as unknown as WorkflowStep[]) || [];
+    const actions =
+      (result.workflow?.actions as unknown as WorkflowStep[]) || [];
 
     // Sort by order
     const sortedSteps = actions.sort((a, b) => a.order - b.order);
@@ -229,10 +240,16 @@ export async function GET(
       total: sortedSteps.length,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId/steps] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/workflows/:workflowId/steps] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -248,15 +265,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -265,22 +285,29 @@ export async function POST(
     const { workspaceSlug: workspaceId, workflowId } = params;
 
     // Get workflow with access check
-    const result = await getWorkflowWithAccess(workspaceId, workflowId, session.user.id);
+    const result = await getWorkflowWithAccess(
+      workspaceId,
+      workflowId,
+      session.user.id
+    );
 
     if ('error' in result) {
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -290,9 +317,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to add workflow steps',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -302,8 +329,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -314,16 +344,17 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: CreateStepInput = parseResult.data;
 
     // Get current actions
-    const currentActions = (result.workflow.actions as unknown as WorkflowStep[]) || [];
+    const currentActions =
+      (result.workflow.actions as unknown as WorkflowStep[]) || [];
 
     // Generate unique ID for the new step
     const newStepId = `step_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -345,7 +376,7 @@ export async function POST(
     const updatedActions = [...currentActions];
 
     // Shift existing steps at or after the new position
-    updatedActions.forEach((step) => {
+    updatedActions.forEach(step => {
       if (step.order >= input.position) {
         step.order += 1;
       }
@@ -370,13 +401,19 @@ export async function POST(
         step: newStep,
         message: 'Workflow step added successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/workflows/:workflowId/steps] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/workflows/:workflowId/steps] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -390,14 +427,20 @@ export async function POST(
  * @param context - Route context with workspaceId and workflowId
  * @returns Updated workflow steps
  */
-export async function PUT(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function PUT(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -406,22 +449,29 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
     const { workspaceSlug: workspaceId, workflowId } = params;
 
     // Get workflow with access check
-    const result = await getWorkflowWithAccess(workspaceId, workflowId, session.user.id);
+    const result = await getWorkflowWithAccess(
+      workspaceId,
+      workflowId,
+      session.user.id
+    );
 
     if ('error' in result) {
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
-          createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Workflow not found',
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -431,9 +481,9 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to reorder workflow steps',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -443,8 +493,11 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -455,36 +508,42 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: ReorderStepsInput = parseResult.data;
 
     // Get current actions
-    const currentActions = (result.workflow.actions as unknown as WorkflowStep[]) || [];
+    const currentActions =
+      (result.workflow.actions as unknown as WorkflowStep[]) || [];
 
     // Create a map of step IDs to new positions
-    const positionMap = new Map(input.steps.map((s) => [s.id, s.position]));
+    const positionMap = new Map(input.steps.map(s => [s.id, s.position]));
 
     // Validate that all step IDs exist
-    const invalidIds = input.steps.filter((s) => !currentActions.some((a) => a.id === s.id));
+    const invalidIds = input.steps.filter(
+      s => !currentActions.some(a => a.id === s.id)
+    );
     if (invalidIds.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           'Invalid step IDs provided',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { invalidIds: invalidIds.map((s) => s.id) },
+          { invalidIds: invalidIds.map(s => s.id) }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate positions are unique and sequential
-    const newPositions = input.steps.map((s) => s.position).sort((a, b) => a - b);
-    const expectedPositions = Array.from({ length: currentActions.length }, (_, i) => i);
+    const newPositions = input.steps.map(s => s.position).sort((a, b) => a - b);
+    const expectedPositions = Array.from(
+      { length: currentActions.length },
+      (_, i) => i
+    );
 
     // Check if we're reordering a subset or all steps
     if (input.steps.length === currentActions.length) {
@@ -498,15 +557,15 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
             {
               received: newPositions,
               expected: expectedPositions,
-            },
+            }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     // Update positions for specified steps
-    const updatedActions = currentActions.map((step) => {
+    const updatedActions = currentActions.map(step => {
       const newPosition = positionMap.get(step.id);
       if (newPosition !== undefined) {
         return { ...step, order: newPosition };
@@ -530,10 +589,16 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       message: 'Workflow steps reordered successfully',
     });
   } catch (error) {
-    console.error('[PUT /api/workspaces/:workspaceId/workflows/:workflowId/steps] Error:', error);
+    console.error(
+      '[PUT /api/workspaces/:workspaceId/workflows/:workflowId/steps] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

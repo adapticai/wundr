@@ -67,30 +67,30 @@ export class UserService extends BaseService {
     if (!user) {
       throw new NotFoundError('User', id);
     }
-    
+
     this.logger.info('User retrieved', { userId: id });
     await this.eventBus.emit('user.retrieved', { userId: id });
-    
+
     return user;
   }
 
   async create(userData: CreateUserRequest): Promise<User> {
     // Validation
     await this.validateUserData(userData);
-    
+
     // Business logic
     const user = await this.userRepository.create({
       ...userData,
       id: generateId(),
       createdAt: new Date(),
-      status: UserStatus.ACTIVE
+      status: UserStatus.ACTIVE,
     });
 
     // Events
     await this.eventBus.emit('user.created', { userId: user.id });
-    
+
     this.logger.info('User created', { userId: user.id });
-    
+
     return user;
   }
 
@@ -98,7 +98,7 @@ export class UserService extends BaseService {
     if (!isValidEmail(data.email)) {
       throw new ValidationError('Invalid email format', ['email']);
     }
-    
+
     if (await this.userRepository.existsByEmail(data.email)) {
       throw new ConflictError('User with this email already exists');
     }
@@ -148,11 +148,8 @@ export abstract class BaseRepository<T extends { id: string }> {
 
   async findById(id: string): Promise<T | null> {
     try {
-      const result = await this.db.query(
-        `SELECT * FROM ${this.tableName} WHERE id = ?`,
-        [id]
-      );
-      
+      const result = await this.db.query(`SELECT * FROM ${this.tableName} WHERE id = ?`, [id]);
+
       return result.length > 0 ? this.mapFromDb(result[0]) : null;
     } catch (error) {
       this.logger.error('Failed to find by ID', { id, error });
@@ -162,7 +159,7 @@ export abstract class BaseRepository<T extends { id: string }> {
 
   async findAll(options: FindOptions = {}): Promise<T[]> {
     const { limit = 100, offset = 0, orderBy = 'createdAt', order = 'DESC' } = options;
-    
+
     try {
       const results = await this.db.query(
         `SELECT * FROM ${this.tableName} 
@@ -170,7 +167,7 @@ export abstract class BaseRepository<T extends { id: string }> {
          LIMIT ? OFFSET ?`,
         [limit, offset]
       );
-      
+
       return results.map(row => this.mapFromDb(row));
     } catch (error) {
       this.logger.error('Failed to find all', { options, error });
@@ -184,7 +181,7 @@ export abstract class BaseRepository<T extends { id: string }> {
       ...data,
       id: generateId(),
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     } as T;
 
     try {
@@ -192,7 +189,7 @@ export abstract class BaseRepository<T extends { id: string }> {
         `INSERT INTO ${this.tableName} (${this.getInsertColumns()}) VALUES (${this.getInsertPlaceholders()})`,
         this.getInsertValues(record)
       );
-      
+
       return record;
     } catch (error) {
       this.logger.error('Failed to create', { data, error });
@@ -209,15 +206,15 @@ export abstract class BaseRepository<T extends { id: string }> {
     const updated = {
       ...existing,
       ...data,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     try {
-      await this.db.query(
-        `UPDATE ${this.tableName} SET ${this.getUpdateClause()} WHERE id = ?`,
-        [...this.getUpdateValues(updated), id]
-      );
-      
+      await this.db.query(`UPDATE ${this.tableName} SET ${this.getUpdateClause()} WHERE id = ?`, [
+        ...this.getUpdateValues(updated),
+        id,
+      ]);
+
       return updated;
     } catch (error) {
       this.logger.error('Failed to update', { id, data, error });
@@ -227,11 +224,8 @@ export abstract class BaseRepository<T extends { id: string }> {
 
   async delete(id: string): Promise<void> {
     try {
-      const result = await this.db.query(
-        `DELETE FROM ${this.tableName} WHERE id = ?`,
-        [id]
-      );
-      
+      const result = await this.db.query(`DELETE FROM ${this.tableName} WHERE id = ?`, [id]);
+
       if (result.affectedRows === 0) {
         throw new NotFoundError(this.tableName, id);
       }
@@ -257,11 +251,8 @@ export class UserRepository extends BaseRepository<User> {
 
   async findByEmail(email: string): Promise<User | null> {
     try {
-      const results = await this.db.query(
-        'SELECT * FROM users WHERE email = ?',
-        [email]
-      );
-      
+      const results = await this.db.query('SELECT * FROM users WHERE email = ?', [email]);
+
       return results.length > 0 ? this.mapFromDb(results[0]) : null;
     } catch (error) {
       this.logger.error('Failed to find by email', { email, error });
@@ -271,11 +262,10 @@ export class UserRepository extends BaseRepository<User> {
 
   async existsByEmail(email: string): Promise<boolean> {
     try {
-      const results = await this.db.query(
-        'SELECT COUNT(*) as count FROM users WHERE email = ?',
-        [email]
-      );
-      
+      const results = await this.db.query('SELECT COUNT(*) as count FROM users WHERE email = ?', [
+        email,
+      ]);
+
       return results[0].count > 0;
     } catch (error) {
       this.logger.error('Failed to check email existence', { email, error });
@@ -290,7 +280,7 @@ export class UserRepository extends BaseRepository<User> {
       name: row.name,
       status: row.status as UserStatus,
       createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at)
+      updatedAt: new Date(row.updated_at),
     };
   }
 
@@ -303,14 +293,7 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   protected getInsertValues(user: User): any[] {
-    return [
-      user.id,
-      user.email,
-      user.name,
-      user.status,
-      user.createdAt,
-      user.updatedAt
-    ];
+    return [user.id, user.email, user.name, user.status, user.createdAt, user.updatedAt];
   }
 
   protected getUpdateClause(): string {
@@ -334,7 +317,10 @@ export abstract class AppError extends Error {
   abstract readonly code: string;
   readonly isOperational = true;
 
-  constructor(message: string, public readonly context?: Record<string, any>) {
+  constructor(
+    message: string,
+    public readonly context?: Record<string, any>
+  ) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
   }
@@ -345,7 +331,7 @@ export abstract class AppError extends Error {
       message: this.message,
       code: this.code,
       statusCode: this.statusCode,
-      context: this.context
+      context: this.context,
     };
   }
 }
@@ -411,7 +397,7 @@ export class UserService extends BaseService {
         // Re-throw known errors
         throw error;
       }
-      
+
       // Log unexpected errors
       this.logger.error('Unexpected error in findById', { id, error });
       throw new DatabaseError('Failed to retrieve user');
@@ -433,14 +419,14 @@ export class UserService extends BaseService {
       // Check for conflicts
       if (await this.userRepository.existsByEmail(userData.email)) {
         throw new ConflictError('User with this email already exists', {
-          email: userData.email
+          email: userData.email,
         });
       }
 
       // Create user
       const user = await this.userRepository.create({
         ...userData,
-        status: UserStatus.ACTIVE
+        status: UserStatus.ACTIVE,
       });
 
       return user;
@@ -448,7 +434,7 @@ export class UserService extends BaseService {
       if (error instanceof AppError) {
         throw error;
       }
-      
+
       this.logger.error('Unexpected error in create', { userData, error });
       throw new DatabaseError('Failed to create user');
     }
@@ -512,11 +498,11 @@ export enum UserStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   SUSPENDED = 'SUSPENDED',
-  DELETED = 'DELETED'
+  DELETED = 'DELETED',
 }
 
 // Union types for specific use cases
-export type UserEvent = 
+export type UserEvent =
   | { type: 'user.created'; payload: { userId: string } }
   | { type: 'user.updated'; payload: { userId: string; changes: Partial<User> } }
   | { type: 'user.deleted'; payload: { userId: string } };
@@ -530,15 +516,17 @@ export type UserUpdate = Partial<Omit<User, 'id' | 'createdAt'>>;
 
 ```typescript
 // DON'T DO THIS - Mixed conventions
-export interface IUser {  // L Hungarian notation
-  user_id: string;        // L Snake case in TypeScript
-  userName: string;       // L Inconsistent with snake_case above
+export interface IUser {
+  // L Hungarian notation
+  user_id: string; // L Snake case in TypeScript
+  userName: string; // L Inconsistent with snake_case above
 }
 
-export type UserType = {  // L Redundant "Type" suffix
-  id: any;               // L Using 'any' instead of proper types
-  name: string;          // L Different structure than IUser
-}
+export type UserType = {
+  // L Redundant "Type" suffix
+  id: any; // L Using 'any' instead of proper types
+  name: string; // L Different structure than IUser
+};
 ```
 
 ## API Controller Patterns
@@ -561,15 +549,15 @@ export abstract class BaseController {
         message: error.message,
         context: error.context,
         path: req.path,
-        method: req.method
+        method: req.method,
       });
 
       res.status(error.statusCode).json({
         error: {
           code: error.code,
           message: error.message,
-          ...(error.context && { details: error.context })
-        }
+          ...(error.context && { details: error.context }),
+        },
       });
       return;
     }
@@ -578,14 +566,14 @@ export abstract class BaseController {
     this.logger.error('Unexpected error', {
       error: error instanceof Error ? error.stack : error,
       path: req.path,
-      method: req.method
+      method: req.method,
     });
 
     res.status(500).json({
       error: {
         code: 'INTERNAL_ERROR',
-        message: 'An unexpected error occurred'
-      }
+        message: 'An unexpected error occurred',
+      },
     });
   }
 
@@ -596,7 +584,7 @@ export abstract class BaseController {
       if (error instanceof z.ZodError) {
         const fields = error.errors.map(e => e.path.join('.'));
         throw new ValidationError('Invalid request data', fields, {
-          zodErrors: error.errors
+          zodErrors: error.errors,
         });
       }
       throw error;
@@ -613,15 +601,15 @@ export class UserController extends BaseController {
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params.id;
-      
+
       if (!userId) {
         throw new ValidationError('User ID is required', ['id']);
       }
 
       const user = await this.userService.findById(userId);
-      
+
       res.json({
-        data: this.mapToResponse(user)
+        data: this.mapToResponse(user),
       });
     } catch (error) {
       this.handleError(error, req, res);
@@ -631,11 +619,11 @@ export class UserController extends BaseController {
   create = async (req: Request, res: Response): Promise<void> => {
     try {
       const createUserData = this.validateRequest(CreateUserSchema, req.body);
-      
+
       const user = await this.userService.create(createUserData);
-      
+
       res.status(201).json({
-        data: this.mapToResponse(user)
+        data: this.mapToResponse(user),
       });
     } catch (error) {
       this.handleError(error, req, res);
@@ -646,15 +634,15 @@ export class UserController extends BaseController {
     try {
       const userId = req.params.id;
       const updateData = this.validateRequest(UpdateUserSchema, req.body);
-      
+
       if (!userId) {
         throw new ValidationError('User ID is required', ['id']);
       }
 
       const user = await this.userService.update(userId, updateData);
-      
+
       res.json({
-        data: this.mapToResponse(user)
+        data: this.mapToResponse(user),
       });
     } catch (error) {
       this.handleError(error, req, res);
@@ -664,13 +652,13 @@ export class UserController extends BaseController {
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params.id;
-      
+
       if (!userId) {
         throw new ValidationError('User ID is required', ['id']);
       }
 
       await this.userService.delete(userId);
-      
+
       res.status(204).send();
     } catch (error) {
       this.handleError(error, req, res);
@@ -684,7 +672,7 @@ export class UserController extends BaseController {
       name: user.name,
       status: user.status,
       createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString()
+      updatedAt: user.updatedAt.toISOString(),
     };
   }
 }
@@ -692,12 +680,12 @@ export class UserController extends BaseController {
 // Validation schemas
 const CreateUserSchema = z.object({
   email: z.string().email(),
-  name: z.string().min(2).max(100)
+  name: z.string().min(2).max(100),
 });
 
 const UpdateUserSchema = z.object({
   name: z.string().min(2).max(100).optional(),
-  status: z.nativeEnum(UserStatus).optional()
+  status: z.nativeEnum(UserStatus).optional(),
 });
 ```
 
@@ -723,20 +711,20 @@ describe('UserService', () => {
       findByEmail: jest.fn(),
       findAll: jest.fn(),
       connect: jest.fn(),
-      disconnect: jest.fn()
+      disconnect: jest.fn(),
     } as jest.Mocked<UserRepository>;
 
     mockEventBus = {
       emit: jest.fn(),
       subscribe: jest.fn(),
-      unsubscribe: jest.fn()
+      unsubscribe: jest.fn(),
     } as jest.Mocked<EventBus>;
 
     mockLogger = {
       info: jest.fn(),
       warn: jest.fn(),
       error: jest.fn(),
-      debug: jest.fn()
+      debug: jest.fn(),
     } as jest.Mocked<Logger>;
 
     userService = new UserService(mockUserRepository, mockEventBus, mockLogger);
@@ -765,9 +753,7 @@ describe('UserService', () => {
       mockUserRepository.findById.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(userService.findById(userId)).rejects.toThrow(
-        new NotFoundError('User', userId)
-      );
+      await expect(userService.findById(userId)).rejects.toThrow(new NotFoundError('User', userId));
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
     });
 
@@ -779,10 +765,10 @@ describe('UserService', () => {
 
       // Act & Assert
       await expect(userService.findById(userId)).rejects.toThrow(DatabaseError);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Unexpected error in findById',
-        { id: userId, error: repositoryError }
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith('Unexpected error in findById', {
+        id: userId,
+        error: repositoryError,
+      });
     });
   });
 
@@ -791,10 +777,10 @@ describe('UserService', () => {
       // Arrange
       const createData: CreateUserRequest = {
         email: 'test@example.com',
-        name: 'Test User'
+        name: 'Test User',
       };
       const expectedUser = createMockUser(createData);
-      
+
       mockUserRepository.existsByEmail.mockResolvedValue(false);
       mockUserRepository.create.mockResolvedValue(expectedUser);
 
@@ -806,7 +792,7 @@ describe('UserService', () => {
       expect(mockUserRepository.existsByEmail).toHaveBeenCalledWith(createData.email);
       expect(mockUserRepository.create).toHaveBeenCalledWith({
         ...createData,
-        status: UserStatus.ACTIVE
+        status: UserStatus.ACTIVE,
       });
       expect(mockEventBus.emit).toHaveBeenCalledWith('user.created', { userId: expectedUser.id });
     });
@@ -815,7 +801,7 @@ describe('UserService', () => {
       // Arrange
       const createData: CreateUserRequest = {
         email: 'invalid-email',
-        name: 'Test User'
+        name: 'Test User',
       };
 
       // Act & Assert
@@ -826,9 +812,9 @@ describe('UserService', () => {
       // Arrange
       const createData: CreateUserRequest = {
         email: 'test@example.com',
-        name: 'Test User'
+        name: 'Test User',
       };
-      
+
       mockUserRepository.existsByEmail.mockResolvedValue(true);
 
       // Act & Assert
@@ -848,7 +834,7 @@ function createMockUser(overrides: Partial<User> = {}): User {
     status: UserStatus.ACTIVE,
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
-    ...overrides
+    ...overrides,
   };
 }
 ```
@@ -870,7 +856,7 @@ describe('UserController', () => {
       update: jest.fn(),
       delete: jest.fn(),
       start: jest.fn(),
-      stop: jest.fn()
+      stop: jest.fn(),
     } as jest.Mocked<UserService>;
 
     userController = new UserController(mockUserService);
@@ -879,13 +865,13 @@ describe('UserController', () => {
       params: {},
       body: {},
       path: '/users',
-      method: 'GET'
+      method: 'GET',
     };
 
     res = {
       json: jest.fn().mockReturnThis(),
       status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis()
+      send: jest.fn().mockReturnThis(),
     };
   });
 
@@ -895,7 +881,7 @@ describe('UserController', () => {
       const userId = 'user-123';
       const user = createMockUser({ id: userId });
       req.params = { id: userId };
-      
+
       mockUserService.findById.mockResolvedValue(user);
 
       // Act
@@ -910,8 +896,8 @@ describe('UserController', () => {
           name: user.name,
           status: user.status,
           createdAt: user.createdAt.toISOString(),
-          updatedAt: user.updatedAt.toISOString()
-        }
+          updatedAt: user.updatedAt.toISOString(),
+        },
       });
     });
 
@@ -919,7 +905,7 @@ describe('UserController', () => {
       // Arrange
       const userId = 'nonexistent-user';
       req.params = { id: userId };
-      
+
       mockUserService.findById.mockRejectedValue(new NotFoundError('User', userId));
 
       // Act
@@ -931,8 +917,8 @@ describe('UserController', () => {
         error: {
           code: 'NOT_FOUND',
           message: `User with id ${userId} not found`,
-          details: { resource: 'User', id: userId }
-        }
+          details: { resource: 'User', id: userId },
+        },
       });
     });
 
@@ -949,8 +935,8 @@ describe('UserController', () => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'User ID is required',
-          details: { fields: ['id'] }
-        }
+          details: { fields: ['id'] },
+        },
       });
     });
   });
@@ -960,10 +946,10 @@ describe('UserController', () => {
       // Arrange
       const createData = {
         email: 'test@example.com',
-        name: 'Test User'
+        name: 'Test User',
       };
       const createdUser = createMockUser(createData);
-      
+
       req.body = createData;
       mockUserService.create.mockResolvedValue(createdUser);
 
@@ -977,8 +963,8 @@ describe('UserController', () => {
         data: expect.objectContaining({
           id: createdUser.id,
           email: createdUser.email,
-          name: createdUser.name
-        })
+          name: createdUser.name,
+        }),
       });
     });
 
@@ -986,7 +972,7 @@ describe('UserController', () => {
       // Arrange
       req.body = {
         email: 'invalid-email',
-        name: ''
+        name: '',
       };
 
       // Act
@@ -997,8 +983,8 @@ describe('UserController', () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           error: expect.objectContaining({
-            code: 'VALIDATION_ERROR'
-          })
+            code: 'VALIDATION_ERROR',
+          }),
         })
       );
     });
@@ -1017,31 +1003,31 @@ import { z } from 'zod';
 const ConfigSchema = z.object({
   NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
   PORT: z.coerce.number().min(1).max(65535).default(3000),
-  
+
   // Database
   DATABASE_URL: z.string().url(),
   DATABASE_MAX_CONNECTIONS: z.coerce.number().min(1).default(10),
   DATABASE_TIMEOUT: z.coerce.number().min(1000).default(30000),
-  
+
   // Redis
   REDIS_URL: z.string().url(),
   REDIS_KEY_PREFIX: z.string().default('app:'),
-  
+
   // Logging
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   LOG_FORMAT: z.enum(['json', 'pretty']).default('json'),
-  
+
   // Security
   JWT_SECRET: z.string().min(32),
   CORS_ORIGINS: z.string().transform(str => str.split(',')),
-  
+
   // External Services
   EMAIL_SERVICE_URL: z.string().url().optional(),
   EMAIL_SERVICE_API_KEY: z.string().optional(),
-  
+
   // Feature Flags
   FEATURE_ANALYTICS: z.coerce.boolean().default(false),
-  FEATURE_BETA_FEATURES: z.coerce.boolean().default(false)
+  FEATURE_BETA_FEATURES: z.coerce.boolean().default(false),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -1078,21 +1064,23 @@ export const environments = {
     LOG_LEVEL: 'debug' as const,
     LOG_FORMAT: 'pretty' as const,
     FEATURE_ANALYTICS: false,
-    FEATURE_BETA_FEATURES: true
+    FEATURE_BETA_FEATURES: true,
   },
   staging: {
     LOG_LEVEL: 'info' as const,
     LOG_FORMAT: 'json' as const,
     FEATURE_ANALYTICS: true,
-    FEATURE_BETA_FEATURES: true
+    FEATURE_BETA_FEATURES: true,
   },
   production: {
     LOG_LEVEL: 'warn' as const,
     LOG_FORMAT: 'json' as const,
     FEATURE_ANALYTICS: true,
-    FEATURE_BETA_FEATURES: false
-  }
+    FEATURE_BETA_FEATURES: false,
+  },
 } as const;
 ```
 
-These patterns demonstrate the "golden standard" approach that should be consistently applied across the monorepo. Each pattern includes proper error handling, logging, type safety, and follows the established architectural principles.
+These patterns demonstrate the "golden standard" approach that should be consistently applied across
+the monorepo. Each pattern includes proper error handling, logging, type safety, and follows the
+established architectural principles.

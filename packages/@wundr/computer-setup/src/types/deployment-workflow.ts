@@ -5,10 +5,20 @@
  * @module deployment-workflow-types
  */
 
-import type { DeploymentPlatform, DeploymentStatus, DeploymentError, AppliedFix } from './deployment';
+import type {
+  DeploymentPlatform,
+  DeploymentStatus,
+  DeploymentError,
+  AppliedFix,
+} from './deployment';
 
 // Workflow Phase Types
-export type WorkflowPhaseStatus = 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
+export type WorkflowPhaseStatus =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'skipped';
 
 export type WorkflowPhaseName =
   | 'detect-platform'

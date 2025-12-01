@@ -37,7 +37,7 @@ export function useConversationalCreation({
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [generatedSpec, setGeneratedSpec] = React.useState<EntitySpec | null>(
-    existingSpec || null,
+    existingSpec || null
   );
   const [workspaceContext, setWorkspaceContext] =
     React.useState<WorkspaceContext | null>(null);
@@ -51,9 +51,7 @@ export function useConversationalCreation({
 
   const fetchWorkspaceContext = async (id: string) => {
     try {
-      const response = await fetch(
-        `/api/workspaces/${id}/creation-context`,
-      );
+      const response = await fetch(`/api/workspaces/${id}/creation-context`);
       if (response.ok) {
         const data = await response.json();
         setWorkspaceContext(data);
@@ -65,7 +63,7 @@ export function useConversationalCreation({
 
   const sendMessage = async (
     userMessage: string,
-    conversationHistory: ChatMessage[],
+    conversationHistory: ChatMessage[]
   ): Promise<string> => {
     setIsLoading(true);
     setError(null);

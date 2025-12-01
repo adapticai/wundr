@@ -2,17 +2,20 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from 'next-themes';
 
-import { ThemeToggle, ThemeToggleButton, ThemeToggleLarge } from '@/components/layout/theme-toggle';
+import {
+  ThemeToggle,
+  ThemeToggleButton,
+  ThemeToggleLarge,
+} from '@/components/layout/theme-toggle';
 
 import type { ReactNode } from 'react';
-
 
 /**
  * Wrapper component to provide ThemeProvider context for tests
  */
 function ThemeTestWrapper({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
       {children}
     </ThemeProvider>
   );
@@ -23,8 +26,8 @@ describe('ThemeToggle Component', () => {
     it('renders the theme toggle button', () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -34,8 +37,8 @@ describe('ThemeToggle Component', () => {
     it('opens and closes the dropdown menu', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -56,8 +59,8 @@ describe('ThemeToggle Component', () => {
     it('closes dropdown when clicking outside', async () => {
       const { container } = render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -68,7 +71,9 @@ describe('ThemeToggle Component', () => {
       });
 
       // Click outside
-      const backdrop = container.querySelector('[role="button"][aria-hidden="true"]');
+      const backdrop = container.querySelector(
+        '[role="button"][aria-hidden="true"]'
+      );
       if (backdrop) {
         fireEvent.click(backdrop);
       }
@@ -81,8 +86,8 @@ describe('ThemeToggle Component', () => {
     it('closes dropdown when pressing Escape', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -102,8 +107,8 @@ describe('ThemeToggle Component', () => {
     it('displays all theme options', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -119,8 +124,8 @@ describe('ThemeToggle Component', () => {
     it('shows label when showLabel prop is true', () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" showLabel={true} />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' showLabel={true} />
+        </ThemeTestWrapper>
       );
 
       // The label may be hidden on mobile, but should exist in the DOM
@@ -131,8 +136,8 @@ describe('ThemeToggle Component', () => {
     it('applies custom className', () => {
       const { container } = render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" className="custom-class" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' className='custom-class' />
+        </ThemeTestWrapper>
       );
 
       const wrapper = container.querySelector('.custom-class');
@@ -144,8 +149,8 @@ describe('ThemeToggle Component', () => {
     it('renders compact button', () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="compact" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='compact' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /toggle theme/i });
@@ -155,8 +160,8 @@ describe('ThemeToggle Component', () => {
     it('cycles through themes on click', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="compact" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='compact' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /toggle theme/i });
@@ -177,8 +182,8 @@ describe('ThemeToggle Component', () => {
     it('shows label when showLabel prop is true', () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="compact" showLabel={true} />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='compact' showLabel={true} />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /toggle theme/i });
@@ -191,7 +196,7 @@ describe('ThemeToggle Component', () => {
       render(
         <ThemeTestWrapper>
           <ThemeToggleButton />
-        </ThemeTestWrapper>,
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /toggle theme/i });
@@ -202,7 +207,7 @@ describe('ThemeToggle Component', () => {
       render(
         <ThemeTestWrapper>
           <ThemeToggleButton />
-        </ThemeTestWrapper>,
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /toggle theme/i });
@@ -219,7 +224,7 @@ describe('ThemeToggle Component', () => {
       render(
         <ThemeTestWrapper>
           <ThemeToggleLarge />
-        </ThemeTestWrapper>,
+        </ThemeTestWrapper>
       );
 
       const radios = screen.getAllByRole('radio');
@@ -230,7 +235,7 @@ describe('ThemeToggle Component', () => {
       render(
         <ThemeTestWrapper>
           <ThemeToggleLarge />
-        </ThemeTestWrapper>,
+        </ThemeTestWrapper>
       );
 
       expect(screen.getByText('Light')).toBeInTheDocument();
@@ -246,11 +251,11 @@ describe('ThemeToggle Component', () => {
       render(
         <ThemeTestWrapper>
           <ThemeToggleLarge />
-        </ThemeTestWrapper>,
+        </ThemeTestWrapper>
       );
 
       const radios = screen.getAllByRole('radio') as HTMLInputElement[];
-      const darkRadio = radios.find((r) => r.value === 'dark');
+      const darkRadio = radios.find(r => r.value === 'dark');
 
       if (darkRadio) {
         fireEvent.click(darkRadio);
@@ -267,8 +272,8 @@ describe('ThemeToggle Component', () => {
     it('has proper ARIA attributes for dropdown', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -285,8 +290,8 @@ describe('ThemeToggle Component', () => {
     it('listbox has proper ARIA attributes', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -301,8 +306,8 @@ describe('ThemeToggle Component', () => {
     it('theme options have proper ARIA attributes', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -312,7 +317,7 @@ describe('ThemeToggle Component', () => {
         const options = screen.getAllByRole('option');
         expect(options).toHaveLength(3);
 
-        options.forEach((option) => {
+        options.forEach(option => {
           expect(option).toHaveAttribute('aria-selected');
         });
       });
@@ -321,8 +326,8 @@ describe('ThemeToggle Component', () => {
     it('supports keyboard navigation', async () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -338,8 +343,8 @@ describe('ThemeToggle Component', () => {
     it('has focus ring styling', () => {
       render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       const button = screen.getByRole('button', { name: /select theme/i });
@@ -352,8 +357,8 @@ describe('ThemeToggle Component', () => {
     it('renders without hydration issues', async () => {
       const { rerender } = render(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
       // Should not show loading state after mount
@@ -365,11 +370,13 @@ describe('ThemeToggle Component', () => {
       // Rerender should work smoothly
       rerender(
         <ThemeTestWrapper>
-          <ThemeToggle variant="dropdown" />
-        </ThemeTestWrapper>,
+          <ThemeToggle variant='dropdown' />
+        </ThemeTestWrapper>
       );
 
-      expect(screen.getByRole('button', { name: /select theme/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /select theme/i })
+      ).toBeInTheDocument();
     });
   });
 });

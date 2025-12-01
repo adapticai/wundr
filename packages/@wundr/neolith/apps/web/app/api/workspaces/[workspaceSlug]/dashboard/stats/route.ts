@@ -119,7 +119,10 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   // User needs to be either an org member or workspace member
-  if (!workspaceMembership && !['OWNER', 'ADMIN'].includes(orgMembership.role)) {
+  if (
+    !workspaceMembership &&
+    !['OWNER', 'ADMIN'].includes(orgMembership.role)
+  ) {
     return null;
   }
 
@@ -174,15 +177,18 @@ function getDateRange(timeRange: TimeRange): Date | null {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -191,8 +197,11 @@ export async function GET(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -202,9 +211,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -214,7 +223,7 @@ export async function GET(
     const includeActivity = searchParams.get('includeActivity') !== 'false';
     const activityLimit = Math.min(
       Math.max(1, parseInt(searchParams.get('activityLimit') || '10', 10)),
-      50,
+      50
     );
 
     // Calculate date filters
@@ -356,7 +365,9 @@ export async function GET(
 
     // Process member statistics
     const totalMembers = membersData.length;
-    const orchestratorCount = membersData.filter(m => m.user.isOrchestrator).length;
+    const orchestratorCount = membersData.filter(
+      m => m.user.isOrchestrator
+    ).length;
     const humanCount = totalMembers - orchestratorCount;
 
     // Process channel statistics
@@ -370,7 +381,7 @@ export async function GET(
         acc.total += curr._count;
         return acc;
       },
-      { total: 0, publicCount: 0, privateCount: 0 },
+      { total: 0, publicCount: 0, privateCount: 0 }
     );
 
     // Process workflow statistics
@@ -388,7 +399,7 @@ export async function GET(
         acc.total += curr._count;
         return acc;
       },
-      { total: 0, active: 0, draft: 0, inactive: 0, archived: 0 },
+      { total: 0, active: 0, draft: 0, inactive: 0, archived: 0 }
     );
 
     // Process task statistics
@@ -404,12 +415,13 @@ export async function GET(
         acc.total += curr._count;
         return acc;
       },
-      { total: 0, completed: 0, inProgress: 0, todo: 0 },
+      { total: 0, completed: 0, inProgress: 0, todo: 0 }
     );
 
-    const completionRate = taskStats.total > 0
-      ? Math.round((taskStats.completed / taskStats.total) * 100)
-      : 0;
+    const completionRate =
+      taskStats.total > 0
+        ? Math.round((taskStats.completed / taskStats.total) * 100)
+        : 0;
 
     // Get contributor details
     const contributorIds = topContributors.map(c => c.authorId);
@@ -506,13 +518,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/dashboard/stats] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/dashboard/stats] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred while fetching dashboard statistics',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

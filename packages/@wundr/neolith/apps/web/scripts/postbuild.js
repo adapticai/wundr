@@ -83,16 +83,16 @@ const indexHtml = `<!DOCTYPE html>
 </html>`;
 
 try {
-    // Ensure out directory exists
-    if (!fs.existsSync(outDir)) {
-        console.error(`Error: Output directory not found at ${outDir}`);
-        process.exit(1);
-    }
-
-    // Create or overwrite index.html
-    fs.writeFileSync(indexPath, indexHtml, 'utf-8');
-    console.log(`✓ Created index.html for Capacitor mobile app at ${indexPath}`);
-} catch (error) {
-    console.error('Failed to create index.html:', error.message);
+  // Ensure out directory exists
+  if (!fs.existsSync(outDir)) {
+    console.error(`Error: Output directory not found at ${outDir}`);
     process.exit(1);
+  }
+
+  // Create or overwrite index.html
+  fs.writeFileSync(indexPath, indexHtml, 'utf-8');
+  console.log(`✓ Created index.html for Capacitor mobile app at ${indexPath}`);
+} catch (error) {
+  console.error('Failed to create index.html:', error.message);
+  process.exit(1);
 }

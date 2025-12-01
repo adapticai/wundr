@@ -102,7 +102,9 @@ class MemoryPressureMonitor {
     }
   }
 
-  onPressureChange(listener: (level: 'normal' | 'warning' | 'critical') => void): void {
+  onPressureChange(
+    listener: (level: 'normal' | 'warning' | 'critical') => void
+  ): void {
     this.listeners.push(listener);
   }
 }
@@ -163,7 +165,7 @@ class ConcurrentTaskScheduler {
           // Apply backpressure by reducing concurrency temporarily
           this.maxConcurrency = Math.max(
             1,
-            Math.floor(this.maxConcurrency * 0.8),
+            Math.floor(this.maxConcurrency * 0.8)
           );
         }
 
@@ -204,7 +206,7 @@ class StreamingASTProcessor extends Transform {
   constructor(
     analyzer: MemoryOptimizedASTAnalyzer,
     entityPool: ObjectPool<EntityInfo>,
-    batchSize = 100,
+    batchSize = 100
   ) {
     super({ objectMode: true });
     this.analyzer = analyzer;
@@ -215,7 +217,7 @@ class StreamingASTProcessor extends Transform {
   override _transform(
     sourceFile: ts.SourceFile,
     _encoding: BufferEncoding,
-    callback: (error?: Error | null) => void,
+    callback: (error?: Error | null) => void
   ): void {
     try {
       const entities = this.analyzer.extractEntitiesFromSourceFile(sourceFile);
@@ -252,9 +254,10 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
 
   // Memory and concurrency optimizations
   private entityPool!: ObjectPool<EntityInfo>;
-  private memoryPressureMonitor: MemoryPressureMonitor = new MemoryPressureMonitor(); // Renamed to avoid conflict with base class
+  private memoryPressureMonitor: MemoryPressureMonitor =
+    new MemoryPressureMonitor(); // Renamed to avoid conflict with base class
   private taskScheduler: ConcurrentTaskScheduler = new ConcurrentTaskScheduler(
-    4,
+    4
   );
   private memoryMetrics!: MemoryMetrics;
   private streamProcessor!: StreamingASTProcessor;
@@ -288,18 +291,17 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   private initializeOptimizations(): void {
     // Object pool for entities
     this.entityPool = new ObjectPool<EntityInfo>(
-      () =>
-        ({
-          id: '',
-          name: '',
-          type: 'whitespace',
-          file: '',
-          line: 0,
-          column: 0,
-          startLine: 0,
-          exportType: 'none',
-          dependencies: [],
-        }),
+      () => ({
+        id: '',
+        name: '',
+        type: 'whitespace',
+        file: '',
+        line: 0,
+        column: 0,
+        startLine: 0,
+        exportType: 'none',
+        dependencies: [],
+      }),
       entity => {
         // Reset entity for reuse
         entity.id = '';
@@ -317,21 +319,23 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
         delete entity.members;
         delete entity.signature;
       },
-      200,
+      200
     );
 
     // Memory pressure monitoring
     this.memoryPressureMonitor = new MemoryPressureMonitor();
-    this.memoryPressureMonitor.onPressureChange((level: 'normal' | 'warning' | 'critical') => {
-      if (level === 'critical') {
-        this.handleMemoryPressure();
+    this.memoryPressureMonitor.onPressureChange(
+      (level: 'normal' | 'warning' | 'critical') => {
+        if (level === 'critical') {
+          this.handleMemoryPressure();
+        }
       }
-    });
+    );
 
     // Concurrent task scheduler
     this.taskScheduler = new ConcurrentTaskScheduler(
       this.config.performance.maxConcurrency,
-      1000,
+      1000
     );
 
     // Initialize memory metrics
@@ -347,7 +351,9 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     };
   }
 
-  private initializeTSProject(config: Partial<AnalysisConfig & ServiceConfig>): void {
+  private initializeTSProject(
+    config: Partial<AnalysisConfig & ServiceConfig>
+  ): void {
     this.project = new Project({
       tsConfigFilePath: config.targetDir
         ? `${config.targetDir}/tsconfig.json`
@@ -365,21 +371,27 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
       },
     });
 
-    this.tsProgram = (this.project as unknown as { getProgram?: () => { compilerObject: ts.Program } }).getProgram?.()?.compilerObject;
+    this.tsProgram = (
+      this.project as unknown as {
+        getProgram?: () => { compilerObject: ts.Program };
+      }
+    ).getProgram?.()?.compilerObject;
     this.typeChecker = this.tsProgram?.getTypeChecker();
 
     // Initialize streaming processor
     this.streamProcessor = new StreamingASTProcessor(
       this,
       this.entityPool,
-      this.config.performance.chunkSize,
+      this.config.performance.chunkSize
     );
   }
 
   /**
    * Enhanced analysis with streaming and memory management
    */
-  protected async performAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
+  protected async performAnalysis(
+    entities: EntityInfo[]
+  ): Promise<AnalysisResults> {
     this.memoryPressureMonitor.start();
     const startTime = performance.now();
     const initialMemory = memoryUsage();
@@ -406,7 +418,9 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Streaming analysis for large codebases (>5K files)
    */
-  private async performStreamingAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
+  private async performStreamingAnalysis(
+    entities: EntityInfo[]
+  ): Promise<AnalysisResults> {
     this.emitProgress({
       type: 'phase',
       message: 'Using streaming analysis for large codebase...',
@@ -433,7 +447,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
           Object.assign(results, chunk);
           yield chunk;
         }
-      },
+      }
     );
 
     return this.finalizeResults(results);
@@ -442,22 +456,26 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Batch analysis with optimized concurrency
    */
-  private async performBatchAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
+  private async performBatchAnalysis(
+    entities: EntityInfo[]
+  ): Promise<AnalysisResults> {
     this.emitProgress({
       type: 'phase',
       message: `Using optimized batch analysis for ${entities.length} entities...`,
     });
 
     // Dynamic concurrency adjustment based on memory pressure
-    this.memoryPressureMonitor.onPressureChange((level: 'normal' | 'warning' | 'critical') => {
-      if (level === 'critical') {
-        this.taskScheduler.adjustConcurrency(0.5);
-      } else if (level === 'warning') {
-        this.taskScheduler.adjustConcurrency(0.8);
-      } else {
-        this.taskScheduler.adjustConcurrency(1.2);
+    this.memoryPressureMonitor.onPressureChange(
+      (level: 'normal' | 'warning' | 'critical') => {
+        if (level === 'critical') {
+          this.taskScheduler.adjustConcurrency(0.5);
+        } else if (level === 'warning') {
+          this.taskScheduler.adjustConcurrency(0.8);
+        } else {
+          this.taskScheduler.adjustConcurrency(1.2);
+        }
       }
-    });
+    );
 
     // Run analysis phases with intelligent scheduling
     const [
@@ -467,8 +485,12 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
       codeSmells,
       wrapperPatterns,
     ] = await Promise.all([
-      this.taskScheduler.schedule<DuplicateCluster[]>(() => Promise.resolve([])), // detectDuplicates placeholder
-      this.taskScheduler.schedule<CircularDependency[]>(() => Promise.resolve([])), // detectCircularDependencies placeholder
+      this.taskScheduler.schedule<DuplicateCluster[]>(() =>
+        Promise.resolve([])
+      ), // detectDuplicates placeholder
+      this.taskScheduler.schedule<CircularDependency[]>(() =>
+        Promise.resolve([])
+      ), // detectCircularDependencies placeholder
       this.taskScheduler.schedule<EntityInfo[]>(() => Promise.resolve([])), // findUnusedExports placeholder
       this.taskScheduler.schedule<CodeSmell[]>(() => Promise.resolve([])), // detectCodeSmells placeholder
       this.taskScheduler.schedule<EntityInfo[]>(() => Promise.resolve([])), // detectWrapperPatterns placeholder
@@ -506,7 +528,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
    */
   protected extractEntityFromNode(
     node: ts.Node,
-    sourceFile: ts.SourceFile,
+    sourceFile: ts.SourceFile
   ): EntityInfo | null {
     const entity = this.entityPool.acquire();
     this.memoryMetrics.objectPoolHits++;
@@ -522,7 +544,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
             entity,
             node as ts.ClassDeclaration,
             filePath,
-            position,
+            position
           );
         case ts.SyntaxKind.InterfaceDeclaration:
           // return this.populateInterfaceEntity(entity, node as ts.InterfaceDeclaration, filePath, position);
@@ -548,7 +570,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     entity: EntityInfo,
     classDecl: ts.ClassDeclaration,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo {
     const name = classDecl.name?.getText();
     if (!name) {
@@ -638,14 +660,17 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Update performance statistics
    */
-  private updatePerformanceStats(startTime: number, initialMemory: NodeJS.MemoryUsage): void {
+  private updatePerformanceStats(
+    startTime: number,
+    initialMemory: NodeJS.MemoryUsage
+  ): void {
     const endTime = performance.now();
     const finalMemory = memoryUsage();
 
     this.performanceStats.averageProcessingTime = endTime - startTime;
     this.performanceStats.memoryPeakUsage = Math.max(
       this.performanceStats.memoryPeakUsage,
-      finalMemory.heapUsed - initialMemory.heapUsed,
+      finalMemory.heapUsed - initialMemory.heapUsed
     );
 
     this.memoryMetrics.heapUsed = finalMemory.heapUsed;
@@ -654,7 +679,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     this.memoryMetrics.rss = finalMemory.rss;
     this.memoryMetrics.peakUsage = Math.max(
       this.memoryMetrics.peakUsage,
-      finalMemory.heapUsed,
+      finalMemory.heapUsed
     );
   }
 
@@ -802,7 +827,8 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
         type: 'BREAK_CIRCULAR_DEPS',
         priority: 'critical',
         title: `Break ${results.circularDependencies.length} circular dependencies`,
-        description: 'Circular dependencies can cause build issues and increase complexity',
+        description:
+          'Circular dependencies can cause build issues and increase complexity',
         impact: 'Critical - Improves build reliability',
         effort: 'high',
         estimatedTimeHours: results.circularDependencies.length * 4,
@@ -824,7 +850,9 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     }
 
     // Generate recommendations for code smells
-    const criticalSmells = results.codeSmells.filter(s => s.severity === 'critical');
+    const criticalSmells = results.codeSmells.filter(
+      s => s.severity === 'critical'
+    );
     if (criticalSmells.length > 0) {
       recommendations.push({
         id: createId(),
@@ -841,13 +869,16 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     return recommendations;
   }
 
-  private generateVisualizationData(entities: EntityInfo[], results: {
-    duplicates: DuplicateCluster[];
-    circularDependencies: CircularDependency[];
-    unusedExports: EntityInfo[];
-    codeSmells: CodeSmell[];
-    wrapperPatterns: EntityInfo[];
-  }): VisualizationData {
+  private generateVisualizationData(
+    entities: EntityInfo[],
+    results: {
+      duplicates: DuplicateCluster[];
+      circularDependencies: CircularDependency[];
+      unusedExports: EntityInfo[];
+      codeSmells: CodeSmell[];
+      wrapperPatterns: EntityInfo[];
+    }
+  ): VisualizationData {
     // Generate dependency graph nodes from entities
     const nodes = entities.map(entity => ({
       id: entity.id,
@@ -858,7 +889,11 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     }));
 
     // Generate edges based on entity dependencies
-    const edges: Array<{ source: string; target: string; type: 'import' | 'extends' | 'implements' | 'uses' }> = [];
+    const edges: Array<{
+      source: string;
+      target: string;
+      type: 'import' | 'extends' | 'implements' | 'uses';
+    }> = [];
     const entityByFile = new Map<string, EntityInfo[]>();
 
     // Group entities by file for efficient lookup
@@ -896,12 +931,19 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
           source: e1.id,
           target: e2.id,
           similarity: cluster.similarity,
-        })),
+        }))
       ),
     }));
 
     // Generate complexity heatmap
-    const fileComplexityMap = new Map<string, { file: string; complexity: number; entities: Array<{ name: string; complexity: number; line: number }> }>();
+    const fileComplexityMap = new Map<
+      string,
+      {
+        file: string;
+        complexity: number;
+        entities: Array<{ name: string; complexity: number; line: number }>;
+      }
+    >();
 
     entities.forEach(entity => {
       if (!fileComplexityMap.has(entity.file)) {

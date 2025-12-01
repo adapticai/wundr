@@ -35,7 +35,11 @@ interface RouteContext {
 /**
  * Helper to verify workspace and Orchestrator access
  */
-async function verifyVPAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function verifyVPAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -102,7 +106,7 @@ async function verifyVPAccess(workspaceId: string, orchestratorId: string, userI
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -111,9 +115,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -126,21 +130,25 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify access
-    const access = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyVPAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -153,9 +161,9 @@ export async function GET(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -177,14 +185,19 @@ export async function GET(
     }
 
     // Detect anomalies
-    const anomalies = await detectAnomalies(orchestratorId, query.threshold, startDate, endDate);
+    const anomalies = await detectAnomalies(
+      orchestratorId,
+      query.threshold,
+      startDate,
+      endDate
+    );
 
     // Filter by minimum severity
     const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
     const minSeverityLevel = severityOrder[query.minSeverity];
 
     const filteredAnomalies = anomalies.filter(
-      (anomaly) => severityOrder[anomaly.severity] >= minSeverityLevel,
+      anomaly => severityOrder[anomaly.severity] >= minSeverityLevel
     );
 
     // Group anomalies by severity
@@ -196,12 +209,12 @@ export async function GET(
         acc[anomaly.severity].push(anomaly);
         return acc;
       },
-      {} as Record<string, typeof filteredAnomalies>,
+      {} as Record<string, typeof filteredAnomalies>
     );
 
     // Calculate overall health score
     let healthScore = 100;
-    filteredAnomalies.forEach((anomaly) => {
+    filteredAnomalies.forEach(anomaly => {
       switch (anomaly.severity) {
         case 'critical':
           healthScore -= 25;
@@ -238,8 +251,8 @@ export async function GET(
               acc[a.anomalyType] = (acc[a.anomalyType] || 0) + 1;
               return acc;
             },
-            {} as Record<string, number>,
-          ),
+            {} as Record<string, number>
+          )
         ).map(([type, count]) => ({ type, count })),
         bySeverity: {
           critical: anomaliesBySeverity.critical?.length || 0,
@@ -257,7 +270,7 @@ export async function GET(
             : healthScore >= 40
               ? 'degraded'
               : 'critical',
-      anomalies: filteredAnomalies.map((anomaly) => ({
+      anomalies: filteredAnomalies.map(anomaly => ({
         type: anomaly.anomalyType,
         severity: anomaly.severity,
         description: anomaly.description,
@@ -274,36 +287,41 @@ export async function GET(
     // Add overall recommendations
     if (response.healthScore < 60) {
       response.recommendations.push(
-        'Immediate attention required - multiple performance issues detected',
+        'Immediate attention required - multiple performance issues detected'
       );
     }
 
-    if (anomaliesBySeverity.critical && anomaliesBySeverity.critical.length > 0) {
+    if (
+      anomaliesBySeverity.critical &&
+      anomaliesBySeverity.critical.length > 0
+    ) {
       response.recommendations.push(
-        'Critical issues detected - prioritize resolution of high-severity anomalies',
+        'Critical issues detected - prioritize resolution of high-severity anomalies'
       );
     }
 
     const lowCompletionAnomaly = filteredAnomalies.find(
-      (a) => a.anomalyType === 'low_completion_rate',
+      a => a.anomalyType === 'low_completion_rate'
     );
     if (lowCompletionAnomaly) {
       response.recommendations.push(
-        'Consider workload adjustment or additional training to improve completion rate',
+        'Consider workload adjustment or additional training to improve completion rate'
       );
     }
 
     const highResponseTimeAnomaly = filteredAnomalies.find(
-      (a) => a.anomalyType === 'high_response_time',
+      a => a.anomalyType === 'high_response_time'
     );
     if (highResponseTimeAnomaly) {
       response.recommendations.push(
-        'Review task complexity and consider breaking down large tasks',
+        'Review task complexity and consider breaking down large tasks'
       );
     }
 
     if (filteredAnomalies.length === 0) {
-      response.recommendations.push('No significant anomalies detected - Orchestrator performing normally');
+      response.recommendations.push(
+        'No significant anomalies detected - Orchestrator performing normally'
+      );
     }
 
     return NextResponse.json({
@@ -313,14 +331,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/anomalies] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

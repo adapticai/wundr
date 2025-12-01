@@ -120,7 +120,9 @@ interface ExcelWorkbook {
   xlsx: {
     readFile: (path: string) => Promise<void>;
   };
-  eachSheet: (callback: (worksheet: ExcelWorksheet, sheetId: number) => void) => void;
+  eachSheet: (
+    callback: (worksheet: ExcelWorksheet, sheetId: number) => void
+  ) => void;
   creator?: string;
   lastModifiedBy?: string;
   created?: Date;
@@ -205,7 +207,7 @@ export class XlsxProcessor {
    */
   async process(
     filePath: string,
-    options: XlsxProcessingOptions = {},
+    options: XlsxProcessingOptions = {}
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -280,7 +282,7 @@ export class XlsxProcessor {
    */
   private async parseXlsx(
     filePath: string,
-    options: XlsxProcessingOptions,
+    options: XlsxProcessingOptions
   ): Promise<{
     sheets: SheetData[];
     properties?: WorkbookProperties;
@@ -340,7 +342,7 @@ export class XlsxProcessor {
   private processSheet(
     worksheet: ExcelWorksheet,
     sheetId: number,
-    options: XlsxProcessingOptions,
+    options: XlsxProcessingOptions
   ): SheetData {
     const rows: CellValue[][] = [];
     let headers: string[] = [];
@@ -359,7 +361,10 @@ export class XlsxProcessor {
       });
 
       // Skip empty rows if configured
-      if (options.skipEmptyRows && cellValues.every(v => v === null || v === '')) {
+      if (
+        options.skipEmptyRows &&
+        cellValues.every(v => v === null || v === '')
+      ) {
         return;
       }
 
@@ -374,19 +379,21 @@ export class XlsxProcessor {
     });
 
     // Extract merged cells
-    const mergedCells: MergedCell[] = (worksheet.model.merges ?? []).map(merge => {
-      // Parse merge range like "A1:B2"
-      const match = merge.match(/([A-Z]+)(\d+):([A-Z]+)(\d+)/);
-      if (!match) {
-        return { startRow: 0, startColumn: 0, endRow: 0, endColumn: 0 };
+    const mergedCells: MergedCell[] = (worksheet.model.merges ?? []).map(
+      merge => {
+        // Parse merge range like "A1:B2"
+        const match = merge.match(/([A-Z]+)(\d+):([A-Z]+)(\d+)/);
+        if (!match) {
+          return { startRow: 0, startColumn: 0, endRow: 0, endColumn: 0 };
+        }
+        return {
+          startRow: parseInt(match[2] ?? '0', 10),
+          startColumn: this.columnLetterToNumber(match[1] ?? 'A'),
+          endRow: parseInt(match[4] ?? '0', 10),
+          endColumn: this.columnLetterToNumber(match[3] ?? 'A'),
+        };
       }
-      return {
-        startRow: parseInt(match[2] ?? '0', 10),
-        startColumn: this.columnLetterToNumber(match[1] ?? 'A'),
-        endRow: parseInt(match[4] ?? '0', 10),
-        endColumn: this.columnLetterToNumber(match[3] ?? 'A'),
-      };
-    });
+    );
 
     return {
       name: worksheet.name,
@@ -440,7 +447,7 @@ export class XlsxProcessor {
    */
   private sheetsToText(
     sheets: SheetData[],
-    _options: XlsxProcessingOptions,
+    _options: XlsxProcessingOptions
   ): string {
     const lines: string[] = [];
 
@@ -544,7 +551,7 @@ interface WorkbookProperties {
  * Create XLSX processor instance
  */
 export function createXlsxProcessor(
-  config: FileProcessorConfig,
+  config: FileProcessorConfig
 ): XlsxProcessor {
   return new XlsxProcessor(config);
 }

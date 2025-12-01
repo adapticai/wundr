@@ -6,7 +6,14 @@
 
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Send, ArrowRight, Zap, GitBranch, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  Send,
+  ArrowRight,
+  Zap,
+  GitBranch,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -64,7 +71,9 @@ export default function ConversationalWorkflowCreationPage() {
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [generatedSpec, setGeneratedSpec] = React.useState<WorkflowSpec | null>(null);
+  const [generatedSpec, setGeneratedSpec] = React.useState<WorkflowSpec | null>(
+    null
+  );
   const [showReview, setShowReview] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -92,7 +101,7 @@ export default function ConversationalWorkflowCreationPage() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
 
     try {
@@ -125,7 +134,7 @@ export default function ConversationalWorkflowCreationPage() {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages(prev => [...prev, assistantMsg]);
 
       // Check if spec was generated
       if (data.spec) {
@@ -141,9 +150,10 @@ export default function ConversationalWorkflowCreationPage() {
         setGeneratedSpec(spec);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to send message';
       setError(errorMessage);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           id: `error-${Date.now()}`,
@@ -177,8 +187,8 @@ export default function ConversationalWorkflowCreationPage() {
       const basicSpec: WorkflowSpec = {
         name: '',
         description: messages
-          .filter((m) => m.role === 'user')
-          .map((m) => m.content)
+          .filter(m => m.role === 'user')
+          .map(m => m.content)
           .join(' ')
           .slice(0, 200),
         trigger: null,
@@ -230,7 +240,8 @@ export default function ConversationalWorkflowCreationPage() {
       // Redirect to workflows page
       router.push(`/${workspaceId}/workflows`);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create workflow';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to create workflow';
       setError(errorMessage);
     } finally {
       setIsSaving(false);
@@ -243,21 +254,25 @@ export default function ConversationalWorkflowCreationPage() {
 
   if (showReview && generatedSpec) {
     return (
-      <div className="flex h-screen flex-col">
+      <div className='flex h-screen flex-col'>
         {/* Header */}
-        <div className="border-b bg-background px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className='border-b bg-background px-6 py-4'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h1 className="text-xl font-semibold">Review Workflow</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className='text-xl font-semibold'>Review Workflow</h1>
+              <p className='text-sm text-muted-foreground'>
                 Review and finalize your workflow before creating
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" onClick={() => setShowReview(false)}>
+            <div className='flex items-center gap-2'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => setShowReview(false)}
+              >
                 Back to Chat
               </Button>
-              <Button type="button" onClick={handleCancel} variant="ghost">
+              <Button type='button' onClick={handleCancel} variant='ghost'>
                 Cancel
               </Button>
             </div>
@@ -265,23 +280,24 @@ export default function ConversationalWorkflowCreationPage() {
         </div>
 
         {/* Review Content */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="mx-auto max-w-4xl space-y-6">
+        <div className='flex-1 overflow-auto p-6'>
+          <div className='mx-auto max-w-4xl space-y-6'>
             {/* Confidence & Status */}
-            <div className="rounded-lg border bg-card p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div className='rounded-lg border bg-card p-4'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-3'>
                   {generatedSpec.confidence >= 0.7 ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle className='h-5 w-5 text-green-600' />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-600" />
+                    <AlertCircle className='h-5 w-5 text-yellow-600' />
                   )}
                   <div>
-                    <p className="font-medium">
-                      Specification Confidence: {Math.round(generatedSpec.confidence * 100)}%
+                    <p className='font-medium'>
+                      Specification Confidence:{' '}
+                      {Math.round(generatedSpec.confidence * 100)}%
                     </p>
                     {generatedSpec.missingFields.length > 0 && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className='text-sm text-muted-foreground'>
                         Missing: {generatedSpec.missingFields.join(', ')}
                       </p>
                     )}
@@ -289,11 +305,11 @@ export default function ConversationalWorkflowCreationPage() {
                 </div>
               </div>
               {generatedSpec.suggestions.length > 0 && (
-                <div className="mt-3 rounded-md bg-muted/50 p-3">
-                  <p className="text-sm font-medium">Suggestions:</p>
-                  <ul className="mt-1 space-y-1">
+                <div className='mt-3 rounded-md bg-muted/50 p-3'>
+                  <p className='text-sm font-medium'>Suggestions:</p>
+                  <ul className='mt-1 space-y-1'>
                     {generatedSpec.suggestions.map((suggestion, idx) => (
-                      <li key={idx} className="text-sm text-muted-foreground">
+                      <li key={idx} className='text-sm text-muted-foreground'>
                         • {suggestion}
                       </li>
                     ))}
@@ -303,33 +319,41 @@ export default function ConversationalWorkflowCreationPage() {
             </div>
 
             {/* Workflow Details */}
-            <div className="rounded-lg border bg-card p-6">
-              <h2 className="mb-4 text-lg font-semibold">Workflow Details</h2>
-              <div className="space-y-4">
+            <div className='rounded-lg border bg-card p-6'>
+              <h2 className='mb-4 text-lg font-semibold'>Workflow Details</h2>
+              <div className='space-y-4'>
                 <div>
-                  <label className="block text-sm font-medium text-foreground">Name</label>
+                  <label className='block text-sm font-medium text-foreground'>
+                    Name
+                  </label>
                   <input
-                    type="text"
+                    type='text'
                     value={generatedSpec.name}
-                    onChange={(e) =>
-                      setGeneratedSpec({ ...generatedSpec, name: e.target.value })
+                    onChange={e =>
+                      setGeneratedSpec({
+                        ...generatedSpec,
+                        name: e.target.value,
+                      })
                     }
-                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="My Workflow"
+                    className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                    placeholder='My Workflow'
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground">
+                  <label className='block text-sm font-medium text-foreground'>
                     Description
                   </label>
                   <textarea
                     value={generatedSpec.description}
-                    onChange={(e) =>
-                      setGeneratedSpec({ ...generatedSpec, description: e.target.value })
+                    onChange={e =>
+                      setGeneratedSpec({
+                        ...generatedSpec,
+                        description: e.target.value,
+                      })
                     }
                     rows={3}
-                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="Describe what this workflow does..."
+                    className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                    placeholder='Describe what this workflow does...'
                   />
                 </div>
               </div>
@@ -341,33 +365,36 @@ export default function ConversationalWorkflowCreationPage() {
                 name={generatedSpec.name}
                 description={generatedSpec.description}
                 trigger={generatedSpec.trigger}
-                actions={generatedSpec.actions.map((action, index) => ({
-                  ...action,
-                  id: `preview-${index}` as ActionId,
-                  order: index,
-                } as ActionConfig))}
+                actions={generatedSpec.actions.map(
+                  (action, index) =>
+                    ({
+                      ...action,
+                      id: `preview-${index}` as ActionId,
+                      order: index,
+                    }) as ActionConfig
+                )}
               />
             )}
 
             {/* Error Display */}
             {error && (
-              <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+              <div className='rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
                 {error}
               </div>
             )}
 
             {/* Actions */}
-            <div className="flex justify-end gap-3">
+            <div className='flex justify-end gap-3'>
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={() => setShowReview(false)}
                 disabled={isSaving}
               >
                 Back to Chat
               </Button>
               <Button
-                type="button"
+                type='button'
                 onClick={handleCreateWorkflow}
                 disabled={
                   isSaving ||
@@ -386,45 +413,47 @@ export default function ConversationalWorkflowCreationPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className='flex h-screen flex-col'>
       {/* Header */}
-      <div className="border-b bg-background px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className='border-b bg-background px-6 py-4'>
+        <div className='flex items-center justify-between'>
           <div>
-            <h1 className="text-xl font-semibold">Create Workflow</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className='text-xl font-semibold'>Create Workflow</h1>
+            <p className='text-sm text-muted-foreground'>
               Chat with AI to generate your workflow specification
             </p>
           </div>
-          <Button type="button" onClick={handleCancel} variant="ghost">
+          <Button type='button' onClick={handleCancel} variant='ghost'>
             Cancel
           </Button>
         </div>
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <div className="mx-auto max-w-3xl space-y-4">
-          {messages.map((message) => (
+      <div className='flex-1 overflow-y-auto px-6 py-4'>
+        <div className='mx-auto max-w-3xl space-y-4'>
+          {messages.map(message => (
             <ChatMessage key={message.id} message={message} />
           ))}
 
           {isLoading && (
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Zap className="h-4 w-4 text-primary" />
+            <div className='flex items-start gap-3'>
+              <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10'>
+                <Zap className='h-4 w-4 text-primary' />
               </div>
-              <div className="flex-1 rounded-lg bg-muted p-4">
-                <div className="flex items-center gap-2">
+              <div className='flex-1 rounded-lg bg-muted p-4'>
+                <div className='flex items-center gap-2'>
                   <LoadingDots />
-                  <span className="text-sm text-muted-foreground">Thinking...</span>
+                  <span className='text-sm text-muted-foreground'>
+                    Thinking...
+                  </span>
                 </div>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
               {error}
             </div>
           )}
@@ -434,45 +463,45 @@ export default function ConversationalWorkflowCreationPage() {
       </div>
 
       {/* Input Area */}
-      <div className="border-t bg-background px-6 py-4">
-        <div className="mx-auto max-w-3xl">
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="flex gap-2">
+      <div className='border-t bg-background px-6 py-4'>
+        <div className='mx-auto max-w-3xl'>
+          <form onSubmit={handleSubmit} className='space-y-3'>
+            <div className='flex gap-2'>
               <Textarea
                 ref={textareaRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="min-h-[80px] resize-none"
+                placeholder='Type your message... (Enter to send, Shift+Enter for new line)'
+                className='min-h-[80px] resize-none'
                 disabled={isLoading}
-                aria-label="Message input"
+                aria-label='Message input'
               />
               <Button
-                type="submit"
-                size="icon"
-                className="h-[80px] w-[80px] shrink-0"
+                type='submit'
+                size='icon'
+                className='h-[80px] w-[80px] shrink-0'
                 disabled={!input.trim() || isLoading}
               >
-                <Send className="h-5 w-5" />
-                <span className="sr-only">Send message</span>
+                <Send className='h-5 w-5' />
+                <span className='sr-only'>Send message</span>
               </Button>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className='flex items-center justify-between'>
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={handleSwitchToReview}
                 disabled={isLoading}
               >
                 Switch to Review
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className='ml-2 h-4 w-4' />
               </Button>
 
               {generatedSpec && generatedSpec.trigger && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <GitBranch className="h-4 w-4" />
+                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                  <GitBranch className='h-4 w-4' />
                   <span>
                     Workflow spec ready: {generatedSpec.actions.length} action
                     {generatedSpec.actions.length !== 1 ? 's' : ''}
@@ -498,16 +527,18 @@ function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
   return (
-    <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div
+      className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
+    >
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
           isUser ? 'bg-primary text-primary-foreground' : 'bg-primary/10'
         }`}
       >
         {isUser ? (
-          <UserIcon className="h-4 w-4" />
+          <UserIcon className='h-4 w-4' />
         ) : (
-          <Zap className="h-4 w-4 text-primary" />
+          <Zap className='h-4 w-4 text-primary' />
         )}
       </div>
       <div
@@ -515,8 +546,10 @@ function ChatMessage({ message }: ChatMessageProps) {
           isUser ? 'bg-primary/10 text-right' : 'bg-muted'
         }`}
       >
-        <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className='whitespace-pre-wrap text-sm leading-relaxed'>
+          {message.content}
+        </p>
+        <p className='mt-2 text-xs text-muted-foreground'>
           {message.timestamp.toLocaleTimeString()}
         </p>
       </div>
@@ -529,10 +562,10 @@ function ChatMessage({ message }: ChatMessageProps) {
  */
 function LoadingDots() {
   return (
-    <div className="flex gap-1">
-      <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-      <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-      <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+    <div className='flex gap-1'>
+      <div className='h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]' />
+      <div className='h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]' />
+      <div className='h-2 w-2 animate-bounce rounded-full bg-primary' />
     </div>
   );
 }
@@ -543,17 +576,17 @@ function LoadingDots() {
 function UserIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+      <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
+      <circle cx='12' cy='7' r='4' />
     </svg>
   );
 }

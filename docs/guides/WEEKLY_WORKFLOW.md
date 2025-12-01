@@ -3,7 +3,9 @@
 ## Monday: Analysis & Planning
 
 ### Morning (2 hours)
+
 1. **Run Fresh Analysis**
+
    ```bash
    # Pull latest changes
    git checkout refactor/monorepo
@@ -25,6 +27,7 @@
    ```
 
 ### Afternoon (2 hours)
+
 1. **Prioritize Work**
    - Review consolidation batches
    - Select 3-5 batches for the week
@@ -38,12 +41,14 @@
 ## Tuesday-Thursday: Execution
 
 ### Daily Routine
+
 1. **Morning Standup (15 min)**
    - Progress on assigned batches
    - Blockers
    - Need for AI assistance?
 
 2. **Consolidation Work**
+
    ```bash
    # Process assigned batch
    npx ts-node scripts/consolidation-manager.ts process batch-001.json
@@ -53,6 +58,7 @@
    ```
 
 3. **Testing After Each Change**
+
    ```bash
    # Run affected tests
    pnpm test -- --findRelatedTests src/modified-file.ts
@@ -65,6 +71,7 @@
    ```
 
 4. **Commit Practices**
+
    ```bash
    # Use conventional commits
    git commit -m "refactor(types): consolidate User interfaces
@@ -75,7 +82,9 @@
    ```
 
 ### End of Day
+
 1. **Update Progress**
+
    ```bash
    npx ts-node scripts/consolidation-manager.ts status
    ```
@@ -88,7 +97,9 @@
 ## Friday: Review & Report
 
 ### Morning (2 hours)
+
 1. **Generate Progress Report**
+
    ```bash
    # Re-run analysis to measure improvement
    ./scripts/analyze-all.sh .
@@ -104,6 +115,7 @@
    - Build time improvement
 
 ### Afternoon (2 hours)
+
 1. **Team Retrospective**
    - What went well?
    - What was challenging?
@@ -117,15 +129,17 @@
 ## Key Performance Indicators (KPIs)
 
 ### Weekly Targets
-| Metric | Target | How to Measure |
-|--------|--------|----------------|
-| Duplicate Reduction | -20% | `analysis-report.json` → `summary.duplicateClusters` |
-| Unused Exports | -50% | `analysis-report.json` → `summary.unusedExports` |
-| Test Coverage | +5% | `pnpm test:coverage` |
-| Type Safety | 100% | `pnpm type-check` (0 errors) |
-| Circular Dependencies | 0 | `circular-deps.json` |
+
+| Metric                | Target | How to Measure                                       |
+| --------------------- | ------ | ---------------------------------------------------- |
+| Duplicate Reduction   | -20%   | `analysis-report.json` → `summary.duplicateClusters` |
+| Unused Exports        | -50%   | `analysis-report.json` → `summary.unusedExports`     |
+| Test Coverage         | +5%    | `pnpm test:coverage`                                 |
+| Type Safety           | 100%   | `pnpm type-check` (0 errors)                         |
+| Circular Dependencies | 0      | `circular-deps.json`                                 |
 
 ### Progress Tracking
+
 ```bash
 # Create weekly snapshot
 mkdir -p progress/week-$(date +%U)
@@ -138,16 +152,19 @@ npx ts-node scripts/generate-trends.ts progress/
 ## Batch Processing Guidelines
 
 ### Small Batches (1-2 hours)
+
 - 5-10 duplicate interfaces/types
 - 20-30 unused exports
 - 1-2 wrapper pattern refactors
 
 ### Medium Batches (Half day)
+
 - Service standardization (1-2 services)
 - Error handling updates (1 module)
 - Import reorganization (1 package)
 
 ### Large Batches (Full day)
+
 - Package extraction
 - Cross-cutting concern refactor
 - Major pattern standardization
@@ -155,6 +172,7 @@ npx ts-node scripts/generate-trends.ts progress/
 ## Common Scenarios
 
 ### Merge Conflicts
+
 ```bash
 # If main has diverged significantly
 git checkout main
@@ -168,11 +186,13 @@ git rebase --continue
 ```
 
 ### Failed Tests After Refactor
+
 1. Check if behavior changed unintentionally
 2. Update test to match new structure
 3. If test reveals issue, revert and fix
 
 ### Circular Dependency Introduced
+
 ```bash
 # Identify the cycle
 npx madge --circular src
@@ -186,6 +206,7 @@ npx madge --circular src
 ## Automation Opportunities
 
 ### Pre-commit Hooks
+
 ```bash
 # .husky/pre-commit
 #!/bin/sh
@@ -199,6 +220,7 @@ npx ts-node scripts/check-new-duplicates.ts
 ```
 
 ### CI Integration
+
 ```yaml
 # .github/workflows/refactor-check.yml
 name: Refactor Quality Check
@@ -224,12 +246,14 @@ jobs:
 ## Escalation Path
 
 ### When to Escalate
+
 - Circular dependency that can't be resolved
 - Major architectural decision needed
 - Significant performance regression
 - Breaking change consideration
 
 ### Escalation Process
+
 1. Document the issue clearly
 2. Prepare options with pros/cons
 3. Schedule architecture review
@@ -238,6 +262,7 @@ jobs:
 ## Success Criteria
 
 ### Week is Successful If:
+
 - ✅ All assigned batches processed
 - ✅ No increase in technical debt metrics
 - ✅ All tests passing
@@ -245,6 +270,7 @@ jobs:
 - ✅ Progress documented
 
 ### Red Flags:
+
 - ❌ Drift detection shows regression
 - ❌ Test coverage decreased
 - ❌ Build time increased significantly

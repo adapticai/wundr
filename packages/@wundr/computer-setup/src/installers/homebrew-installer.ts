@@ -18,7 +18,7 @@ const logger = new Logger({ name: 'homebrew-installer' });
 export class HomebrewInstaller implements BaseInstaller {
   name = 'homebrew';
   private readonly homeDir = os.homedir();
-  
+
   isSupported(platform: SetupPlatform): boolean {
     return ['darwin', 'linux'].includes(platform.os);
   }
@@ -41,7 +41,10 @@ export class HomebrewInstaller implements BaseInstaller {
     }
   }
 
-  async install(_profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(
+    _profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     if (await this.isInstalled()) {
       logger.info('Homebrew already installed, updating...');
       await this.updateHomebrew();
@@ -56,7 +59,10 @@ export class HomebrewInstaller implements BaseInstaller {
     await this.installDevTools();
   }
 
-  async configure(_profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(
+    _profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     // Configure Homebrew settings
     await this.configureHomebrew();
 
@@ -85,7 +91,8 @@ export class HomebrewInstaller implements BaseInstaller {
 
       return true;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       logger.error('Homebrew validation failed:', errorMessage);
       return false;
     }
@@ -121,52 +128,56 @@ export class HomebrewInstaller implements BaseInstaller {
   }
 
   private async installHomebrew(platform: SetupPlatform): Promise<void> {
-    const installScript = 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
-    
+    const installScript =
+      'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
+
     try {
       // Download and run the Homebrew installation script
       await execa('/bin/bash', ['-c', `curl -fsSL ${installScript} | bash`], {
         stdio: 'inherit',
       });
-      
+
       // Setup PATH for current session
       await this.setupBrewPath(platform);
-      
     } catch (error) {
       throw new Error(`Homebrew installation failed: ${error}`);
     }
   }
 
   private async setupBrewPath(platform: SetupPlatform): Promise<void> {
-    const brewPaths = platform.os === 'darwin' 
-      ? ['/opt/homebrew/bin/brew', '/usr/local/bin/brew']
-      : ['/home/linuxbrew/.linuxbrew/bin/brew'];
+    const brewPaths =
+      platform.os === 'darwin'
+        ? ['/opt/homebrew/bin/brew', '/usr/local/bin/brew']
+        : ['/home/linuxbrew/.linuxbrew/bin/brew'];
 
     for (const brewPath of brewPaths) {
       try {
         await fs.access(brewPath);
         const brewDir = path.dirname(brewPath);
-        
+
         // Add to current PATH
         process.env.PATH = `${brewDir}:${process.env.PATH}`;
-        
+
         // Setup shellenv for current session
         const { stdout } = await execa(brewPath, ['shellenv']);
-        const envVars = stdout.split('\n').filter(line => line.startsWith('export'));
-        
+        const envVars = stdout
+          .split('\n')
+          .filter(line => line.startsWith('export'));
+
         for (const envVar of envVars) {
-          const [, key, value] = envVar.match(/export ([^=]+)="?([^"]*)"?/) || [];
+          const [, key, value] =
+            envVar.match(/export ([^=]+)="?([^"]*)"?/) || [];
           if (key && value) {
             process.env[key] = value;
           }
         }
-        
+
         return;
       } catch {
         continue;
       }
     }
-    
+
     throw new Error('Homebrew installation path not found');
   }
 
@@ -178,7 +189,8 @@ export class HomebrewInstaller implements BaseInstaller {
       logger.info('Upgrading installed packages...');
       await execa('brew', ['upgrade'], { stdio: 'inherit' });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       logger.warn('Homebrew update failed:', errorMessage);
     }
   }
@@ -217,7 +229,8 @@ export class HomebrewInstaller implements BaseInstaller {
           logger.info(`Installing ${formula}...`);
           await execa('brew', ['install', formula]);
         } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           logger.warn(`Failed to install ${formula}:`, errorMessage);
         }
       }
@@ -251,7 +264,8 @@ export class HomebrewInstaller implements BaseInstaller {
           logger.info(`Installing ${formula}...`);
           await execa('brew', ['install', formula]);
         } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           logger.warn(`Warning: Failed to install ${formula}:`, errorMessage);
         }
       }
@@ -274,13 +288,14 @@ export class HomebrewInstaller implements BaseInstaller {
 
   private async setupShellIntegration(platform: SetupPlatform): Promise<void> {
     const shellFiles = ['.zshrc', '.bashrc'];
-    const brewPath = platform.os === 'darwin' 
-      ? '/opt/homebrew/bin/brew' 
-      : '/home/linuxbrew/.linuxbrew/bin/brew';
+    const brewPath =
+      platform.os === 'darwin'
+        ? '/opt/homebrew/bin/brew'
+        : '/home/linuxbrew/.linuxbrew/bin/brew';
 
     for (const shellFile of shellFiles) {
       const shellPath = path.join(this.homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -305,7 +320,8 @@ export HOMEBREW_NO_ANALYTICS=1
         await fs.writeFile(shellPath, shellContent + homebrewConfig, 'utf-8');
         logger.info(`Updated ${shellFile} with Homebrew configuration`);
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         logger.warn(`Failed to update ${shellFile}:`, errorMessage);
       }
     }
@@ -322,10 +338,10 @@ alias brewclean='brew cleanup && brew doctor'
 `;
 
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     for (const shellFile of shellFiles) {
       const shellPath = path.join(this.homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -342,17 +358,22 @@ alias brewclean='brew cleanup && brew doctor'
         await fs.writeFile(shellPath, shellContent + aliases, 'utf-8');
         logger.info(`Added Homebrew aliases to ${shellFile}`);
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        logger.warn(`Failed to update ${shellFile} with aliases:`, errorMessage);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        logger.warn(
+          `Failed to update ${shellFile} with aliases:`,
+          errorMessage
+        );
       }
     }
   }
 
   async uninstall(): Promise<void> {
     logger.info('Uninstalling Homebrew...');
-    
+
     try {
-      const uninstallScript = 'https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh';
+      const uninstallScript =
+        'https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh';
       await execa('/bin/bash', ['-c', `curl -fsSL ${uninstallScript} | bash`], {
         stdio: 'inherit',
       });

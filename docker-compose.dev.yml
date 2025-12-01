@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # Development-specific overrides for docker-compose
 # Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
@@ -7,10 +7,10 @@ services:
   # Development version with hot reload
   wundr:
     build:
-      target: builder  # Use builder stage for development
+      target: builder # Use builder stage for development
     volumes:
-      - .:/app                    # Mount source code for hot reload
-      - /app/node_modules        # Exclude node_modules from mount
+      - .:/app # Mount source code for hot reload
+      - /app/node_modules # Exclude node_modules from mount
       - wundr_dev_data:/app/data
       - wundr_dev_logs:/app/logs
     environment:
@@ -20,7 +20,7 @@ services:
     command: ["pnpm", "dev"]
     ports:
       - "3000:3000"
-      - "9229:9229"  # Node.js debugging port
+      - "9229:9229" # Node.js debugging port
 
   # Development web client with hot reload
   wundr-web:
@@ -40,16 +40,16 @@ services:
       - POSTGRES_USER=wundr_dev
       - POSTGRES_PASSWORD=dev_password
     ports:
-      - "5433:5432"  # Different port to avoid conflicts
+      - "5433:5432" # Different port to avoid conflicts
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
       - ./scripts/database/dev-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   # Development Redis
   redis:
-    command: redis-server --appendonly yes  # No password in dev
+    command: redis-server --appendonly yes # No password in dev
     ports:
-      - "6380:6379"  # Different port for development
+      - "6380:6379" # Different port for development
 
   # File watcher for automatic rebuilds
   watcher:

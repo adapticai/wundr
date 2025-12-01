@@ -433,9 +433,7 @@
         "severity": "critical",
         "title": "Workspace-scoped call endpoints missing",
         "description": "Call page expects /api/workspaces/[workspaceId]/calls/* but only /api/calls/* exists",
-        "affected_files": [
-          "call/[callId]/page.tsx"
-        ],
+        "affected_files": ["call/[callId]/page.tsx"],
         "recommendation": "Create workspace-scoped call routes or update call page to use existing routes",
         "estimated_effort": "4-6 hours"
       },
@@ -443,9 +441,7 @@
         "severity": "critical",
         "title": "No agents API endpoints",
         "description": "Agents page has no backend support",
-        "affected_files": [
-          "agents/page.tsx"
-        ],
+        "affected_files": ["agents/page.tsx"],
         "recommendation": "Create full CRUD API for agents with proper authentication",
         "estimated_effort": "8-12 hours"
       },
@@ -453,9 +449,7 @@
         "severity": "critical",
         "title": "No deployments API endpoints",
         "description": "Deployments page has no backend support",
-        "affected_files": [
-          "deployments/page.tsx"
-        ],
+        "affected_files": ["deployments/page.tsx"],
         "recommendation": "Create deployment API with Railway/Netlify MCP integration",
         "estimated_effort": "8-12 hours"
       },
@@ -463,9 +457,7 @@
         "severity": "high",
         "title": "Analytics trends endpoint may be missing",
         "description": "AnalyticsDashboard calls /analytics/trends but only /analytics/metrics verified",
-        "affected_files": [
-          "analytics/analytics-dashboard.tsx"
-        ],
+        "affected_files": ["analytics/analytics-dashboard.tsx"],
         "recommendation": "Verify trends endpoint exists or handle 404 gracefully",
         "estimated_effort": "2 hours"
       }

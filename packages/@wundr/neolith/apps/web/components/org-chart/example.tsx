@@ -7,7 +7,11 @@
 
 import { useState } from 'react';
 
-import { OrgHierarchyChart, OrgHierarchyChartEmpty, OrgHierarchyChartSkeleton } from './OrgHierarchyChart';
+import {
+  OrgHierarchyChart,
+  OrgHierarchyChartEmpty,
+  OrgHierarchyChartSkeleton,
+} from './OrgHierarchyChart';
 
 import type { OrgHierarchyNode } from './types';
 
@@ -192,23 +196,25 @@ export function OrgChartExample() {
   }
 
   if (!hasData) {
-    return <OrgHierarchyChartEmpty message="No organization data available. Create your first workspace to get started." />;
+    return (
+      <OrgHierarchyChartEmpty message='No organization data available. Create your first workspace to get started.' />
+    );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Organization Hierarchy</h1>
-        <div className="flex gap-2">
+    <div className='container mx-auto py-8 space-y-4'>
+      <div className='flex justify-between items-center'>
+        <h1 className='text-3xl font-bold'>Organization Hierarchy</h1>
+        <div className='flex gap-2'>
           <button
             onClick={() => setIsLoading(!isLoading)}
-            className="px-4 py-2 text-sm border rounded-md hover:bg-accent"
+            className='px-4 py-2 text-sm border rounded-md hover:bg-accent'
           >
             Toggle Loading
           </button>
           <button
             onClick={() => setHasData(!hasData)}
-            className="px-4 py-2 text-sm border rounded-md hover:bg-accent"
+            className='px-4 py-2 text-sm border rounded-md hover:bg-accent'
           >
             Toggle Data
           </button>
@@ -260,7 +266,7 @@ export function OrgChartWithAPI() {
   }
 
   if (error) {
-    return <div className="text-destructive">Error: {error}</div>;
+    return <div className='text-destructive'>Error: {error}</div>;
   }
 
   if (!hierarchy) {
@@ -270,7 +276,7 @@ export function OrgChartWithAPI() {
   return (
     <OrgHierarchyChart
       hierarchy={hierarchy}
-      onNodeClick={(node) => console.log('Clicked:', node)}
+      onNodeClick={node => console.log('Clicked:', node)}
     />
   );
 }

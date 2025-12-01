@@ -17,13 +17,6 @@
     "noPropertyAccessFromIndexSignature": false,
     "types": ["node", "jest"]
   },
-  "include": [
-    "src/**/*",
-    "tests/**/*"
-  ],
-  "exclude": [
-    "dist",
-    "dist-test",
-    "node_modules"
-  ]
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["dist", "dist-test", "node_modules"]
 }

@@ -43,20 +43,25 @@ export const AudioPreview = React.forwardRef<HTMLDivElement, AudioPreviewProps>(
 
     return (
       <Card ref={ref} className={cn('overflow-hidden', className)}>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
+        <CardContent className='p-4'>
+          <div className='flex items-center gap-4'>
             {/* Audio icon */}
-            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-              <MusicIcon className="h-8 w-8 text-white" />
+            <div className='flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500'>
+              <MusicIcon className='h-8 w-8 text-white' />
             </div>
 
             {/* File info and player */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-foreground" title={filename}>
+            <div className='min-w-0 flex-1'>
+              <p
+                className='truncate font-medium text-foreground'
+                title={filename}
+              >
                 {truncateFilename(filename)}
               </p>
               {fileSize !== undefined && (
-                <p className="text-sm text-muted-foreground">{formatFileSize(fileSize)}</p>
+                <p className='text-sm text-muted-foreground'>
+                  {formatFileSize(fileSize)}
+                </p>
               )}
 
               {/* Audio player */}
@@ -65,34 +70,36 @@ export const AudioPreview = React.forwardRef<HTMLDivElement, AudioPreviewProps>(
                   ref={audioRef}
                   src={fileUrl}
                   controls
-                  className="mt-3 w-full"
+                  className='mt-3 w-full'
                   onError={handleAudioError}
-                  preload="metadata"
+                  preload='metadata'
                 >
                   Your browser does not support the audio element.
                 </audio>
               ) : (
-                <p className="mt-2 text-sm text-destructive">Unable to load audio file</p>
+                <p className='mt-2 text-sm text-destructive'>
+                  Unable to load audio file
+                </p>
               )}
             </div>
 
             {/* Download button */}
-            <div className="flex-shrink-0">
+            <div className='flex-shrink-0'>
               <Button
-                variant="ghost"
-                size="icon"
+                variant='ghost'
+                size='icon'
                 onClick={handleDownload}
-                title="Download audio"
+                title='Download audio'
                 aria-label={`Download ${filename}`}
               >
-                <DownloadIcon className="h-4 w-4" />
+                <DownloadIcon className='h-4 w-4' />
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
     );
-  },
+  }
 );
 
 AudioPreview.displayName = 'AudioPreview';

@@ -88,12 +88,20 @@ async function testNeuralModels() {
     // Test layer configuration validation by creating another model
     console.log('   - Validating layer configurations work properly...');
     const testLayers: LayerConfiguration[] = [
-      { type: 'conv1d', size: 32, activation: 'relu', filters: 32, kernelSize: 3 },
+      {
+        type: 'conv1d',
+        size: 32,
+        activation: 'relu',
+        filters: 32,
+        kernelSize: 3,
+      },
       { type: 'pool', size: 16, poolSize: 2 },
-      { type: 'dense', size: 1, activation: 'sigmoid', units: 1 }
+      { type: 'dense', size: 1, activation: 'sigmoid', units: 1 },
     ];
 
-    console.log(`   - Created ${testLayers.length} layer configurations successfully`);
+    console.log(
+      `   - Created ${testLayers.length} layer configurations successfully`
+    );
 
     console.log('✅ Model operations completed successfully\n');
 
@@ -131,14 +139,20 @@ async function testNeuralModels() {
     console.log('5. Testing performance metrics...');
 
     // Test model inference (prediction)
-    const inferenceResult = await modelManager.predict(modelId, [0.1, 0.2, 0.3, 0.4]);
-    console.log(`   - Inference result confidence: ${inferenceResult.confidence}`);
+    const inferenceResult = await modelManager.predict(
+      modelId,
+      [0.1, 0.2, 0.3, 0.4]
+    );
+    console.log(
+      `   - Inference result confidence: ${inferenceResult.confidence}`
+    );
     console.log(`   - Model ID used: ${inferenceResult.modelId}`);
     console.log('✅ Performance metrics tested successfully\n');
 
     console.log('🎉 All neural model tests completed successfully!');
-    console.log('✅ Type definitions are working correctly with neural models.');
-
+    console.log(
+      '✅ Type definitions are working correctly with neural models.'
+    );
   } catch (error) {
     console.error('❌ Neural model test failed:', error);
     process.exit(1);

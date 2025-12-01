@@ -18,7 +18,7 @@ const logger = new Logger({ name: 'PythonInstaller' });
 export class PythonInstaller implements BaseInstaller {
   name = 'python';
   private readonly homeDir = os.homedir();
-  
+
   isSupported(platform: SetupPlatform): boolean {
     return ['darwin', 'linux', 'win32'].includes(platform.os);
   }
@@ -59,7 +59,10 @@ export class PythonInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     const pythonConfig = profile.tools?.languages?.python;
     if (!pythonConfig) {
       logger.info('Python not configured in profile, checking existing setup');
@@ -82,7 +85,7 @@ export class PythonInstaller implements BaseInstaller {
     } catch (error: unknown) {
       logger.warn('pip setup had issues, but continuing:', error);
     }
-    
+
     // Optional: Install pyenv for version management
     if (pythonConfig?.versions && pythonConfig.versions.length > 1) {
       try {
@@ -111,13 +114,16 @@ export class PythonInstaller implements BaseInstaller {
     }
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<void> {
     // Setup Python path configurations
     await this.setupPythonPaths();
-    
+
     // Configure pip
     await this.configurePip();
-    
+
     // Setup shell integration
     await this.setupShellIntegration(platform);
   }
@@ -137,9 +143,11 @@ export class PythonInstaller implements BaseInstaller {
         await execa('python3', ['-m', 'pip', '--version']);
         logger.info('pip is available');
       } catch {
-        logger.warn('pip not available via python3 -m pip, but Python is installed');
+        logger.warn(
+          'pip not available via python3 -m pip, but Python is installed'
+        );
       }
-      
+
       // Don't fail on venv check - it's optional
       try {
         await execa('python3', ['-m', 'venv', '--help'], { stdio: 'ignore' });
@@ -218,7 +226,9 @@ export class PythonInstaller implements BaseInstaller {
         await this.installPythonLinux(platform);
         break;
       case 'win32':
-        throw new Error('Python installation on Windows requires manual setup from python.org');
+        throw new Error(
+          'Python installation on Windows requires manual setup from python.org'
+        );
       default:
         throw new Error(`Python installation not supported on ${platform.os}`);
     }
@@ -228,7 +238,7 @@ export class PythonInstaller implements BaseInstaller {
     try {
       // Check if Homebrew is available
       await which('brew');
-      
+
       // Check if Python is already installed via brew
       try {
         await execa('brew', ['list', 'python@3.12']);
@@ -237,30 +247,31 @@ export class PythonInstaller implements BaseInstaller {
       } catch {
         // Not installed, proceed
       }
-      
+
       // Install Python via Homebrew
       logger.info('Installing Python via Homebrew...');
       await execa('brew', ['install', 'python@3.12']);
-      
+
       // Create symlinks if needed
       await this.setupPythonSymlinks();
-      
     } catch (error: unknown) {
       logger.error('Python installation failed:', error);
       // Check if Python is available through other means
       if (await this.isInstalled()) {
         logger.info('Python is available through other means, continuing...');
       } else {
-        throw new Error('Python installation requires Homebrew. Please install Homebrew first.');
+        throw new Error(
+          'Python installation requires Homebrew. Please install Homebrew first.'
+        );
       }
     }
   }
 
   private async installPythonLinux(platform: SetupPlatform): Promise<void> {
-    const distro = platform.distro || await this.detectLinuxDistro();
+    const distro = platform.distro || (await this.detectLinuxDistro());
 
     logger.info(`Installing Python on ${distro}...`);
-    
+
     switch (distro) {
       case 'ubuntu':
       case 'debian':
@@ -329,7 +340,10 @@ export class PythonInstaller implements BaseInstaller {
 
       logger.info('pip setup completed');
     } catch (error: unknown) {
-      logger.warn('pip setup had issues (this is often okay if pip is already installed):', error);
+      logger.warn(
+        'pip setup had issues (this is often okay if pip is already installed):',
+        error
+      );
     }
   }
 
@@ -348,7 +362,9 @@ export class PythonInstaller implements BaseInstaller {
     }
 
     if (platform.os === 'win32') {
-      throw new Error('pyenv installation on Windows requires manual setup of pyenv-win');
+      throw new Error(
+        'pyenv installation on Windows requires manual setup of pyenv-win'
+      );
     }
 
     try {
@@ -366,7 +382,9 @@ export class PythonInstaller implements BaseInstaller {
     }
   }
 
-  private async setupVirtualEnvironments(pythonConfig?: { virtualEnv?: string }): Promise<void> {
+  private async setupVirtualEnvironments(pythonConfig?: {
+    virtualEnv?: string;
+  }): Promise<void> {
     logger.info('Setting up virtual environment tools...');
 
     const virtualEnvType = pythonConfig?.virtualEnv || 'venv';
@@ -409,13 +427,15 @@ export class PythonInstaller implements BaseInstaller {
     let condaUrl = '';
 
     if (currentPlatform === 'darwin') {
-      condaUrl = arch === 'arm64'
-        ? 'https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh'
-        : 'https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh';
+      condaUrl =
+        arch === 'arm64'
+          ? 'https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh'
+          : 'https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh';
     } else if (currentPlatform === 'linux') {
-      condaUrl = arch === 'arm64'
-        ? 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh'
-        : 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh';
+      condaUrl =
+        arch === 'arm64'
+          ? 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh'
+          : 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh';
     } else {
       throw new Error('Conda installation not supported on this platform');
     }
@@ -427,7 +447,12 @@ export class PythonInstaller implements BaseInstaller {
       await execa('curl', ['-o', condaScript, condaUrl]);
 
       // Run installer
-      await execa('bash', [condaScript, '-b', '-p', path.join(this.homeDir, 'miniconda3')]);
+      await execa('bash', [
+        condaScript,
+        '-b',
+        '-p',
+        path.join(this.homeDir, 'miniconda3'),
+      ]);
 
       // Clean up
       await fs.unlink(condaScript);
@@ -509,7 +534,7 @@ user = true
 
   private async setupShellIntegration(_platform: SetupPlatform): Promise<void> {
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     const pythonConfig = `
 # Python Configuration
 export PYTHONPATH="$HOME/.local/lib/python3.12/site-packages:$PYTHONPATH"
@@ -535,7 +560,7 @@ alias venv-activate='source venv/bin/activate'
 
     for (const shellFile of shellFiles) {
       const shellPath = path.join(this.homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {
@@ -569,7 +594,7 @@ alias venv-activate='source venv/bin/activate'
 
   private async updateShellWithPythonPaths(userBinPath: string): Promise<void> {
     const shellFiles = ['.zshrc', '.bashrc'];
-    
+
     const pathConfig = `
 # Python User Bin Path
 export PATH="${userBinPath}:$PATH"
@@ -577,7 +602,7 @@ export PATH="${userBinPath}:$PATH"
 
     for (const shellFile of shellFiles) {
       const shellPath = path.join(this.homeDir, shellFile);
-      
+
       try {
         let shellContent = '';
         try {

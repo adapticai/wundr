@@ -1,12 +1,18 @@
 # ADR-002: Technology Stack Selection
 
 ## Status
+
 Accepted
 
 ## Context
-The unified Wundr platform requires a comprehensive technology stack that supports both the existing code analysis capabilities and the new environment setup functionality. The stack must enable high-performance, scalable, and maintainable development while providing excellent developer experience.
+
+The unified Wundr platform requires a comprehensive technology stack that supports both the existing
+code analysis capabilities and the new environment setup functionality. The stack must enable
+high-performance, scalable, and maintainable development while providing excellent developer
+experience.
 
 ## Decision Drivers
+
 - **Performance**: Sub-second API responses, efficient analysis processing
 - **Scalability**: Support for thousands of concurrent users and large codebases
 - **Developer Experience**: Modern tooling, type safety, excellent debugging
@@ -17,29 +23,34 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ## Considered Options
 
 ### Frontend Framework
+
 1. **Next.js 15 with React 19** (Selected)
 2. Vue.js 3 with Nuxt.js
 3. SvelteKit
 4. Angular 17
 
 ### Backend Framework
+
 1. **Node.js with Fastify** (Selected)
 2. Node.js with Express
 3. Python with FastAPI
 4. Go with Gin/Echo
 
 ### Database
+
 1. **PostgreSQL 15** (Selected)
 2. MySQL 8
 3. MongoDB
 4. CockroachDB
 
 ### Caching
+
 1. **Redis 7** (Selected)
 2. Memcached
 3. In-memory caching only
 
 ### Build System
+
 1. **Turborepo** (Selected)
 2. Nx
 3. Lerna
@@ -48,6 +59,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ## Decision
 
 ### Frontend Stack
+
 - **Next.js 15** with App Router for SSR/SSG capabilities
 - **React 19** for UI components with concurrent features
 - **TypeScript 5.2+** for type safety across the entire frontend
@@ -56,6 +68,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **Recharts** for data visualization
 
 ### Backend Stack
+
 - **Node.js 18+** as the runtime environment
 - **Fastify 4** as the web framework for performance
 - **TypeScript 5.2+** for type-safe server development
@@ -64,12 +77,14 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **Bull Queue** for background job processing
 
 ### Database Stack
+
 - **PostgreSQL 15** as the primary database
 - **Redis 7** for caching and session management
 - **Prisma ORM** for database access and migrations
 - **PgBouncer** for connection pooling
 
 ### DevOps & Infrastructure
+
 - **Docker** for containerization
 - **Kubernetes** for orchestration (production)
 - **Turborepo** for monorepo build management
@@ -78,6 +93,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **AWS/GCP** for backend infrastructure
 
 ### Development Tools
+
 - **ESLint** and **Prettier** for code quality
 - **Jest** and **Vitest** for testing
 - **Playwright** for end-to-end testing
@@ -87,6 +103,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ## Rationale
 
 ### Next.js 15 + React 19
+
 - **Performance**: App Router provides excellent SSR/SSG performance
 - **Developer Experience**: Best-in-class developer tools and debugging
 - **Ecosystem**: Massive ecosystem with community support
@@ -94,6 +111,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **Concurrent Features**: React 19's concurrent features for better UX
 
 ### Fastify over Express
+
 - **Performance**: 2-3x faster than Express in benchmarks
 - **TypeScript Support**: Native TypeScript support and excellent typing
 - **Plugin System**: Rich plugin ecosystem for extensibility
@@ -101,6 +119,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **Modern Architecture**: Designed with modern Node.js features
 
 ### PostgreSQL over NoSQL
+
 - **ACID Compliance**: Strong consistency for critical business data
 - **Complex Queries**: Superior support for complex analytical queries
 - **JSON Support**: Native JSONB support for flexible data
@@ -108,6 +127,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **Ecosystem**: Rich ecosystem of tools and extensions
 
 ### Turborepo over Nx
+
 - **Simplicity**: Simpler configuration and mental model
 - **Performance**: Excellent build caching and parallelization
 - **Vercel Integration**: Native integration with Vercel deployment
@@ -117,6 +137,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ## Consequences
 
 ### Positive
+
 - **Unified Language**: TypeScript across frontend and backend reduces context switching
 - **Performance**: Excellent performance characteristics for our use cases
 - **Developer Productivity**: Modern tooling significantly improves developer experience
@@ -125,6 +146,7 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 - **Community**: Large communities ensure long-term support and resources
 
 ### Negative
+
 - **Learning Curve**: Team needs to learn Fastify, Next.js App Router, and Turborepo
 - **Complexity**: Monorepo setup adds initial complexity
 - **Bundle Size**: React and associated libraries increase frontend bundle size
@@ -133,19 +155,25 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ### Risks and Mitigation
 
 #### Risk: Performance bottlenecks in Node.js
-**Mitigation**: 
+
+**Mitigation**:
+
 - Use worker threads for CPU-intensive tasks
 - Implement proper caching strategies
 - Consider microservices for compute-heavy operations
 
 #### Risk: PostgreSQL scaling limitations
+
 **Mitigation**:
+
 - Implement read replicas for scaling reads
 - Use connection pooling (PgBouncer)
 - Consider partitioning for large tables
 
 #### Risk: Frontend bundle size
+
 **Mitigation**:
+
 - Implement code splitting and lazy loading
 - Use Next.js built-in optimizations
 - Regular bundle analysis and optimization
@@ -153,24 +181,28 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ## Implementation Plan
 
 ### Phase 1: Foundation (Weeks 1-2)
+
 1. Set up Turborepo monorepo structure
 2. Configure TypeScript across all packages
 3. Set up basic Next.js application
 4. Configure Fastify backend with basic routes
 
 ### Phase 2: Core Infrastructure (Weeks 3-4)
+
 1. Set up PostgreSQL with Prisma
 2. Configure Redis for caching
 3. Implement authentication system
 4. Set up GraphQL schema and resolvers
 
 ### Phase 3: Feature Development (Weeks 5-8)
+
 1. Migrate analysis engine to new architecture
 2. Implement setup toolkit integration
 3. Build unified web dashboard
 4. Implement real-time features with Socket.io
 
 ### Phase 4: Production Ready (Weeks 9-12)
+
 1. Performance optimization
 2. Security hardening
 3. Monitoring and observability
@@ -179,14 +211,17 @@ The unified Wundr platform requires a comprehensive technology stack that suppor
 ## Monitoring and Review
 
 ### Success Metrics
+
 - **Build Time**: < 60 seconds for full monorepo build
 - **API Response Time**: < 200ms for 95th percentile
 - **Frontend Load Time**: < 3 seconds for initial page load
 - **Developer Satisfaction**: Regular team feedback surveys
 
 ### Review Schedule
+
 - **Monthly**: Performance metrics review
 - **Quarterly**: Technology stack assessment
 - **Annually**: Major version upgrades and architecture review
 
-This technology stack provides a solid foundation for the unified Wundr platform while maintaining flexibility for future growth and evolution.
+This technology stack provides a solid foundation for the unified Wundr platform while maintaining
+flexibility for future growth and evolution.

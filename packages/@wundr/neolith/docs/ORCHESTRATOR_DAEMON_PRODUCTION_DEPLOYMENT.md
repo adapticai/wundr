@@ -1,14 +1,12 @@
 # Orchestrator-Daemon Production Deployment Guide
 
-**Version:** 1.0.3
-**Package:** `@wundr.io/orchestrator-daemon`
-**Date:** November 26, 2025
+**Version:** 1.0.3 **Package:** `@wundr.io/orchestrator-daemon` **Date:** November 26, 2025
 
 ## Overview
 
-This guide covers deploying Orchestrator-Daemon to 16 production machines for autonomous Orchestrator
-(Orchestrator) operation. Each daemon manages one or more Orchestrators that can spawn Claude Code sessions to complete
-tasks autonomously.
+This guide covers deploying Orchestrator-Daemon to 16 production machines for autonomous
+Orchestrator (Orchestrator) operation. Each daemon manages one or more Orchestrators that can spawn
+Claude Code sessions to complete tasks autonomously.
 
 ## Prerequisites
 
@@ -234,24 +232,24 @@ sudo systemctl status orchestrator-daemon
 
 ### Machine Naming Convention
 
-| Machine ID      | Region    | Purpose              |
-| --------------- | --------- | -------------------- |
-| orchestrator-machine-01   | us-east-1 | Primary - Engineering |
-| orchestrator-machine-02   | us-east-1 | Primary - Engineering |
-| orchestrator-machine-03   | us-east-1 | Primary - Product    |
-| orchestrator-machine-04   | us-east-1 | Primary - Operations |
-| orchestrator-machine-05   | us-west-2 | Secondary - Engineering |
-| orchestrator-machine-06   | us-west-2 | Secondary - Product  |
-| orchestrator-machine-07   | us-west-2 | Secondary - Operations |
-| orchestrator-machine-08   | us-west-2 | Secondary - General  |
-| orchestrator-machine-09   | eu-west-1 | Europe - Engineering |
-| orchestrator-machine-10   | eu-west-1 | Europe - Product     |
-| orchestrator-machine-11   | eu-west-1 | Europe - Operations  |
-| orchestrator-machine-12   | eu-west-1 | Europe - General     |
-| orchestrator-machine-13   | ap-northeast-1 | APAC - Engineering |
-| orchestrator-machine-14   | ap-northeast-1 | APAC - Product     |
-| orchestrator-machine-15   | ap-northeast-1 | APAC - Operations  |
-| orchestrator-machine-16   | ap-northeast-1 | APAC - General     |
+| Machine ID              | Region         | Purpose                 |
+| ----------------------- | -------------- | ----------------------- |
+| orchestrator-machine-01 | us-east-1      | Primary - Engineering   |
+| orchestrator-machine-02 | us-east-1      | Primary - Engineering   |
+| orchestrator-machine-03 | us-east-1      | Primary - Product       |
+| orchestrator-machine-04 | us-east-1      | Primary - Operations    |
+| orchestrator-machine-05 | us-west-2      | Secondary - Engineering |
+| orchestrator-machine-06 | us-west-2      | Secondary - Product     |
+| orchestrator-machine-07 | us-west-2      | Secondary - Operations  |
+| orchestrator-machine-08 | us-west-2      | Secondary - General     |
+| orchestrator-machine-09 | eu-west-1      | Europe - Engineering    |
+| orchestrator-machine-10 | eu-west-1      | Europe - Product        |
+| orchestrator-machine-11 | eu-west-1      | Europe - Operations     |
+| orchestrator-machine-12 | eu-west-1      | Europe - General        |
+| orchestrator-machine-13 | ap-northeast-1 | APAC - Engineering      |
+| orchestrator-machine-14 | ap-northeast-1 | APAC - Product          |
+| orchestrator-machine-15 | ap-northeast-1 | APAC - Operations       |
+| orchestrator-machine-16 | ap-northeast-1 | APAC - General          |
 
 ### Deployment Script
 
@@ -348,8 +346,8 @@ scrape_configs:
   - job_name: 'orchestrator-daemon'
     static_configs:
       - targets:
-        - 'orchestrator-machine-01:8080'
-        - 'orchestrator-machine-02:8080'
+          - 'orchestrator-machine-01:8080'
+          - 'orchestrator-machine-02:8080'
         # ... all 16 machines
     relabel_configs:
       - source_labels: [__address__]
@@ -405,11 +403,11 @@ orchestrator-daemon memory-prune --older-than 7d
 
 ### Log Locations
 
-| Log File | Description |
-| -------- | ----------- |
-| `/var/log/orchestrator-daemon/daemon.log` | Main daemon log |
-| `/var/log/orchestrator-daemon/stdout.log` | Standard output |
-| `/var/log/orchestrator-daemon/stderr.log` | Standard error |
+| Log File                                     | Description               |
+| -------------------------------------------- | ------------------------- |
+| `/var/log/orchestrator-daemon/daemon.log`    | Main daemon log           |
+| `/var/log/orchestrator-daemon/stdout.log`    | Standard output           |
+| `/var/log/orchestrator-daemon/stderr.log`    | Standard error            |
 | `/var/lib/orchestrator-daemon/memory/*.json` | Orchestrator memory files |
 
 ## Security

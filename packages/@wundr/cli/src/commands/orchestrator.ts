@@ -14,8 +14,15 @@ import ora from 'ora';
 import YAML from 'yaml';
 
 // Constants
-const ORCHESTRATOR_CONFIG_DIR = path.join(os.homedir(), '.wundr', 'orchestrator-daemon');
-const ORCHESTRATOR_CONFIG_FILE = path.join(ORCHESTRATOR_CONFIG_DIR, 'config.yaml');
+const ORCHESTRATOR_CONFIG_DIR = path.join(
+  os.homedir(),
+  '.wundr',
+  'orchestrator-daemon'
+);
+const ORCHESTRATOR_CONFIG_FILE = path.join(
+  ORCHESTRATOR_CONFIG_DIR,
+  'config.yaml'
+);
 const ORCHESTRATOR_PID_FILE = path.join(ORCHESTRATOR_CONFIG_DIR, 'daemon.pid');
 const ORCHESTRATOR_LOG_FILE = path.join(ORCHESTRATOR_CONFIG_DIR, 'daemon.log');
 
@@ -204,9 +211,7 @@ function formatUptime(ms: number): string {
 // Create Orchestrator command
 export function createOrchestratorCommand(): Command {
   const command = new Command('orchestrator')
-    .description(
-      'Manage the Orchestrator Daemon for agent orchestration',
-    )
+    .description('Manage the Orchestrator Daemon for agent orchestration')
     .addHelpText(
       'after',
       chalk.gray(`
@@ -217,7 +222,7 @@ Examples:
   ${chalk.green('wundr orchestrator stop')}               Stop the daemon gracefully
   ${chalk.green('wundr orchestrator config show')}        View current configuration
   ${chalk.green('wundr orchestrator config set daemon.port=9000')}  Update configuration
-      `),
+      `)
     );
 
   // Start command
@@ -308,7 +313,7 @@ async function startDaemon(options: {
     const currentStatus = await getDaemonStatus();
     if (currentStatus.running) {
       spinner.fail(
-        `Orchestrator Daemon is already running (PID: ${currentStatus.pid}, port: ${currentStatus.port})`,
+        `Orchestrator Daemon is already running (PID: ${currentStatus.pid}, port: ${currentStatus.port})`
       );
       return;
     }
@@ -343,7 +348,9 @@ async function startDaemon(options: {
         .replace(/\.js$/, '');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const daemonModule = require(daemonModulePath);
-      const OrchestratorDaemon = daemonModule.OrchestratorDaemon || daemonModule.default?.OrchestratorDaemon;
+      const OrchestratorDaemon =
+        daemonModule.OrchestratorDaemon ||
+        daemonModule.default?.OrchestratorDaemon;
 
       if (!OrchestratorDaemon) {
         throw new Error('OrchestratorDaemon class not found in module');
@@ -361,18 +368,22 @@ async function startDaemon(options: {
     } catch (importError) {
       // Fallback: try to spawn the daemon as a subprocess
       spinner.fail('Failed to load Orchestrator Daemon module');
-      console.error(chalk.red('\nThe Orchestrator Daemon module could not be loaded.'));
+      console.error(
+        chalk.red('\nThe Orchestrator Daemon module could not be loaded.')
+      );
       console.error(chalk.gray('Options to resolve:'));
-      console.error(chalk.white('  1. Install: npm install @wundr/orchestrator-daemon'));
+      console.error(
+        chalk.white('  1. Install: npm install @wundr/orchestrator-daemon')
+      );
       console.error(
         chalk.white(
-          '  2. Or build from source: cd scripts/orchestrator-daemon && npm run build',
-        ),
+          '  2. Or build from source: cd scripts/orchestrator-daemon && npm run build'
+        )
       );
       console.error(
         chalk.gray(
-          `\nError: ${importError instanceof Error ? importError.message : String(importError)}`,
-        ),
+          `\nError: ${importError instanceof Error ? importError.message : String(importError)}`
+        )
       );
       return;
     }
@@ -393,13 +404,13 @@ async function startDaemon(options: {
             ([k, v]: [string, unknown]) => [
               k,
               (v as { status?: string })?.status ?? 'unknown',
-            ],
-          ),
+            ]
+          )
         ),
       };
       fs.writeFile(
         path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json'),
-        JSON.stringify(statusData, null, 2),
+        JSON.stringify(statusData, null, 2)
       ).catch(() => {});
     };
 
@@ -408,7 +419,9 @@ async function startDaemon(options: {
     // Set up cleanup handlers
     const cleanup = async () => {
       await fs.unlink(ORCHESTRATOR_PID_FILE).catch(() => {});
-      await fs.unlink(path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json')).catch(() => {});
+      await fs
+        .unlink(path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json'))
+        .catch(() => {});
     };
 
     daemon.on('stopped', cleanup);
@@ -417,7 +430,7 @@ async function startDaemon(options: {
     await daemon.start();
 
     spinner.succeed(
-      `Orchestrator Daemon started successfully on ${config.daemon.host}:${config.daemon.port}`,
+      `Orchestrator Daemon started successfully on ${config.daemon.host}:${config.daemon.port}`
     );
 
     console.log(chalk.gray('\nDaemon Information:'));
@@ -442,7 +455,7 @@ async function startDaemon(options: {
   } catch (error) {
     spinner.fail('Failed to start Orchestrator Daemon');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -468,8 +481,8 @@ async function showStatus(options: { json?: boolean }): Promise<void> {
             },
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       return;
     }
@@ -502,7 +515,7 @@ async function showStatus(options: { json?: boolean }): Promise<void> {
               ? chalk.yellow
               : chalk.red;
         console.log(
-          healthColor(`Health:       ${status.health.toUpperCase()}`),
+          healthColor(`Health:       ${status.health.toUpperCase()}`)
         );
       }
 
@@ -530,7 +543,7 @@ async function showStatus(options: { json?: boolean }): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to get daemon status');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -556,7 +569,9 @@ async function stopDaemon(options: {
       spinner.text = 'Force stopping daemon...';
       process.kill(pid, 'SIGKILL');
       await fs.unlink(ORCHESTRATOR_PID_FILE).catch(() => {});
-      await fs.unlink(path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json')).catch(() => {});
+      await fs
+        .unlink(path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json'))
+        .catch(() => {});
       spinner.succeed('Orchestrator Daemon force stopped');
       return;
     }
@@ -586,12 +601,14 @@ async function stopDaemon(options: {
     spinner.text = 'Graceful shutdown timed out, forcing stop...';
     process.kill(pid, 'SIGKILL');
     await fs.unlink(ORCHESTRATOR_PID_FILE).catch(() => {});
-    await fs.unlink(path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json')).catch(() => {});
+    await fs
+      .unlink(path.join(ORCHESTRATOR_CONFIG_DIR, 'status.json'))
+      .catch(() => {});
     spinner.warn('Orchestrator Daemon stopped (forced after timeout)');
   } catch (error) {
     spinner.fail('Failed to stop Orchestrator Daemon');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -611,7 +628,7 @@ async function showConfig(options: { json?: boolean }): Promise<void> {
     }
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -623,10 +640,12 @@ async function setConfig(keyValue: string): Promise<void> {
 
     if (!keyPath || valueStr === undefined) {
       console.error(
-        chalk.red('Invalid format. Use: wundr orchestrator config set <key>=<value>'),
+        chalk.red(
+          'Invalid format. Use: wundr orchestrator config set <key>=<value>'
+        )
       );
       console.error(
-        chalk.gray('Example: wundr orchestrator config set daemon.port=9000'),
+        chalk.gray('Example: wundr orchestrator config set daemon.port=9000')
       );
       return;
     }
@@ -671,13 +690,13 @@ async function setConfig(keyValue: string): Promise<void> {
     console.log(chalk.green('Configuration updated:'));
     console.log(
       chalk.white(
-        `  ${keyPath}: ${JSON.stringify(oldValue)} -> ${JSON.stringify(value)}`,
-      ),
+        `  ${keyPath}: ${JSON.stringify(oldValue)} -> ${JSON.stringify(value)}`
+      )
     );
     console.log(chalk.gray('\nRestart the daemon for changes to take effect.'));
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -709,7 +728,7 @@ async function resetConfig(options: { force?: boolean }): Promise<void> {
     console.log(chalk.gray(`Saved to: ${ORCHESTRATOR_CONFIG_FILE}`));
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -724,20 +743,26 @@ async function viewLogs(options: {
     console.log(chalk.yellow('No log file found.'));
     console.log(chalk.gray(`Expected location: ${ORCHESTRATOR_LOG_FILE}`));
     console.log(
-      chalk.gray('Start the daemon with --verbose to enable logging.'),
+      chalk.gray('Start the daemon with --verbose to enable logging.')
     );
     return;
   }
 
   try {
     if (options.follow) {
-      console.log(chalk.cyan(`Following logs from ${ORCHESTRATOR_LOG_FILE}...`));
+      console.log(
+        chalk.cyan(`Following logs from ${ORCHESTRATOR_LOG_FILE}...`)
+      );
       console.log(chalk.gray('Press Ctrl+C to stop.\n'));
 
       const { spawn } = await import('child_process');
-      const tail = spawn('tail', ['-f', '-n', String(lines), ORCHESTRATOR_LOG_FILE], {
-        stdio: 'inherit',
-      });
+      const tail = spawn(
+        'tail',
+        ['-f', '-n', String(lines), ORCHESTRATOR_LOG_FILE],
+        {
+          stdio: 'inherit',
+        }
+      );
 
       await new Promise<void>(resolve => {
         process.on('SIGINT', () => {
@@ -751,12 +776,14 @@ async function viewLogs(options: {
       const logLines = content.split('\n');
       const lastLines = logLines.slice(-lines).join('\n');
 
-      console.log(chalk.cyan(`Last ${lines} lines from ${ORCHESTRATOR_LOG_FILE}:\n`));
+      console.log(
+        chalk.cyan(`Last ${lines} lines from ${ORCHESTRATOR_LOG_FILE}:\n`)
+      );
       console.log(lastLines);
     }
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }

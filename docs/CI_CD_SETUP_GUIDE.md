@@ -12,7 +12,8 @@ This guide provides comprehensive instructions for setting up the complete CI/CD
 
 ## 🔐 Required Secrets
 
-Configure these secrets in your GitHub repository settings (`Settings > Secrets and variables > Actions`):
+Configure these secrets in your GitHub repository settings
+(`Settings > Secrets and variables > Actions`):
 
 ### Core Secrets
 
@@ -39,6 +40,7 @@ ENCRYPTION_KEY=your-32-char-encryption-key-here
 ### Cloud Provider Secrets
 
 #### AWS (if using AWS deployment)
+
 ```bash
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
@@ -46,6 +48,7 @@ AWS_REGION=us-east-1
 ```
 
 #### Vercel (if using Vercel deployment)
+
 ```bash
 VERCEL_TOKEN=...
 VERCEL_ORG_ID=...
@@ -53,6 +56,7 @@ VERCEL_PROJECT_ID=...
 ```
 
 #### Railway (if using Railway deployment)
+
 ```bash
 RAILWAY_TOKEN=...
 ```
@@ -84,7 +88,8 @@ K8S_CLUSTER_CA_CERT=...
 
 ## 🌍 Environment Variables
 
-Configure these in GitHub repository settings (`Settings > Secrets and variables > Actions` > `Variables` tab):
+Configure these in GitHub repository settings (`Settings > Secrets and variables > Actions` >
+`Variables` tab):
 
 ```bash
 # Repository settings
@@ -110,31 +115,37 @@ REMOTE_WRITE_USERNAME=...
 Our CI/CD pipeline consists of several interconnected workflows:
 
 ### 1. Modern CI Pipeline (`ci-modern.yml`)
+
 - **Triggers**: Push, PR, manual dispatch
 - **Features**: Multi-OS testing, security audit, performance benchmarks
 - **Status checks**: Required for branch protection
 
 ### 2. Release Automation (`release-automation.yml`)
+
 - **Triggers**: Push to main, manual dispatch
 - **Features**: Changesets integration, automated versioning, npm publishing
 - **Outputs**: GitHub releases, Docker images, notifications
 
 ### 3. Deployment (`deploy.yml`)
+
 - **Triggers**: Release published, manual dispatch
 - **Features**: Multi-environment deployment, rollback capability, health checks
 - **Environments**: Development, staging, production
 
 ### 4. Dependency Management (`dependencies.yml`)
+
 - **Triggers**: Schedule (weekly), manual dispatch
 - **Features**: Security audits, automated updates, license compliance
 - **Outputs**: Automated PRs for updates
 
 ### 5. Performance Monitoring (`monitoring.yml`)
+
 - **Triggers**: Push, PR, schedule (daily), manual dispatch
 - **Features**: Benchmarks, memory profiling, load testing, security scans
 - **Outputs**: Performance reports, trend analysis
 
 ### 6. Branch Protection (`branch-protection.yml`)
+
 - **Triggers**: Push to main, manual dispatch
 - **Features**: Automated protection setup, team management, templates
 - **Outputs**: Repository configuration, team assignments
@@ -144,6 +155,7 @@ Our CI/CD pipeline consists of several interconnected workflows:
 ### Step 1: Repository Configuration
 
 1. **Enable GitHub Actions**:
+
    ```bash
    # In repository Settings > Actions > General
    # Allow all actions and reusable workflows
@@ -156,6 +168,7 @@ Our CI/CD pipeline consists of several interconnected workflows:
 ### Step 2: Environment Setup
 
 1. **Create environments**:
+
    ```bash
    # Navigate to Settings > Environments
    # Create: development, staging, production
@@ -170,6 +183,7 @@ Our CI/CD pipeline consists of several interconnected workflows:
 ### Step 3: Dependencies Setup
 
 1. **Install changesets**:
+
    ```bash
    npm install -g @changesets/cli
    npx changeset init
@@ -190,6 +204,7 @@ Our CI/CD pipeline consists of several interconnected workflows:
 ### Step 4: Monitoring Setup
 
 1. **Configure Prometheus**:
+
    ```bash
    # Copy monitoring/prometheus.yml to your monitoring setup
    # Adjust targets for your environment
@@ -205,12 +220,12 @@ Our CI/CD pipeline consists of several interconnected workflows:
 
 ### Automatic Triggers
 
-| Workflow | Trigger | Frequency |
-|----------|---------|-----------|
-| CI Pipeline | Push/PR to main branches | On demand |
-| Dependency Updates | Schedule | Weekly (Mondays 9:00 UTC) |
-| Performance Monitoring | Schedule | Daily (2:00 UTC) |
-| Security Scans | Push to main | On demand |
+| Workflow               | Trigger                  | Frequency                 |
+| ---------------------- | ------------------------ | ------------------------- |
+| CI Pipeline            | Push/PR to main branches | On demand                 |
+| Dependency Updates     | Schedule                 | Weekly (Mondays 9:00 UTC) |
+| Performance Monitoring | Schedule                 | Daily (2:00 UTC)          |
+| Security Scans         | Push to main             | On demand                 |
 
 ### Manual Triggers
 
@@ -232,6 +247,7 @@ The following status checks are required for branch protection:
 ### Automatic Releases (Recommended)
 
 1. **Create changeset**:
+
    ```bash
    npx changeset
    # Select packages and change type (patch/minor/major)
@@ -239,6 +255,7 @@ The following status checks are required for branch protection:
    ```
 
 2. **Commit and push**:
+
    ```bash
    git add .changeset/
    git commit -m "feat: add new analysis feature"
@@ -321,12 +338,14 @@ Configure alerts in your monitoring system for:
 ### Common Issues
 
 1. **Workflow fails with permissions error**:
+
    ```bash
    # Check repository settings > Actions > General
    # Ensure "Read and write permissions" are enabled
    ```
 
 2. **Branch protection conflicts**:
+
    ```bash
    # Temporarily disable protection rules
    # Apply changes
@@ -381,4 +400,5 @@ For issues with the CI/CD pipeline:
 
 ---
 
-**Next Steps**: After completing the setup, run the branch protection workflow to apply all configurations automatically.
+**Next Steps**: After completing the setup, run the branch protection workflow to apply all
+configurations automatically.

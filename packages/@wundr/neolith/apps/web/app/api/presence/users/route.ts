@@ -19,7 +19,11 @@ import {
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
 
-import type { BatchPresenceInput, UserPresenceResponse, PresenceStatusType } from '@/lib/validations/presence';
+import type {
+  BatchPresenceInput,
+  UserPresenceResponse,
+  PresenceStatusType,
+} from '@/lib/validations/presence';
 import type { UserStatus, Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -38,16 +42,22 @@ interface UserPreferences {
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
   if (!lastActiveAt) {
-return false;
-}
+    return false;
+  }
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
 /**
  * Get presence from user preferences
  */
-function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferences {
-  if (typeof preferences === 'object' && preferences !== null && !Array.isArray(preferences)) {
+function getPresenceFromPreferences(
+  preferences: Prisma.JsonValue
+): UserPreferences {
+  if (
+    typeof preferences === 'object' &&
+    preferences !== null &&
+    !Array.isArray(preferences)
+  ) {
     return preferences as UserPreferences;
   }
   return {};
@@ -56,7 +66,10 @@ function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferen
 /**
  * Map Prisma UserStatus to presence status
  */
-function mapUserStatusToPresence(status: UserStatus, prefs: UserPreferences): UserPresenceResponse['status'] {
+function mapUserStatusToPresence(
+  status: UserStatus,
+  prefs: UserPreferences
+): UserPresenceResponse['status'] {
   if (prefs.presenceStatus) {
     return prefs.presenceStatus;
   }
@@ -137,8 +150,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -148,8 +164,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createPresenceErrorResponse('Invalid JSON body', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createPresenceErrorResponse(
+          'Invalid JSON body',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -160,9 +179,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -190,9 +209,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

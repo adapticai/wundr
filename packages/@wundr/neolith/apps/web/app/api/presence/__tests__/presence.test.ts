@@ -109,7 +109,7 @@ function _createMockRequest(
   method: string,
   path: string,
   body?: Record<string, unknown>,
-  headers?: Record<string, string>,
+  headers?: Record<string, string>
 ): NextRequest {
   const url = new URL(`http://localhost:3000${path}`);
 
@@ -123,7 +123,10 @@ function _createMockRequest(
   });
 }
 
-function createMockUserPresence(userId: string, status: UserPresenceStatus = 'online') {
+function createMockUserPresence(
+  userId: string,
+  status: UserPresenceStatus = 'online'
+) {
   return {
     userId,
     status,
@@ -148,7 +151,10 @@ function createMockOrchestratorPresence(orchestratorId: string) {
   };
 }
 
-function createMockChannelPresence(channelId: string, onlineMembers: string[] = []) {
+function createMockChannelPresence(
+  channelId: string,
+  onlineMembers: string[] = []
+) {
   return {
     channelId,
     onlineMembers,
@@ -187,11 +193,14 @@ describe('Presence API', () => {
 
       // Simulate route handler logic
       expect(session.user).toBeDefined();
-      await mockPresenceService.setUserStatus(session.user.id, requestBody.status);
+      await mockPresenceService.setUserStatus(
+        session.user.id,
+        requestBody.status
+      );
 
       expect(mockPresenceService.setUserStatus).toHaveBeenCalledWith(
         'user-123',
-        'away',
+        'away'
       );
     });
 
@@ -199,7 +208,13 @@ describe('Presence API', () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const validStatuses: UserPresenceStatus[] = ['online', 'away', 'busy', 'offline', 'dnd'];
+      const validStatuses: UserPresenceStatus[] = [
+        'online',
+        'away',
+        'busy',
+        'offline',
+        'dnd',
+      ];
 
       for (const status of validStatuses) {
         mockPresenceService.setUserStatus.mockResolvedValue(undefined);
@@ -210,7 +225,9 @@ describe('Presence API', () => {
 
       // Invalid status should be rejected (in real implementation)
       const invalidStatus = 'invalid-status';
-      const isValidStatus = validStatuses.includes(invalidStatus as UserPresenceStatus);
+      const isValidStatus = validStatuses.includes(
+        invalidStatus as UserPresenceStatus
+      );
       expect(isValidStatus).toBe(false);
     });
 
@@ -239,17 +256,20 @@ describe('Presence API', () => {
       mockPresenceService.setUserStatus.mockResolvedValue(undefined);
       mockPresenceService.setUserCustomStatus.mockResolvedValue(undefined);
 
-      await mockPresenceService.setUserStatus(session.user.id, requestBody.status);
+      await mockPresenceService.setUserStatus(
+        session.user.id,
+        requestBody.status
+      );
       await mockPresenceService.setUserCustomStatus(
         session.user.id,
         requestBody.customStatus,
-        requestBody.customStatusEmoji,
+        requestBody.customStatusEmoji
       );
 
       expect(mockPresenceService.setUserCustomStatus).toHaveBeenCalledWith(
         'user-123',
         'In a meeting',
-        '...',
+        '...'
       );
     });
 
@@ -262,7 +282,10 @@ describe('Presence API', () => {
         // No custom status
       };
 
-      await mockPresenceService.setUserStatus(session.user.id, requestBody.status);
+      await mockPresenceService.setUserStatus(
+        session.user.id,
+        requestBody.status
+      );
 
       expect(mockPresenceService.setUserCustomStatus).not.toHaveBeenCalled();
     });
@@ -293,7 +316,8 @@ describe('Presence API', () => {
 
       mockPresenceService.getUserPresence.mockResolvedValue(null);
 
-      const result = await mockPresenceService.getUserPresence('non-existent-user');
+      const result =
+        await mockPresenceService.getUserPresence('non-existent-user');
 
       expect(result).toBeNull();
 
@@ -357,7 +381,7 @@ describe('Presence API', () => {
 
       expect(mockPresenceService.addUserToChannel).toHaveBeenCalledWith(
         'user-123',
-        'channel-123',
+        'channel-123'
       );
     });
 
@@ -387,7 +411,9 @@ describe('Presence API', () => {
       ]);
 
       mockPresenceService.addUserToChannel.mockResolvedValue(undefined);
-      mockPresenceService.getChannelPresence.mockResolvedValue(mockChannelPresence);
+      mockPresenceService.getChannelPresence.mockResolvedValue(
+        mockChannelPresence
+      );
 
       await mockPresenceService.addUserToChannel(session.user.id, channelId);
       const result = await mockPresenceService.getChannelPresence(channelId);
@@ -417,11 +443,14 @@ describe('Presence API', () => {
 
       mockPresenceService.removeUserFromChannel.mockResolvedValue(undefined);
 
-      await mockPresenceService.removeUserFromChannel(session.user.id, channelId);
+      await mockPresenceService.removeUserFromChannel(
+        session.user.id,
+        channelId
+      );
 
       expect(mockPresenceService.removeUserFromChannel).toHaveBeenCalledWith(
         'user-123',
-        'channel-123',
+        'channel-123'
       );
     });
 
@@ -435,7 +464,7 @@ describe('Presence API', () => {
       mockPresenceService.removeUserFromChannel.mockResolvedValue(undefined);
 
       await expect(
-        mockPresenceService.removeUserFromChannel(session.user.id, channelId),
+        mockPresenceService.removeUserFromChannel(session.user.id, channelId)
       ).resolves.toBeUndefined();
     });
   });
@@ -452,9 +481,12 @@ describe('Presence API', () => {
       const channelId = 'channel-123';
       const onlineMembers = ['user-123', 'user-456', 'user-789'];
 
-      mockPresenceService.getOnlineChannelMembers.mockResolvedValue(onlineMembers);
+      mockPresenceService.getOnlineChannelMembers.mockResolvedValue(
+        onlineMembers
+      );
 
-      const result = await mockPresenceService.getOnlineChannelMembers(channelId);
+      const result =
+        await mockPresenceService.getOnlineChannelMembers(channelId);
 
       expect(result).toEqual(onlineMembers);
       expect(result).toHaveLength(3);
@@ -468,7 +500,8 @@ describe('Presence API', () => {
 
       mockPresenceService.getOnlineChannelMembers.mockResolvedValue([]);
 
-      const result = await mockPresenceService.getOnlineChannelMembers(channelId);
+      const result =
+        await mockPresenceService.getOnlineChannelMembers(channelId);
 
       expect(result).toEqual([]);
     });
@@ -511,7 +544,7 @@ describe('Presence API', () => {
         expect.objectContaining({
           responseTimeMs: 150,
           messagesProcessed: 100,
-        }),
+        })
       );
     });
 
@@ -553,12 +586,16 @@ describe('Presence API', () => {
 
       mockHeartbeatService.sendHeartbeat.mockResolvedValue(undefined);
 
-      await mockHeartbeatService.sendHeartbeat(orchestratorId, daemonId, metrics);
+      await mockHeartbeatService.sendHeartbeat(
+        orchestratorId,
+        daemonId,
+        metrics
+      );
 
       expect(mockHeartbeatService.sendHeartbeat).toHaveBeenCalledWith(
         orchestratorId,
         daemonId,
-        metrics,
+        metrics
       );
     });
 
@@ -623,7 +660,8 @@ describe('Presence API', () => {
       });
 
       await mockHeartbeatService.sendHeartbeat(orchestratorId, daemonId);
-      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
+      const health =
+        await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.status).toBe('healthy');
       expect(health.missedHeartbeats).toBe(0);
@@ -655,7 +693,8 @@ describe('Presence API', () => {
         message: 'All systems operational',
       });
 
-      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
+      const health =
+        await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.orchestratorId).toBe(orchestratorId);
       expect(health.status).toBe('healthy');
@@ -674,7 +713,8 @@ describe('Presence API', () => {
         message: 'Missed 2 heartbeat(s)',
       });
 
-      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
+      const health =
+        await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.status).toBe('degraded');
       expect(health.missedHeartbeats).toBe(2);
@@ -693,7 +733,8 @@ describe('Presence API', () => {
         message: 'Orchestrator unresponsive - missed 6 consecutive heartbeats',
       });
 
-      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
+      const health =
+        await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.status).toBe('unhealthy');
       expect(health.missedHeartbeats).toBeGreaterThanOrEqual(3);
@@ -712,9 +753,12 @@ describe('Presence API', () => {
       const orchestratorId = 'orchestrator-123';
       const mockPresence = createMockOrchestratorPresence(orchestratorId);
 
-      mockPresenceService.getOrchestratorPresence.mockResolvedValue(mockPresence);
+      mockPresenceService.getOrchestratorPresence.mockResolvedValue(
+        mockPresence
+      );
 
-      const result = await mockPresenceService.getOrchestratorPresence(orchestratorId);
+      const result =
+        await mockPresenceService.getOrchestratorPresence(orchestratorId);
 
       expect(result.orchestratorId).toBe(orchestratorId);
       expect(result.status).toBe('online');
@@ -729,7 +773,8 @@ describe('Presence API', () => {
 
       mockPresenceService.getOrchestratorPresence.mockResolvedValue(null);
 
-      const result = await mockPresenceService.getOrchestratorPresence(orchestratorId);
+      const result =
+        await mockPresenceService.getOrchestratorPresence(orchestratorId);
 
       expect(result).toBeNull();
     });
@@ -741,9 +786,12 @@ describe('Presence API', () => {
       const orchestratorId = 'orchestrator-123';
       const mockPresence = createMockOrchestratorPresence(orchestratorId);
 
-      mockPresenceService.getOrchestratorPresence.mockResolvedValue(mockPresence);
+      mockPresenceService.getOrchestratorPresence.mockResolvedValue(
+        mockPresence
+      );
 
-      const result = await mockPresenceService.getOrchestratorPresence(orchestratorId);
+      const result =
+        await mockPresenceService.getOrchestratorPresence(orchestratorId);
 
       expect(result.daemonInfo).toBeDefined();
       expect(result.daemonInfo.daemonId).toBe(`daemon-${orchestratorId}`);
@@ -825,7 +873,11 @@ describe('Presence API', () => {
       const orgId = 'org-123';
 
       mockHeartbeatService.getUnhealthyVPs.mockResolvedValue([
-        { orchestratorId: 'orchestrator-1', organizationId: orgId, status: 'unhealthy' },
+        {
+          orchestratorId: 'orchestrator-1',
+          organizationId: orgId,
+          status: 'unhealthy',
+        },
       ]);
 
       const result = await mockHeartbeatService.getUnhealthyVPs(orgId);
@@ -845,11 +897,11 @@ describe('Presence API', () => {
       mockAuth.mockResolvedValue(session);
 
       mockPresenceService.setUserStatus.mockRejectedValue(
-        new Error('Redis connection refused'),
+        new Error('Redis connection refused')
       );
 
       await expect(
-        mockPresenceService.setUserStatus(session.user.id, 'online'),
+        mockPresenceService.setUserStatus(session.user.id, 'online')
       ).rejects.toThrow('Redis connection refused');
     });
 
@@ -869,11 +921,11 @@ describe('Presence API', () => {
       mockAuth.mockResolvedValue(session);
 
       mockPresenceService.getUserPresence.mockRejectedValue(
-        new Error('Request timeout'),
+        new Error('Request timeout')
       );
 
       await expect(
-        mockPresenceService.getUserPresence('user-123'),
+        mockPresenceService.getUserPresence('user-123')
       ).rejects.toThrow('Request timeout');
     });
   });

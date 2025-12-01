@@ -55,7 +55,16 @@ export interface RagFileSearchArgs {
 }
 
 export interface RagStoreManageArgs {
-  action: 'create' | 'delete' | 'list' | 'status' | 'index' | 'clear' | 'optimize' | 'backup' | 'restore';
+  action:
+    | 'create'
+    | 'delete'
+    | 'list'
+    | 'status'
+    | 'index'
+    | 'clear'
+    | 'optimize'
+    | 'backup'
+    | 'restore';
   storeName?: string;
   config?: {
     type?: string;

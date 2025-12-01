@@ -1,7 +1,11 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useDropzone, type DropzoneOptions, type FileRejection } from 'react-dropzone';
+import {
+  useDropzone,
+  type DropzoneOptions,
+  type FileRejection,
+} from 'react-dropzone';
 
 import { cn } from '@/lib/utils';
 import {
@@ -53,7 +57,9 @@ export function FileUploadZone({
         const errorCode = rejection.errors[0]?.code;
 
         if (errorCode === 'file-too-large') {
-          setError(`File is too large. Maximum size is ${formatFileSize(maxSize)}.`);
+          setError(
+            `File is too large. Maximum size is ${formatFileSize(maxSize)}.`
+          );
         } else if (errorCode === 'file-invalid-type') {
           setError('File type not supported.');
         } else if (errorCode === 'too-many-files') {
@@ -68,7 +74,7 @@ export function FileUploadZone({
         onFilesSelected(acceptedFiles);
       }
     },
-    [maxSize, maxFiles, onFilesSelected],
+    [maxSize, maxFiles, onFilesSelected]
   );
 
   const dropzoneOptions: DropzoneOptions = {
@@ -80,8 +86,13 @@ export function FileUploadZone({
     multiple: maxFiles > 1,
   };
 
-  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } =
-    useDropzone(dropzoneOptions);
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    isDragAccept,
+    isDragReject,
+  } = useDropzone(dropzoneOptions);
 
   const acceptTypes = accept
     ? Object.entries(accept)
@@ -105,10 +116,10 @@ export function FileUploadZone({
             'border-primary bg-primary/5': isDragActive && isDragAccept,
             'border-destructive bg-destructive/5': isDragReject,
             'cursor-not-allowed opacity-50': disabled,
-          },
+          }
         )}
       >
-        <input {...getInputProps()} aria-label="File upload input" />
+        <input {...getInputProps()} aria-label='File upload input' />
 
         {children || (
           <>
@@ -120,47 +131,47 @@ export function FileUploadZone({
                 {
                   'bg-primary/10': isDragActive && isDragAccept,
                   'bg-destructive/10': isDragReject,
-                },
+                }
               )}
             >
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                xmlns='http://www.w3.org/2000/svg'
+                width='24'
+                height='24'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
                 className={cn('h-8 w-8 text-muted-foreground', {
                   'text-primary': isDragActive && isDragAccept,
                   'text-destructive': isDragReject,
                 })}
               >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" x2="12" y1="3" y2="15" />
+                <path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' />
+                <polyline points='17 8 12 3 7 8' />
+                <line x1='12' x2='12' y1='3' y2='15' />
               </svg>
             </div>
 
             {/* Instructions */}
-            <div className="text-center">
+            <div className='text-center'>
               {isDragActive ? (
-                <p className="text-lg font-medium font-heading">
+                <p className='text-lg font-medium font-heading'>
                   {isDragAccept ? 'Drop files here' : 'File type not supported'}
                 </p>
               ) : (
                 <>
-                  <p className="text-lg font-medium font-heading">
+                  <p className='text-lg font-medium font-heading'>
                     Drag and drop files here, or{' '}
-                    <span className="text-primary">click to browse</span>
+                    <span className='text-primary'>click to browse</span>
                   </p>
-                  <p className="mt-2 text-sm text-muted-foreground font-sans">
+                  <p className='mt-2 text-sm text-muted-foreground font-sans'>
                     Accepts {acceptTypes} up to {formatFileSize(maxSize)}
                   </p>
                   {maxFiles > 1 && (
-                    <p className="text-sm text-muted-foreground font-sans">
+                    <p className='text-sm text-muted-foreground font-sans'>
                       Maximum {maxFiles} files at once
                     </p>
                   )}
@@ -174,24 +185,24 @@ export function FileUploadZone({
       {/* Error Message */}
       {error && (
         <div
-          className="mt-2 flex items-center gap-2 text-sm text-destructive font-sans"
-          role="alert"
-          aria-live="polite"
+          className='mt-2 flex items-center gap-2 text-sm text-destructive font-sans'
+          role='alert'
+          aria-live='polite'
         >
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            xmlns='http://www.w3.org/2000/svg'
+            width='16'
+            height='16'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
           >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" x2="12" y1="8" y2="12" />
-            <line x1="12" x2="12.01" y1="16" y2="16" />
+            <circle cx='12' cy='12' r='10' />
+            <line x1='12' x2='12' y1='8' y2='12' />
+            <line x1='12' x2='12.01' y1='16' y2='16' />
           </svg>
           <span>{error}</span>
         </div>

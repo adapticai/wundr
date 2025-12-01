@@ -182,7 +182,7 @@ export class ImagePreprocessor {
    */
   async prepareForOCR(
     image: Buffer,
-    options: PreprocessOptions = DEFAULT_PREPROCESS_OPTIONS,
+    options: PreprocessOptions = DEFAULT_PREPROCESS_OPTIONS
   ): Promise<Buffer> {
     let pipeline = sharp(image);
 
@@ -424,7 +424,7 @@ export class ImagePreprocessor {
   async batchProcess(
     images: Buffer[],
     options: PreprocessOptions = DEFAULT_PREPROCESS_OPTIONS,
-    onProgress?: (current: number, total: number) => void,
+    onProgress?: (current: number, total: number) => void
   ): Promise<Buffer[]> {
     const results: Buffer[] = [];
 

@@ -61,7 +61,7 @@ export const userResolvers = {
     me: async (
       _parent: unknown,
       _args: unknown,
-      context: GraphQLContext,
+      context: GraphQLContext
     ): Promise<ContextUser | null> => {
       if (!isAuthenticated(context)) {
         return null;
@@ -110,7 +110,7 @@ export const userResolvers = {
     user: async (
       _parent: unknown,
       args: UserQueryArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -150,7 +150,7 @@ export const userResolvers = {
     users: async (
       _parent: unknown,
       args: UsersQueryArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -202,7 +202,7 @@ export const userResolvers = {
     updateProfile: async (
       _parent: unknown,
       args: UpdateProfileArgs,
-      context: GraphQLContext,
+      context: GraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {

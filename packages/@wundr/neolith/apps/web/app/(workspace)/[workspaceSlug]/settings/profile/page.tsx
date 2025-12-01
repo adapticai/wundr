@@ -4,7 +4,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -112,7 +118,8 @@ export default function ProfileSettingsPage() {
         } catch (error) {
           toast({
             title: 'Error',
-            description: error instanceof Error ? error.message : 'Failed to save changes',
+            description:
+              error instanceof Error ? error.message : 'Failed to save changes',
             variant: 'destructive',
           });
         }
@@ -124,7 +131,7 @@ export default function ProfileSettingsPage() {
   // Handle field changes with auto-save
   const handleFieldChange = useCallback(
     (field: keyof ProfileData, value: string) => {
-      setProfileData((prev) => {
+      setProfileData(prev => {
         const updated = { ...prev, [field]: value };
         debouncedSave({ [field]: value });
         return updated;
@@ -184,7 +191,7 @@ export default function ProfileSettingsPage() {
 
       const result = await response.json();
 
-      setProfileData((prev) => ({
+      setProfileData(prev => ({
         ...prev,
         avatar: result.avatar?.url || prev.avatar,
       }));
@@ -201,7 +208,8 @@ export default function ProfileSettingsPage() {
       setAvatarPreview(null);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to upload avatar',
+        description:
+          error instanceof Error ? error.message : 'Failed to upload avatar',
         variant: 'destructive',
       });
     } finally {
@@ -212,7 +220,9 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
     uploadAvatar(file);
@@ -269,7 +279,7 @@ export default function ProfileSettingsPage() {
     return name
       ? name
           .split(' ')
-          .map((n) => n[0])
+          .map(n => n[0])
           .join('')
           .toUpperCase()
       : 'U';
@@ -282,16 +292,16 @@ export default function ProfileSettingsPage() {
       timeZoneName: 'short',
     })
       .formatToParts(now)
-      .find((part) => part.type === 'timeZoneName')?.value;
+      .find(part => part.type === 'timeZoneName')?.value;
 
     return `${tz.replace(/_/g, ' ')} ${offset ? `(${offset})` : ''}`;
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className='text-2xl font-bold'>Profile</h1>
+        <p className='mt-1 text-muted-foreground'>
           Manage your profile identity and how others see you.
         </p>
       </div>
@@ -304,10 +314,10 @@ export default function ProfileSettingsPage() {
             Customize how you appear across the workspace.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className='space-y-6'>
           {/* Avatar Upload with Drag & Drop */}
           <div>
-            <Label className="mb-3 block">Profile Picture</Label>
+            <Label className='mb-3 block'>Profile Picture</Label>
             <div
               className={`relative flex items-center gap-6 rounded-lg border-2 border-dashed p-4 transition-colors ${
                 isDraggingOver
@@ -319,49 +329,49 @@ export default function ProfileSettingsPage() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              <div className="relative">
-                <Avatar className="h-20 w-20" shape="lg">
+              <div className='relative'>
+                <Avatar className='h-20 w-20' shape='lg'>
                   <AvatarImage
                     src={avatarPreview || profileData.avatar}
                     alt={profileData.name}
                   />
-                  <AvatarFallback className="text-lg" shape="lg">
+                  <AvatarFallback className='text-lg' shape='lg'>
                     {getInitials(profileData.name)}
                   </AvatarFallback>
                 </Avatar>
                 {isUploadingAvatar && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
-                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  <div className='absolute inset-0 flex items-center justify-center rounded-lg bg-black/60'>
+                    <Loader2 className='h-6 w-6 animate-spin text-white' />
                   </div>
                 )}
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
+              <div className='flex-1'>
+                <div className='flex items-center gap-3'>
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant='outline'
+                    size='sm'
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingAvatar}
                   >
-                    <Upload className="mr-2 h-4 w-4" />
+                    <Upload className='mr-2 h-4 w-4' />
                     {isUploadingAvatar ? 'Uploading...' : 'Upload Photo'}
                   </Button>
                   {isDraggingOver && (
-                    <span className="text-sm font-medium text-primary">
+                    <span className='text-sm font-medium text-primary'>
                       Drop to upload
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Drag and drop an image, or click to browse. JPG, PNG, WebP or GIF. Max
-                  10MB.
+                <p className='mt-2 text-xs text-muted-foreground'>
+                  Drag and drop an image, or click to browse. JPG, PNG, WebP or
+                  GIF. Max 10MB.
                 </p>
                 <input
                   ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
+                  type='file'
+                  accept='image/jpeg,image/png,image/webp,image/gif'
+                  className='hidden'
                   onChange={handleAvatarChange}
                   disabled={isUploadingAvatar}
                 />
@@ -370,9 +380,9 @@ export default function ProfileSettingsPage() {
           </div>
 
           {/* Display Name */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="display-name">Display Name</Label>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor='display-name'>Display Name</Label>
               <span
                 className={`text-xs ${
                   profileData.name.length > DISPLAY_NAME_LIMIT
@@ -384,63 +394,63 @@ export default function ProfileSettingsPage() {
               </span>
             </div>
             <Input
-              id="display-name"
-              type="text"
-              placeholder="How you want to be called"
+              id='display-name'
+              type='text'
+              placeholder='How you want to be called'
               value={profileData.name}
-              onChange={(e) => {
+              onChange={e => {
                 const value = e.target.value.slice(0, DISPLAY_NAME_LIMIT);
                 handleFieldChange('name', value);
               }}
               maxLength={DISPLAY_NAME_LIMIT}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               This is the name that appears across the workspace.
             </p>
           </div>
 
           {/* Full Name */}
-          <div className="space-y-2">
-            <Label htmlFor="full-name">Full Name</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='full-name'>Full Name</Label>
             <Input
-              id="full-name"
-              type="text"
-              placeholder="Your full legal name"
+              id='full-name'
+              type='text'
+              placeholder='Your full legal name'
               value={profileData.fullName}
-              onChange={(e) => handleFieldChange('fullName', e.target.value)}
+              onChange={e => handleFieldChange('fullName', e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               Your complete name for official records.
             </p>
           </div>
 
           {/* Title/Role */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Title / Role (optional)</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='title'>Title / Role (optional)</Label>
             <Input
-              id="title"
-              type="text"
-              placeholder="e.g., Senior Designer, Product Manager"
+              id='title'
+              type='text'
+              placeholder='e.g., Senior Designer, Product Manager'
               value={profileData.title}
-              onChange={(e) => handleFieldChange('title', e.target.value)}
+              onChange={e => handleFieldChange('title', e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               Your job title or role within the organization.
             </p>
           </div>
 
           {/* Pronouns */}
-          <div className="space-y-2">
-            <Label htmlFor="pronouns">Pronouns (optional)</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='pronouns'>Pronouns (optional)</Label>
             <Select
               value={profileData.pronouns}
-              onValueChange={(value) => handleFieldChange('pronouns', value)}
+              onValueChange={value => handleFieldChange('pronouns', value)}
             >
-              <SelectTrigger id="pronouns">
-                <SelectValue placeholder="Select your pronouns" />
+              <SelectTrigger id='pronouns'>
+                <SelectValue placeholder='Select your pronouns' />
               </SelectTrigger>
               <SelectContent>
-                {PRONOUN_OPTIONS.map((option) => (
+                {PRONOUN_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -449,22 +459,24 @@ export default function ProfileSettingsPage() {
             </Select>
             {profileData.pronouns === 'custom' && (
               <Input
-                type="text"
-                placeholder="Enter your pronouns"
+                type='text'
+                placeholder='Enter your pronouns'
                 value={profileData.customPronouns}
-                onChange={(e) => handleFieldChange('customPronouns', e.target.value)}
-                className="mt-2"
+                onChange={e =>
+                  handleFieldChange('customPronouns', e.target.value)
+                }
+                className='mt-2'
               />
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               Help others know how to refer to you.
             </p>
           </div>
 
           {/* Status Message */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="status-message">Status Message (optional)</Label>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor='status-message'>Status Message (optional)</Label>
               <span
                 className={`text-xs ${
                   profileData.statusMessage.length > STATUS_MESSAGE_LIMIT
@@ -476,43 +488,45 @@ export default function ProfileSettingsPage() {
               </span>
             </div>
             <Textarea
-              id="status-message"
+              id='status-message'
               placeholder="What's your current status? e.g., On vacation, In a meeting, Available"
               value={profileData.statusMessage}
-              onChange={(e) => {
+              onChange={e => {
                 const value = e.target.value.slice(0, STATUS_MESSAGE_LIMIT);
                 handleFieldChange('statusMessage', value);
               }}
               maxLength={STATUS_MESSAGE_LIMIT}
               rows={2}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               Let others know what you're up to or your availability.
             </p>
           </div>
 
           {/* Time Zone - Informational */}
-          <div className="space-y-2">
+          <div className='space-y-2'>
             <Label>Time Zone</Label>
-            <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
-              <span className="flex-1 text-sm">{formatTimeZone(userTimeZone)}</span>
+            <div className='flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2'>
+              <span className='flex-1 text-sm'>
+                {formatTimeZone(userTimeZone)}
+              </span>
               <Link
-                href="./language-region"
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                href='./language-region'
+                className='flex items-center gap-1 text-xs text-primary hover:underline'
               >
-                <Info className="h-3 w-3" />
+                <Info className='h-3 w-3' />
                 Change in Language & Region
               </Link>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               Your local time zone is detected automatically.
             </p>
           </div>
 
           {/* Auto-save indicator */}
-          <div className="flex items-center gap-2 rounded-md bg-muted/50 p-3">
-            <Info className="h-4 w-4 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">
+          <div className='flex items-center gap-2 rounded-md bg-muted/50 p-3'>
+            <Info className='h-4 w-4 text-muted-foreground' />
+            <p className='text-xs text-muted-foreground'>
               Changes are saved automatically as you type.
             </p>
           </div>

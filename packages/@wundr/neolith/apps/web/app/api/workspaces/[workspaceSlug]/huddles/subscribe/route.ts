@@ -15,7 +15,11 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { addSubscriber, removeSubscriber, getWorkspaceHuddles } from '@/lib/huddles/store';
+import {
+  addSubscriber,
+  removeSubscriber,
+  getWorkspaceHuddles,
+} from '@/lib/huddles/store';
 import {
   createErrorResponse,
   ORG_ERROR_CODES,
@@ -41,14 +45,17 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<Response> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -64,8 +71,11 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', ORG_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -82,7 +92,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         createErrorResponse('Access denied', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -113,7 +123,7 @@ export async function GET(
             type: 'init',
             huddles,
             timestamp: new Date().toISOString(),
-          })}\n\n`,
+          })}\n\n`
         );
 
         try {
@@ -150,10 +160,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/huddles/subscribe] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/huddles/subscribe] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

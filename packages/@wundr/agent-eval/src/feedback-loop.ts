@@ -57,16 +57,16 @@ export class FeedbackLoop {
       }>;
       rubricSuggestions?: string;
       tags?: string[];
-    },
+    }
   ): HumanFeedback {
     // Find the test result
     const testResult = evalResults.testResults.find(
-      r => r.testCaseId === testCaseId && r.iteration === iteration,
+      r => r.testCaseId === testCaseId && r.iteration === iteration
     );
 
     if (!testResult) {
       throw new Error(
-        `Test result not found: ${testCaseId} iteration ${iteration}`,
+        `Test result not found: ${testCaseId} iteration ${iteration}`
       );
     }
 
@@ -105,7 +105,7 @@ export class FeedbackLoop {
    */
   sampleForReview(
     evalResults: EvalResults,
-    options: SampleForReviewOptions,
+    options: SampleForReviewOptions
   ): TestCaseResult[] {
     const { strategy, sampleSize } = options;
     let candidates = [...evalResults.testResults];
@@ -183,7 +183,7 @@ export class FeedbackLoop {
    */
   analyzeFailures(
     evalResults: EvalResults,
-    useCache: boolean = true,
+    useCache: boolean = true
   ): FailureAnalysis {
     if (useCache && this.analysisCache.has(evalResults.runId)) {
       return this.analysisCache.get(evalResults.runId)!;
@@ -256,7 +256,7 @@ export class FeedbackLoop {
 
     // Count rubric suggestions
     const rubricSuggestionCount = allFeedback.filter(
-      f => f.rubricSuggestions && f.rubricSuggestions.trim().length > 0,
+      f => f.rubricSuggestions && f.rubricSuggestions.trim().length > 0
     ).length;
 
     return {
@@ -276,7 +276,7 @@ export class FeedbackLoop {
    */
   calculateReliability(
     runId: string,
-    evalResults: EvalResults,
+    evalResults: EvalResults
   ): {
     correlation: number;
     meanAbsoluteError: number;
@@ -294,7 +294,7 @@ export class FeedbackLoop {
       if (feedback && feedback.length > 0) {
         // Use the most recent feedback with a suggested score
         const relevantFeedback = feedback.find(
-          f => f.suggestedScore !== undefined,
+          f => f.suggestedScore !== undefined
         );
         if (relevantFeedback) {
           llmScores.push(result.score);
@@ -330,7 +330,7 @@ export class FeedbackLoop {
   getFeedback(
     runId: string,
     testCaseId: string,
-    iteration: number,
+    iteration: number
   ): HumanFeedback[] {
     const key = `${runId}:${testCaseId}:${iteration}`;
     return this.feedbackStore.get(key) || [];
@@ -520,7 +520,7 @@ export function summarizeFailureAnalysis(analysis: FailureAnalysis): string {
     lines.push('## Commonly Failing Criteria');
     for (const criterion of analysis.commonFailingCriteria) {
       lines.push(
-        `- ${criterion.criterionName}: ${(criterion.failureRate * 100).toFixed(1)}% failure rate (avg score: ${criterion.avgScore.toFixed(1)})`,
+        `- ${criterion.criterionName}: ${(criterion.failureRate * 100).toFixed(1)}% failure rate (avg score: ${criterion.avgScore.toFixed(1)})`
       );
     }
     lines.push('');

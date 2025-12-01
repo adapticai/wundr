@@ -37,7 +37,7 @@ import {
   type QueueErrorEvent,
 } from './types';
 
-import type { Job} from 'bullmq';
+import type { Job } from 'bullmq';
 
 /**
  * Default configuration for Redis queue
@@ -108,7 +108,10 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
    * @param config - Queue configuration
    * @param processorRegistry - Optional processor registry for job handling
    */
-  constructor(config: Partial<RedisQueueConfig> = {}, processorRegistry?: ProcessorRegistry) {
+  constructor(
+    config: Partial<RedisQueueConfig> = {},
+    processorRegistry?: ProcessorRegistry
+  ) {
     super(config.queue?.name ?? DEFAULT_CONFIG.queue.name!);
     this.config = this.mergeConfig(config);
     this.processorRegistry = processorRegistry ?? null;
@@ -128,10 +131,18 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
         ...config.queue,
       },
       deadLetterQueue: {
-        enabled: config.deadLetterQueue?.enabled ?? DEFAULT_CONFIG.deadLetterQueue!.enabled,
-        queueName: config.deadLetterQueue?.queueName ?? DEFAULT_CONFIG.deadLetterQueue!.queueName,
-        maxSize: config.deadLetterQueue?.maxSize ?? DEFAULT_CONFIG.deadLetterQueue!.maxSize,
-        retentionTime: config.deadLetterQueue?.retentionTime ?? DEFAULT_CONFIG.deadLetterQueue!.retentionTime,
+        enabled:
+          config.deadLetterQueue?.enabled ??
+          DEFAULT_CONFIG.deadLetterQueue!.enabled,
+        queueName:
+          config.deadLetterQueue?.queueName ??
+          DEFAULT_CONFIG.deadLetterQueue!.queueName,
+        maxSize:
+          config.deadLetterQueue?.maxSize ??
+          DEFAULT_CONFIG.deadLetterQueue!.maxSize,
+        retentionTime:
+          config.deadLetterQueue?.retentionTime ??
+          DEFAULT_CONFIG.deadLetterQueue!.retentionTime,
       },
     };
   }
@@ -167,8 +178,11 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
       // Wait for connection
       await new Promise<void>((resolve, reject) => {
         this.connection!.on('connect', () => resolve());
-        this.connection!.on('error', (err) => reject(err));
-        setTimeout(() => reject(new Error('Redis connection timeout')), this.config.connection.connectTimeout);
+        this.connection!.on('error', err => reject(err));
+        setTimeout(
+          () => reject(new Error('Redis connection timeout')),
+          this.config.connection.connectTimeout
+        );
       });
 
       // Create main queue
@@ -191,20 +205,23 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
 
       // Create dead letter queue if enabled
       if (this.config.deadLetterQueue?.enabled) {
-        this.deadLetterQueue = new Queue(this.config.deadLetterQueue.queueName!, {
-          connection: this.connection.duplicate(),
-        });
+        this.deadLetterQueue = new Queue(
+          this.config.deadLetterQueue.queueName!,
+          {
+            connection: this.connection.duplicate(),
+          }
+        );
       }
 
       // Create worker
       this.worker = new Worker(
         this.config.queue.name!,
-        async (job) => this.processJob(job),
+        async job => this.processJob(job),
         {
           connection: this.connection.duplicate(),
           concurrency: this.config.queue.concurrency!,
           stalledInterval: this.config.queue.stalledJobInterval,
-        },
+        }
       );
 
       // Create queue events listener
@@ -231,8 +248,8 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
    */
   private setupEventHandlers(): void {
     if (!this.worker || !this.queueEvents) {
-return;
-}
+      return;
+    }
 
     // Worker events
     this.worker.on('completed', (job: Job, result: ProcessingResult) => {
@@ -245,10 +262,10 @@ return;
 
     this.worker.on('failed', (job: Job | undefined, error: Error) => {
       if (!job) {
-return;
-}
+        return;
+      }
 
-      const willRetry = job.attemptsMade < (this.config.queue.maxRetries! + 1);
+      const willRetry = job.attemptsMade < this.config.queue.maxRetries! + 1;
 
       this.emit<JobFailedEvent>(QueueEvent.JOB_FAILED, {
         jobId: job.id!,
@@ -260,7 +277,7 @@ return;
 
       // Move to dead letter queue if exhausted retries
       if (!willRetry && this.deadLetterQueue) {
-        this.moveToDeadLetterQueue(job, error).catch((dlqError) => {
+        this.moveToDeadLetterQueue(job, error).catch(dlqError => {
           console.error('Failed to move job to DLQ:', dlqError);
         });
       }
@@ -303,11 +320,17 @@ return;
     });
 
     this.queueEvents.on('progress', ({ jobId, data }) => {
-      const progress = typeof data === 'number' ? data : (data as { progress?: number })?.progress ?? 0;
+      const progress =
+        typeof data === 'number'
+          ? data
+          : ((data as { progress?: number })?.progress ?? 0);
       this.emit<JobProgressEvent>(QueueEvent.JOB_PROGRESS, {
         jobId,
         progress,
-        message: typeof data === 'object' ? (data as { message?: string })?.message : undefined,
+        message:
+          typeof data === 'object'
+            ? (data as { message?: string })?.message
+            : undefined,
       });
     });
   }
@@ -365,8 +388,8 @@ return;
    */
   private async moveToDeadLetterQueue(job: Job, error: Error): Promise<void> {
     if (!this.deadLetterQueue) {
-return;
-}
+      return;
+    }
 
     await this.deadLetterQueue.add(
       'dead-letter',
@@ -379,9 +402,11 @@ return;
       },
       {
         removeOnComplete: {
-          age: Math.floor((this.config.deadLetterQueue?.retentionTime ?? 604800000) / 1000),
+          age: Math.floor(
+            (this.config.deadLetterQueue?.retentionTime ?? 604800000) / 1000
+          ),
         },
-      },
+      }
     );
   }
 
@@ -390,8 +415,8 @@ return;
    */
   async close(): Promise<void> {
     if (!this.ready) {
-return;
-}
+      return;
+    }
 
     this.ready = false;
 
@@ -434,7 +459,9 @@ return;
     this.ensureReady();
 
     const jobId = this.generateJobId();
-    const priority = this.normalizePriority(job.priority ?? this.config.queue.defaultPriority ?? 5);
+    const priority = this.normalizePriority(
+      job.priority ?? this.config.queue.defaultPriority ?? 5
+    );
 
     const bullJob = await this.queue!.add(job.type, job, {
       jobId,
@@ -456,19 +483,21 @@ return;
   async addBulkJobs(jobs: ProcessingJob[]): Promise<string[]> {
     this.ensureReady();
 
-    const bulkJobs = jobs.map((job) => ({
+    const bulkJobs = jobs.map(job => ({
       name: job.type,
       data: job,
       opts: {
         jobId: this.generateJobId(),
-        priority: this.normalizePriority(job.priority ?? this.config.queue.defaultPriority ?? 5),
+        priority: this.normalizePriority(
+          job.priority ?? this.config.queue.defaultPriority ?? 5
+        ),
         delay: job.delay,
       },
     }));
 
     const addedJobs = await this.queue!.addBulk(bulkJobs);
 
-    const jobIds = addedJobs.map((j) => j.id!);
+    const jobIds = addedJobs.map(j => j.id!);
 
     // Emit events for each job
     jobs.forEach((job, index) => {
@@ -489,8 +518,8 @@ return;
 
     const job = await this.queue!.getJob(jobId);
     if (!job) {
-return null;
-}
+      return null;
+    }
 
     return this.mapJobToInfo(job);
   }
@@ -503,8 +532,8 @@ return null;
 
     const job = await this.queue!.getJob(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
 
     const state = await job.getState();
     if (state === 'active') {
@@ -523,8 +552,8 @@ return false;
 
     const job = await this.queue!.getJob(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
 
     const state = await job.getState();
     if (state !== 'failed') {
@@ -538,7 +567,11 @@ return false;
   /**
    * Update job progress
    */
-  async updateProgress(jobId: string, progress: number, message?: string): Promise<void> {
+  async updateProgress(
+    jobId: string,
+    progress: number,
+    message?: string
+  ): Promise<void> {
     this.ensureReady();
 
     const job = await this.queue!.getJob(jobId);
@@ -637,7 +670,7 @@ return false;
   async getActiveJobs(limit = 100): Promise<JobInfo[]> {
     this.ensureReady();
     const jobs = await this.queue!.getActive(0, limit - 1);
-    return Promise.all(jobs.map((job) => this.mapJobToInfo(job)));
+    return Promise.all(jobs.map(job => this.mapJobToInfo(job)));
   }
 
   /**
@@ -646,7 +679,7 @@ return false;
   async getWaitingJobs(limit = 100): Promise<JobInfo[]> {
     this.ensureReady();
     const jobs = await this.queue!.getWaiting(0, limit - 1);
-    return Promise.all(jobs.map((job) => this.mapJobToInfo(job)));
+    return Promise.all(jobs.map(job => this.mapJobToInfo(job)));
   }
 
   /**
@@ -655,7 +688,7 @@ return false;
   async getFailedJobs(limit = 100): Promise<JobInfo[]> {
     this.ensureReady();
     const jobs = await this.queue!.getFailed(0, limit - 1);
-    return Promise.all(jobs.map((job) => this.mapJobToInfo(job)));
+    return Promise.all(jobs.map(job => this.mapJobToInfo(job)));
   }
 
   /**
@@ -664,7 +697,7 @@ return false;
   async getCompletedJobs(limit = 100): Promise<JobInfo[]> {
     this.ensureReady();
     const jobs = await this.queue!.getCompleted(0, limit - 1);
-    return Promise.all(jobs.map((job) => this.mapJobToInfo(job)));
+    return Promise.all(jobs.map(job => this.mapJobToInfo(job)));
   }
 
   /**
@@ -673,7 +706,7 @@ return false;
   async getDelayedJobs(limit = 100): Promise<JobInfo[]> {
     this.ensureReady();
     const jobs = await this.queue!.getDelayed(0, limit - 1);
-    return Promise.all(jobs.map((job) => this.mapJobToInfo(job)));
+    return Promise.all(jobs.map(job => this.mapJobToInfo(job)));
   }
 
   /**
@@ -692,10 +725,18 @@ return false;
       this.queue!.getFailed(0, 100),
     ]);
 
-    const allJobs = [...waiting, ...active, ...delayed, ...completed, ...failed];
-    const matchingJobs = allJobs.filter((job) => (job.data as ProcessingJob).fileId === fileId);
+    const allJobs = [
+      ...waiting,
+      ...active,
+      ...delayed,
+      ...completed,
+      ...failed,
+    ];
+    const matchingJobs = allJobs.filter(
+      job => (job.data as ProcessingJob).fileId === fileId
+    );
 
-    return Promise.all(matchingJobs.map((job) => this.mapJobToInfo(job)));
+    return Promise.all(matchingJobs.map(job => this.mapJobToInfo(job)));
   }
 
   /**
@@ -703,7 +744,9 @@ return false;
    */
   private async mapJobToInfo(job: Job): Promise<JobInfo> {
     const state = await job.getState();
-    const progress = job.progress as { progress?: number; message?: string } | number;
+    const progress = job.progress as
+      | { progress?: number; message?: string }
+      | number;
 
     return {
       id: job.id!,
@@ -711,14 +754,19 @@ return false;
       status: this.mapBullStateToStatus(state),
       attempts: job.attemptsMade,
       maxAttempts: job.opts.attempts ?? this.config.queue.maxRetries! + 1,
-      progress: typeof progress === 'number' ? progress : progress?.progress ?? 0,
-      progressMessage: typeof progress === 'object' ? progress?.message : undefined,
+      progress:
+        typeof progress === 'number' ? progress : (progress?.progress ?? 0),
+      progressMessage:
+        typeof progress === 'object' ? progress?.message : undefined,
       createdAt: new Date(job.timestamp),
       startedAt: job.processedOn ? new Date(job.processedOn) : undefined,
       finishedAt: job.finishedOn ? new Date(job.finishedOn) : undefined,
       result: job.returnvalue as ProcessingResult | undefined,
       error: job.failedReason,
-      duration: job.finishedOn && job.processedOn ? job.finishedOn - job.processedOn : undefined,
+      duration:
+        job.finishedOn && job.processedOn
+          ? job.finishedOn - job.processedOn
+          : undefined,
     };
   }
 
@@ -740,8 +788,13 @@ return false;
   /**
    * Map JobStatus to BullMQ state
    */
-  private mapStatusToBullState(status: JobStatus): 'completed' | 'failed' | 'wait' | 'active' | 'delayed' | 'paused' {
-    const statusMap: Record<JobStatus, 'completed' | 'failed' | 'wait' | 'active' | 'delayed' | 'paused'> = {
+  private mapStatusToBullState(
+    status: JobStatus
+  ): 'completed' | 'failed' | 'wait' | 'active' | 'delayed' | 'paused' {
+    const statusMap: Record<
+      JobStatus,
+      'completed' | 'failed' | 'wait' | 'active' | 'delayed' | 'paused'
+    > = {
       [JobStatus.WAITING]: 'wait',
       [JobStatus.ACTIVE]: 'active',
       [JobStatus.COMPLETED]: 'completed',
@@ -781,7 +834,7 @@ return false;
  */
 export function createRedisProcessingQueue(
   config?: Partial<RedisQueueConfig>,
-  processorRegistry?: ProcessorRegistry,
+  processorRegistry?: ProcessorRegistry
 ): RedisProcessingQueue {
   return new RedisProcessingQueue(config, processorRegistry);
 }

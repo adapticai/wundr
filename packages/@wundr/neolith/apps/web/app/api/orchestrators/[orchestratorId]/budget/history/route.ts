@@ -21,7 +21,12 @@ import {
   createErrorResponse,
   BUDGET_ERROR_CODES,
 } from '@/lib/validations/token-budget';
-import type { UsageHistoryQuery, UsageHistoryEntry, TimeRangePreset, Granularity } from '@/lib/validations/token-budget';
+import type {
+  UsageHistoryQuery,
+  UsageHistoryEntry,
+  TimeRangePreset,
+  Granularity,
+} from '@/lib/validations/token-budget';
 
 /**
  * Route context with orchestrator ID parameter
@@ -33,13 +38,16 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an orchestrator
  */
-async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: string) {
+async function getOrchestratorWithAccessCheck(
+  orchestratorId: string,
+  userId: string
+) {
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
@@ -59,7 +67,10 @@ async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: st
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
@@ -69,7 +80,10 @@ async function getOrchestratorWithAccessCheck(orchestratorId: string, userId: st
 /**
  * Calculate date range from preset
  */
-function getDateRangeFromPreset(preset: TimeRangePreset): { start: Date; end: Date } {
+function getDateRangeFromPreset(preset: TimeRangePreset): {
+  start: Date;
+  end: Date;
+} {
   const now = new Date();
   const end = new Date(now);
   const start = new Date(now);
@@ -151,7 +165,7 @@ async function queryUsageHistory(
   endDate: Date,
   granularity: Granularity,
   limit: number,
-  offset: number,
+  offset: number
 ): Promise<{ entries: UsageHistoryEntry[]; total: number }> {
   const dateTrunc = getDateTruncForGranularity(granularity);
   const interval = getIntervalForGranularity(granularity);
@@ -196,13 +210,15 @@ async function queryUsageHistory(
 
   const total = Number(countResult[0]?.count ?? 0);
 
-  const usageEntries: UsageHistoryEntry[] = entries.map((entry) => ({
+  const usageEntries: UsageHistoryEntry[] = entries.map(entry => ({
     periodStart: entry.period_start,
     periodEnd: entry.period_end,
     tokensUsed: Number(entry.tokens_used),
     requestCount: Number(entry.request_count),
     avgTokensPerRequest: Number(entry.avg_tokens),
-    peakTokensPerRequest: entry.peak_tokens ? Number(entry.peak_tokens) : undefined,
+    peakTokensPerRequest: entry.peak_tokens
+      ? Number(entry.peak_tokens)
+      : undefined,
   }));
 
   return { entries: usageEntries, total };
@@ -228,15 +244,18 @@ async function queryUsageHistory(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', BUDGET_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          BUDGET_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -245,8 +264,11 @@ export async function GET(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid orchestrator ID format', BUDGET_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid orchestrator ID format',
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -268,24 +290,27 @@ export async function GET(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const query: UsageHistoryQuery = parseResult.data;
 
     // Get orchestrator with access check
-    const orchestrator = await getOrchestratorWithAccessCheck(params.orchestratorId, session.user.id);
+    const orchestrator = await getOrchestratorWithAccessCheck(
+      params.orchestratorId,
+      session.user.id
+    );
 
     if (!orchestrator) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -298,9 +323,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'startDate and endDate are required for CUSTOM time range',
-            BUDGET_ERROR_CODES.INVALID_TIME_RANGE,
+            BUDGET_ERROR_CODES.INVALID_TIME_RANGE
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
       startDate = new Date(query.startDate);
@@ -316,9 +341,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'startDate must be before endDate',
-          BUDGET_ERROR_CODES.INVALID_TIME_RANGE,
+          BUDGET_ERROR_CODES.INVALID_TIME_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -329,13 +354,20 @@ export async function GET(
       endDate,
       query.granularity,
       query.limit,
-      query.offset,
+      query.offset
     );
 
     // Calculate summary statistics
-    const totalTokens = entries.reduce((sum, entry) => sum + entry.tokensUsed, 0);
-    const totalRequests = entries.reduce((sum, entry) => sum + entry.requestCount, 0);
-    const avgTokensPerRequest = totalRequests > 0 ? totalTokens / totalRequests : 0;
+    const totalTokens = entries.reduce(
+      (sum, entry) => sum + entry.tokensUsed,
+      0
+    );
+    const totalRequests = entries.reduce(
+      (sum, entry) => sum + entry.requestCount,
+      0
+    );
+    const avgTokensPerRequest =
+      totalRequests > 0 ? totalTokens / totalRequests : 0;
 
     return NextResponse.json({
       data: {
@@ -363,13 +395,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/orchestrators/:orchestratorId/budget/history] Error:', error);
+    console.error(
+      '[GET /api/orchestrators/:orchestratorId/budget/history] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

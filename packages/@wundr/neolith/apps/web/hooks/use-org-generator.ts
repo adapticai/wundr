@@ -119,7 +119,8 @@ const GENERATION_STEPS: Record<GenerationState, GenerationStep> = {
   'creating-orchestrators': {
     state: 'creating-orchestrators',
     label: 'Creating Orchestrators',
-    description: 'Generating Orchestrator orchestrators and assigning disciplines',
+    description:
+      'Generating Orchestrator orchestrators and assigning disciplines',
   },
   'creating-workflows': {
     state: 'creating-workflows',
@@ -194,14 +195,17 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
   /**
    * Update generation state with simulated progress
    */
-  const updateState = useCallback((newState: GenerationState, warnings: string[] = []) => {
-    setState((prev) => ({
-      ...prev,
-      currentState: newState,
-      progress: calculateProgress(newState),
-      warnings: [...prev.warnings, ...warnings],
-    }));
-  }, []);
+  const updateState = useCallback(
+    (newState: GenerationState, warnings: string[] = []) => {
+      setState(prev => ({
+        ...prev,
+        currentState: newState,
+        progress: calculateProgress(newState),
+        warnings: [...prev.warnings, ...warnings],
+      }));
+    },
+    []
+  );
 
   /**
    * Simulate progress through generation states
@@ -210,15 +214,15 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
   const simulateProgress = useCallback(async () => {
     // Start with workspace creation
     updateState('creating-workspace');
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     // Move to orchestrators
     updateState('creating-orchestrators');
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     // Move to workflows
     updateState('creating-workflows');
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 800));
   }, [updateState]);
 
   /**
@@ -259,7 +263,8 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
 
         if (!response.ok) {
           const errorMessage =
-            data.error?.message || `Generation failed with status ${response.status}`;
+            data.error?.message ||
+            `Generation failed with status ${response.status}`;
           throw new Error(errorMessage);
         }
 
@@ -268,7 +273,7 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
 
         const result: GenerationResult = data;
 
-        setState((prev) => ({
+        setState(prev => ({
           ...prev,
           isGenerating: false,
           result,
@@ -276,9 +281,10 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
 
         return result;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error occurred';
 
-        setState((prev) => ({
+        setState(prev => ({
           ...prev,
           isGenerating: false,
           currentState: 'error',
@@ -289,7 +295,7 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
         throw error;
       }
     },
-    [simulateProgress, updateState],
+    [simulateProgress, updateState]
   );
 
   /**

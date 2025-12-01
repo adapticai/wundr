@@ -70,15 +70,20 @@ export interface MockQueueOptions {
  * Create a mock PDF processor for testing
  */
 export function createMockPdfProcessor(options: MockProcessorOptions = {}) {
-  const { delay = 0, shouldFail = false, errorMessage = 'Mock PDF error', customResult } = options;
+  const {
+    delay = 0,
+    shouldFail = false,
+    errorMessage = 'Mock PDF error',
+    customResult,
+  } = options;
 
   const process = vi.fn(
     async (
       filePath: string,
-      processingOptions: ProcessingOptions = {},
+      processingOptions: ProcessingOptions = {}
     ): Promise<ProcessorResult> => {
       if (delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
       if (shouldFail) {
@@ -88,21 +93,24 @@ export function createMockPdfProcessor(options: MockProcessorOptions = {}) {
       const filename = filePath.split('/').pop() ?? 'document.pdf';
       const pageCount = processingOptions.maxPages ?? 10;
 
-      const pages: PageContent[] = Array.from({ length: pageCount }, (_, i) => ({
-        pageNumber: i + 1,
-        content: `Page ${i + 1} content from ${filename}`,
-        tables: processingOptions.extractTables
-          ? [
-              {
-                headers: ['Column A', 'Column B', 'Column C'],
-                rows: [
-                  ['Row 1 A', 'Row 1 B', 'Row 1 C'],
-                  ['Row 2 A', 'Row 2 B', 'Row 2 C'],
-                ],
-              },
-            ]
-          : undefined,
-      }));
+      const pages: PageContent[] = Array.from(
+        { length: pageCount },
+        (_, i) => ({
+          pageNumber: i + 1,
+          content: `Page ${i + 1} content from ${filename}`,
+          tables: processingOptions.extractTables
+            ? [
+                {
+                  headers: ['Column A', 'Column B', 'Column C'],
+                  rows: [
+                    ['Row 1 A', 'Row 1 B', 'Row 1 C'],
+                    ['Row 2 A', 'Row 2 B', 'Row 2 C'],
+                  ],
+                },
+              ]
+            : undefined,
+        })
+      );
 
       const metadata: FileMetadata = {
         filename,
@@ -118,18 +126,18 @@ export function createMockPdfProcessor(options: MockProcessorOptions = {}) {
 
       return {
         success: true,
-        content: pages.map((p) => p.content).join('\n\n'),
+        content: pages.map(p => p.content).join('\n\n'),
         metadata,
         processingTime: delay || 100,
         pages,
         structuredData: processingOptions.extractTables
           ? {
-              tables: pages.flatMap((p) => p.tables ?? []),
+              tables: pages.flatMap(p => p.tables ?? []),
             }
           : undefined,
         ...customResult,
       };
-    },
+    }
   );
 
   const getInfo = vi.fn(() => ({
@@ -152,15 +160,20 @@ export function createMockPdfProcessor(options: MockProcessorOptions = {}) {
  * Create a mock DOCX processor for testing
  */
 export function createMockDocxProcessor(options: MockProcessorOptions = {}) {
-  const { delay = 0, shouldFail = false, errorMessage = 'Mock DOCX error', customResult } = options;
+  const {
+    delay = 0,
+    shouldFail = false,
+    errorMessage = 'Mock DOCX error',
+    customResult,
+  } = options;
 
   const process = vi.fn(
     async (
       filePath: string,
-      processingOptions: ProcessingOptions = {},
+      processingOptions: ProcessingOptions = {}
     ): Promise<ProcessorResult> => {
       if (delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
       if (shouldFail) {
@@ -237,13 +250,11 @@ export function createMockDocxProcessor(options: MockProcessorOptions = {}) {
         structuredData: {
           html: htmlContent,
           images: images.length > 0 ? images : undefined,
-          headings: [
-            { level: 1, text: 'Document Title' },
-          ],
+          headings: [{ level: 1, text: 'Document Title' }],
         },
         ...customResult,
       };
-    },
+    }
   );
 
   const getInfo = vi.fn(() => ({
@@ -277,7 +288,7 @@ interface MockSheetData {
  * Create a mock XLSX processor for testing
  */
 export function createMockXlsxProcessor(
-  options: MockProcessorOptions & { sheets?: MockSheetData[] } = {},
+  options: MockProcessorOptions & { sheets?: MockSheetData[] } = {}
 ) {
   const {
     delay = 0,
@@ -309,10 +320,10 @@ export function createMockXlsxProcessor(
   const process = vi.fn(
     async (
       filePath: string,
-      _processingOptions: ProcessingOptions = {},
+      _processingOptions: ProcessingOptions = {}
     ): Promise<ProcessorResult> => {
       if (delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
       if (shouldFail) {
@@ -323,21 +334,21 @@ export function createMockXlsxProcessor(
 
       // Convert sheets to text
       const textContent = sheets
-        .map((sheet) => {
+        .map(sheet => {
           const headerRow = sheet.headers.join('\t');
           const dataRows = sheet.rows
-            .map((row) =>
+            .map(row =>
               row
-                .map((cell) => {
+                .map(cell => {
                   if (cell === null) {
-return '';
-}
+                    return '';
+                  }
                   if (cell instanceof Date) {
-return cell.toISOString();
-}
+                    return cell.toISOString();
+                  }
                   return String(cell);
                 })
-                .join('\t'),
+                .join('\t')
             )
             .join('\n');
           return `=== ${sheet.name} ===\n${headerRow}\n${dataRows}`;
@@ -345,18 +356,18 @@ return cell.toISOString();
         .join('\n\n');
 
       // Convert to table data
-      const tables: TableData[] = sheets.map((sheet) => ({
+      const tables: TableData[] = sheets.map(sheet => ({
         headers: sheet.headers,
-        rows: sheet.rows.map((row) =>
-          row.map((cell) => {
+        rows: sheet.rows.map(row =>
+          row.map(cell => {
             if (cell === null) {
-return '';
-}
+              return '';
+            }
             if (cell instanceof Date) {
-return cell.toISOString();
-}
+              return cell.toISOString();
+            }
             return String(cell);
-          }),
+          })
         ),
       }));
 
@@ -373,7 +384,7 @@ return cell.toISOString();
         custom: {
           sheetCount: sheets.length,
           totalRows,
-          totalColumns: Math.max(...sheets.map((s) => s.headers.length)),
+          totalColumns: Math.max(...sheets.map(s => s.headers.length)),
         },
       };
 
@@ -398,7 +409,7 @@ return cell.toISOString();
         },
         ...customResult,
       };
-    },
+    }
   );
 
   const getInfo = vi.fn(() => ({
@@ -444,10 +455,10 @@ export function createMockOCRService(options: MockOCROptions = {}) {
   const recognizeText = vi.fn(
     async (
       imagePath: string,
-      ocrOptions: { languages?: string[]; enhanceImage?: boolean } = {},
+      ocrOptions: { languages?: string[]; enhanceImage?: boolean } = {}
     ) => {
       if (delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
       if (shouldFail) {
@@ -460,16 +471,18 @@ export function createMockOCRService(options: MockOCROptions = {}) {
         Line 3 with some numbers: 12345
       `.trim();
 
-      const words: MockWordResult[] = mockText.split(/\s+/).map((word, index) => ({
-        text: word,
-        confidence: confidence - Math.random() * 5,
-        boundingBox: {
-          x: 10 + (index % 5) * 100,
-          y: 10 + Math.floor(index / 5) * 30,
-          width: word.length * 10,
-          height: 20,
-        },
-      }));
+      const words: MockWordResult[] = mockText
+        .split(/\s+/)
+        .map((word, index) => ({
+          text: word,
+          confidence: confidence - Math.random() * 5,
+          boundingBox: {
+            x: 10 + (index % 5) * 100,
+            y: 10 + Math.floor(index / 5) * 30,
+            width: word.length * 10,
+            height: 20,
+          },
+        }));
 
       return {
         text: mockText,
@@ -499,16 +512,13 @@ export function createMockOCRService(options: MockOCROptions = {}) {
         language: (ocrOptions.languages ?? languages).join('+'),
         processingTime: delay || 1500,
       };
-    },
+    }
   );
 
   const recognizeTextFromBuffer = vi.fn(
-    async (
-      _buffer: Buffer,
-      ocrOptions: { languages?: string[] } = {},
-    ) => {
+    async (_buffer: Buffer, ocrOptions: { languages?: string[] } = {}) => {
       return recognizeText('/mock/buffer/path', ocrOptions);
-    },
+    }
   );
 
   const preprocessImage = vi.fn(
@@ -518,23 +528,23 @@ export function createMockOCRService(options: MockOCROptions = {}) {
         deskew?: boolean;
         removeNoise?: boolean;
         improveContrast?: boolean;
-      } = {},
+      } = {}
     ) => {
       if (delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay / 2));
+        await new Promise(resolve => setTimeout(resolve, delay / 2));
       }
 
       const transformations: string[] = [];
 
       if (preprocessOptions.deskew) {
-transformations.push('deskew');
-}
+        transformations.push('deskew');
+      }
       if (preprocessOptions.removeNoise) {
-transformations.push('denoise');
-}
+        transformations.push('denoise');
+      }
       if (preprocessOptions.improveContrast) {
-transformations.push('contrast');
-}
+        transformations.push('contrast');
+      }
 
       return {
         buffer: Buffer.from('preprocessed image data'),
@@ -542,7 +552,7 @@ transformations.push('contrast');
         skewAngle: preprocessOptions.deskew ? -1.5 : undefined,
         enhancedContrast: preprocessOptions.improveContrast ? 1.3 : undefined,
       };
-    },
+    }
   );
 
   const detectLanguage = vi.fn(async (_imagePath: string) => {
@@ -570,16 +580,12 @@ transformations.push('contrast');
  * Create a mock processing queue for testing
  */
 export function createMockProcessingQueue(options: MockQueueOptions = {}) {
-  const {
-    initialJobs = [],
-    shouldFail = false,
-    processingDelay = 0,
-  } = options;
+  const { initialJobs = [], shouldFail = false, processingDelay = 0 } = options;
 
   const jobs = new Map<string, FileProcessingJob & { status: JobStatus }>();
 
   // Initialize with any initial jobs
-  initialJobs.forEach((job) => {
+  initialJobs.forEach(job => {
     jobs.set(job.jobId, { ...job, status: JobStatus.PENDING });
   });
 
@@ -605,7 +611,7 @@ export function createMockProcessingQueue(options: MockQueueOptions = {}) {
     if (shouldFail) {
       throw new Error('Failed to add bulk jobs');
     }
-    return jobList.map((job) => {
+    return jobList.map(job => {
       jobs.set(job.jobId, { ...job, status: JobStatus.PENDING });
       return job.jobId;
     });
@@ -614,29 +620,35 @@ export function createMockProcessingQueue(options: MockQueueOptions = {}) {
   const getJobStatus = vi.fn(async (jobId: string) => {
     const job = jobs.get(jobId);
     if (!job) {
-return null;
-}
+      return null;
+    }
 
     return {
       jobId: job.jobId,
       status: job.status,
-      result: job.status === JobStatus.COMPLETED ? { success: true, content: 'Mock content' } : undefined,
+      result:
+        job.status === JobStatus.COMPLETED
+          ? { success: true, content: 'Mock content' }
+          : undefined,
       error: job.status === JobStatus.FAILED ? 'Mock error' : undefined,
       attempts: 1,
       createdAt: job.createdAt,
       processedAt: job.status !== JobStatus.PENDING ? new Date() : undefined,
-      finishedAt: job.status === JobStatus.COMPLETED || job.status === JobStatus.FAILED ? new Date() : undefined,
+      finishedAt:
+        job.status === JobStatus.COMPLETED || job.status === JobStatus.FAILED
+          ? new Date()
+          : undefined,
     };
   });
 
   const cancelJob = vi.fn(async (jobId: string) => {
     const job = jobs.get(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
     if (job.status === JobStatus.PROCESSING) {
-return false;
-}
+      return false;
+    }
 
     jobs.set(jobId, { ...job, status: JobStatus.CANCELLED });
     return true;
@@ -645,11 +657,11 @@ return false;
   const retryJob = vi.fn(async (jobId: string) => {
     const job = jobs.get(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
     if (job.status !== JobStatus.FAILED) {
-return false;
-}
+      return false;
+    }
 
     jobs.set(jobId, { ...job, status: JobStatus.PENDING });
     return true;
@@ -658,10 +670,10 @@ return false;
   const getStats = vi.fn(async () => {
     const jobArray = Array.from(jobs.values());
     return {
-      waiting: jobArray.filter((j) => j.status === JobStatus.PENDING).length,
-      active: jobArray.filter((j) => j.status === JobStatus.PROCESSING).length,
-      completed: jobArray.filter((j) => j.status === JobStatus.COMPLETED).length,
-      failed: jobArray.filter((j) => j.status === JobStatus.FAILED).length,
+      waiting: jobArray.filter(j => j.status === JobStatus.PENDING).length,
+      active: jobArray.filter(j => j.status === JobStatus.PROCESSING).length,
+      completed: jobArray.filter(j => j.status === JobStatus.COMPLETED).length,
+      failed: jobArray.filter(j => j.status === JobStatus.FAILED).length,
       delayed: 0,
       paused: 0,
     };
@@ -700,7 +712,7 @@ return false;
         jobs.set(jobId, { ...job, status: JobStatus.PROCESSING });
 
         if (processingDelay > 0) {
-          await new Promise((resolve) => setTimeout(resolve, processingDelay));
+          await new Promise(resolve => setTimeout(resolve, processingDelay));
         }
 
         jobs.set(jobId, { ...job, status: JobStatus.COMPLETED });
@@ -748,43 +760,48 @@ return false;
  * Create a mock processing service for testing
  */
 export function createMockProcessingService() {
-  const jobs = new Map<string, {
-    id: string;
-    fileId: string;
-    type: string;
-    status: string;
-    progress: number;
-    result: unknown;
-    error: unknown;
-    options: Record<string, unknown>;
-    userId: string;
-    createdAt: Date;
-  }>();
+  const jobs = new Map<
+    string,
+    {
+      id: string;
+      fileId: string;
+      type: string;
+      status: string;
+      progress: number;
+      result: unknown;
+      error: unknown;
+      options: Record<string, unknown>;
+      userId: string;
+      createdAt: Date;
+    }
+  >();
 
   let jobCounter = 0;
 
-  const createJob = vi.fn(async (input: {
-    fileId: string;
-    type: string;
-    options?: Record<string, unknown>;
-    userId?: string;
-  }) => {
-    const jobId = `job_${++jobCounter}`;
-    const job = {
-      id: jobId,
-      fileId: input.fileId,
-      type: input.type,
-      status: 'PENDING',
-      progress: 0,
-      result: null,
-      error: null,
-      options: input.options ?? {},
-      userId: input.userId ?? 'test_user',
-      createdAt: new Date(),
-    };
-    jobs.set(jobId, job);
-    return job;
-  });
+  const createJob = vi.fn(
+    async (input: {
+      fileId: string;
+      type: string;
+      options?: Record<string, unknown>;
+      userId?: string;
+    }) => {
+      const jobId = `job_${++jobCounter}`;
+      const job = {
+        id: jobId,
+        fileId: input.fileId,
+        type: input.type,
+        status: 'PENDING',
+        progress: 0,
+        result: null,
+        error: null,
+        options: input.options ?? {},
+        userId: input.userId ?? 'test_user',
+        createdAt: new Date(),
+      };
+      jobs.set(jobId, job);
+      return job;
+    }
+  );
 
   const getJob = vi.fn(async (jobId: string) => {
     return jobs.get(jobId) ?? null;
@@ -793,11 +810,11 @@ export function createMockProcessingService() {
   const cancelJob = vi.fn(async (jobId: string) => {
     const job = jobs.get(jobId);
     if (!job) {
-return false;
-}
+      return false;
+    }
     if (job.status === 'PROCESSING') {
-return false;
-}
+      return false;
+    }
 
     jobs.set(jobId, { ...job, status: 'CANCELLED' });
     return true;
@@ -814,25 +831,33 @@ return false;
     return newJob;
   });
 
-  const extractText = vi.fn(async (fileId: string, options?: Record<string, unknown>) => {
-    return createJob({ fileId, type: 'TEXT_EXTRACTION', options });
-  });
+  const extractText = vi.fn(
+    async (fileId: string, options?: Record<string, unknown>) => {
+      return createJob({ fileId, type: 'TEXT_EXTRACTION', options });
+    }
+  );
 
-  const runOCR = vi.fn(async (fileId: string, options?: Record<string, unknown>) => {
-    return createJob({ fileId, type: 'OCR', options });
-  });
+  const runOCR = vi.fn(
+    async (fileId: string, options?: Record<string, unknown>) => {
+      return createJob({ fileId, type: 'OCR', options });
+    }
+  );
 
   const convertDocument = vi.fn(async (fileId: string, format: string) => {
-    return createJob({ fileId, type: 'DOCUMENT_CONVERSION', options: { format } });
+    return createJob({
+      fileId,
+      type: 'DOCUMENT_CONVERSION',
+      options: { format },
+    });
   });
 
   const getQueueStats = vi.fn(async () => {
     const jobArray = Array.from(jobs.values());
     return {
-      waiting: jobArray.filter((j) => j.status === 'PENDING').length,
-      active: jobArray.filter((j) => j.status === 'PROCESSING').length,
-      completed: jobArray.filter((j) => j.status === 'COMPLETED').length,
-      failed: jobArray.filter((j) => j.status === 'FAILED').length,
+      waiting: jobArray.filter(j => j.status === 'PENDING').length,
+      active: jobArray.filter(j => j.status === 'PROCESSING').length,
+      completed: jobArray.filter(j => j.status === 'COMPLETED').length,
+      failed: jobArray.filter(j => j.status === 'FAILED').length,
       delayed: 0,
     };
   });
@@ -876,7 +901,7 @@ return false;
  * Create a mock file processing job
  */
 export function createMockFileJob(
-  overrides: Partial<FileProcessingJob> = {},
+  overrides: Partial<FileProcessingJob> = {}
 ): FileProcessingJob {
   return {
     jobId: `job_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
@@ -894,7 +919,7 @@ export function createMockFileJob(
  * Create mock processor result
  */
 export function createMockProcessorResult(
-  overrides: Partial<ProcessorResult> = {},
+  overrides: Partial<ProcessorResult> = {}
 ): ProcessorResult {
   return {
     success: true,
@@ -914,7 +939,7 @@ export function createMockProcessorResult(
  * Create mock job progress
  */
 export function createMockJobProgress(
-  overrides: Partial<JobProgress> = {},
+  overrides: Partial<JobProgress> = {}
 ): JobProgress {
   return {
     stage: 'processing',

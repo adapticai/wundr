@@ -51,15 +51,18 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', INTEGRATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -71,9 +74,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID and Webhook ID are required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,9 +86,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -95,9 +98,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Webhook not found',
-          INTEGRATION_ERROR_CODES.WEBHOOK_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WEBHOOK_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -110,9 +113,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: filterResult.error.flatten().fieldErrors },
+          { errors: filterResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -120,7 +123,7 @@ export async function GET(
     const { deliveries, total } = await listWebhookDeliveries(
       workspaceId,
       webhookId,
-      filterResult.data,
+      filterResult.data
     );
 
     // Calculate pagination metadata
@@ -140,10 +143,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/webhooks/:webhookId/deliveries] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/webhooks/:webhookId/deliveries] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

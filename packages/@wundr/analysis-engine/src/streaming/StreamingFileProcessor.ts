@@ -14,7 +14,7 @@ import { Worker } from 'worker_threads';
 import * as fs from 'fs-extra';
 import * as ts from 'typescript';
 
-import type { Readable} from 'stream';
+import type { Readable } from 'stream';
 
 // Mark unused imports to satisfy linter while keeping them for future use
 void readline;
@@ -79,7 +79,7 @@ export class StreamingFileProcessor extends EventEmitter {
       enableGzipCompression: false,
       workerPoolSize: Math.max(
         2,
-        Math.floor(require('os').cpus().length * 0.75),
+        Math.floor(require('os').cpus().length * 0.75)
       ),
       bufferSize: 1024 * 1024, // 1MB buffer
       backpressureThreshold: 0.8,
@@ -105,7 +105,7 @@ export class StreamingFileProcessor extends EventEmitter {
    */
   async streamProcessFiles(
     filePaths: string[],
-    processor: (chunk: FileChunk) => Promise<any>,
+    processor: (chunk: FileChunk) => Promise<any>
   ): Promise<StreamingMetrics> {
     const startTime = Date.now();
 
@@ -113,7 +113,7 @@ export class StreamingFileProcessor extends EventEmitter {
       // Process files in batches to manage memory
       const batchSize = Math.max(
         1,
-        Math.floor(this.config.maxMemoryUsage / (this.config.bufferSize * 2)),
+        Math.floor(this.config.maxMemoryUsage / (this.config.bufferSize * 2))
       );
       const batches = this.createBatches(filePaths, batchSize);
 
@@ -150,7 +150,7 @@ export class StreamingFileProcessor extends EventEmitter {
    */
   async streamProcessFile(
     filePath: string,
-    processor: (chunk: FileChunk) => Promise<any>,
+    processor: (chunk: FileChunk) => Promise<any>
   ): Promise<void> {
     const fileStats = await fs.stat(filePath);
 
@@ -168,7 +168,7 @@ export class StreamingFileProcessor extends EventEmitter {
    */
   private async processSmallFile(
     filePath: string,
-    processor: (chunk: FileChunk) => Promise<any>,
+    processor: (chunk: FileChunk) => Promise<any>
   ): Promise<void> {
     const content = await fs.readFile(filePath);
     const chunk = this.createChunk({
@@ -196,7 +196,7 @@ export class StreamingFileProcessor extends EventEmitter {
    */
   private async processLargeFile(
     filePath: string,
-    processor: (chunk: FileChunk) => Promise<any>,
+    processor: (chunk: FileChunk) => Promise<any>
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const fileStream = fs.createReadStream(filePath, {
@@ -239,7 +239,7 @@ export class StreamingFileProcessor extends EventEmitter {
       transform(
         data: Buffer,
         encoding: BufferEncoding,
-        callback: (error?: Error | null) => void,
+        callback: (error?: Error | null) => void
       ) {
         try {
           buffer = Buffer.concat([buffer, data]);
@@ -314,7 +314,7 @@ export class StreamingFileProcessor extends EventEmitter {
    * Create a processing transform stream
    */
   private createProcessingTransform(
-    processor: (chunk: FileChunk) => Promise<any>,
+    processor: (chunk: FileChunk) => Promise<any>
   ): Transform {
     const self = this;
 
@@ -325,7 +325,7 @@ export class StreamingFileProcessor extends EventEmitter {
       async transform(
         chunk: FileChunk,
         encoding: BufferEncoding,
-        callback: (error?: Error | null) => void,
+        callback: (error?: Error | null) => void
       ) {
         try {
           await processor(chunk);
@@ -347,10 +347,10 @@ export class StreamingFileProcessor extends EventEmitter {
    */
   private async processBatch(
     filePaths: string[],
-    processor: (chunk: FileChunk) => Promise<any>,
+    processor: (chunk: FileChunk) => Promise<any>
   ): Promise<void> {
     const promises = filePaths.map(filePath =>
-      this.streamProcessFile(filePath, processor),
+      this.streamProcessFile(filePath, processor)
     );
 
     await Promise.all(promises);
@@ -433,7 +433,7 @@ export class StreamingFileProcessor extends EventEmitter {
       const memUsage = process.memoryUsage();
       this.metrics.memoryPeak = Math.max(
         this.metrics.memoryPeak,
-        memUsage.heapUsed,
+        memUsage.heapUsed
       );
       this.metrics.memoryAverage =
         (this.metrics.memoryAverage + memUsage.heapUsed) / 2;
@@ -562,7 +562,7 @@ export class StreamingASTProcessor {
    */
   async processTypeScriptFiles(
     files: string[],
-    processor: (node: ts.Node, sourceFile: ts.SourceFile) => void,
+    processor: (node: ts.Node, sourceFile: ts.SourceFile) => void
   ): Promise<StreamingMetrics> {
     // Create lightweight TypeScript program
     this.program = ts.createProgram(files, {
@@ -576,8 +576,8 @@ export class StreamingASTProcessor {
     return this.streamProcessor.streamProcessFiles(files, async chunk => {
       const sourceFile = this.program?.getSourceFile(chunk.filePath);
       if (!sourceFile) {
-return;
-}
+        return;
+      }
 
       // Process AST nodes in streaming fashion
       this.visitNodeStreaming(sourceFile, processor);
@@ -589,7 +589,7 @@ return;
    */
   private visitNodeStreaming(
     node: ts.Node,
-    visitor: (node: ts.Node, sourceFile: ts.SourceFile) => void,
+    visitor: (node: ts.Node, sourceFile: ts.SourceFile) => void
   ): void {
     const sourceFile = node.getSourceFile();
     visitor(node, sourceFile);

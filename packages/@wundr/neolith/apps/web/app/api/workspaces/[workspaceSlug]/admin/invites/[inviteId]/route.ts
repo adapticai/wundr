@@ -38,14 +38,17 @@ interface RouteContext {
  */
 export async function DELETE(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -61,8 +64,11 @@ export async function DELETE(
 
     if (!workspace) {
       return NextResponse.json(
-        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Workspace not found',
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -73,10 +79,16 @@ export async function DELETE(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -87,8 +99,11 @@ export async function DELETE(
     const inviteIndex = invites.findIndex(i => i.id === inviteId);
     if (inviteIndex === -1) {
       return NextResponse.json(
-        createAdminErrorResponse('Invite not found', ADMIN_ERROR_CODES.INVITE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Invite not found',
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -98,15 +113,21 @@ export async function DELETE(
     // Note: status values are uppercase (PENDING, ACCEPTED, EXPIRED, REVOKED)
     if (invite.status === 'ACCEPTED') {
       return NextResponse.json(
-        createAdminErrorResponse('Invite has already been accepted', ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Invite has already been accepted',
+          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED
+        ),
+        { status: 400 }
       );
     }
 
     if (invite.status === 'REVOKED') {
       return NextResponse.json(
-        createAdminErrorResponse('Invite has already been revoked', ADMIN_ERROR_CODES.INVITE_REVOKED),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Invite has already been revoked',
+          ADMIN_ERROR_CODES.INVITE_REVOKED
+        ),
+        { status: 400 }
       );
     }
 
@@ -142,13 +163,20 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Invite revoked successfully' });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : '';
-    console.error('[DELETE /api/workspaces/:workspaceId/admin/invites/:inviteId] Error:', errorMessage);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/admin/invites/:inviteId] Error:',
+      errorMessage
+    );
     console.error('Stack:', errorStack);
     return NextResponse.json(
-      createAdminErrorResponse(`Failed to revoke invite: ${errorMessage}`, ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        `Failed to revoke invite: ${errorMessage}`,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

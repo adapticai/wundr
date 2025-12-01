@@ -45,7 +45,12 @@ import type {
  * Base error for integration operations.
  */
 export class IntegrationError extends GenesisError {
-  constructor(message: string, code: string, statusCode: number = 500, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    statusCode: number = 500,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, statusCode, metadata);
     this.name = 'IntegrationError';
   }
@@ -70,7 +75,7 @@ export class IntegrationAlreadyExistsError extends GenesisError {
       `Integration '${name}' already exists in workspace ${workspaceId}`,
       'INTEGRATION_ALREADY_EXISTS',
       409,
-      { name, workspaceId },
+      { name, workspaceId }
     );
     this.name = 'IntegrationAlreadyExistsError';
   }
@@ -98,7 +103,7 @@ export class OAuthRefreshError extends GenesisError {
       `Failed to refresh OAuth token for integration ${integrationId}: ${reason}`,
       'OAUTH_REFRESH_ERROR',
       401,
-      { integrationId, reason },
+      { integrationId, reason }
     );
     this.name = 'OAuthRefreshError';
   }
@@ -123,7 +128,7 @@ export class WebhookDeliveryError extends GenesisError {
       `Webhook delivery failed for ${webhookId}: ${reason}`,
       'WEBHOOK_DELIVERY_ERROR',
       500,
-      { webhookId, reason },
+      { webhookId, reason }
     );
     this.name = 'WebhookDeliveryError';
   }
@@ -134,7 +139,12 @@ export class WebhookDeliveryError extends GenesisError {
  */
 export class WebhookSignatureError extends GenesisError {
   constructor(reason: string) {
-    super(`Webhook signature verification failed: ${reason}`, 'WEBHOOK_SIGNATURE_ERROR', 401, { reason });
+    super(
+      `Webhook signature verification failed: ${reason}`,
+      'WEBHOOK_SIGNATURE_ERROR',
+      401,
+      { reason }
+    );
     this.name = 'WebhookSignatureError';
   }
 }
@@ -148,7 +158,7 @@ export class ConnectionTestError extends GenesisError {
       `Connection test failed for integration ${integrationId}: ${reason}`,
       'CONNECTION_TEST_ERROR',
       503,
-      { integrationId, reason },
+      { integrationId, reason }
     );
     this.name = 'ConnectionTestError';
   }
@@ -165,27 +175,48 @@ export class ConnectionTestError extends GenesisError {
 export interface IntegrationStorage {
   // Integration operations
   getIntegration(id: string): Promise<IntegrationConfig | null>;
-  listIntegrations(workspaceId: string, options?: ListIntegrationsOptions): Promise<PaginatedIntegrationResult>;
+  listIntegrations(
+    workspaceId: string,
+    options?: ListIntegrationsOptions
+  ): Promise<PaginatedIntegrationResult>;
   createIntegration(integration: IntegrationConfig): Promise<IntegrationConfig>;
-  updateIntegration(id: string, updates: Partial<IntegrationConfig>): Promise<IntegrationConfig>;
+  updateIntegration(
+    id: string,
+    updates: Partial<IntegrationConfig>
+  ): Promise<IntegrationConfig>;
   deleteIntegration(id: string): Promise<void>;
 
   // Webhook operations
   getWebhook(id: string): Promise<WebhookConfig | null>;
-  listWebhooks(workspaceId: string, options?: ListWebhooksOptions): Promise<PaginatedWebhookResult>;
+  listWebhooks(
+    workspaceId: string,
+    options?: ListWebhooksOptions
+  ): Promise<PaginatedWebhookResult>;
   createWebhook(webhook: WebhookConfig): Promise<WebhookConfig>;
-  updateWebhook(id: string, updates: Partial<WebhookConfig>): Promise<WebhookConfig>;
+  updateWebhook(
+    id: string,
+    updates: Partial<WebhookConfig>
+  ): Promise<WebhookConfig>;
   deleteWebhook(id: string): Promise<void>;
 
   // Delivery operations
   getDelivery(id: string): Promise<WebhookDelivery | null>;
-  listDeliveries(webhookId: string, options?: ListDeliveriesOptions): Promise<PaginatedDeliveryResult>;
+  listDeliveries(
+    webhookId: string,
+    options?: ListDeliveriesOptions
+  ): Promise<PaginatedDeliveryResult>;
   createDelivery(delivery: WebhookDelivery): Promise<WebhookDelivery>;
-  updateDelivery(id: string, updates: Partial<WebhookDelivery>): Promise<WebhookDelivery>;
+  updateDelivery(
+    id: string,
+    updates: Partial<WebhookDelivery>
+  ): Promise<WebhookDelivery>;
 
   // Integration event operations
   createEvent(event: IntegrationEvent): Promise<IntegrationEvent>;
-  updateEvent(id: string, updates: Partial<IntegrationEvent>): Promise<IntegrationEvent>;
+  updateEvent(
+    id: string,
+    updates: Partial<IntegrationEvent>
+  ): Promise<IntegrationEvent>;
 }
 
 // =============================================================================
@@ -250,10 +281,7 @@ export interface HttpClient {
    * @param options - Optional request configuration
    * @returns Response with status code and body
    */
-  get(
-    url: string,
-    options?: HttpRequestOptions
-  ): Promise<HttpResponse>;
+  get(url: string, options?: HttpRequestOptions): Promise<HttpResponse>;
 }
 
 // =============================================================================
@@ -265,14 +293,26 @@ export interface HttpClient {
  */
 export interface IntegrationService {
   // Integration CRUD
-  createIntegration(input: CreateIntegrationInput, createdBy: string): Promise<IntegrationConfig>;
+  createIntegration(
+    input: CreateIntegrationInput,
+    createdBy: string
+  ): Promise<IntegrationConfig>;
   getIntegration(id: string): Promise<IntegrationConfig | null>;
-  listIntegrations(workspaceId: string, options?: ListIntegrationsOptions): Promise<PaginatedIntegrationResult>;
-  updateIntegration(id: string, updates: UpdateIntegrationInput): Promise<IntegrationConfig>;
+  listIntegrations(
+    workspaceId: string,
+    options?: ListIntegrationsOptions
+  ): Promise<PaginatedIntegrationResult>;
+  updateIntegration(
+    id: string,
+    updates: UpdateIntegrationInput
+  ): Promise<IntegrationConfig>;
   deleteIntegration(id: string): Promise<void>;
 
   // OAuth operations
-  setOAuthToken(integrationId: string, token: OAuthToken): Promise<IntegrationConfig>;
+  setOAuthToken(
+    integrationId: string,
+    token: OAuthToken
+  ): Promise<IntegrationConfig>;
   refreshOAuthToken(integrationId: string): Promise<IntegrationConfig>;
 
   // Connection testing
@@ -287,20 +327,40 @@ export interface IntegrationService {
  */
 export interface WebhookService {
   // Webhook CRUD
-  createWebhook(input: CreateWebhookInput, createdBy: string): Promise<WebhookConfig>;
+  createWebhook(
+    input: CreateWebhookInput,
+    createdBy: string
+  ): Promise<WebhookConfig>;
   getWebhook(id: string): Promise<WebhookConfig | null>;
-  listWebhooks(workspaceId: string, options?: ListWebhooksOptions): Promise<PaginatedWebhookResult>;
-  updateWebhook(id: string, updates: UpdateWebhookInput): Promise<WebhookConfig>;
+  listWebhooks(
+    workspaceId: string,
+    options?: ListWebhooksOptions
+  ): Promise<PaginatedWebhookResult>;
+  updateWebhook(
+    id: string,
+    updates: UpdateWebhookInput
+  ): Promise<WebhookConfig>;
   deleteWebhook(id: string): Promise<void>;
 
   // Delivery operations
-  triggerWebhook(webhookId: string, event: WebhookEvent, payload: WebhookPayload): Promise<WebhookDelivery>;
+  triggerWebhook(
+    webhookId: string,
+    event: WebhookEvent,
+    payload: WebhookPayload
+  ): Promise<WebhookDelivery>;
   deliverWithRetry(delivery: WebhookDelivery): Promise<WebhookDelivery>;
-  getDeliveryHistory(webhookId: string, options?: ListDeliveriesOptions): Promise<PaginatedDeliveryResult>;
+  getDeliveryHistory(
+    webhookId: string,
+    options?: ListDeliveriesOptions
+  ): Promise<PaginatedDeliveryResult>;
 
   // Signature operations
   generateSignature(payload: string, secret: string): string;
-  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean;
+  verifyWebhookSignature(
+    payload: string,
+    signature: string,
+    secret: string
+  ): boolean;
 }
 
 // =============================================================================
@@ -320,19 +380,24 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
     return this.integrations.get(id) ?? null;
   }
 
-  async listIntegrations(workspaceId: string, options: ListIntegrationsOptions = {}): Promise<PaginatedIntegrationResult> {
-    let results = Array.from(this.integrations.values()).filter((i) => i.workspaceId === workspaceId);
+  async listIntegrations(
+    workspaceId: string,
+    options: ListIntegrationsOptions = {}
+  ): Promise<PaginatedIntegrationResult> {
+    let results = Array.from(this.integrations.values()).filter(
+      i => i.workspaceId === workspaceId
+    );
 
     if (options.provider) {
-      results = results.filter((i) => i.provider === options.provider);
+      results = results.filter(i => i.provider === options.provider);
     }
 
     if (options.status) {
-      results = results.filter((i) => i.status === options.status);
+      results = results.filter(i => i.status === options.status);
     }
 
     if (!options.includeInactive) {
-      results = results.filter((i) => i.status !== 'inactive');
+      results = results.filter(i => i.status !== 'inactive');
     }
 
     const total = results.length;
@@ -345,16 +410,22 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
       data: results,
       total,
       hasMore: skip + results.length < total,
-      nextCursor: results.length > 0 ? results[results.length - 1]?.id : undefined,
+      nextCursor:
+        results.length > 0 ? results[results.length - 1]?.id : undefined,
     };
   }
 
-  async createIntegration(integration: IntegrationConfig): Promise<IntegrationConfig> {
+  async createIntegration(
+    integration: IntegrationConfig
+  ): Promise<IntegrationConfig> {
     this.integrations.set(integration.id, integration);
     return integration;
   }
 
-  async updateIntegration(id: string, updates: Partial<IntegrationConfig>): Promise<IntegrationConfig> {
+  async updateIntegration(
+    id: string,
+    updates: Partial<IntegrationConfig>
+  ): Promise<IntegrationConfig> {
     const existing = this.integrations.get(id);
     if (!existing) {
       throw new IntegrationNotFoundError(id);
@@ -373,19 +444,24 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
     return this.webhooks.get(id) ?? null;
   }
 
-  async listWebhooks(workspaceId: string, options: ListWebhooksOptions = {}): Promise<PaginatedWebhookResult> {
-    let results = Array.from(this.webhooks.values()).filter((w) => w.workspaceId === workspaceId);
+  async listWebhooks(
+    workspaceId: string,
+    options: ListWebhooksOptions = {}
+  ): Promise<PaginatedWebhookResult> {
+    let results = Array.from(this.webhooks.values()).filter(
+      w => w.workspaceId === workspaceId
+    );
 
     if (options.integrationId) {
-      results = results.filter((w) => w.integrationId === options.integrationId);
+      results = results.filter(w => w.integrationId === options.integrationId);
     }
 
     if (options.status) {
-      results = results.filter((w) => w.status === options.status);
+      results = results.filter(w => w.status === options.status);
     }
 
     if (options.event) {
-      results = results.filter((w) => w.events.includes(options.event!));
+      results = results.filter(w => w.events.includes(options.event!));
     }
 
     const total = results.length;
@@ -398,7 +474,8 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
       data: results,
       total,
       hasMore: skip + results.length < total,
-      nextCursor: results.length > 0 ? results[results.length - 1]?.id : undefined,
+      nextCursor:
+        results.length > 0 ? results[results.length - 1]?.id : undefined,
     };
   }
 
@@ -407,7 +484,10 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
     return webhook;
   }
 
-  async updateWebhook(id: string, updates: Partial<WebhookConfig>): Promise<WebhookConfig> {
+  async updateWebhook(
+    id: string,
+    updates: Partial<WebhookConfig>
+  ): Promise<WebhookConfig> {
     const existing = this.webhooks.get(id);
     if (!existing) {
       throw new WebhookNotFoundError(id);
@@ -426,23 +506,28 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
     return this.deliveries.get(id) ?? null;
   }
 
-  async listDeliveries(webhookId: string, options: ListDeliveriesOptions = {}): Promise<PaginatedDeliveryResult> {
-    let results = Array.from(this.deliveries.values()).filter((d) => d.webhookId === webhookId);
+  async listDeliveries(
+    webhookId: string,
+    options: ListDeliveriesOptions = {}
+  ): Promise<PaginatedDeliveryResult> {
+    let results = Array.from(this.deliveries.values()).filter(
+      d => d.webhookId === webhookId
+    );
 
     if (options.status) {
-      results = results.filter((d) => d.status === options.status);
+      results = results.filter(d => d.status === options.status);
     }
 
     if (options.event) {
-      results = results.filter((d) => d.event === options.event);
+      results = results.filter(d => d.event === options.event);
     }
 
     if (options.after) {
-      results = results.filter((d) => d.createdAt >= options.after!);
+      results = results.filter(d => d.createdAt >= options.after!);
     }
 
     if (options.before) {
-      results = results.filter((d) => d.createdAt <= options.before!);
+      results = results.filter(d => d.createdAt <= options.before!);
     }
 
     const total = results.length;
@@ -455,7 +540,8 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
       data: results,
       total,
       hasMore: skip + results.length < total,
-      nextCursor: results.length > 0 ? results[results.length - 1]?.id : undefined,
+      nextCursor:
+        results.length > 0 ? results[results.length - 1]?.id : undefined,
     };
   }
 
@@ -464,10 +550,17 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
     return delivery;
   }
 
-  async updateDelivery(id: string, updates: Partial<WebhookDelivery>): Promise<WebhookDelivery> {
+  async updateDelivery(
+    id: string,
+    updates: Partial<WebhookDelivery>
+  ): Promise<WebhookDelivery> {
     const existing = this.deliveries.get(id);
     if (!existing) {
-      throw new IntegrationError(`Delivery not found: ${id}`, 'DELIVERY_NOT_FOUND', 404);
+      throw new IntegrationError(
+        `Delivery not found: ${id}`,
+        'DELIVERY_NOT_FOUND',
+        404
+      );
     }
 
     const updated = { ...existing, ...updates };
@@ -480,10 +573,17 @@ export class InMemoryIntegrationStorage implements IntegrationStorage {
     return event;
   }
 
-  async updateEvent(id: string, updates: Partial<IntegrationEvent>): Promise<IntegrationEvent> {
+  async updateEvent(
+    id: string,
+    updates: Partial<IntegrationEvent>
+  ): Promise<IntegrationEvent> {
     const existing = this.events.get(id);
     if (!existing) {
-      throw new IntegrationError(`Event not found: ${id}`, 'EVENT_NOT_FOUND', 404);
+      throw new IntegrationError(
+        `Event not found: ${id}`,
+        'EVENT_NOT_FOUND',
+        404
+      );
     }
 
     const updated = { ...existing, ...updates };
@@ -537,10 +637,13 @@ class DefaultHttpClient implements HttpClient {
   async post(
     url: string,
     body: JsonSerializable | WebhookPayload,
-    options?: HttpRequestOptions,
+    options?: HttpRequestOptions
   ): Promise<HttpResponse> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), options?.timeout ?? 30000);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      options?.timeout ?? 30000
+    );
 
     try {
       const response = await fetch(url, {
@@ -567,12 +670,12 @@ class DefaultHttpClient implements HttpClient {
    * @param options - Optional request configuration
    * @returns Response with status code and body
    */
-  async get(
-    url: string,
-    options?: HttpRequestOptions,
-  ): Promise<HttpResponse> {
+  async get(url: string, options?: HttpRequestOptions): Promise<HttpResponse> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), options?.timeout ?? 30000);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      options?.timeout ?? 30000
+    );
 
     try {
       const response = await fetch(url, {
@@ -592,7 +695,9 @@ class DefaultHttpClient implements HttpClient {
 /**
  * Combined Integration and Webhook Service implementation.
  */
-export class IntegrationServiceImpl implements IntegrationService, WebhookService {
+export class IntegrationServiceImpl
+  implements IntegrationService, WebhookService
+{
   private readonly storage: IntegrationStorage;
   private readonly httpClient: HttpClient;
   private readonly webhookTimeout: number;
@@ -609,7 +714,10 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   // Integration CRUD Operations
   // ===========================================================================
 
-  async createIntegration(input: CreateIntegrationInput, createdBy: string): Promise<IntegrationConfig> {
+  async createIntegration(
+    input: CreateIntegrationInput,
+    createdBy: string
+  ): Promise<IntegrationConfig> {
     this.validateCreateIntegrationInput(input);
 
     const now = new Date();
@@ -636,12 +744,15 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
   async listIntegrations(
     workspaceId: string,
-    options?: ListIntegrationsOptions,
+    options?: ListIntegrationsOptions
   ): Promise<PaginatedIntegrationResult> {
     return this.storage.listIntegrations(workspaceId, options);
   }
 
-  async updateIntegration(id: string, updates: UpdateIntegrationInput): Promise<IntegrationConfig> {
+  async updateIntegration(
+    id: string,
+    updates: UpdateIntegrationInput
+  ): Promise<IntegrationConfig> {
     const existing = await this.storage.getIntegration(id);
     if (!existing) {
       throw new IntegrationNotFoundError(id);
@@ -679,7 +790,9 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     }
 
     // Delete associated webhooks first
-    const webhooks = await this.storage.listWebhooks(existing.workspaceId, { integrationId: id });
+    const webhooks = await this.storage.listWebhooks(existing.workspaceId, {
+      integrationId: id,
+    });
     for (const webhook of webhooks.data) {
       await this.storage.deleteWebhook(webhook.id);
     }
@@ -691,7 +804,10 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   // OAuth Operations
   // ===========================================================================
 
-  async setOAuthToken(integrationId: string, token: OAuthToken): Promise<IntegrationConfig> {
+  async setOAuthToken(
+    integrationId: string,
+    token: OAuthToken
+  ): Promise<IntegrationConfig> {
     const existing = await this.storage.getIntegration(integrationId);
     if (!existing) {
       throw new IntegrationNotFoundError(integrationId);
@@ -755,7 +871,9 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
         if (response.status >= 200 && response.status < 300) {
           // Update integration status to active
-          await this.storage.updateIntegration(integrationId, { status: 'active' });
+          await this.storage.updateIntegration(integrationId, {
+            status: 'active',
+          });
 
           return {
             success: true,
@@ -785,7 +903,8 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
       };
     } catch (error) {
       const latencyMs = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       // Update integration status to error
       await this.storage.updateIntegration(integrationId, {
@@ -850,7 +969,8 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
         nextSyncAt: new Date(syncedAt.getTime() + 3600 * 1000), // 1 hour from now
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       await this.storage.updateEvent(eventId, {
         status: 'failed',
@@ -877,7 +997,10 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   // Webhook CRUD Operations
   // ===========================================================================
 
-  async createWebhook(input: CreateWebhookInput, createdBy: string): Promise<WebhookConfig> {
+  async createWebhook(
+    input: CreateWebhookInput,
+    createdBy: string
+  ): Promise<WebhookConfig> {
     this.validateCreateWebhookInput(input);
 
     const now = new Date();
@@ -910,11 +1033,17 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     return this.storage.getWebhook(id);
   }
 
-  async listWebhooks(workspaceId: string, options?: ListWebhooksOptions): Promise<PaginatedWebhookResult> {
+  async listWebhooks(
+    workspaceId: string,
+    options?: ListWebhooksOptions
+  ): Promise<PaginatedWebhookResult> {
     return this.storage.listWebhooks(workspaceId, options);
   }
 
-  async updateWebhook(id: string, updates: UpdateWebhookInput): Promise<WebhookConfig> {
+  async updateWebhook(
+    id: string,
+    updates: UpdateWebhookInput
+  ): Promise<WebhookConfig> {
     const existing = await this.storage.getWebhook(id);
     if (!existing) {
       throw new WebhookNotFoundError(id);
@@ -943,7 +1072,10 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     }
 
     if (updates.retryPolicy !== undefined) {
-      updateData.retryPolicy = { ...existing.retryPolicy, ...updates.retryPolicy };
+      updateData.retryPolicy = {
+        ...existing.retryPolicy,
+        ...updates.retryPolicy,
+      };
     }
 
     return this.storage.updateWebhook(id, updateData);
@@ -965,7 +1097,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   async triggerWebhook(
     webhookId: string,
     event: WebhookEvent,
-    payload: WebhookPayload,
+    payload: WebhookPayload
   ): Promise<WebhookDelivery> {
     const webhook = await this.storage.getWebhook(webhookId);
     if (!webhook) {
@@ -977,7 +1109,10 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     }
 
     if (!webhook.events.includes(event)) {
-      throw new WebhookDeliveryError(webhookId, `Webhook is not subscribed to event: ${event}`);
+      throw new WebhookDeliveryError(
+        webhookId,
+        `Webhook is not subscribed to event: ${event}`
+      );
     }
 
     const delivery: WebhookDelivery = {
@@ -1002,16 +1137,25 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
       throw new WebhookNotFoundError(delivery.webhookId);
     }
 
-    const { maxRetries, initialDelay, maxDelay, backoffMultiplier } = webhook.retryPolicy;
+    const { maxRetries, initialDelay, maxDelay, backoffMultiplier } =
+      webhook.retryPolicy;
 
     let currentDelay = initialDelay;
     let updatedDelivery = delivery;
 
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
-      const attemptRecord = await this.attemptDelivery(webhook, delivery.payload, attempt);
+      const attemptRecord = await this.attemptDelivery(
+        webhook,
+        delivery.payload,
+        attempt
+      );
       updatedDelivery.attempts.push(attemptRecord);
 
-      if (attemptRecord.statusCode && attemptRecord.statusCode >= 200 && attemptRecord.statusCode < 300) {
+      if (
+        attemptRecord.statusCode &&
+        attemptRecord.statusCode >= 200 &&
+        attemptRecord.statusCode < 300
+      ) {
         // Success
         updatedDelivery = await this.storage.updateDelivery(delivery.id, {
           status: 'success',
@@ -1056,7 +1200,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
   async getDeliveryHistory(
     webhookId: string,
-    options?: ListDeliveriesOptions,
+    options?: ListDeliveriesOptions
   ): Promise<PaginatedDeliveryResult> {
     const webhook = await this.storage.getWebhook(webhookId);
     if (!webhook) {
@@ -1076,7 +1220,11 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     return `sha256=${hmac.digest('hex')}`;
   }
 
-  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+  verifyWebhookSignature(
+    payload: string,
+    signature: string,
+    secret: string
+  ): boolean {
     if (!signature || !payload || !secret) {
       return false;
     }
@@ -1086,7 +1234,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     try {
       return crypto.timingSafeEqual(
         Buffer.from(signature),
-        Buffer.from(expectedSignature),
+        Buffer.from(expectedSignature)
       );
     } catch {
       return false;
@@ -1115,7 +1263,10 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new IntegrationValidationError('Integration validation failed', errors);
+      throw new IntegrationValidationError(
+        'Integration validation failed',
+        errors
+      );
     }
   }
 
@@ -1175,7 +1326,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   private async attemptDelivery(
     webhook: WebhookConfig,
     payload: WebhookPayload,
-    attemptNumber: number,
+    attemptNumber: number
   ): Promise<WebhookAttempt> {
     const startTime = Date.now();
     const payloadString = JSON.stringify(payload);
@@ -1194,7 +1345,8 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
     // Safely extract event and deliveryId from payload (handles both typed and generic payloads)
     const eventValue = 'event' in payload ? String(payload.event) : 'unknown';
-    const deliveryIdValue = 'deliveryId' in payload ? String(payload.deliveryId) : generateShortId();
+    const deliveryIdValue =
+      'deliveryId' in payload ? String(payload.deliveryId) : generateShortId();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -1228,7 +1380,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
@@ -1240,7 +1392,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
  * Creates a new Integration Service with in-memory storage.
  */
 export function createIntegrationService(
-  config?: Partial<IntegrationServiceConfig>,
+  config?: Partial<IntegrationServiceConfig>
 ): IntegrationServiceImpl {
   const storage = config?.storage ?? new InMemoryIntegrationStorage();
   return new IntegrationServiceImpl({

@@ -30,8 +30,8 @@ const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
   if (!lastActiveAt) {
-return false;
-}
+    return false;
+  }
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
@@ -77,8 +77,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -91,9 +94,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'organizationId query parameter is required',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -113,9 +116,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Access denied to this organization',
-          PRESENCE_ERROR_CODES.FORBIDDEN,
+          PRESENCE_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -133,7 +136,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Get message counts for all Orchestrators
-    const orchestratorUserIds = orchestrators.map((orchestrator) => orchestrator.userId);
+    const orchestratorUserIds = orchestrators.map(
+      orchestrator => orchestrator.userId
+    );
     const messageCounts = await prisma.message.groupBy({
       by: ['authorId'],
       where: { authorId: { in: orchestratorUserIds } },
@@ -141,18 +146,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     const messageCountMap = new Map(
-      messageCounts.map((mc) => [mc.authorId, mc._count?.id ?? 0]),
+      messageCounts.map(mc => [mc.authorId, mc._count?.id ?? 0])
     );
 
     // Build Orchestrator presence responses
-    const responses: OrchestratorPresenceResponse[] = orchestrators.map((orchestrator) => ({
-      orchestratorId: orchestrator.id,
-      userId: orchestrator.userId,
-      status: orchestrator.status as OrchestratorPresenceResponse['status'],
-      lastActivity: orchestrator.user.lastActiveAt?.toISOString() ?? null,
-      isHealthy: orchestrator.status === 'ONLINE' && isUserOnline(orchestrator.user.lastActiveAt),
-      messageCount: messageCountMap.get(orchestrator.userId) ?? 0,
-    }));
+    const responses: OrchestratorPresenceResponse[] = orchestrators.map(
+      orchestrator => ({
+        orchestratorId: orchestrator.id,
+        userId: orchestrator.userId,
+        status: orchestrator.status as OrchestratorPresenceResponse['status'],
+        lastActivity: orchestrator.user.lastActiveAt?.toISOString() ?? null,
+        isHealthy:
+          orchestrator.status === 'ONLINE' &&
+          isUserOnline(orchestrator.user.lastActiveAt),
+        messageCount: messageCountMap.get(orchestrator.userId) ?? 0,
+      })
+    );
 
     return NextResponse.json({
       data: responses,
@@ -162,9 +171,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

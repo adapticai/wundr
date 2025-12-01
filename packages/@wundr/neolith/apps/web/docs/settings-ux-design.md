@@ -1,9 +1,7 @@
 # Wundr/Neolith Settings UX Design Document
 
-**Version**: 1.0.0
-**Last Updated**: 2025-11-30
-**Designer**: Product Design Team
-**Status**: Design Specification
+**Version**: 1.0.0 **Last Updated**: 2025-11-30 **Designer**: Product Design Team **Status**: Design
+Specification
 
 ---
 
@@ -21,33 +19,39 @@
 
 ## Overview
 
-This document defines the UX design for Wundr/Neolith's settings interface, divided into two primary contexts:
+This document defines the UX design for Wundr/Neolith's settings interface, divided into two primary
+contexts:
 
 1. **Personal User Settings**: Individual user preferences accessible to all users
 2. **Workspace Admin Settings**: Administrative controls accessible only to workspace admins
 
-The design follows established patterns from Slack and modern workspace collaboration tools, emphasizing clarity, discoverability, and progressive disclosure.
+The design follows established patterns from Slack and modern workspace collaboration tools,
+emphasizing clarity, discoverability, and progressive disclosure.
 
 ---
 
 ## Design Principles
 
 ### 1. Clear Separation of Concerns
+
 - Personal settings never mixed with admin settings
 - Visual indicators for admin-only sections
 - Context-appropriate language (e.g., "My notifications" vs "Workspace notifications")
 
 ### 2. Progressive Disclosure
+
 - Show most common settings first
 - Use collapsible sections for advanced options
 - Inline help text for complex settings
 
 ### 3. Immediate Feedback
+
 - Auto-save for most settings with visual confirmation
 - Clear error states with actionable messages
 - Success confirmations for critical actions
 
 ### 4. Consistent Patterns
+
 - Similar settings use similar controls
 - Predictable layout across all pages
 - Unified visual language
@@ -95,12 +99,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 1. Account
 
-**Page Title**: Account
-**Description**: Manage your personal profile and account security
+**Page Title**: Account **Description**: Manage your personal profile and account security
 
 #### Settings Groups
 
 ##### Profile Information
+
 - **Full Name**
   - Control: Text input
   - Validation: 1-100 characters, required
@@ -130,6 +134,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save on blur
 
 ##### Email & Authentication
+
 - **Primary Email**
   - Control: Text input with verification badge
   - Actions: "Change email" (opens modal with verification flow)
@@ -156,6 +161,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with verification step
 
 ##### Connected Accounts
+
 - **Google Account**
   - Control: Connect/Disconnect button
   - Status: Shows connected email or "Not connected"
@@ -169,6 +175,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Status: Shows connected email or "Not connected"
 
 ##### Account Management
+
 - **Download Your Data**
   - Control: Button "Request export"
   - Help text: "We'll email you a link to download your messages, files, and profile data"
@@ -182,12 +189,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 2. Notifications
 
-**Page Title**: Notifications
-**Description**: Choose when and how you want to be notified
+**Page Title**: Notifications **Description**: Choose when and how you want to be notified
 
 #### Settings Groups
 
 ##### Notification Schedule
+
 - **Notification Hours**
   - Control: Toggle "Use notification schedule"
   - Conditional section: When enabled:
@@ -202,6 +209,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Immediate
 
 ##### Desktop Notifications
+
 - **Show desktop notifications for**
   - Control: Radio group
     - All new messages
@@ -220,6 +228,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Mobile Push Notifications
+
 - **Send me mobile push notifications for**
   - Control: Radio group
     - All new messages
@@ -234,6 +243,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Email Notifications
+
 - **Send me email notifications for**
   - Control: Checkbox group (multiple selection)
     - Direct messages
@@ -253,6 +263,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Channel-Specific Overrides
+
 - **Customize per channel**
   - Control: Expandable section
   - List: Each channel with dropdown
@@ -261,6 +272,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save on change
 
 ##### Keywords & Highlights
+
 - **Keyword notifications**
   - Control: Tag input (add/remove keywords)
   - Help text: "Get notified when these words are mentioned"
@@ -268,6 +280,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save (500ms debounce)
 
 ##### In-App Notifications
+
 - **Play sound for incoming messages**
   - Control: Toggle
   - Save: Auto-save
@@ -280,12 +293,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 3. Appearance
 
-**Page Title**: Appearance
-**Description**: Customize how Wundr looks and feels
+**Page Title**: Appearance **Description**: Customize how Wundr looks and feels
 
 #### Settings Groups
 
 ##### Theme
+
 - **Theme Mode**
   - Control: Segmented control (3 options with icons)
     - Light
@@ -301,6 +314,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Immediate with preview
 
 ##### Sidebar
+
 - **Sidebar theme**
   - Control: Radio group with previews
     - Light sidebar
@@ -324,6 +338,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Messages
+
 - **Message display**
   - Control: Radio group with previews
     - Comfortable (with avatars and spacing)
@@ -344,6 +359,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Immediate
 
 ##### Advanced
+
 - **Enable animations**
   - Control: Toggle
   - Help text: "Smooth transitions and effects"
@@ -358,12 +374,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 4. Accessibility
 
-**Page Title**: Accessibility
-**Description**: Settings to improve your experience
+**Page Title**: Accessibility **Description**: Settings to improve your experience
 
 #### Settings Groups
 
 ##### Screen Reader
+
 - **Enable screen reader support**
   - Control: Toggle
   - Help text: "Optimized announcements for screen readers"
@@ -375,6 +391,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Keyboard Navigation
+
 - **Enhanced keyboard navigation**
   - Control: Toggle
   - Help text: "Additional keyboard shortcuts and focus indicators"
@@ -386,6 +403,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Visual
+
 - **Reduce motion**
   - Control: Toggle
   - Help text: "Minimize animations and transitions"
@@ -402,6 +420,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Immediate
 
 ##### Focus & Attention
+
 - **Auto-scroll to new messages**
   - Control: Toggle
   - Save: Auto-save
@@ -415,12 +434,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 5. Language & Region
 
-**Page Title**: Language & Region
-**Description**: Set your language, timezone, and regional formats
+**Page Title**: Language & Region **Description**: Set your language, timezone, and regional formats
 
 #### Settings Groups
 
 ##### Language
+
 - **Language**
   - Control: Searchable dropdown
   - Options: All supported languages (English, Spanish, French, German, etc.)
@@ -433,6 +452,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Timezone & Time Format
+
 - **Timezone**
   - Control: Searchable dropdown grouped by region
   - Auto-detect: "Use device timezone" checkbox
@@ -446,6 +466,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Date Format
+
 - **Date format**
   - Control: Radio group
     - MM/DD/YYYY (US)
@@ -465,12 +486,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 6. Privacy
 
-**Page Title**: Privacy
-**Description**: Control your visibility and data sharing
+**Page Title**: Privacy **Description**: Control your visibility and data sharing
 
 #### Settings Groups
 
 ##### Status & Presence
+
 - **Show when I'm active**
   - Control: Radio group
     - Show as active
@@ -488,6 +509,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Read Receipts
+
 - **Send read receipts**
   - Control: Radio group
     - Always send
@@ -497,12 +519,14 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Typing Indicators
+
 - **Show when I'm typing**
   - Control: Toggle
   - Help text: "Others will see '... is typing' when you're composing"
   - Save: Auto-save
 
 ##### Profile Visibility
+
 - **Who can see my profile**
   - Control: Radio group
     - Everyone in workspace
@@ -518,6 +542,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Data & Analytics
+
 - **Help improve Wundr**
   - Control: Toggle
   - Help text: "Share anonymous usage data to help us improve"
@@ -532,19 +557,19 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ## Workspace Admin Settings
 
-**Access Control**: Only visible to users with admin or owner role
-**Visual Indicator**: Admin sections marked with distinctive icon and "Admin only" badge
+**Access Control**: Only visible to users with admin or owner role **Visual Indicator**: Admin
+sections marked with distinctive icon and "Admin only" badge
 
 ---
 
 ### 1. General
 
-**Page Title**: Workspace Settings
-**Description**: Manage basic workspace information and defaults
+**Page Title**: Workspace Settings **Description**: Manage basic workspace information and defaults
 
 #### Settings Groups
 
 ##### Workspace Identity
+
 - **Workspace Name**
   - Control: Text input
   - Validation: 1-100 characters, required
@@ -572,6 +597,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with "Save Changes" button
 
 ##### Default Settings
+
 - **Default Channel**
   - Control: Searchable dropdown (channels)
   - Help text: "New members are automatically added here"
@@ -584,6 +610,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual
 
 ##### Workspace Features
+
 - **Enable threads**
   - Control: Toggle
   - Help text: "Allow threaded conversations"
@@ -600,6 +627,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual
 
 ##### Danger Zone
+
 - **Archive Workspace**
   - Control: Button (outlined, warning color)
   - Action: Opens modal with confirmation
@@ -614,12 +642,13 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 2. Members & Permissions
 
-**Page Title**: Members & Permissions
-**Description**: Manage workspace members, roles, and access controls
+**Page Title**: Members & Permissions **Description**: Manage workspace members, roles, and access
+controls
 
 #### Settings Groups
 
 ##### Member Management
+
 - **Members List**
   - Control: Searchable table with columns:
     - Avatar + Name
@@ -643,6 +672,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Sends invitations immediately
 
 ##### Invitation Settings
+
 - **Who can invite**
   - Control: Checkbox group
     - Workspace owners
@@ -665,6 +695,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Guest Access
+
 - **Allow guest accounts**
   - Control: Toggle
   - Help text: "Guests have limited access to specific channels"
@@ -679,6 +710,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Role Permissions
+
 - **Customize role permissions**
   - Control: Expandable accordion per role (Member, Admin, Owner)
   - Each role: Checkbox grid of permissions
@@ -690,6 +722,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with "Save Permissions" button
 
 ##### Member Defaults
+
 - **Default channels for new members**
   - Control: Multi-select dropdown
   - Help text: "Auto-add new members to these channels"
@@ -699,12 +732,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 3. Channels
 
-**Page Title**: Channel Management
-**Description**: Configure channel policies and defaults
+**Page Title**: Channel Management **Description**: Configure channel policies and defaults
 
 #### Settings Groups
 
 ##### Channel Creation
+
 - **Who can create channels**
   - Control: Checkbox group
     - Workspace owners
@@ -725,6 +758,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Channel Policies
+
 - **Channel naming conventions**
   - Control: Text input with variables
   - Example: `{team}-{topic}` or `proj-{name}`
@@ -744,6 +778,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Private Channels
+
 - **Allow private channels**
   - Control: Toggle
   - Warning: "Disabling will make all private channels public"
@@ -757,6 +792,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Default Channels
+
 - **Default channels**
   - Control: Sortable list with "Add" button
   - Each item: Channel name + Make default toggle + Remove
@@ -765,6 +801,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Channel Management
+
 - **All Channels**
   - Control: Searchable table
     - Columns: Name, Type (Public/Private), Members count, Created date, Actions
@@ -777,12 +814,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 4. Apps & Integrations
 
-**Page Title**: Apps & Integrations
-**Description**: Manage installed apps, webhooks, and API access
+**Page Title**: Apps & Integrations **Description**: Manage installed apps, webhooks, and API access
 
 #### Settings Groups
 
 ##### Installed Apps
+
 - **App Directory**
   - Control: Card grid showing installed apps
   - Each card:
@@ -794,6 +831,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Immediate on toggle/remove
 
 ##### App Permissions
+
 - **Who can install apps**
   - Control: Checkbox group
     - Workspace owners
@@ -814,6 +852,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with "Update Permissions"
 
 ##### Webhooks
+
 - **Incoming Webhooks**
   - Control: List of webhooks
   - Each item:
@@ -836,6 +875,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Immediate on add/remove
 
 ##### API Access
+
 - **API Tokens**
   - Control: List of tokens
   - Each item:
@@ -859,6 +899,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual per app
 
 ##### Bot Users
+
 - **Workspace Bots**
   - Control: List of bot users
   - Each item:
@@ -874,12 +915,13 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 5. Security & Compliance
 
-**Page Title**: Security & Compliance
-**Description**: Manage workspace security policies and compliance
+**Page Title**: Security & Compliance **Description**: Manage workspace security policies and
+compliance
 
 #### Settings Groups
 
 ##### Authentication
+
 - **Require two-factor authentication**
   - Control: Toggle
   - Help text: "All members must enable 2FA"
@@ -905,6 +947,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Session Management
+
 - **Session timeout**
   - Control: Dropdown
     - Never (stay logged in)
@@ -920,6 +963,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Access Control
+
 - **IP allowlist**
   - Control: Toggle "Restrict access by IP"
   - Conditional: IP address list (add/remove)
@@ -934,6 +978,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual
 
 ##### Data Retention
+
 - **Message retention policy**
   - Control: Radio group
     - Keep all messages forever
@@ -950,6 +995,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with confirmation
 
 ##### Compliance & Export
+
 - **Data export**
   - Control: Button "Export Workspace Data"
   - Options modal:
@@ -973,6 +1019,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with confirmation
 
 ##### External Sharing
+
 - **Allow file sharing with external domains**
   - Control: Toggle
   - Save: Auto-save
@@ -988,12 +1035,12 @@ The design follows established patterns from Slack and modern workspace collabor
 
 ### 6. Billing & Plans
 
-**Page Title**: Billing & Plans
-**Description**: Manage subscription, usage, and payment methods
+**Page Title**: Billing & Plans **Description**: Manage subscription, usage, and payment methods
 
 #### Settings Groups
 
 ##### Current Plan
+
 - **Plan Details**
   - Display: Card showing
     - Plan name (Free, Pro, Enterprise)
@@ -1010,6 +1057,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Action: "Upgrade" or "Downgrade" buttons
 
 ##### Usage & Limits
+
 - **Current Usage**
   - Display: Progress bars showing
     - Active members: [X] / [Limit]
@@ -1020,6 +1068,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Action: "Upgrade for more" link
 
 ##### Payment Methods
+
 - **Payment Method**
   - Display: Card showing
     - Card brand + last 4 digits
@@ -1038,6 +1087,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Manual with "Update Address"
 
 ##### Billing History
+
 - **Invoices**
   - Control: Table of past invoices
     - Columns: Invoice number, Date, Amount, Status, Download
@@ -1046,6 +1096,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Export: "Download All" button
 
 ##### Subscription Management
+
 - **Auto-renewal**
   - Control: Toggle
   - Help text: "Automatically renew subscription"
@@ -1058,6 +1109,7 @@ The design follows established patterns from Slack and modern workspace collabor
   - Save: Auto-save
 
 ##### Cancellation
+
 - **Cancel Subscription**
   - Control: Text link (subtle, at bottom)
   - Action: Opens modal with
@@ -1074,6 +1126,7 @@ The design follows established patterns from Slack and modern workspace collabor
 ### Save Behaviors
 
 #### Auto-Save (Most Settings)
+
 - **Trigger**: On change, after 500ms debounce
 - **Indicator**:
   - Spinner icon next to control while saving
@@ -1082,6 +1135,7 @@ The design follows established patterns from Slack and modern workspace collabor
 - **UX**: No manual save button needed
 
 #### Manual Save (Critical/Bulk Changes)
+
 - **Trigger**: Explicit "Save Changes" button
 - **Indicator**:
   - Button shows "Saving..." with spinner
@@ -1090,6 +1144,7 @@ The design follows established patterns from Slack and modern workspace collabor
 - **UX**: Button disabled until changes made
 
 #### Immediate Save (Upload/Delete Actions)
+
 - **Trigger**: Immediately on action
 - **Indicator**:
   - Loading state on control
@@ -1136,6 +1191,7 @@ Used for destructive or irreversible actions:
 ## Accessibility Considerations
 
 ### Keyboard Navigation
+
 - All controls accessible via Tab/Shift+Tab
 - Focus indicators clearly visible (3px outline)
 - Escape key closes modals/dropdowns
@@ -1143,6 +1199,7 @@ Used for destructive or irreversible actions:
 - Arrow keys navigate radio groups/lists
 
 ### Screen Reader Support
+
 - Proper ARIA labels for all controls
 - Live regions announce save status
 - Error messages associated with controls
@@ -1150,6 +1207,7 @@ Used for destructive or irreversible actions:
 - Heading hierarchy for navigation
 
 ### Visual Design
+
 - Minimum 4.5:1 contrast ratio for text
 - Color never sole indicator (use icons/text)
 - Focus indicators visible in all themes
@@ -1157,6 +1215,7 @@ Used for destructive or irreversible actions:
 - Clear visual hierarchy
 
 ### Error States
+
 - Clear error messages in plain language
 - Specific guidance on how to fix
 - Error icon + red outline on invalid fields
@@ -1167,6 +1226,7 @@ Used for destructive or irreversible actions:
 ## Responsive Behavior
 
 ### Mobile (<768px)
+
 - Sidebar becomes full-screen overlay
 - Settings stack vertically
 - Tables become stacked cards
@@ -1174,11 +1234,13 @@ Used for destructive or irreversible actions:
 - Collapsible sections auto-collapsed
 
 ### Tablet (768px-1024px)
+
 - Sidebar remains visible, narrower
 - Two-column layouts for some sections
 - Full table views maintained
 
 ### Desktop (>1024px)
+
 - Sidebar + content side-by-side
 - Multi-column layouts for comparisons
 - Hover states for additional info
@@ -1188,18 +1250,21 @@ Used for destructive or irreversible actions:
 ## Implementation Notes
 
 ### State Management
+
 - Personal settings sync across devices in real-time
 - Admin settings require permission check before render
 - Optimistic UI updates with rollback on failure
 - Local draft state for manual save sections
 
 ### Performance
+
 - Lazy load setting sections (code split per page)
 - Debounce auto-save inputs (500ms)
 - Virtual scrolling for large lists (members, channels)
 - Image uploads compressed client-side before upload
 
 ### Localization
+
 - All text externalized for translation
 - Date/time formats respect user locale
 - RTL support for right-to-left languages

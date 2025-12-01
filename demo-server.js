@@ -3,35 +3,50 @@ const PORT = 3002;
 
 // Simple analysis demo data
 const demoAnalysis = {
-    project: 'Wundr Demo',
-    timestamp: new Date().toISOString(),
-    metrics: {
-        totalFiles: 142,
-        linesOfCode: 15420,
-        maintainabilityIndex: 72,
-        testCoverage: 78,
-        issues: 12,
-        technicalDebt: 180
+  project: 'Wundr Demo',
+  timestamp: new Date().toISOString(),
+  metrics: {
+    totalFiles: 142,
+    linesOfCode: 15420,
+    maintainabilityIndex: 72,
+    testCoverage: 78,
+    issues: 12,
+    technicalDebt: 180,
+  },
+  issues: [
+    {
+      type: 'complexity',
+      severity: 'high',
+      file: 'src/services/user.ts',
+      line: 45,
     },
-    issues: [
-        { type: 'complexity', severity: 'high', file: 'src/services/user.ts', line: 45 },
-        { type: 'duplication', severity: 'medium', file: 'src/utils/validation.ts', line: 12 },
-        { type: 'security', severity: 'high', file: 'package.json', description: 'Vulnerable dependency detected' }
-    ],
-    recommendations: [
-        'Refactor UserService to reduce complexity',
-        'Extract duplicate validation logic',
-        'Update vulnerable dependencies'
-    ]
+    {
+      type: 'duplication',
+      severity: 'medium',
+      file: 'src/utils/validation.ts',
+      line: 12,
+    },
+    {
+      type: 'security',
+      severity: 'high',
+      file: 'package.json',
+      description: 'Vulnerable dependency detected',
+    },
+  ],
+  recommendations: [
+    'Refactor UserService to reduce complexity',
+    'Extract duplicate validation logic',
+    'Update vulnerable dependencies',
+  ],
 };
 
 const server = http.createServer((req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    
-    if (req.url === '/') {
-        res.setHeader('Content-Type', 'text/html');
-        res.end(`
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  if (req.url === '/') {
+    res.setHeader('Content-Type', 'text/html');
+    res.end(`
 <!DOCTYPE html>
 <html>
 <head>
@@ -77,16 +92,24 @@ const server = http.createServer((req, res) => {
         </div>
         
         <h2>⚠️ Issues Found</h2>
-        ${demoAnalysis.issues.map(issue => `
+        ${demoAnalysis.issues
+          .map(
+            issue => `
             <div class="issue">
                 <strong>${issue.type.toUpperCase()}</strong> (${issue.severity}): ${issue.description || 'Found in ' + issue.file + ':' + issue.line}
             </div>
-        `).join('')}
+        `
+          )
+          .join('')}
         
         <h2>💡 Recommendations</h2>
-        ${demoAnalysis.recommendations.map(rec => `
+        ${demoAnalysis.recommendations
+          .map(
+            rec => `
             <div class="recommendation">${rec}</div>
-        `).join('')}
+        `
+          )
+          .join('')}
         
         <h2>🔗 API Endpoints</h2>
         <p>Try these API endpoints:</p>
@@ -112,23 +135,29 @@ const server = http.createServer((req, res) => {
 </body>
 </html>
         `);
-    } else if (req.url === '/api/analysis') {
-        res.end(JSON.stringify(demoAnalysis, null, 2));
-    } else if (req.url === '/api/metrics') {
-        res.end(JSON.stringify(demoAnalysis.metrics, null, 2));
-    } else if (req.url === '/api/issues') {
-        res.end(JSON.stringify(demoAnalysis.issues, null, 2));
-    } else if (req.url === '/api/health') {
-        res.end(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }, null, 2));
-    } else {
-        res.statusCode = 404;
-        res.end(JSON.stringify({ error: 'Endpoint not found' }));
-    }
+  } else if (req.url === '/api/analysis') {
+    res.end(JSON.stringify(demoAnalysis, null, 2));
+  } else if (req.url === '/api/metrics') {
+    res.end(JSON.stringify(demoAnalysis.metrics, null, 2));
+  } else if (req.url === '/api/issues') {
+    res.end(JSON.stringify(demoAnalysis.issues, null, 2));
+  } else if (req.url === '/api/health') {
+    res.end(
+      JSON.stringify(
+        { status: 'healthy', timestamp: new Date().toISOString() },
+        null,
+        2
+      )
+    );
+  } else {
+    res.statusCode = 404;
+    res.end(JSON.stringify({ error: 'Endpoint not found' }));
+  }
 });
 
 server.listen(PORT, () => {
-    console.log(`🚀 Wundr Demo Server running at http://localhost:${PORT}`);
-    console.log(`📊 View dashboard: http://localhost:${PORT}`);
-    console.log(`🔗 API available: http://localhost:${PORT}/api/analysis`);
-    console.log(`Press Ctrl+C to stop`);
+  console.log(`🚀 Wundr Demo Server running at http://localhost:${PORT}`);
+  console.log(`📊 View dashboard: http://localhost:${PORT}`);
+  console.log(`🔗 API available: http://localhost:${PORT}/api/analysis`);
+  console.log(`Press Ctrl+C to stop`);
 });

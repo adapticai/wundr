@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -32,17 +32,28 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const period = (searchParams.get('period') || 'month') as 'day' | 'week' | 'month' | 'quarter' | 'year';
+    const period = (searchParams.get('period') || 'month') as
+      | 'day'
+      | 'week'
+      | 'month'
+      | 'quarter'
+      | 'year';
 
     const analyticsService = new AnalyticsServiceImpl({
       prisma: prisma as unknown as AnalyticsDatabaseClient,
       redis: redis as unknown as AnalyticsRedisClient,
     });
-    const report = await analyticsService.generateInsightReport(workspaceId, period);
+    const report = await analyticsService.generateInsightReport(
+      workspaceId,
+      period
+    );
 
     return NextResponse.json(report);
   } catch (error) {
     console.error('Analytics insights error:', error);
-    return NextResponse.json({ error: 'Failed to generate insights' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to generate insights' },
+      { status: 500 }
+    );
   }
 }

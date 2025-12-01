@@ -1,8 +1,6 @@
 # Claude Code Master Configuration - Enterprise SPARC Development Environment
 
-> **Version**: 3.0.0
-> **Last Updated**: 2025-01-21
-> **Status**: Production Ready
+> **Version**: 3.0.0 **Last Updated**: 2025-01-21 **Status**: Production Ready
 
 ## Table of Contents
 
@@ -33,12 +31,14 @@ After EVERY code change or implementation:
 4. **VERIFY SUCCESS**: Only claim "complete" after showing it working
 
 **NEVER claim completion without:**
+
 - Actual terminal output proving it works
 - Build command succeeding (`npm run build`, etc.)
 - Tests passing (if applicable)
 - The feature demonstrably working
 
 **When something fails:**
+
 1. Report immediately: "❌ FAILURE: [specific error]"
 2. Show the actual error message
 3. Do NOT continue pretending it worked
@@ -47,6 +47,7 @@ After EVERY code change or implementation:
 ### VERIFICATION CHECKPOINTS
 
 Before claiming ANY task complete:
+
 - [ ] Does the build succeed? (show `npm run build` output)
 - [ ] Do tests pass? (show test output)
 - [ ] Can you run it? (show execution)
@@ -57,6 +58,7 @@ Before claiming ANY task complete:
 ### HONESTY REQUIREMENTS
 
 **You MUST:**
+
 - Test every claim with actual commands
 - Show real terminal output (not fictional)
 - Say "I cannot verify this" if you can't test it
@@ -65,6 +67,7 @@ Before claiming ANY task complete:
 - Verify cross-worktree consistency
 
 **You MUST NOT:**
+
 - Assume code works without testing
 - Create fictional success messages
 - Claim completion without verification
@@ -78,7 +81,8 @@ Before claiming ANY task complete:
 
 ### Overview
 
-Git worktrees enable parallel development by allowing multiple working directories from a single repository. This is essential for agent-based concurrent workflows.
+Git worktrees enable parallel development by allowing multiple working directories from a single
+repository. This is essential for agent-based concurrent workflows.
 
 ### Core Worktree Commands
 
@@ -117,12 +121,14 @@ git worktree list
 #### 2. Agent-Specific Worktree Assignment
 
 Each agent MUST:
+
 - Work in its own dedicated worktree
 - Create feature branches from the appropriate base
 - Never directly modify other agent worktrees
 - Sync with main branch regularly
 
 **Agent Worktree Mapping:**
+
 ```
 .worktrees/
 ├── agent-coder/          # Development work
@@ -136,6 +142,7 @@ Each agent MUST:
 #### 3. Worktree Coordination Protocol
 
 **BEFORE starting work:**
+
 ```bash
 # Agent initialization
 cd .worktrees/agent-[name]
@@ -145,6 +152,7 @@ npx claude-flow@alpha hooks pre-task --description "[task]" --worktree "agent-[n
 ```
 
 **DURING work:**
+
 ```bash
 # Regular commits within worktree
 git add .
@@ -153,6 +161,7 @@ npx claude-flow@alpha hooks post-edit --file "[file]" --worktree "agent-[name]"
 ```
 
 **AFTER completing work:**
+
 ```bash
 # Push worktree branch
 git push -u origin HEAD
@@ -168,6 +177,7 @@ npx claude-flow@alpha hooks post-task --task-id "[task]" --worktree "agent-[name
 #### 4. Worktree Merge & Integration Strategy
 
 **Integration Workflow:**
+
 ```bash
 # 1. All agents complete in their worktrees
 # 2. Integration agent validates all branches
@@ -322,24 +332,23 @@ Task("Tester agent: Create test suite")
 
 ```javascript
 // Initialize swarm with worktrees
-mcp__claude-flow__swarm_init({
-  topology: "mesh",
-  maxAgents: 6,
-  worktreeEnabled: true,
-  worktreeBase: ".worktrees"
-})
-
-// Spawn agents in parallel
-[
-  Task("Backend agent: Implement API → .worktrees/agent-backend"),
-  Task("Frontend agent: Implement UI → .worktrees/agent-frontend"),
-  Task("Database agent: Design schema → .worktrees/agent-database"),
-  Task("Test agent: Create E2E tests → .worktrees/agent-test"),
-  Task("Docs agent: Write documentation → .worktrees/agent-docs")
-]
+mcp__claude -
+  flow__swarm_init({
+    topology: 'mesh',
+    maxAgents: 6,
+    worktreeEnabled: true,
+    worktreeBase: '.worktrees',
+  })[
+    // Spawn agents in parallel
+    (Task('Backend agent: Implement API → .worktrees/agent-backend'),
+    Task('Frontend agent: Implement UI → .worktrees/agent-frontend'),
+    Task('Database agent: Design schema → .worktrees/agent-database'),
+    Task('Test agent: Create E2E tests → .worktrees/agent-test'),
+    Task('Docs agent: Write documentation → .worktrees/agent-docs'))
+  ];
 
 // Integration agent merges all
-Task("Integration agent: Merge and verify all branches → .worktrees/integration")
+Task('Integration agent: Merge and verify all branches → .worktrees/integration');
 ```
 
 #### Pattern 3: Hierarchical Coordination
@@ -369,6 +378,7 @@ mcp__claude-flow__agent_spawn({
 ### GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 
 **MANDATORY PATTERNS:**
+
 - **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
 - **Task tool**: ALWAYS spawn ALL agents in ONE message with full instructions
 - **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
@@ -550,26 +560,26 @@ project-root/
 
 ```typescript
 // Components
-MyComponent.tsx
-MyComponent.test.tsx
-MyComponent.styles.ts
+MyComponent.tsx;
+MyComponent.test.tsx;
+MyComponent.styles.ts;
 
 // Utils
-stringUtils.ts
-stringUtils.test.ts
+stringUtils.ts;
+stringUtils.test.ts;
 
 // Types
-userTypes.ts
-apiTypes.ts
+userTypes.ts;
+apiTypes.ts;
 
 // Configs
-jest.config.ts
-webpack.config.ts
+jest.config.ts;
+webpack.config.ts;
 
 // Documentation
-API_REFERENCE.md
-ARCHITECTURE.md
-CONTRIBUTING.md
+API_REFERENCE.md;
+ARCHITECTURE.md;
+CONTRIBUTING.md;
 ```
 
 ---
@@ -826,6 +836,7 @@ CONTRIBUTING.md
 ### MCP vs Claude Code Division of Responsibilities
 
 **Claude Code Handles:**
+
 - File operations (Read, Write, Edit, Glob, Grep)
 - Code generation and programming
 - Bash commands and system operations
@@ -838,6 +849,7 @@ CONTRIBUTING.md
 - Worktree management
 
 **MCP Tools Handle:**
+
 - Coordination and planning
 - Memory management
 - Neural features
@@ -852,16 +864,19 @@ CONTRIBUTING.md
 #### Coordination Tools
 
 1. **swarm_init** - Initialize swarm
+
    ```javascript
-   mcp__claude-flow__swarm_init({
-     topology: "mesh" | "hierarchical" | "adaptive",
-     maxAgents: 6,
-     worktreeEnabled: true,
-     worktreeBase: ".worktrees"
-   })
+   mcp__claude -
+     flow__swarm_init({
+       topology: 'mesh' | 'hierarchical' | 'adaptive',
+       maxAgents: 6,
+       worktreeEnabled: true,
+       worktreeBase: '.worktrees',
+     });
    ```
 
 2. **agent_spawn** - Spawn new agent
+
    ```javascript
    mcp__claude-flow__agent_spawn({
      type: "coder" | "tester" | "reviewer" | ...,
@@ -882,53 +897,64 @@ CONTRIBUTING.md
 #### Monitoring Tools
 
 4. **swarm_status** - Check swarm status
+
    ```javascript
-   mcp__claude-flow__swarm_status()
+   mcp__claude - flow__swarm_status();
    ```
 
 5. **agent_list** - List active agents
+
    ```javascript
-   mcp__claude-flow__agent_list()
+   mcp__claude - flow__agent_list();
    ```
 
 6. **agent_metrics** - Get agent metrics
+
    ```javascript
-   mcp__claude-flow__agent_metrics({
-     agentId: "agent-coder",
-     includeWorktree: true
-   })
+   mcp__claude -
+     flow__agent_metrics({
+       agentId: 'agent-coder',
+       includeWorktree: true,
+     });
    ```
 
 7. **task_status** - Check task status
+
    ```javascript
-   mcp__claude-flow__task_status({
-     taskId: "task-123"
-   })
+   mcp__claude -
+     flow__task_status({
+       taskId: 'task-123',
+     });
    ```
 
 8. **task_results** - Get task results
    ```javascript
-   mcp__claude-flow__task_results({
-     taskId: "task-123",
-     includeMetrics: true
-   })
+   mcp__claude -
+     flow__task_results({
+       taskId: 'task-123',
+       includeMetrics: true,
+     });
    ```
 
 #### Memory & Neural Tools
 
 9. **memory_usage** - Check memory usage
+
    ```javascript
-   mcp__claude-flow__memory_usage({
-     scope: "swarm" | "agent" | "global"
-   })
+   mcp__claude -
+     flow__memory_usage({
+       scope: 'swarm' | 'agent' | 'global',
+     });
    ```
 
 10. **neural_status** - Neural network status
+
     ```javascript
-    mcp__claude-flow__neural_status()
+    mcp__claude - flow__neural_status();
     ```
 
 11. **neural_train** - Train neural patterns
+
     ```javascript
     mcp__claude-flow__neural_train({
       patterns: [...],
@@ -938,14 +964,16 @@ CONTRIBUTING.md
 
 12. **neural_patterns** - Get learned patterns
     ```javascript
-    mcp__claude-flow__neural_patterns({
-      category: "performance" | "quality" | "patterns"
-    })
+    mcp__claude -
+      flow__neural_patterns({
+        category: 'performance' | 'quality' | 'patterns',
+      });
     ```
 
 #### GitHub Integration Tools
 
 13. **github_swarm** - GitHub swarm operations
+
     ```javascript
     mcp__claude-flow__github_swarm({
       operation: "pr" | "issue" | "review",
@@ -954,115 +982,133 @@ CONTRIBUTING.md
     ```
 
 14. **repo_analyze** - Analyze repository
+
     ```javascript
-    mcp__claude-flow__repo_analyze({
-      repo: "owner/repo",
-      depth: "full" | "shallow"
-    })
+    mcp__claude -
+      flow__repo_analyze({
+        repo: 'owner/repo',
+        depth: 'full' | 'shallow',
+      });
     ```
 
 15. **pr_enhance** - Enhance pull requests
+
     ```javascript
-    mcp__claude-flow__pr_enhance({
-      prNumber: 123,
-      enhancements: ["description", "tests", "docs"]
-    })
+    mcp__claude -
+      flow__pr_enhance({
+        prNumber: 123,
+        enhancements: ['description', 'tests', 'docs'],
+      });
     ```
 
 16. **issue_triage** - Triage issues
+
     ```javascript
-    mcp__claude-flow__issue_triage({
-      repo: "owner/repo",
-      labels: true,
-      priority: true
-    })
+    mcp__claude -
+      flow__issue_triage({
+        repo: 'owner/repo',
+        labels: true,
+        priority: true,
+      });
     ```
 
 17. **code_review** - Automated code review
     ```javascript
-    mcp__claude-flow__code_review({
-      prNumber: 123,
-      depth: "full" | "shallow",
-      focus: ["security", "performance", "style"]
-    })
+    mcp__claude -
+      flow__code_review({
+        prNumber: 123,
+        depth: 'full' | 'shallow',
+        focus: ['security', 'performance', 'style'],
+      });
     ```
 
 #### System Tools
 
 18. **benchmark_run** - Run benchmarks
+
     ```javascript
-    mcp__claude-flow__benchmark_run({
-      suite: "performance" | "load" | "stress",
-      worktrees: true
-    })
+    mcp__claude -
+      flow__benchmark_run({
+        suite: 'performance' | 'load' | 'stress',
+        worktrees: true,
+      });
     ```
 
 19. **features_detect** - Detect features
+
     ```javascript
-    mcp__claude-flow__features_detect({
-      scope: "hardware" | "software" | "environment"
-    })
+    mcp__claude -
+      flow__features_detect({
+        scope: 'hardware' | 'software' | 'environment',
+      });
     ```
 
 20. **swarm_monitor** - Monitor swarm
     ```javascript
-    mcp__claude-flow__swarm_monitor({
-      interval: 1000,
-      metrics: ["performance", "memory", "agents"]
-    })
+    mcp__claude -
+      flow__swarm_monitor({
+        interval: 1000,
+        metrics: ['performance', 'memory', 'agents'],
+      });
     ```
 
 ### Wundr MCP Tools
 
 21. **drift_detection** - Monitor code quality drift
+
     ```javascript
     mcp__wundr__drift_detection({
-      operation: "check" | "baseline" | "trends"
-    })
+      operation: 'check' | 'baseline' | 'trends',
+    });
     ```
 
 22. **pattern_standardize** - Auto-fix code patterns
+
     ```javascript
     mcp__wundr__pattern_standardize({
-      patterns: ["error-handling", "imports", "naming"],
-      autoFix: true
-    })
+      patterns: ['error-handling', 'imports', 'naming'],
+      autoFix: true,
+    });
     ```
 
 23. **monorepo_manage** - Monorepo management
+
     ```javascript
     mcp__wundr__monorepo_manage({
-      operation: "init" | "add" | "check-circular"
-    })
+      operation: 'init' | 'add' | 'check-circular',
+    });
     ```
 
 24. **governance_report** - Generate governance reports
+
     ```javascript
     mcp__wundr__governance_report({
-      type: "weekly" | "monthly" | "compliance",
-      includeMetrics: true
-    })
+      type: 'weekly' | 'monthly' | 'compliance',
+      includeMetrics: true,
+    });
     ```
 
 25. **dependency_analyze** - Analyze dependencies
+
     ```javascript
     mcp__wundr__dependency_analyze({
-      type: "circular" | "unused" | "outdated"
-    })
+      type: 'circular' | 'unused' | 'outdated',
+    });
     ```
 
 26. **test_baseline** - Manage test coverage baseline
+
     ```javascript
     mcp__wundr__test_baseline({
-      operation: "create" | "compare" | "update"
-    })
+      operation: 'create' | 'compare' | 'update',
+    });
     ```
 
 27. **claude_config** - Configure Claude Code
     ```javascript
     mcp__wundr__claude_config({
-      operation: "generate" | "setup-hooks" | "conventions"
-    })
+      operation: 'generate' | 'setup-hooks' | 'conventions',
+    });
     ```
 
 ### MCP Setup
@@ -1112,6 +1158,7 @@ claude mcp list
 ### SPARC Methodology
 
 #### Specification Phase
+
 ```typescript
 /**
  * Feature: User Authentication
@@ -1130,6 +1177,7 @@ claude mcp list
 ```
 
 #### Pseudocode Phase
+
 ```typescript
 /**
  * Algorithm: Authenticate User
@@ -1149,6 +1197,7 @@ claude mcp list
 ```
 
 #### Architecture Phase
+
 ```typescript
 /**
  * Architecture: Authentication Service
@@ -1168,12 +1217,14 @@ claude mcp list
 ```
 
 #### Refinement Phase
+
 - Implement following TDD
 - Write tests first
 - Refactor for performance
 - Optimize for readability
 
 #### Completion Phase
+
 - Integration testing
 - Documentation
 - Code review
@@ -1228,29 +1279,30 @@ Target metrics for all implementations:
 ### Optimization Strategies
 
 #### 1. Code Splitting
+
 ```typescript
 // Dynamic imports
-const HeavyComponent = lazy(() => import('./HeavyComponent'))
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
 
 // Route-based splitting
-const routes = [
-  { path: '/dashboard', component: lazy(() => import('./Dashboard')) }
-]
+const routes = [{ path: '/dashboard', component: lazy(() => import('./Dashboard')) }];
 ```
 
 #### 2. Memoization
+
 ```typescript
 // React memoization
-const MemoizedComponent = memo(Component)
+const MemoizedComponent = memo(Component);
 
 // useMemo for expensive calculations
-const result = useMemo(() => expensiveCalculation(data), [data])
+const result = useMemo(() => expensiveCalculation(data), [data]);
 
 // useCallback for stable references
-const handler = useCallback(() => doSomething(), [])
+const handler = useCallback(() => doSomething(), []);
 ```
 
 #### 3. Lazy Loading
+
 ```typescript
 // Lazy load images
 <img loading="lazy" src={imageUrl} alt={alt} />
@@ -1266,37 +1318,36 @@ useEffect(() => {
 ```
 
 #### 4. Caching
+
 ```typescript
 // Service worker caching
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request)
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
     })
-  )
-})
+  );
+});
 
 // In-memory caching
-const cache = new Map()
+const cache = new Map();
 function getCached(key, fn) {
-  if (!cache.has(key)) cache.set(key, fn())
-  return cache.get(key)
+  if (!cache.has(key)) cache.set(key, fn());
+  return cache.get(key);
 }
 ```
 
 #### 5. Database Optimization
+
 ```typescript
 // Index critical fields
-db.collection.createIndex({ email: 1 })
+db.collection.createIndex({ email: 1 });
 
 // Use projection to limit fields
-db.collection.find({}, { projection: { name: 1, email: 1 } })
+db.collection.find({}, { projection: { name: 1, email: 1 } });
 
 // Batch operations
-db.collection.bulkWrite([
-  { insertOne: { document: doc1 } },
-  { insertOne: { document: doc2 } }
-])
+db.collection.bulkWrite([{ insertOne: { document: doc1 } }, { insertOne: { document: doc2 } }]);
 ```
 
 ### Performance Monitoring
@@ -1396,32 +1447,32 @@ describe('Feature', () => {
   describe('Component', () => {
     beforeEach(() => {
       // Setup
-    })
+    });
 
     afterEach(() => {
       // Cleanup
-    })
+    });
 
     it('should handle normal case', () => {
       // Arrange
-      const input = createInput()
+      const input = createInput();
 
       // Act
-      const result = functionUnderTest(input)
+      const result = functionUnderTest(input);
 
       // Assert
-      expect(result).toBe(expectedOutput)
-    })
+      expect(result).toBe(expectedOutput);
+    });
 
     it('should handle edge case', () => {
       // Test edge case
-    })
+    });
 
     it('should handle error case', () => {
       // Test error handling
-    })
-  })
-})
+    });
+  });
+});
 ```
 
 ### Documentation Standards
@@ -1436,7 +1487,7 @@ describe('Feature', () => {
 
 #### Code Comments
 
-```typescript
+````typescript
 /**
  * Function description
  *
@@ -1452,7 +1503,7 @@ describe('Feature', () => {
 function myFunction(param1: string, param2: number): Result {
   // Implementation
 }
-```
+````
 
 ---
 
@@ -1564,11 +1615,9 @@ With proper implementation of this configuration:
 
 ---
 
-**Remember**: Claude Flow coordinates, Claude Code creates, Wundr ensures quality, Git worktrees enable parallel development!
+**Remember**: Claude Flow coordinates, Claude Code creates, Wundr ensures quality, Git worktrees
+enable parallel development!
 
 ---
 
-**Template Version**: 3.0.0
-**Date**: 2025-01-21
-**Status**: Production Ready
-**License**: MIT
+**Template Version**: 3.0.0 **Date**: 2025-01-21 **Status**: Production Ready **License**: MIT

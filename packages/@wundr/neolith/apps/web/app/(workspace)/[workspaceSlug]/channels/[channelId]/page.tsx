@@ -68,10 +68,16 @@ export default function ChannelPage() {
   }, [authUser]);
 
   // Fetch channel details
-  const { channel, isLoading: isChannelLoading, refetch: refetchChannel } = useChannel(channelId);
+  const {
+    channel,
+    isLoading: isChannelLoading,
+    refetch: refetchChannel,
+  } = useChannel(channelId);
 
   // Derive isStarred: use local state for optimistic updates, fallback to channel data
-  const channelWithStarred = channel as typeof channel & { isStarred?: boolean };
+  const channelWithStarred = channel as typeof channel & {
+    isStarred?: boolean;
+  };
   const isStarred = localIsStarred ?? channelWithStarred?.isStarred ?? false;
 
   // Sync local starred state when channel data loads
@@ -100,7 +106,7 @@ export default function ChannelPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     channelId,
-    currentUser?.id || '',
+    currentUser?.id || ''
   );
 
   // Thread state
@@ -112,7 +118,16 @@ export default function ChannelPage() {
 
   // Debug: log thread state changes
   useEffect(() => {
-    console.log('[Channel] Thread state:', { activeThreadId, thread: thread ? { parentId: thread.parentMessage?.id, messagesCount: thread.messages?.length } : null, isThreadLoading });
+    console.log('[Channel] Thread state:', {
+      activeThreadId,
+      thread: thread
+        ? {
+            parentId: thread.parentMessage?.id,
+            messagesCount: thread.messages?.length,
+          }
+        : null,
+      isThreadLoading,
+    });
   }, [activeThreadId, thread, isThreadLoading]);
 
   // Mark channel as read when opened
@@ -141,9 +156,13 @@ export default function ChannelPage() {
         id: `optimistic-attachment-${index}`,
         name: file.name,
         url: URL.createObjectURL(file), // Temporary URL for preview
-        type: file.type.startsWith('image/') ? 'image' as const :
-              file.type.startsWith('video/') ? 'video' as const :
-              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        type: file.type.startsWith('image/')
+          ? ('image' as const)
+          : file.type.startsWith('video/')
+            ? ('video' as const)
+            : file.type.startsWith('audio/')
+              ? ('audio' as const)
+              : ('file' as const),
         size: file.size,
         mimeType: file.type,
       }));
@@ -168,7 +187,7 @@ export default function ChannelPage() {
         // Upload files if any
         let uploadedFileIds: string[] = [];
         if (attachments.length > 0) {
-          const uploadPromises = attachments.map(async (file) => {
+          const uploadPromises = attachments.map(async file => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('workspaceId', workspaceSlug);
@@ -182,8 +201,15 @@ export default function ChannelPage() {
             const result = await response.json();
 
             if (!response.ok) {
-              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
-              console.error('[File Upload Error]', { file: file.name, status: response.status, result });
+              const errorMessage =
+                result?.message ||
+                result?.error ||
+                `Failed to upload ${file.name}`;
+              console.error('[File Upload Error]', {
+                file: file.name,
+                status: response.status,
+                result,
+              });
               throw new Error(errorMessage);
             }
 
@@ -196,7 +222,7 @@ export default function ChannelPage() {
         // Send message with file IDs
         const { message } = await sendMessage(
           { content, channelId, mentions, attachmentIds: uploadedFileIds },
-          currentUser,
+          currentUser
         );
 
         // Replace optimistic message with real one
@@ -219,12 +245,22 @@ export default function ChannelPage() {
         removeOptimisticMessage(optimisticId);
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to send message',
+          description:
+            error instanceof Error ? error.message : 'Failed to send message',
           variant: 'destructive',
         });
       }
     },
-    [channelId, workspaceSlug, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage, toast],
+    [
+      channelId,
+      workspaceSlug,
+      currentUser,
+      sendMessage,
+      addOptimisticMessage,
+      updateOptimisticMessage,
+      removeOptimisticMessage,
+      toast,
+    ]
   );
 
   // Handle send thread reply
@@ -242,9 +278,13 @@ export default function ChannelPage() {
         id: `optimistic-attachment-${index}`,
         name: file.name,
         url: URL.createObjectURL(file),
-        type: file.type.startsWith('image/') ? 'image' as const :
-              file.type.startsWith('video/') ? 'video' as const :
-              file.type.startsWith('audio/') ? 'audio' as const : 'file' as const,
+        type: file.type.startsWith('image/')
+          ? ('image' as const)
+          : file.type.startsWith('video/')
+            ? ('video' as const)
+            : file.type.startsWith('audio/')
+              ? ('audio' as const)
+              : ('file' as const),
         size: file.size,
         mimeType: file.type,
       }));
@@ -267,14 +307,15 @@ export default function ChannelPage() {
 
       // Update reply count on parent optimistically
       updateOptimisticMessage(activeThreadId, {
-        replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
+        replyCount:
+          (messages.find(m => m.id === activeThreadId)?.replyCount || 0) + 1,
       });
 
       try {
         // Upload files if any
         let uploadedFileIds: string[] = [];
         if (attachments.length > 0) {
-          const uploadPromises = attachments.map(async (file) => {
+          const uploadPromises = attachments.map(async file => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('workspaceId', workspaceSlug);
@@ -288,8 +329,15 @@ export default function ChannelPage() {
             const result = await response.json();
 
             if (!response.ok) {
-              const errorMessage = result?.message || result?.error || `Failed to upload ${file.name}`;
-              console.error('[Thread File Upload Error]', { file: file.name, status: response.status, result });
+              const errorMessage =
+                result?.message ||
+                result?.error ||
+                `Failed to upload ${file.name}`;
+              console.error('[Thread File Upload Error]', {
+                file: file.name,
+                status: response.status,
+                result,
+              });
               throw new Error(errorMessage);
             }
 
@@ -301,8 +349,14 @@ export default function ChannelPage() {
 
         // Send message with file IDs
         await sendMessage(
-          { content, channelId, parentId: activeThreadId, mentions, attachmentIds: uploadedFileIds },
-          currentUser,
+          {
+            content,
+            channelId,
+            parentId: activeThreadId,
+            mentions,
+            attachmentIds: uploadedFileIds,
+          },
+          currentUser
         );
 
         // Cleanup temporary blob URLs
@@ -315,27 +369,43 @@ export default function ChannelPage() {
         console.error('Failed to send thread reply:', error);
         // Revert reply count on error
         updateOptimisticMessage(activeThreadId, {
-          replyCount: Math.max(0, (messages.find((m) => m.id === activeThreadId)?.replyCount || 1) - 1),
+          replyCount: Math.max(
+            0,
+            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1
+          ),
         });
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to send reply',
+          description:
+            error instanceof Error ? error.message : 'Failed to send reply',
           variant: 'destructive',
         });
       }
     },
-    [activeThreadId, channelId, workspaceSlug, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages, toast],
+    [
+      activeThreadId,
+      channelId,
+      workspaceSlug,
+      currentUser,
+      sendMessage,
+      addOptimisticReply,
+      updateOptimisticMessage,
+      messages,
+      toast,
+    ]
   );
 
   // Handle edit message
   const handleEditMessage = useCallback(
     async (message: Message) => {
-      const result = await editMessage(message.id, { content: message.content });
+      const result = await editMessage(message.id, {
+        content: message.content,
+      });
       if (result) {
         updateOptimisticMessage(message.id, result);
       }
     },
-    [editMessage, updateOptimisticMessage],
+    [editMessage, updateOptimisticMessage]
   );
 
   // Handle delete message
@@ -346,7 +416,7 @@ export default function ChannelPage() {
         removeOptimisticMessage(messageId);
       }
     },
-    [deleteMessage, removeOptimisticMessage],
+    [deleteMessage, removeOptimisticMessage]
   );
 
   // Handle reaction toggle
@@ -357,34 +427,36 @@ export default function ChannelPage() {
       }
 
       // Optimistic update
-      const message = messages.find((m) => m.id === messageId);
+      const message = messages.find(m => m.id === messageId);
       if (!message) {
         return;
       }
 
-      const existingReaction = message.reactions.find((r) => r.emoji === emoji);
+      const existingReaction = message.reactions.find(r => r.emoji === emoji);
       let updatedReactions = [...message.reactions];
 
       if (existingReaction) {
         if (existingReaction.hasReacted) {
           // Remove user's reaction
           if (existingReaction.count === 1) {
-            updatedReactions = updatedReactions.filter((r) => r.emoji !== emoji);
+            updatedReactions = updatedReactions.filter(r => r.emoji !== emoji);
           } else {
-            updatedReactions = updatedReactions.map((r) =>
+            updatedReactions = updatedReactions.map(r =>
               r.emoji === emoji
                 ? {
                     ...r,
                     count: r.count - 1,
                     hasReacted: false,
-                    userIds: (r.userIds || []).filter((id) => id !== currentUser.id),
+                    userIds: (r.userIds || []).filter(
+                      id => id !== currentUser.id
+                    ),
                   }
-                : r,
+                : r
             );
           }
         } else {
           // Add user's reaction
-          updatedReactions = updatedReactions.map((r) =>
+          updatedReactions = updatedReactions.map(r =>
             r.emoji === emoji
               ? {
                   ...r,
@@ -392,7 +464,7 @@ export default function ChannelPage() {
                   hasReacted: true,
                   userIds: [...(r.userIds || []), currentUser.id],
                 }
-              : r,
+              : r
           );
         }
       } else {
@@ -412,9 +484,12 @@ export default function ChannelPage() {
       try {
         let response: Response;
         if (isRemoving) {
-          response = await fetch(`/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`, {
-            method: 'DELETE',
-          });
+          response = await fetch(
+            `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
+            {
+              method: 'DELETE',
+            }
+          );
         } else {
           response = await fetch(`/api/messages/${messageId}/reactions`, {
             method: 'POST',
@@ -432,7 +507,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [currentUser, messages, updateOptimisticMessage],
+    [currentUser, messages, updateOptimisticMessage]
   );
 
   // Handle reply (open thread)
@@ -442,7 +517,14 @@ export default function ChannelPage() {
 
   // Handle open thread
   const handleOpenThread = useCallback((message: Message) => {
-    console.log('[Channel] handleOpenThread called with message:', message.id, 'replyCount:', message.replyCount, 'content:', message.content?.slice(0, 50));
+    console.log(
+      '[Channel] handleOpenThread called with message:',
+      message.id,
+      'replyCount:',
+      message.replyCount,
+      'content:',
+      message.content?.slice(0, 50)
+    );
     setActiveThreadId(message.id);
   }, []);
 
@@ -461,7 +543,9 @@ export default function ChannelPage() {
 
     try {
       const method = previousValue ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/channels/${channelId}/star`, { method });
+      const response = await fetch(`/api/channels/${channelId}/star`, {
+        method,
+      });
       if (!response.ok) {
         // Revert on failure
         console.error('Failed to toggle star, reverting');
@@ -489,103 +573,132 @@ export default function ChannelPage() {
   }, [channelId, workspaceSlug, router]);
 
   // Edit channel handler - must be before conditional returns
-  const handleEditChannel = useCallback(async (updates: { name?: string; description?: string }) => {
-    const response = await fetch(`/api/channels/${channelId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update channel');
-    }
-    // Refetch channel data
-    await refetchChannel();
-  }, [channelId, refetchChannel]);
+  const handleEditChannel = useCallback(
+    async (updates: { name?: string; description?: string }) => {
+      const response = await fetch(`/api/channels/${channelId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update channel');
+      }
+      // Refetch channel data
+      await refetchChannel();
+    },
+    [channelId, refetchChannel]
+  );
 
   // Remove member handler - must be before conditional returns
-  const handleRemoveMember = useCallback(async (userId: string) => {
-    const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to remove member');
-    }
-  }, [channelId]);
+  const handleRemoveMember = useCallback(
+    async (userId: string) => {
+      const response = await fetch(
+        `/api/channels/${channelId}/members/${userId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to remove member');
+      }
+    },
+    [channelId]
+  );
 
   // Change member role handler - must be before conditional returns
-  const handleChangeMemberRole = useCallback(async (userId: string, role: 'admin' | 'member') => {
-    const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role.toUpperCase() }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to change member role');
-    }
-  }, [channelId]);
+  const handleChangeMemberRole = useCallback(
+    async (userId: string, role: 'admin' | 'member') => {
+      const response = await fetch(
+        `/api/channels/${channelId}/members/${userId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: role.toUpperCase() }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to change member role');
+      }
+    },
+    [channelId]
+  );
 
   // Invite members handler - must be before conditional returns
-  const handleInviteMembers = useCallback(async (userIds: string[], role: 'admin' | 'member') => {
-    try {
-      const response = await fetch(`/api/channels/${channelId}/members`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds, role: role.toUpperCase() }),
-      });
+  const handleInviteMembers = useCallback(
+    async (userIds: string[], role: 'admin' | 'member') => {
+      try {
+        const response = await fetch(`/api/channels/${channelId}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds, role: role.toUpperCase() }),
+        });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to invite members' }));
-        throw new Error(error.message || 'Failed to invite members');
+        if (!response.ok) {
+          const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to invite members' }));
+          throw new Error(error.message || 'Failed to invite members');
+        }
+
+        // Refetch channel data to update member count
+        await refetchChannel();
+
+        // Show success toast
+        toast({
+          title: 'Success',
+          description: `Successfully invited ${userIds.length} ${userIds.length === 1 ? 'member' : 'members'} to the channel`,
+        });
+      } catch (error) {
+        // Show error toast
+        toast({
+          title: 'Error',
+          description:
+            error instanceof Error ? error.message : 'Failed to invite members',
+          variant: 'destructive',
+        });
+        throw error;
       }
-
-      // Refetch channel data to update member count
-      await refetchChannel();
-
-      // Show success toast
-      toast({
-        title: 'Success',
-        description: `Successfully invited ${userIds.length} ${userIds.length === 1 ? 'member' : 'members'} to the channel`,
-      });
-    } catch (error) {
-      // Show error toast
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to invite members',
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  }, [channelId, refetchChannel, toast]);
+    },
+    [channelId, refetchChannel, toast]
+  );
 
   // Invite members by email handler - must be before conditional returns
-  const handleInviteByEmail = useCallback(async (emails: string[], role: 'admin' | 'member') => {
-    try {
-      const response = await fetch(`/api/channels/${channelId}/invite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ emails, role: role.toUpperCase() }),
-      });
+  const handleInviteByEmail = useCallback(
+    async (emails: string[], role: 'admin' | 'member') => {
+      try {
+        const response = await fetch(`/api/channels/${channelId}/invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emails, role: role.toUpperCase() }),
+        });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to send email invites' }));
-        throw new Error(error.message || 'Failed to send email invites');
+        if (!response.ok) {
+          const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to send email invites' }));
+          throw new Error(error.message || 'Failed to send email invites');
+        }
+
+        // Show success toast
+        toast({
+          title: 'Success',
+          description: `Successfully sent ${emails.length} email ${emails.length === 1 ? 'invite' : 'invites'}`,
+        });
+      } catch (error) {
+        // Show error toast
+        toast({
+          title: 'Error',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Failed to send email invites',
+          variant: 'destructive',
+        });
+        throw error;
       }
-
-      // Show success toast
-      toast({
-        title: 'Success',
-        description: `Successfully sent ${emails.length} email ${emails.length === 1 ? 'invite' : 'invites'}`,
-      });
-    } catch (error) {
-      // Show error toast
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to send email invites',
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  }, [channelId, toast]);
+    },
+    [channelId, toast]
+  );
 
   // Tab change handler - filter to only supported tabs for channels
   const handleTabChange = useCallback((tab: ConversationTab) => {
@@ -599,8 +712,8 @@ export default function ChannelPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <LoadingSpinner size='lg' />
       </div>
     );
   }
@@ -608,8 +721,10 @@ export default function ChannelPage() {
   // Require authentication
   if (!currentUser) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">Please sign in to view this channel.</p>
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <p className='text-muted-foreground'>
+          Please sign in to view this channel.
+        </p>
       </div>
     );
   }
@@ -634,34 +749,41 @@ export default function ChannelPage() {
     };
   };
 
-  const channelForHeader: Channel | null = channel ? {
-    id: channel.id,
-    name: channel.name,
-    description: channel.description,
-    type: channel.type as 'public' | 'private' | 'direct',
-    workspaceId: workspaceSlug,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdById: '',
-    members: ((channel.members || []) as ChannelMemberRaw[]).map((m) => ({
-      id: m.id || m.userId || '',
-      userId: m.userId || m.id || '',
-      user: {
-        id: m.userId || m.user?.id || m.id || '',
-        name: m.displayName || m.name || m.user?.displayName || m.user?.name || 'Unknown',
-        email: m.email || m.user?.email || '',
-        image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
-        status: 'online' as const,
-      },
-      channelId: channel.id,
-      role: (m.role || 'member') as 'admin' | 'member',
-      joinedAt: new Date(),
-    })),
-    memberCount: channel.members?.length || 0,
-    unreadCount: 0,
-    isStarred: isStarred,
-    isArchived: false,
-  } : null;
+  const channelForHeader: Channel | null = channel
+    ? {
+        id: channel.id,
+        name: channel.name,
+        description: channel.description,
+        type: channel.type as 'public' | 'private' | 'direct',
+        workspaceId: workspaceSlug,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdById: '',
+        members: ((channel.members || []) as ChannelMemberRaw[]).map(m => ({
+          id: m.id || m.userId || '',
+          userId: m.userId || m.id || '',
+          user: {
+            id: m.userId || m.user?.id || m.id || '',
+            name:
+              m.displayName ||
+              m.name ||
+              m.user?.displayName ||
+              m.user?.name ||
+              'Unknown',
+            email: m.email || m.user?.email || '',
+            image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
+            status: 'online' as const,
+          },
+          channelId: channel.id,
+          role: (m.role || 'member') as 'admin' | 'member',
+          joinedAt: new Date(),
+        })),
+        memberCount: channel.members?.length || 0,
+        unreadCount: 0,
+        isStarred: isStarred,
+        isArchived: false,
+      }
+    : null;
 
   // TODO: Replace with actual permissions from API/hook
   // Currently using permissive defaults - should be based on user role and channel settings
@@ -675,7 +797,7 @@ export default function ChannelPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* Slack-like Channel Header */}
       {channelForHeader && (
         <ChannelHeader
@@ -688,28 +810,40 @@ export default function ChannelPage() {
           onLeave={handleLeaveChannel}
           onOpenDetails={() => setShowDetailsPanel(true)}
           onOpenSettings={() => setShowEditDialog(true)}
-          onSummarize={() => console.log('Summarize channel - AI feature coming soon')}
+          onSummarize={() =>
+            console.log('Summarize channel - AI feature coming soon')
+          }
           onEditNotifications={() => setShowNotificationsDialog(true)}
-          onAddTemplate={() => console.log('Add template - feature coming soon')}
-          onAddWorkflow={() => console.log('Add workflow - feature coming soon')}
-          onSearchInChannel={() => console.log('Search in channel - feature coming soon')}
+          onAddTemplate={() =>
+            console.log('Add template - feature coming soon')
+          }
+          onAddWorkflow={() =>
+            console.log('Add workflow - feature coming soon')
+          }
+          onSearchInChannel={() =>
+            console.log('Search in channel - feature coming soon')
+          }
           onInvite={() => setShowDetailsPanel(true)}
-          onStartHuddle={() => toast({
-            title: 'Coming Soon',
-            description: 'Huddle feature is under development. Stay tuned!',
-          })}
-          onStartCall={(type) => toast({
-            title: 'Coming Soon',
-            description: `${type === 'video' ? 'Video' : 'Audio'} calls are under development. Stay tuned!`,
-          })}
+          onStartHuddle={() =>
+            toast({
+              title: 'Coming Soon',
+              description: 'Huddle feature is under development. Stay tuned!',
+            })
+          }
+          onStartCall={type =>
+            toast({
+              title: 'Coming Soon',
+              description: `${type === 'video' ? 'Video' : 'Audio'} calls are under development. Stay tuned!`,
+            })
+          }
         />
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className='flex flex-1 overflow-hidden'>
         {/* Tab content */}
         {activeTab === 'messages' && (
-          <div className="flex flex-1 flex-col">
+          <div className='flex flex-1 flex-col'>
             <MessageList
               messages={messages}
               currentUser={currentUser}
@@ -740,7 +874,7 @@ export default function ChannelPage() {
         )}
 
         {activeTab === 'canvas' && (
-          <CanvasTab channelId={channelId} className="flex-1" />
+          <CanvasTab channelId={channelId} className='flex-1' />
         )}
 
         {activeTab === 'files' && (
@@ -748,7 +882,7 @@ export default function ChannelPage() {
             channelId={channelId}
             workspaceSlug={workspaceSlug}
             currentUserId={currentUser?.id}
-            className="flex-1"
+            className='flex-1'
           />
         )}
 
@@ -817,11 +951,10 @@ export default function ChannelPage() {
             workspaceId={workspaceSlug}
             channelId={channelId}
             channelName={channelForHeader.name}
-            existingMemberIds={channelForHeader.members.map((m) => m.userId)}
+            existingMemberIds={channelForHeader.members.map(m => m.userId)}
           />
         </>
       )}
     </div>
   );
 }
-

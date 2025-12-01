@@ -1,6 +1,7 @@
 # Playwright E2E Tests - Dashboard
 
-This directory contains end-to-end tests for the Neolith web application, with comprehensive coverage of the dashboard functionality.
+This directory contains end-to-end tests for the Neolith web application, with comprehensive
+coverage of the dashboard functionality.
 
 ## Prerequisites
 
@@ -15,6 +16,7 @@ This directory contains end-to-end tests for the Neolith web application, with c
 **File**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/tests/auth.setup.ts`
 
 This setup file creates an authenticated session that's reused across all tests. It:
+
 - Logs in with test credentials
 - Waits for successful redirect to dashboard
 - Saves authentication state to `playwright/.auth/user.json`
@@ -26,12 +28,14 @@ This setup file creates an authenticated session that's reused across all tests.
 Comprehensive test suite covering:
 
 #### 1. Authentication & Access Control
+
 - Dashboard loads when authenticated
 - Displays authenticated user information
 - Has valid session cookies
 - Redirects to login when session expires
 
 #### 2. Quick Stats Widget
+
 - Displays all four stat items (Team Members, Channels, Workflows, Orchestrators)
 - Shows numeric values correctly
 - Handles zero values
@@ -39,6 +43,7 @@ Comprehensive test suite covering:
 - Handles API errors gracefully
 
 #### 3. Recent Activity Widget
+
 - Displays recent activity heading
 - Shows activity items when data exists
 - Shows empty state when no activity
@@ -47,6 +52,7 @@ Comprehensive test suite covering:
 - Handles API errors
 
 #### 4. Quick Actions
+
 - Displays all action buttons
 - Has chevron icons on buttons
 - Navigates correctly on click:
@@ -57,6 +63,7 @@ Comprehensive test suite covering:
 - Shows hover effects
 
 #### 5. Sidebar Navigation
+
 - Displays all navigation items
 - Highlights active navigation item
 - Navigates to different pages
@@ -65,11 +72,13 @@ Comprehensive test suite covering:
 - Shows online status indicator
 
 #### 6. Theme Toggle
+
 - Displays theme toggle button
 - Toggles between light and dark themes
 - Persists theme preference across reloads
 
 #### 7. User Menu
+
 - Displays user menu button
 - Opens menu on click
 - Shows user information in menu
@@ -77,6 +86,7 @@ Comprehensive test suite covering:
 - Navigates to settings
 
 #### 8. Workspace Switcher
+
 - Displays workspace switcher (if multiple workspaces)
 - Shows current workspace name
 - Opens workspace dropdown
@@ -84,11 +94,13 @@ Comprehensive test suite covering:
 - Switches workspace when selected
 
 #### 9. Performance Tests
+
 - Page loads within 3 seconds
 - Stats API completes within 2 seconds
 - No layout shift (CLS < 0.1)
 
 #### 10. Accessibility
+
 - Supports keyboard navigation
 - Has proper focus indicators
 - Has aria-labels on interactive elements
@@ -112,6 +124,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:3000
 ### Playwright Config
 
 The `playwright.config.ts` includes:
+
 - Setup project that runs before all tests
 - Storage state reuse for authentication
 - Auto-start dev server
@@ -317,6 +330,7 @@ To add new dashboard tests:
 ## Support
 
 For issues or questions:
+
 - Check Playwright docs: https://playwright.dev
 - Review existing test patterns
 - Run tests in UI mode for debugging

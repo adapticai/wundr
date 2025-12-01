@@ -1,6 +1,7 @@
 # Contributing to Monorepo Refactoring Toolkit
 
-Thank you for your interest in contributing to the Monorepo Refactoring Toolkit! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to the Monorepo Refactoring Toolkit! This document
+provides guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -15,7 +16,8 @@ Thank you for your interest in contributing to the Monorepo Refactoring Toolkit!
 
 ## Code of Conduct
 
-This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected
+to uphold this code.
 
 ## Getting Started
 
@@ -80,7 +82,8 @@ We welcome the following types of contributions:
 
 ### Before You Start
 
-1. Check existing [issues](https://github.com/YOUR_ORG/monorepo-refactoring-toolkit/issues) to see if your idea is already being discussed
+1. Check existing [issues](https://github.com/YOUR_ORG/monorepo-refactoring-toolkit/issues) to see
+   if your idea is already being discussed
 2. Create an issue to discuss major changes before implementing them
 3. Look for issues labeled `good first issue` or `help wanted` if you're new to the project
 
@@ -108,6 +111,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -117,6 +121,7 @@ type(scope): description
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 ```
 feat(analyzer): add circular dependency detection
 fix(consolidation): resolve memory leak in batch processing
@@ -221,10 +226,7 @@ npm test -- analyzer.test.ts
 describe('SimilarityDetector', () => {
   it('should identify highly similar interfaces with 90%+ similarity', () => {
     // Arrange
-    const interfaces = [
-      mockInterface1,
-      mockInterface2
-    ];
+    const interfaces = [mockInterface1, mockInterface2];
 
     // Act
     const result = detector.findSimilarities(interfaces);
@@ -314,6 +316,7 @@ git push --force-with-lease origin feature/your-feature-name
 ### Code Review Checklist
 
 **For Contributors:**
+
 - [ ] Tests added/updated and passing
 - [ ] Documentation updated
 - [ ] Code follows project standards
@@ -321,6 +324,7 @@ git push --force-with-lease origin feature/your-feature-name
 - [ ] PR description is clear and complete
 
 **For Reviewers:**
+
 - [ ] Code is well-structured and readable
 - [ ] Tests adequately cover new functionality
 - [ ] Documentation is accurate and helpful

@@ -127,7 +127,7 @@ export class SessionManager extends EventEmitter {
   constructor(
     conversationManager: ConversationManager,
     commandMapper: CommandMapper,
-    config: Partial<SessionManagerConfig> = {},
+    config: Partial<SessionManagerConfig> = {}
   ) {
     super();
 
@@ -155,7 +155,7 @@ export class SessionManager extends EventEmitter {
   async createSession(
     userId: string,
     workspacePath?: string,
-    sessionId?: string,
+    sessionId?: string
   ): Promise<string> {
     const id =
       sessionId ||
@@ -222,7 +222,7 @@ export class SessionManager extends EventEmitter {
     // Refresh project context
     if (session.projectContext) {
       session.projectContext = await this.detectProjectContext(
-        session.currentWorkspace,
+        session.currentWorkspace
       );
     }
 
@@ -239,8 +239,8 @@ export class SessionManager extends EventEmitter {
    */
   getCurrentSession(): SessionState | null {
     if (!this.currentSessionId) {
-return null;
-}
+      return null;
+    }
     return this.activeSessions.get(this.currentSessionId) || null;
   }
 
@@ -257,7 +257,7 @@ return null;
   async updateSessionContext(
     sessionId: string,
     contextType: 'project' | 'command' | 'conversation',
-    contextData: any,
+    contextData: any
   ): Promise<void> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -299,7 +299,7 @@ return null;
     sessionId: string,
     command: string,
     success: boolean,
-    duration: number,
+    duration: number
   ): Promise<void> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -335,7 +335,7 @@ return null;
    */
   async updateUserPreferences(
     userId: string,
-    preferences: Partial<UserPreferences>,
+    preferences: Partial<UserPreferences>
   ): Promise<void> {
     const defaultPreferences = this.getDefaultPreferences();
     const currentPreferences = await this.loadUserPreferences(userId);
@@ -363,7 +363,7 @@ return null;
    */
   async registerWorkspace(
     workspacePath: string,
-    config: Partial<WorkspaceConfig>,
+    config: Partial<WorkspaceConfig>
   ): Promise<void> {
     const workspace: WorkspaceConfig = {
       name: config.name || path.basename(workspacePath),
@@ -386,7 +386,7 @@ return null;
    */
   getWorkspaceSuggestions(limit: number = 5): WorkspaceConfig[] {
     const workspaces = Array.from(this.workspaces.values()).sort(
-      (a, b) => b.lastAccessed.getTime() - a.lastAccessed.getTime(),
+      (a, b) => b.lastAccessed.getTime() - a.lastAccessed.getTime()
     );
 
     return workspaces.slice(0, limit);
@@ -402,7 +402,7 @@ return null;
       timeRange?: { from: Date; to: Date };
       successOnly?: boolean;
       limit?: number;
-    },
+    }
   ): Array<{
     command: string;
     timestamp: Date;
@@ -411,15 +411,15 @@ return null;
   }> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
-return [];
-}
+      return [];
+    }
 
     let history = session.recentCommands;
 
     if (query.command) {
       const searchTerm = query.command.toLowerCase();
       history = history.filter(cmd =>
-        cmd.command.toLowerCase().includes(searchTerm),
+        cmd.command.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -427,7 +427,7 @@ return [];
       history = history.filter(
         cmd =>
           cmd.timestamp >= query.timeRange!.from &&
-          cmd.timestamp <= query.timeRange!.to,
+          cmd.timestamp <= query.timeRange!.to
       );
     }
 
@@ -447,7 +447,7 @@ return [];
    */
   async getContextualSuggestions(
     sessionId: string,
-    limit: number = 5,
+    limit: number = 5
   ): Promise<
     Array<{
       type: 'command' | 'workspace' | 'conversation';
@@ -458,8 +458,8 @@ return [];
   > {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
-return [];
-}
+      return [];
+    }
 
     const suggestions: Array<{
       type: 'command' | 'workspace' | 'conversation';
@@ -479,7 +479,7 @@ return [];
       if (baseCommand) {
         commandFrequency.set(
           baseCommand,
-          (commandFrequency.get(baseCommand) || 0) + 1,
+          (commandFrequency.get(baseCommand) || 0) + 1
         );
       }
     }
@@ -516,7 +516,7 @@ return [];
    */
   async exportSession(
     sessionId: string,
-    format: 'json' | 'csv',
+    format: 'json' | 'csv'
   ): Promise<string> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -562,7 +562,7 @@ return [];
     // Limit active sessions
     if (this.activeSessions.size > this.config.maxSessions) {
       const sessionsByAccess = Array.from(this.activeSessions.entries()).sort(
-        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime(),
+        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime()
       );
 
       const excessCount = this.activeSessions.size - this.config.maxSessions;
@@ -593,11 +593,11 @@ return [];
     const activeSessions = this.activeSessions.size;
     const totalCommands = Array.from(this.activeSessions.values()).reduce(
       (sum, session) => sum + session.recentCommands.length,
-      0,
+      0
     );
 
     const sessionDurations = Array.from(this.activeSessions.values()).map(
-      session => session.lastAccessed.getTime() - session.created.getTime(),
+      session => session.lastAccessed.getTime() - session.created.getTime()
     );
     const averageSessionDuration =
       sessionDurations.length > 0
@@ -613,7 +613,7 @@ return [];
         if (baseCommand) {
           commandCounts.set(
             baseCommand,
-            (commandCounts.get(baseCommand) || 0) + 1,
+            (commandCounts.get(baseCommand) || 0) + 1
           );
         }
       }
@@ -660,7 +660,7 @@ return [];
           logger.error('Session backup failed:', error);
         }
       },
-      this.config.backupInterval * 60 * 1000,
+      this.config.backupInterval * 60 * 1000
     );
 
     // Periodic cleanup
@@ -672,16 +672,16 @@ return [];
           logger.error('Session cleanup failed:', error);
         }
       },
-      30 * 60 * 1000,
+      30 * 60 * 1000
     ); // Every 30 minutes
   }
 
   private async detectProjectContext(
-    workspacePath: string,
+    workspacePath: string
   ): Promise<ProjectContext | undefined> {
     if (!this.config.autoDetectProjects) {
-return undefined;
-}
+      return undefined;
+    }
 
     try {
       const context: ProjectContext = {
@@ -699,7 +699,7 @@ return undefined;
         const packageJson = await fs.readJson(packageJsonPath);
         context.dependencies = Object.keys(packageJson.dependencies || {});
         context.devDependencies = Object.keys(
-          packageJson.devDependencies || {},
+          packageJson.devDependencies || {}
         );
         context.scripts = packageJson.scripts || {};
 
@@ -754,7 +754,7 @@ return undefined;
   }
 
   private async getGitInfo(
-    workspacePath: string,
+    workspacePath: string
   ): Promise<ProjectContext['gitRepository']> {
     // Simplified git info extraction
     return {
@@ -785,7 +785,7 @@ return undefined;
     const prefsPath = path.join(
       this.config.persistencePath,
       'users',
-      `${userId}.json`,
+      `${userId}.json`
     );
 
     if (await fs.pathExists(prefsPath)) {
@@ -802,12 +802,12 @@ return undefined;
 
   private async saveUserPreferences(
     userId: string,
-    preferences: UserPreferences,
+    preferences: UserPreferences
   ): Promise<void> {
     const prefsPath = path.join(
       this.config.persistencePath,
       'users',
-      `${userId}.json`,
+      `${userId}.json`
     );
     await fs.ensureDir(path.dirname(prefsPath));
     await fs.writeJson(prefsPath, preferences, { spaces: 2 });
@@ -816,7 +816,7 @@ return undefined;
   private async persistSession(session: SessionState): Promise<void> {
     const sessionPath = path.join(
       this.config.persistencePath,
-      `${session.id}.json`,
+      `${session.id}.json`
     );
     const serialized = this.serializeSession(session);
     await fs.writeJson(sessionPath, serialized, { spaces: 2 });
@@ -825,7 +825,7 @@ return undefined;
   private async loadSession(sessionId: string): Promise<SessionState | null> {
     const sessionPath = path.join(
       this.config.persistencePath,
-      `${sessionId}.json`,
+      `${sessionId}.json`
     );
 
     if (await fs.pathExists(sessionPath)) {
@@ -888,7 +888,7 @@ return undefined;
               ? {
                   ...data.projectContext.lastAnalysis,
                   timestamp: new Date(
-                    data.projectContext.lastAnalysis.timestamp,
+                    data.projectContext.lastAnalysis.timestamp
                   ),
                 }
               : undefined,
@@ -898,12 +898,12 @@ return undefined;
   }
 
   private async loadWorkspace(
-    workspacePath: string,
+    workspacePath: string
   ): Promise<WorkspaceConfig | null> {
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
     const workspaceFile = path.join(
       workspacesDir,
-      `${Buffer.from(workspacePath).toString('base64')}.json`,
+      `${Buffer.from(workspacePath).toString('base64')}.json`
     );
 
     if (await fs.pathExists(workspaceFile)) {
@@ -923,7 +923,7 @@ return undefined;
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
     const workspaceFile = path.join(
       workspacesDir,
-      `${Buffer.from(workspace.path).toString('base64')}.json`,
+      `${Buffer.from(workspace.path).toString('base64')}.json`
     );
 
     await fs.ensureDir(workspacesDir);
@@ -933,7 +933,7 @@ return undefined;
         ...workspace,
         lastAccessed: workspace.lastAccessed.toISOString(),
       },
-      { spaces: 2 },
+      { spaces: 2 }
     );
   }
 

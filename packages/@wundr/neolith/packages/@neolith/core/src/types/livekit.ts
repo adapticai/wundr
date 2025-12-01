@@ -150,11 +150,7 @@ export interface TokenGenerationResult {
 /**
  * Participant connection state.
  */
-export type ParticipantState =
-  | 'joining'
-  | 'joined'
-  | 'active'
-  | 'disconnected';
+export type ParticipantState = 'joining' | 'joined' | 'active' | 'disconnected';
 
 /**
  * Track type enumeration.
@@ -579,7 +575,9 @@ export function isTrackSource(value: unknown): value is TrackSource {
 /**
  * Checks if a value is a valid CreateRoomOptions object.
  */
-export function isCreateRoomOptions(value: unknown): value is CreateRoomOptions {
+export function isCreateRoomOptions(
+  value: unknown
+): value is CreateRoomOptions {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -619,7 +617,10 @@ export const DEFAULT_LIVEKIT_CONFIG = {
  * Default token options.
  */
 export const DEFAULT_TOKEN_OPTIONS: Required<
-  Pick<TokenOptions, 'canPublish' | 'canSubscribe' | 'canPublishData' | 'roomJoin' | 'ttl'>
+  Pick<
+    TokenOptions,
+    'canPublish' | 'canSubscribe' | 'canPublishData' | 'roomJoin' | 'ttl'
+  >
 > = {
   canPublish: true,
   canSubscribe: true,
@@ -669,13 +670,16 @@ export const VIEWER_TOKEN_OPTIONS: TokenOptions = {
 /**
  * Recording presets with their dimensions.
  */
-export const RECORDING_PRESETS: Record<RecordingPreset, { width: number; height: number; frameRate: number }> = {
-  'H264_720P_30': { width: 1280, height: 720, frameRate: 30 },
-  'H264_720P_60': { width: 1280, height: 720, frameRate: 60 },
-  'H264_1080P_30': { width: 1920, height: 1080, frameRate: 30 },
-  'H264_1080P_60': { width: 1920, height: 1080, frameRate: 60 },
-  'PORTRAIT_H264_720P_30': { width: 720, height: 1280, frameRate: 30 },
-  'PORTRAIT_H264_720P_60': { width: 720, height: 1280, frameRate: 60 },
-  'PORTRAIT_H264_1080P_30': { width: 1080, height: 1920, frameRate: 30 },
-  'PORTRAIT_H264_1080P_60': { width: 1080, height: 1920, frameRate: 60 },
+export const RECORDING_PRESETS: Record<
+  RecordingPreset,
+  { width: number; height: number; frameRate: number }
+> = {
+  H264_720P_30: { width: 1280, height: 720, frameRate: 30 },
+  H264_720P_60: { width: 1280, height: 720, frameRate: 60 },
+  H264_1080P_30: { width: 1920, height: 1080, frameRate: 30 },
+  H264_1080P_60: { width: 1920, height: 1080, frameRate: 60 },
+  PORTRAIT_H264_720P_30: { width: 720, height: 1280, frameRate: 30 },
+  PORTRAIT_H264_720P_60: { width: 720, height: 1280, frameRate: 60 },
+  PORTRAIT_H264_1080P_30: { width: 1080, height: 1920, frameRate: 30 },
+  PORTRAIT_H264_1080P_60: { width: 1080, height: 1920, frameRate: 60 },
 };

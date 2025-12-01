@@ -42,7 +42,7 @@ vi.mock('@neolith/database', () => {
       delete: vi.fn(),
       count: vi.fn(),
     },
-    $transaction: vi.fn().mockImplementation(async (callback) => {
+    $transaction: vi.fn().mockImplementation(async callback => {
       return callback({
         vP: {
           create: vi.fn(),

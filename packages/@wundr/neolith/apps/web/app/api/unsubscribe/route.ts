@@ -46,10 +46,14 @@ function generateUnsubscribeHTML(
   errorMessage?: string
 ): string {
   const appName = process.env.NEXT_PUBLIC_APP_NAME || 'Neolith';
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    'http://localhost:3000';
 
   if (success && emailType && userEmail) {
-    const emailTypeDisplay = emailType === 'all' ? 'all emails' : `${emailType} emails`;
+    const emailTypeDisplay =
+      emailType === 'all' ? 'all emails' : `${emailType} emails`;
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -165,11 +169,15 @@ function generateUnsubscribeHTML(
     <p>You've been unsubscribed from <span class="email-type">${emailTypeDisplay}</span></p>
     <div class="email">${userEmail}</div>
     <p>You will no longer receive ${emailTypeDisplay} from ${appName}.</p>
-    ${emailType !== 'all' ? `
+    ${
+      emailType !== 'all'
+        ? `
     <p style="color: #9ca3af; font-size: 14px; margin-top: 24px;">
       You can manage all your email preferences in your account settings.
     </p>
-    ` : ''}
+    `
+        : ''
+    }
     <a href="${appUrl}" class="button">Return to ${appName}</a>
     <div class="footer">
       <p>
@@ -314,7 +322,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!token) {
       console.warn('[GET /api/unsubscribe] Missing token parameter');
       return new NextResponse(
-        generateUnsubscribeHTML(false, undefined, undefined, 'Missing unsubscribe token'),
+        generateUnsubscribeHTML(
+          false,
+          undefined,
+          undefined,
+          'Missing unsubscribe token'
+        ),
         {
           status: 400,
           headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -355,7 +368,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!user) {
       console.warn(`[GET /api/unsubscribe] User not found: ${userId}`);
       return new NextResponse(
-        generateUnsubscribeHTML(false, undefined, undefined, 'User account not found'),
+        generateUnsubscribeHTML(
+          false,
+          undefined,
+          undefined,
+          'User account not found'
+        ),
         {
           status: 404,
           headers: { 'Content-Type': 'text/html; charset=utf-8' },

@@ -17,9 +17,7 @@ export const EmailHeader = ({ previewText }: EmailHeaderProps) => {
       <div style={logoContainer}>
         <Text style={logoText}>NEOLITH</Text>
       </div>
-      {previewText && (
-        <Text style={previewTextStyle}>{previewText}</Text>
-      )}
+      {previewText && <Text style={previewTextStyle}>{previewText}</Text>}
     </Section>
   );
 };

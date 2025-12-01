@@ -4,7 +4,10 @@ Hub-and-spoke delegation pattern for AI agent coordination with audit logging an
 
 ## Overview
 
-This package provides a comprehensive framework for coordinating multi-agent systems using the **hub-and-spoke delegation pattern**. A central hub coordinator manages task distribution to spoke agents, handles parallel execution, synthesizes results from multiple agents, and maintains detailed audit logs.
+This package provides a comprehensive framework for coordinating multi-agent systems using the
+**hub-and-spoke delegation pattern**. A central hub coordinator manages task distribution to spoke
+agents, handles parallel execution, synthesizes results from multiple agents, and maintains detailed
+audit logs.
 
 ### Key Features
 
@@ -75,10 +78,7 @@ const parallelResult = await coordinator.delegateParallel({
 });
 
 // Synthesize results
-const synthesis = await coordinator.synthesizeResults(
-  parallelResult.results,
-  'consensus'
-);
+const synthesis = await coordinator.synthesizeResults(parallelResult.results, 'consensus');
 
 console.log('Synthesized output:', synthesis.synthesizedOutput);
 ```
@@ -103,6 +103,7 @@ console.log('Synthesized output:', synthesis.synthesizedOutput);
 ```
 
 The hub coordinator acts as the central point for:
+
 - Task distribution and assignment
 - Agent lifecycle management
 - Result collection and synthesis
@@ -133,7 +134,8 @@ const options: HubCoordinatorOptions = {
   onTaskStarted: (task, agent) => console.log(`Task ${task.id} started by ${agent.name}`),
   onTaskCompleted: (result, agent) => console.log(`Task completed by ${agent.name}`),
   onTaskFailed: (result, agent) => console.log(`Task failed: ${result.error?.message}`),
-  onSynthesisCompleted: (synthesis) => console.log(`Synthesis complete with ${synthesis.confidence} confidence`),
+  onSynthesisCompleted: synthesis =>
+    console.log(`Synthesis complete with ${synthesis.confidence} confidence`),
 };
 
 const coordinator = new HubCoordinator(options);
@@ -141,17 +143,17 @@ const coordinator = new HubCoordinator(options);
 
 #### Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `hubAgentId` | `string` | Required | Unique identifier for the hub coordinator |
-| `maxParallelDelegations` | `number` | `5` | Maximum concurrent task delegations |
-| `defaultTimeout` | `number` | `60000` | Default timeout in milliseconds |
-| `synthesisStrategy` | `SynthesisStrategy` | `'merge'` | Default strategy for result synthesis |
-| `enableAuditLogging` | `boolean` | `true` | Enable/disable audit logging |
-| `retryFailedDelegations` | `boolean` | `true` | Retry failed tasks automatically |
-| `maxRetries` | `number` | `3` | Maximum retry attempts |
-| `aggregatePartialResults` | `boolean` | `true` | Include partial results in synthesis |
-| `modelSelectionStrategy` | `string` | `'balanced'` | Strategy for model selection |
+| Option                    | Type                | Default      | Description                               |
+| ------------------------- | ------------------- | ------------ | ----------------------------------------- |
+| `hubAgentId`              | `string`            | Required     | Unique identifier for the hub coordinator |
+| `maxParallelDelegations`  | `number`            | `5`          | Maximum concurrent task delegations       |
+| `defaultTimeout`          | `number`            | `60000`      | Default timeout in milliseconds           |
+| `synthesisStrategy`       | `SynthesisStrategy` | `'merge'`    | Default strategy for result synthesis     |
+| `enableAuditLogging`      | `boolean`           | `true`       | Enable/disable audit logging              |
+| `retryFailedDelegations`  | `boolean`           | `true`       | Retry failed tasks automatically          |
+| `maxRetries`              | `number`            | `3`          | Maximum retry attempts                    |
+| `aggregatePartialResults` | `boolean`           | `true`       | Include partial results in synthesis      |
+| `modelSelectionStrategy`  | `string`            | `'balanced'` | Strategy for model selection              |
 
 ## Delegation Request/Response Flow
 
@@ -418,12 +420,12 @@ const timeline = auditLog.getTaskTimeline('task-123');
 
 ```typescript
 type SynthesisStrategy =
-  | 'merge'           // Deep merge all outputs
-  | 'vote'            // Select most common output
-  | 'consensus'       // Require threshold agreement
-  | 'best_pick'       // Select highest-scored result
+  | 'merge' // Deep merge all outputs
+  | 'vote' // Select most common output
+  | 'consensus' // Require threshold agreement
+  | 'best_pick' // Select highest-scored result
   | 'weighted_average' // Weight by agent trust
-  | 'chain';          // Use final result in sequence
+  | 'chain'; // Use final result in sequence
 ```
 
 ### Strategy Examples
@@ -473,12 +475,9 @@ console.log(`Confidence: ${synthesis.confidence}`);
 import { AuditLogManager, createAuditLogWithHandler } from '@wundr.io/agent-delegation';
 
 // With custom handler for external storage
-const auditLog = createAuditLogWithHandler(
-  async (entry) => {
-    await database.insert('audit_logs', entry);
-  },
-  'session-123'
-);
+const auditLog = createAuditLogWithHandler(async entry => {
+  await database.insert('audit_logs', entry);
+}, 'session-123');
 
 // Or configure via coordinator
 const coordinator = new HubCoordinator({

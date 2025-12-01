@@ -47,15 +47,18 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -64,8 +67,11 @@ export async function POST(
     const paramResult = huddleIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid huddle ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid huddle ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -79,12 +85,14 @@ export async function POST(
 
     // Try huddles table first
     try {
-      const huddles = await prisma.$queryRaw<Array<{
-        id: string;
-        workspace_id: string;
-        status: string;
-        room_name: string;
-      }>>`
+      const huddles = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          workspace_id: string;
+          status: string;
+          room_name: string;
+        }>
+      >`
         SELECT id, workspace_id, status, room_name
         FROM huddles
         WHERE id = ${params.huddleId}
@@ -106,8 +114,12 @@ export async function POST(
       });
 
       for (const workspace of workspaces) {
-        const settings = workspace.settings as { huddles?: HuddleResponse[] } | null;
-        const foundHuddle = settings?.huddles?.find((h) => h.id === params.huddleId);
+        const settings = workspace.settings as {
+          huddles?: HuddleResponse[];
+        } | null;
+        const foundHuddle = settings?.huddles?.find(
+          h => h.id === params.huddleId
+        );
 
         if (foundHuddle) {
           huddle = {
@@ -123,16 +135,22 @@ export async function POST(
 
     if (!huddle) {
       return NextResponse.json(
-        createErrorResponse('Huddle not found', CALL_ERROR_CODES.HUDDLE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Huddle not found',
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Check if huddle is still active
     if (huddle.status === 'ended') {
       return NextResponse.json(
-        createErrorResponse('Huddle has already ended', CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED),
-        { status: 400 },
+        createErrorResponse(
+          'Huddle has already ended',
+          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED
+        ),
+        { status: 400 }
       );
     }
 
@@ -156,8 +174,11 @@ export async function POST(
 
     if (!wasParticipant) {
       return NextResponse.json(
-        createErrorResponse('You are not in this huddle', CALL_ERROR_CODES.NOT_IN_HUDDLE),
-        { status: 400 },
+        createErrorResponse(
+          'You are not in this huddle',
+          CALL_ERROR_CODES.NOT_IN_HUDDLE
+        ),
+        { status: 400 }
       );
     }
 
@@ -190,12 +211,14 @@ export async function POST(
           select: { settings: true },
         });
 
-        const settings = workspace?.settings as { huddles?: HuddleResponse[] } | null;
+        const settings = workspace?.settings as {
+          huddles?: HuddleResponse[];
+        } | null;
         if (settings?.huddles) {
-          const updatedHuddles = settings.huddles.map((h) =>
+          const updatedHuddles = settings.huddles.map(h =>
             h.id === params.huddleId
               ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
-              : h,
+              : h
           );
 
           await prisma.workspace.update({
@@ -226,8 +249,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/huddles/:huddleId/leave] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -98,7 +98,10 @@ export interface RagConfig {
 /**
  * Helper to safely parse integer from environment variable
  */
-const parseEnvInt = (value: string | undefined, defaultValue: number): number => {
+const parseEnvInt = (
+  value: string | undefined,
+  defaultValue: number
+): number => {
   if (value === undefined || value === '') {
     return defaultValue;
   }
@@ -109,7 +112,10 @@ const parseEnvInt = (value: string | undefined, defaultValue: number): number =>
 /**
  * Helper to safely parse float from environment variable
  */
-const parseEnvFloat = (value: string | undefined, defaultValue: number): number => {
+const parseEnvFloat = (
+  value: string | undefined,
+  defaultValue: number
+): number => {
   if (value === undefined || value === '') {
     return defaultValue;
   }
@@ -120,7 +126,10 @@ const parseEnvFloat = (value: string | undefined, defaultValue: number): number 
 /**
  * Helper to safely parse boolean from environment variable
  */
-const parseEnvBool = (value: string | undefined, defaultValue: boolean): boolean => {
+const parseEnvBool = (
+  value: string | undefined,
+  defaultValue: boolean
+): boolean => {
   if (value === undefined || value === '') {
     return defaultValue;
   }
@@ -130,7 +139,10 @@ const parseEnvBool = (value: string | undefined, defaultValue: boolean): boolean
 /**
  * Helper to validate log level
  */
-const parseLogLevel = (value: string | undefined, defaultValue: RagLogLevel): RagLogLevel => {
+const parseLogLevel = (
+  value: string | undefined,
+  defaultValue: RagLogLevel
+): RagLogLevel => {
   const validLevels: RagLogLevel[] = ['debug', 'info', 'warn', 'error'];
   if (value && validLevels.includes(value as RagLogLevel)) {
     return value as RagLogLevel;
@@ -154,7 +166,8 @@ const parseLogLevel = (value: string | undefined, defaultValue: RagLogLevel): Ra
  */
 export const DEFAULT_RAG_CONFIG: RagConfig = {
   geminiApiKey: process.env[RAG_ENV_VARS.GEMINI_API_KEY],
-  storePath: process.env[RAG_ENV_VARS.DEFAULT_STORE_PATH] || RAG_DEFAULTS.STORE_PATH,
+  storePath:
+    process.env[RAG_ENV_VARS.DEFAULT_STORE_PATH] || RAG_DEFAULTS.STORE_PATH,
   maxFileSizeMb: parseEnvInt(
     process.env[RAG_ENV_VARS.MAX_FILE_SIZE_MB],
     RAG_DEFAULTS.MAX_FILE_SIZE_MB
@@ -175,7 +188,8 @@ export const DEFAULT_RAG_CONFIG: RagConfig = {
     process.env[RAG_ENV_VARS.LOG_LEVEL],
     RAG_DEFAULTS.LOG_LEVEL
   ),
-  embeddingModel: process.env[RAG_ENV_VARS.EMBEDDING_MODEL] || RAG_DEFAULTS.EMBEDDING_MODEL,
+  embeddingModel:
+    process.env[RAG_ENV_VARS.EMBEDDING_MODEL] || RAG_DEFAULTS.EMBEDDING_MODEL,
   similarityThreshold: parseEnvFloat(
     process.env[RAG_ENV_VARS.SIMILARITY_THRESHOLD],
     RAG_DEFAULTS.SIMILARITY_THRESHOLD
@@ -200,7 +214,8 @@ export const DEFAULT_RAG_CONFIG: RagConfig = {
  */
 export const createRagConfig = (): RagConfig => ({
   geminiApiKey: process.env[RAG_ENV_VARS.GEMINI_API_KEY],
-  storePath: process.env[RAG_ENV_VARS.DEFAULT_STORE_PATH] || RAG_DEFAULTS.STORE_PATH,
+  storePath:
+    process.env[RAG_ENV_VARS.DEFAULT_STORE_PATH] || RAG_DEFAULTS.STORE_PATH,
   maxFileSizeMb: parseEnvInt(
     process.env[RAG_ENV_VARS.MAX_FILE_SIZE_MB],
     RAG_DEFAULTS.MAX_FILE_SIZE_MB
@@ -221,7 +236,8 @@ export const createRagConfig = (): RagConfig => ({
     process.env[RAG_ENV_VARS.LOG_LEVEL],
     RAG_DEFAULTS.LOG_LEVEL
   ),
-  embeddingModel: process.env[RAG_ENV_VARS.EMBEDDING_MODEL] || RAG_DEFAULTS.EMBEDDING_MODEL,
+  embeddingModel:
+    process.env[RAG_ENV_VARS.EMBEDDING_MODEL] || RAG_DEFAULTS.EMBEDDING_MODEL,
   similarityThreshold: parseEnvFloat(
     process.env[RAG_ENV_VARS.SIMILARITY_THRESHOLD],
     RAG_DEFAULTS.SIMILARITY_THRESHOLD
@@ -256,7 +272,7 @@ export const getGeminiApiKey = (): string => {
   if (!key) {
     throw new Error(
       `${RAG_ENV_VARS.GEMINI_API_KEY} environment variable is not set. ` +
-      'Please set it to use RAG features with Gemini embeddings.'
+        'Please set it to use RAG features with Gemini embeddings.'
     );
   }
   return key;

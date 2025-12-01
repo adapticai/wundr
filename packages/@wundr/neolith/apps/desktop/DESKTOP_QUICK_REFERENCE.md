@@ -26,15 +26,18 @@ npm run clean           # Clean build artifacts
 ## File Locations
 
 ### Configuration
+
 - `electron-builder.yml` - Build configuration
 - `package.json` - Dependencies and scripts
 - `tsconfig.json` - TypeScript configuration
 
 ### Source Code
+
 - `electron/main.ts` - Main process
 - `electron/preload.ts` - Preload script (context bridge)
 
 ### Build Resources
+
 - `build/icon.icns` - macOS icon
 - `build/icon.ico` - Windows icon
 - `build/icon.png` - Source PNG / Linux icon
@@ -43,11 +46,13 @@ npm run clean           # Clean build artifacts
 - `build/entitlements.mac.inherit.plist` - macOS child process entitlements
 
 ### Scripts
+
 - `scripts/build.js` - Pre-build preparation
 - `scripts/notarize.js` - macOS notarization
 - `scripts/generate-icons.sh` - Icon generation
 
 ### Output
+
 - `dist/` - Compiled JavaScript
 - `dist/out/` - Built packages (DMG, EXE, AppImage, etc.)
 - `out/` - Web app output (copied from ../web/out)
@@ -57,11 +62,13 @@ npm run clean           # Clean build artifacts
 ### Before Building
 
 1. Ensure web app is built:
+
    ```bash
    cd ../web && npm run build
    ```
 
 2. Verify TypeScript compiles:
+
    ```bash
    npm run typecheck
    ```
@@ -74,6 +81,7 @@ npm run clean           # Clean build artifacts
 ### For Signed macOS Builds
 
 Set environment variables:
+
 ```bash
 export CSC_LINK="/path/to/cert.p12"
 export CSC_KEY_PASSWORD="cert-password"
@@ -85,6 +93,7 @@ export APPLE_TEAM_ID="TEAM_ID"
 ### For Signed Windows Builds
 
 Set environment variables:
+
 ```bash
 export WIN_CSC_LINK="/path/to/cert.pfx"
 export WIN_CSC_KEY_PASSWORD="cert-password"
@@ -97,6 +106,7 @@ npm run build:all
 ```
 
 Output locations:
+
 - macOS: `dist/out/mac/Neolith.app`, `dist/out/Neolith-*.dmg`
 - Windows: `dist/out/Neolith Setup *.exe`, `dist/out/Neolith *.exe` (portable)
 - Linux: `dist/out/Neolith-*.AppImage`, `dist/out/Neolith_*.deb`, `dist/out/Neolith-*.rpm`
@@ -104,6 +114,7 @@ Output locations:
 ## Architecture
 
 ### Main Process (main.ts)
+
 - Creates BrowserWindow
 - Manages system tray
 - Handles IPC communication
@@ -111,11 +122,13 @@ Output locations:
 - Implements deep linking
 
 ### Preload Script (preload.ts)
+
 - Exposes `window.neolith` API to renderer
 - Provides type-safe IPC wrappers
 - Manages event listeners
 
 ### IPC API Categories
+
 1. **Configuration** - Get/set app config
 2. **Dialogs** - File/directory/message dialogs
 3. **Shell** - External URLs, file paths
@@ -125,11 +138,11 @@ Output locations:
 
 ## Supported Platforms
 
-| Platform | Architectures | Formats |
-|----------|--------------|---------|
-| macOS    | x64, ARM64   | DMG, ZIP |
-| Windows  | x64, ia32, ARM64 | NSIS, Portable |
-| Linux    | x64, ARM64   | AppImage, DEB, RPM, Snap |
+| Platform | Architectures    | Formats                  |
+| -------- | ---------------- | ------------------------ |
+| macOS    | x64, ARM64       | DMG, ZIP                 |
+| Windows  | x64, ia32, ARM64 | NSIS, Portable           |
+| Linux    | x64, ARM64       | AppImage, DEB, RPM, Snap |
 
 ## Icon Requirements
 
@@ -138,6 +151,7 @@ Output locations:
 - **Linux**: `.png` files or directory
 
 Generate from PNG:
+
 ```bash
 ./scripts/generate-icons.sh
 ```
@@ -145,6 +159,7 @@ Generate from PNG:
 ## Troubleshooting
 
 ### Build Fails
+
 ```bash
 npm run clean
 npm run build
@@ -152,17 +167,20 @@ npm run build:all
 ```
 
 ### TypeScript Errors
+
 ```bash
 npm run typecheck
 ```
 
 ### Missing Icons
+
 ```bash
 ./scripts/generate-icons.sh
 ls -lh build/icon.*
 ```
 
 ### Web App Not Found
+
 ```bash
 cd ../web
 npm run build
@@ -192,9 +210,11 @@ npm run build:all
 ## Environment Variables
 
 ### Optional for Development
+
 - `NODE_ENV=development` - Enable dev mode
 
 ### Required for Signed Releases
+
 - `APPLE_ID` - Apple ID for notarization
 - `APPLE_ID_PASSWORD` - App-specific password
 - `APPLE_TEAM_ID` - Developer Team ID
@@ -211,5 +231,4 @@ npm run build:all
 
 ---
 
-**Quick Reference - Version 1.0**
-Last Updated: November 26, 2024
+**Quick Reference - Version 1.0** Last Updated: November 26, 2024

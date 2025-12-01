@@ -1,6 +1,8 @@
 # @wundr.io/autogen-orchestrator
 
-AutoGen-style conversational multi-agent orchestration for the Wundr platform. This package implements sophisticated patterns for coordinating multiple AI agents in group chat settings with configurable speaker selection, termination conditions, and nested chat support.
+AutoGen-style conversational multi-agent orchestration for the Wundr platform. This package
+implements sophisticated patterns for coordinating multiple AI agents in group chat settings with
+configurable speaker selection, termination conditions, and nested chat support.
 
 ## Table of Contents
 
@@ -45,11 +47,11 @@ const analyst = createParticipant(
   ['analysis', 'research', 'data']
 );
 
-const developer = createParticipant(
-  'Developer',
-  'You are a senior software developer.',
-  ['coding', 'architecture', 'debugging']
-);
+const developer = createParticipant('Developer', 'You are a senior software developer.', [
+  'coding',
+  'architecture',
+  'debugging',
+]);
 
 const reviewer = createParticipant(
   'Reviewer',
@@ -134,9 +136,9 @@ import { Message, MessageRole, ContentType } from '@wundr.io/autogen-orchestrato
 // Message structure
 interface Message {
   id: string;
-  role: MessageRole;        // 'system' | 'user' | 'assistant' | 'function'
+  role: MessageRole; // 'system' | 'user' | 'assistant' | 'function'
   content: string;
-  name: string;             // Sender name
+  name: string; // Sender name
   timestamp: Date;
   contentType?: ContentType; // 'text' | 'code' | 'image' | 'function_call' | 'function_result'
   functionCall?: FunctionCall;
@@ -158,8 +160,8 @@ interface ChatContext {
   currentSpeaker?: string;
   previousSpeaker?: string;
   startTime: Date;
-  state: Record<string, unknown>;  // Custom state storage
-  parentContext?: ChatContext;      // For nested chats
+  state: Record<string, unknown>; // Custom state storage
+  parentContext?: ChatContext; // For nested chats
 }
 ```
 
@@ -196,9 +198,9 @@ const chat = new GroupChatManager({
       { from: 'Specialist', to: ['Leader', 'Assistant'], weight: 0.5 },
     ],
     allowedTransitions: {
-      'Leader': ['Specialist', 'Assistant'],
-      'Specialist': ['Leader'],
-      'Assistant': ['Leader', 'Specialist'],
+      Leader: ['Specialist', 'Assistant'],
+      Specialist: ['Leader'],
+      Assistant: ['Leader', 'Specialist'],
     },
   },
 });
@@ -229,9 +231,7 @@ const chat = new GroupChatBuilder()
 Automatically chooses the best selection strategy:
 
 ```typescript
-const chat = new GroupChatBuilder()
-  .withSpeakerSelection('auto')
-  .build();
+const chat = new GroupChatBuilder().withSpeakerSelection('auto').build();
 
 // Strategy selection logic:
 // - Uses 'priority' if transition rules are configured
@@ -389,12 +389,7 @@ const selector = createSpeakerSelector('llm_selected');
 const manager = new SpeakerSelectionManager('round_robin');
 
 // Select next speaker
-const result = await manager.selectSpeaker(
-  participants,
-  messages,
-  context,
-  selectionConfig
-);
+const result = await manager.selectSpeaker(participants, messages, context, selectionConfig);
 
 console.log(result);
 // {
@@ -471,9 +466,9 @@ const config: SpeakerSelectionConfig = {
     },
   ],
   allowedTransitions: {
-    'Manager': ['Developer', 'Tester'],
-    'Developer': ['Tester', 'Manager'],
-    'Tester': ['Developer', 'Manager'],
+    Manager: ['Developer', 'Tester'],
+    Developer: ['Tester', 'Manager'],
+    Tester: ['Developer', 'Manager'],
   },
 };
 ```
@@ -706,10 +701,7 @@ Nested chats allow focused sub-discussions within a main conversation.
 ### Configuration
 
 ```typescript
-import {
-  NestedChatManager,
-  NestedChatConfigBuilder,
-} from '@wundr.io/autogen-orchestrator';
+import { NestedChatManager, NestedChatConfigBuilder } from '@wundr.io/autogen-orchestrator';
 
 // Using the builder
 const nestedConfig = new NestedChatConfigBuilder()
@@ -738,9 +730,7 @@ const chat = new GroupChatBuilder()
 
 ```typescript
 // Keyword trigger
-new NestedChatConfigBuilder()
-  .withKeywordTrigger(['review code', 'code review'])
-  .build();
+new NestedChatConfigBuilder().withKeywordTrigger(['review code', 'code review']).build();
 
 // Participant trigger
 new NestedChatConfigBuilder()
@@ -755,9 +745,7 @@ new NestedChatConfigBuilder()
   .build();
 
 // Manual trigger
-new NestedChatConfigBuilder()
-  .withManualTrigger('startNestedDiscussion')
-  .build();
+new NestedChatConfigBuilder().withManualTrigger('startNestedDiscussion').build();
 
 // Trigger manually via state
 chat.updateState('startNestedDiscussion', true);
@@ -771,9 +759,7 @@ chat.updateState('startNestedDiscussion', true);
 // 'reflection' - Structured reflection summary
 // 'custom' - Custom summary logic
 
-const config = new NestedChatConfigBuilder()
-  .withSummaryMethod('reflection')
-  .build();
+const config = new NestedChatConfigBuilder().withSummaryMethod('reflection').build();
 ```
 
 ### Nested Chat Events
@@ -799,7 +785,7 @@ import { TaskOrchestrator } from '@wundr.io/task-orchestrator';
 const taskOrchestrator = new TaskOrchestrator();
 
 // Create a chat for each complex task
-taskOrchestrator.on('task:complex', async (task) => {
+taskOrchestrator.on('task:complex', async task => {
   const chat = new GroupChatBuilder()
     .withName(`Task: ${task.name}`)
     .withParticipant(createParticipant('Planner', 'Plan the task execution'))
@@ -896,65 +882,65 @@ class AgentEventBridge extends EventEmitter {
 
 ### GroupChatManager
 
-| Method | Description |
-|--------|-------------|
-| `constructor(config: GroupChatConfig)` | Create a new chat manager |
-| `setResponseGenerator(generator: ResponseGenerator)` | Set the LLM response generator |
-| `start(options?: StartChatOptions)` | Start the conversation |
-| `pause()` | Pause the conversation |
-| `resume()` | Resume a paused conversation |
-| `stop(reason?: string)` | Stop the conversation |
-| `addMessage(options: CreateMessageOptions)` | Add a message |
-| `addParticipant(options: AddParticipantOptions)` | Add a participant |
-| `removeParticipant(name: string)` | Remove a participant |
-| `updateParticipantStatus(name: string, status: ParticipantStatus)` | Update participant status |
-| `addTerminationCondition(condition: TerminationCondition)` | Add termination condition |
-| `addNestedChatConfig(config: NestedChatConfig)` | Add nested chat configuration |
-| `getStatus()` | Get current chat status |
-| `getChatId()` | Get the chat ID |
-| `getMessages()` | Get all messages |
-| `getParticipants()` | Get all participants |
-| `getContext()` | Get current context |
-| `getMetrics()` | Get chat metrics |
-| `updateState(key: string, value: T)` | Update context state |
-| `getState<T>(key: string)` | Get context state value |
+| Method                                                             | Description                    |
+| ------------------------------------------------------------------ | ------------------------------ |
+| `constructor(config: GroupChatConfig)`                             | Create a new chat manager      |
+| `setResponseGenerator(generator: ResponseGenerator)`               | Set the LLM response generator |
+| `start(options?: StartChatOptions)`                                | Start the conversation         |
+| `pause()`                                                          | Pause the conversation         |
+| `resume()`                                                         | Resume a paused conversation   |
+| `stop(reason?: string)`                                            | Stop the conversation          |
+| `addMessage(options: CreateMessageOptions)`                        | Add a message                  |
+| `addParticipant(options: AddParticipantOptions)`                   | Add a participant              |
+| `removeParticipant(name: string)`                                  | Remove a participant           |
+| `updateParticipantStatus(name: string, status: ParticipantStatus)` | Update participant status      |
+| `addTerminationCondition(condition: TerminationCondition)`         | Add termination condition      |
+| `addNestedChatConfig(config: NestedChatConfig)`                    | Add nested chat configuration  |
+| `getStatus()`                                                      | Get current chat status        |
+| `getChatId()`                                                      | Get the chat ID                |
+| `getMessages()`                                                    | Get all messages               |
+| `getParticipants()`                                                | Get all participants           |
+| `getContext()`                                                     | Get current context            |
+| `getMetrics()`                                                     | Get chat metrics               |
+| `updateState(key: string, value: T)`                               | Update context state           |
+| `getState<T>(key: string)`                                         | Get context state value        |
 
 ### SpeakerSelectionManager
 
-| Method | Description |
-|--------|-------------|
-| `constructor(method?: SpeakerSelectionMethod)` | Create with initial method |
-| `selectSpeaker(participants, messages, context, config?)` | Select next speaker |
-| `setMethod(method: SpeakerSelectionMethod)` | Change selection method |
-| `getMethod()` | Get current method |
-| `getStrategy(method: SpeakerSelectionMethod)` | Get strategy instance |
+| Method                                                    | Description                |
+| --------------------------------------------------------- | -------------------------- |
+| `constructor(method?: SpeakerSelectionMethod)`            | Create with initial method |
+| `selectSpeaker(participants, messages, context, config?)` | Select next speaker        |
+| `setMethod(method: SpeakerSelectionMethod)`               | Change selection method    |
+| `getMethod()`                                             | Get current method         |
+| `getStrategy(method: SpeakerSelectionMethod)`             | Get strategy instance      |
 
 ### TerminationManager
 
-| Method | Description |
-|--------|-------------|
+| Method                                             | Description                    |
+| -------------------------------------------------- | ------------------------------ |
 | `constructor(conditions?: TerminationCondition[])` | Create with initial conditions |
-| `addCondition(condition: TerminationCondition)` | Add a condition |
-| `removeCondition(type: TerminationConditionType)` | Remove conditions by type |
-| `clearConditions()` | Clear all conditions |
-| `evaluate(messages, participants, context)` | Evaluate all conditions |
-| `getConditions()` | Get all conditions |
-| `hasCondition(type: TerminationConditionType)` | Check if type exists |
+| `addCondition(condition: TerminationCondition)`    | Add a condition                |
+| `removeCondition(type: TerminationConditionType)`  | Remove conditions by type      |
+| `clearConditions()`                                | Clear all conditions           |
+| `evaluate(messages, participants, context)`        | Evaluate all conditions        |
+| `getConditions()`                                  | Get all conditions             |
+| `hasCondition(type: TerminationConditionType)`     | Check if type exists           |
 
 ### NestedChatManager
 
-| Method | Description |
-|--------|-------------|
-| `constructor(configs?: NestedChatConfig[])` | Create with initial configs |
-| `addConfig(config: NestedChatConfig)` | Add configuration |
-| `removeConfig(configId: string)` | Remove configuration |
-| `checkTrigger(message, participants, context)` | Check for triggers |
-| `startNestedChat(config, parentChatId, parentMessageId, participants, context)` | Start nested chat |
-| `addMessage(nestedChatId: string, message: Message)` | Add message to nested chat |
-| `endNestedChat(nestedChatId, status?, reason?)` | End nested chat |
-| `getActiveChats()` | Get active nested chat IDs |
-| `getCompletedChats()` | Get completed results |
-| `hasActiveChats()` | Check for active chats |
+| Method                                                                          | Description                 |
+| ------------------------------------------------------------------------------- | --------------------------- |
+| `constructor(configs?: NestedChatConfig[])`                                     | Create with initial configs |
+| `addConfig(config: NestedChatConfig)`                                           | Add configuration           |
+| `removeConfig(configId: string)`                                                | Remove configuration        |
+| `checkTrigger(message, participants, context)`                                  | Check for triggers          |
+| `startNestedChat(config, parentChatId, parentMessageId, participants, context)` | Start nested chat           |
+| `addMessage(nestedChatId: string, message: Message)`                            | Add message to nested chat  |
+| `endNestedChat(nestedChatId, status?, reason?)`                                 | End nested chat             |
+| `getActiveChats()`                                                              | Get active nested chat IDs  |
+| `getCompletedChats()`                                                           | Get completed results       |
+| `hasActiveChats()`                                                              | Check for active chats      |
 
 ## Examples
 

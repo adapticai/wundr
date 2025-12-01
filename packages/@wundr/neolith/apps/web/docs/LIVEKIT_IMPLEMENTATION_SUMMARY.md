@@ -2,25 +2,30 @@
 
 ## Completed Tasks
 
-This document summarizes the LiveKit video/audio call integration completed for the Neolith application.
+This document summarizes the LiveKit video/audio call integration completed for the Neolith
+application.
 
 ### 1. Dependencies ✅
 
 **Already Installed:**
+
 - `@livekit/components-react@^2.6.0` - React components for LiveKit
 - `livekit-client@^2.5.0` - Client-side LiveKit SDK
 - `livekit-server-sdk@^2.9.1` - Server-side LiveKit SDK (in @neolith/core)
 
 **Location:**
+
 - `/packages/@wundr/neolith/apps/web/package.json`
 - `/packages/@wundr/neolith/packages/@neolith/core/package.json`
 
 ### 2. Backend Service ✅
 
 **Already Implemented:**
+
 - `/packages/@neolith/core/src/services/livekit-service.ts`
 
 **Features:**
+
 - Room management (create, delete, list, get, update)
 - Token generation (host, guest, viewer roles)
 - Participant management (list, remove, mute, update)
@@ -35,6 +40,7 @@ This document summarizes the LiveKit video/audio call integration completed for 
 **Created New Routes:**
 
 #### Room Management
+
 - `POST /api/livekit/room` - Create new room
   - Location: `/apps/web/app/api/livekit/room/route.ts`
   - Body: `{ name, maxParticipants?, emptyTimeout?, metadata? }`
@@ -49,12 +55,14 @@ This document summarizes the LiveKit video/audio call integration completed for 
   - Location: `/apps/web/app/api/livekit/room/[roomId]/route.ts`
 
 #### Token Generation
+
 - `GET /api/livekit/token` - Generate participant token
   - Location: `/apps/web/app/api/livekit/token/route.ts`
   - Query params: `roomName, identity?, name?, role?, metadata?`
   - Supports roles: `host`, `guest`, `viewer`
 
 **Existing Webhook:**
+
 - `POST /api/livekit/webhook` - Handle LiveKit events
   - Location: `/apps/web/app/api/livekit/webhook/route.ts`
   - Handles: room events, participant events, track events, recording events
@@ -64,6 +72,7 @@ This document summarizes the LiveKit video/audio call integration completed for 
 **Created New Components:**
 
 #### LiveKitProvider
+
 - Location: `/apps/web/components/call/livekit-provider.tsx`
 - Purpose: Context provider for LiveKit configuration
 - Features:
@@ -73,6 +82,7 @@ This document summarizes the LiveKit video/audio call integration completed for 
 - Hook: `useLiveKit()`
 
 #### AudioRoom
+
 - Location: `/apps/web/components/call/audio-room.tsx`
 - Purpose: Audio-only room component
 - Features:
@@ -83,6 +93,7 @@ This document summarizes the LiveKit video/audio call integration completed for 
   - Device selection
 
 **Existing Component:**
+
 - VideoRoom: `/apps/web/components/call/video-room.tsx`
   - Already implemented with full video features
   - Grid, spotlight, and sidebar layouts
@@ -104,6 +115,7 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://localhost:7880
 ```
 
 **Optional Configuration:**
+
 - `LIVEKIT_DEFAULT_TOKEN_TTL` - Token expiration (default: 3600s)
 - `LIVEKIT_DEFAULT_EMPTY_TIMEOUT` - Empty room timeout (default: 300s)
 - `LIVEKIT_DEFAULT_MAX_PARTICIPANTS` - Max participants (default: 100)
@@ -111,10 +123,12 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://localhost:7880
 ### 6. Type Safety ✅
 
 **Error Codes Added:**
+
 - Location: `/apps/web/lib/validations/call.ts`
 - Added: `LIVEKIT_CONFIG_ERROR`, `ROOM_NOT_FOUND`, `ROOM_ALREADY_EXISTS`
 
 **TypeScript Compilation:**
+
 - All new files pass type checking
 - No LiveKit-related type errors
 - Proper error handling with typed responses
@@ -122,6 +136,7 @@ NEXT_PUBLIC_LIVEKIT_URL=wss://localhost:7880
 ### 7. Documentation ✅
 
 **Created:**
+
 - `/apps/web/docs/LIVEKIT_SETUP.md` - Comprehensive setup guide
   - Environment variable documentation
   - Architecture overview
@@ -219,6 +234,7 @@ function MyAudioCall() {
 ## Testing
 
 ### Typecheck Status
+
 - ✅ All LiveKit files pass TypeScript compilation
 - ✅ No LiveKit-related type errors
 - ✅ Proper error handling with typed responses
@@ -256,6 +272,7 @@ The LiveKit integration is complete and ready for use. To implement calls in you
 ## Support
 
 For issues or questions:
+
 - See `/docs/LIVEKIT_SETUP.md` for detailed documentation
 - Check LiveKit docs: https://docs.livekit.io/
 - Review the service implementation in `@neolith/core/services/livekit-service.ts`

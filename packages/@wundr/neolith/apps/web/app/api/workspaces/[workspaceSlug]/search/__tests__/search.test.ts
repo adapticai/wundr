@@ -134,8 +134,12 @@ describe('Search API Routes', () => {
       auth.mockResolvedValue(null);
 
       const { GET } = await import('../route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/search?q=test');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/search?q=test'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(401);
       const data = await response.json();
@@ -146,8 +150,12 @@ describe('Search API Routes', () => {
       auth.mockResolvedValue(createMockSession());
 
       const { GET } = await import('../route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/search');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/search'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(400);
       const data = await response.json();
@@ -159,8 +167,12 @@ describe('Search API Routes', () => {
       prisma.workspaceMember.findFirst.mockResolvedValue(null);
 
       const { GET } = await import('../route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/search?q=test');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/search?q=test'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(403);
       const data = await response.json();
@@ -180,8 +192,12 @@ describe('Search API Routes', () => {
       mockSearchService.search.mockResolvedValue(createMockSearchResponse());
 
       const { GET } = await import('../route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/search?q=test');
-      const response = await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/search?q=test'
+      );
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -204,10 +220,17 @@ describe('Search API Routes', () => {
       mockSearchService.search.mockResolvedValue(createMockSearchResponse());
 
       const { GET } = await import('../route');
-      const request = new NextRequest('http://localhost/api/workspaces/ws-1/search?q=test');
-      await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      const request = new NextRequest(
+        'http://localhost/api/workspaces/ws-1/search?q=test'
+      );
+      await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
-      expect(mockSearchService.saveRecentSearch).toHaveBeenCalledWith('user-123', 'test');
+      expect(mockSearchService.saveRecentSearch).toHaveBeenCalledWith(
+        'user-123',
+        'test'
+      );
     });
 
     it('should pass filter parameters', async () => {
@@ -224,9 +247,11 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search?q=test&types=message,file&channels=ch-1,ch-2&limit=10',
+        'http://localhost/api/workspaces/ws-1/search?q=test&types=message,file&channels=ch-1,ch-2&limit=10'
       );
-      await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(mockSearchService.search).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -239,7 +264,7 @@ describe('Search API Routes', () => {
           pagination: expect.objectContaining({
             limit: 10,
           }),
-        }),
+        })
       );
     });
 
@@ -259,9 +284,11 @@ describe('Search API Routes', () => {
       const fromDate = '2024-01-01T00:00:00Z';
       const toDate = '2024-12-31T23:59:59Z';
       const request = new NextRequest(
-        `http://localhost/api/workspaces/ws-1/search?q=test&from=${fromDate}&to=${toDate}`,
+        `http://localhost/api/workspaces/ws-1/search?q=test&from=${fromDate}&to=${toDate}`
       );
-      await GET(request, { params: Promise.resolve({ workspaceSlug: 'ws-1' }) });
+      await GET(request, {
+        params: Promise.resolve({ workspaceSlug: 'ws-1' }),
+      });
 
       expect(mockSearchService.search).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -271,7 +298,7 @@ describe('Search API Routes', () => {
               end: expect.any(Date),
             }),
           }),
-        }),
+        })
       );
     });
   });

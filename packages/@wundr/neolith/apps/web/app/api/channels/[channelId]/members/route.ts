@@ -41,8 +41,8 @@ async function checkChannelAccess(channelId: string, userId: string) {
   });
 
   if (!channel) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -54,8 +54,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   const channelMembership = await prisma.channelMember.findUnique({
     where: {
@@ -89,15 +89,18 @@ return null;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -106,8 +109,11 @@ export async function GET(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -117,9 +123,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -128,9 +134,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to private channel',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -173,7 +179,7 @@ export async function GET(
       });
 
       // Transform to match expected format
-      const members = workspaceMembers.map((wm) => ({
+      const members = workspaceMembers.map(wm => ({
         id: wm.user.id,
         name: wm.user.displayName || wm.user.name || 'Unknown',
         email: wm.user.email,
@@ -204,10 +210,7 @@ export async function GET(
           },
         },
       },
-      orderBy: [
-        { role: 'asc' },
-        { joinedAt: 'asc' },
-      ],
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
     });
 
     return NextResponse.json({
@@ -219,9 +222,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -238,15 +241,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -255,8 +261,11 @@ export async function POST(
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid channel ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -266,9 +275,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -279,9 +288,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Channel Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -291,36 +300,48 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Support both single userId and array of userIds
-    const bodyWithUserIds = body as { userId?: string; userIds?: string[]; role?: string; includeHistory?: boolean };
+    const bodyWithUserIds = body as {
+      userId?: string;
+      userIds?: string[];
+      role?: string;
+      includeHistory?: boolean;
+    };
 
     // Convert to array format for unified processing
-    const userIds = bodyWithUserIds.userIds || (bodyWithUserIds.userId ? [bodyWithUserIds.userId] : []);
+    const userIds =
+      bodyWithUserIds.userIds ||
+      (bodyWithUserIds.userId ? [bodyWithUserIds.userId] : []);
     const role = bodyWithUserIds.role || 'MEMBER';
 
     if (userIds.length === 0) {
       return NextResponse.json(
         createErrorResponse(
           'At least one userId is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate all user IDs are strings
-    if (!userIds.every((id: unknown) => typeof id === 'string' && id.length > 0)) {
+    if (
+      !userIds.every((id: unknown) => typeof id === 'string' && id.length > 0)
+    ) {
       return NextResponse.json(
         createErrorResponse(
           'All user IDs must be non-empty strings',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -335,16 +356,20 @@ export async function POST(
       },
     });
 
-    const workspaceMemberIds = new Set(workspaceMemberships.map(wm => wm.userId));
-    const nonWorkspaceMembers = userIds.filter((id: string) => !workspaceMemberIds.has(id));
+    const workspaceMemberIds = new Set(
+      workspaceMemberships.map(wm => wm.userId)
+    );
+    const nonWorkspaceMembers = userIds.filter(
+      (id: string) => !workspaceMemberIds.has(id)
+    );
 
     if (nonWorkspaceMembers.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           `Users must be workspace members to join the channel: ${nonWorkspaceMembers.join(', ')}`,
-          ORG_ERROR_CODES.USER_NOT_FOUND,
+          ORG_ERROR_CODES.USER_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -357,20 +382,22 @@ export async function POST(
     });
 
     const existingMemberIds = new Set(existingMemberships.map(m => m.userId));
-    const newUserIds = userIds.filter((id: string) => !existingMemberIds.has(id));
+    const newUserIds = userIds.filter(
+      (id: string) => !existingMemberIds.has(id)
+    );
 
     if (newUserIds.length === 0) {
       return NextResponse.json(
         createErrorResponse(
           'All users are already members of this channel',
-          ORG_ERROR_CODES.ALREADY_MEMBER,
+          ORG_ERROR_CODES.ALREADY_MEMBER
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     // Add all new members in a transaction
-    const newMemberships = await prisma.$transaction(async (tx) => {
+    const newMemberships = await prisma.$transaction(async tx => {
       await tx.channelMember.createMany({
         data: newUserIds.map((userId: string) => ({
           channelId: params.channelId,
@@ -406,16 +433,20 @@ export async function POST(
       where: { id: session.user.id },
       select: { name: true, displayName: true },
     });
-    const inviterName = currentUser?.displayName || currentUser?.name || 'Someone';
+    const inviterName =
+      currentUser?.displayName || currentUser?.name || 'Someone';
 
     for (const membership of newMemberships) {
       NotificationService.notifyChannelInvite(
         membership.userId,
         params.channelId,
         access.channel.name,
-        inviterName,
+        inviterName
       ).catch(err => {
-        console.error('[POST /api/channels/:channelId/members] Failed to send channel invite notification:', err);
+        console.error(
+          '[POST /api/channels/:channelId/members] Failed to send channel invite notification:',
+          err
+        );
       });
     }
 
@@ -425,16 +456,16 @@ export async function POST(
         message: `${newMemberships.length} member(s) added to channel successfully`,
         skipped: existingMemberIds.size,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/members] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

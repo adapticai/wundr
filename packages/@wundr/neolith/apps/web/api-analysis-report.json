@@ -721,9 +721,7 @@
     },
     "orchestrator-analytics": {
       "description": "Agent performance tracking and metrics",
-      "endpoints": [
-        "GET /api/orchestrators/:id/analytics"
-      ],
+      "endpoints": ["GET /api/orchestrators/:id/analytics"],
       "mcpPotential": "high - performance monitoring and optimization"
     },
     "agents": {
@@ -792,24 +790,17 @@
     },
     "workspaces": {
       "description": "Workspace management",
-      "endpoints": [
-        "GET /api/workspaces",
-        "POST /api/workspaces"
-      ],
+      "endpoints": ["GET /api/workspaces", "POST /api/workspaces"],
       "mcpPotential": "medium - workspace discovery"
     },
     "system": {
       "description": "System health and monitoring",
-      "endpoints": [
-        "GET /api/health"
-      ],
+      "endpoints": ["GET /api/health"],
       "mcpPotential": "medium - health monitoring"
     },
     "graphql": {
       "description": "GraphQL API access",
-      "endpoints": [
-        "GET,POST,OPTIONS /api/graphql"
-      ],
+      "endpoints": ["GET,POST,OPTIONS /api/graphql"],
       "mcpPotential": "high - flexible data access"
     }
   },
@@ -1123,9 +1114,7 @@
       },
       {
         "category": "Analytics & Metrics",
-        "endpoints": [
-          "GET /api/orchestrators/:id/analytics"
-        ],
+        "endpoints": ["GET /api/orchestrators/:id/analytics"],
         "mcpTools": [
           "get_orchestrator_analytics - Retrieve performance metrics",
           "track_agent_performance - Monitor agent success rates"
@@ -1135,10 +1124,7 @@
     "mediumPriority": [
       {
         "category": "Channel Management",
-        "endpoints": [
-          "GET /api/channels",
-          "POST /api/channels"
-        ],
+        "endpoints": ["GET /api/channels", "POST /api/channels"],
         "mcpTools": [
           "list_channels - Browse available channels",
           "create_channel - Create new channel"
@@ -1146,12 +1132,8 @@
       },
       {
         "category": "Workspace Discovery",
-        "endpoints": [
-          "GET /api/workspaces"
-        ],
-        "mcpTools": [
-          "list_workspaces - Discover available workspaces"
-        ]
+        "endpoints": ["GET /api/workspaces"],
+        "mcpTools": ["list_workspaces - Discover available workspaces"]
       }
     ],
     "lowPriority": [
@@ -1171,9 +1153,7 @@
         "priority": 1,
         "tool": "Agent Management Suite",
         "description": "Core tools for agent lifecycle management",
-        "endpoints": [
-          "GET/POST/PATCH /api/workspaces/:workspaceSlug/agents/*"
-        ],
+        "endpoints": ["GET/POST/PATCH /api/workspaces/:workspaceSlug/agents/*"],
         "features": [
           "Agent discovery and filtering",
           "Agent creation with config templates",
@@ -1216,9 +1196,7 @@
         "priority": 4,
         "tool": "Workflow Automation Suite",
         "description": "Create and manage automation workflows",
-        "endpoints": [
-          "GET/POST /api/workspaces/:workspaceSlug/workflows/*"
-        ],
+        "endpoints": ["GET/POST /api/workspaces/:workspaceSlug/workflows/*"],
         "features": [
           "Workflow template library",
           "Dynamic workflow creation",

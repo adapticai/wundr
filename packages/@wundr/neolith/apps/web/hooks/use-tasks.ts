@@ -2,10 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type {
-  TaskPriorityType,
-  TaskStatusType,
-} from '@/lib/validations/task';
+import type { TaskPriorityType, TaskStatusType } from '@/lib/validations/task';
 
 /**
  * Task type for workspace tasks
@@ -60,7 +57,13 @@ export interface UseTasksOptions {
   tags?: string[];
   assignedToId?: string;
   includeCompleted?: boolean;
-  sortBy?: 'createdAt' | 'updatedAt' | 'priority' | 'dueDate' | 'title' | 'status';
+  sortBy?:
+    | 'createdAt'
+    | 'updatedAt'
+    | 'priority'
+    | 'dueDate'
+    | 'title'
+    | 'status';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
@@ -97,9 +100,13 @@ export interface UseTasksReturn {
  * });
  * ```
  */
-export function useTasks(workspaceId: string, options?: UseTasksOptions): UseTasksReturn {
+export function useTasks(
+  workspaceId: string,
+  options?: UseTasksOptions
+): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [pagination, setPagination] = useState<UseTasksReturn['pagination']>(null);
+  const [pagination, setPagination] =
+    useState<UseTasksReturn['pagination']>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -127,12 +134,16 @@ export function useTasks(workspaceId: string, options?: UseTasksOptions): UseTas
       }
 
       if (options?.status) {
-        const statusArray = Array.isArray(options.status) ? options.status : [options.status];
+        const statusArray = Array.isArray(options.status)
+          ? options.status
+          : [options.status];
         statusArray.forEach(s => params.append('status', s));
       }
 
       if (options?.priority) {
-        const priorityArray = Array.isArray(options.priority) ? options.priority : [options.priority];
+        const priorityArray = Array.isArray(options.priority)
+          ? options.priority
+          : [options.priority];
         priorityArray.forEach(p => params.append('priority', p));
       }
 

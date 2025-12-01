@@ -16,7 +16,6 @@ import { createHash } from 'crypto';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
-
 import {
   validateApiKeySchema,
   createErrorResponse,
@@ -24,7 +23,7 @@ import {
 } from '@/lib/validations/orchestrator';
 
 import type { ValidateApiKeyInput } from '@/lib/validations/orchestrator';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Hash an API key for comparison
@@ -74,8 +73,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -86,9 +88,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -97,8 +99,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Validate API key format
     if (!input.apiKey.startsWith('vp_')) {
       return NextResponse.json(
-        createErrorResponse('Invalid API key format', ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY),
-        { status: 401 },
+        createErrorResponse(
+          'Invalid API key format',
+          ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY
+        ),
+        { status: 401 }
       );
     }
 
@@ -107,7 +112,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Build query to find Orchestrator with matching API key hash
     // If orchestratorId is provided, add it as an additional filter
-    const whereClause = input.orchestratorId ? { id: input.orchestratorId } : {};
+    const whereClause = input.orchestratorId
+      ? { id: input.orchestratorId }
+      : {};
 
     // Fetch all VPs (or specific Orchestrator if orchestratorId provided) to check API keys
     // Note: In production with many VPs, consider a dedicated API key table with index
@@ -139,7 +146,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let keyMetadata: ApiKeyMetadata | null = null;
 
     for (const orchestrator of orchestrators) {
-      const capabilities = orchestrator.capabilities as Record<string, unknown> | null;
+      const capabilities = orchestrator.capabilities as Record<
+        string,
+        unknown
+      > | null;
       if (capabilities?.apiKey) {
         const storedKey = capabilities.apiKey as ApiKeyMetadata;
         if (storedKey.hash === apiKeyHash) {
@@ -152,8 +162,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!matchedVP || !keyMetadata) {
       return NextResponse.json(
-        createErrorResponse('Invalid API key', ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY),
-        { status: 401 },
+        createErrorResponse(
+          'Invalid API key',
+          ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY
+        ),
+        { status: 401 }
       );
     }
 
@@ -162,8 +175,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const expirationDate = new Date(keyMetadata.expiresAt);
       if (expirationDate < new Date()) {
         return NextResponse.json(
-          createErrorResponse('API key has expired', ORCHESTRATOR_ERROR_CODES.API_KEY_EXPIRED),
-          { status: 401 },
+          createErrorResponse(
+            'API key has expired',
+            ORCHESTRATOR_ERROR_CODES.API_KEY_EXPIRED
+          ),
+          { status: 401 }
         );
       }
     }
@@ -172,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (matchedVP.status === 'OFFLINE') {
       // Allow validation but include status in response
       console.warn(
-        `[OrchestratorValidate] API key validated for offline Orchestrator ${matchedVP.id}`,
+        `[OrchestratorValidate] API key validated for offline Orchestrator ${matchedVP.id}`
       );
     }
 
@@ -181,9 +197,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator user account is not active',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -233,9 +249,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

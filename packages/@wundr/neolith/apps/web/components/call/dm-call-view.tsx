@@ -93,7 +93,10 @@ export function DMCallView({
         toast({
           variant: 'destructive',
           title: 'Failed to join call',
-          description: error instanceof Error ? error.message : 'An unexpected error occurred',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred',
         });
         setIsJoining(false);
         onCallEnd?.();
@@ -125,7 +128,10 @@ export function DMCallView({
       toast({
         variant: 'destructive',
         title: 'Failed to end call',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       });
     }
   };
@@ -133,10 +139,10 @@ export function DMCallView({
   // Show loading state while joining
   if (isJoining || !token) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-lg font-medium">Joining call...</p>
-        <p className="text-sm text-muted-foreground mt-2">
+      <div className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-background'>
+        <Loader2 className='h-12 w-12 animate-spin text-primary mb-4' />
+        <p className='text-lg font-medium'>Joining call...</p>
+        <p className='text-sm text-muted-foreground mt-2'>
           Connecting to {call.type === 'video' ? 'video' : 'audio'} call
         </p>
       </div>
@@ -145,7 +151,7 @@ export function DMCallView({
 
   // Render VideoRoom for both audio and video calls
   return (
-    <div className="fixed inset-0 z-50 bg-background">
+    <div className='fixed inset-0 z-50 bg-background'>
       <VideoRoom
         token={token}
         serverUrl={serverUrl}

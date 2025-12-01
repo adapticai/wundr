@@ -64,7 +64,7 @@ async function getSharp(): Promise<SharpFunction> {
     throw new Error(
       'Failed to load sharp module. Ensure sharp is installed with the correct platform binaries. ' +
         'Try: npm install --include=optional sharp\n' +
-        `Original error: ${error instanceof Error ? error.message : String(error)}`,
+        `Original error: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 }
@@ -170,7 +170,10 @@ export interface ImageService {
    * @param sizes - Variant configurations
    * @returns Array of image variants
    */
-  generateVariants(input: Buffer, sizes: VariantConfig[]): Promise<ImageVariant[]>;
+  generateVariants(
+    input: Buffer,
+    sizes: VariantConfig[]
+  ): Promise<ImageVariant[]>;
 
   /**
    * Validates an image against specified criteria.
@@ -179,7 +182,10 @@ export interface ImageService {
    * @param options - Validation options
    * @returns Validation result
    */
-  validateImage(input: Buffer, options?: ImageValidationOptions): Promise<ImageValidationResult>;
+  validateImage(
+    input: Buffer,
+    options?: ImageValidationOptions
+  ): Promise<ImageValidationResult>;
 }
 
 // =============================================================================
@@ -217,7 +223,7 @@ export class UnsupportedFormatError extends ImageProcessingError {
 export class ImageValidationError extends ImageProcessingError {
   constructor(
     message: string,
-    public readonly errors: string[],
+    public readonly errors: string[]
   ) {
     super(message, 'VALIDATION_ERROR');
     this.name = 'ImageValidationError';
@@ -232,7 +238,7 @@ export class ImageOperationError extends ImageProcessingError {
     super(
       `Image operation failed: ${operation}${cause ? ` - ${cause.message}` : ''}`,
       'OPERATION_ERROR',
-      cause,
+      cause
     );
     this.name = 'ImageOperationError';
   }
@@ -325,7 +331,10 @@ export class ImageServiceImpl implements ImageService {
 
       return await pipeline.toBuffer();
     } catch (error) {
-      throw new ImageOperationError('resize', error instanceof Error ? error : undefined);
+      throw new ImageOperationError(
+        'resize',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -356,7 +365,7 @@ export class ImageServiceImpl implements ImageService {
     } catch (error) {
       throw new ImageOperationError(
         `generate thumbnail (${size})`,
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -364,7 +373,10 @@ export class ImageServiceImpl implements ImageService {
   /**
    * Optimizes an image for web delivery.
    */
-  async optimizeImage(input: Buffer, options?: OptimizeOptions): Promise<Buffer> {
+  async optimizeImage(
+    input: Buffer,
+    options?: OptimizeOptions
+  ): Promise<Buffer> {
     const opts = { ...DEFAULT_OPTIMIZE_OPTIONS, ...options };
     const sharp = await getSharp();
     const metadata = await sharp(input).metadata();
@@ -392,7 +404,10 @@ export class ImageServiceImpl implements ImageService {
 
         case 'png':
           pipeline = pipeline.png({
-            compressionLevel: Math.min(9, Math.round((100 - (opts.quality ?? 100)) / 10)),
+            compressionLevel: Math.min(
+              9,
+              Math.round((100 - (opts.quality ?? 100)) / 10)
+            ),
             progressive: opts.progressive ?? false,
           });
           break;
@@ -426,7 +441,10 @@ export class ImageServiceImpl implements ImageService {
 
       return await pipeline.toBuffer();
     } catch (error) {
-      throw new ImageOperationError('optimize', error instanceof Error ? error : undefined);
+      throw new ImageOperationError(
+        'optimize',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -459,9 +477,12 @@ export class ImageServiceImpl implements ImageService {
         .toBuffer();
     } catch (error) {
       if (error instanceof ImageProcessingError) {
-throw error;
-}
-      throw new ImageOperationError('crop', error instanceof Error ? error : undefined);
+        throw error;
+      }
+      throw new ImageOperationError(
+        'crop',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -475,10 +496,15 @@ throw error;
       const normalizedDegrees = ((degrees % 360) + 360) % 360;
 
       return await sharp(input)
-        .rotate(normalizedDegrees, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .rotate(normalizedDegrees, {
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
         .toBuffer();
     } catch (error) {
-      throw new ImageOperationError('rotate', error instanceof Error ? error : undefined);
+      throw new ImageOperationError(
+        'rotate',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -494,7 +520,11 @@ throw error;
 
       switch (format) {
         case 'jpeg':
-          pipeline = pipeline.jpeg({ quality, progressive: true, mozjpeg: true });
+          pipeline = pipeline.jpeg({
+            quality,
+            progressive: true,
+            mozjpeg: true,
+          });
           break;
         case 'png':
           pipeline = pipeline.png({ compressionLevel: 6 });
@@ -515,9 +545,12 @@ throw error;
       return await pipeline.toBuffer();
     } catch (error) {
       if (error instanceof ImageProcessingError) {
-throw error;
-}
-      throw new ImageOperationError(`convert to ${format}`, error instanceof Error ? error : undefined);
+        throw error;
+      }
+      throw new ImageOperationError(
+        `convert to ${format}`,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -543,7 +576,10 @@ throw error;
         orientation: metadata.orientation,
       };
     } catch (error) {
-      throw new ImageOperationError('extract metadata', error instanceof Error ? error : undefined);
+      throw new ImageOperationError(
+        'extract metadata',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -572,7 +608,10 @@ throw error;
         },
       };
     } catch (error) {
-      throw new ImageOperationError('extract EXIF', error instanceof Error ? error : undefined);
+      throw new ImageOperationError(
+        'extract EXIF',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -585,14 +624,20 @@ throw error;
       // Rotate auto-orients based on EXIF, then we don't preserve metadata
       return await sharp(input).rotate().toBuffer();
     } catch (error) {
-      throw new ImageOperationError('strip EXIF', error instanceof Error ? error : undefined);
+      throw new ImageOperationError(
+        'strip EXIF',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
   /**
    * Generates multiple size variants of an image.
    */
-  async generateVariants(input: Buffer, sizes: VariantConfig[]): Promise<ImageVariant[]> {
+  async generateVariants(
+    input: Buffer,
+    sizes: VariantConfig[]
+  ): Promise<ImageVariant[]> {
     const sharp = await getSharp();
     const metadata = await sharp(input).metadata();
     const isAnimated = (metadata.pages ?? 1) > 1;
@@ -601,9 +646,10 @@ throw error;
     const variantPromises = sizes.map(async (config): Promise<ImageVariant> => {
       try {
         // For animated images, use first frame for non-animated variants
-        const sourceBuffer = isAnimated && config.isThumbnail
-          ? await sharp(input, { page: 0 }).toBuffer()
-          : input;
+        const sourceBuffer =
+          isAnimated && config.isThumbnail
+            ? await sharp(input, { page: 0 }).toBuffer()
+            : input;
 
         let pipeline = sharp(sourceBuffer).rotate(); // Auto-orient
 
@@ -622,7 +668,11 @@ throw error;
 
         switch (format) {
           case 'jpeg':
-            pipeline = pipeline.jpeg({ quality, progressive: true, mozjpeg: true });
+            pipeline = pipeline.jpeg({
+              quality,
+              progressive: true,
+              mozjpeg: true,
+            });
             break;
           case 'png':
             pipeline = pipeline.png({ compressionLevel: 6 });
@@ -652,7 +702,7 @@ throw error;
       } catch (error) {
         throw new ImageOperationError(
           `generate variant ${config.name}`,
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
     });
@@ -665,7 +715,7 @@ throw error;
    */
   async validateImage(
     input: Buffer,
-    options?: ImageValidationOptions,
+    options?: ImageValidationOptions
   ): Promise<ImageValidationResult> {
     const opts = { ...DEFAULT_VALIDATION_OPTIONS, ...options };
     const errors: string[] = [];
@@ -682,7 +732,9 @@ throw error;
 
       // Check file size
       if (opts.maxSize && size > opts.maxSize) {
-        errors.push(`File size (${this.formatBytes(size)}) exceeds maximum (${this.formatBytes(opts.maxSize)})`);
+        errors.push(
+          `File size (${this.formatBytes(size)}) exceeds maximum (${this.formatBytes(opts.maxSize)})`
+        );
       }
 
       // Check dimensions
@@ -693,15 +745,21 @@ throw error;
         errors.push(`Width (${width}px) exceeds maximum (${opts.maxWidth}px)`);
       }
       if (opts.minHeight && height < opts.minHeight) {
-        errors.push(`Height (${height}px) is below minimum (${opts.minHeight}px)`);
+        errors.push(
+          `Height (${height}px) is below minimum (${opts.minHeight}px)`
+        );
       }
       if (opts.maxHeight && height > opts.maxHeight) {
-        errors.push(`Height (${height}px) exceeds maximum (${opts.maxHeight}px)`);
+        errors.push(
+          `Height (${height}px) exceeds maximum (${opts.maxHeight}px)`
+        );
       }
 
       // Check format
       if (opts.allowedFormats && !opts.allowedFormats.includes(format)) {
-        errors.push(`Format '${format}' is not allowed. Allowed: ${opts.allowedFormats.join(', ')}`);
+        errors.push(
+          `Format '${format}' is not allowed. Allowed: ${opts.allowedFormats.join(', ')}`
+        );
       }
 
       // Check animation
@@ -711,7 +769,9 @@ throw error;
 
       // Add warnings for edge cases
       if (isAnimated && (metadata.pages ?? 1) > 100) {
-        warnings.push(`Image has ${metadata.pages} frames which may impact processing performance`);
+        warnings.push(
+          `Image has ${metadata.pages} frames which may impact processing performance`
+        );
       }
       if (size > 10 * 1024 * 1024) {
         warnings.push('Large file size may impact upload and processing time');
@@ -782,7 +842,9 @@ throw error;
   /**
    * Maps ResizeFit to sharp fit option.
    */
-  private mapFit(fit?: string): 'cover' | 'contain' | 'fill' | 'inside' | 'outside' {
+  private mapFit(
+    fit?: string
+  ): 'cover' | 'contain' | 'fill' | 'inside' | 'outside' {
     switch (fit) {
       case 'cover':
         return 'cover';
@@ -811,11 +873,11 @@ throw error;
    */
   private formatBytes(bytes: number): string {
     if (bytes < 1024) {
-return `${bytes} B`;
-}
+      return `${bytes} B`;
+    }
     if (bytes < 1024 * 1024) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 }

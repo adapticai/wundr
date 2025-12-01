@@ -101,7 +101,7 @@ function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   headers?: Record<string, string>,
-  searchParams?: Record<string, string>,
+  searchParams?: Record<string, string>
 ): NextRequest {
   let url = 'http://localhost:3000/api/notifications';
   if (searchParams) {
@@ -261,7 +261,9 @@ describe('Notification API Routes', () => {
       });
 
       expect(result.data).toHaveLength(2);
-      expect(result.data.every((n: { isRead: boolean }) => !n.isRead)).toBe(true);
+      expect(result.data.every((n: { isRead: boolean }) => !n.isRead)).toBe(
+        true
+      );
     });
 
     it('filters by notification type', async () => {
@@ -319,7 +321,7 @@ describe('Notification API Routes', () => {
       expect(mockNotificationService.listNotifications).toHaveBeenCalledWith(
         expect.objectContaining({
           cursor: 'prev-cursor',
-        }),
+        })
       );
     });
   });
@@ -335,7 +337,9 @@ describe('Notification API Routes', () => {
 
       mockNotificationService.getUnreadCount.mockResolvedValue(15);
 
-      const count = await mockNotificationService.getUnreadCount(session.user.id);
+      const count = await mockNotificationService.getUnreadCount(
+        session.user.id
+      );
 
       expect(count).toBe(15);
     });
@@ -346,7 +350,9 @@ describe('Notification API Routes', () => {
 
       mockNotificationService.getUnreadCount.mockResolvedValue(0);
 
-      const count = await mockNotificationService.getUnreadCount(session.user.id);
+      const count = await mockNotificationService.getUnreadCount(
+        session.user.id
+      );
 
       expect(count).toBe(0);
     });
@@ -370,7 +376,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.markAsRead(
         'notif-123',
-        session.user.id,
+        session.user.id
       );
 
       expect(result.isRead).toBe(true);
@@ -387,11 +393,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.markAsRead('non-existent', session.user.id),
+        mockNotificationService.markAsRead('non-existent', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        }),
+        })
       );
     });
 
@@ -405,11 +411,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.markAsRead('other-user-notif', session.user.id),
+        mockNotificationService.markAsRead('other-user-notif', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -425,7 +431,9 @@ describe('Notification API Routes', () => {
 
       mockNotificationService.markAllAsRead.mockResolvedValue({ count: 10 });
 
-      const result = await mockNotificationService.markAllAsRead(session.user.id);
+      const result = await mockNotificationService.markAllAsRead(
+        session.user.id
+      );
 
       expect(result.count).toBe(10);
     });
@@ -436,7 +444,9 @@ describe('Notification API Routes', () => {
 
       mockNotificationService.markAllAsRead.mockResolvedValue({ count: 0 });
 
-      const result = await mockNotificationService.markAllAsRead(session.user.id);
+      const result = await mockNotificationService.markAllAsRead(
+        session.user.id
+      );
 
       expect(result.count).toBe(0);
     });
@@ -457,7 +467,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.deleteNotification(
         'notif-123',
-        session.user.id,
+        session.user.id
       );
 
       expect(result.success).toBe(true);
@@ -473,11 +483,14 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.deleteNotification('non-existent', session.user.id),
+        mockNotificationService.deleteNotification(
+          'non-existent',
+          session.user.id
+        )
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        }),
+        })
       );
     });
   });
@@ -494,20 +507,26 @@ describe('Notification API Routes', () => {
       const preferences = createMockPreferencesResponse();
       mockNotificationService.getPreferences.mockResolvedValue(preferences);
 
-      const result = await mockNotificationService.getPreferences(session.user.id);
+      const result = await mockNotificationService.getPreferences(
+        session.user.id
+      );
 
       expect(result.userId).toBe(session.user.id);
       expect(result.pushEnabled).toBe(true);
     });
 
     it('returns default preferences for new user', async () => {
-      const session = createMockSession({ user: { id: 'new-user' } as MockUser });
+      const session = createMockSession({
+        user: { id: 'new-user' } as MockUser,
+      });
       authMock.mockResolvedValue(session);
 
       const defaultPreferences = createMockPreferencesResponse({
         userId: 'new-user',
       });
-      mockNotificationService.getPreferences.mockResolvedValue(defaultPreferences);
+      mockNotificationService.getPreferences.mockResolvedValue(
+        defaultPreferences
+      );
 
       const result = await mockNotificationService.getPreferences('new-user');
 
@@ -533,7 +552,9 @@ describe('Notification API Routes', () => {
         quietHoursTimezone: 'America/New_York',
       });
 
-      mockNotificationService.updatePreferences.mockResolvedValue(updatedPreferences);
+      mockNotificationService.updatePreferences.mockResolvedValue(
+        updatedPreferences
+      );
 
       const result = await mockNotificationService.updatePreferences(
         session.user.id,
@@ -543,7 +564,7 @@ describe('Notification API Routes', () => {
           quietHoursStart: '22:00',
           quietHoursEnd: '08:00',
           quietHoursTimezone: 'America/New_York',
-        },
+        }
       );
 
       expect(result.pushEnabled).toBe(false);
@@ -564,11 +585,11 @@ describe('Notification API Routes', () => {
         mockNotificationService.updatePreferences(session.user.id, {
           quietHoursEnabled: true,
           // Missing quietHoursStart, quietHoursEnd, quietHoursTimezone
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
   });
@@ -585,13 +606,16 @@ describe('Notification API Routes', () => {
       const device = createMockDeviceResponse();
       mockNotificationService.registerDevice.mockResolvedValue(device);
 
-      const result = await mockNotificationService.registerDevice(session.user.id, {
-        platform: 'WEB',
-        token: 'web_push_token',
-        endpoint: 'https://fcm.googleapis.com/fcm/send/endpoint',
-        p256dh: 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQ',
-        auth: 'tBHItJI5svbpez7KI4CCXg',
-      });
+      const result = await mockNotificationService.registerDevice(
+        session.user.id,
+        {
+          platform: 'WEB',
+          token: 'web_push_token',
+          endpoint: 'https://fcm.googleapis.com/fcm/send/endpoint',
+          p256dh: 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQ',
+          auth: 'tBHItJI5svbpez7KI4CCXg',
+        }
+      );
 
       expect(result.platform).toBe('WEB');
       expect(result.isActive).toBe(true);
@@ -609,10 +633,13 @@ describe('Notification API Routes', () => {
       });
       mockNotificationService.registerDevice.mockResolvedValue(device);
 
-      const result = await mockNotificationService.registerDevice(session.user.id, {
-        platform: 'IOS',
-        token: 'fcm_ios_token',
-      });
+      const result = await mockNotificationService.registerDevice(
+        session.user.id,
+        {
+          platform: 'IOS',
+          token: 'fcm_ios_token',
+        }
+      );
 
       expect(result.platform).toBe('IOS');
     });
@@ -631,11 +658,11 @@ describe('Notification API Routes', () => {
           platform: 'WEB',
           token: 'web_push_token',
           // Missing endpoint, p256dh, auth
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
 
@@ -648,13 +675,16 @@ describe('Notification API Routes', () => {
       });
       mockNotificationService.registerDevice.mockResolvedValue(updatedDevice);
 
-      const result = await mockNotificationService.registerDevice(session.user.id, {
-        platform: 'WEB',
-        token: 'existing_token',
-        endpoint: 'https://fcm.googleapis.com/fcm/send/endpoint',
-        p256dh: 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQ',
-        auth: 'tBHItJI5svbpez7KI4CCXg',
-      });
+      const result = await mockNotificationService.registerDevice(
+        session.user.id,
+        {
+          platform: 'WEB',
+          token: 'existing_token',
+          endpoint: 'https://fcm.googleapis.com/fcm/send/endpoint',
+          p256dh: 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQ',
+          auth: 'tBHItJI5svbpez7KI4CCXg',
+        }
+      );
 
       expect(result.isActive).toBe(true);
     });
@@ -669,11 +699,13 @@ describe('Notification API Routes', () => {
       const session = createMockSession();
       authMock.mockResolvedValue(session);
 
-      mockNotificationService.unregisterDevice.mockResolvedValue({ success: true });
+      mockNotificationService.unregisterDevice.mockResolvedValue({
+        success: true,
+      });
 
       const result = await mockNotificationService.unregisterDevice(
         session.user.id,
-        'device-123',
+        'device-123'
       );
 
       expect(result.success).toBe(true);
@@ -689,11 +721,14 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.unregisterDevice(session.user.id, 'non-existent'),
+        mockNotificationService.unregisterDevice(
+          session.user.id,
+          'non-existent'
+        )
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        }),
+        })
       );
     });
 
@@ -707,11 +742,14 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.unregisterDevice(session.user.id, 'other-user-device'),
+        mockNotificationService.unregisterDevice(
+          session.user.id,
+          'other-user-device'
+        )
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -761,7 +799,7 @@ describe('Notification API Routes', () => {
       expect(mockSyncService.performSync).toHaveBeenCalledWith(
         expect.objectContaining({
           syncToken: 'previous-sync-token',
-        }),
+        })
       );
     });
 
@@ -852,7 +890,9 @@ describe('Notification API Routes', () => {
 
       expect(result.processed).toBe(3);
       expect(result.failed).toBe(2);
-      expect(result.results.filter((r: { success: boolean }) => !r.success)).toHaveLength(2);
+      expect(
+        result.results.filter((r: { success: boolean }) => !r.success)
+      ).toHaveLength(2);
     });
 
     it('processes in order', async () => {
@@ -860,15 +900,30 @@ describe('Notification API Routes', () => {
       authMock.mockResolvedValue(session);
 
       const actions = [
-        { id: 'action-1', action: 'SEND_MESSAGE', payload: {}, timestamp: new Date() },
-        { id: 'action-2', action: 'SEND_MESSAGE', payload: {}, timestamp: new Date() },
-        { id: 'action-3', action: 'SEND_MESSAGE', payload: {}, timestamp: new Date() },
+        {
+          id: 'action-1',
+          action: 'SEND_MESSAGE',
+          payload: {},
+          timestamp: new Date(),
+        },
+        {
+          id: 'action-2',
+          action: 'SEND_MESSAGE',
+          payload: {},
+          timestamp: new Date(),
+        },
+        {
+          id: 'action-3',
+          action: 'SEND_MESSAGE',
+          payload: {},
+          timestamp: new Date(),
+        },
       ];
 
       mockSyncService.processOfflineQueue.mockResolvedValue({
         processed: 3,
         failed: 0,
-        results: actions.map((a) => ({ actionId: a.id, success: true })),
+        results: actions.map(a => ({ actionId: a.id, success: true })),
       });
 
       const result = await mockSyncService.processOfflineQueue({
@@ -876,11 +931,9 @@ describe('Notification API Routes', () => {
         actions,
       });
 
-      expect(result.results.map((r: { actionId: string }) => r.actionId)).toEqual([
-        'action-1',
-        'action-2',
-        'action-3',
-      ]);
+      expect(
+        result.results.map((r: { actionId: string }) => r.actionId)
+      ).toEqual(['action-1', 'action-2', 'action-3']);
     });
   });
 
@@ -942,11 +995,11 @@ describe('Notification API Routes', () => {
           userId: session.user.id,
           conflictId: 'non-existent',
           resolution: 'SERVER_WINS',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        }),
+        })
       );
     });
 
@@ -964,11 +1017,11 @@ describe('Notification API Routes', () => {
           userId: session.user.id,
           conflictId: 'already-resolved',
           resolution: 'SERVER_WINS',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ALREADY_RESOLVED',
-        }),
+        })
       );
     });
   });

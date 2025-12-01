@@ -2,9 +2,12 @@
 
 ## Overview
 
-The `CharterDiff` component provides a comprehensive visual comparison between two versions of an orchestrator charter. It displays differences in a user-friendly format with color-coded changes, expandable sections, and detailed statistics.
+The `CharterDiff` component provides a comprehensive visual comparison between two versions of an
+orchestrator charter. It displays differences in a user-friendly format with color-coded changes,
+expandable sections, and detailed statistics.
 
-**File Location:** `/Users/maya/wundr/packages/@wundr/neolith/apps/web/components/charter/charter-diff.tsx`
+**File Location:**
+`/Users/maya/wundr/packages/@wundr/neolith/apps/web/components/charter/charter-diff.tsx`
 
 ## Features
 
@@ -103,20 +106,13 @@ function CompareCharters() {
 ### Without Version Numbers
 
 ```tsx
-<CharterDiff
-  oldCharter={baselineCharter}
-  newCharter={draftCharter}
-/>
+<CharterDiff oldCharter={baselineCharter} newCharter={draftCharter} />
 ```
 
 ### With Custom Styling
 
 ```tsx
-<CharterDiff
-  oldCharter={oldCharter}
-  newCharter={newCharter}
-  className="max-w-4xl mx-auto"
-/>
+<CharterDiff oldCharter={oldCharter} newCharter={newCharter} className='max-w-4xl mx-auto' />
 ```
 
 ## Component Structure
@@ -160,7 +156,8 @@ CharterDiff (Main Component)
 
 - **Memoized diff computation**: Uses `React.useMemo` to avoid recomputing diffs on every render
 - **Memoized statistics**: Total statistics computed once and cached
-- **Controlled expansion**: Sections start expanded but can be collapsed to improve performance with large charters
+- **Controlled expansion**: Sections start expanded but can be collapsed to improve performance with
+  large charters
 - **Virtualized scrolling**: Main container has max-height with overflow scrolling
 
 ## Accessibility
@@ -193,10 +190,7 @@ function CharterManagement() {
   return (
     <>
       {showDiff && originalCharter && draftCharter ? (
-        <CharterDiff
-          oldCharter={originalCharter}
-          newCharter={draftCharter}
-        />
+        <CharterDiff oldCharter={originalCharter} newCharter={draftCharter} />
       ) : (
         <CharterEditor
           orchestratorId={orchestratorId}

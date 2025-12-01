@@ -52,7 +52,7 @@ export function CreationModal({
 }: CreationModalProps) {
   const [mode, setMode] = React.useState<CreationMode>(initialMode);
   const [spec, setSpec] = React.useState<EntitySpec | null>(
-    existingSpec || null,
+    existingSpec || null
   );
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -95,9 +95,7 @@ export function CreationModal({
       onCreated?.(entity);
       onOpenChange(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to create entity',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to create entity');
       setIsSubmitting(false);
     }
   };
@@ -111,9 +109,9 @@ export function CreationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={mode === 'conversation' ? 'max-w-2xl' : 'max-w-3xl'}
-        aria-describedby="creation-modal-description"
+        aria-describedby='creation-modal-description'
       >
-        <div id="creation-modal-description" className="sr-only">
+        <div id='creation-modal-description' className='sr-only'>
           {mode === 'conversation'
             ? `Create a new ${entityType} through conversational interface`
             : `Review and edit ${entityType} specification`}
@@ -121,7 +119,7 @@ export function CreationModal({
 
         {/* Error display */}
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
             {error}
           </div>
         )}
@@ -161,7 +159,7 @@ export function CreationModal({
 async function createEntity(
   entityType: EntityType,
   spec: EntitySpec,
-  workspaceId?: string,
+  workspaceId?: string
 ): Promise<unknown> {
   // TODO: Replace with actual API calls to your backend
   const endpoint = getEntityEndpoint(entityType);

@@ -37,14 +37,17 @@ interface RouteContext {
  * Helper function to check if user has access to a session manager
  * Returns the session manager with related data if accessible, null otherwise
  */
-async function getSessionManagerWithAccessCheck(sessionManagerId: string, userId: string) {
+async function getSessionManagerWithAccessCheck(
+  sessionManagerId: string,
+  userId: string
+) {
   // Get user's organization memberships
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   // Fetch session manager with orchestrator and verify organization access
   const sessionManager = await prisma.sessionManager.findUnique({
@@ -83,13 +86,16 @@ async function getSessionManagerWithAccessCheck(sessionManagerId: string, userId
     },
   });
 
-  if (!sessionManager || !accessibleOrgIds.includes(sessionManager.orchestrator.organizationId)) {
+  if (
+    !sessionManager ||
+    !accessibleOrgIds.includes(sessionManager.orchestrator.organizationId)
+  ) {
     return null;
   }
 
   // Find user's role in the orchestrator's organization
   const membership = userOrganizations.find(
-    (m) => m.organizationId === sessionManager.orchestrator.organizationId,
+    m => m.organizationId === sessionManager.orchestrator.organizationId
   );
 
   return { sessionManager, role: membership?.role ?? null };
@@ -105,14 +111,20 @@ async function getSessionManagerWithAccessCheck(sessionManagerId: string, userId
  * @param context - Route context containing session manager ID
  * @returns Session manager details with orchestrator and subagents
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -123,22 +135,25 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'Invalid session manager ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get session manager with access check
-    const result = await getSessionManagerWithAccessCheck(params.id, session.user.id);
+    const result = await getSessionManagerWithAccessCheck(
+      params.id,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Session manager not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -148,9 +163,9 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -180,14 +195,20 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
  * @param context - Route context containing session manager ID
  * @returns Updated session manager object
  */
-export async function PATCH(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function PATCH(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -198,9 +219,9 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       return NextResponse.json(
         createErrorResponse(
           'Invalid session manager ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -210,8 +231,11 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -222,24 +246,27 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
         createErrorResponse(
           'Validation failed',
           SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: UpdateSessionManagerInput = parseResult.data;
 
     // Get session manager with access check
-    const result = await getSessionManagerWithAccessCheck(params.id, session.user.id);
+    const result = await getSessionManagerWithAccessCheck(
+      params.id,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Session manager not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -248,9 +275,9 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update this session manager',
-          SESSION_MANAGER_ERROR_CODES.FORBIDDEN,
+          SESSION_MANAGER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -268,9 +295,9 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
         return NextResponse.json(
           createErrorResponse(
             'A session manager with this name already exists for this orchestrator',
-            SESSION_MANAGER_ERROR_CODES.ALREADY_EXISTS,
+            SESSION_MANAGER_ERROR_CODES.ALREADY_EXISTS
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -280,12 +307,16 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       where: { id: params.id },
       data: {
         ...(input.name !== undefined && { name: input.name }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.charterId !== undefined && { charterId: input.charterId }),
         ...(input.charterData !== undefined && {
           charterData: input.charterData as Prisma.InputJsonValue,
         }),
-        ...(input.disciplineId !== undefined && { disciplineId: input.disciplineId }),
+        ...(input.disciplineId !== undefined && {
+          disciplineId: input.disciplineId,
+        }),
         ...(input.isGlobal !== undefined && { isGlobal: input.isGlobal }),
         ...(input.globalConfig !== undefined && {
           globalConfig: input.globalConfig as Prisma.InputJsonValue,
@@ -347,9 +378,9 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
         return NextResponse.json(
           createErrorResponse(
             'Session manager not found',
-            SESSION_MANAGER_ERROR_CODES.NOT_FOUND,
+            SESSION_MANAGER_ERROR_CODES.NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -357,9 +388,9 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -377,14 +408,20 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
  * @param context - Route context containing session manager ID
  * @returns Success message
  */
-export async function DELETE(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function DELETE(
+  _request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -395,22 +432,25 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
       return NextResponse.json(
         createErrorResponse(
           'Invalid session manager ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get session manager with access check
-    const result = await getSessionManagerWithAccessCheck(params.id, session.user.id);
+    const result = await getSessionManagerWithAccessCheck(
+      params.id,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Session manager not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -419,9 +459,9 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to delete this session manager',
-          SESSION_MANAGER_ERROR_CODES.FORBIDDEN,
+          SESSION_MANAGER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -437,9 +477,9 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
       return NextResponse.json(
         createErrorResponse(
           `Cannot delete session manager: it has ${activeSubagentCount} active subagent(s). Please deactivate or reassign them first.`,
-          SESSION_MANAGER_ERROR_CODES.HAS_DEPENDENCIES,
+          SESSION_MANAGER_ERROR_CODES.HAS_DEPENDENCIES
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -460,9 +500,9 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
         return NextResponse.json(
           createErrorResponse(
             'Session manager not found',
-            SESSION_MANAGER_ERROR_CODES.NOT_FOUND,
+            SESSION_MANAGER_ERROR_CODES.NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -471,9 +511,9 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
         return NextResponse.json(
           createErrorResponse(
             'Cannot delete session manager: it has dependent records',
-            SESSION_MANAGER_ERROR_CODES.HAS_DEPENDENCIES,
+            SESSION_MANAGER_ERROR_CODES.HAS_DEPENDENCIES
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -481,9 +521,9 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -37,7 +37,7 @@ export function ReactionPicker({
   // Build categories with frequent emojis
   const categories = useMemo(() => {
     const cats = [...EMOJI_CATEGORIES];
-    const frequentIndex = cats.findIndex((c) => c.id === 'frequent');
+    const frequentIndex = cats.findIndex(c => c.id === 'frequent');
     if (frequentIndex >= 0) {
       cats[frequentIndex] = {
         ...cats[frequentIndex],
@@ -53,13 +53,16 @@ export function ReactionPicker({
 
     const searchLower = search.toLowerCase();
     return categories
-      .map((cat) => ({
+      .map(cat => ({
         ...cat,
-        emojis: cat.emojis.filter((emoji) => {
-          return emoji.includes(search) || cat.name.toLowerCase().includes(searchLower);
+        emojis: cat.emojis.filter(emoji => {
+          return (
+            emoji.includes(search) ||
+            cat.name.toLowerCase().includes(searchLower)
+          );
         }),
       }))
-      .filter((cat) => cat.emojis.length > 0);
+      .filter(cat => cat.emojis.length > 0);
   }, [categories, search]);
 
   const handleCategoryClick = useCallback((categoryId: string) => {
@@ -73,31 +76,31 @@ export function ReactionPicker({
       onSelect(emoji);
       onClose();
     },
-    [onSelect, onClose],
+    [onSelect, onClose]
   );
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Search */}
-      <div className="p-3 border-b">
+      <div className='p-3 border-b'>
         <input
-          type="text"
-          placeholder="Search emoji..."
+          type='text'
+          placeholder='Search emoji...'
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
+          onChange={e => setSearch(e.target.value)}
+          className='w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20'
           autoFocus
         />
       </div>
 
       {/* Quick reactions */}
-      <div className="flex gap-1 border-b p-3">
-        {QUICK_REACTIONS.map((emoji) => (
+      <div className='flex gap-1 border-b p-3'>
+        {QUICK_REACTIONS.map(emoji => (
           <button
             key={emoji}
-            type="button"
+            type='button'
             onClick={() => handleEmojiClick(emoji)}
-            className="rounded-md p-2 text-2xl hover:bg-accent transition-colors"
+            className='rounded-md p-2 text-2xl hover:bg-accent transition-colors'
           >
             {emoji}
           </button>
@@ -105,17 +108,17 @@ export function ReactionPicker({
       </div>
 
       {/* Category tabs */}
-      <div className="flex gap-1 overflow-x-auto border-b px-3 py-2 scrollbar-thin">
-        {categories.map((category) => (
+      <div className='flex gap-1 overflow-x-auto border-b px-3 py-2 scrollbar-thin'>
+        {categories.map(category => (
           <button
             key={category.id}
-            type="button"
+            type='button'
             onClick={() => handleCategoryClick(category.id)}
             className={cn(
               'shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
               activeCategory === category.id
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {category.name}
@@ -124,23 +127,23 @@ export function ReactionPicker({
       </div>
 
       {/* Emoji grid */}
-      <div className="flex-1 overflow-y-auto p-3 min-h-0">
-        {filteredCategories.map((category) => (
+      <div className='flex-1 overflow-y-auto p-3 min-h-0'>
+        {filteredCategories.map(category => (
           <div
             key={category.id}
             id={`emoji-category-${category.id}`}
-            className="mb-4"
+            className='mb-4'
           >
-            <div className="sticky top-0 mb-2 bg-background py-1 text-xs font-semibold text-muted-foreground">
+            <div className='sticky top-0 mb-2 bg-background py-1 text-xs font-semibold text-muted-foreground'>
               {category.name}
             </div>
-            <div className="grid grid-cols-8 gap-1">
+            <div className='grid grid-cols-8 gap-1'>
               {category.emojis.map((emoji, index) => (
                 <button
                   key={`${category.id}-${index}`}
-                  type="button"
+                  type='button'
                   onClick={() => handleEmojiClick(emoji)}
-                  className="rounded-md p-2 text-2xl hover:bg-accent transition-colors"
+                  className='rounded-md p-2 text-2xl hover:bg-accent transition-colors'
                 >
                   {emoji}
                 </button>
@@ -150,7 +153,7 @@ export function ReactionPicker({
         ))}
 
         {filteredCategories.length === 0 && (
-          <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+          <div className='flex h-32 items-center justify-center text-sm text-muted-foreground'>
             No emojis found
           </div>
         )}
@@ -192,7 +195,7 @@ export function ReactionPickerTrigger({
       onSelect(emoji);
       setIsOpen(false);
     },
-    [onSelect],
+    [onSelect]
   );
 
   return (
@@ -200,11 +203,11 @@ export function ReactionPickerTrigger({
       <div onClick={() => setIsOpen(true)}>{children}</div>
 
       <ResponsiveModal open={isOpen} onOpenChange={setIsOpen}>
-        <ResponsiveModalContent className="max-w-md p-0 sm:max-h-[80vh] max-h-[70vh] flex flex-col">
-          <ResponsiveModalHeader className="p-4 pb-0">
+        <ResponsiveModalContent className='max-w-md p-0 sm:max-h-[80vh] max-h-[70vh] flex flex-col'>
+          <ResponsiveModalHeader className='p-4 pb-0'>
             <ResponsiveModalTitle>Choose an emoji</ResponsiveModalTitle>
           </ResponsiveModalHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className='flex-1 min-h-0 overflow-hidden'>
             <ReactionPicker
               onSelect={handleSelect}
               onClose={() => setIsOpen(false)}

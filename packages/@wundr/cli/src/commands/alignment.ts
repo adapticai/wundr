@@ -189,11 +189,11 @@ class AlignmentDriftDetector {
     return history.entries
       .filter(
         (entry: AlignmentHistoryEntry) =>
-          new Date(entry.timestamp) >= cutoffDate,
+          new Date(entry.timestamp) >= cutoffDate
       )
       .sort(
         (a: AlignmentHistoryEntry, b: AlignmentHistoryEntry) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
   }
 
@@ -205,7 +205,7 @@ class AlignmentDriftDetector {
   async generateDebtReport(
     days: number = 7,
     sessionId?: string,
-    outputFile?: string,
+    outputFile?: string
   ): Promise<AlignmentDebtReport> {
     await this.initialize();
 
@@ -286,13 +286,13 @@ class AlignmentDriftDetector {
     // Calculate total violations
     const totalViolations = Object.values(dimensionAnalysis).reduce(
       (sum, dim) => sum + dim.exceedances,
-      0,
+      0
     );
 
     // Generate recommendations
     const recommendations = this.generateDebtRecommendations(
       dimensionAnalysis,
-      trend,
+      trend
     );
 
     const report: AlignmentDebtReport = {
@@ -326,7 +326,7 @@ class AlignmentDriftDetector {
   }
 
   private async collectMetrics(
-    sessionId?: string,
+    sessionId?: string
   ): Promise<AlignmentDriftMetrics> {
     const sessionMetricsFile = sessionId
       ? path.join(this.dataDir, 'sessions', `${sessionId}.json`)
@@ -359,23 +359,23 @@ class AlignmentDriftDetector {
   private calculateScore(metrics: AlignmentDriftMetrics): number {
     const normalizedPolicyViolation = Math.min(
       metrics.policyViolationRate / this.thresholds.policyViolation,
-      2,
+      2
     );
     const normalizedIntentGap = Math.min(
       metrics.intentOutcomeGap / this.thresholds.intentOutcomeGap,
-      2,
+      2
     );
     const normalizedEvaluatorDisagreement = Math.min(
       metrics.evaluatorDisagreement / this.thresholds.evaluatorDisagreement,
-      2,
+      2
     );
     const normalizedEscalationSuppression = Math.min(
       metrics.escalationSuppression / this.thresholds.escalationSuppression,
-      2,
+      2
     );
     const normalizedRewardHacking = Math.min(
       metrics.rewardHacking / this.thresholds.rewardHacking,
-      2,
+      2
     );
 
     const weights = {
@@ -408,7 +408,7 @@ class AlignmentDriftDetector {
   }
 
   private analyzeDimensions(
-    metrics: AlignmentDriftMetrics,
+    metrics: AlignmentDriftMetrics
   ): AlignmentDimension[] {
     return [
       {
@@ -419,7 +419,7 @@ class AlignmentDriftDetector {
         currentValue: metrics.policyViolationRate,
         status: this.getDimensionStatus(
           metrics.policyViolationRate,
-          this.thresholds.policyViolation,
+          this.thresholds.policyViolation
         ),
       },
       {
@@ -430,7 +430,7 @@ class AlignmentDriftDetector {
         currentValue: metrics.intentOutcomeGap,
         status: this.getDimensionStatus(
           metrics.intentOutcomeGap,
-          this.thresholds.intentOutcomeGap,
+          this.thresholds.intentOutcomeGap
         ),
       },
       {
@@ -441,7 +441,7 @@ class AlignmentDriftDetector {
         currentValue: metrics.evaluatorDisagreement,
         status: this.getDimensionStatus(
           metrics.evaluatorDisagreement,
-          this.thresholds.evaluatorDisagreement,
+          this.thresholds.evaluatorDisagreement
         ),
       },
       {
@@ -452,7 +452,7 @@ class AlignmentDriftDetector {
         currentValue: metrics.escalationSuppression,
         status: this.getDimensionStatus(
           metrics.escalationSuppression,
-          this.thresholds.escalationSuppression,
+          this.thresholds.escalationSuppression
         ),
       },
       {
@@ -463,7 +463,7 @@ class AlignmentDriftDetector {
         currentValue: metrics.rewardHacking,
         status: this.getDimensionStatus(
           metrics.rewardHacking,
-          this.thresholds.rewardHacking,
+          this.thresholds.rewardHacking
         ),
       },
     ];
@@ -471,7 +471,7 @@ class AlignmentDriftDetector {
 
   private getDimensionStatus(
     value: number,
-    threshold: number,
+    threshold: number
   ): 'healthy' | 'warning' | 'critical' {
     if (value <= threshold) {
       return 'healthy';
@@ -495,39 +495,39 @@ class AlignmentDriftDetector {
 
   private generateRecommendations(
     dimensions: AlignmentDimension[],
-    status: string,
+    status: string
   ): string[] {
     const recommendations: string[] = [];
 
     for (const dim of dimensions) {
       if (dim.status === 'critical') {
         recommendations.push(
-          `CRITICAL: ${dim.name} at ${this.formatValue(dim.currentValue, dim.key)} exceeds threshold (${this.formatValue(dim.threshold, dim.key)}). Immediate action required.`,
+          `CRITICAL: ${dim.name} at ${this.formatValue(dim.currentValue, dim.key)} exceeds threshold (${this.formatValue(dim.threshold, dim.key)}). Immediate action required.`
         );
       } else if (dim.status === 'warning') {
         recommendations.push(
-          `WARNING: ${dim.name} at ${this.formatValue(dim.currentValue, dim.key)} approaching threshold (${this.formatValue(dim.threshold, dim.key)}). Monitor closely.`,
+          `WARNING: ${dim.name} at ${this.formatValue(dim.currentValue, dim.key)} approaching threshold (${this.formatValue(dim.threshold, dim.key)}). Monitor closely.`
         );
       }
     }
 
     if (status === 'critical') {
       recommendations.push(
-        'Consider pausing autonomous operations until alignment issues are resolved.',
+        'Consider pausing autonomous operations until alignment issues are resolved.'
       );
       recommendations.push('Schedule immediate review with Guardian role.');
     } else if (status === 'warning') {
       recommendations.push(
-        'Review recent agent decisions for potential alignment drift.',
+        'Review recent agent decisions for potential alignment drift.'
       );
       recommendations.push(
-        'Consider tightening constraints or adding checkpoints.',
+        'Consider tightening constraints or adding checkpoints.'
       );
     }
 
     if (recommendations.length === 0) {
       recommendations.push(
-        'All alignment metrics within acceptable thresholds.',
+        'All alignment metrics within acceptable thresholds.'
       );
     }
 
@@ -536,17 +536,17 @@ class AlignmentDriftDetector {
 
   private generateDebtRecommendations(
     dimensionAnalysis: AlignmentDebtReport['dimensionAnalysis'],
-    trend: 'improving' | 'stable' | 'degrading',
+    trend: 'improving' | 'stable' | 'degrading'
   ): string[] {
     const recommendations: string[] = [];
 
     if (trend === 'degrading') {
       recommendations.push(
-        'Alignment score is degrading over time. Review recent changes to agent configurations.',
+        'Alignment score is degrading over time. Review recent changes to agent configurations.'
       );
     } else if (trend === 'improving') {
       recommendations.push(
-        'Alignment score is improving. Continue current governance practices.',
+        'Alignment score is improving. Continue current governance practices.'
       );
     }
 
@@ -555,7 +555,7 @@ class AlignmentDriftDetector {
         const friendlyName = this.getFriendlyDimensionName(key);
         const entry = analysis as DimensionAnalysisEntry;
         recommendations.push(
-          `${friendlyName}: ${entry.exceedances} threshold exceedance(s) detected. Average: ${entry.average.toFixed(3)}`,
+          `${friendlyName}: ${entry.exceedances} threshold exceedance(s) detected. Average: ${entry.average.toFixed(3)}`
         );
       }
     }
@@ -615,7 +615,7 @@ function padRight(str: string, length: number): string {
 }
 
 function getStatusColor(
-  status: 'healthy' | 'warning' | 'critical',
+  status: 'healthy' | 'warning' | 'critical'
 ): (str: string) => string {
   switch (status) {
     case 'healthy':
@@ -694,7 +694,7 @@ Examples:
   ${chalk.green('wundr alignment score')}               Get current alignment score
   ${chalk.green('wundr alignment history --days 7')}    Show alignment history for past week
   ${chalk.green('wundr alignment dimensions')}          Show breakdown by dimension
-      `),
+      `)
     );
 
   // Report subcommand
@@ -725,7 +725,7 @@ Examples:
     .option(
       '-f, --format <type>',
       'Output format (table, json, chart)',
-      'table',
+      'table'
     )
     .action(async options => {
       await showAlignmentHistory(options);
@@ -762,7 +762,7 @@ async function generateAlignmentReport(options: {
     const report = await detector.generateDebtReport(
       days,
       options.session,
-      options.output,
+      options.output
     );
 
     spinner.stop();
@@ -772,13 +772,13 @@ async function generateAlignmentReport(options: {
     console.log(chalk.gray('='.repeat(70)));
     console.log(
       chalk.white('Generated: ') +
-        chalk.gray(new Date(report.generatedAt).toLocaleString()),
+        chalk.gray(new Date(report.generatedAt).toLocaleString())
     );
     console.log(
       chalk.white('Period:    ') +
         chalk.gray(
-          `${days} days (${new Date(report.period.start).toLocaleDateString()} - ${new Date(report.period.end).toLocaleDateString()})`,
-        ),
+          `${days} days (${new Date(report.period.start).toLocaleDateString()} - ${new Date(report.period.end).toLocaleDateString()})`
+        )
     );
 
     if (options.session) {
@@ -790,24 +790,24 @@ async function generateAlignmentReport(options: {
     console.log(chalk.cyan('Summary'));
     console.log(
       chalk.white('Average Score:    ') +
-        formatScore(report.summary.averageScore),
+        formatScore(report.summary.averageScore)
     );
     console.log(
       chalk.white('Lowest Score:     ') +
-        formatScore(report.summary.lowestScore),
+        formatScore(report.summary.lowestScore)
     );
     console.log(
       chalk.white('Highest Score:    ') +
-        formatScore(report.summary.highestScore),
+        formatScore(report.summary.highestScore)
     );
     console.log(
-      chalk.white('Trend:            ') + formatTrend(report.summary.trend),
+      chalk.white('Trend:            ') + formatTrend(report.summary.trend)
     );
     console.log(
       chalk.white('Total Violations: ') +
         (report.summary.totalViolations > 0
           ? chalk.red(String(report.summary.totalViolations))
-          : chalk.green('0')),
+          : chalk.green('0'))
     );
 
     // Dimension analysis section
@@ -818,8 +818,8 @@ async function generateAlignmentReport(options: {
         padRight('Dimension', 25) +
           padRight('Average', 12) +
           padRight('Max', 12) +
-          padRight('Exceedances', 12),
-      ),
+          padRight('Exceedances', 12)
+      )
     );
     console.log(chalk.gray('-'.repeat(61)));
 
@@ -840,7 +840,7 @@ async function generateAlignmentReport(options: {
         padRight(name, 25) +
           padRight(formatDimensionValue(entry.average, key), 12) +
           padRight(formatDimensionValue(entry.max, key), 12) +
-          exceedanceColor(padRight(String(entry.exceedances), 12)),
+          exceedanceColor(padRight(String(entry.exceedances), 12))
       );
     }
 
@@ -856,13 +856,13 @@ async function generateAlignmentReport(options: {
             chalk.white(` ${dimName}: `) +
             chalk.red(formatDimensionValue(event.value, event.dimension)) +
             chalk.gray(
-              ` (threshold: ${formatDimensionValue(event.threshold, event.dimension)})`,
-            ),
+              ` (threshold: ${formatDimensionValue(event.threshold, event.dimension)})`
+            )
         );
       }
       if (report.criticalEvents.length > 5) {
         console.log(
-          chalk.gray(`  ... and ${report.criticalEvents.length - 5} more`),
+          chalk.gray(`  ... and ${report.criticalEvents.length - 5} more`)
         );
       }
     }
@@ -890,7 +890,7 @@ async function generateAlignmentReport(options: {
   } catch (error) {
     spinner.fail('Failed to generate alignment report');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -931,7 +931,7 @@ async function showAlignmentScore(options: {
 
     const statusColor = getStatusColor(result.status);
     console.log(
-      chalk.white('Status: ') + statusColor(getStatusIcon(result.status)),
+      chalk.white('Status: ') + statusColor(getStatusIcon(result.status))
     );
 
     if (options.session) {
@@ -954,7 +954,7 @@ async function showAlignmentScore(options: {
       console.log(
         dimStatusColor(`  ${icon} `) +
           chalk.white(padRight(dim.name, 25)) +
-          dimStatusColor(formatDimensionValue(dim.currentValue, dim.key)),
+          dimStatusColor(formatDimensionValue(dim.currentValue, dim.key))
       );
     }
 
@@ -963,7 +963,7 @@ async function showAlignmentScore(options: {
   } catch (error) {
     spinner.fail('Failed to get alignment score');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -993,8 +993,8 @@ async function showAlignmentHistory(options: {
             entries: history,
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       return;
     }
@@ -1002,7 +1002,7 @@ async function showAlignmentHistory(options: {
     console.log(chalk.cyan('\nAlignment History'));
     console.log(chalk.gray('='.repeat(80)));
     console.log(
-      chalk.gray(`Showing last ${days} days (${history.length} entries)`),
+      chalk.gray(`Showing last ${days} days (${history.length} entries)`)
     );
 
     if (history.length === 0) {
@@ -1023,8 +1023,8 @@ async function showAlignmentHistory(options: {
             padRight('Score', 10) +
             padRight('Status', 12) +
             padRight('Session', 20) +
-            padRight('Policy', 10),
-        ),
+            padRight('Policy', 10)
+        )
       );
       console.log(chalk.gray('-'.repeat(80)));
 
@@ -1037,7 +1037,7 @@ async function showAlignmentHistory(options: {
             formatScore(entry.score).padEnd(19) + // Account for ANSI codes
             statusColor(padRight(getStatusIcon(entry.status), 12)) +
             chalk.gray(padRight(entry.sessionId || '-', 20)) +
-            padRight(formatPercentage(entry.metrics.policyViolationRate), 10),
+            padRight(formatPercentage(entry.metrics.policyViolationRate), 10)
         );
       }
 
@@ -1051,7 +1051,7 @@ async function showAlignmentHistory(options: {
   } catch (error) {
     spinner.fail('Failed to load alignment history');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }
@@ -1099,8 +1099,8 @@ function displayHistoryChart(history: AlignmentHistoryEntry[]): void {
     chalk.gray(
       '       ' +
         'oldest'.padEnd(chartWidth / 2) +
-        'newest'.padStart(chartWidth / 2),
-    ),
+        'newest'.padStart(chartWidth / 2)
+    )
   );
 }
 
@@ -1145,7 +1145,7 @@ async function showDimensionBreakdown(options: {
       const barWidth = 40;
       const valueRatio = Math.min(dim.currentValue / (dim.threshold * 3), 1);
       const thresholdPos = Math.floor(
-        (dim.threshold / (dim.threshold * 3)) * barWidth,
+        (dim.threshold / (dim.threshold * 3)) * barWidth
       );
       const valuePos = Math.floor(valueRatio * barWidth);
 
@@ -1162,10 +1162,10 @@ async function showDimensionBreakdown(options: {
 
       console.log(`   [${bar}]`);
       console.log(
-        `   ${chalk.white('Current:')} ${statusColor(formatDimensionValue(dim.currentValue, dim.key))}  ${chalk.white('Threshold:')} ${chalk.yellow(formatDimensionValue(dim.threshold, dim.key))}`,
+        `   ${chalk.white('Current:')} ${statusColor(formatDimensionValue(dim.currentValue, dim.key))}  ${chalk.white('Threshold:')} ${chalk.yellow(formatDimensionValue(dim.threshold, dim.key))}`
       );
       console.log(
-        `   ${chalk.white('Status:')} ${statusColor(dim.status.toUpperCase())}`,
+        `   ${chalk.white('Status:')} ${statusColor(dim.status.toUpperCase())}`
       );
     }
 
@@ -1174,28 +1174,28 @@ async function showDimensionBreakdown(options: {
     console.log(chalk.cyan('Threshold Reference'));
     console.log(
       chalk.gray(
-        `  Policy Violation:      >${formatPercentage(thresholds.policyViolation)} daily violations`,
-      ),
+        `  Policy Violation:      >${formatPercentage(thresholds.policyViolation)} daily violations`
+      )
     );
     console.log(
       chalk.gray(
-        `  Intent-Outcome Gap:    >${formatPercentage(thresholds.intentOutcomeGap)} divergence`,
-      ),
+        `  Intent-Outcome Gap:    >${formatPercentage(thresholds.intentOutcomeGap)} divergence`
+      )
     );
     console.log(
       chalk.gray(
-        `  Evaluator Disagreement:>${formatPercentage(thresholds.evaluatorDisagreement)} monthly overrides`,
-      ),
+        `  Evaluator Disagreement:>${formatPercentage(thresholds.evaluatorDisagreement)} monthly overrides`
+      )
     );
     console.log(
       chalk.gray(
-        `  Escalation Suppression:>${formatPercentage(thresholds.escalationSuppression)} drop from baseline`,
-      ),
+        `  Escalation Suppression:>${formatPercentage(thresholds.escalationSuppression)} drop from baseline`
+      )
     );
     console.log(
       chalk.gray(
-        `  Reward Hacking:        >${thresholds.rewardHacking} instances/month`,
-      ),
+        `  Reward Hacking:        >${thresholds.rewardHacking} instances/month`
+      )
     );
 
     console.log(chalk.gray('='.repeat(90)));
@@ -1203,7 +1203,7 @@ async function showDimensionBreakdown(options: {
   } catch (error) {
     spinner.fail('Failed to load dimension breakdown');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error)),
+      chalk.red(error instanceof Error ? error.message : String(error))
     );
   }
 }

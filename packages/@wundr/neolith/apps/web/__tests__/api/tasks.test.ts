@@ -85,9 +85,15 @@ describe('Task API', () => {
     // Cleanup (in reverse order of dependencies)
     await prisma.task.deleteMany({ where: { workspaceId: testWorkspaceId } });
     await prisma.backlogItem.deleteMany({});
-    await prisma.backlog.deleteMany({ where: { workspaceId: testWorkspaceId } });
-    await prisma.orchestrator.deleteMany({ where: { workspaceId: testWorkspaceId } });
-    await prisma.workspaceMember.deleteMany({ where: { workspaceId: testWorkspaceId } });
+    await prisma.backlog.deleteMany({
+      where: { workspaceId: testWorkspaceId },
+    });
+    await prisma.orchestrator.deleteMany({
+      where: { workspaceId: testWorkspaceId },
+    });
+    await prisma.workspaceMember.deleteMany({
+      where: { workspaceId: testWorkspaceId },
+    });
     await prisma.workspace.deleteMany({ where: { id: testWorkspaceId } });
     await prisma.user.deleteMany({ where: { id: { in: [testUserId] } } });
     await prisma.organization.deleteMany({});
@@ -260,7 +266,9 @@ describe('Task API', () => {
       });
 
       expect(tasks.length).toBeGreaterThan(0);
-      expect(tasks.every((t) => t.orchestratorId === testOrchestratorId)).toBe(true);
+      expect(tasks.every(t => t.orchestratorId === testOrchestratorId)).toBe(
+        true
+      );
     });
 
     it('should retrieve tasks by workspace ID', async () => {
@@ -269,7 +277,7 @@ describe('Task API', () => {
       });
 
       expect(tasks.length).toBeGreaterThan(0);
-      expect(tasks.every((t) => t.workspaceId === testWorkspaceId)).toBe(true);
+      expect(tasks.every(t => t.workspaceId === testWorkspaceId)).toBe(true);
     });
 
     it('should retrieve tasks by status', async () => {
@@ -280,7 +288,7 @@ describe('Task API', () => {
         },
       });
 
-      expect(todoTasks.every((t) => t.status === 'TODO')).toBe(true);
+      expect(todoTasks.every(t => t.status === 'TODO')).toBe(true);
     });
 
     it('should retrieve tasks by priority', async () => {
@@ -291,7 +299,9 @@ describe('Task API', () => {
         },
       });
 
-      expect(highPriorityTasks.every((t) => ['HIGH', 'CRITICAL'].includes(t.priority))).toBe(true);
+      expect(
+        highPriorityTasks.every(t => ['HIGH', 'CRITICAL'].includes(t.priority))
+      ).toBe(true);
     });
 
     it('should retrieve tasks with dependencies', async () => {
@@ -302,7 +312,7 @@ describe('Task API', () => {
         },
       });
 
-      expect(tasksWithDeps.every((t) => t.dependsOn.length > 0)).toBe(true);
+      expect(tasksWithDeps.every(t => t.dependsOn.length > 0)).toBe(true);
     });
 
     it('should retrieve tasks with pagination', async () => {
@@ -406,7 +416,9 @@ describe('Task API', () => {
         },
       });
 
-      expect(tasks.every((t) => ['TODO', 'IN_PROGRESS'].includes(t.status))).toBe(true);
+      expect(tasks.every(t => ['TODO', 'IN_PROGRESS'].includes(t.status))).toBe(
+        true
+      );
     });
 
     it('should filter tasks by tag', async () => {
@@ -417,7 +429,7 @@ describe('Task API', () => {
         },
       });
 
-      expect(tasks.every((t) => t.tags.some((tag) => tag === 'urgent'))).toBe(true);
+      expect(tasks.every(t => t.tags.some(tag => tag === 'urgent'))).toBe(true);
     });
 
     it('should filter tasks by created date range', async () => {
@@ -445,7 +457,7 @@ describe('Task API', () => {
         },
       });
 
-      expect(tasks.every((t) => t.dueDate !== null)).toBe(true);
+      expect(tasks.every(t => t.dueDate !== null)).toBe(true);
     });
   });
 
@@ -475,7 +487,9 @@ describe('Task API', () => {
       let lastDate: Date | null = null;
       for (const task of tasks) {
         if (task.dueDate && lastDate) {
-          expect(task.dueDate.getTime()).toBeGreaterThanOrEqual(lastDate.getTime());
+          expect(task.dueDate.getTime()).toBeGreaterThanOrEqual(
+            lastDate.getTime()
+          );
         }
         if (task.dueDate) {
           lastDate = task.dueDate;
@@ -492,7 +506,9 @@ describe('Task API', () => {
       let lastDate: Date | null = null;
       for (const task of tasks) {
         if (lastDate) {
-          expect(task.createdAt.getTime()).toBeLessThanOrEqual(lastDate.getTime());
+          expect(task.createdAt.getTime()).toBeLessThanOrEqual(
+            lastDate.getTime()
+          );
         }
         lastDate = task.createdAt;
       }

@@ -6,10 +6,10 @@ import { useState, useEffect } from 'react';
  * Media query breakpoints matching Tailwind CSS defaults
  */
 export const BREAKPOINTS = {
-  sm: 640,   // Mobile
-  md: 768,   // Tablet
-  lg: 1024,  // Desktop
-  xl: 1280,  // Large desktop
+  sm: 640, // Mobile
+  md: 768, // Tablet
+  lg: 1024, // Desktop
+  xl: 1280, // Large desktop
 } as const;
 
 export type Breakpoint = keyof typeof BREAKPOINTS;
@@ -74,7 +74,7 @@ export function useIsMobile(): boolean {
  */
 export function useIsTablet(): boolean {
   return useMediaQuery(
-    `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`,
+    `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
   );
 }
 
@@ -145,21 +145,24 @@ export function useTouchDevice(): boolean {
  * @returns 'portrait' or 'landscape' or null
  */
 export function useOrientation(): 'portrait' | 'landscape' | null {
-  const [orientation, setOrientation] = useState<'portrait' | 'landscape' | null>(null);
+  const [orientation, setOrientation] = useState<
+    'portrait' | 'landscape' | null
+  >(null);
 
   useEffect(() => {
     const handleOrientationChange = () => {
       setOrientation(
         window.matchMedia('(orientation: portrait)').matches
           ? 'portrait'
-          : 'landscape',
+          : 'landscape'
       );
     };
 
     handleOrientationChange();
     window.addEventListener('orientationchange', handleOrientationChange);
 
-    return () => window.removeEventListener('orientationchange', handleOrientationChange);
+    return () =>
+      window.removeEventListener('orientationchange', handleOrientationChange);
   }, []);
 
   return orientation;

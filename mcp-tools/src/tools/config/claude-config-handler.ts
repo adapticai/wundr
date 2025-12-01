@@ -14,16 +14,16 @@ export class ClaudeConfigHandler {
       switch (configType) {
         case 'claude-md':
           return this.generateClaudeMd(features);
-        
+
         case 'hooks':
           return this.generateHooks(features);
-        
+
         case 'conventions':
           return this.generateConventions(features);
-        
+
         case 'all':
           return this.generateAllConfigs(features);
-        
+
         default:
           throw new Error(`Unknown config type: ${configType}`);
       }
@@ -192,21 +192,29 @@ Imports should be organized in groups:
 - Implement caching strategies
 - Profile critical paths
 
-${features.includes('ai-assistance') ? `
+${
+  features.includes('ai-assistance')
+    ? `
 ## AI Assistance Features
 - Use MCP tools for automated checks
 - Run standardization before commits
 - Generate reports for PR reviews
 - Monitor drift continuously
-` : ''}
+`
+    : ''
+}
 
-${features.includes('governance') ? `
+${
+  features.includes('governance')
+    ? `
 ## Governance Workflow
 1. Create baseline weekly
 2. Check drift before merges
 3. Generate compliance reports
 4. Address violations immediately
-` : ''}
+`
+    : ''
+}
 
 ## Commit Conventions
 Follow conventional commits:
@@ -227,22 +235,26 @@ Follow conventional commits:
     const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
     fs.writeFileSync(claudeMdPath, claudeMdContent);
 
-    return JSON.stringify({
-      success: true,
-      action: 'generate-claude-md',
-      filePath: 'CLAUDE.md',
-      features: features.length > 0 ? features : ['default'],
-      message: 'CLAUDE.md generated successfully',
-      sections: [
-        'Project Overview',
-        'Key Commands',
-        'Code Style Guidelines',
-        'Architecture Patterns',
-        'Testing Requirements',
-        'Performance Guidelines',
-        'Commit Conventions',
-      ],
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'generate-claude-md',
+        filePath: 'CLAUDE.md',
+        features: features.length > 0 ? features : ['default'],
+        message: 'CLAUDE.md generated successfully',
+        sections: [
+          'Project Overview',
+          'Key Commands',
+          'Code Style Guidelines',
+          'Architecture Patterns',
+          'Testing Requirements',
+          'Performance Guidelines',
+          'Commit Conventions',
+        ],
+      },
+      null,
+      2
+    );
   }
 
   private generateHooks(features: string[]): string {
@@ -345,14 +357,18 @@ Follow conventional commits:
 
     fs.writeFileSync(path.join(hooksDir, 'session-start.js'), sessionStartHook);
 
-    return JSON.stringify({
-      success: true,
-      action: 'generate-hooks',
-      hooks: ['pre-commit.js', 'post-pr.js', 'session-start.js'],
-      hooksDir: '.claude/hooks',
-      message: 'Claude Code hooks generated successfully',
-      features: features.length > 0 ? features : ['default'],
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'generate-hooks',
+        hooks: ['pre-commit.js', 'post-pr.js', 'session-start.js'],
+        hooksDir: '.claude/hooks',
+        message: 'Claude Code hooks generated successfully',
+        features: features.length > 0 ? features : ['default'],
+      },
+      null,
+      2
+    );
   }
 
   private generateConventions(features: string[]): string {
@@ -370,7 +386,7 @@ Follow conventional commits:
           prefer: 'async-await',
           disallow: ['nested-promises', 'callback-hell'],
         },
-        'naming': {
+        naming: {
           level: 'error',
           patterns: {
             services: '*Service',
@@ -380,7 +396,7 @@ Follow conventional commits:
             enums: 'E*',
           },
         },
-        'imports': {
+        imports: {
           level: 'warn',
           order: ['builtin', 'external', 'internal', 'relative'],
           groups: {
@@ -388,7 +404,7 @@ Follow conventional commits:
             internal: ['@company/*', '@/*'],
           },
         },
-        'testing': {
+        testing: {
           level: 'error',
           coverage: {
             branches: 80,
@@ -399,15 +415,17 @@ Follow conventional commits:
           patterns: ['*.test.ts', '*.spec.ts'],
         },
       },
-      overrides: features.includes('strict-mode') ? {
-        '**/*.ts': {
-          rules: {
-            'error-handling': { level: 'error' },
-            'naming': { level: 'error' },
-            'testing': { level: 'error' },
-          },
-        },
-      } : {},
+      overrides: features.includes('strict-mode')
+        ? {
+            '**/*.ts': {
+              rules: {
+                'error-handling': { level: 'error' },
+                naming: { level: 'error' },
+                testing: { level: 'error' },
+              },
+            },
+          }
+        : {},
       autoFix: {
         enabled: true,
         on: ['save', 'commit'],
@@ -416,17 +434,24 @@ Follow conventional commits:
     };
 
     const conventionsPath = path.join(process.cwd(), '.wundr-conventions.json');
-    fs.writeFileSync(conventionsPath, JSON.stringify(conventionsContent, null, 2));
+    fs.writeFileSync(
+      conventionsPath,
+      JSON.stringify(conventionsContent, null, 2)
+    );
 
-    return JSON.stringify({
-      success: true,
-      action: 'generate-conventions',
-      filePath: '.wundr-conventions.json',
-      rules: Object.keys(conventionsContent.rules),
-      autoFixEnabled: true,
-      message: 'Coding conventions configuration generated',
-      features: features.length > 0 ? features : ['default'],
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'generate-conventions',
+        filePath: '.wundr-conventions.json',
+        rules: Object.keys(conventionsContent.rules),
+        autoFixEnabled: true,
+        message: 'Coding conventions configuration generated',
+        features: features.length > 0 ? features : ['default'],
+      },
+      null,
+      2
+    );
   }
 
   private generateAllConfigs(features: string[]): string {
@@ -459,23 +484,27 @@ Follow conventional commits:
       JSON.stringify(vscodeSettings, null, 2)
     );
 
-    return JSON.stringify({
-      success: true,
-      action: 'generate-all',
-      generated: {
-        'CLAUDE.md': results.claudeMd.filePath,
-        hooks: results.hooks.hooks,
-        conventions: results.conventions.filePath,
-        vscode: '.vscode/settings.json',
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'generate-all',
+        generated: {
+          'CLAUDE.md': results.claudeMd.filePath,
+          hooks: results.hooks.hooks,
+          conventions: results.conventions.filePath,
+          vscode: '.vscode/settings.json',
+        },
+        features: features.length > 0 ? features : ['default'],
+        message: 'All Claude Code configurations generated successfully',
+        nextSteps: [
+          'Review CLAUDE.md for project guidelines',
+          'Test hooks with a sample commit',
+          'Customize conventions as needed',
+          'Run "claude mcp restart wundr" to reload',
+        ],
       },
-      features: features.length > 0 ? features : ['default'],
-      message: 'All Claude Code configurations generated successfully',
-      nextSteps: [
-        'Review CLAUDE.md for project guidelines',
-        'Test hooks with a sample commit',
-        'Customize conventions as needed',
-        'Run "claude mcp restart wundr" to reload',
-      ],
-    }, null, 2);
+      null,
+      2
+    );
   }
 }

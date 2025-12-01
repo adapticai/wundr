@@ -22,7 +22,10 @@ import {
   ORCHESTRATOR_ERROR_CODES,
 } from '@/lib/validations/orchestrator';
 
-import type { CreateOrchestratorInput, OrchestratorFiltersInput } from '@/lib/validations/orchestrator';
+import type {
+  CreateOrchestratorInput,
+  OrchestratorFiltersInput,
+} from '@/lib/validations/orchestrator';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -112,15 +115,18 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -131,8 +137,11 @@ export async function GET(
     // Validate workspace ID format
     if (!workspaceId || typeof workspaceId !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -142,9 +151,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -157,9 +166,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -176,7 +185,9 @@ export async function GET(
       ...(filters.search && {
         OR: [
           { user: { name: { contains: filters.search, mode: 'insensitive' } } },
-          { user: { email: { contains: filters.search, mode: 'insensitive' } } },
+          {
+            user: { email: { contains: filters.search, mode: 'insensitive' } },
+          },
           { role: { contains: filters.search, mode: 'insensitive' } },
           { discipline: { contains: filters.search, mode: 'insensitive' } },
         ],
@@ -186,7 +197,9 @@ export async function GET(
     // Build orderBy based on sortBy field
     // Map sortBy to the correct field
     // The schema only allows: 'createdAt', 'updatedAt', 'discipline', 'role', 'status'
-    const orderBy: Prisma.orchestratorOrderByWithRelationInput = { [filters.sortBy]: filters.sortOrder };
+    const orderBy: Prisma.orchestratorOrderByWithRelationInput = {
+      [filters.sortBy]: filters.sortOrder,
+    };
 
     // Determine pagination approach
     let skip: number | undefined;
@@ -250,7 +263,7 @@ export async function GET(
     ]);
 
     // Enhance Orchestrators with task statistics
-    const orchestratorIds = orchestrators.map((orchestrator) => orchestrator.id);
+    const orchestratorIds = orchestrators.map(orchestrator => orchestrator.id);
 
     // Fetch task statistics for all Orchestrators in parallel
     const [completedTaskCounts, activeTaskCounts] = await Promise.all([
@@ -278,14 +291,14 @@ export async function GET(
 
     // Create lookup maps for O(1) access
     const completedTaskMap = new Map(
-      completedTaskCounts.map((item) => [item.orchestratorId, item._count.id]),
+      completedTaskCounts.map(item => [item.orchestratorId, item._count.id])
     );
     const activeTaskMap = new Map(
-      activeTaskCounts.map((item) => [item.orchestratorId, item._count.id]),
+      activeTaskCounts.map(item => [item.orchestratorId, item._count.id])
     );
 
     // Enhance Orchestrator data with statistics
-    const enhancedOrchestrators = orchestrators.map((orchestrator) => ({
+    const enhancedOrchestrators = orchestrators.map(orchestrator => ({
       ...orchestrator,
       statistics: {
         totalTasks: orchestrator._count.tasks,
@@ -296,9 +309,14 @@ export async function GET(
 
     // Calculate pagination metadata
     const totalPages = Math.ceil(totalCount / filters.limit);
-    const hasNextPage = cursor ? orchestrators.length === filters.limit : filters.page < totalPages;
+    const hasNextPage = cursor
+      ? orchestrators.length === filters.limit
+      : filters.page < totalPages;
     const hasPreviousPage = cursor ? !!cursor : filters.page > 1;
-    const nextCursor = hasNextPage && orchestrators.length > 0 ? orchestrators[orchestrators.length - 1].id : null;
+    const nextCursor =
+      hasNextPage && orchestrators.length > 0
+        ? orchestrators[orchestrators.length - 1].id
+        : null;
 
     return NextResponse.json({
       data: enhancedOrchestrators,
@@ -319,13 +337,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -372,15 +393,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -391,8 +415,11 @@ export async function POST(
     // Validate workspace ID format
     if (!workspaceId || typeof workspaceId !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -402,9 +429,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -413,9 +440,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Organization admin/owner required.',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -425,16 +452,22 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Ensure body is an object
     if (typeof body !== 'object' || body === null || Array.isArray(body)) {
       return NextResponse.json(
-        createErrorResponse('Request body must be an object', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Request body must be an object',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -449,9 +482,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -467,19 +500,20 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'A user with this email already exists',
-            ORCHESTRATOR_ERROR_CODES.DUPLICATE_EMAIL,
+            ORCHESTRATOR_ERROR_CODES.DUPLICATE_EMAIL
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
 
     // Create Orchestrator with associated user in a transaction
-    const orchestrator = await prisma.$transaction(async (tx) => {
+    const orchestrator = await prisma.$transaction(async tx => {
       // Create user for the Orchestrator
       const user = await tx.user.create({
         data: {
-          email: input.user?.email ?? `orchestrator-${Date.now()}@neolith.local`,
+          email:
+            input.user?.email ?? `orchestrator-${Date.now()}@neolith.local`,
           name: input.user?.name ?? `${input.role} Orchestrator`,
           displayName: input.user?.displayName,
           avatarUrl: input.user?.avatarUrl,
@@ -561,10 +595,13 @@ export async function POST(
           organizationId: access.workspace.organizationId,
         },
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators Error:',
+      error
+    );
 
     // Handle Prisma unique constraint errors
     if (
@@ -574,18 +611,18 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'An Orchestrator with these details already exists',
-          ORCHESTRATOR_ERROR_CODES.DUPLICATE_EMAIL,
+          ORCHESTRATOR_ERROR_CODES.DUPLICATE_EMAIL
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

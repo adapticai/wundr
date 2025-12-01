@@ -32,7 +32,8 @@ export const colors = {
 };
 
 export const fonts = {
-  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  fontFamily:
+    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 };
 
 export const spacing = {

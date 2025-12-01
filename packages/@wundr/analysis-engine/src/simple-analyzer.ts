@@ -69,7 +69,11 @@ export class SimpleAnalyzer {
   /**
    * Emit progress event if callback is set
    */
-  private emitProgress(event: { type: string; message: string; progress?: number }): void {
+  private emitProgress(event: {
+    type: string;
+    message: string;
+    progress?: number;
+  }): void {
     if (this.progressCallback) {
       this.progressCallback(event as Parameters<AnalysisProgressCallback>[0]);
     }
@@ -168,7 +172,7 @@ export class SimpleAnalyzer {
 
   private extractEntitiesFromContent(
     content: string,
-    filePath: string,
+    filePath: string
   ): EntityInfo[] {
     const entities: EntityInfo[] = [];
 
@@ -177,7 +181,7 @@ export class SimpleAnalyzer {
         filePath,
         content,
         ts.ScriptTarget.ES2020,
-        true,
+        true
       );
 
       const visitNode = (node: ts.Node) => {
@@ -187,11 +191,11 @@ export class SimpleAnalyzer {
             node,
             'class',
             filePath,
-            sourceFile,
+            sourceFile
           );
           if (entity) {
-entities.push(entity);
-}
+            entities.push(entity);
+          }
         }
 
         // Extract interfaces
@@ -200,11 +204,11 @@ entities.push(entity);
             node,
             'interface',
             filePath,
-            sourceFile,
+            sourceFile
           );
           if (entity) {
-entities.push(entity);
-}
+            entities.push(entity);
+          }
         }
 
         // Extract functions
@@ -213,11 +217,11 @@ entities.push(entity);
             node,
             'function',
             filePath,
-            sourceFile,
+            sourceFile
           );
           if (entity) {
-entities.push(entity);
-}
+            entities.push(entity);
+          }
         }
 
         // Extract type aliases
@@ -226,11 +230,11 @@ entities.push(entity);
             node,
             'type',
             filePath,
-            sourceFile,
+            sourceFile
           );
           if (entity) {
-entities.push(entity);
-}
+            entities.push(entity);
+          }
         }
 
         ts.forEachChild(node, visitNode);
@@ -239,8 +243,11 @@ entities.push(entity);
       ts.forEachChild(sourceFile, visitNode);
     } catch (parseError) {
       // TypeScript parsing failed, fallback to simple text-based extraction
-      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
-      console.warn(`Warning: TypeScript parsing failed for ${filePath}, using text-based extraction: ${errorMessage}`);
+      const errorMessage =
+        parseError instanceof Error ? parseError.message : String(parseError);
+      console.warn(
+        `Warning: TypeScript parsing failed for ${filePath}, using text-based extraction: ${errorMessage}`
+      );
       entities.push(...this.extractEntitiesFromText(content, filePath));
     }
 
@@ -251,14 +258,14 @@ entities.push(entity);
     node: ts.Node,
     type: string,
     filePath: string,
-    sourceFile: ts.SourceFile,
+    sourceFile: ts.SourceFile
   ): EntityInfo | null {
     const name = this.getNodeName(node);
     if (!name) {
-return null;
-}
+      return null;
+    }
     const { line, character } = sourceFile.getLineAndCharacterOfPosition(
-      node.getStart(),
+      node.getStart()
     );
 
     const complexity = this.calculateComplexity(node, sourceFile);
@@ -300,17 +307,17 @@ return null;
   private hasExportModifier(node: ts.Node): boolean {
     const modifiers = (node as any).modifiers;
     if (!modifiers) {
-return false;
-}
+      return false;
+    }
 
     return modifiers.some(
-      (modifier: any) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      (modifier: any) => modifier.kind === ts.SyntaxKind.ExportKeyword
     );
   }
 
   private calculateComplexity(
     node: ts.Node,
-    sourceFile: ts.SourceFile,
+    sourceFile: ts.SourceFile
   ): ComplexityMetrics {
     let cyclomatic = 1;
     const start = sourceFile.getLineAndCharacterOfPosition(node.getStart());
@@ -344,7 +351,7 @@ return false;
 
   private extractEntitiesFromText(
     content: string,
-    filePath: string,
+    filePath: string
   ): EntityInfo[] {
     const entities: EntityInfo[] = [];
     const lines = content.split('\n');
@@ -354,7 +361,7 @@ return false;
 
       // Simple pattern matching
       const classMatch = trimmed.match(
-        /export\s+(class|interface|type)\s+(\w+)/,
+        /export\s+(class|interface|type)\s+(\w+)/
       );
       if (classMatch) {
         entities.push({
@@ -421,12 +428,12 @@ return false;
 
   private calculateAverageComplexity(entities: EntityInfo[]): number {
     if (entities.length === 0) {
-return 0;
-}
+      return 0;
+    }
 
     const totalComplexity = entities.reduce(
       (sum, entity) => sum + (entity.complexity?.cyclomatic || 1),
-      0,
+      0
     );
 
     return totalComplexity / entities.length;
@@ -448,7 +455,7 @@ return 0;
 
 // Export convenience function
 export async function analyzeProject(
-  targetDir?: string,
+  targetDir?: string
 ): Promise<AnalysisReport> {
   const analyzer = new SimpleAnalyzer({
     targetDir: targetDir || process.cwd(),

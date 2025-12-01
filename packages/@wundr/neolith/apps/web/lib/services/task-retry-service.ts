@@ -51,11 +51,11 @@ interface TaskRetryMetadata {
  */
 export function calculateRetryDelay(
   attemptNumber: number,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG,
+  config: RetryConfig = DEFAULT_RETRY_CONFIG
 ): number {
   const delay = Math.min(
     config.initialDelayMs * Math.pow(config.backoffMultiplier, attemptNumber),
-    config.maxDelayMs,
+    config.maxDelayMs
   );
   return delay;
 }
@@ -65,7 +65,7 @@ export function calculateRetryDelay(
  */
 export function calculateNextRetryTime(
   attemptNumber: number,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG,
+  config: RetryConfig = DEFAULT_RETRY_CONFIG
 ): Date {
   const delayMs = calculateRetryDelay(attemptNumber, config);
   return new Date(Date.now() + delayMs);
@@ -82,7 +82,7 @@ export function calculateNextRetryTime(
 export async function recordTaskFailure(
   taskId: string,
   error: string,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG,
+  config: RetryConfig = DEFAULT_RETRY_CONFIG
 ): Promise<{ shouldRetry: boolean; nextRetryAt?: Date; retryCount: number }> {
   // Get current task
   const task = await prisma.task.findUnique({
@@ -108,7 +108,9 @@ export async function recordTaskFailure(
 
   // Determine if we should retry
   const shouldRetry = retryCount < config.maxRetries;
-  const nextRetryAt = shouldRetry ? calculateNextRetryTime(retryCount, config) : undefined;
+  const nextRetryAt = shouldRetry
+    ? calculateNextRetryTime(retryCount, config)
+    : undefined;
 
   // Update task metadata
   const updatedMetadata: Prisma.JsonObject = {
@@ -171,7 +173,10 @@ export async function isTaskReadyForRetry(taskId: string): Promise<boolean> {
  * @param workspaceId - Optional workspace filter
  * @returns Tasks ready to be retried
  */
-export async function getTasksReadyForRetry(orchestratorId?: string, workspaceId?: string) {
+export async function getTasksReadyForRetry(
+  orchestratorId?: string,
+  workspaceId?: string
+) {
   const where: Prisma.taskWhereInput = {
     status: 'TODO',
     metadata: {
@@ -200,7 +205,7 @@ export async function getTasksReadyForRetry(orchestratorId?: string, workspaceId
 
   // Filter to only tasks where retry time has passed
   const now = new Date();
-  return tasks.filter((task) => {
+  return tasks.filter(task => {
     const metadata = task.metadata as TaskRetryMetadata;
     if (!metadata.nextRetryAt) {
       return true;
@@ -252,7 +257,7 @@ export async function resetTaskRetry(taskId: string): Promise<void> {
  */
 export async function blockTaskAfterMaxRetries(
   taskId: string,
-  reason?: string,
+  reason?: string
 ): Promise<void> {
   const task = await prisma.task.findUnique({
     where: { id: taskId },

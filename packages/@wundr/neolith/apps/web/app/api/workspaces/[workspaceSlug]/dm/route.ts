@@ -82,7 +82,10 @@ async function checkWorkspaceAccess(workspaceSlug: string, userId: string) {
 /**
  * Calculate unread count for a DM channel
  */
-async function getUnreadCount(channelId: string, userId: string): Promise<number> {
+async function getUnreadCount(
+  channelId: string,
+  userId: string
+): Promise<number> {
   try {
     // Get user's last read timestamp for this channel
     const channelMember = await prisma.channelMember.findUnique({
@@ -141,15 +144,18 @@ async function getUnreadCount(channelId: string, userId: string): Promise<number
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -158,8 +164,11 @@ export async function GET(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -169,9 +178,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -231,19 +240,22 @@ export async function GET(
 
     // Format response with unread counts
     const formattedChannels = await Promise.all(
-      dmChannels.map(async (channel) => {
+      dmChannels.map(async channel => {
         // Get the other participant (not the current user)
         // For self-DM (notes to self), the participant is the current user
-        const otherParticipant = channel.channelMembers.find((m) => m.userId !== session.user.id)
-          || channel.channelMembers.find((m) => m.userId === session.user.id);
+        const otherParticipant =
+          channel.channelMembers.find(m => m.userId !== session.user.id) ||
+          channel.channelMembers.find(m => m.userId === session.user.id);
 
         if (!otherParticipant) {
           return null;
         }
 
-        const isSelfDM = channel.channelMembers.length === 2
-          && channel.channelMembers.every((m) => m.userId === session.user.id)
-          || (channel.channelMembers.length === 1 && channel.channelMembers[0].userId === session.user.id);
+        const isSelfDM =
+          (channel.channelMembers.length === 2 &&
+            channel.channelMembers.every(m => m.userId === session.user.id)) ||
+          (channel.channelMembers.length === 1 &&
+            channel.channelMembers[0].userId === session.user.id);
 
         // Check if this is a group DM (3+ total participants)
         const isGroupDM = channel.channelMembers.length >= 3;
@@ -277,7 +289,7 @@ export async function GET(
           lastMessage,
           isSelfDM,
           isGroupDM,
-          participants: channel.channelMembers.map((m) => ({
+          participants: channel.channelMembers.map(m => ({
             id: m.user.id,
             name: m.user.displayName || m.user.name || 'Unknown',
             avatarUrl: m.user.avatarUrl,
@@ -286,17 +298,23 @@ export async function GET(
           })),
           participant: {
             id: otherParticipant.user.id,
-            name: isSelfDM ? (otherParticipant.user.displayName || otherParticipant.user.name || 'You') + ' (you)' : (otherParticipant.user.displayName || otherParticipant.user.name || 'Unknown'),
+            name: isSelfDM
+              ? (otherParticipant.user.displayName ||
+                  otherParticipant.user.name ||
+                  'You') + ' (you)'
+              : otherParticipant.user.displayName ||
+                otherParticipant.user.name ||
+                'Unknown',
             avatarUrl: otherParticipant.user.avatarUrl,
             status: otherParticipant.user.status,
             isOrchestrator: otherParticipant.user.isOrchestrator,
           },
         };
-      }),
+      })
     );
 
     // Filter out any null entries
-    const validChannels = formattedChannels.filter((ch) => ch !== null);
+    const validChannels = formattedChannels.filter(ch => ch !== null);
 
     return NextResponse.json({
       data: validChannels,
@@ -305,8 +323,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceId/dm] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -333,15 +354,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -350,8 +374,11 @@ export async function POST(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -361,9 +388,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -376,8 +403,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -393,9 +423,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -430,9 +460,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Target user is not a member of this workspace',
-          ORG_ERROR_CODES.USER_NOT_FOUND,
+          ORG_ERROR_CODES.USER_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -489,7 +519,9 @@ export async function POST(
       const unreadCount = await getUnreadCount(existingDM.id, session.user.id);
 
       // Get the other participant
-      const otherParticipant = existingDM.channelMembers.find((m) => m.userId !== session.user.id);
+      const otherParticipant = existingDM.channelMembers.find(
+        m => m.userId !== session.user.id
+      );
 
       // Get last message
       const lastMessage = existingDM.messages[0]
@@ -518,7 +550,10 @@ export async function POST(
           lastMessage,
           participant: {
             id: otherParticipant?.user.id,
-            name: otherParticipant?.user.displayName || otherParticipant?.user.name || 'Unknown',
+            name:
+              otherParticipant?.user.displayName ||
+              otherParticipant?.user.name ||
+              'Unknown',
             avatarUrl: otherParticipant?.user.avatarUrl,
             status: otherParticipant?.user.status,
             isOrchestrator: otherParticipant?.user.isOrchestrator,
@@ -530,7 +565,7 @@ export async function POST(
     }
 
     // Create new DM channel
-    const dmChannel = await prisma.$transaction(async (tx) => {
+    const dmChannel = await prisma.$transaction(async tx => {
       // Create the DM channel
       const newChannel = await tx.channel.create({
         data: {
@@ -581,13 +616,18 @@ export async function POST(
 
     if (!dmChannel) {
       return NextResponse.json(
-        createErrorResponse('Failed to create DM channel', ORG_ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 },
+        createErrorResponse(
+          'Failed to create DM channel',
+          ORG_ERROR_CODES.INTERNAL_ERROR
+        ),
+        { status: 500 }
       );
     }
 
     // Get the other participant
-    const otherParticipant = dmChannel.channelMembers.find((m) => m.userId !== session.user.id);
+    const otherParticipant = dmChannel.channelMembers.find(
+      m => m.userId !== session.user.id
+    );
 
     return NextResponse.json(
       {
@@ -601,7 +641,10 @@ export async function POST(
           lastMessage: undefined,
           participant: {
             id: otherParticipant?.user.id,
-            name: otherParticipant?.user.displayName || otherParticipant?.user.name || 'Unknown',
+            name:
+              otherParticipant?.user.displayName ||
+              otherParticipant?.user.name ||
+              'Unknown',
             avatarUrl: otherParticipant?.user.avatarUrl,
             status: otherParticipant?.user.status,
             isOrchestrator: otherParticipant?.user.isOrchestrator,
@@ -610,13 +653,16 @@ export async function POST(
         isNew: true,
         message: 'DM channel created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/dm] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -491,4 +491,5 @@ export const WorkspaceVisibility = {
   Restricted: 'RESTRICTED',
 } as const;
 
-export type WorkspaceVisibility = (typeof WorkspaceVisibility)[keyof typeof WorkspaceVisibility];
+export type WorkspaceVisibility =
+  (typeof WorkspaceVisibility)[keyof typeof WorkspaceVisibility];

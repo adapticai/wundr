@@ -4,14 +4,18 @@
 
 ## Overview
 
-Implemented a comprehensive Orchestrator Work Execution Engine service that manages task selection, context preparation, and execution flow for Orchestrators (Orchestrators). The service implements priority-based scheduling with dependency awareness and deadline urgency.
+Implemented a comprehensive Orchestrator Work Execution Engine service that manages task selection,
+context preparation, and execution flow for Orchestrators (Orchestrators). The service implements
+priority-based scheduling with dependency awareness and deadline urgency.
 
 ## Files Created
 
 ### 1. Service Implementation
+
 **Location:** `/apps/web/lib/services/orchestrator-work-engine-service.ts`
 
 **Exports:**
+
 - `selectNextTask(vpId, criteria?)` - Select highest priority task
 - `prepareTaskContext(vpId, taskId)` - Gather execution context
 - `executeTask(vpId, taskId)` - Main execution flow
@@ -20,9 +24,11 @@ Implemented a comprehensive Orchestrator Work Execution Engine service that mana
 - `getVPExecutionStats(vpId, timeRange?)` - Get execution statistics
 
 ### 2. Test Suite
+
 **Location:** `/apps/web/lib/services/__tests__/orchestrator-work-engine-service.test.ts`
 
 **Test Coverage:**
+
 - Task selection with priority ordering
 - Deadline-aware task boosting
 - Dependency resolution filtering
@@ -35,7 +41,9 @@ Implemented a comprehensive Orchestrator Work Execution Engine service that mana
 ## Type Definitions
 
 ### TaskExecutionContext
+
 Complete context for Orchestrator task execution including:
+
 - Task details
 - Orchestrator information (role, discipline, capabilities, daemon endpoint)
 - Charter (mission, vision, values, expertise)
@@ -44,7 +52,9 @@ Complete context for Orchestrator task execution including:
 - Workspace and channel information
 
 ### TaskExecutionResult
+
 Result of task execution:
+
 - Status (completed | failed | blocked | in_progress)
 - Output data
 - Error information
@@ -52,7 +62,9 @@ Result of task execution:
 - Artifacts produced
 
 ### TaskProgressUpdate
+
 Progress tracking during execution:
+
 - Task ID
 - Progress percentage (0-100)
 - Status update
@@ -62,14 +74,16 @@ Progress tracking during execution:
 ## Task Selection Algorithm
 
 ### Priority Weights
+
 ```typescript
-CRITICAL: 1000
-HIGH:     100
-MEDIUM:   10
-LOW:      1
+CRITICAL: 1000;
+HIGH: 100;
+MEDIUM: 10;
+LOW: 1;
 ```
 
 ### Selection Criteria
+
 1. **Priority-based** - CRITICAL > HIGH > MEDIUM > LOW
 2. **Deadline awareness** - Boost scores for approaching deadlines:
    - Overdue: 10x boost
@@ -79,6 +93,7 @@ LOW:      1
 4. **VP availability** - Only selects tasks when Orchestrator is ONLINE or BUSY
 
 ### Selection Process
+
 1. Verify Orchestrator exists and is available
 2. Query candidate tasks (TODO or BLOCKED status)
 3. Filter by dependencies - only tasks with met dependencies
@@ -88,37 +103,44 @@ LOW:      1
 ## Key Features
 
 ### 1. Smart Task Selection
+
 - Respects task dependencies (won't select blocked tasks)
 - Priority-based with deadline awareness
 - Filters tasks by Orchestrator availability status
 - Supports custom selection criteria (tags, priority limits)
 
 ### 2. Comprehensive Context Preparation
+
 - Gathers Orchestrator charter from user config
 - Fetches all task dependencies with status
 - Includes related tasks for context awareness
 - Provides workspace and channel information
 
 ### 3. Execution Lifecycle Management
+
 - Validates task can transition to IN_PROGRESS
 - Updates task status atomically
 - Returns context for daemon execution
 - Handles errors gracefully
 
 ### 4. Progress Tracking
+
 - Updates task metadata with progress percentage
 - Stores progress messages and custom metadata
 - Validates progress range (0-100)
 - Maintains execution history
 
 ### 5. Task Completion Handling
+
 - Validates completion based on dependencies
 - Updates task status (DONE, BLOCKED)
 - Stores execution results in metadata
 - Automatically unblocks dependent tasks
 
 ### 6. Dependent Task Unblocking
+
 When a task completes:
+
 1. Finds all BLOCKED tasks depending on completed task
 2. Checks if all dependencies are now met
 3. Automatically transitions eligible tasks to TODO
@@ -127,15 +149,18 @@ When a task completes:
 ## Integration Points
 
 ### Database Schema (Prisma)
+
 - **Task model** - Core task entity with status, priority, dependencies
 - **VP model** - Orchestrator with capabilities and daemon endpoint
 - **User model** - User config containing Orchestrator charter
 
 ### Existing Services
+
 - **task-service.ts** - Uses `canTransitionToStatus` for validation
 - **@neolith/database** - Prisma client for database operations
 
 ### Task Status Flow
+
 ```
 TODO → IN_PROGRESS → DONE
   ↓         ↓
@@ -147,6 +172,7 @@ CANCELLED
 ## Usage Examples
 
 ### Select Next Task
+
 ```typescript
 import { selectNextTask } from '@/lib/services/orchestrator-work-engine-service';
 
@@ -157,6 +183,7 @@ const task = await selectNextTask('vp_123', {
 ```
 
 ### Execute Task
+
 ```typescript
 import { executeTask } from '@/lib/services/orchestrator-work-engine-service';
 
@@ -167,6 +194,7 @@ if (result.status === 'in_progress') {
 ```
 
 ### Update Progress
+
 ```typescript
 import { updateTaskProgress } from '@/lib/services/orchestrator-work-engine-service';
 
@@ -179,6 +207,7 @@ await updateTaskProgress({
 ```
 
 ### Complete Task
+
 ```typescript
 import { completeTask } from '@/lib/services/orchestrator-work-engine-service';
 
@@ -198,6 +227,7 @@ await completeTask('task_456', {
 ```
 
 ### Get Execution Stats
+
 ```typescript
 import { getVPExecutionStats } from '@/lib/services/orchestrator-work-engine-service';
 
@@ -213,21 +243,25 @@ console.log(`Avg completion time: ${stats.averageCompletionTime}s`);
 ## Error Handling
 
 ### Orchestrator Not Found
+
 ```typescript
 throw new Error(`VP not found: ${vpId}`);
 ```
 
 ### Task Not Found
+
 ```typescript
 throw new Error(`Task not found: ${taskId}`);
 ```
 
 ### Task Assignment Mismatch
+
 ```typescript
 throw new Error(`Task ${taskId} is not assigned to Orchestrator ${vpId}`);
 ```
 
 ### Dependencies Not Met
+
 ```typescript
 return {
   taskId,
@@ -238,6 +272,7 @@ return {
 ```
 
 ### Invalid Progress Range
+
 ```typescript
 throw new Error('Progress must be between 0 and 100');
 ```
@@ -245,10 +280,12 @@ throw new Error('Progress must be between 0 and 100');
 ## Testing
 
 ### Test Framework
+
 - **Vitest** - Modern test runner
 - **Vi mocking** - Mock Prisma client calls
 
 ### Test Coverage
+
 - ✅ Task selection with various priorities
 - ✅ Orchestrator offline filtering
 - ✅ Dependency resolution
@@ -261,6 +298,7 @@ throw new Error('Progress must be between 0 and 100');
 - ✅ Execution statistics
 
 ### Running Tests
+
 ```bash
 cd apps/web
 npm test lib/services/__tests__/orchestrator-work-engine-service.test.ts
@@ -269,6 +307,7 @@ npm test lib/services/__tests__/orchestrator-work-engine-service.test.ts
 ## TypeScript Compliance
 
 ### Verification
+
 ```bash
 npx tsc --noEmit --skipLibCheck lib/services/orchestrator-work-engine-service.ts
 ```
@@ -276,6 +315,7 @@ npx tsc --noEmit --skipLibCheck lib/services/orchestrator-work-engine-service.ts
 **Result:** ✅ No TypeScript errors
 
 ### Type Safety
+
 - All function parameters are strongly typed
 - Return types explicitly defined
 - Prisma types imported from `@prisma/client`
@@ -304,16 +344,19 @@ This implementation provides the foundation for:
 ## Performance Considerations
 
 ### Database Queries
+
 - Uses indexed fields (vpId, status, priority)
 - Optimized dependency checks with `findMany`
 - Batches statistics queries with `Promise.all`
 
 ### Scalability
+
 - Limits candidate task queries (default 50)
 - Filters eligible tasks before scoring
 - Single atomic update for status changes
 
 ### Memory Efficiency
+
 - Selective field fetching with Prisma `select`
 - Returns only necessary context data
 - Minimal metadata storage
@@ -321,12 +364,14 @@ This implementation provides the foundation for:
 ## Security
 
 ### Validation
+
 - Verifies Orchestrator ownership of tasks
 - Checks Orchestrator availability status
 - Validates dependency relationships
 - Validates progress range
 
 ### Error Handling
+
 - Graceful failure with error messages
 - No sensitive data in error responses
 - Transaction safety with Prisma

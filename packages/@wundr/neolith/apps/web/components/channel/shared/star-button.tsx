@@ -35,8 +35,8 @@ export function StarButton({
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant='ghost'
+      size='icon'
       className={cn(buttonSize, className)}
       onClick={onToggle}
       disabled={isLoading}

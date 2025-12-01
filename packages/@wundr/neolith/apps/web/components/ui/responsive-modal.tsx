@@ -101,7 +101,11 @@ export function ResponsiveModal({
   );
 }
 
-export function ResponsiveModalTrigger({ children }: { children: React.ReactNode }) {
+export function ResponsiveModalTrigger({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   if (isDesktop) {
@@ -157,10 +161,14 @@ export function ResponsiveModalDescription({
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   if (isDesktop) {
-    return <DialogDescription className={className}>{children}</DialogDescription>;
+    return (
+      <DialogDescription className={className}>{children}</DialogDescription>
+    );
   }
 
-  return <DrawerDescription className={className}>{children}</DrawerDescription>;
+  return (
+    <DrawerDescription className={className}>{children}</DrawerDescription>
+  );
 }
 
 export function ResponsiveModalFooter({
@@ -176,7 +184,11 @@ export function ResponsiveModalFooter({
   return <DrawerFooter className={className}>{children}</DrawerFooter>;
 }
 
-export function ResponsiveModalClose({ children }: { children: React.ReactNode }) {
+export function ResponsiveModalClose({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   // Dialog has built-in close button in DialogContent

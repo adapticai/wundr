@@ -9,9 +9,9 @@ beforeAll(async () => {
   // Ensure test directories exist
   const testDirs = [
     './test-sessions',
-    './test-registry', 
+    './test-registry',
     './test-models',
-    './test-memory'
+    './test-memory',
   ];
 
   for (const dir of testDirs) {
@@ -29,9 +29,9 @@ afterAll(async () => {
   const testDirs = [
     './test-sessions',
     './test-registry',
-    './test-models', 
+    './test-models',
     './test-memory',
-    './coverage'
+    './coverage',
   ];
 
   for (const dir of testDirs) {
@@ -48,7 +48,7 @@ jest.mock('sqlite3', () => ({
   Database: jest.fn().mockImplementation((path, callback) => {
     // Mock successful database connection
     if (callback) callback(null);
-    
+
     return {
       serialize: jest.fn(fn => fn()),
       run: jest.fn((query, params, callback) => {
@@ -74,9 +74,9 @@ jest.mock('sqlite3', () => ({
       }),
       close: jest.fn(callback => {
         if (callback) callback(null);
-      })
+      }),
     };
-  })
+  }),
 }));
 
 // Mock child_process for agent spawning
@@ -89,8 +89,8 @@ jest.mock('child_process', () => ({
       }
     }),
     stdout: { on: jest.fn() },
-    stderr: { on: jest.fn() }
-  }))
+    stderr: { on: jest.fn() },
+  })),
 }));
 
 // Mock Octokit for GitHub integration tests
@@ -98,8 +98,8 @@ jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({
     users: {
       getAuthenticated: jest.fn().mockResolvedValue({
-        data: { login: 'test-user' }
-      })
+        data: { login: 'test-user' },
+      }),
     },
     pulls: {
       get: jest.fn().mockResolvedValue({
@@ -108,14 +108,14 @@ jest.mock('@octokit/rest', () => ({
           title: 'Test PR',
           changed_files: 5,
           additions: 100,
-          deletions: 20
-        }
+          deletions: 20,
+        },
       }),
       createReview: jest.fn().mockResolvedValue({
-        data: { id: 456 }
-      })
-    }
-  }))
+        data: { id: 456 },
+      }),
+    },
+  })),
 }));
 
 // Extend Jest matchers for better assertions
@@ -124,34 +124,44 @@ expect.extend({
     const pass = received >= floor && received <= ceiling;
     if (pass) {
       return {
-        message: () => `expected ${received} not to be within range ${floor} - ${ceiling}`,
-        pass: true
+        message: () =>
+          `expected ${received} not to be within range ${floor} - ${ceiling}`,
+        pass: true,
       };
     } else {
       return {
-        message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,
-        pass: false
+        message: () =>
+          `expected ${received} to be within range ${floor} - ${ceiling}`,
+        pass: false,
       };
     }
   },
 
   toHaveValidAgentStructure(received: any) {
-    const requiredFields = ['id', 'type', 'category', 'capabilities', 'status', 'metrics'];
+    const requiredFields = [
+      'id',
+      'type',
+      'category',
+      'capabilities',
+      'status',
+      'metrics',
+    ];
     const hasAllFields = requiredFields.every(field => field in received);
-    
+
     if (hasAllFields) {
       return {
         message: () => `expected agent not to have valid structure`,
-        pass: true
+        pass: true,
       };
     } else {
       const missing = requiredFields.filter(field => !(field in received));
       return {
-        message: () => `expected agent to have valid structure, missing: ${missing.join(', ')}`,
-        pass: false
+        message: () =>
+          `expected agent to have valid structure, missing: ${missing.join(', ')}`,
+        pass: false,
       };
     }
-  }
+  },
 });
 
 // Global error handler for unhandled promise rejections

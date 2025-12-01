@@ -71,18 +71,20 @@ interface RouteContext {
 async function getHuddleWithAccess(huddleId: string, userId: string) {
   // Try to get huddle from dedicated table first
   try {
-    const huddles = await prisma.$queryRaw<Array<{
-      id: string;
-      workspace_id: string;
-      name: string;
-      description: string | null;
-      is_public: boolean;
-      room_name: string;
-      status: string;
-      created_at: Date;
-      ended_at: Date | null;
-      created_by_id: string;
-    }>>`
+    const huddles = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        workspace_id: string;
+        name: string;
+        description: string | null;
+        is_public: boolean;
+        room_name: string;
+        status: string;
+        created_at: Date;
+        ended_at: Date | null;
+        created_by_id: string;
+      }>
+    >`
       SELECT * FROM huddles WHERE id = ${huddleId} LIMIT 1
     `;
 
@@ -95,8 +97,8 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
       });
 
       if (!workspace) {
-return null;
-}
+        return null;
+      }
 
       const orgMembership = await prisma.organizationMember.findUnique({
         where: {
@@ -108,8 +110,8 @@ return null;
       });
 
       if (!orgMembership) {
-return null;
-}
+        return null;
+      }
 
       return {
         huddle: {
@@ -138,8 +140,10 @@ return null;
   });
 
   for (const workspace of workspaces) {
-    const settings = workspace.settings as { huddles?: HuddleResponse[] } | null;
-    const huddle = settings?.huddles?.find((h) => h.id === huddleId);
+    const settings = workspace.settings as {
+      huddles?: HuddleResponse[];
+    } | null;
+    const huddle = settings?.huddles?.find(h => h.id === huddleId);
 
     if (huddle) {
       // Check access
@@ -153,8 +157,8 @@ return null;
       });
 
       if (!orgMembership) {
-return null;
-}
+        return null;
+      }
 
       const fullWorkspace = await prisma.workspace.findUnique({
         where: { id: workspace.id },
@@ -186,15 +190,18 @@ return null;
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -203,8 +210,11 @@ export async function GET(
     const paramResult = huddleIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid huddle ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid huddle ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -212,8 +222,11 @@ export async function GET(
     const result = await getHuddleWithAccess(params.huddleId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Huddle not found or access denied', CALL_ERROR_CODES.HUDDLE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Huddle not found or access denied',
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -235,8 +248,11 @@ export async function GET(
 
       if (!isParticipant && result.huddle.createdById !== session.user.id) {
         return NextResponse.json(
-          createErrorResponse('Access denied to private huddle', CALL_ERROR_CODES.HUDDLE_PRIVATE),
-          { status: 403 },
+          createErrorResponse(
+            'Access denied to private huddle',
+            CALL_ERROR_CODES.HUDDLE_PRIVATE
+          ),
+          { status: 403 }
         );
       }
     }
@@ -261,17 +277,19 @@ export async function GET(
     }> = [];
 
     try {
-      const participantResults = await prisma.$queryRaw<Array<{
-        id: string;
-        user_id: string;
-        display_name: string | null;
-        joined_at: Date;
-        left_at: Date | null;
-        is_audio_enabled: boolean;
-        is_video_enabled: boolean;
-        user_name: string | null;
-        user_avatar: string | null;
-      }>>`
+      const participantResults = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          user_id: string;
+          display_name: string | null;
+          joined_at: Date;
+          left_at: Date | null;
+          is_audio_enabled: boolean;
+          is_video_enabled: boolean;
+          user_name: string | null;
+          user_avatar: string | null;
+        }>
+      >`
         SELECT
           hp.id,
           hp.user_id,
@@ -288,7 +306,7 @@ export async function GET(
         ORDER BY hp.joined_at ASC
       `;
 
-      participants = participantResults.map((p) => ({
+      participants = participantResults.map(p => ({
         id: p.id,
         huddleId: params.huddleId,
         userId: p.user_id,
@@ -321,8 +339,8 @@ export async function GET(
         id: creator?.id ?? result.huddle.createdById,
         name: creator?.displayName ?? creator?.name ?? null,
       },
-      participantCount: participants.filter((p) => !p.leftAt).length,
-      participants: participants.map((p) => ({
+      participantCount: participants.filter(p => !p.leftAt).length,
+      participants: participants.map(p => ({
         ...p,
         callId: result.huddle.id,
       })),
@@ -332,8 +350,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/huddles/:huddleId] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -349,15 +370,18 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -366,8 +390,11 @@ export async function DELETE(
     const paramResult = huddleIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid huddle ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid huddle ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -375,16 +402,22 @@ export async function DELETE(
     const result = await getHuddleWithAccess(params.huddleId, session.user.id);
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Huddle not found or access denied', CALL_ERROR_CODES.HUDDLE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Huddle not found or access denied',
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Check if huddle is already ended
     if (result.huddle.status === 'ended') {
       return NextResponse.json(
-        createErrorResponse('Huddle has already ended', CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED),
-        { status: 400 },
+        createErrorResponse(
+          'Huddle has already ended',
+          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED
+        ),
+        { status: 400 }
       );
     }
 
@@ -402,7 +435,10 @@ export async function DELETE(
         },
       },
     });
-    if (workspaceMembership && ['OWNER', 'ADMIN'].includes(workspaceMembership.role)) {
+    if (
+      workspaceMembership &&
+      ['OWNER', 'ADMIN'].includes(workspaceMembership.role)
+    ) {
       isWorkspaceAdmin = true;
     }
 
@@ -410,9 +446,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only the huddle creator or an admin can end this huddle',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -426,12 +462,14 @@ export async function DELETE(
         select: { settings: true },
       });
 
-      const settings = workspace?.settings as WorkspaceSettingsWithHuddles | null;
-      const updatedHuddles: StoredHuddleData[] = settings?.huddles?.map((h) =>
-        h.id === params.huddleId
-          ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
-          : h,
-      ) ?? [];
+      const settings =
+        workspace?.settings as WorkspaceSettingsWithHuddles | null;
+      const updatedHuddles: StoredHuddleData[] =
+        settings?.huddles?.map(h =>
+          h.id === params.huddleId
+            ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
+            : h
+        ) ?? [];
 
       const updatedSettings: Prisma.InputJsonValue = toJsonValue({
         ...settings,
@@ -473,8 +511,11 @@ export async function DELETE(
   } catch (error) {
     console.error('[DELETE /api/huddles/:huddleId] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -1,20 +1,17 @@
 module.exports = {
-  extends: [
-    'next/core-web-vitals',
-    'plugin:@typescript-eslint/recommended'
-  ],
+  extends: ['next/core-web-vitals', 'plugin:@typescript-eslint/recommended'],
   parser: '@typescript-eslint/parser',
   env: {
     browser: true,
     node: true,
-    es2022: true
+    es2022: true,
   },
   parserOptions: {
     ecmaFeatures: {
-      jsx: true
+      jsx: true,
     },
     ecmaVersion: 'latest',
-    sourceType: 'module'
+    sourceType: 'module',
   },
   rules: {
     // React specific rules
@@ -25,58 +22,64 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'warn',
 
     // TypeScript rules (minimal set to avoid conflicts)
-    '@typescript-eslint/no-unused-vars': ['warn', {
-      argsIgnorePattern: '^_',
-      varsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-      destructuredArrayIgnorePattern: '^_'
-    }],
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'warn',
 
     // Accessibility adjustments for Next.js
-    'jsx-a11y/anchor-is-valid': ['error', {
-      components: ['Link'],
-      specialLink: ['hrefLeft', 'hrefRight'],
-      aspects: ['invalidHref', 'preferButton']
-    }],
+    'jsx-a11y/anchor-is-valid': [
+      'error',
+      {
+        components: ['Link'],
+        specialLink: ['hrefLeft', 'hrefRight'],
+        aspects: ['invalidHref', 'preferButton'],
+      },
+    ],
 
     // Allow console in development scripts
-    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }]
+    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
   },
   settings: {
     react: {
-      version: 'detect'
-    }
+      version: 'detect',
+    },
   },
   overrides: [
     {
       files: ['pages/**/*', 'app/**/*', 'src/pages/**/*', 'src/app/**/*'],
       rules: {
         'import/no-default-export': 'off', // Next.js requires default exports
-        '@typescript-eslint/explicit-module-boundary-types': 'off'
-      }
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+      },
     },
     {
       files: ['app/api/**/*', 'pages/api/**/*'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off', // Allow require in API routes
-        'no-console': 'off' // Allow console in API routes
-      }
+        'no-console': 'off', // Allow console in API routes
+      },
     },
     {
       files: ['*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx'],
       env: {
-        jest: true
+        jest: true,
       },
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         'react-hooks/rules-of-hooks': 'off',
-        'jsx-a11y/anchor-is-valid': 'off'
-      }
-    }
-  ]
+        'jsx-a11y/anchor-is-valid': 'off',
+      },
+    },
+  ],
 };

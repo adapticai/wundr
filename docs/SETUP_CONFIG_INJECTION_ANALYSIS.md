@@ -1,17 +1,20 @@
 # Computer Setup Config File Injection Analysis
 
-**Analysis Date:** November 21, 2025
-**Repository:** wundr
-**Scope:** All setup scripts and config file injection mechanisms
+**Analysis Date:** November 21, 2025 **Repository:** wundr **Scope:** All setup scripts and config
+file injection mechanisms
 
 ---
 
 ## Executive Summary
 
-This analysis identifies how CLAUDE.md and other Claude Code config files are injected into developer machines via the computer-setup infrastructure, current mechanisms, missing components, and recommendations for integrating git-worktree guidelines.
+This analysis identifies how CLAUDE.md and other Claude Code config files are injected into
+developer machines via the computer-setup infrastructure, current mechanisms, missing components,
+and recommendations for integrating git-worktree guidelines.
 
 **Key Findings:**
-- Single source of truth: `CLAUDE.md.template` in `/packages/@wundr/computer-setup/resources/templates/`
+
+- Single source of truth: `CLAUDE.md.template` in
+  `/packages/@wundr/computer-setup/resources/templates/`
 - Config injection happens at 3 stages: Installation, Runtime, and Project-level
 - Missing: Git-worktree guidelines, conventions files, advanced hooks
 - Opportunity: Centralized config management with version control
@@ -22,12 +25,12 @@ This analysis identifies how CLAUDE.md and other Claude Code config files are in
 
 ### 1.1 Primary Setup Entry Points
 
-| Script | Location | Purpose | Trigger |
-|--------|----------|---------|---------|
-| **setup/install.sh** | `/Users/iroselli/wundr/setup/install.sh` | Main monorepo installation | `bash setup/install.sh` |
-| **dev-computer-setup.sh** | `/Users/iroselli/wundr/scripts/dev-computer-setup.sh` | CLI runner for computer-setup package | `./scripts/dev-computer-setup.sh --profile <profile>` |
-| **SetupCommands** | `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/setup.ts` | Main wundr CLI setup command | `wundr setup [options]` |
-| **RealSetupOrchestrator** | `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/installers/real-setup-orchestrator.ts` | Orchestration engine | Invoked by SetupCommands |
+| Script                    | Location                                                                                         | Purpose                               | Trigger                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------------- |
+| **setup/install.sh**      | `/Users/iroselli/wundr/setup/install.sh`                                                         | Main monorepo installation            | `bash setup/install.sh`                               |
+| **dev-computer-setup.sh** | `/Users/iroselli/wundr/scripts/dev-computer-setup.sh`                                            | CLI runner for computer-setup package | `./scripts/dev-computer-setup.sh --profile <profile>` |
+| **SetupCommands**         | `/Users/iroselli/wundr/packages/@wundr/cli/src/commands/setup.ts`                                | Main wundr CLI setup command          | `wundr setup [options]`                               |
+| **RealSetupOrchestrator** | `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/installers/real-setup-orchestrator.ts` | Orchestration engine                  | Invoked by SetupCommands                              |
 
 ### 1.2 Setup Script Flow Diagram
 
@@ -60,11 +63,14 @@ CLAUDE.md injection (Step 9)
 ### 2.1 CLAUDE.md Injection Flow
 
 **Source File:**
-- `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template` (382 lines)
+
+- `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template` (382
+  lines)
 
 **Injection Points:**
 
 #### A. Global User-Level (during computer-setup)
+
 **File:** `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/installers/claude-installer.ts`
 **Lines:** 1067-1203
 
@@ -86,16 +92,19 @@ private async setupClaudeMdGenerator(): Promise<void> {
 ```
 
 **Flow:**
+
 1. Bundled `CLAUDE.md.template` copied from npm package
 2. Installed to `~/.claude/templates/CLAUDE.md.template`
 3. Generator script created to auto-generate project-level CLAUDE.md
 4. Global command `claude-init` created
 
 #### B. Project-Level (on-demand)
+
 **File:** `/Users/iroselli/wundr/packages/@wundr/computer-setup/src/installers/claude-installer.ts`
 **Lines:** 1095-1190
 
 Generator script creates dynamic `CLAUDE.md` based on:
+
 ```javascript
 // Project detection (Lines 1125-1129)
 const hasTypeScript = fs.existsSync('tsconfig.json');
@@ -114,7 +123,9 @@ const isMonorepo = fs.existsSync('lerna.json') || fs.existsSync('pnpm-workspace.
 **Output:** Creates `CLAUDE.md` in project root
 
 #### C. Repository-Level (Wundr itself)
+
 **File:** `/Users/iroselli/wundr/CLAUDE.md` (382 lines)
+
 - Manually maintained
 - Not auto-generated
 - Contains all setup instructions
@@ -124,9 +135,11 @@ const isMonorepo = fs.existsSync('lerna.json') || fs.existsSync('pnpm-workspace.
 ## 3. Claude Code Config Files Currently Included
 
 ### 3.1 Agent Definitions
+
 **Location:** `/Users/iroselli/wundr/.claude/agents/` (63 files)
 
 **Categories:**
+
 - Core (5): coder, reviewer, tester, planner, researcher
 - Swarm (3): hierarchical-coordinator, mesh-coordinator, adaptive-coordinator
 - Consensus (8): byzantine-coordinator, raft-manager, crdt-synchronizer, etc.
@@ -136,14 +149,17 @@ const isMonorepo = fs.existsSync('lerna.json') || fs.existsSync('pnpm-workspace.
 - Others: optimization, testing, mobile, documentation, backend, ML
 
 **Files per agent:**
+
 - Single `.md` file with prompt/instructions
 - Located in thematic subdirectories
 - No version control or inheritance
 
 ### 3.2 Slash Commands
+
 **Location:** `/Users/iroselli/wundr/.claude/commands/` (44 files)
 
 **Categories:**
+
 - Coordination (3): agent-spawn, swarm-init, task-orchestrate
 - GitHub (6): code-review, github-swarm, issue-triage, pr-enhance, repo-analyze, workflow
 - Analysis (3): bottleneck-detect, performance-report, token-usage
@@ -155,6 +171,7 @@ const isMonorepo = fs.existsSync('lerna.json') || fs.existsSync('pnpm-workspace.
 - Hooks (5): pre-task, post-task, pre-edit, post-edit, session-end
 
 ### 3.3 Helper Scripts
+
 **Location:** `/Users/iroselli/wundr/.claude/helpers/` (6 files)
 
 ```
@@ -167,9 +184,11 @@ standard-checkpoint-hooks.sh    - Pre-commit hooks
 ```
 
 ### 3.4 Settings & Configuration
+
 **Location:** `/Users/iroselli/wundr/.claude/settings.json` (115 lines)
 
 **Contents:**
+
 - Environment variables (8)
 - Permissions (allow/deny lists)
 - Hooks (PreToolUse, PostToolUse, PreCompact, Stop)
@@ -183,6 +202,7 @@ standard-checkpoint-hooks.sh    - Pre-commit hooks
 ### 4.1 Critical Missing: Git-Worktree Guidelines
 
 **Current Status:** NO GIT-WORKTREE CONFIGURATION EXISTS
+
 - No `.claude/conventions/` directory
 - No worktree best practices file
 - No branch isolation guidelines
@@ -190,17 +210,20 @@ standard-checkpoint-hooks.sh    - Pre-commit hooks
 
 **Should Include:**
 
-```markdown
+````markdown
 # Git-Worktree Guidelines for SPARC Development
 
 ## Worktree Management
 
 ### Creating Feature Worktrees
+
 ```bash
 git worktree add ../wundr-feature-<name> --track origin/master
 ```
+````
 
 ### Branch Isolation in SPARC Workflow
+
 - Each SPARC phase: separate worktree
 - Specification → worktree-spec
 - Pseudocode → worktree-pseudocode
@@ -209,30 +232,30 @@ git worktree add ../wundr-feature-<name> --track origin/master
 - Completion → main branch merge
 
 ### Cleanup & Maintenance
+
 - Remove stale worktrees: `git worktree prune`
 - Check status: `git worktree list`
 
 ### Concurrent Development
+
 - Teams can work on different worktrees
 - No branch conflicts
 - Isolated test environments
+
 ```
 
 ### 4.2 Missing: Conventions & Standards Files
 
 **Should Create:**
 ```
-~/.claude/conventions/
-├── README.md                  (Overview of all conventions)
-├── naming-conventions.md      (Variable, function, file naming)
-├── code-style.md             (Formatting, structure standards)
-├── git-conventions.md        (Commit messages, branch naming)
-├── documentation.md          (Doc standards, templates)
-├── testing.md               (Test patterns, coverage goals)
-├── git-worktree.md          (Worktree usage, isolation)
-├── security.md              (Secret handling, permissions)
-└── performance.md           (Optimization guidelines)
-```
+
+~/.claude/conventions/ ├── README.md (Overview of all conventions) ├── naming-conventions.md
+(Variable, function, file naming) ├── code-style.md (Formatting, structure standards) ├──
+git-conventions.md (Commit messages, branch naming) ├── documentation.md (Doc standards, templates)
+├── testing.md (Test patterns, coverage goals) ├── git-worktree.md (Worktree usage, isolation) ├──
+security.md (Secret handling, permissions) └── performance.md (Optimization guidelines)
+
+````
 
 ### 4.3 Missing: Advanced Hooks
 
@@ -263,7 +286,7 @@ git worktree add ../wundr-feature-<name> --track origin/master
     "dist",
     "resources"
 ],
-```
+````
 
 **Needed:** Already includes `resources` ✓
 
@@ -274,6 +297,7 @@ git worktree add ../wundr-feature-<name> --track origin/master
 **Required Updates:**
 
 1. **Add Conventions Installation** (Line ~175, new method)
+
 ```typescript
 private async setupConventions(): Promise<void> {
     // Copy convention files from bundled resources
@@ -283,6 +307,7 @@ private async setupConventions(): Promise<void> {
 ```
 
 2. **Add Worktree Hooks** (Line ~200, new section)
+
 ```typescript
 private async setupWorktreeHooks(): Promise<void> {
     // Create git hooks for worktree lifecycle
@@ -292,24 +317,29 @@ private async setupWorktreeHooks(): Promise<void> {
 ```
 
 3. **Update Steps Array** (Lines 74-156)
+
 - Add "claude-conventions" step
 - Add "claude-worktree-setup" step
 - Update dependencies
 
 ### 5.3 CLAUDE.md Template (Expand Config)
 
-**File:** `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
+**File:**
+`/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
 
 **Needed Additions:**
 
 1. **Git-Worktree Section**
+
 ```markdown
 ## Git-Worktree Workflow
 
 ### Creating SPARC-Aware Worktrees
+
 [Include worktree guidelines]
 
 ### Phase-Specific Branches
+
 - spec/feature-name
 - design/feature-name
 - impl/feature-name
@@ -317,25 +347,30 @@ private async setupWorktreeHooks(): Promise<void> {
 ```
 
 2. **Conventions Reference**
+
 ```markdown
 ## Code Conventions
 
 All team standards are documented in:
+
 - ~/.claude/conventions/git-worktree.md
 - ~/.claude/conventions/code-style.md
 - ~/.claude/conventions/naming-conventions.md
 ```
 
 3. **Hooks Documentation**
+
 ```markdown
 ## Installed Hooks
 
 ### Pre-commit Hooks
+
 - Linting validation
 - Type checking
 - Test execution
 
 ### Worktree Hooks
+
 - Branch naming validation
 - SPARC phase tracking
 - Cleanup on deletion
@@ -346,6 +381,7 @@ All team standards are documented in:
 **File:** Lines 1132-1175 in claude-installer.ts
 
 **Add to Generated CLAUDE.md:**
+
 ```javascript
 // After line 1166, add conventions section:
 \${hasTypeScript ? '- Review conventions in ~/.claude/conventions/' : ''}
@@ -367,6 +403,7 @@ Configure in .git/hooks/ or use husky
 ### 5.5 Resources Directory Structure
 
 **Current:** `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/`
+
 ```
 resources/
 ├── agents/       (63 agent definitions)
@@ -377,6 +414,7 @@ resources/
 ```
 
 **Should Be:**
+
 ```
 resources/
 ├── agents/       (63 agent definitions)
@@ -397,6 +435,7 @@ resources/
 **When:** `npm install` → `setup/install.sh` → `wundr setup`
 
 **What's Injected:**
+
 1. Global CLI wrapper → `/usr/local/bin/claude`
 2. `.claude/` directory structure
 3. Agent definitions → `~/.claude/agents/`
@@ -411,6 +450,7 @@ resources/
 **When:** User runs `claude-init` in a git repo
 
 **What's Injected:**
+
 1. Project-specific `CLAUDE.md`
 2. Auto-detected project configuration
 3. Recommended agents for project type
@@ -421,6 +461,7 @@ resources/
 **When:** Developer clones wundr or similar repo with `.claude/` directory
 
 **What's Injected:**
+
 - Repo-specific agent extensions
 - Custom slash commands
 - Project-specific settings
@@ -431,12 +472,15 @@ resources/
 ## 7. MCP Tools Currently Referenced
 
 ### In Settings.json
+
 **Line 113:**
+
 ```json
 "enabledMcpjsonServers": ["claude-flow", "ruv-swarm"]
 ```
 
 ### In claude-installer.ts (Lines 38-46)
+
 ```typescript
 private readonly mcpServers = [
     'claude-flow',       // Orchestration & coordination
@@ -450,6 +494,7 @@ private readonly mcpServers = [
 ```
 
 ### In Generated CLAUDE.md (Lines 1168-1172)
+
 ```javascript
 ## MCP Tools
 - claude-flow: Orchestration and coordination
@@ -465,21 +510,26 @@ ${hasReact ? '- browser: Real browser testing' : ''}
 ### In settings.json (Lines 40-110)
 
 #### Pre-Tool Use Hooks
+
 - Bash commands: `pre-command` validation and resource prep
 - File operations: `pre-edit` with agent assignment and context loading
 
 #### Post-Tool Use Hooks
+
 - Bash commands: `post-command` with metrics and result storage
 - File operations: `post-edit` with formatting and memory update
 
 #### Pre-Compact Hooks
+
 - Manual mode: Guidance on CLAUDE.md, agents, SPARC methodology
 - Auto mode: Full agent context and batchtools optimization
 
 #### Stop Hooks
+
 - Session end: Summary generation, state persistence, metrics export
 
 ### Missing Hook Types
+
 - Pre-commit hooks (source control)
 - Post-merge hooks (dependency management)
 - Branch hooks (validation, SPARC phase enforcement)
@@ -603,35 +653,36 @@ private async createGitHook(hookName: string, content: string): Promise<void> {
 
 ```typescript
 steps.push({
-    id: 'claude-conventions',
-    name: 'Setup Code Conventions',
-    description: 'Install code style, naming, and workflow conventions',
-    category: 'configuration',
-    required: true,
-    dependencies: ['claude-config'],
-    estimatedTime: 5,
-    installer: async () => {
-        await this.setupConventions();
-    },
+  id: 'claude-conventions',
+  name: 'Setup Code Conventions',
+  description: 'Install code style, naming, and workflow conventions',
+  category: 'configuration',
+  required: true,
+  dependencies: ['claude-config'],
+  estimatedTime: 5,
+  installer: async () => {
+    await this.setupConventions();
+  },
 });
 
 steps.push({
-    id: 'claude-worktree',
-    name: 'Setup Git-Worktree Hooks',
-    description: 'Configure hooks for SPARC-aware worktree management',
-    category: 'configuration',
-    required: false,
-    dependencies: ['claude-conventions'],
-    estimatedTime: 5,
-    installer: async () => {
-        await this.setupWorktreeHooks();
-    },
+  id: 'claude-worktree',
+  name: 'Setup Git-Worktree Hooks',
+  description: 'Configure hooks for SPARC-aware worktree management',
+  category: 'configuration',
+  required: false,
+  dependencies: ['claude-conventions'],
+  estimatedTime: 5,
+  installer: async () => {
+    await this.setupWorktreeHooks();
+  },
 });
 ```
 
 ### 9.3 Step 3: Update CLAUDE.md Template
 
-**File:** `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
+**File:**
+`/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/CLAUDE.md.template`
 
 **Add Section (after Agent Configuration):**
 
@@ -639,6 +690,7 @@ steps.push({
 ## Code Conventions
 
 All development standards are documented in:
+
 - **Git-Worktree:** ~/.claude/conventions/git-worktree.md
 - **Naming:** ~/.claude/conventions/naming-conventions.md
 - **Code Style:** ~/.claude/conventions/code-style.md
@@ -651,17 +703,11 @@ All development standards are documented in:
 
 For feature development using SPARC methodology:
 
-1. Create specification worktree:
-   \`\`\`bash
-   git worktree add ../wundr-spec-<feature> --track origin/master
-   cd ../wundr-spec-<feature>
-   git checkout -b spec/<feature>
-   \`\`\`
+1. Create specification worktree: \`\`\`bash git worktree add ../wundr-spec-<feature> --track
+   origin/master cd ../wundr-spec-<feature> git checkout -b spec/<feature> \`\`\`
 
-2. Run specification phase:
-   \`\`\`bash
-   npx claude-flow sparc run spec-pseudocode "<feature description>"
-   \`\`\`
+2. Run specification phase: \`\`\`bash npx claude-flow sparc run spec-pseudocode
+   "<feature description>" \`\`\`
 
 3. Merge when complete, move to architecture worktree
 4. Follow same pattern for each SPARC phase
@@ -669,6 +715,7 @@ For feature development using SPARC methodology:
 ## Git Hooks
 
 Automatic hooks are installed for:
+
 - Branch naming validation (SPARC phases)
 - Pre-commit linting and testing
 - Worktree lifecycle management
@@ -688,7 +735,8 @@ Automatic hooks are installed for:
 ],
 ```
 
-The resources directory will automatically include all subdirectories including the new `conventions/` folder.
+The resources directory will automatically include all subdirectories including the new
+`conventions/` folder.
 
 ---
 
@@ -696,28 +744,28 @@ The resources directory will automatically include all subdirectories including 
 
 ### Summary Table
 
-| File | Lines | Type | Change | Priority |
-|------|-------|------|--------|----------|
-| claude-installer.ts | 74-156 | Feature | Add conventions + worktree steps | HIGH |
-| claude-installer.ts | 1203+ | Feature | Add setupConventions() method | HIGH |
-| claude-installer.ts | 1220+ | Feature | Add setupWorktreeHooks() method | HIGH |
-| CLAUDE.md.template | +30 | Content | Add conventions + SPARC+worktree section | HIGH |
-| claude-installer.ts (generator) | 1132-1175 | Feature | Include conventions in dynamic generation | MEDIUM |
-| generator-claude-md.js | 1095-1184 | Feature | Add hooks documentation | MEDIUM |
-| package.json (computer-setup) | 7-9 | Config | Verify resources inclusion | LOW |
+| File                            | Lines     | Type    | Change                                    | Priority |
+| ------------------------------- | --------- | ------- | ----------------------------------------- | -------- |
+| claude-installer.ts             | 74-156    | Feature | Add conventions + worktree steps          | HIGH     |
+| claude-installer.ts             | 1203+     | Feature | Add setupConventions() method             | HIGH     |
+| claude-installer.ts             | 1220+     | Feature | Add setupWorktreeHooks() method           | HIGH     |
+| CLAUDE.md.template              | +30       | Content | Add conventions + SPARC+worktree section  | HIGH     |
+| claude-installer.ts (generator) | 1132-1175 | Feature | Include conventions in dynamic generation | MEDIUM   |
+| generator-claude-md.js          | 1095-1184 | Feature | Add hooks documentation                   | MEDIUM   |
+| package.json (computer-setup)   | 7-9       | Config  | Verify resources inclusion                | LOW      |
 
 ### New Files to Create
 
-| File | Location | Purpose |
-|------|----------|---------|
-| git-worktree.md | resources/conventions/ | Worktree workflow guide |
-| naming-conventions.md | resources/conventions/ | Code naming standards |
-| code-style.md | resources/conventions/ | Formatting standards |
-| git-conventions.md | resources/conventions/ | Git workflow standards |
-| documentation.md | resources/conventions/ | Doc standards |
-| testing.md | resources/conventions/ | Test guidelines |
-| security.md | resources/conventions/ | Security practices |
-| README.md | resources/conventions/ | Conventions overview |
+| File                  | Location               | Purpose                 |
+| --------------------- | ---------------------- | ----------------------- |
+| git-worktree.md       | resources/conventions/ | Worktree workflow guide |
+| naming-conventions.md | resources/conventions/ | Code naming standards   |
+| code-style.md         | resources/conventions/ | Formatting standards    |
+| git-conventions.md    | resources/conventions/ | Git workflow standards  |
+| documentation.md      | resources/conventions/ | Doc standards           |
+| testing.md            | resources/conventions/ | Test guidelines         |
+| security.md           | resources/conventions/ | Security practices      |
+| README.md             | resources/conventions/ | Conventions overview    |
 
 ---
 
@@ -778,34 +826,28 @@ The resources directory will automatically include all subdirectories including 
 ## 12. Current State Summary
 
 ### What's Working
-✓ Bundled agent definitions (63 files)
-✓ Bundled slash commands (44 files)
-✓ Bundled helper scripts (6 files)
-✓ Settings.json with hooks
-✓ CLAUDE.md template generation
-✓ MCP server configuration
-✓ Global CLI installation
+
+✓ Bundled agent definitions (63 files) ✓ Bundled slash commands (44 files) ✓ Bundled helper scripts
+(6 files) ✓ Settings.json with hooks ✓ CLAUDE.md template generation ✓ MCP server configuration ✓
+Global CLI installation
 
 ### What's Missing
-✗ Git-worktree guidelines
-✗ Code conventions directory
-✗ Advanced hooks (pre-commit, post-merge, branch validation)
-✗ Convention versioning
-✗ SPARC phase awareness in hooks
-✗ Worktree lifecycle hooks
-✗ Team collaboration guidelines
+
+✗ Git-worktree guidelines ✗ Code conventions directory ✗ Advanced hooks (pre-commit, post-merge,
+branch validation) ✗ Convention versioning ✗ SPARC phase awareness in hooks ✗ Worktree lifecycle
+hooks ✗ Team collaboration guidelines
 
 ### What Needs Enhancement
-~ CLAUDE.md template (add conventions section)
-~ Claude installer (add conventions installation)
-~ Hook system (add advanced hooks)
-~ Generator script (include conventions in output)
+
+~ CLAUDE.md template (add conventions section) ~ Claude installer (add conventions installation) ~
+Hook system (add advanced hooks) ~ Generator script (include conventions in output)
 
 ---
 
 ## 13. Critical Files Map
 
 ### Config Injection Source Files
+
 ```
 Source of Truth:
   └─ /packages/@wundr/computer-setup/resources/
@@ -833,6 +875,7 @@ Wrapper Scripts:
 ```
 
 ### Configuration Targets
+
 ```
 Global User Level:
   ~/.claude/
@@ -859,30 +902,35 @@ Repository Level:
 ## 14. Next Steps
 
 ### Phase 1: Analysis Complete ✓
+
 - Identified all injection points
 - Documented current config files
 - Listed missing components
 - Mapped file locations
 
 ### Phase 2: Planning (Next)
+
 - Design conventions content structure
 - Plan hook implementation
 - Define integration sequence
 - Create test plan
 
 ### Phase 3: Implementation (After Planning)
+
 - Create conventions files
 - Update claude-installer.ts
 - Update CLAUDE.md template
 - Create/update setup scripts
 
 ### Phase 4: Testing & Validation
+
 - Test fresh computer-setup
 - Verify all configs installed
 - Test hooks execution
 - Validate worktree flow
 
 ### Phase 5: Documentation
+
 - Update onboarding guide
 - Create conventions guide
 - Document SPARC + worktree workflow
@@ -892,20 +940,17 @@ Repository Level:
 
 ## Appendix: File Sizes & Statistics
 
-| Component | Count | Total Size |
-|-----------|-------|-----------|
-| Agent definitions | 63 | ~1.5 MB |
-| Slash commands | 44 | ~800 KB |
-| Helper scripts | 6 | ~120 KB |
-| Settings.json | 1 | ~4 KB |
-| CLAUDE.md template | 1 | ~8 KB |
-| Conventions (missing) | 8 | ~0 KB |
+| Component             | Count | Total Size |
+| --------------------- | ----- | ---------- |
+| Agent definitions     | 63    | ~1.5 MB    |
+| Slash commands        | 44    | ~800 KB    |
+| Helper scripts        | 6     | ~120 KB    |
+| Settings.json         | 1     | ~4 KB      |
+| CLAUDE.md template    | 1     | ~8 KB      |
+| Conventions (missing) | 8     | ~0 KB      |
 
-**Total Current:** ~2.4 MB
-**With Conventions:** ~2.5 MB
+**Total Current:** ~2.4 MB **With Conventions:** ~2.5 MB
 
 ---
 
-**Report Generated:** 2025-11-21
-**Analysis Complete:** YES
-**Ready for Implementation:** YES
+**Report Generated:** 2025-11-21 **Analysis Complete:** YES **Ready for Implementation:** YES

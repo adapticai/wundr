@@ -11,7 +11,12 @@ import type { DeveloperProfile } from '../types/index.js';
 const logger = new Logger({ name: 'template-manager' });
 
 /** Supported template variable value types */
-export type TemplateVariableValue = string | boolean | number | unknown[] | Record<string, unknown>;
+export type TemplateVariableValue =
+  | string
+  | boolean
+  | number
+  | unknown[]
+  | Record<string, unknown>;
 
 export interface TemplateVariable {
   name: string;
@@ -71,7 +76,7 @@ export class TemplateManager {
       const templatePath = path.resolve(this.templatesDir, options.templateDir);
       const outputPath = path.resolve(options.outputDir);
 
-      if (!await fs.pathExists(templatePath)) {
+      if (!(await fs.pathExists(templatePath))) {
         throw new Error(`Template directory not found: ${templatePath}`);
       }
 
@@ -95,15 +100,15 @@ export class TemplateManager {
     templateName: string,
     outputPath: string,
     context: TemplateContext,
-    options?: { overwrite?: boolean; verbose?: boolean },
+    options?: { overwrite?: boolean; verbose?: boolean }
   ): Promise<void> {
     const templatePath = this.getTemplatePath(templateName);
-    
-    if (!await fs.pathExists(templatePath)) {
+
+    if (!(await fs.pathExists(templatePath))) {
       throw new Error(`Template not found: ${templateName}`);
     }
 
-    if (!options?.overwrite && await fs.pathExists(outputPath)) {
+    if (!options?.overwrite && (await fs.pathExists(outputPath))) {
       logger.info(chalk.yellow(`Skipping existing file: ${outputPath}`));
       return;
     }
@@ -125,7 +130,7 @@ export class TemplateManager {
   async generateConfigs(
     projectPath: string,
     context: TemplateContext,
-    configs: string[],
+    configs: string[]
   ): Promise<void> {
     const spinner = ora('Generating configuration files').start();
 
@@ -147,18 +152,18 @@ export class TemplateManager {
   private async generateConfig(
     configType: string,
     projectPath: string,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const configMap = {
-      'eslint': {
+      eslint: {
         template: 'config/eslint/eslint.config.js',
         output: '.eslintrc.js',
       },
-      'prettier': {
+      prettier: {
         template: 'config/prettier/.prettierrc.js',
         output: '.prettierrc.js',
       },
-      'jest': {
+      jest: {
         template: 'config/jest/jest.config.js',
         output: 'jest.config.js',
       },
@@ -174,7 +179,7 @@ export class TemplateManager {
         template: 'config/typescript/tsconfig.react.json',
         output: 'tsconfig.json',
       },
-      'docker': {
+      docker: {
         template: 'docker/Dockerfile.node',
         output: 'Dockerfile',
       },
@@ -202,19 +207,24 @@ export class TemplateManager {
     }
 
     const outputPath = path.join(projectPath, config.output);
-    
+
     if (config.template === 'github') {
       // Special handling for GitHub templates
       await this.copyGitHubTemplates(projectPath, context);
     } else {
-      await this.copyTemplate(config.template, outputPath, context, { overwrite: true });
+      await this.copyTemplate(config.template, outputPath, context, {
+        overwrite: true,
+      });
     }
   }
 
   /**
    * Copy GitHub templates (issue templates, PR template)
    */
-  private async copyGitHubTemplates(projectPath: string, context: TemplateContext): Promise<void> {
+  private async copyGitHubTemplates(
+    projectPath: string,
+    context: TemplateContext
+  ): Promise<void> {
     const githubDir = path.join(projectPath, '.github');
     await fs.ensureDir(githubDir);
 
@@ -222,13 +232,17 @@ export class TemplateManager {
     const issueTemplatesDir = path.join(githubDir, 'ISSUE_TEMPLATE');
     await fs.ensureDir(issueTemplatesDir);
 
-    const issueTemplates = ['bug_report.md', 'feature_request.md', 'config.yml'];
+    const issueTemplates = [
+      'bug_report.md',
+      'feature_request.md',
+      'config.yml',
+    ];
     for (const template of issueTemplates) {
       await this.copyTemplate(
         `github/ISSUE_TEMPLATE/${template}`,
         path.join(issueTemplatesDir, template),
         context,
-        { overwrite: true },
+        { overwrite: true }
       );
     }
 
@@ -237,7 +251,7 @@ export class TemplateManager {
       'github/pull_request_template.md',
       path.join(githubDir, 'pull_request_template.md'),
       context,
-      { overwrite: true },
+      { overwrite: true }
     );
   }
 
@@ -247,7 +261,7 @@ export class TemplateManager {
   private async processDirectory(
     templateDir: string,
     outputDir: string,
-    options: TemplateOptions,
+    options: TemplateOptions
   ): Promise<void> {
     const entries = await fs.readdir(templateDir, { withFileTypes: true });
 
@@ -270,9 +284,9 @@ export class TemplateManager {
   private async processFile(
     templatePath: string,
     outputPath: string,
-    options: TemplateOptions,
+    options: TemplateOptions
   ): Promise<void> {
-    if (!options.overwrite && await fs.pathExists(outputPath)) {
+    if (!options.overwrite && (await fs.pathExists(outputPath))) {
       if (options.verbose) {
         logger.info(chalk.yellow(`Skipping existing file: ${outputPath}`));
       }
@@ -300,7 +314,7 @@ export class TemplateManager {
    */
   private replaceVariables(content: string, context: TemplateContext): string {
     const variables = this.buildVariableMap(context);
-    
+
     // Replace simple variables {{VARIABLE}}
     let result = content.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
       const value = variables[varName.trim()];
@@ -319,50 +333,75 @@ export class TemplateManager {
   /**
    * Process conditional template blocks
    */
-  private processConditionals(content: string, variables: Record<string, TemplateVariableValue>): string {
-    return content.replace(/\{\{#([^}]+)\}\}(.*?)\{\{\/\1\}\}/gs, (match, condition, innerContent) => {
-      const value = variables[condition.trim()];
-      return this.isTruthy(value) ? innerContent : '';
-    });
+  private processConditionals(
+    content: string,
+    variables: Record<string, TemplateVariableValue>
+  ): string {
+    return content.replace(
+      /\{\{#([^}]+)\}\}(.*?)\{\{\/\1\}\}/gs,
+      (match, condition, innerContent) => {
+        const value = variables[condition.trim()];
+        return this.isTruthy(value) ? innerContent : '';
+      }
+    );
   }
 
   /**
    * Process array template blocks
    */
-  private processArrays(content: string, variables: Record<string, TemplateVariableValue>): string {
-    return content.replace(/\{\{#([^}]+)\}\}(.*?)\{\{\/\1\}\}/gs, (match, arrayName, template) => {
-      const array = variables[arrayName.trim()];
-      
-      if (!Array.isArray(array)) {
-        return '';
-      }
+  private processArrays(
+    content: string,
+    variables: Record<string, TemplateVariableValue>
+  ): string {
+    return content.replace(
+      /\{\{#([^}]+)\}\}(.*?)\{\{\/\1\}\}/gs,
+      (match, arrayName, template) => {
+        const array = variables[arrayName.trim()];
 
-      return array.map((item, index) => {
-        let itemContent = template;
-        
-        // Replace item properties
-        if (typeof item === 'object') {
-          for (const [key, value] of Object.entries(item)) {
-            itemContent = itemContent.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value));
-          }
-        } else {
-          itemContent = itemContent.replace(/\{\{\.}\}/g, String(item));
+        if (!Array.isArray(array)) {
+          return '';
         }
 
-        // Handle special array variables
-        itemContent = itemContent.replace(/\{\{@index\}\}/g, String(index));
-        itemContent = itemContent.replace(/\{\{@first\}\}/g, String(index === 0));
-        itemContent = itemContent.replace(/\{\{@last\}\}/g, String(index === array.length - 1));
+        return array
+          .map((item, index) => {
+            let itemContent = template;
 
-        return itemContent;
-      }).join('');
-    });
+            // Replace item properties
+            if (typeof item === 'object') {
+              for (const [key, value] of Object.entries(item)) {
+                itemContent = itemContent.replace(
+                  new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+                  String(value)
+                );
+              }
+            } else {
+              itemContent = itemContent.replace(/\{\{\.}\}/g, String(item));
+            }
+
+            // Handle special array variables
+            itemContent = itemContent.replace(/\{\{@index\}\}/g, String(index));
+            itemContent = itemContent.replace(
+              /\{\{@first\}\}/g,
+              String(index === 0)
+            );
+            itemContent = itemContent.replace(
+              /\{\{@last\}\}/g,
+              String(index === array.length - 1)
+            );
+
+            return itemContent;
+          })
+          .join('');
+      }
+    );
   }
 
   /**
    * Build variable map from context
    */
-  private buildVariableMap(context: TemplateContext): Record<string, TemplateVariableValue> {
+  private buildVariableMap(
+    context: TemplateContext
+  ): Record<string, TemplateVariableValue> {
     const { profile, project, platform } = context;
 
     const variables: Record<string, TemplateVariableValue> = {
@@ -376,40 +415,40 @@ export class TemplateManager {
       LICENSE: project.license,
       AUTHOR: project.author,
       ORGANIZATION: project.organization,
-      
+
       // Platform variables
       OS: platform.os,
       ARCH: platform.arch,
       NODE_VERSION: platform.nodeVersion,
       SHELL: platform.shell,
-      
+
       // Profile variables
       DEVELOPER_NAME: profile.name,
       DEVELOPER_EMAIL: profile.email,
       ROLE: profile.role,
       TEAM: profile.team,
-      
+
       // Common configurations
       PORT: 3000,
       HOST_PORT: 3000,
       CONTAINER_PORT: 3000,
       BUILD_OUTPUT_DIR: 'dist',
       ENTRY_POINT: 'index.js',
-      
+
       // Environment variables
       NODE_ENV: 'development',
-      
+
       // Tool configurations
       REACT_PROJECT: profile.frameworks?.react || false,
       TYPESCRIPT_PROJECT: true,
       NODE_PROJECT: true,
-      
+
       // Database configurations
       INCLUDE_POSTGRES: profile.tools?.databases?.postgresql || false,
       INCLUDE_REDIS: profile.tools?.databases?.redis || false,
       POSTGRES_VERSION: '16',
       REDIS_VERSION: '7',
-      
+
       // Custom variables
       ...context.customVariables,
     };
@@ -422,23 +461,23 @@ export class TemplateManager {
    */
   private isTruthy(value: TemplateVariableValue): boolean {
     if (value === null || value === undefined) {
-return false;
-}
+      return false;
+    }
     if (typeof value === 'boolean') {
-return value;
-}
+      return value;
+    }
     if (typeof value === 'number') {
-return value !== 0;
-}
+      return value !== 0;
+    }
     if (typeof value === 'string') {
-return value.length > 0;
-}
+      return value.length > 0;
+    }
     if (Array.isArray(value)) {
-return value.length > 0;
-}
+      return value.length > 0;
+    }
     if (typeof value === 'object') {
-return Object.keys(value).length > 0;
-}
+      return Object.keys(value).length > 0;
+    }
     return Boolean(value);
   }
 
@@ -454,14 +493,14 @@ return Object.keys(value).length > 0;
    */
   async listTemplates(): Promise<string[]> {
     const templates: string[] = [];
-    
+
     async function scanDir(dir: string, prefix = '') {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
-        
+
         if (entry.isDirectory()) {
           await scanDir(fullPath, relativePath);
         } else {
@@ -469,7 +508,7 @@ return Object.keys(value).length > 0;
         }
       }
     }
-    
+
     await scanDir(this.templatesDir);
     return templates.sort();
   }

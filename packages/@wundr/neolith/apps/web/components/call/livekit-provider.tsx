@@ -27,7 +27,9 @@ interface LiveKitContextValue {
 /**
  * LiveKit context
  */
-const LiveKitContext = createContext<LiveKitContextValue | undefined>(undefined);
+const LiveKitContext = createContext<LiveKitContextValue | undefined>(
+  undefined
+);
 
 /**
  * Props for LiveKitProvider component
@@ -53,7 +55,8 @@ export interface LiveKitProviderProps {
  * ```
  */
 export function LiveKitProvider({ children, serverUrl }: LiveKitProviderProps) {
-  const defaultServerUrl = serverUrl ?? process.env.NEXT_PUBLIC_LIVEKIT_URL ?? 'wss://localhost:7880';
+  const defaultServerUrl =
+    serverUrl ?? process.env.NEXT_PUBLIC_LIVEKIT_URL ?? 'wss://localhost:7880';
 
   const [config, setConfigState] = useState<LiveKitConfig>({
     serverUrl: defaultServerUrl,
@@ -62,11 +65,11 @@ export function LiveKitProvider({ children, serverUrl }: LiveKitProviderProps) {
   });
 
   const setConfig = useCallback((newConfig: Partial<LiveKitConfig>) => {
-    setConfigState((prev) => ({ ...prev, ...newConfig }));
+    setConfigState(prev => ({ ...prev, ...newConfig }));
   }, []);
 
   const connect = useCallback((roomName: string, token: string) => {
-    setConfigState((prev) => ({
+    setConfigState(prev => ({
       ...prev,
       roomName,
       token,
@@ -74,7 +77,7 @@ export function LiveKitProvider({ children, serverUrl }: LiveKitProviderProps) {
   }, []);
 
   const disconnect = useCallback(() => {
-    setConfigState((prev) => ({
+    setConfigState(prev => ({
       ...prev,
       token: null,
       roomName: null,
@@ -92,9 +95,7 @@ export function LiveKitProvider({ children, serverUrl }: LiveKitProviderProps) {
   };
 
   return (
-    <LiveKitContext.Provider value={value}>
-      {children}
-    </LiveKitContext.Provider>
+    <LiveKitContext.Provider value={value}>{children}</LiveKitContext.Provider>
   );
 }
 

@@ -187,7 +187,12 @@ export const DEFAULT_DEPLOYMENT_CONFIG: DeploymentConfig = {
   auto_fix: {
     enabled: true,
     max_cycles: 5,
-    categories: ['type_errors', 'null_checks', 'import_errors', 'connection_retries'],
+    categories: [
+      'type_errors',
+      'null_checks',
+      'import_errors',
+      'connection_retries',
+    ],
   },
   notifications: {
     on_deploy_start: true,

@@ -19,10 +19,7 @@ import {
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
-import {
-  CALL_ERROR_CODES,
-  type HuddleResponse,
-} from '@/lib/validations/call';
+import { CALL_ERROR_CODES, type HuddleResponse } from '@/lib/validations/call';
 
 import type { NextRequest } from 'next/server';
 import type { Prisma } from '@neolith/database';
@@ -103,15 +100,18 @@ function generateHuddleRoomName(channelId: string): string {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -131,9 +131,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -142,9 +142,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot start huddle in archived channel',
-          ORG_ERROR_CODES.CHANNEL_ARCHIVED,
+          ORG_ERROR_CODES.CHANNEL_ARCHIVED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -162,21 +162,22 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a member of this channel to start a huddle',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Check if there's already an active huddle in this channel
-    const currentSettings = channel.settings as ChannelSettingsWithHuddle | null;
+    const currentSettings =
+      channel.settings as ChannelSettingsWithHuddle | null;
     if (currentSettings?.activeHuddle?.status === 'active') {
       return NextResponse.json(
         createErrorResponse(
           'A huddle is already active in this channel',
-          CALL_ERROR_CODES.ALREADY_IN_HUDDLE,
+          CALL_ERROR_CODES.ALREADY_IN_HUDDLE
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -238,15 +239,21 @@ export async function POST(
       participantCount: 1,
     };
 
-    return NextResponse.json({
-      data: response,
-      message: 'Huddle started successfully',
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        data: response,
+        message: 'Huddle started successfully',
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/huddle/start] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

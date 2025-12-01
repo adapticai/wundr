@@ -122,7 +122,7 @@ describe('AvatarService', () => {
         url,
         expect.objectContaining({
           headers: expect.any(Object),
-        }),
+        })
       );
       expect(result).toHaveProperty('url');
     });
@@ -166,7 +166,7 @@ describe('AvatarService', () => {
         expect.any(Buffer),
         expect.objectContaining({
           contentType: 'image/png',
-        }),
+        })
       );
     });
 
@@ -186,9 +186,7 @@ describe('AvatarService', () => {
 
       expect(mockStorage.listFiles).toHaveBeenCalledWith('avatars/user_123/');
       expect(mockStorage.deleteFiles).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.stringContaining('avatars/user_123/'),
-        ]),
+        expect.arrayContaining([expect.stringContaining('avatars/user_123/')])
       );
     });
   });

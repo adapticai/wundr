@@ -44,7 +44,7 @@ async function generatePartUploadUrl(
   uploadId: string,
   s3Key: string,
   s3Bucket: string,
-  partNumber: number,
+  partNumber: number
 ): Promise<PartUrlResponse> {
   const region = process.env.AWS_REGION ?? 'us-east-1';
   const expiresIn = 3600; // 1 hour
@@ -110,15 +110,18 @@ async function generatePartUploadUrl(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -127,8 +130,11 @@ export async function POST(
     const paramResult = uploadIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid upload ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid upload ID format',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -138,8 +144,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -150,9 +159,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: bodyResult.error.flatten().fieldErrors },
+          { errors: bodyResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -171,8 +180,11 @@ export async function POST(
 
     if (!file) {
       return NextResponse.json(
-        createErrorResponse('Upload not found', UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Upload not found',
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -180,21 +192,24 @@ export async function POST(
     if (file.uploadedById !== session.user.id) {
       return NextResponse.json(
         createErrorResponse('Access denied', UPLOAD_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Validate part number against total parts
-    const metadata = file.metadata as { totalParts?: number; expiresAt?: string } | null;
+    const metadata = file.metadata as {
+      totalParts?: number;
+      expiresAt?: string;
+    } | null;
     const totalParts = metadata?.totalParts ?? MAX_PARTS;
 
     if (input.partNumber > totalParts) {
       return NextResponse.json(
         createErrorResponse(
           `Part number ${input.partNumber} exceeds total parts ${totalParts}`,
-          UPLOAD_ERROR_CODES.INVALID_PART,
+          UPLOAD_ERROR_CODES.INVALID_PART
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -205,9 +220,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Upload has expired',
-            UPLOAD_ERROR_CODES.UPLOAD_EXPIRED,
+            UPLOAD_ERROR_CODES.UPLOAD_EXPIRED
           ),
-          { status: 410 },
+          { status: 410 }
         );
       }
     }
@@ -217,7 +232,7 @@ export async function POST(
       params.uploadId,
       file.s3Key,
       file.s3Bucket,
-      input.partNumber,
+      input.partNumber
     );
 
     return NextResponse.json({
@@ -228,9 +243,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

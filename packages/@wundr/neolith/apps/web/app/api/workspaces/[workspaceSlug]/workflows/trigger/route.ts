@@ -14,7 +14,12 @@ import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import type { TriggerWorkflowsInput, WorkflowAction, WorkflowStepResult, WorkflowTrigger } from '@/lib/validations/workflow';
+import type {
+  TriggerWorkflowsInput,
+  WorkflowAction,
+  WorkflowStepResult,
+  WorkflowTrigger,
+} from '@/lib/validations/workflow';
 import {
   createErrorResponse,
   triggerWorkflowsSchema,
@@ -33,7 +38,7 @@ interface RouteContext {
  */
 function checkTriggerConditions(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): boolean {
   if (!trigger.conditions || trigger.conditions.length === 0) {
     return true;
@@ -45,53 +50,71 @@ function checkTriggerConditions(
     switch (condition.operator) {
       case 'equals':
         if (fieldValue !== condition.value) {
-return false;
-}
+          return false;
+        }
         break;
       case 'not_equals':
         if (fieldValue === condition.value) {
-return false;
-}
+          return false;
+        }
         break;
       case 'contains':
-        if (typeof fieldValue !== 'string' || !fieldValue.includes(String(condition.value))) {
-return false;
-}
+        if (
+          typeof fieldValue !== 'string' ||
+          !fieldValue.includes(String(condition.value))
+        ) {
+          return false;
+        }
         break;
       case 'not_contains':
-        if (typeof fieldValue === 'string' && fieldValue.includes(String(condition.value))) {
-return false;
-}
+        if (
+          typeof fieldValue === 'string' &&
+          fieldValue.includes(String(condition.value))
+        ) {
+          return false;
+        }
         break;
       case 'greater_than':
-        if (typeof fieldValue !== 'number' || fieldValue <= Number(condition.value)) {
-return false;
-}
+        if (
+          typeof fieldValue !== 'number' ||
+          fieldValue <= Number(condition.value)
+        ) {
+          return false;
+        }
         break;
       case 'less_than':
-        if (typeof fieldValue !== 'number' || fieldValue >= Number(condition.value)) {
-return false;
-}
+        if (
+          typeof fieldValue !== 'number' ||
+          fieldValue >= Number(condition.value)
+        ) {
+          return false;
+        }
         break;
       case 'exists':
         if (fieldValue === undefined || fieldValue === null) {
-return false;
-}
+          return false;
+        }
         break;
       case 'not_exists':
         if (fieldValue !== undefined && fieldValue !== null) {
-return false;
-}
+          return false;
+        }
         break;
       case 'in':
-        if (!Array.isArray(condition.value) || !condition.value.includes(fieldValue as string)) {
-return false;
-}
+        if (
+          !Array.isArray(condition.value) ||
+          !condition.value.includes(fieldValue as string)
+        ) {
+          return false;
+        }
         break;
       case 'not_in':
-        if (Array.isArray(condition.value) && condition.value.includes(fieldValue as string)) {
-return false;
-}
+        if (
+          Array.isArray(condition.value) &&
+          condition.value.includes(fieldValue as string)
+        ) {
+          return false;
+        }
         break;
       default:
         break;
@@ -118,7 +141,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
  */
 function checkTriggerFilters(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): boolean {
   if (!trigger.filters) {
     return true;
@@ -145,7 +168,10 @@ function checkTriggerFilters(
   // Check Orchestrator filter
   if (orchestratorIds && orchestratorIds.length > 0) {
     const eventOrchestratorId = eventData.orchestratorId as string | undefined;
-    if (!eventOrchestratorId || !orchestratorIds.includes(eventOrchestratorId)) {
+    if (
+      !eventOrchestratorId ||
+      !orchestratorIds.includes(eventOrchestratorId)
+    ) {
       return false;
     }
   }
@@ -161,7 +187,7 @@ async function executeWorkflow(
   workspaceSlug: string,
   triggerType: string,
   triggerData: Record<string, unknown>,
-  triggeredBy: string,
+  triggeredBy: string
 ): Promise<{ executionId: string; success: boolean }> {
   const startedAt = new Date();
 
@@ -244,7 +270,9 @@ async function executeWorkflow(
     data: {
       lastExecutedAt: startedAt,
       executionCount: { increment: 1 },
-      ...(success ? { successCount: { increment: 1 } } : { failureCount: { increment: 1 } }),
+      ...(success
+        ? { successCount: { increment: 1 } }
+        : { failureCount: { increment: 1 } }),
     },
   });
 
@@ -263,15 +291,18 @@ async function executeWorkflow(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (internal services should also authenticate)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -286,8 +317,11 @@ export async function POST(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -302,8 +336,11 @@ export async function POST(
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found or access denied',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -313,8 +350,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -325,9 +365,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -346,21 +386,24 @@ export async function POST(
     });
 
     // Filter workflows based on conditions and filters
-    const matchingWorkflows = workflows.filter((workflow) => {
+    const matchingWorkflows = workflows.filter(workflow => {
       const trigger = workflow.trigger as unknown as WorkflowTrigger;
-      return checkTriggerConditions(trigger, input.data) && checkTriggerFilters(trigger, input.data);
+      return (
+        checkTriggerConditions(trigger, input.data) &&
+        checkTriggerFilters(trigger, input.data)
+      );
     });
 
     // Execute matching workflows
     const executions: string[] = [];
-    const executionPromises = matchingWorkflows.map(async (workflow) => {
+    const executionPromises = matchingWorkflows.map(async workflow => {
       try {
         const result = await executeWorkflow(
           workflow.id,
           workspaceId,
           input.event,
           input.data,
-          session.user.id,
+          session.user.id
         );
         executions.push(result.executionId);
       } catch {
@@ -377,8 +420,11 @@ export async function POST(
     });
   } catch (_error) {
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

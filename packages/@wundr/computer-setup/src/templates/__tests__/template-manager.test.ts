@@ -15,7 +15,7 @@ describe('TemplateManager', () => {
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(__dirname, 'temp-test-'));
     templateManager = new TemplateManager();
-    
+
     const mockProfile: DeveloperProfile = {
       name: 'Test Developer',
       email: 'test@example.com',
@@ -90,7 +90,8 @@ describe('TemplateManager', () => {
     });
 
     test('should process conditional blocks', () => {
-      const content = '{{#ENABLE_FEATURE}}Feature is enabled{{/ENABLE_FEATURE}}{{#DISABLE_FEATURE}}Feature is disabled{{/DISABLE_FEATURE}}';
+      const content =
+        '{{#ENABLE_FEATURE}}Feature is enabled{{/ENABLE_FEATURE}}{{#DISABLE_FEATURE}}Feature is disabled{{/DISABLE_FEATURE}}';
       const result = templateManager['replaceVariables'](content, testContext);
       expect(result).toBe('Feature is enabled');
     });
@@ -107,12 +108,12 @@ describe('TemplateManager', () => {
       const templates = await templateManager.listTemplates();
       expect(Array.isArray(templates)).toBe(true);
       expect(templates.length).toBeGreaterThan(0);
-      
+
       // Check for expected template categories
       const hasDockerTemplate = templates.some(t => t.includes('docker'));
       const hasGithubTemplate = templates.some(t => t.includes('github'));
       const hasConfigTemplate = templates.some(t => t.includes('config'));
-      
+
       expect(hasDockerTemplate).toBe(true);
       expect(hasGithubTemplate).toBe(true);
       expect(hasConfigTemplate).toBe(true);
@@ -122,25 +123,25 @@ describe('TemplateManager', () => {
   describe('variable building', () => {
     test('should build comprehensive variable map', () => {
       const variables = templateManager['buildVariableMap'](testContext);
-      
+
       // Check project variables
       expect(variables.PROJECT_NAME).toBe('test-project');
       expect(variables.PROJECT_DESCRIPTION).toBe('A test project');
       expect(variables.PACKAGE_MANAGER).toBe('pnpm');
-      
+
       // Check profile variables
       expect(variables.DEVELOPER_NAME).toBe('Test Developer');
       expect(variables.DEVELOPER_EMAIL).toBe('test@example.com');
       expect(variables.ROLE).toBe('Software Engineer');
-      
+
       // Check platform variables
       expect(variables.OS).toBe('darwin');
       expect(variables.NODE_VERSION).toBe('20.0.0');
-      
+
       // Check custom variables
       expect(variables.TEST_VAR).toBe('test-value');
       expect(variables.ENABLE_FEATURE).toBe(true);
-      
+
       // Check computed variables
       expect(variables.INCLUDE_POSTGRES).toBe(true);
       expect(variables.INCLUDE_REDIS).toBe(true);

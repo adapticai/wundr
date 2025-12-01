@@ -1,8 +1,6 @@
 # General Coding Principles Convention
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Core Conventions
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Core Conventions
 
 This document defines the foundational coding principles and quality standards for the project.
 
@@ -39,14 +37,14 @@ This document defines the foundational coding principles and quality standards f
 
 ### Code Quality Metrics
 
-| Metric | Maximum Allowed | Target |
-|--------|-----------------|--------|
-| File size | 500 lines | 300 lines |
-| Function size | 50 lines | 25 lines |
-| Function parameters | 5 | 3 |
-| Cyclomatic complexity | 10 | 5 |
-| Nesting depth | 4 levels | 2 levels |
-| Line length | 100 characters | 80 characters |
+| Metric                | Maximum Allowed | Target        |
+| --------------------- | --------------- | ------------- |
+| File size             | 500 lines       | 300 lines     |
+| Function size         | 50 lines        | 25 lines      |
+| Function parameters   | 5               | 3             |
+| Cyclomatic complexity | 10              | 5             |
+| Nesting depth         | 4 levels        | 2 levels      |
+| Line length           | 100 characters  | 80 characters |
 
 ---
 
@@ -56,12 +54,12 @@ This document defines the foundational coding principles and quality standards f
 
 **Case Standards:**
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Variables, functions | camelCase | `userName`, `calculateTotal` |
-| Classes, interfaces, types | PascalCase | `UserService`, `ApiResponse` |
-| Constants, env vars | UPPER_SNAKE_CASE | `MAX_RETRIES`, `API_URL` |
-| File names, CSS classes | kebab-case | `user-profile.ts`, `main-header` |
+| Type                       | Convention       | Example                          |
+| -------------------------- | ---------------- | -------------------------------- |
+| Variables, functions       | camelCase        | `userName`, `calculateTotal`     |
+| Classes, interfaces, types | PascalCase       | `UserService`, `ApiResponse`     |
+| Constants, env vars        | UPPER_SNAKE_CASE | `MAX_RETRIES`, `API_URL`         |
+| File names, CSS classes    | kebab-case       | `user-profile.ts`, `main-header` |
 
 **Naming Patterns:**
 
@@ -89,6 +87,7 @@ const errorMessages = [];
 ### Code Structure
 
 **Function Organization:**
+
 ```typescript
 // 1. Early returns for edge cases
 function processUser(user: User | null): Result {
@@ -105,6 +104,7 @@ function processUser(user: User | null): Result {
 ```
 
 **Class Organization:**
+
 ```typescript
 class UserService {
   // 1. Properties (public, then private)
@@ -149,12 +149,14 @@ project-root/
 ### File Placement Rules
 
 **NEVER place in root directory:**
+
 - Source code files
 - Test files
 - Working documents
 - Temporary files
 
 **Allowed in root:**
+
 - `package.json`
 - `README.md`
 - Configuration files (`.eslintrc`, `tsconfig.json`, etc.)
@@ -169,6 +171,7 @@ project-root/
 Use Wundr MCP tools to enforce and monitor code quality:
 
 **Drift Detection:**
+
 ```javascript
 // Create baseline at project milestone
 mcp__wundr__drift_detection { action: "create-baseline" }
@@ -181,6 +184,7 @@ mcp__wundr__drift_detection { action: "trends" }
 ```
 
 **Pattern Standardization:**
+
 ```javascript
 // Check naming conventions
 mcp__wundr__pattern_standardize {
@@ -196,6 +200,7 @@ mcp__wundr__pattern_standardize {
 ```
 
 **Governance Reports:**
+
 ```javascript
 // Generate quality metrics report
 mcp__wundr__governance_report {
@@ -212,6 +217,7 @@ mcp__wundr__governance_report {
 ### Automated Quality Checks
 
 **Pre-Commit Workflow:**
+
 ```javascript
 [BatchTool]:
   // 1. Standardize code patterns
@@ -225,6 +231,7 @@ mcp__wundr__governance_report {
 ```
 
 **Weekly Maintenance:**
+
 ```javascript
 [BatchTool]:
   // 1. Create new baseline

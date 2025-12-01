@@ -2,15 +2,19 @@
 
 ## Overview
 
-A comprehensive self-service configuration system for orchestrators in Neolith. This system allows orchestrators to manage their own settings, capabilities, triggers, and behavior while providing administrators with override and lock capabilities.
+A comprehensive self-service configuration system for orchestrators in Neolith. This system allows
+orchestrators to manage their own settings, capabilities, triggers, and behavior while providing
+administrators with override and lock capabilities.
 
 ## Database Schema
 
 ### vp_configs Table
 
-Created in `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
+Created in
+`/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
 
 **Fields:**
+
 - `id` (String, PK) - Unique configuration ID
 - `vp_id` (String, Unique) - Reference to orchestrator
 - **General Settings:**
@@ -46,19 +50,23 @@ Created in `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/data
   - `updated_at` (DateTime)
 
 **Relations:**
+
 - `orchestrator` -> `vps` (via vp_id, cascade delete)
 
 **Indexes:**
+
 - `vp_id` (unique)
 
 ## API Endpoints
 
 ### GET /api/orchestrators/[id]/config
+
 **Access:** Orchestrator (self) or Admin
 
 Returns the complete configuration for an orchestrator. Creates default config if none exists.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -75,11 +83,13 @@ Returns the complete configuration for an orchestrator. Creates default config i
 ```
 
 ### PUT /api/orchestrators/[id]/config
+
 **Access:** Orchestrator (self) or Admin
 
 Updates orchestrator configuration. Locked configs can only be modified by admins.
 
 **Request:**
+
 ```json
 {
   "autoReply": true,
@@ -91,19 +101,24 @@ Updates orchestrator configuration. Locked configs can only be modified by admin
 ```
 
 **Response:**
+
 ```json
 {
-  "data": { /* updated config */ },
+  "data": {
+    /* updated config */
+  },
   "message": "Configuration updated successfully"
 }
 ```
 
 ### GET /api/orchestrators/[id]/capabilities
+
 **Access:** Orchestrator (self) or Admin
 
 Returns only capability-related configuration.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -125,11 +140,13 @@ Returns only capability-related configuration.
 ```
 
 ### PUT /api/orchestrators/[id]/capabilities
+
 **Access:** Orchestrator (self) or Admin
 
 Updates capability configuration.
 
 **Request:**
+
 ```json
 {
   "capabilities": {
@@ -150,6 +167,7 @@ Updates capability configuration.
 ### /Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/orchestrator-config.ts
 
 **Key Types:**
+
 - `CapabilityType` - Enum of capability types
 - `PermissionLevel` - none | read | write | admin
 - `TriggerType` - Enum of trigger types
@@ -162,6 +180,7 @@ Updates capability configuration.
 - `UpdateOrchestratorConfigInput` - Partial update input
 
 **Default Capabilities:**
+
 ```typescript
 {
   respond_to_messages: { enabled: true, permissionLevel: 'write', rateLimit: { maxPerHour: 100, maxPerDay: 500 } },
@@ -175,15 +194,19 @@ Updates capability configuration.
 ## UI Components
 
 ### Settings Page
-**Path:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/page.tsx`
+
+**Path:**
+`/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/page.tsx`
 
 **Route:** `/{workspaceSlug}/orchestrators/{orchestratorId}/settings`
 
 **Access Control:**
+
 - Orchestrator can access their own settings
 - Organization admins can access any orchestrator settings
 
 **Features:**
+
 - Tab-based navigation for different setting categories
 - Real-time save with optimistic updates
 - Lock indicator when config is locked by admin
@@ -192,7 +215,9 @@ Updates capability configuration.
 ### Component Structure
 
 #### OrchestratorSettingsForm.tsx
+
 Main form component with tabbed interface:
+
 - General settings
 - Capabilities
 - Triggers
@@ -201,12 +226,14 @@ Main form component with tabbed interface:
 - Integrations
 
 #### GeneralSettings.tsx
+
 - Profile information (read-only, admin-editable)
 - Auto-reply toggle
 - Reply delay configuration
 - Rate limits (hourly/daily)
 
 #### CapabilitySettings.tsx
+
 - List of all available capabilities
 - Toggle enable/disable per capability
 - Permission level selector (none/read/write/admin)
@@ -214,7 +241,9 @@ Main form component with tabbed interface:
 - Collapsible advanced settings
 
 #### CapabilityToggle.tsx
+
 Individual capability card with:
+
 - Icon and description
 - Enable/disable switch
 - Permission level dropdown
@@ -222,18 +251,21 @@ Individual capability card with:
 - Collapsible configuration panel
 
 #### TriggerSettings.tsx
+
 - Mention-only mode toggle
 - Keyword triggers (add/remove)
 - Watched channels (add/remove)
 - Badge display for active triggers
 
 #### ResponseTemplates.tsx
+
 - Create/edit/delete response templates
 - Template list with preview
 - Variable support in templates
 - Trigger keyword association
 
 #### ModelSelector.tsx
+
 - LLM provider selection (Anthropic/OpenAI)
 - Model selection dropdown
 - Temperature slider
@@ -241,6 +273,7 @@ Individual capability card with:
 - Model capabilities display
 
 #### IntegrationSettings.tsx
+
 - Webhook URL management
 - Available events display
 - Third-party integration info
@@ -269,6 +302,7 @@ Individual capability card with:
 ### Rate Limiting
 
 Each capability can have:
+
 - `maxPerHour` - Maximum actions per hour
 - `maxPerDay` - Maximum actions per day
 
@@ -338,17 +372,20 @@ Each capability can have:
 ## Integration Points
 
 ### With Orchestrator System
+
 - Configuration loaded when orchestrator initializes
 - Capabilities checked before actions
 - Triggers evaluated for message processing
 - Rate limits enforced in real-time
 
 ### With Workspace System
+
 - `assignedWorkspaces` controls workspace access
 - Workspace admins can manage orchestrator configs
 - Workspace-level integrations accessible based on capabilities
 
 ### With Messaging System
+
 - `mentionOnly` flag affects message processing
 - `keywordTriggers` evaluated for auto-responses
 - `watchedChannels` determines monitoring scope
@@ -365,21 +402,32 @@ Each capability can have:
 ## File Locations
 
 ### Database
-- Schema: `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
+
+- Schema:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
 - Table: `vp_configs`
 
 ### API Routes
-- Config endpoint: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[orchestratorId]/config/route.ts`
-- Capabilities endpoint: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[orchestratorId]/capabilities/route.ts`
+
+- Config endpoint:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[orchestratorId]/config/route.ts`
+- Capabilities endpoint:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[orchestratorId]/capabilities/route.ts`
 
 ### Validations
-- Schema: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/orchestrator-config.ts`
+
+- Schema:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/orchestrator-config.ts`
 
 ### UI Components
-- Settings page: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/page.tsx`
-- Components directory: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/components/`
+
+- Settings page:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/page.tsx`
+- Components directory:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/components/`
 
 ### Components Created
+
 1. OrchestratorSettingsForm.tsx
 2. SettingsSkeleton.tsx
 3. GeneralSettings.tsx
@@ -393,6 +441,7 @@ Each capability can have:
 ## Usage Examples
 
 ### Create Default Configuration
+
 ```typescript
 import { createDefaultOrchestratorConfig } from '@/lib/validations/orchestrator-config';
 
@@ -406,6 +455,7 @@ await prisma.orchestratorConfig.create({
 ```
 
 ### Update Capability
+
 ```typescript
 await fetch(`/api/orchestrators/${orchestratorId}/capabilities`, {
   method: 'PUT',
@@ -424,6 +474,7 @@ await fetch(`/api/orchestrators/${orchestratorId}/capabilities`, {
 ```
 
 ### Lock Configuration (Admin Only)
+
 ```typescript
 await fetch(`/api/orchestrators/${orchestratorId}/config`, {
   method: 'PUT',
@@ -470,8 +521,9 @@ await fetch(`/api/orchestrators/${orchestratorId}/config`, {
 
 ## Migration Notes
 
-The `vp_configs` table was successfully created with all required fields. The Prisma schema has been updated and formatted. The database is now in sync with the schema.
+The `vp_configs` table was successfully created with all required fields. The Prisma schema has been
+updated and formatted. The database is now in sync with the schema.
 
-**Migration verified:** `prisma db push` completed successfully.
-**Schema formatted:** `prisma format` completed successfully.
-**Client generated:** `prisma generate` completed successfully.
+**Migration verified:** `prisma db push` completed successfully. **Schema formatted:**
+`prisma format` completed successfully. **Client generated:** `prisma generate` completed
+successfully.

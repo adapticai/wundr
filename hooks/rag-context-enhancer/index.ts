@@ -44,7 +44,10 @@ export const ragContextEnhancerHook = {
  * Simple in-memory cache for analysis results
  */
 class AnalysisCache {
-  private cache = new Map<string, { result: AnalysisResult; timestamp: number }>();
+  private cache = new Map<
+    string,
+    { result: AnalysisResult; timestamp: number }
+  >();
   private readonly ttlMs: number;
   private readonly maxEntries: number;
 
@@ -56,8 +59,8 @@ class AnalysisCache {
   get(key: string): AnalysisResult | undefined {
     const entry = this.cache.get(key);
     if (!entry) {
-return undefined;
-}
+      return undefined;
+    }
 
     if (Date.now() - entry.timestamp > this.ttlMs) {
       this.cache.delete(key);
@@ -87,7 +90,7 @@ return undefined;
 // Global cache instance
 const analysisCache = new AnalysisCache(
   defaultConfig.cache?.ttlMs ?? 300000,
-  defaultConfig.cache?.maxEntries ?? 100,
+  defaultConfig.cache?.maxEntries ?? 100
 );
 
 /**
@@ -101,7 +104,7 @@ const analysisCache = new AnalysisCache(
 export async function executeHook(
   context: HookContext,
   config: Partial<RagContextHookConfig> = {},
-  ragService?: IRagService,
+  ragService?: IRagService
 ): Promise<HookExecutionResult> {
   const startTime = Date.now();
   const mergedConfig = { ...defaultConfig, ...config };
@@ -151,12 +154,15 @@ export async function executeHook(
     if (ragService && analysis.queries.length > 0) {
       try {
         // Build search config from analysis and defaults
-        const searchConfig = buildSearchConfig(analysis, mergedConfig.defaultSearchConfig);
+        const searchConfig = buildSearchConfig(
+          analysis,
+          mergedConfig.defaultSearchConfig
+        );
 
         enhancedContext = await ragService.search(
           analysis.queries,
           context.targetPath,
-          searchConfig,
+          searchConfig
         );
 
         if (mergedConfig.logging?.logQueries) {
@@ -178,7 +184,8 @@ export async function executeHook(
       analysis,
       enhancedContext,
       executionTimeMs,
-      contextInjected: enhancedContext !== undefined && enhancedContext.sections.length > 0,
+      contextInjected:
+        enhancedContext !== undefined && enhancedContext.sections.length > 0,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -204,7 +211,7 @@ export async function executeHook(
  */
 export function analyzeRequest(
   request: string,
-  config: Partial<RagContextHookConfig> = {},
+  config: Partial<RagContextHookConfig> = {}
 ): AnalysisResult {
   const mergedConfig = { ...defaultConfig, ...config };
   const analyzer = new RequestAnalyzer(mergedConfig);
@@ -220,7 +227,7 @@ export function analyzeRequest(
  */
 export function wouldTriggerEnhancement(
   request: string,
-  config: Partial<RagContextHookConfig> = {},
+  config: Partial<RagContextHookConfig> = {}
 ): boolean {
   const analysis = analyzeRequest(request, config);
   return analysis.shouldEnhance;
@@ -235,7 +242,7 @@ export function wouldTriggerEnhancement(
  */
 export function formatContextForInjection(
   context: EnhancedContext,
-  maxTokens: number = 8000,
+  maxTokens: number = 8000
 ): string {
   if (context.sections.length === 0) {
     return '';
@@ -326,21 +333,25 @@ function generateCacheKey(request: string, targetPath: string): string {
  */
 function buildSearchConfig(
   analysis: AnalysisResult,
-  defaults: SearchConfig,
+  defaults: SearchConfig
 ): SearchConfig {
   return {
     ...defaults,
     // Add suggested patterns from analysis
-    includePatterns: analysis.suggestedPatterns && analysis.suggestedPatterns.length > 0
-      ? [...defaults.includePatterns, ...analysis.suggestedPatterns]
-      : defaults.includePatterns,
+    includePatterns:
+      analysis.suggestedPatterns && analysis.suggestedPatterns.length > 0
+        ? [...defaults.includePatterns, ...analysis.suggestedPatterns]
+        : defaults.includePatterns,
   };
 }
 
 /**
  * Log analysis results
  */
-function logAnalysis(_analysis: AnalysisResult, _config: RagContextHookConfig): void {
+function logAnalysis(
+  _analysis: AnalysisResult,
+  _config: RagContextHookConfig
+): void {
   // Logging is disabled - analysis details available in returned result
   // To enable logging, integrate with a proper logging framework
 }
@@ -348,7 +359,10 @@ function logAnalysis(_analysis: AnalysisResult, _config: RagContextHookConfig): 
 /**
  * Log generated queries and results
  */
-function logQueries(_queries: readonly GeneratedQuery[], _context: EnhancedContext): void {
+function logQueries(
+  _queries: readonly GeneratedQuery[],
+  _context: EnhancedContext
+): void {
   // Logging is disabled - query and context details available in returned result
   // To enable logging, integrate with a proper logging framework
 }
@@ -364,12 +378,14 @@ function estimateTokens(text: string): number {
 /**
  * Create a mock RAG service for testing
  */
-export function createMockRagService(responses: Map<string, EnhancedContext>): IRagService {
+export function createMockRagService(
+  responses: Map<string, EnhancedContext>
+): IRagService {
   return {
     async search(
       queries: readonly GeneratedQuery[],
       _targetPath: string,
-      _config: SearchConfig,
+      _config: SearchConfig
     ): Promise<EnhancedContext> {
       // Return first matching response or empty context
       for (const query of queries) {

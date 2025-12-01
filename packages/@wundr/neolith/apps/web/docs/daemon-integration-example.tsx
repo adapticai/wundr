@@ -24,7 +24,14 @@ export function DaemonConnectionExample() {
   return (
     <div>
       <h2>Daemon Connection</h2>
-      <p>Status: {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}</p>
+      <p>
+        Status:{' '}
+        {connected
+          ? 'Connected'
+          : connecting
+            ? 'Connecting...'
+            : 'Disconnected'}
+      </p>
       {error && <p>Error: {error.message}</p>}
 
       <div>
@@ -45,13 +52,9 @@ export function DaemonConnectionExample() {
 // =============================================================================
 
 export function SessionManagerExample() {
-  const {
-    connected,
-    sessions,
-    spawnSession,
-    stopSession,
-    error,
-  } = useDaemon({ autoConnect: true });
+  const { connected, sessions, spawnSession, stopSession, error } = useDaemon({
+    autoConnect: true,
+  });
 
   const [isSpawning, setIsSpawning] = useState(false);
 
@@ -96,14 +99,23 @@ export function SessionManagerExample() {
 
           <div>
             <h3>Active Sessions ({sessions.length})</h3>
-            {sessions.map((session) => (
-              <div key={session.id} style={{ border: '1px solid #ccc', padding: '10px', margin: '5px' }}>
+            {sessions.map(session => (
+              <div
+                key={session.id}
+                style={{
+                  border: '1px solid #ccc',
+                  padding: '10px',
+                  margin: '5px',
+                }}
+              >
                 <p>ID: {session.id}</p>
                 <p>Type: {session.type}</p>
                 <p>Status: {session.status}</p>
                 <p>Task: {session.task.description}</p>
                 <p>Tokens Used: {session.metrics.tokensUsed}</p>
-                <button onClick={() => stopSession(session.id)}>Stop Session</button>
+                <button onClick={() => stopSession(session.id)}>
+                  Stop Session
+                </button>
               </div>
             ))}
           </div>
@@ -125,32 +137,34 @@ export function StreamingOutputExample() {
   const { connected, executeTask } = useDaemon({
     autoConnect: true,
     handlers: {
-      onStreamStart: (sid) => {
+      onStreamStart: sid => {
         if (sid === sessionId) {
           setOutput('');
           console.log('Stream started');
         }
       },
-      onStreamChunk: (chunk) => {
+      onStreamChunk: chunk => {
         if (chunk.sessionId === sessionId) {
-          setOutput((prev) => prev + chunk.chunk);
+          setOutput(prev => prev + chunk.chunk);
         }
       },
-      onStreamEnd: (sid) => {
+      onStreamEnd: sid => {
         if (sid === sessionId) {
           console.log('Stream ended');
         }
       },
-      onToolCallStart: (info) => {
+      onToolCallStart: info => {
         if (info.sessionId === sessionId) {
-          setTools((prev) => [...prev, `${info.toolName} (started)`]);
+          setTools(prev => [...prev, `${info.toolName} (started)`]);
         }
       },
-      onToolCallResult: (info) => {
+      onToolCallResult: info => {
         if (info.sessionId === sessionId) {
-          setTools((prev) =>
-            prev.map((t) =>
-              t.includes(info.toolName) ? `${info.toolName} (${info.status})` : t
+          setTools(prev =>
+            prev.map(t =>
+              t.includes(info.toolName)
+                ? `${info.toolName} (${info.status})`
+                : t
             )
           );
         }
@@ -189,7 +203,13 @@ export function StreamingOutputExample() {
 
           <div>
             <h3>Output</h3>
-            <pre style={{ background: '#f5f5f5', padding: '10px', whiteSpace: 'pre-wrap' }}>
+            <pre
+              style={{
+                background: '#f5f5f5',
+                padding: '10px',
+                whiteSpace: 'pre-wrap',
+              }}
+            >
               {output || 'Waiting for output...'}
             </pre>
           </div>
@@ -205,7 +225,7 @@ export function StreamingOutputExample() {
 
 export function SessionMonitorExample({ sessionId }: { sessionId: string }) {
   const { session, streamOutput, connected } = useSessionMonitor(sessionId, {
-    onSessionUpdated: (updatedSession) => {
+    onSessionUpdated: updatedSession => {
       console.log('Session updated:', updatedSession.status);
     },
     onTaskCompleted: (sid, taskId, result) => {
@@ -243,7 +263,13 @@ export function SessionMonitorExample({ sessionId }: { sessionId: string }) {
 
       <div>
         <h3>Live Output</h3>
-        <pre style={{ background: '#f5f5f5', padding: '10px', whiteSpace: 'pre-wrap' }}>
+        <pre
+          style={{
+            background: '#f5f5f5',
+            padding: '10px',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
           {streamOutput || 'No output yet...'}
         </pre>
       </div>
@@ -283,7 +309,9 @@ export function DaemonStatusDashboard() {
       <div>
         <h3>Connection</h3>
         <p>Status: {connected ? '🟢 Connected' : '🔴 Disconnected'}</p>
-        {reconnectAttempts > 0 && <p>Reconnect Attempts: {reconnectAttempts}</p>}
+        {reconnectAttempts > 0 && (
+          <p>Reconnect Attempts: {reconnectAttempts}</p>
+        )}
       </div>
 
       {daemonStatus && (
@@ -300,37 +328,50 @@ export function DaemonStatusDashboard() {
             <h3>Metrics</h3>
             <p>Total Sessions: {daemonStatus.metrics.totalSessionsSpawned}</p>
             <p>Total Tasks: {daemonStatus.metrics.totalTasksProcessed}</p>
-            <p>Total Tokens: {daemonStatus.metrics.totalTokensUsed.toLocaleString()}</p>
-            <p>Success Rate: {(daemonStatus.metrics.successRate * 100).toFixed(1)}%</p>
-            <p>Avg Session Duration: {daemonStatus.metrics.averageSessionDuration}ms</p>
+            <p>
+              Total Tokens:{' '}
+              {daemonStatus.metrics.totalTokensUsed.toLocaleString()}
+            </p>
+            <p>
+              Success Rate:{' '}
+              {(daemonStatus.metrics.successRate * 100).toFixed(1)}%
+            </p>
+            <p>
+              Avg Session Duration:{' '}
+              {daemonStatus.metrics.averageSessionDuration}ms
+            </p>
           </div>
 
           <div>
             <h3>Subsystems</h3>
-            {Object.entries(daemonStatus.subsystems).map(([name, subsystem]) => (
-              <div key={name}>
-                <p>
-                  {name}: {subsystem.status === 'running' ? '🟢' : '🔴'} {subsystem.status}
-                </p>
-                {subsystem.errors && subsystem.errors.length > 0 && (
-                  <ul>
-                    {subsystem.errors.map((error, i) => (
-                      <li key={i}>{error}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+            {Object.entries(daemonStatus.subsystems).map(
+              ([name, subsystem]) => (
+                <div key={name}>
+                  <p>
+                    {name}: {subsystem.status === 'running' ? '🟢' : '🔴'}{' '}
+                    {subsystem.status}
+                  </p>
+                  {subsystem.errors && subsystem.errors.length > 0 && (
+                    <ul>
+                      {subsystem.errors.map((error, i) => (
+                        <li key={i}>{error}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )
+            )}
           </div>
         </>
       )}
 
       <div>
         <h3>Local Sessions ({sessions.length})</h3>
-        {sessions.map((session) => (
+        {sessions.map(session => (
           <div key={session.id}>
             <p>
-              {session.id} - {session.status} - {session.metrics.tokensUsed} tokens
+              {session.id} - {session.status} - {session.metrics.tokensUsed}{' '}
+              tokens
             </p>
           </div>
         ))}

@@ -30,7 +30,7 @@ const SUBAGENT_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof SUBAGENT_ERROR_CODES)[keyof typeof SUBAGENT_ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -62,8 +62,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SUBAGENT_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SUBAGENT_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -122,9 +125,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SUBAGENT_ERROR_CODES.INTERNAL_ERROR,
+        SUBAGENT_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -162,8 +165,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', SUBAGENT_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          SUBAGENT_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -173,8 +179,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', SUBAGENT_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          SUBAGENT_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -195,9 +204,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Missing required fields: name, charterId, charterData',
-          SUBAGENT_ERROR_CODES.VALIDATION_ERROR,
+          SUBAGENT_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -224,16 +233,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: subagent,
         message: 'Universal subagent created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/subagents/universal] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SUBAGENT_ERROR_CODES.INTERNAL_ERROR,
+        SUBAGENT_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

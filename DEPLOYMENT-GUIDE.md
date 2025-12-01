@@ -2,7 +2,8 @@
 
 ## Publishing Strategy for Adaptic AI / AdapticAI
 
-This guide provides comprehensive instructions for publishing the Wundr platform packages on behalf of **AdapticAI** (GitHub) and **@adaptic** (npm).
+This guide provides comprehensive instructions for publishing the Wundr platform packages on behalf
+of **AdapticAI** (GitHub) and **@adaptic** (npm).
 
 ---
 
@@ -68,12 +69,14 @@ git push origin v1.0.0
 ### 1. Transfer or Fork Repository
 
 #### Option A: Transfer Repository
+
 ```bash
 # In GitHub Settings > General > Danger Zone
 # Transfer ownership to adapticai organization
 ```
 
 #### Option B: Create Organization Fork
+
 ```bash
 # Fork to adapticai organization
 gh repo fork . --org adapticai --clone
@@ -101,12 +104,12 @@ docker push ghcr.io/adapticai/wundr:latest
 Set up these secrets in GitHub repository settings:
 
 ```yaml
-NPM_TOKEN: npm_xxx...           # npm automation token
-DOCKER_USERNAME: adaptic         # Docker Hub username
-DOCKER_PASSWORD: xxx...          # Docker Hub password
-GITHUB_TOKEN: ghp_xxx...         # GitHub PAT with packages:write
-SLACK_WEBHOOK_URL: https://...  # Slack notifications (optional)
-CODECOV_TOKEN: xxx...            # Codecov integration (optional)
+NPM_TOKEN: npm_xxx... # npm automation token
+DOCKER_USERNAME: adaptic # Docker Hub username
+DOCKER_PASSWORD: xxx... # Docker Hub password
+GITHUB_TOKEN: ghp_xxx... # GitHub PAT with packages:write
+SLACK_WEBHOOK_URL: https://... # Slack notifications (optional)
+CODECOV_TOKEN: xxx... # Codecov integration (optional)
 ```
 
 ---
@@ -135,6 +138,7 @@ npm pack --dry-run --workspaces
 ### Publishing Commands
 
 #### Manual Publishing
+
 ```bash
 # Individual package
 cd packages/@wundr/core
@@ -148,6 +152,7 @@ turbo run publish
 ```
 
 #### Automated Publishing (Recommended)
+
 ```bash
 # Create release tag
 git tag -a v1.0.0 -m "Release v1.0.0: Initial public release"
@@ -190,7 +195,7 @@ services:
   wundr:
     image: adaptic/wundr:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
     volumes:
@@ -250,11 +255,13 @@ Access at: `https://adapticai.github.io/wundr/`
 ### 2. Custom Domain (Optional)
 
 Add CNAME file to docs:
+
 ```
 docs.adaptic.ai
 ```
 
 Configure DNS:
+
 ```
 A     @     185.199.108.153
 A     @     185.199.109.153
@@ -308,6 +315,7 @@ npx license-checker --production --summary
 ### Semantic Versioning
 
 Follow semantic versioning:
+
 - **MAJOR** (1.0.0): Breaking changes
 - **MINOR** (0.1.0): New features
 - **PATCH** (0.0.1): Bug fixes
@@ -373,9 +381,7 @@ adaptic dashboard
 
 ## Installation
 
-\`\`\`bash
-npm install @adaptic/[package-name]
-\`\`\`
+\`\`\`bash npm install @adaptic/[package-name] \`\`\`
 
 ## Documentation
 
@@ -430,4 +436,5 @@ Get started: npm install -g @adaptic/cli
 
 ---
 
-*This deployment guide ensures the Wundr platform is properly published and accessible to the developer community under the Adaptic AI brand.*
+_This deployment guide ensures the Wundr platform is properly published and accessible to the
+developer community under the Adaptic AI brand._

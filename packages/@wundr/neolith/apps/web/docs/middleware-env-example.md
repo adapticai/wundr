@@ -85,6 +85,7 @@ openssl rand -base64 32
 ```
 
 Output example:
+
 ```
 K7JxQv3mN8pR2sT5wY9zA1bC4dE6fG8h
 ```
@@ -187,7 +188,7 @@ spec:
                 name: neolith-auth
           env:
             - name: ALLOWED_ORIGINS
-              value: "https://app.example.com,https://admin.example.com"
+              value: 'https://app.example.com,https://admin.example.com'
 ```
 
 ## Verification
@@ -212,6 +213,7 @@ export async function GET() {
 Visit: `http://localhost:3000/api/test-env`
 
 Expected response:
+
 ```json
 {
   "hasNextAuthUrl": true,
@@ -235,6 +237,7 @@ Expected response:
 ### Error: "Redirect URI mismatch"
 
 **Solution**: Ensure callback URL in OAuth app matches:
+
 - Local: `http://localhost:3000/api/auth/callback/{provider}`
 - Production: `https://yourdomain.com/api/auth/callback/{provider}`
 

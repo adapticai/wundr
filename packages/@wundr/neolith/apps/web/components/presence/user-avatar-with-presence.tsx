@@ -73,7 +73,7 @@ export function UserAvatarWithPresence({
     <div className={cn('relative inline-flex flex-shrink-0', className)}>
       <Avatar className={avatarSizeClasses[size]}>
         <AvatarImage src={user.image || undefined} alt={user.name} />
-        <AvatarFallback className="bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-heading">
+        <AvatarFallback className='bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-heading'>
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -85,7 +85,7 @@ export function UserAvatarWithPresence({
           showPulse={showPulse && status === 'online'}
           className={cn(
             'absolute ring-2 ring-card',
-            presencePositionClasses[size],
+            presencePositionClasses[size]
           )}
         />
       )}
@@ -128,4 +128,3 @@ export function ConnectedUserAvatar({
     />
   );
 }
-

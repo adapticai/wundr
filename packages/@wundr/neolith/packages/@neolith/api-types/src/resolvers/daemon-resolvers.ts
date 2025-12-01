@@ -326,7 +326,9 @@ class DaemonAuthService {
   /**
    * Register a new daemon and generate credentials
    */
-  async registerDaemon(input: RegisterDaemonInput): Promise<DaemonRegistrationResult> {
+  async registerDaemon(
+    input: RegisterDaemonInput
+  ): Promise<DaemonRegistrationResult> {
     const apiKey = generateApiKey();
     const apiSecret = generateApiSecret();
     const apiSecretHash = hashSecret(apiSecret);
@@ -410,7 +412,9 @@ class DaemonAuthService {
     const sessions: DaemonSession[] = [];
 
     for (const sessionId of sessionIds) {
-      const sessionData = await this.redis.hgetall(getSessionKey(daemonId, sessionId));
+      const sessionData = await this.redis.hgetall(
+        getSessionKey(daemonId, sessionId)
+      );
 
       if (sessionData && Object.keys(sessionData).length > 0) {
         sessions.push({
@@ -418,13 +422,17 @@ class DaemonAuthService {
           daemonId,
           orchestratorId: sessionData.orchestratorId || '',
           workspaceId: sessionData.workspaceId || '',
-          status: (sessionData.status as DaemonStatusType) || DaemonStatus.Disconnected,
+          status:
+            (sessionData.status as DaemonStatusType) ||
+            DaemonStatus.Disconnected,
           connectedAt: new Date(sessionData.connectedAt || Date.now()),
           lastHeartbeat: new Date(sessionData.lastHeartbeat || Date.now()),
           hostname: sessionData.hostname || 'unknown',
           version: sessionData.version || '1.0.0',
           ipAddress: sessionData.ipAddress || null,
-          metadata: sessionData.metadata ? JSON.parse(sessionData.metadata) : null,
+          metadata: sessionData.metadata
+            ? JSON.parse(sessionData.metadata)
+            : null,
         });
       }
     }
@@ -474,7 +482,10 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       /**
        * Get all daemon credentials for a VP
        */
-      daemonCredentials: async (_: unknown, { orchestratorId }: { orchestratorId: string }) => {
+      daemonCredentials: async (
+        _: unknown,
+        { orchestratorId }: { orchestratorId: string }
+      ) => {
         const credentials = await context.prisma.daemonCredential.findMany({
           where: { orchestratorId },
           orderBy: { createdAt: 'desc' },
@@ -505,14 +516,20 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       /**
        * Get active sessions for a daemon
        */
-      daemonSessions: async (_: unknown, { daemonId }: { daemonId: string }) => {
+      daemonSessions: async (
+        _: unknown,
+        { daemonId }: { daemonId: string }
+      ) => {
         return authService.getActiveSessions(daemonId);
       },
 
       /**
        * Get metrics for a daemon
        */
-      daemonMetrics: async (_: unknown, { daemonId }: { daemonId: string }): Promise<DaemonMetrics | null> => {
+      daemonMetrics: async (
+        _: unknown,
+        { daemonId }: { daemonId: string }
+      ): Promise<DaemonMetrics | null> => {
         const metricsKey = getMetricsKey(daemonId);
         const metrics = await context.redis.hgetall(metricsKey);
 
@@ -522,18 +539,29 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
 
         return {
           cpuUsage: metrics.cpuUsage ? parseFloat(metrics.cpuUsage) : null,
-          memoryUsage: metrics.memoryUsage ? parseFloat(metrics.memoryUsage) : null,
-          messagesProcessed: metrics.messagesProcessed ? parseInt(metrics.messagesProcessed, 10) : null,
-          activeConnections: metrics.activeConnections ? parseInt(metrics.activeConnections, 10) : null,
+          memoryUsage: metrics.memoryUsage
+            ? parseFloat(metrics.memoryUsage)
+            : null,
+          messagesProcessed: metrics.messagesProcessed
+            ? parseInt(metrics.messagesProcessed, 10)
+            : null,
+          activeConnections: metrics.activeConnections
+            ? parseInt(metrics.activeConnections, 10)
+            : null,
           uptime: metrics.uptime ? parseInt(metrics.uptime, 10) : null,
-          errorCount: metrics.errorCount ? parseInt(metrics.errorCount, 10) : null,
+          errorCount: metrics.errorCount
+            ? parseInt(metrics.errorCount, 10)
+            : null,
         };
       },
 
       /**
        * Get all daemons in a workspace
        */
-      vpDaemons: async (_: unknown, { workspaceId }: { workspaceId: string }) => {
+      vpDaemons: async (
+        _: unknown,
+        { workspaceId }: { workspaceId: string }
+      ) => {
         const credentials = await context.prisma.daemonCredential.findMany({
           where: { workspaceId },
           orderBy: { createdAt: 'desc' },
@@ -550,7 +578,10 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       /**
        * Register a new daemon for a VP
        */
-      registerDaemon: async (_: unknown, { input }: { input: RegisterDaemonInput }) => {
+      registerDaemon: async (
+        _: unknown,
+        { input }: { input: RegisterDaemonInput }
+      ) => {
         // Verify user has access to Orchestrator - check by orchestratorId and organizationId
         // Orchestrator may not have workspaceId directly, so we check organization membership
         const orchestrator = await context.prisma.orchestrator.findFirst({
@@ -603,7 +634,9 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
           updateData.capabilities = input.capabilities;
         }
         if (input.metadata !== undefined) {
-          updateData.metadata = input.metadata ? JSON.stringify(input.metadata) : null;
+          updateData.metadata = input.metadata
+            ? JSON.stringify(input.metadata)
+            : null;
         }
         if (input.isActive !== undefined) {
           updateData.isActive = input.isActive;
@@ -675,7 +708,10 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       /**
        * Terminate a specific daemon session
        */
-      terminateDaemonSession: async (_: unknown, { sessionId }: { sessionId: string }) => {
+      terminateDaemonSession: async (
+        _: unknown,
+        { sessionId }: { sessionId: string }
+      ) => {
         await authService.endSession(sessionId);
         return true;
       },
@@ -683,7 +719,10 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       /**
        * Terminate all sessions for a daemon
        */
-      terminateAllDaemonSessions: async (_: unknown, { daemonId }: { daemonId: string }) => {
+      terminateAllDaemonSessions: async (
+        _: unknown,
+        { daemonId }: { daemonId: string }
+      ) => {
         const sessions = await authService.getActiveSessions(daemonId);
 
         for (const session of sessions) {
@@ -699,7 +738,10 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
        * Subscribe to daemon status changes
        */
       daemonStatusChanged: {
-        subscribe: async function* (_: unknown, { daemonId }: { daemonId: string }) {
+        subscribe: async function* (
+          _: unknown,
+          { daemonId }: { daemonId: string }
+        ) {
           // This would use Redis pub/sub in production
           // For now, yield an empty result as placeholder
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -714,7 +756,10 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
        * Subscribe to daemon metrics updates
        */
       daemonMetricsUpdated: {
-        subscribe: async function* (_: unknown, { daemonId }: { daemonId: string }) {
+        subscribe: async function* (
+          _: unknown,
+          { daemonId }: { daemonId: string }
+        ) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const channel = `daemon:metrics:${daemonId}`;
           // Implementation would depend on GraphQL subscription infrastructure
@@ -843,16 +888,30 @@ export const daemonMutations = {
  */
 export const daemonSubscriptions = {
   daemonStatusChanged: {
-    subscribe: async function* (_: unknown, args: { daemonId: string }, context: DaemonResolverContext) {
+    subscribe: async function* (
+      _: unknown,
+      args: { daemonId: string },
+      context: DaemonResolverContext
+    ) {
       const resolvers = createDaemonResolvers(context);
-      yield* resolvers.Subscription.daemonStatusChanged.subscribe(undefined, args);
+      yield* resolvers.Subscription.daemonStatusChanged.subscribe(
+        undefined,
+        args
+      );
     },
   },
 
   daemonMetricsUpdated: {
-    subscribe: async function* (_: unknown, args: { daemonId: string }, context: DaemonResolverContext) {
+    subscribe: async function* (
+      _: unknown,
+      args: { daemonId: string },
+      context: DaemonResolverContext
+    ) {
       const resolvers = createDaemonResolvers(context);
-      yield* resolvers.Subscription.daemonMetricsUpdated.subscribe(undefined, args);
+      yield* resolvers.Subscription.daemonMetricsUpdated.subscribe(
+        undefined,
+        args
+      );
     },
   },
 };

@@ -49,18 +49,21 @@ export function DynamicPageHeaderExample() {
   }, [setPageHeader, setBreadcrumbs]);
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Dynamic Page Header Example</h2>
-        <p className="text-muted-foreground mb-4">
-          This page demonstrates how to use the dynamic page header component. The header above
-          this content automatically updates based on the context you provide.
+    <div className='space-y-6'>
+      <div className='rounded-lg border bg-card p-6'>
+        <h2 className='text-xl font-semibold mb-4'>
+          Dynamic Page Header Example
+        </h2>
+        <p className='text-muted-foreground mb-4'>
+          This page demonstrates how to use the dynamic page header component.
+          The header above this content automatically updates based on the
+          context you provide.
         </p>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
-            <h3 className="font-medium mb-2">Features:</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+            <h3 className='font-medium mb-2'>Features:</h3>
+            <ul className='list-disc list-inside space-y-1 text-sm text-muted-foreground'>
               <li>Dynamic title updates</li>
               <li>Optional subtitle support</li>
               <li>Breadcrumb navigation</li>
@@ -70,8 +73,8 @@ export function DynamicPageHeaderExample() {
           </div>
 
           <div>
-            <h3 className="font-medium mb-2">Usage in your components:</h3>
-            <pre className="bg-muted p-4 rounded-md overflow-x-auto text-xs">
+            <h3 className='font-medium mb-2'>Usage in your components:</h3>
+            <pre className='bg-muted p-4 rounded-md overflow-x-auto text-xs'>
               {`const { setPageHeader, setBreadcrumbs } = usePageHeader();
 
 useEffect(() => {

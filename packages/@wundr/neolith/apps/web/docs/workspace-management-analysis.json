@@ -62,10 +62,7 @@
         "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/workspace/add-account-dialog.tsx",
         "name": "AddAccountDialog",
         "description": "Dialog for adding accounts to workspace",
-        "features": [
-          "Multi-account support",
-          "OAuth provider integration"
-        ]
+        "features": ["Multi-account support", "OAuth provider integration"]
       }
     ],
     "pages": [
@@ -885,10 +882,7 @@
         "userId": "String",
         "joinedAt": "DateTime @default(now())"
       },
-      "relations": [
-        "workspace (belongs to)",
-        "user (belongs to)"
-      ],
+      "relations": ["workspace (belongs to)", "user (belongs to)"],
       "indexes": [
         "@@unique([workspaceId, userId])",
         "@@index([userId])",

@@ -2,16 +2,20 @@
 
 ## Overview
 
-Complete implementation of project initialization system for creating and configuring projects with Claude Code integration, including .claude directory structure, templates, agents, workflows, and git-worktree configuration.
+Complete implementation of project initialization system for creating and configuring projects with
+Claude Code integration, including .claude directory structure, templates, agents, workflows, and
+git-worktree configuration.
 
 ## Architecture
 
 ### Core Components
 
 #### 1. ProjectInitializer
+
 **Location:** `/packages/@wundr/computer-setup/src/project-init/project-initializer.ts`
 
 **Responsibilities:**
+
 - Orchestrates complete project initialization
 - Creates .claude directory structure
 - Copies and customizes templates
@@ -21,6 +25,7 @@ Complete implementation of project initialization system for creating and config
 - Runs validation checks
 
 **Key Methods:**
+
 ```typescript
 async initialize(options: ProjectInitOptions): Promise<void>
 async createClaudeDirectory(options: ProjectInitOptions): Promise<void>
@@ -31,6 +36,7 @@ async validateSetup(options: ProjectInitOptions): Promise<void>
 ```
 
 **Directory Structure Created:**
+
 ```
 .claude/
   ├── agents/
@@ -70,15 +76,18 @@ async validateSetup(options: ProjectInitOptions): Promise<void>
 ```
 
 #### 2. TemplateSelector
+
 **Location:** `/packages/@wundr/computer-setup/src/project-init/template-selector.ts`
 
 **Responsibilities:**
+
 - Intelligent template selection based on project characteristics
 - Interactive template selection wizard
 - Template matching algorithm
 - Template validation
 
 **Template Metadata Structure:**
+
 ```typescript
 interface TemplateMetadata {
   id: string;
@@ -100,6 +109,7 @@ interface TemplateMetadata {
 ```
 
 **Available Templates:**
+
 1. **node-basic** - Simple Node.js project
 2. **react-frontend** - Modern React application
 3. **nextjs-fullstack** - Complete Next.js application
@@ -110,21 +120,25 @@ interface TemplateMetadata {
 8. **enterprise-backend** - Enterprise-grade backend
 
 **Selection Algorithm:**
+
 - Project type match (40% weight)
 - Scale/complexity match (20% weight)
 - Features match (30% weight)
 - Team size appropriateness (10% weight)
 
 #### 3. CustomizationEngine
+
 **Location:** `/packages/@wundr/computer-setup/src/project-init/customization-engine.ts`
 
 **Responsibilities:**
+
 - Project-specific template customization
 - Variable replacement in templates
 - File-type specific customization
 - Rule-based transformation
 
 **Customization Rules:**
+
 ```typescript
 interface CustomizationRule {
   id: string;
@@ -137,6 +151,7 @@ interface CustomizationRule {
 ```
 
 **Built-in Rules:**
+
 - **Global Rules:**
   - Update project metadata
   - Update dates
@@ -151,15 +166,18 @@ interface CustomizationRule {
   - Enable strict mode
 
 **File-Specific Customizations:**
+
 - TypeScript/JavaScript files
 - package.json
 - Markdown files
 - Configuration files (YAML/JSON)
 
 #### 4. ValidationChecker
+
 **Location:** `/packages/@wundr/computer-setup/src/project-init/validation-checker.ts`
 
 **Responsibilities:**
+
 - Comprehensive setup validation
 - Directory structure verification
 - File existence and content validation
@@ -167,6 +185,7 @@ interface CustomizationRule {
 - Auto-fix capabilities
 
 **Validation Categories:**
+
 1. **Directory Structure**
    - .claude directory and subdirectories
    - src, tests, docs, scripts
@@ -204,6 +223,7 @@ interface CustomizationRule {
    - Lock files
 
 **Validation Report:**
+
 ```typescript
 interface ValidationReport {
   timestamp: Date;
@@ -230,7 +250,7 @@ await orchestrator.initializeProject({
   projectPath: '/path/to/new-project',
   projectName: 'my-awesome-app',
   interactive: true,
-  autoFix: true
+  autoFix: true,
 });
 ```
 
@@ -257,7 +277,7 @@ const templates = await selector.selectTemplates({
   projectType: 'react',
   scale: 'medium',
   features: ['typescript', 'testing', 'cicd'],
-  teamSize: 5
+  teamSize: 5,
 });
 
 const template = templates[0];
@@ -287,6 +307,7 @@ await checker.autoFix('/path/to/project');
 ## Template Customization Procedures
 
 ### React Project
+
 ```typescript
 {
   projectType: 'react',
@@ -301,6 +322,7 @@ await checker.autoFix('/path/to/project');
 ```
 
 ### Node.js Project
+
 ```typescript
 {
   projectType: 'node',
@@ -315,6 +337,7 @@ await checker.autoFix('/path/to/project');
 ```
 
 ### Monorepo
+
 ```typescript
 {
   projectType: 'monorepo',
@@ -330,6 +353,7 @@ await checker.autoFix('/path/to/project');
 ## Git-Worktree Configuration
 
 ### Configuration Structure
+
 ```json
 {
   "version": "1.0.0",
@@ -358,9 +382,11 @@ await checker.autoFix('/path/to/project');
 ```
 
 ### Management Script
+
 Located at: `scripts/manage-worktrees.sh`
 
 **Features:**
+
 - Create worktrees
 - Switch between worktrees
 - Sync worktrees
@@ -369,6 +395,7 @@ Located at: `scripts/manage-worktrees.sh`
 ## Agent Workflows
 
 ### SPARC Workflow
+
 ```json
 {
   "name": "SPARC Workflow",
@@ -378,6 +405,7 @@ Located at: `scripts/manage-worktrees.sh`
 ```
 
 ### TDD Workflow
+
 ```json
 {
   "name": "TDD Workflow",
@@ -387,49 +415,58 @@ Located at: `scripts/manage-worktrees.sh`
 ```
 
 ### Workflow Runner
+
 Located at: `scripts/run-workflow.sh`
 
 ## Hooks System
 
 ### Pre-task Hook
+
 - Prepares environment
 - Validates prerequisites
 - Sets up session
 
 ### Post-task Hook
+
 - Runs quality checks
 - Updates documentation
 - Cleans up resources
 
 ### Pre-edit Hook
+
 - Backs up files
 - Validates permissions
 - Prepares git state
 
 ### Post-edit Hook
+
 - Runs formatters
 - Validates syntax
 - Updates indexes
 
 ### Session Hooks
+
 - Session start: Initialize environment
 - Session end: Cleanup and export metrics
 
 ## Validation Checks
 
 ### Critical Checks (Errors)
+
 - .claude directory exists
 - CLAUDE.md exists
 - Required agent categories exist
 - Package.json is valid (if exists)
 
 ### Important Checks (Warnings)
+
 - Agent templates exist
 - Hooks are executable
 - Git repository initialized
 - Documentation files exist
 
 ### Informational Checks (Info)
+
 - Dependencies installed
 - Lock file exists
 - Configuration files valid
@@ -437,6 +474,7 @@ Located at: `scripts/run-workflow.sh`
 ## Auto-fix Capabilities
 
 The validation checker can automatically fix:
+
 - Create missing directories
 - Set executable permissions on hooks
 - Initialize git repository
@@ -445,11 +483,13 @@ The validation checker can automatically fix:
 ## Integration with Existing Commands
 
 ### claude-init Command
+
 ```bash
 wundr claude-init --interactive
 ```
 
 Uses ProjectInitOrchestrator to:
+
 1. Select template interactively
 2. Create .claude structure
 3. Copy and customize templates
@@ -457,11 +497,13 @@ Uses ProjectInitOrchestrator to:
 5. Auto-fix issues
 
 ### init project Command
+
 ```bash
 wundr init project my-app --template react-frontend
 ```
 
 Uses ProjectInitializer directly to:
+
 1. Create project structure
 2. Setup .claude directory
 3. Initialize agents and workflows
@@ -470,43 +512,52 @@ Uses ProjectInitializer directly to:
 ## Best Practices
 
 ### 1. Always Use Interactive Mode for New Projects
+
 ```typescript
 await orchestrator.initializeProject({
   projectPath: './new-project',
   projectName: 'new-project',
-  interactive: true,  // Let user choose template
-  autoFix: true       // Auto-fix validation issues
+  interactive: true, // Let user choose template
+  autoFix: true, // Auto-fix validation issues
 });
 ```
 
 ### 2. Validate After Manual Changes
+
 ```bash
 wundr validate-project /path/to/project --auto-fix
 ```
 
 ### 3. Update Templates Periodically
+
 ```bash
 wundr update-templates /path/to/project
 ```
 
 ### 4. Customize for Team Standards
+
 Create custom customization rules for your team's standards.
 
 ### 5. Version Control .claude Directory
+
 Always commit the .claude directory to version control.
 
 ## Troubleshooting
 
 ### Issue: Templates Not Customizing
+
 **Solution:** Check that template context is properly configured with project metadata.
 
 ### Issue: Validation Failing
+
 **Solution:** Run with `autoFix: true` or manually check reported issues.
 
 ### Issue: Hooks Not Executing
+
 **Solution:** Ensure hooks have execute permissions (`chmod +x .claude/hooks/*.sh`).
 
 ### Issue: Agent Templates Missing
+
 **Solution:** Re-run initialization with `force: true` option.
 
 ## Performance Considerations
@@ -548,6 +599,7 @@ Always commit the .claude directory to version control.
 ## Testing
 
 Run tests:
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/computer-setup
 npm test src/project-init/

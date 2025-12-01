@@ -25,7 +25,6 @@ import {
 import { useMembers, useInvites, useRoles, type Role } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
-
 type MemberStatus = 'active' | 'suspended' | 'pending';
 type FilterStatus = 'all' | MemberStatus;
 
@@ -65,12 +64,17 @@ export default function AdminMembersPage() {
     search: searchQuery || undefined,
   });
 
-  const { invites, createInvites, revokeInvite, isLoading: invitesLoading } = useInvites(workspaceSlug);
+  const {
+    invites,
+    createInvites,
+    revokeInvite,
+    isLoading: invitesLoading,
+  } = useInvites(workspaceSlug);
   const { roles } = useRoles(workspaceSlug);
 
   // Filter members based on status and search
   const filteredMembers = useMemo(() => {
-    return members.filter((member) => {
+    return members.filter(member => {
       if (filterStatus !== 'all' && member.status !== filterStatus) {
         return false;
       }
@@ -90,7 +94,7 @@ export default function AdminMembersPage() {
       await createInvites(emails, roleId);
       setShowInviteModal(false);
     },
-    [createInvites],
+    [createInvites]
   );
 
   const handleUpdateRole = useCallback(
@@ -98,14 +102,14 @@ export default function AdminMembersPage() {
       await updateMember(memberId, { roleId });
       setEditingMember(null);
     },
-    [updateMember],
+    [updateMember]
   );
 
   const handleSuspend = useCallback(
     async (memberId: string) => {
       await suspendMember(memberId);
     },
-    [suspendMember],
+    [suspendMember]
   );
 
   const handleRemove = useCallback(
@@ -114,7 +118,7 @@ export default function AdminMembersPage() {
         await removeMember(memberId);
       }
     },
-    [removeMember],
+    [removeMember]
   );
 
   const filterOptions: { value: FilterStatus; label: string }[] = [
@@ -125,39 +129,39 @@ export default function AdminMembersPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header with member count and action */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className='flex items-center justify-between'>
+        <p className='text-sm text-muted-foreground'>
           {total} member{total !== 1 ? 's' : ''} in this workspace
         </p>
         <button
-          type="button"
+          type='button'
           onClick={() => setShowInviteModal(true)}
           className={cn(
             'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90',
+            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
           )}
         >
-          <UserPlusIcon className="h-4 w-4" />
+          <UserPlusIcon className='h-4 w-4' />
           Invite Members
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         {/* Status Filter */}
-        <div className="flex flex-wrap gap-2">
-          {filterOptions.map((option) => (
+        <div className='flex flex-wrap gap-2'>
+          {filterOptions.map(option => (
             <button
               key={option.value}
-              type="button"
+              type='button'
               onClick={() => setFilterStatus(option.value)}
               className={cn(
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                 filterStatus === option.value
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
             >
               {option.label}
@@ -166,18 +170,18 @@ export default function AdminMembersPage() {
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className='relative'>
+          <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
           <input
-            type="text"
-            placeholder="Search members..."
+            type='text'
+            placeholder='Search members...'
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className={cn(
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'sm:w-64',
+              'sm:w-64'
             )}
           />
         </div>
@@ -185,14 +189,14 @@ export default function AdminMembersPage() {
 
       {/* Pending Invites */}
       {invites.length > 0 && (
-        <div className="rounded-lg border bg-card">
-          <div className="border-b px-4 py-3">
-            <h2 className="font-semibold text-foreground">
+        <div className='rounded-lg border bg-card'>
+          <div className='border-b px-4 py-3'>
+            <h2 className='font-semibold text-foreground'>
               Pending Invites ({invites.length})
             </h2>
           </div>
-          <div className="divide-y">
-            {invites.map((invite) => (
+          <div className='divide-y'>
+            {invites.map(invite => (
               <InviteRow
                 key={invite.id}
                 invite={invite}
@@ -205,39 +209,42 @@ export default function AdminMembersPage() {
       )}
 
       {/* Member List */}
-      <div className="rounded-lg border bg-card">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className='rounded-lg border bg-card'>
+        <div className='overflow-x-auto'>
+          <table className='w-full'>
             <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+              <tr className='border-b bg-muted/50'>
+                <th className='px-4 py-3 text-left text-sm font-medium text-muted-foreground'>
                   Member
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                <th className='px-4 py-3 text-left text-sm font-medium text-muted-foreground'>
                   Role
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                <th className='px-4 py-3 text-left text-sm font-medium text-muted-foreground'>
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                <th className='px-4 py-3 text-left text-sm font-medium text-muted-foreground'>
                   Joined
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                <th className='px-4 py-3 text-right text-sm font-medium text-muted-foreground'>
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className='divide-y'>
               {isLoading ? (
                 <MemberRowSkeleton count={5} />
               ) : filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                  <td
+                    colSpan={5}
+                    className='px-4 py-8 text-center text-muted-foreground'
+                  >
                     No members found
                   </td>
                 </tr>
               ) : (
-                filteredMembers.map((member) => (
+                filteredMembers.map(member => (
                   <MemberRow
                     key={member.id}
                     member={member}
@@ -253,12 +260,12 @@ export default function AdminMembersPage() {
 
         {/* Load More */}
         {hasMore && (
-          <div className="border-t px-4 py-3 text-center">
+          <div className='border-t px-4 py-3 text-center'>
             <button
-              type="button"
+              type='button'
               onClick={loadMore}
               disabled={isLoading}
-              className="text-sm text-primary hover:underline disabled:opacity-50"
+              className='text-sm text-primary hover:underline disabled:opacity-50'
             >
               {isLoading ? 'Loading...' : 'Load more members'}
             </button>
@@ -279,7 +286,11 @@ export default function AdminMembersPage() {
       <EditMemberModal
         member={editingMember}
         roles={roles}
-        onUpdateRole={(roleId) => editingMember ? handleUpdateRole(editingMember.id, roleId) : Promise.resolve()}
+        onUpdateRole={roleId =>
+          editingMember
+            ? handleUpdateRole(editingMember.id, roleId)
+            : Promise.resolve()
+        }
         onClose={() => setEditingMember(null)}
       />
     </div>
@@ -321,89 +332,96 @@ function MemberRow({ member, onEdit, onSuspend, onRemove }: MemberRowProps) {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <tr className="hover:bg-muted/50">
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-3">
-          <UserAvatar user={{ name: member.name, image: member.image }} size="lg" />
+    <tr className='hover:bg-muted/50'>
+      <td className='px-4 py-3'>
+        <div className='flex items-center gap-3'>
+          <UserAvatar
+            user={{ name: member.name, image: member.image }}
+            size='lg'
+          />
           <div>
-            <p className="font-medium text-foreground">{member.name || 'Unknown'}</p>
-            <p className="text-sm text-muted-foreground">{member.email}</p>
+            <p className='font-medium text-foreground'>
+              {member.name || 'Unknown'}
+            </p>
+            <p className='text-sm text-muted-foreground'>{member.email}</p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3">
-        <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+      <td className='px-4 py-3'>
+        <span className='rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium'>
           {member.role?.name || 'No Role'}
         </span>
       </td>
-      <td className="px-4 py-3">
+      <td className='px-4 py-3'>
         <StatusBadge status={member.status} />
       </td>
-      <td className="px-4 py-3 text-sm text-muted-foreground">
-        {member.joinedAt instanceof Date ? member.joinedAt.toLocaleDateString() : new Date(member.joinedAt).toLocaleDateString()}
+      <td className='px-4 py-3 text-sm text-muted-foreground'>
+        {member.joinedAt instanceof Date
+          ? member.joinedAt.toLocaleDateString()
+          : new Date(member.joinedAt).toLocaleDateString()}
       </td>
-      <td className="px-4 py-3">
-        <div className="relative flex justify-end">
+      <td className='px-4 py-3'>
+        <div className='relative flex justify-end'>
           <button
-            type="button"
+            type='button'
             onClick={() => setShowMenu(!showMenu)}
-            className="rounded-md p-1 hover:bg-muted"
+            className='rounded-md p-1 hover:bg-muted'
           >
-            <MoreIcon className="h-5 w-5 text-muted-foreground" />
+            <MoreIcon className='h-5 w-5 text-muted-foreground' />
           </button>
 
           {showMenu && (
             <>
               <div
-                className="fixed inset-0 z-10"
+                className='fixed inset-0 z-10'
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-8 z-20 w-40 rounded-md border bg-card py-1 shadow-lg">
+              <div className='absolute right-0 top-8 z-20 w-40 rounded-md border bg-card py-1 shadow-lg'>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => {
                     setShowMenu(false);
                     onEdit();
                   }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                  className='flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted'
                 >
-                  <EditIcon className="h-4 w-4" />
+                  <EditIcon className='h-4 w-4' />
                   Edit Role
                 </button>
                 {member.status === 'active' ? (
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => {
                       setShowMenu(false);
                       onSuspend();
                     }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-yellow-600 hover:bg-muted"
+                    className='flex w-full items-center gap-2 px-3 py-2 text-sm text-yellow-600 hover:bg-muted'
                   >
-                    <PauseIcon className="h-4 w-4" />
+                    <PauseIcon className='h-4 w-4' />
                     Suspend
                   </button>
                 ) : (
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => {
                       setShowMenu(false);
                       onSuspend();
                     }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-green-600 hover:bg-muted"
+                    className='flex w-full items-center gap-2 px-3 py-2 text-sm text-green-600 hover:bg-muted'
                   >
-                    <PlayIcon className="h-4 w-4" />
+                    <PlayIcon className='h-4 w-4' />
                     Activate
                   </button>
                 )}
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => {
                     setShowMenu(false);
                     onRemove();
                   }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-muted"
+                  className='flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-muted'
                 >
-                  <TrashIcon className="h-4 w-4" />
+                  <TrashIcon className='h-4 w-4' />
                   Remove
                 </button>
               </div>
@@ -420,26 +438,26 @@ function MemberRowSkeleton({ count }: { count: number }) {
     <>
       {Array.from({ length: count }).map((_, i) => (
         <tr key={i}>
-          <td className="px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
-              <div className="space-y-2">
-                <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-                <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+          <td className='px-4 py-3'>
+            <div className='flex items-center gap-3'>
+              <div className='h-10 w-10 animate-pulse rounded-full bg-muted' />
+              <div className='space-y-2'>
+                <div className='h-4 w-32 animate-pulse rounded bg-muted' />
+                <div className='h-3 w-48 animate-pulse rounded bg-muted' />
               </div>
             </div>
           </td>
-          <td className="px-4 py-3">
-            <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+          <td className='px-4 py-3'>
+            <div className='h-5 w-16 animate-pulse rounded-full bg-muted' />
           </td>
-          <td className="px-4 py-3">
-            <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+          <td className='px-4 py-3'>
+            <div className='h-5 w-16 animate-pulse rounded-full bg-muted' />
           </td>
-          <td className="px-4 py-3">
-            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <td className='px-4 py-3'>
+            <div className='h-4 w-24 animate-pulse rounded bg-muted' />
           </td>
-          <td className="px-4 py-3">
-            <div className="h-8 w-8 animate-pulse rounded bg-muted" />
+          <td className='px-4 py-3'>
+            <div className='h-8 w-8 animate-pulse rounded bg-muted' />
           </td>
         </tr>
       ))}
@@ -450,42 +468,71 @@ function MemberRowSkeleton({ count }: { count: number }) {
 // Status Badge Component
 function StatusBadge({ status }: { status: MemberStatus }) {
   const config = {
-    active: { label: 'Active', className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
-    suspended: { label: 'Suspended', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
-    pending: { label: 'Pending', className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300' },
+    active: {
+      label: 'Active',
+      className:
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    },
+    suspended: {
+      label: 'Suspended',
+      className:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+    },
+    pending: {
+      label: 'Pending',
+      className:
+        'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
+    },
   };
 
   const { label, className } = config[status];
 
   return (
-    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', className)}>
+    <span
+      className={cn(
+        'rounded-full px-2.5 py-0.5 text-xs font-medium',
+        className
+      )}
+    >
       {label}
     </span>
   );
 }
 
 // Invite Row Component
-function InviteRow({ invite, onRevoke, roles }: { invite: Invite; onRevoke: () => void; roles: Role[] }) {
-  const isExpired = invite.status === 'EXPIRED' || new Date(invite.expiresAt) < new Date();
+function InviteRow({
+  invite,
+  onRevoke,
+  roles,
+}: {
+  invite: Invite;
+  onRevoke: () => void;
+  roles: Role[];
+}) {
+  const isExpired =
+    invite.status === 'EXPIRED' || new Date(invite.expiresAt) < new Date();
   const roleName = roles.find(r => r.id === invite.roleId)?.name || 'Member';
 
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-          <MailIcon className="h-5 w-5 text-muted-foreground" />
+    <div className='flex items-center justify-between px-4 py-3'>
+      <div className='flex items-center gap-3'>
+        <div className='flex h-10 w-10 items-center justify-center rounded-full bg-muted'>
+          <MailIcon className='h-5 w-5 text-muted-foreground' />
         </div>
         <div>
-          <p className="font-medium text-foreground">{invite.email}</p>
-          <p className="text-sm text-muted-foreground">
-            Invited as {roleName} - {isExpired ? 'Expired' : `Expires ${invite.expiresAt instanceof Date ? invite.expiresAt.toLocaleDateString() : new Date(invite.expiresAt).toLocaleDateString()}`}
+          <p className='font-medium text-foreground'>{invite.email}</p>
+          <p className='text-sm text-muted-foreground'>
+            Invited as {roleName} -{' '}
+            {isExpired
+              ? 'Expired'
+              : `Expires ${invite.expiresAt instanceof Date ? invite.expiresAt.toLocaleDateString() : new Date(invite.expiresAt).toLocaleDateString()}`}
           </p>
         </div>
       </div>
       <button
-        type="button"
+        type='button'
         onClick={onRevoke}
-        className="rounded-md px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+        className='rounded-md px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
       >
         Revoke
       </button>
@@ -502,7 +549,13 @@ interface InviteModalProps {
   onClose: () => void;
 }
 
-function InviteModal({ roles, isLoading, open, onInvite, onClose }: InviteModalProps) {
+function InviteModal({
+  roles,
+  isLoading,
+  open,
+  onInvite,
+  onClose,
+}: InviteModalProps) {
   const [emails, setEmails] = useState('');
   const [roleId, setRoleId] = useState('');
 
@@ -519,7 +572,7 @@ function InviteModal({ roles, isLoading, open, onInvite, onClose }: InviteModalP
     e.preventDefault();
     const emailList = emails
       .split(/[,\n]/)
-      .map((e) => e.trim())
+      .map(e => e.trim())
       .filter(Boolean);
     if (emailList.length > 0) {
       await onInvite(emailList, roleId);
@@ -529,7 +582,7 @@ function InviteModal({ roles, isLoading, open, onInvite, onClose }: InviteModalP
 
   return (
     <ResponsiveModal open={open} onOpenChange={onClose}>
-      <ResponsiveModalContent className="sm:max-w-md">
+      <ResponsiveModalContent className='sm:max-w-md'>
         <ResponsiveModalHeader>
           <ResponsiveModalTitle>Invite Members</ResponsiveModalTitle>
           <ResponsiveModalDescription>
@@ -537,39 +590,45 @@ function InviteModal({ roles, isLoading, open, onInvite, onClose }: InviteModalP
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className='space-y-4'>
           <div>
-            <label htmlFor="emails" className="block text-sm font-medium text-foreground mb-1">
+            <label
+              htmlFor='emails'
+              className='block text-sm font-medium text-foreground mb-1'
+            >
               Email Addresses
             </label>
             <textarea
-              id="emails"
+              id='emails'
               value={emails}
-              onChange={(e) => setEmails(e.target.value)}
-              placeholder="Enter email addresses (separated by comma or newline)"
+              onChange={e => setEmails(e.target.value)}
+              placeholder='Enter email addresses (separated by comma or newline)'
               rows={4}
               className={cn(
                 'block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                'focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                'focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
               )}
             />
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-foreground mb-1">
+            <label
+              htmlFor='role'
+              className='block text-sm font-medium text-foreground mb-1'
+            >
               Role
             </label>
             <Select value={roleId} onValueChange={setRoleId}>
-              <SelectTrigger id="role">
-                <SelectValue placeholder="Select a role" />
+              <SelectTrigger id='role'>
+                <SelectValue placeholder='Select a role' />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
+                {roles.map(role => (
                   <SelectItem key={role.id} value={role.id}>
                     {role.name}
                     {role.description && (
-                      <span className="text-muted-foreground ml-2">
+                      <span className='text-muted-foreground ml-2'>
                         - {role.description}
                       </span>
                     )}
@@ -580,17 +639,10 @@ function InviteModal({ roles, isLoading, open, onInvite, onClose }: InviteModalP
           </div>
 
           <ResponsiveModalFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type='button' variant='outline' onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || !emails.trim()}
-            >
+            <Button type='submit' disabled={isLoading || !emails.trim()}>
               {isLoading ? 'Sending...' : 'Send Invites'}
             </Button>
           </ResponsiveModalFooter>
@@ -608,7 +660,12 @@ interface EditMemberModalProps {
   onClose: () => void;
 }
 
-function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberModalProps) {
+function EditMemberModal({
+  member,
+  roles,
+  onUpdateRole,
+  onClose,
+}: EditMemberModalProps) {
   const [roleId, setRoleId] = useState(member?.roleId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -626,7 +683,7 @@ function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberMod
 
   return (
     <ResponsiveModal open={!!member} onOpenChange={onClose}>
-      <ResponsiveModalContent className="sm:max-w-md">
+      <ResponsiveModalContent className='sm:max-w-md'>
         <ResponsiveModalHeader>
           <ResponsiveModalTitle>Edit Member</ResponsiveModalTitle>
           <ResponsiveModalDescription>
@@ -634,29 +691,35 @@ function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberMod
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
 
-        <div className="flex items-center gap-3 py-4">
-          <UserAvatar user={{ name: member.name, image: member.image }} size="xl" />
+        <div className='flex items-center gap-3 py-4'>
+          <UserAvatar
+            user={{ name: member.name, image: member.image }}
+            size='xl'
+          />
           <div>
-            <p className="font-medium text-foreground">{member.name}</p>
-            <p className="text-sm text-muted-foreground">{member.email}</p>
+            <p className='font-medium text-foreground'>{member.name}</p>
+            <p className='text-sm text-muted-foreground'>{member.email}</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className='space-y-4'>
           <div>
-            <label htmlFor="memberRole" className="block text-sm font-medium text-foreground mb-1">
+            <label
+              htmlFor='memberRole'
+              className='block text-sm font-medium text-foreground mb-1'
+            >
               Role
             </label>
             <Select value={roleId} onValueChange={setRoleId}>
-              <SelectTrigger id="memberRole">
-                <SelectValue placeholder="Select a role" />
+              <SelectTrigger id='memberRole'>
+                <SelectValue placeholder='Select a role' />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
+                {roles.map(role => (
                   <SelectItem key={role.id} value={role.id}>
                     {role.name}
                     {role.description && (
-                      <span className="text-muted-foreground ml-2">
+                      <span className='text-muted-foreground ml-2'>
                         - {role.description}
                       </span>
                     )}
@@ -667,17 +730,10 @@ function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberMod
           </div>
 
           <ResponsiveModalFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type='button' variant='outline' onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button type='submit' disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </ResponsiveModalFooter>
@@ -690,64 +746,146 @@ function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberMod
 // Icons
 function UserPlusIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+      <circle cx='9' cy='7' r='4' />
+      <line x1='19' x2='19' y1='8' y2='14' />
+      <line x1='22' x2='16' y1='11' y2='11' />
     </svg>
   );
 }
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <circle cx='11' cy='11' r='8' />
+      <path d='m21 21-4.3-4.3' />
     </svg>
   );
 }
 
 function MoreIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <circle cx='12' cy='12' r='1' />
+      <circle cx='12' cy='5' r='1' />
+      <circle cx='12' cy='19' r='1' />
     </svg>
   );
 }
 
 function EditIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' />
     </svg>
   );
 }
 
 function PauseIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <rect x='14' y='4' width='4' height='16' rx='1' />
+      <rect x='6' y='4' width='4' height='16' rx='1' />
     </svg>
   );
 }
 
 function PlayIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <polygon points="6 3 20 12 6 21 6 3" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <polygon points='6 3 20 12 6 21 6 3' />
     </svg>
   );
 }
 
 function TrashIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M3 6h18' />
+      <path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6' />
+      <path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2' />
     </svg>
   );
 }
 
 function MailIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <rect width='20' height='16' x='2' y='4' rx='2' />
+      <path d='m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7' />
     </svg>
   );
 }

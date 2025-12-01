@@ -34,10 +34,19 @@ import { usePageHeader } from '@/contexts/page-header-context';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { useOrchestrator, useOrchestratorMutations } from '@/hooks/use-orchestrator';
+import {
+  useOrchestrator,
+  useOrchestratorMutations,
+} from '@/hooks/use-orchestrator';
 import { cn } from '@/lib/utils';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
 import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
@@ -45,9 +54,18 @@ import { SessionManagerCreate } from '@/components/orchestrator/session-manager-
 import { SubagentList } from '@/components/orchestrator/subagent-list';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
 import { CharterEditor, CharterDiff } from '@/components/charter';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
-import type { UpdateOrchestratorInput, OrchestratorCharter, Orchestrator } from '@/types/orchestrator';
+import type {
+  UpdateOrchestratorInput,
+  OrchestratorCharter,
+  Orchestrator,
+} from '@/types/orchestrator';
 
 export default function OrchestratorDetailPage() {
   const params = useParams();
@@ -61,17 +79,27 @@ export default function OrchestratorDetailPage() {
   const [editFormData, setEditFormData] = useState<UpdateOrchestratorInput>({});
   const [activeTab, setActiveTab] = useState('overview');
   const [isCharterEditorOpen, setIsCharterEditorOpen] = useState(false);
-  const [charterVersions, setCharterVersions] = useState<Array<{ version: number; charter: OrchestratorCharter; createdAt: string }>>([]);
+  const [charterVersions, setCharterVersions] = useState<
+    Array<{ version: number; charter: OrchestratorCharter; createdAt: string }>
+  >([]);
   const [compareVersion, setCompareVersion] = useState<number | null>(null);
 
   // Hooks
-  const { orchestrator, isLoading, error, refetch } = useOrchestrator(orchestratorId);
-  const { updateOrchestrator, toggleOrchestratorStatus, isLoading: isMutating } = useOrchestratorMutations();
+  const { orchestrator, isLoading, error, refetch } =
+    useOrchestrator(orchestratorId);
+  const {
+    updateOrchestrator,
+    toggleOrchestratorStatus,
+    isLoading: isMutating,
+  } = useOrchestratorMutations();
 
   // Set page header
   useEffect(() => {
     if (orchestrator) {
-      setPageHeader(orchestrator.title, orchestrator.description || 'Orchestrator details and configuration');
+      setPageHeader(
+        orchestrator.title,
+        orchestrator.description || 'Orchestrator details and configuration'
+      );
     }
   }, [orchestrator, setPageHeader]);
 
@@ -91,11 +119,13 @@ export default function OrchestratorDetailPage() {
   // Handlers
   const handleEditWithAI = useCallback(() => {
     // TODO: Implement DualModeEditor integration
-    alert('AI-powered editing coming soon! This will open a conversational editor.');
+    alert(
+      'AI-powered editing coming soon! This will open a conversational editor.'
+    );
   }, []);
 
   const handleToggleEditMode = useCallback(() => {
-    setIsEditingMode((prev) => !prev);
+    setIsEditingMode(prev => !prev);
   }, []);
 
   const handleSaveChanges = useCallback(async () => {
@@ -146,19 +176,24 @@ export default function OrchestratorDetailPage() {
     setIsCharterEditorOpen(false);
   }, []);
 
-  const handleSaveCharter = useCallback(async (charter: OrchestratorCharter) => {
-    if (!orchestrator) return;
-    await updateOrchestrator(orchestrator.id, { charter });
-    setIsCharterEditorOpen(false);
-    refetch();
-  }, [orchestrator, updateOrchestrator, refetch]);
+  const handleSaveCharter = useCallback(
+    async (charter: OrchestratorCharter) => {
+      if (!orchestrator) return;
+      await updateOrchestrator(orchestrator.id, { charter });
+      setIsCharterEditorOpen(false);
+      refetch();
+    },
+    [orchestrator, updateOrchestrator, refetch]
+  );
 
   // Fetch charter versions
   const fetchCharterVersions = useCallback(async () => {
     if (!orchestratorId) return;
 
     try {
-      const response = await fetch(`/api/orchestrators/${orchestratorId}/charter/versions`);
+      const response = await fetch(
+        `/api/orchestrators/${orchestratorId}/charter/versions`
+      );
       if (response.ok) {
         const data = await response.json();
         setCharterVersions(data.data?.versions || []);
@@ -169,22 +204,33 @@ export default function OrchestratorDetailPage() {
   }, [orchestratorId]);
 
   // Rollback to a specific charter version
-  const handleRollbackCharter = useCallback(async (version: number) => {
-    if (!orchestrator) return;
+  const handleRollbackCharter = useCallback(
+    async (version: number) => {
+      if (!orchestrator) return;
 
-    const confirmRollback = window.confirm(
-      `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`
-    );
+      const confirmRollback = window.confirm(
+        `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`
+      );
 
-    if (!confirmRollback) return;
+      if (!confirmRollback) return;
 
-    const versionData = charterVersions.find(v => v.version === version);
-    if (!versionData) return;
+      const versionData = charterVersions.find(v => v.version === version);
+      if (!versionData) return;
 
-    await updateOrchestrator(orchestrator.id, { charter: versionData.charter });
-    refetch();
-    fetchCharterVersions();
-  }, [orchestrator, charterVersions, updateOrchestrator, refetch, fetchCharterVersions]);
+      await updateOrchestrator(orchestrator.id, {
+        charter: versionData.charter,
+      });
+      refetch();
+      fetchCharterVersions();
+    },
+    [
+      orchestrator,
+      charterVersions,
+      updateOrchestrator,
+      refetch,
+      fetchCharterVersions,
+    ]
+  );
 
   // Load charter versions when on charter tab
   useEffect(() => {
@@ -196,7 +242,7 @@ export default function OrchestratorDetailPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className='space-y-6'>
         <OrchestratorDetailSkeleton />
       </div>
     );
@@ -205,17 +251,19 @@ export default function OrchestratorDetailPage() {
   // Error state
   if (error || !orchestrator) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 max-w-md">
-          <div className="flex items-center gap-2 text-red-800">
-            <AlertIcon className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Failed to load orchestrator</h3>
+      <div className='flex flex-col items-center justify-center py-12'>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-6 max-w-md'>
+          <div className='flex items-center gap-2 text-red-800'>
+            <AlertIcon className='h-5 w-5' />
+            <h3 className='text-lg font-semibold'>
+              Failed to load orchestrator
+            </h3>
           </div>
-          <p className="mt-2 text-sm text-red-600">
+          <p className='mt-2 text-sm text-red-600'>
             {error?.message || 'The orchestrator could not be found.'}
           </p>
-          <div className="mt-4 flex gap-2">
-            <Button variant="outline" onClick={() => router.back()}>
+          <div className='mt-4 flex gap-2'>
+            <Button variant='outline' onClick={() => router.back()}>
               Go Back
             </Button>
             <Button onClick={refetch}>Try Again</Button>
@@ -228,86 +276,105 @@ export default function OrchestratorDetailPage() {
   const statusConfig = ORCHESTRATOR_STATUS_CONFIG[orchestrator.status];
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+      <nav className='flex items-center gap-2 text-sm text-muted-foreground'>
         <button
-          type="button"
+          type='button'
           onClick={() => router.push(`/${workspaceSlug}/orchestrators`)}
-          className="hover:text-foreground transition-colors"
+          className='hover:text-foreground transition-colors'
         >
           Orchestrators
         </button>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground font-medium">{orchestrator.title}</span>
+        <ChevronRight className='h-4 w-4' />
+        <span className='text-foreground font-medium'>
+          {orchestrator.title}
+        </span>
       </nav>
 
       {/* Header Section */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4">
+          <div className='flex items-start justify-between'>
+            <div className='flex items-start gap-4'>
               {/* Avatar */}
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl font-bold">
+              <div className='flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl font-bold'>
                 {orchestrator.avatarUrl ? (
                   <img
                     src={orchestrator.avatarUrl}
                     alt={orchestrator.title}
-                    className="h-full w-full rounded-full object-cover"
+                    className='h-full w-full rounded-full object-cover'
                   />
                 ) : (
                   orchestrator.title.substring(0, 2).toUpperCase()
                 )}
               </div>
 
-              <div className="flex-1">
+              <div className='flex-1'>
                 {isEditingMode ? (
                   <input
-                    type="text"
+                    type='text'
                     value={editFormData.title || ''}
-                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    className="text-2xl font-bold border-b-2 border-primary bg-transparent focus:outline-none w-full"
+                    onChange={e =>
+                      setEditFormData({
+                        ...editFormData,
+                        title: e.target.value,
+                      })
+                    }
+                    className='text-2xl font-bold border-b-2 border-primary bg-transparent focus:outline-none w-full'
                   />
                 ) : (
-                  <CardTitle className="text-2xl">{orchestrator.title}</CardTitle>
+                  <CardTitle className='text-2xl'>
+                    {orchestrator.title}
+                  </CardTitle>
                 )}
 
                 {isEditingMode ? (
                   <textarea
                     value={editFormData.description || ''}
-                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                    className="mt-2 w-full border rounded-md p-2 text-sm bg-muted"
+                    onChange={e =>
+                      setEditFormData({
+                        ...editFormData,
+                        description: e.target.value,
+                      })
+                    }
+                    className='mt-2 w-full border rounded-md p-2 text-sm bg-muted'
                     rows={2}
-                    placeholder="Add a description..."
+                    placeholder='Add a description...'
                   />
                 ) : (
-                  <CardDescription className="mt-1">
+                  <CardDescription className='mt-1'>
                     {orchestrator.description || 'No description provided'}
                   </CardDescription>
                 )}
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge className={cn(statusConfig.bgColor, statusConfig.color)}>
+                <div className='mt-3 flex flex-wrap gap-2'>
+                  <Badge
+                    className={cn(statusConfig.bgColor, statusConfig.color)}
+                  >
                     {statusConfig.label}
                   </Badge>
                   {isEditingMode && (
-                    <Badge variant="outline" className="text-amber-600 border-amber-400 bg-amber-50">
-                      <Edit className="h-3 w-3 mr-1" />
+                    <Badge
+                      variant='outline'
+                      className='text-amber-600 border-amber-400 bg-amber-50'
+                    >
+                      <Edit className='h-3 w-3 mr-1' />
                       Editing Mode
                     </Badge>
                   )}
                   {orchestrator.discipline && (
-                    <Badge variant="outline">
-                      <Tag className="h-3 w-3 mr-1" />
+                    <Badge variant='outline'>
+                      <Tag className='h-3 w-3 mr-1' />
                       {orchestrator.discipline}
                     </Badge>
                   )}
-                  <Badge variant="secondary">
-                    <MessageSquare className="h-3 w-3 mr-1" />
+                  <Badge variant='secondary'>
+                    <MessageSquare className='h-3 w-3 mr-1' />
                     {orchestrator.messageCount} messages
                   </Badge>
-                  <Badge variant="secondary">
-                    <Users className="h-3 w-3 mr-1" />
+                  <Badge variant='secondary'>
+                    <Users className='h-3 w-3 mr-1' />
                     {orchestrator.agentCount} agents
                   </Badge>
                 </div>
@@ -315,10 +382,14 @@ export default function OrchestratorDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               {isEditingMode ? (
                 <>
-                  <Button variant="outline" onClick={handleCancelEdit} disabled={isMutating}>
+                  <Button
+                    variant='outline'
+                    onClick={handleCancelEdit}
+                    disabled={isMutating}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleSaveChanges} disabled={isMutating}>
@@ -327,12 +398,12 @@ export default function OrchestratorDetailPage() {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" onClick={handleEditWithAI}>
-                    <Brain className="h-4 w-4 mr-2" />
+                  <Button variant='outline' onClick={handleEditWithAI}>
+                    <Brain className='h-4 w-4 mr-2' />
                     Edit with AI
                   </Button>
-                  <Button variant="outline" onClick={handleToggleEditMode}>
-                    <PenLine className="h-4 w-4 mr-2" />
+                  <Button variant='outline' onClick={handleToggleEditMode}>
+                    <PenLine className='h-4 w-4 mr-2' />
                     Edit Directly
                   </Button>
                 </>
@@ -345,33 +416,39 @@ export default function OrchestratorDetailPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
+          <CardTitle className='text-lg'>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
+          <div className='flex flex-wrap gap-2'>
             <Button
-              variant={orchestrator.status === 'ONLINE' ? 'destructive' : 'default'}
+              variant={
+                orchestrator.status === 'ONLINE' ? 'destructive' : 'default'
+              }
               onClick={handleToggleStatus}
               disabled={isMutating}
             >
               {orchestrator.status === 'ONLINE' ? (
                 <>
-                  <Pause className="h-4 w-4 mr-2" />
+                  <Pause className='h-4 w-4 mr-2' />
                   Set Offline
                 </>
               ) : (
                 <>
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className='h-4 w-4 mr-2' />
                   Set Online
                 </>
               )}
             </Button>
-            <Button variant="outline" onClick={handlePause} disabled={isMutating}>
-              <Clock className="h-4 w-4 mr-2" />
+            <Button
+              variant='outline'
+              onClick={handlePause}
+              disabled={isMutating}
+            >
+              <Clock className='h-4 w-4 mr-2' />
               Mark as Busy
             </Button>
-            <Button variant="outline" onClick={handleConfigure}>
-              <Settings className="h-4 w-4 mr-2" />
+            <Button variant='outline' onClick={handleConfigure}>
+              <Settings className='h-4 w-4 mr-2' />
               Advanced Settings
             </Button>
           </div>
@@ -380,38 +457,38 @@ export default function OrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="overview">
-            <Activity className="h-4 w-4 mr-2" />
+        <TabsList className='grid w-full grid-cols-7'>
+          <TabsTrigger value='overview'>
+            <Activity className='h-4 w-4 mr-2' />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="charter">
-            <FileText className="h-4 w-4 mr-2" />
+          <TabsTrigger value='charter'>
+            <FileText className='h-4 w-4 mr-2' />
             Charter
           </TabsTrigger>
-          <TabsTrigger value="session-managers">
-            <Users className="h-4 w-4 mr-2" />
+          <TabsTrigger value='session-managers'>
+            <Users className='h-4 w-4 mr-2' />
             Session Managers
           </TabsTrigger>
-          <TabsTrigger value="subagents">
-            <Brain className="h-4 w-4 mr-2" />
+          <TabsTrigger value='subagents'>
+            <Brain className='h-4 w-4 mr-2' />
             Subagents
           </TabsTrigger>
-          <TabsTrigger value="configuration">
-            <Settings className="h-4 w-4 mr-2" />
+          <TabsTrigger value='configuration'>
+            <Settings className='h-4 w-4 mr-2' />
             Configuration
           </TabsTrigger>
-          <TabsTrigger value="activity">
-            <TrendingUp className="h-4 w-4 mr-2" />
+          <TabsTrigger value='activity'>
+            <TrendingUp className='h-4 w-4 mr-2' />
             Activity
           </TabsTrigger>
-          <TabsTrigger value="capabilities">
-            <Zap className="h-4 w-4 mr-2" />
+          <TabsTrigger value='capabilities'>
+            <Zap className='h-4 w-4 mr-2' />
             Capabilities
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="charter" className="space-y-4 mt-6">
+        <TabsContent value='charter' className='space-y-4 mt-6'>
           <CharterTab
             orchestrator={orchestrator}
             onOpenEditor={handleOpenCharterEditor}
@@ -422,33 +499,41 @@ export default function OrchestratorDetailPage() {
           />
         </TabsContent>
 
-        <TabsContent value="session-managers" className="space-y-4 mt-6">
+        <TabsContent value='session-managers' className='space-y-4 mt-6'>
           <SessionManagersTab orchestratorId={orchestrator.id} />
         </TabsContent>
 
-        <TabsContent value="subagents" className="space-y-4 mt-6">
+        <TabsContent value='subagents' className='space-y-4 mt-6'>
           <SubagentsTab />
         </TabsContent>
 
-        <TabsContent value="overview" className="space-y-4 mt-6">
+        <TabsContent value='overview' className='space-y-4 mt-6'>
           <Card>
             <CardHeader>
               <CardTitle>Performance Metrics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <MetricCard label="Total Messages" value={orchestrator.messageCount.toString()} />
-                <MetricCard label="Managed Agents" value={orchestrator.agentCount.toString()} />
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <MetricCard
-                  label="Last Active"
+                  label='Total Messages'
+                  value={orchestrator.messageCount.toString()}
+                />
+                <MetricCard
+                  label='Managed Agents'
+                  value={orchestrator.agentCount.toString()}
+                />
+                <MetricCard
+                  label='Last Active'
                   value={
                     orchestrator.lastActivityAt
-                      ? new Date(orchestrator.lastActivityAt).toLocaleDateString()
+                      ? new Date(
+                          orchestrator.lastActivityAt
+                        ).toLocaleDateString()
                       : 'Never'
                   }
                 />
                 <MetricCard
-                  label="Created"
+                  label='Created'
                   value={new Date(orchestrator.createdAt).toLocaleDateString()}
                 />
               </div>
@@ -460,37 +545,42 @@ export default function OrchestratorDetailPage() {
               <CardHeader>
                 <CardTitle>Charter</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <div>
-                  <h4 className="font-semibold text-sm mb-1">Mission</h4>
-                  <p className="text-sm text-muted-foreground">{orchestrator.charter.mission}</p>
+                  <h4 className='font-semibold text-sm mb-1'>Mission</h4>
+                  <p className='text-sm text-muted-foreground'>
+                    {orchestrator.charter.mission}
+                  </p>
                 </div>
                 <Separator />
                 <div>
-                  <h4 className="font-semibold text-sm mb-1">Vision</h4>
-                  <p className="text-sm text-muted-foreground">{orchestrator.charter.vision}</p>
+                  <h4 className='font-semibold text-sm mb-1'>Vision</h4>
+                  <p className='text-sm text-muted-foreground'>
+                    {orchestrator.charter.vision}
+                  </p>
                 </div>
-                {orchestrator.charter.values && orchestrator.charter.values.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h4 className="font-semibold text-sm mb-2">Values</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {orchestrator.charter.values.map((value, index) => (
-                          <Badge key={index} variant="secondary">
-                            {value}
-                          </Badge>
-                        ))}
+                {orchestrator.charter.values &&
+                  orchestrator.charter.values.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className='font-semibold text-sm mb-2'>Values</h4>
+                        <div className='flex flex-wrap gap-2'>
+                          {orchestrator.charter.values.map((value, index) => (
+                            <Badge key={index} variant='secondary'>
+                              {value}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
               </CardContent>
             </Card>
           )}
         </TabsContent>
 
-        <TabsContent value="configuration" className="space-y-4 mt-6">
+        <TabsContent value='configuration' className='space-y-4 mt-6'>
           <Card>
             <CardHeader>
               <CardTitle>System Configuration</CardTitle>
@@ -498,19 +588,24 @@ export default function OrchestratorDetailPage() {
                 Technical settings and model configuration for this orchestrator
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               <div>
-                <h4 className="font-semibold text-sm mb-2">System Prompt</h4>
+                <h4 className='font-semibold text-sm mb-2'>System Prompt</h4>
                 {isEditingMode ? (
                   <textarea
                     value={editFormData.systemPrompt || ''}
-                    onChange={(e) => setEditFormData({ ...editFormData, systemPrompt: e.target.value })}
-                    className="w-full border rounded-md p-3 text-sm bg-muted font-mono"
+                    onChange={e =>
+                      setEditFormData({
+                        ...editFormData,
+                        systemPrompt: e.target.value,
+                      })
+                    }
+                    className='w-full border rounded-md p-3 text-sm bg-muted font-mono'
                     rows={8}
                     placeholder="Define the orchestrator's system prompt..."
                   />
                 ) : (
-                  <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-64">
+                  <pre className='text-xs bg-muted p-3 rounded-md overflow-auto max-h-64'>
                     {orchestrator.systemPrompt || 'No system prompt configured'}
                   </pre>
                 )}
@@ -520,23 +615,41 @@ export default function OrchestratorDetailPage() {
                 <>
                   <Separator />
                   <div>
-                    <h4 className="font-semibold text-sm mb-2">Model Configuration</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <h4 className='font-semibold text-sm mb-2'>
+                      Model Configuration
+                    </h4>
+                    <div className='grid grid-cols-2 gap-4'>
                       <div>
-                        <span className="text-xs text-muted-foreground">Model ID</span>
-                        <p className="text-sm font-mono">{orchestrator.modelConfig.modelId}</p>
+                        <span className='text-xs text-muted-foreground'>
+                          Model ID
+                        </span>
+                        <p className='text-sm font-mono'>
+                          {orchestrator.modelConfig.modelId}
+                        </p>
                       </div>
                       <div>
-                        <span className="text-xs text-muted-foreground">Temperature</span>
-                        <p className="text-sm font-mono">{orchestrator.modelConfig.temperature}</p>
+                        <span className='text-xs text-muted-foreground'>
+                          Temperature
+                        </span>
+                        <p className='text-sm font-mono'>
+                          {orchestrator.modelConfig.temperature}
+                        </p>
                       </div>
                       <div>
-                        <span className="text-xs text-muted-foreground">Max Tokens</span>
-                        <p className="text-sm font-mono">{orchestrator.modelConfig.maxTokens}</p>
+                        <span className='text-xs text-muted-foreground'>
+                          Max Tokens
+                        </span>
+                        <p className='text-sm font-mono'>
+                          {orchestrator.modelConfig.maxTokens}
+                        </p>
                       </div>
                       <div>
-                        <span className="text-xs text-muted-foreground">Top P</span>
-                        <p className="text-sm font-mono">{orchestrator.modelConfig.topP}</p>
+                        <span className='text-xs text-muted-foreground'>
+                          Top P
+                        </span>
+                        <p className='text-sm font-mono'>
+                          {orchestrator.modelConfig.topP}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -546,11 +659,13 @@ export default function OrchestratorDetailPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="activity" className="space-y-4 mt-6">
+        <TabsContent value='activity' className='space-y-4 mt-6'>
           <Card>
             <CardHeader>
               <CardTitle>Activity History</CardTitle>
-              <CardDescription>Recent actions and events for this orchestrator</CardDescription>
+              <CardDescription>
+                Recent actions and events for this orchestrator
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ActivityLog orchestratorId={orchestrator.id} />
@@ -558,7 +673,7 @@ export default function OrchestratorDetailPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="capabilities" className="space-y-4 mt-6">
+        <TabsContent value='capabilities' className='space-y-4 mt-6'>
           <Card>
             <CardHeader>
               <CardTitle>Capabilities</CardTitle>
@@ -567,17 +682,20 @@ export default function OrchestratorDetailPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {orchestrator.capabilities && orchestrator.capabilities.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+              {orchestrator.capabilities &&
+              orchestrator.capabilities.length > 0 ? (
+                <div className='flex flex-wrap gap-2'>
                   {orchestrator.capabilities.map((capability, index) => (
-                    <Badge key={index} variant="outline" className="text-sm">
-                      <Zap className="h-3 w-3 mr-1" />
+                    <Badge key={index} variant='outline' className='text-sm'>
+                      <Zap className='h-3 w-3 mr-1' />
                       {capability}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No capabilities configured</p>
+                <p className='text-sm text-muted-foreground'>
+                  No capabilities configured
+                </p>
               )}
             </CardContent>
           </Card>
@@ -586,7 +704,7 @@ export default function OrchestratorDetailPage() {
 
       {/* Charter Editor Dialog */}
       <Dialog open={isCharterEditorOpen} onOpenChange={setIsCharterEditorOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
+        <DialogContent className='max-w-5xl max-h-[90vh] overflow-hidden'>
           <DialogHeader>
             <DialogTitle>Edit Charter</DialogTitle>
           </DialogHeader>
@@ -605,9 +723,9 @@ export default function OrchestratorDetailPage() {
 // Metric Card Component
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border rounded-lg p-4">
-      <p className="text-xs text-muted-foreground mb-1">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
+    <div className='border rounded-lg p-4'>
+      <p className='text-xs text-muted-foreground mb-1'>{label}</p>
+      <p className='text-2xl font-bold'>{value}</p>
     </div>
   );
 }
@@ -617,22 +735,74 @@ function MetricCard({ label, value }: { label: string; value: string }) {
  */
 const ACTIVITY_TYPE_CONFIG: Record<
   string,
-  { icon: React.ComponentType<{ className?: string }>; color: string; bgColor: string }
+  {
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    bgColor: string;
+  }
 > = {
-  TASK_STARTED: { icon: Play, color: 'text-green-600', bgColor: 'bg-green-100' },
+  TASK_STARTED: {
+    icon: Play,
+    color: 'text-green-600',
+    bgColor: 'bg-green-100',
+  },
   TASK_COMPLETED: { icon: Zap, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-  TASK_UPDATED: { icon: Activity, color: 'text-amber-600', bgColor: 'bg-amber-100' },
-  STATUS_CHANGE: { icon: Clock, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  MESSAGE_SENT: { icon: MessageSquare, color: 'text-indigo-600', bgColor: 'bg-indigo-100' },
-  CHANNEL_JOINED: { icon: Users, color: 'text-teal-600', bgColor: 'bg-teal-100' },
+  TASK_UPDATED: {
+    icon: Activity,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-100',
+  },
+  STATUS_CHANGE: {
+    icon: Clock,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-100',
+  },
+  MESSAGE_SENT: {
+    icon: MessageSquare,
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-100',
+  },
+  CHANNEL_JOINED: {
+    icon: Users,
+    color: 'text-teal-600',
+    bgColor: 'bg-teal-100',
+  },
   CHANNEL_LEFT: { icon: Users, color: 'text-gray-600', bgColor: 'bg-gray-100' },
-  DECISION_MADE: { icon: Brain, color: 'text-pink-600', bgColor: 'bg-pink-100' },
-  LEARNING_RECORDED: { icon: TrendingUp, color: 'text-cyan-600', bgColor: 'bg-cyan-100' },
-  CONVERSATION_INITIATED: { icon: MessageSquare, color: 'text-violet-600', bgColor: 'bg-violet-100' },
-  TASK_DELEGATED: { icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-100' },
-  TASK_ESCALATED: { icon: TrendingUp, color: 'text-red-600', bgColor: 'bg-red-100' },
-  ERROR_OCCURRED: { icon: AlertIcon, color: 'text-red-600', bgColor: 'bg-red-100' },
-  SYSTEM_EVENT: { icon: Settings, color: 'text-gray-600', bgColor: 'bg-gray-100' },
+  DECISION_MADE: {
+    icon: Brain,
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-100',
+  },
+  LEARNING_RECORDED: {
+    icon: TrendingUp,
+    color: 'text-cyan-600',
+    bgColor: 'bg-cyan-100',
+  },
+  CONVERSATION_INITIATED: {
+    icon: MessageSquare,
+    color: 'text-violet-600',
+    bgColor: 'bg-violet-100',
+  },
+  TASK_DELEGATED: {
+    icon: Users,
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-100',
+  },
+  TASK_ESCALATED: {
+    icon: TrendingUp,
+    color: 'text-red-600',
+    bgColor: 'bg-red-100',
+  },
+  ERROR_OCCURRED: {
+    icon: AlertIcon,
+    color: 'text-red-600',
+    bgColor: 'bg-red-100',
+  },
+  SYSTEM_EVENT: {
+    icon: Settings,
+    color: 'text-gray-600',
+    bgColor: 'bg-gray-100',
+  },
 };
 
 /**
@@ -700,53 +870,57 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
   /**
    * Fetch activities from API
    */
-  const fetchActivities = useCallback(async (append = false) => {
-    if (!workspaceSlug || !orchestratorId) return;
+  const fetchActivities = useCallback(
+    async (append = false) => {
+      if (!workspaceSlug || !orchestratorId) return;
 
-    if (!append) {
-      setIsLoading(true);
-    } else {
-      setIsLoadingMore(true);
-    }
-    setError(null);
-
-    try {
-      const params = new URLSearchParams({
-        limit: '20',
-      });
-      if (append && cursor) {
-        params.set('cursor', cursor);
-      }
-
-      const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch activities: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const newActivities = result.data?.activities || [];
-      const pagination = result.data?.pagination || {};
-
-      if (append) {
-        setActivities(prev => [...prev, ...newActivities]);
+      if (!append) {
+        setIsLoading(true);
       } else {
-        setActivities(newActivities);
+        setIsLoadingMore(true);
       }
+      setError(null);
 
-      setCursor(pagination.cursor || null);
-      setHasMore(pagination.hasMore || false);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch activities');
-      setError(error);
-      console.error('[ActivityLog] Error fetching activities:', error);
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  }, [workspaceSlug, orchestratorId, cursor]);
+      try {
+        const params = new URLSearchParams({
+          limit: '20',
+        });
+        if (append && cursor) {
+          params.set('cursor', cursor);
+        }
+
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch activities: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const newActivities = result.data?.activities || [];
+        const pagination = result.data?.pagination || {};
+
+        if (append) {
+          setActivities(prev => [...prev, ...newActivities]);
+        } else {
+          setActivities(newActivities);
+        }
+
+        setCursor(pagination.cursor || null);
+        setHasMore(pagination.hasMore || false);
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Failed to fetch activities');
+        setError(error);
+        console.error('[ActivityLog] Error fetching activities:', error);
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [workspaceSlug, orchestratorId, cursor]
+  );
 
   /**
    * Load more activities (pagination)
@@ -775,13 +949,13 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex gap-3 items-start animate-pulse">
-            <div className="h-8 w-8 rounded-full bg-muted" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-muted rounded w-3/4" />
-              <div className="h-3 bg-muted rounded w-1/2" />
+      <div className='space-y-3'>
+        {[1, 2, 3].map(i => (
+          <div key={i} className='flex gap-3 items-start animate-pulse'>
+            <div className='h-8 w-8 rounded-full bg-muted' />
+            <div className='flex-1 space-y-2'>
+              <div className='h-4 bg-muted rounded w-3/4' />
+              <div className='h-3 bg-muted rounded w-1/2' />
             </div>
           </div>
         ))}
@@ -792,16 +966,18 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
   // Error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 max-w-sm text-center">
-          <AlertIcon className="h-6 w-6 text-red-600 mx-auto mb-2" />
-          <p className="text-sm text-red-800 font-medium">Failed to load activity</p>
-          <p className="text-xs text-red-600 mt-1">{error.message}</p>
+      <div className='flex flex-col items-center justify-center py-8'>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-4 max-w-sm text-center'>
+          <AlertIcon className='h-6 w-6 text-red-600 mx-auto mb-2' />
+          <p className='text-sm text-red-800 font-medium'>
+            Failed to load activity
+          </p>
+          <p className='text-xs text-red-600 mt-1'>{error.message}</p>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={handleRetry}
-            className="mt-3"
+            className='mt-3'
           >
             Try Again
           </Button>
@@ -813,10 +989,12 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
   // Empty state
   if (activities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Activity className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <p className="text-sm font-medium text-muted-foreground">No activity recorded yet</p>
-        <p className="text-xs text-muted-foreground mt-1">
+      <div className='flex flex-col items-center justify-center py-12 text-center'>
+        <Activity className='h-12 w-12 text-muted-foreground/50 mb-4' />
+        <p className='text-sm font-medium text-muted-foreground'>
+          No activity recorded yet
+        </p>
+        <p className='text-xs text-muted-foreground mt-1'>
           Activity will appear here as this orchestrator performs actions
         </p>
       </div>
@@ -824,41 +1002,47 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        {activities.map((activity) => {
-          const config = ACTIVITY_TYPE_CONFIG[activity.type] || ACTIVITY_TYPE_CONFIG.SYSTEM_EVENT;
+    <div className='space-y-4'>
+      <div className='space-y-3'>
+        {activities.map(activity => {
+          const config =
+            ACTIVITY_TYPE_CONFIG[activity.type] ||
+            ACTIVITY_TYPE_CONFIG.SYSTEM_EVENT;
           const IconComponent = config.icon;
 
           return (
             <div
               key={activity.id}
-              className="flex gap-3 items-start p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+              className='flex gap-3 items-start p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors'
             >
-              <div className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
-                config.bgColor
-              )}>
+              <div
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
+                  config.bgColor
+                )}
+              >
                 <IconComponent className={cn('h-4 w-4', config.color)} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-tight">{activity.description}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-muted-foreground">
+              <div className='flex-1 min-w-0'>
+                <p className='text-sm font-medium leading-tight'>
+                  {activity.description}
+                </p>
+                <div className='flex items-center gap-2 mt-1'>
+                  <span className='text-xs text-muted-foreground'>
                     {formatRelativeTime(activity.timestamp)}
                   </span>
                   {activity.importance >= 7 && (
-                    <Badge variant="outline" className="text-xs h-5 px-1.5">
+                    <Badge variant='outline' className='text-xs h-5 px-1.5'>
                       High Priority
                     </Badge>
                   )}
                 </div>
                 {activity.keywords && activity.keywords.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className='flex flex-wrap gap-1 mt-2'>
                     {activity.keywords.slice(0, 3).map((keyword, idx) => (
                       <span
                         key={idx}
-                        className="text-xs bg-muted px-1.5 py-0.5 rounded"
+                        className='text-xs bg-muted px-1.5 py-0.5 rounded'
                       >
                         {keyword}
                       </span>
@@ -873,10 +1057,10 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
 
       {/* Load More Button */}
       {hasMore && (
-        <div className="flex justify-center pt-2">
+        <div className='flex justify-center pt-2'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={handleLoadMore}
             disabled={isLoadingMore}
           >
@@ -891,25 +1075,25 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
 // Skeleton Loader
 function OrchestratorDetailSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-8 bg-muted rounded w-1/3" />
+    <div className='space-y-6 animate-pulse'>
+      <div className='h-8 bg-muted rounded w-1/3' />
       <Card>
         <CardHeader>
-          <div className="flex gap-4">
-            <div className="h-16 w-16 bg-muted rounded-full" />
-            <div className="flex-1 space-y-2">
-              <div className="h-8 bg-muted rounded w-1/2" />
-              <div className="h-4 bg-muted rounded w-3/4" />
+          <div className='flex gap-4'>
+            <div className='h-16 w-16 bg-muted rounded-full' />
+            <div className='flex-1 space-y-2'>
+              <div className='h-8 bg-muted rounded w-1/2' />
+              <div className='h-4 bg-muted rounded w-3/4' />
             </div>
           </div>
         </CardHeader>
       </Card>
       <Card>
         <CardHeader>
-          <div className="h-6 bg-muted rounded w-1/4" />
+          <div className='h-6 bg-muted rounded w-1/4' />
         </CardHeader>
         <CardContent>
-          <div className="h-32 bg-muted rounded" />
+          <div className='h-32 bg-muted rounded' />
         </CardContent>
       </Card>
     </div>
@@ -924,7 +1108,9 @@ function OrchestratorDetailSkeleton() {
 function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   // TODO: Use selectedSessionManager for detail view
-  const [_selectedSessionManager, _setSelectedSessionManager] = useState<unknown | null>(null);
+  const [_selectedSessionManager, _setSelectedSessionManager] = useState<
+    unknown | null
+  >(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateNew = () => {
@@ -932,7 +1118,7 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
   };
 
   const handleCreated = () => {
-    setRefreshKey((prev) => prev + 1);
+    setRefreshKey(prev => prev + 1);
   };
 
   const handleSelect = (sessionManager: unknown) => {
@@ -945,16 +1131,17 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
         <CardHeader>
           <CardTitle>Session Manager Overview</CardTitle>
           <CardDescription>
-            Session Managers orchestrate Claude Code/Flow sessions with up to 20 subagents.
-            They manage task distribution, token budgets, and coordination between subagents.
+            Session Managers orchestrate Claude Code/Flow sessions with up to 20
+            subagents. They manage task distribution, token budgets, and
+            coordination between subagents.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetricCard label="Total Session Managers" value="0" />
-            <MetricCard label="Active Sessions" value="0" />
-            <MetricCard label="Total Subagents" value="0" />
-            <MetricCard label="Token Budget/hr" value="0" />
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+            <MetricCard label='Total Session Managers' value='0' />
+            <MetricCard label='Active Sessions' value='0' />
+            <MetricCard label='Total Subagents' value='0' />
+            <MetricCard label='Token Budget/hr' value='0' />
           </div>
         </CardContent>
       </Card>
@@ -982,7 +1169,9 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
  * Displays universal subagents and session-specific subagents
  */
 function SubagentsTab() {
-  const [selectedSessionManager, _setSelectedSessionManager] = useState<string | null>(null);
+  const [selectedSessionManager, _setSelectedSessionManager] = useState<
+    string | null
+  >(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -995,7 +1184,7 @@ function SubagentsTab() {
   };
 
   const handleCreated = () => {
-    setRefreshKey((prev) => prev + 1);
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -1004,26 +1193,26 @@ function SubagentsTab() {
         <CardHeader>
           <CardTitle>Subagent Management</CardTitle>
           <CardDescription>
-            Subagents are specialized workers that perform tasks under Session Manager coordination.
-            Universal subagents are available to all orchestrators.
+            Subagents are specialized workers that perform tasks under Session
+            Manager coordination. Universal subagents are available to all
+            orchestrators.
           </CardDescription>
         </CardHeader>
       </Card>
 
       {/* Universal Subagents */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Universal Subagents</h3>
-        <SubagentList
-          key={`universal-${refreshKey}`}
-          showUniversal={true}
-        />
+        <h3 className='text-lg font-semibold mb-4'>Universal Subagents</h3>
+        <SubagentList key={`universal-${refreshKey}`} showUniversal={true} />
       </div>
 
-      <Separator className="my-6" />
+      <Separator className='my-6' />
 
       {/* Session Manager Specific Subagents */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Session Manager Subagents</h3>
+        <h3 className='text-lg font-semibold mb-4'>
+          Session Manager Subagents
+        </h3>
         {selectedSessionManager ? (
           <>
             <SubagentList
@@ -1040,8 +1229,9 @@ function SubagentsTab() {
           </>
         ) : (
           <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              Select a Session Manager from the Session Managers tab to view and manage its subagents.
+            <CardContent className='pt-6 text-center text-muted-foreground'>
+              Select a Session Manager from the Session Managers tab to view and
+              manage its subagents.
             </CardContent>
           </Card>
         )}
@@ -1058,7 +1248,11 @@ function SubagentsTab() {
 interface CharterTabProps {
   orchestrator: Orchestrator;
   onOpenEditor: () => void;
-  versions: Array<{ version: number; charter: OrchestratorCharter; createdAt: string }>;
+  versions: Array<{
+    version: number;
+    charter: OrchestratorCharter;
+    createdAt: string;
+  }>;
   onRollback: (version: number) => void;
   compareVersion: number | null;
   onCompareVersion: (version: number | null) => void;
@@ -1079,7 +1273,9 @@ function CharterTab({
     if (!charter) return null;
 
     return {
-      concurrentSessions: charter.operationalSettings?.autoEscalation ? 'Unlimited' : '20',
+      concurrentSessions: charter.operationalSettings?.autoEscalation
+        ? 'Unlimited'
+        : '20',
       tokenBudget: charter.operationalSettings?.responseTimeTarget
         ? `${charter.operationalSettings.responseTimeTarget}min target`
         : 'No limit',
@@ -1093,7 +1289,7 @@ function CharterTab({
       {/* Charter Status Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
+          <div className='flex items-start justify-between'>
             <div>
               <CardTitle>Charter Status</CardTitle>
               <CardDescription>
@@ -1101,57 +1297,73 @@ function CharterTab({
               </CardDescription>
             </div>
             <Button onClick={onOpenEditor} disabled={!orchestrator}>
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className='h-4 w-4 mr-2' />
               Edit Charter
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {charter ? (
-            <div className="space-y-6">
+            <div className='space-y-6'>
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <MetricCard label="Version" value={versions.length > 0 ? `v${versions[0]?.version || 1}` : 'v1'} />
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <MetricCard
-                  label="Last Modified"
-                  value={versions.length > 0
-                    ? new Date(versions[0]?.createdAt).toLocaleDateString()
-                    : new Date(orchestrator.updatedAt).toLocaleDateString()
+                  label='Version'
+                  value={
+                    versions.length > 0 ? `v${versions[0]?.version || 1}` : 'v1'
                   }
                 />
-                <MetricCard label="Expertise Areas" value={charterStats?.expertise.toString() || '0'} />
-                <MetricCard label="Core Values" value={charterStats?.values.toString() || '0'} />
+                <MetricCard
+                  label='Last Modified'
+                  value={
+                    versions.length > 0
+                      ? new Date(versions[0]?.createdAt).toLocaleDateString()
+                      : new Date(orchestrator.updatedAt).toLocaleDateString()
+                  }
+                />
+                <MetricCard
+                  label='Expertise Areas'
+                  value={charterStats?.expertise.toString() || '0'}
+                />
+                <MetricCard
+                  label='Core Values'
+                  value={charterStats?.values.toString() || '0'}
+                />
               </div>
 
               <Separator />
 
               {/* Charter Summary */}
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 <div>
-                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                  <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+                    <FileText className='h-4 w-4' />
                     Mission Statement
                   </h4>
-                  <p className="text-sm text-muted-foreground">{charter.mission}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {charter.mission}
+                  </p>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
+                  <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+                    <TrendingUp className='h-4 w-4' />
                     Vision
                   </h4>
-                  <p className="text-sm text-muted-foreground">{charter.vision}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {charter.vision}
+                  </p>
                 </div>
 
                 {charter.values && charter.values.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                      <Tag className="h-4 w-4" />
+                    <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+                      <Tag className='h-4 w-4' />
                       Core Values
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className='flex flex-wrap gap-2'>
                       {charter.values.map((value: string, index: number) => (
-                        <Badge key={index} variant="secondary">
+                        <Badge key={index} variant='secondary'>
                           {value}
                         </Badge>
                       ))}
@@ -1161,13 +1373,13 @@ function CharterTab({
 
                 {charter.expertise && charter.expertise.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                      <Brain className="h-4 w-4" />
+                    <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+                      <Brain className='h-4 w-4' />
                       Expertise
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className='flex flex-wrap gap-2'>
                       {charter.expertise.map((item: string, index: number) => (
-                        <Badge key={index} variant="outline">
+                        <Badge key={index} variant='outline'>
                           {item}
                         </Badge>
                       ))}
@@ -1177,30 +1389,45 @@ function CharterTab({
 
                 {/* Resource Limits */}
                 <div>
-                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
+                  <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+                    <Settings className='h-4 w-4' />
                     Resource Limits
                   </h4>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className='grid grid-cols-2 gap-3 text-sm'>
                     <div>
-                      <span className="text-muted-foreground">Concurrent Sessions:</span>
-                      <span className="ml-2 font-medium">{charterStats?.concurrentSessions}</span>
+                      <span className='text-muted-foreground'>
+                        Concurrent Sessions:
+                      </span>
+                      <span className='ml-2 font-medium'>
+                        {charterStats?.concurrentSessions}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Response Target:</span>
-                      <span className="ml-2 font-medium">{charterStats?.tokenBudget}</span>
+                      <span className='text-muted-foreground'>
+                        Response Target:
+                      </span>
+                      <span className='ml-2 font-medium'>
+                        {charterStats?.tokenBudget}
+                      </span>
                     </div>
                     {charter.operationalSettings?.workHours && (
                       <>
                         <div>
-                          <span className="text-muted-foreground">Work Hours:</span>
-                          <span className="ml-2 font-medium">
-                            {charter.operationalSettings.workHours.start} - {charter.operationalSettings.workHours.end}
+                          <span className='text-muted-foreground'>
+                            Work Hours:
+                          </span>
+                          <span className='ml-2 font-medium'>
+                            {charter.operationalSettings.workHours.start} -{' '}
+                            {charter.operationalSettings.workHours.end}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Timezone:</span>
-                          <span className="ml-2 font-medium">{charter.operationalSettings.workHours.timezone}</span>
+                          <span className='text-muted-foreground'>
+                            Timezone:
+                          </span>
+                          <span className='ml-2 font-medium'>
+                            {charter.operationalSettings.workHours.timezone}
+                          </span>
                         </div>
                       </>
                     )}
@@ -1210,26 +1437,42 @@ function CharterTab({
                 {/* Communication Preferences */}
                 {charter.communicationPreferences && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
+                    <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+                      <MessageSquare className='h-4 w-4' />
                       Communication Preferences
                     </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className='grid grid-cols-2 gap-3 text-sm'>
                       <div>
-                        <span className="text-muted-foreground">Tone:</span>
-                        <span className="ml-2 font-medium capitalize">{charter.communicationPreferences.tone}</span>
+                        <span className='text-muted-foreground'>Tone:</span>
+                        <span className='ml-2 font-medium capitalize'>
+                          {charter.communicationPreferences.tone}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Response Length:</span>
-                        <span className="ml-2 font-medium capitalize">{charter.communicationPreferences.responseLength}</span>
+                        <span className='text-muted-foreground'>
+                          Response Length:
+                        </span>
+                        <span className='ml-2 font-medium capitalize'>
+                          {charter.communicationPreferences.responseLength}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Formality:</span>
-                        <span className="ml-2 font-medium capitalize">{charter.communicationPreferences.formality}</span>
+                        <span className='text-muted-foreground'>
+                          Formality:
+                        </span>
+                        <span className='ml-2 font-medium capitalize'>
+                          {charter.communicationPreferences.formality}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Use Emoji:</span>
-                        <span className="ml-2 font-medium">{charter.communicationPreferences.useEmoji ? 'Yes' : 'No'}</span>
+                        <span className='text-muted-foreground'>
+                          Use Emoji:
+                        </span>
+                        <span className='ml-2 font-medium'>
+                          {charter.communicationPreferences.useEmoji
+                            ? 'Yes'
+                            : 'No'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1237,14 +1480,17 @@ function CharterTab({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-sm font-medium text-muted-foreground">No charter configured</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Create a charter to define mission, values, and operational parameters
+            <div className='flex flex-col items-center justify-center py-12 text-center'>
+              <FileText className='h-12 w-12 text-muted-foreground/50 mb-4' />
+              <p className='text-sm font-medium text-muted-foreground'>
+                No charter configured
               </p>
-              <Button onClick={onOpenEditor} className="mt-4">
-                <FileText className="h-4 w-4 mr-2" />
+              <p className='text-xs text-muted-foreground mt-1'>
+                Create a charter to define mission, values, and operational
+                parameters
+              </p>
+              <Button onClick={onOpenEditor} className='mt-4'>
+                <FileText className='h-4 w-4 mr-2' />
                 Create Charter
               </Button>
             </div>
@@ -1256,10 +1502,10 @@ function CharterTab({
       {charter && versions.length > 0 && (
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between">
+            <div className='flex items-start justify-between'>
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
+                <CardTitle className='flex items-center gap-2'>
+                  <History className='h-5 w-5' />
                   Version History
                 </CardTitle>
                 <CardDescription>
@@ -1268,8 +1514,8 @@ function CharterTab({
               </div>
               {compareVersion !== null && (
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={() => onCompareVersion(null)}
                 >
                   Clear Comparison
@@ -1278,7 +1524,7 @@ function CharterTab({
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className='space-y-3'>
               {versions.map((versionData, index) => (
                 <div
                   key={versionData.version}
@@ -1287,40 +1533,40 @@ function CharterTab({
                     index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-card'
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-medium">
+                  <div className='flex items-center gap-3'>
+                    <div className='flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-medium'>
                       v{versionData.version}
                     </div>
                     <div>
-                      <p className="text-sm font-medium">
+                      <p className='text-sm font-medium'>
                         Version {versionData.version}
                         {index === 0 && (
-                          <Badge variant="default" className="ml-2">
+                          <Badge variant='default' className='ml-2'>
                             Current
                           </Badge>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-xs text-muted-foreground'>
                         {new Date(versionData.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className='flex gap-2'>
                     {index > 0 && (
                       <>
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant='outline'
+                          size='sm'
                           onClick={() => onCompareVersion(versionData.version)}
                         >
                           Compare
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant='outline'
+                          size='sm'
                           onClick={() => onRollback(versionData.version)}
                         >
-                          <RotateCcw className="h-3 w-3 mr-1" />
+                          <RotateCcw className='h-3 w-3 mr-1' />
                           Rollback
                         </Button>
                       </>
@@ -1344,9 +1590,15 @@ function CharterTab({
           </CardHeader>
           <CardContent>
             {(() => {
-              const oldVersion = versions.find(v => v.version === compareVersion);
+              const oldVersion = versions.find(
+                v => v.version === compareVersion
+              );
               if (!oldVersion) {
-                return <p className="text-sm text-muted-foreground">Version not found</p>;
+                return (
+                  <p className='text-sm text-muted-foreground'>
+                    Version not found
+                  </p>
+                );
               }
               return (
                 <CharterDiff
@@ -1368,18 +1620,18 @@ function CharterTab({
 function AlertIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" x2="12" y1="8" y2="12" />
-      <line x1="12" x2="12.01" y1="16" y2="16" />
+      <circle cx='12' cy='12' r='10' />
+      <line x1='12' x2='12' y1='8' y2='12' />
+      <line x1='12' x2='12.01' y1='16' y2='16' />
     </svg>
   );
 }

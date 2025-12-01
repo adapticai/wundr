@@ -74,6 +74,7 @@ When limit exceeded:
 ```
 
 Headers:
+
 ```
 Retry-After: 45
 ```
@@ -90,6 +91,7 @@ const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests
 ### Production Considerations
 
 **IMPORTANT**: The current implementation uses in-memory storage which:
+
 - Does NOT persist across deployments
 - Does NOT work with multiple instances/regions
 - Will reset on server restart
@@ -131,11 +133,9 @@ ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
 ```
 
 Default (development):
+
 ```typescript
-const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-];
+const ALLOWED_ORIGINS = ['http://localhost:3000', 'http://localhost:3001'];
 ```
 
 ### CORS Headers
@@ -152,6 +152,7 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 ### Preflight Requests
 
 OPTIONS requests are handled automatically with:
+
 - 204 No Content response
 - All CORS headers
 - 24-hour cache (`Access-Control-Max-Age: 86400`)
@@ -222,6 +223,7 @@ NODE_ENV=development
 ```
 
 This enables:
+
 - NextAuth debug logging
 - Detailed error messages
 - Console output for auth events
@@ -246,6 +248,7 @@ if (!rateLimit.allowed) {
 ### Edge Runtime
 
 Middleware runs on the Edge Runtime for optimal performance:
+
 - ~50ms cold start vs ~200ms Node.js
 - Global distribution (runs close to users)
 - Limited to Edge-compatible code only
@@ -253,6 +256,7 @@ Middleware runs on the Edge Runtime for optimal performance:
 ### Rate Limit Cleanup
 
 Automatic cleanup of expired entries:
+
 ```typescript
 // 1% chance per request to clean up expired entries
 if (Math.random() < 0.01) {

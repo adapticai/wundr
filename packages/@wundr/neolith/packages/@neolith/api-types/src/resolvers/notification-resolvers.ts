@@ -27,7 +27,8 @@ export const NotificationType = {
   System: 'SYSTEM',
 } as const;
 
-export type NotificationTypeValue = (typeof NotificationType)[keyof typeof NotificationType];
+export type NotificationTypeValue =
+  (typeof NotificationType)[keyof typeof NotificationType];
 
 /**
  * Push device platform enum
@@ -38,7 +39,8 @@ export const DevicePlatform = {
   Android: 'ANDROID',
 } as const;
 
-export type DevicePlatformType = (typeof DevicePlatform)[keyof typeof DevicePlatform];
+export type DevicePlatformType =
+  (typeof DevicePlatform)[keyof typeof DevicePlatform];
 
 /**
  * Sync type enum
@@ -59,7 +61,8 @@ export const ConflictResolution = {
   Manual: 'MANUAL',
 } as const;
 
-export type ConflictResolutionType = (typeof ConflictResolution)[keyof typeof ConflictResolution];
+export type ConflictResolutionType =
+  (typeof ConflictResolution)[keyof typeof ConflictResolution];
 
 /**
  * Queued action status enum
@@ -71,7 +74,8 @@ export const QueuedActionStatus = {
   Failed: 'FAILED',
 } as const;
 
-export type QueuedActionStatusType = (typeof QueuedActionStatus)[keyof typeof QueuedActionStatus];
+export type QueuedActionStatusType =
+  (typeof QueuedActionStatus)[keyof typeof QueuedActionStatus];
 
 /**
  * User role for authorization checks
@@ -466,9 +470,9 @@ function isAuthenticated(
  * Generate cursor from notification for pagination
  */
 function generateCursor(notification: Notification): string {
-  return Buffer.from(`${notification.createdAt.toISOString()}:${notification.id}`).toString(
-    'base64'
-  );
+  return Buffer.from(
+    `${notification.createdAt.toISOString()}:${notification.id}`
+  ).toString('base64');
 }
 
 /**
@@ -503,7 +507,9 @@ function generateSyncToken(userId: string, version: number): string {
 /**
  * Parse sync token
  */
-function parseSyncToken(token: string): { userId: string; version: number; timestamp: number } | null {
+function parseSyncToken(
+  token: string
+): { userId: string; version: number; timestamp: number } | null {
   try {
     const decoded = Buffer.from(token, 'base64').toString('utf-8');
     return JSON.parse(decoded);
@@ -551,7 +557,10 @@ export const notificationQueries = {
     }
 
     if (filter?.dateFrom) {
-      where.createdAt = { ...(where.createdAt as object), gte: filter.dateFrom };
+      where.createdAt = {
+        ...(where.createdAt as object),
+        gte: filter.dateFrom,
+      };
     }
 
     if (filter?.dateTo) {
@@ -582,7 +591,7 @@ export const notificationQueries = {
     const hasNextPage = notifications.length > limit;
     const nodes = hasNextPage ? notifications.slice(0, -1) : notifications;
 
-    const edges = nodes.map((n) => ({
+    const edges = nodes.map(n => ({
       node: n as Notification,
       cursor: generateCursor(n as Notification),
     }));
@@ -741,9 +750,9 @@ export const notificationMutations = {
       });
     }
 
-    const notification = await context.prisma.notification.findUnique({
+    const notification = (await context.prisma.notification.findUnique({
       where: { id: args.id },
-    }) as Notification | null;
+    })) as Notification | null;
 
     if (!notification) {
       return {
@@ -759,13 +768,13 @@ export const notificationMutations = {
       });
     }
 
-    const updated = await context.prisma.notification.update({
+    const updated = (await context.prisma.notification.update({
       where: { id: args.id },
       data: {
         isRead: true,
         readAt: new Date(),
       },
-    }) as Notification;
+    })) as Notification;
 
     return {
       notification: updated,
@@ -780,7 +789,10 @@ export const notificationMutations = {
     _parent: unknown,
     _args: Record<string, never>,
     context: GraphQLContext
-  ): Promise<{ count: number; errors: Array<{ code: string; message: string }> }> => {
+  ): Promise<{
+    count: number;
+    errors: Array<{ code: string; message: string }>;
+  }> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -811,16 +823,19 @@ export const notificationMutations = {
     _parent: unknown,
     args: DeleteNotificationArgs,
     context: GraphQLContext
-  ): Promise<{ success: boolean; errors: Array<{ code: string; message: string }> }> => {
+  ): Promise<{
+    success: boolean;
+    errors: Array<{ code: string; message: string }>;
+  }> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
       });
     }
 
-    const notification = await context.prisma.notification.findUnique({
+    const notification = (await context.prisma.notification.findUnique({
       where: { id: args.id },
-    }) as Notification | null;
+    })) as Notification | null;
 
     if (!notification) {
       return {
@@ -863,13 +878,20 @@ export const notificationMutations = {
 
     // Validate quiet hours if enabled
     if (input.quietHoursEnabled) {
-      if (!input.quietHoursStart || !input.quietHoursEnd || !input.quietHoursTimezone) {
+      if (
+        !input.quietHoursStart ||
+        !input.quietHoursEnd ||
+        !input.quietHoursTimezone
+      ) {
         return {
           preferences: null,
-          errors: [{
-            code: 'VALIDATION_ERROR',
-            message: 'Quiet hours start, end, and timezone are required when quiet hours are enabled',
-          }],
+          errors: [
+            {
+              code: 'VALIDATION_ERROR',
+              message:
+                'Quiet hours start, end, and timezone are required when quiet hours are enabled',
+            },
+          ],
         };
       }
     }
@@ -877,17 +899,39 @@ export const notificationMutations = {
     const preferences = await context.prisma.notificationPreference.upsert({
       where: { userId: context.user.id },
       update: {
-        ...(input.emailEnabled !== undefined && { emailEnabled: input.emailEnabled }),
-        ...(input.pushEnabled !== undefined && { pushEnabled: input.pushEnabled }),
-        ...(input.mentionEnabled !== undefined && { mentionEnabled: input.mentionEnabled }),
-        ...(input.threadReplyEnabled !== undefined && { threadReplyEnabled: input.threadReplyEnabled }),
-        ...(input.reactionEnabled !== undefined && { reactionEnabled: input.reactionEnabled }),
-        ...(input.channelInviteEnabled !== undefined && { channelInviteEnabled: input.channelInviteEnabled }),
-        ...(input.callStartedEnabled !== undefined && { callStartedEnabled: input.callStartedEnabled }),
-        ...(input.quietHoursEnabled !== undefined && { quietHoursEnabled: input.quietHoursEnabled }),
-        ...(input.quietHoursStart !== undefined && { quietHoursStart: input.quietHoursStart }),
-        ...(input.quietHoursEnd !== undefined && { quietHoursEnd: input.quietHoursEnd }),
-        ...(input.quietHoursTimezone !== undefined && { quietHoursTimezone: input.quietHoursTimezone }),
+        ...(input.emailEnabled !== undefined && {
+          emailEnabled: input.emailEnabled,
+        }),
+        ...(input.pushEnabled !== undefined && {
+          pushEnabled: input.pushEnabled,
+        }),
+        ...(input.mentionEnabled !== undefined && {
+          mentionEnabled: input.mentionEnabled,
+        }),
+        ...(input.threadReplyEnabled !== undefined && {
+          threadReplyEnabled: input.threadReplyEnabled,
+        }),
+        ...(input.reactionEnabled !== undefined && {
+          reactionEnabled: input.reactionEnabled,
+        }),
+        ...(input.channelInviteEnabled !== undefined && {
+          channelInviteEnabled: input.channelInviteEnabled,
+        }),
+        ...(input.callStartedEnabled !== undefined && {
+          callStartedEnabled: input.callStartedEnabled,
+        }),
+        ...(input.quietHoursEnabled !== undefined && {
+          quietHoursEnabled: input.quietHoursEnabled,
+        }),
+        ...(input.quietHoursStart !== undefined && {
+          quietHoursStart: input.quietHoursStart,
+        }),
+        ...(input.quietHoursEnd !== undefined && {
+          quietHoursEnd: input.quietHoursEnd,
+        }),
+        ...(input.quietHoursTimezone !== undefined && {
+          quietHoursTimezone: input.quietHoursTimezone,
+        }),
       },
       create: {
         userId: context.user.id,
@@ -932,10 +976,12 @@ export const notificationMutations = {
       if (!input.endpoint || !input.p256dh || !input.auth) {
         return {
           device: null,
-          errors: [{
-            code: 'VALIDATION_ERROR',
-            message: 'Web push requires endpoint, p256dh, and auth keys',
-          }],
+          errors: [
+            {
+              code: 'VALIDATION_ERROR',
+              message: 'Web push requires endpoint, p256dh, and auth keys',
+            },
+          ],
         };
       }
     }
@@ -981,16 +1027,19 @@ export const notificationMutations = {
     _parent: unknown,
     args: UnregisterDeviceArgs,
     context: GraphQLContext
-  ): Promise<{ success: boolean; errors: Array<{ code: string; message: string }> }> => {
+  ): Promise<{
+    success: boolean;
+    errors: Array<{ code: string; message: string }>;
+  }> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
       });
     }
 
-    const device = await context.prisma.pushDevice.findUnique({
+    const device = (await context.prisma.pushDevice.findUnique({
       where: { id: args.deviceId },
-    }) as PushDevice | null;
+    })) as PushDevice | null;
 
     if (!device) {
       return {
@@ -1175,9 +1224,9 @@ export const notificationMutations = {
 
     const { conflictId, resolution } = args;
 
-    const conflict = await context.prisma.syncConflict.findUnique({
+    const conflict = (await context.prisma.syncConflict.findUnique({
       where: { id: conflictId },
-    }) as SyncConflict | null;
+    })) as SyncConflict | null;
 
     if (!conflict) {
       return {
@@ -1195,17 +1244,22 @@ export const notificationMutations = {
     if (conflict.resolvedAt) {
       return {
         conflict: null,
-        errors: [{ code: 'ALREADY_RESOLVED', message: 'Conflict has already been resolved' }],
+        errors: [
+          {
+            code: 'ALREADY_RESOLVED',
+            message: 'Conflict has already been resolved',
+          },
+        ],
       };
     }
 
-    const updated = await context.prisma.syncConflict.update({
+    const updated = (await context.prisma.syncConflict.update({
       where: { id: conflictId },
       data: {
         resolution: resolution.resolution,
         resolvedAt: new Date(),
       },
-    }) as SyncConflict;
+    })) as SyncConflict;
 
     return {
       conflict: updated,
@@ -1237,7 +1291,9 @@ export const notificationSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${NOTIFICATION_RECEIVED}_${context.user.id}`);
+      return context.pubsub.asyncIterator(
+        `${NOTIFICATION_RECEIVED}_${context.user.id}`
+      );
     },
   },
 
@@ -1256,7 +1312,9 @@ export const notificationSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${SYNC_REQUIRED}_${context.user.id}`);
+      return context.pubsub.asyncIterator(
+        `${SYNC_REQUIRED}_${context.user.id}`
+      );
     },
   },
 };

@@ -1,6 +1,7 @@
 # S3 Avatar Storage Implementation Summary
 
-Complete implementation of S3-based avatar storage system with OAuth integration for the Neolith platform.
+Complete implementation of S3-based avatar storage system with OAuth integration for the Neolith
+platform.
 
 ## Implementation Overview
 
@@ -68,6 +69,7 @@ apps/web/lib/
 ### 1. S3 Bucket Configuration
 
 **Separate Avatars Bucket** (recommended):
+
 ```bash
 # Dedicated bucket for user avatars
 AVATAR_STORAGE_BUCKET=my-app-avatars
@@ -79,6 +81,7 @@ STORAGE_BUCKET=my-app-files
 ```
 
 **Benefits of separate bucket**:
+
 - Different CDN configuration
 - Separate security policies
 - Easier to manage/backup
@@ -87,12 +90,14 @@ STORAGE_BUCKET=my-app-files
 ### 2. Image Processing
 
 **Size Variants**:
+
 - **SMALL** (32px): Chat thumbnails, small UI
 - **MEDIUM** (64px): Message avatars, notifications
 - **LARGE** (128px): Profile cards, sidebars
 - **XLARGE** (256px): Full profile view, original
 
 **Processing Pipeline**:
+
 ```typescript
 1. Download/decode source
 2. Validate format (JPEG, PNG, WebP, GIF)
@@ -104,15 +109,16 @@ STORAGE_BUCKET=my-app-files
 ```
 
 **Sharp Configuration**:
+
 ```typescript
 await sharp(buffer)
   .resize(size, size, {
-    fit: 'cover',        // Crop to square
-    position: 'center',  // Center crop
+    fit: 'cover', // Crop to square
+    position: 'center', // Center crop
   })
   .jpeg({
-    quality: 85,         // Good quality/size balance
-    progressive: true,   // Faster perceived loading
+    quality: 85, // Good quality/size balance
+    progressive: true, // Faster perceived loading
   })
   .toBuffer();
 ```
@@ -120,6 +126,7 @@ await sharp(buffer)
 ### 3. OAuth Provider Integration
 
 **Google OAuth**:
+
 ```typescript
 profile: {
   sub: "123456789",
@@ -130,6 +137,7 @@ profile: {
 ```
 
 **GitHub OAuth**:
+
 ```typescript
 profile: {
   id: 123456,
@@ -140,6 +148,7 @@ profile: {
 ```
 
 **Flow**:
+
 ```
 1. User signs in with OAuth
 2. NextAuth callback receives profile with avatar_url
@@ -152,6 +161,7 @@ profile: {
 ### 4. Fallback Avatar Generation
 
 **Initials-based SVG**:
+
 ```svg
 <svg width="256" height="256">
   <rect width="256" height="256" fill="hsl(182, 72%, 52%)"/>
@@ -164,12 +174,14 @@ profile: {
 ```
 
 **Color Generation**:
+
 - Consistent HSL color based on user ID
 - 65-85% saturation (vibrant)
 - 45-60% lightness (readable)
 - Auto contrast (white/black text)
 
 **Initials Extraction**:
+
 - "John Doe" → "JD"
 - "Alice" → "AL"
 - "Bob Smith Jones" → "BJ" (first + last)
@@ -177,6 +189,7 @@ profile: {
 ### 5. Manual Upload API
 
 **Upload via File**:
+
 ```bash
 curl -X POST /api/users/user_123/avatar \
   -H "Authorization: Bearer $TOKEN" \
@@ -184,6 +197,7 @@ curl -X POST /api/users/user_123/avatar \
 ```
 
 **Upload via URL**:
+
 ```bash
 curl -X POST /api/users/user_123/avatar \
   -H "Authorization: Bearer $TOKEN" \
@@ -192,6 +206,7 @@ curl -X POST /api/users/user_123/avatar \
 ```
 
 **Upload via Base64**:
+
 ```bash
 curl -X POST /api/users/user_123/avatar \
   -H "Authorization: Bearer $TOKEN" \
@@ -200,11 +215,13 @@ curl -X POST /api/users/user_123/avatar \
 ```
 
 **Get Avatar**:
+
 ```bash
 curl /api/users/user_123/avatar?size=LARGE
 ```
 
 **Delete Avatar**:
+
 ```bash
 curl -X DELETE /api/users/user_123/avatar \
   -H "Authorization: Bearer $TOKEN"
@@ -213,6 +230,7 @@ curl -X DELETE /api/users/user_123/avatar \
 ### 6. CDN Caching Headers
 
 **S3 Upload Metadata**:
+
 ```typescript
 {
   CacheControl: 'public, max-age=31536000, immutable',
@@ -226,6 +244,7 @@ curl -X DELETE /api/users/user_123/avatar \
 ```
 
 **CloudFront Settings**:
+
 - Minimum TTL: 1 day
 - Maximum TTL: 1 year
 - Default TTL: 1 week
@@ -250,11 +269,13 @@ s3://my-app-avatars/
 ```
 
 **Key Format**:
+
 ```
 avatars/{userId}/{type}-{size}-{timestamp}-{cuid}.{ext}
 ```
 
 **Benefits**:
+
 - Unique filenames (no overwrites)
 - Easy to list user avatars
 - CDN cache-friendly
@@ -275,6 +296,7 @@ model User {
 ```
 
 **Why no changes?**:
+
 - All variants are generated and stored in S3
 - Only the primary (XLARGE) URL is stored in DB
 - Other sizes are accessible via S3 key pattern
@@ -355,15 +377,15 @@ npm run test:integration -- avatar-service
 
 ## Performance Benchmarks
 
-| Operation | Average Time | Notes |
-|-----------|--------------|-------|
-| OAuth avatar download | ~200ms | Depends on provider speed |
-| Image processing (4 variants) | ~300ms | Sharp is very fast |
-| S3 upload (4 files) | ~200ms | Parallel uploads |
-| **Total OAuth flow** | **~700ms** | Acceptable for sign-in |
-| Fallback generation | ~100ms | SVG → PNG conversion |
-| CDN response (cached) | <50ms | After first request |
-| API upload endpoint | ~500ms | Including validation |
+| Operation                     | Average Time | Notes                     |
+| ----------------------------- | ------------ | ------------------------- |
+| OAuth avatar download         | ~200ms       | Depends on provider speed |
+| Image processing (4 variants) | ~300ms       | Sharp is very fast        |
+| S3 upload (4 files)           | ~200ms       | Parallel uploads          |
+| **Total OAuth flow**          | **~700ms**   | Acceptable for sign-in    |
+| Fallback generation           | ~100ms       | SVG → PNG conversion      |
+| CDN response (cached)         | <50ms        | After first request       |
+| API upload endpoint           | ~500ms       | Including validation      |
 
 ## Security Considerations
 
@@ -454,6 +476,7 @@ npm run test:integration -- avatar-service
 ### Issue: "Avatar not displaying"
 
 **Solution**:
+
 1. Check S3 bucket policy allows public read
 2. Verify CORS configuration
 3. Test URL directly in browser
@@ -463,6 +486,7 @@ npm run test:integration -- avatar-service
 ### Issue: "Upload failing"
 
 **Solution**:
+
 1. Verify AWS credentials
 2. Check S3 bucket exists
 3. Test with AWS CLI: `aws s3 ls s3://your-bucket`
@@ -472,6 +496,7 @@ npm run test:integration -- avatar-service
 ### Issue: "OAuth avatar not downloading"
 
 **Solution**:
+
 1. Check provider avatar URL
 2. Verify network access
 3. Check error logs
@@ -515,6 +540,7 @@ async function migrateExistingAvatars() {
 ```
 
 Run migration:
+
 ```bash
 npx tsx scripts/migrate-avatars.ts
 ```
@@ -524,14 +550,17 @@ npx tsx scripts/migrate-avatars.ts
 ### AWS S3
 
 **Storage**:
+
 - 10,000 users × 4 variants × 50KB avg = 2GB
 - S3 Standard: $0.023/GB/month × 2GB = **$0.05/month**
 
 **Requests**:
+
 - 10,000 new users/month × 4 PUT requests = 40,000 PUT
 - PUT: $0.005/1,000 requests × 40 = **$0.20/month**
 
 **Data Transfer** (without CDN):
+
 - 100,000 views/month × 50KB = 5GB
 - Data out: $0.09/GB × 5GB = **$0.45/month**
 
@@ -540,25 +569,31 @@ npx tsx scripts/migrate-avatars.ts
 ### With CloudFront CDN
 
 **Requests**:
+
 - First 10M requests/month: $0.0075/10K = **$7.50/month**
 
 **Data Transfer**:
+
 - First 10TB/month: $0.085/GB
 - 100M views × 50KB = 5TB = **$425/month**
 
 **Total with CDN**: ~$433/month for 100M views
+
 - **99% cache hit**: ~$4.33/month (realistic)
 
 ### Cloudflare R2
 
 **Storage**:
+
 - 2GB: **Free** (first 10GB free)
 
 **Operations**:
+
 - Class A (writes): 40K/month = **Free** (first 1M free)
 - Class B (reads): 100K/month = **Free** (first 10M free)
 
 **Data Transfer**:
+
 - Egress: **Free** (no egress charges!)
 
 **Total with R2**: **$0/month** (within free tier)
@@ -576,13 +611,8 @@ npx tsx scripts/migrate-avatars.ts
 
 The S3 avatar storage system is fully implemented with:
 
-✅ Complete OAuth integration (Google, GitHub)
-✅ Multi-size variant generation (4 sizes)
-✅ Fallback initials-based avatars
-✅ REST API for manual uploads
-✅ CDN-ready with caching headers
-✅ Comprehensive test suite
-✅ Production-ready documentation
-✅ Cost-effective (especially with R2)
+✅ Complete OAuth integration (Google, GitHub) ✅ Multi-size variant generation (4 sizes) ✅
+Fallback initials-based avatars ✅ REST API for manual uploads ✅ CDN-ready with caching headers ✅
+Comprehensive test suite ✅ Production-ready documentation ✅ Cost-effective (especially with R2)
 
 **Ready for production deployment!**

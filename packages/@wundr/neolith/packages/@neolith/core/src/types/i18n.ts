@@ -4,7 +4,17 @@
  */
 
 /** Supported locales */
-export type SupportedLocale = 'en-US' | 'en-GB' | 'es-ES' | 'fr-FR' | 'de-DE' | 'ja-JP' | 'zh-CN' | 'pt-BR' | 'ko-KR' | 'it-IT';
+export type SupportedLocale =
+  | 'en-US'
+  | 'en-GB'
+  | 'es-ES'
+  | 'fr-FR'
+  | 'de-DE'
+  | 'ja-JP'
+  | 'zh-CN'
+  | 'pt-BR'
+  | 'ko-KR'
+  | 'it-IT';
 
 /** Locale configuration */
 export interface LocaleConfig {
@@ -27,7 +37,15 @@ export interface NumberFormatConfig {
 }
 
 /** Translation namespace */
-export type TranslationNamespace = 'common' | 'auth' | 'channels' | 'messages' | 'settings' | 'admin' | 'errors' | 'notifications';
+export type TranslationNamespace =
+  | 'common'
+  | 'auth'
+  | 'channels'
+  | 'messages'
+  | 'settings'
+  | 'admin'
+  | 'errors'
+  | 'notifications';
 
 /** Translation key with namespace */
 export type TranslationKey = `${TranslationNamespace}:${string}`;
@@ -36,7 +54,10 @@ export type TranslationKey = `${TranslationNamespace}:${string}`;
 export type InterpolationValues = Record<string, string | number | boolean>;
 
 /** Translation function */
-export type TranslateFunction = (key: string, values?: InterpolationValues) => string;
+export type TranslateFunction = (
+  key: string,
+  values?: InterpolationValues
+) => string;
 
 /** i18n context */
 export interface I18nContext {
@@ -51,7 +72,12 @@ export interface I18nContext {
 }
 
 /** Locale detection source */
-export type LocaleSource = 'browser' | 'user_preference' | 'workspace_default' | 'url' | 'cookie';
+export type LocaleSource =
+  | 'browser'
+  | 'user_preference'
+  | 'workspace_default'
+  | 'url'
+  | 'cookie';
 
 /** User locale preferences */
 export interface UserLocalePreferences {
@@ -89,16 +115,156 @@ export interface LiveRegionConfig {
 
 /** Locale data */
 export const SUPPORTED_LOCALES: LocaleConfig[] = [
-  { code: 'en-US', name: 'English (US)', nativeName: 'English', direction: 'ltr', dateFormat: 'MM/DD/YYYY', timeFormat: 'h:mm A', numberFormat: { decimal: '.', thousands: ',', currency: 'USD', currencySymbol: '$' }, pluralRules: 'en' },
-  { code: 'en-GB', name: 'English (UK)', nativeName: 'English', direction: 'ltr', dateFormat: 'DD/MM/YYYY', timeFormat: 'HH:mm', numberFormat: { decimal: '.', thousands: ',', currency: 'GBP', currencySymbol: '£' }, pluralRules: 'en' },
-  { code: 'es-ES', name: 'Spanish', nativeName: 'Español', direction: 'ltr', dateFormat: 'DD/MM/YYYY', timeFormat: 'HH:mm', numberFormat: { decimal: ',', thousands: '.', currency: 'EUR', currencySymbol: '€' }, pluralRules: 'es' },
-  { code: 'fr-FR', name: 'French', nativeName: 'Français', direction: 'ltr', dateFormat: 'DD/MM/YYYY', timeFormat: 'HH:mm', numberFormat: { decimal: ',', thousands: ' ', currency: 'EUR', currencySymbol: '€' }, pluralRules: 'fr' },
-  { code: 'de-DE', name: 'German', nativeName: 'Deutsch', direction: 'ltr', dateFormat: 'DD.MM.YYYY', timeFormat: 'HH:mm', numberFormat: { decimal: ',', thousands: '.', currency: 'EUR', currencySymbol: '€' }, pluralRules: 'de' },
-  { code: 'ja-JP', name: 'Japanese', nativeName: '日本語', direction: 'ltr', dateFormat: 'YYYY/MM/DD', timeFormat: 'HH:mm', numberFormat: { decimal: '.', thousands: ',', currency: 'JPY', currencySymbol: '¥' }, pluralRules: 'ja' },
-  { code: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '中文', direction: 'ltr', dateFormat: 'YYYY-MM-DD', timeFormat: 'HH:mm', numberFormat: { decimal: '.', thousands: ',', currency: 'CNY', currencySymbol: '¥' }, pluralRules: 'zh' },
-  { code: 'pt-BR', name: 'Portuguese (Brazil)', nativeName: 'Português', direction: 'ltr', dateFormat: 'DD/MM/YYYY', timeFormat: 'HH:mm', numberFormat: { decimal: ',', thousands: '.', currency: 'BRL', currencySymbol: 'R$' }, pluralRules: 'pt' },
-  { code: 'ko-KR', name: 'Korean', nativeName: '한국어', direction: 'ltr', dateFormat: 'YYYY.MM.DD', timeFormat: 'HH:mm', numberFormat: { decimal: '.', thousands: ',', currency: 'KRW', currencySymbol: '₩' }, pluralRules: 'ko' },
-  { code: 'it-IT', name: 'Italian', nativeName: 'Italiano', direction: 'ltr', dateFormat: 'DD/MM/YYYY', timeFormat: 'HH:mm', numberFormat: { decimal: ',', thousands: '.', currency: 'EUR', currencySymbol: '€' }, pluralRules: 'it' },
+  {
+    code: 'en-US',
+    name: 'English (US)',
+    nativeName: 'English',
+    direction: 'ltr',
+    dateFormat: 'MM/DD/YYYY',
+    timeFormat: 'h:mm A',
+    numberFormat: {
+      decimal: '.',
+      thousands: ',',
+      currency: 'USD',
+      currencySymbol: '$',
+    },
+    pluralRules: 'en',
+  },
+  {
+    code: 'en-GB',
+    name: 'English (UK)',
+    nativeName: 'English',
+    direction: 'ltr',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: '.',
+      thousands: ',',
+      currency: 'GBP',
+      currencySymbol: '£',
+    },
+    pluralRules: 'en',
+  },
+  {
+    code: 'es-ES',
+    name: 'Spanish',
+    nativeName: 'Español',
+    direction: 'ltr',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: '.',
+      currency: 'EUR',
+      currencySymbol: '€',
+    },
+    pluralRules: 'es',
+  },
+  {
+    code: 'fr-FR',
+    name: 'French',
+    nativeName: 'Français',
+    direction: 'ltr',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: ' ',
+      currency: 'EUR',
+      currencySymbol: '€',
+    },
+    pluralRules: 'fr',
+  },
+  {
+    code: 'de-DE',
+    name: 'German',
+    nativeName: 'Deutsch',
+    direction: 'ltr',
+    dateFormat: 'DD.MM.YYYY',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: '.',
+      currency: 'EUR',
+      currencySymbol: '€',
+    },
+    pluralRules: 'de',
+  },
+  {
+    code: 'ja-JP',
+    name: 'Japanese',
+    nativeName: '日本語',
+    direction: 'ltr',
+    dateFormat: 'YYYY/MM/DD',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: '.',
+      thousands: ',',
+      currency: 'JPY',
+      currencySymbol: '¥',
+    },
+    pluralRules: 'ja',
+  },
+  {
+    code: 'zh-CN',
+    name: 'Chinese (Simplified)',
+    nativeName: '中文',
+    direction: 'ltr',
+    dateFormat: 'YYYY-MM-DD',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: '.',
+      thousands: ',',
+      currency: 'CNY',
+      currencySymbol: '¥',
+    },
+    pluralRules: 'zh',
+  },
+  {
+    code: 'pt-BR',
+    name: 'Portuguese (Brazil)',
+    nativeName: 'Português',
+    direction: 'ltr',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: '.',
+      currency: 'BRL',
+      currencySymbol: 'R$',
+    },
+    pluralRules: 'pt',
+  },
+  {
+    code: 'ko-KR',
+    name: 'Korean',
+    nativeName: '한국어',
+    direction: 'ltr',
+    dateFormat: 'YYYY.MM.DD',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: '.',
+      thousands: ',',
+      currency: 'KRW',
+      currencySymbol: '₩',
+    },
+    pluralRules: 'ko',
+  },
+  {
+    code: 'it-IT',
+    name: 'Italian',
+    nativeName: 'Italiano',
+    direction: 'ltr',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: '.',
+      currency: 'EUR',
+      currencySymbol: '€',
+    },
+    pluralRules: 'it',
+  },
 ];
 
 export const DEFAULT_LOCALE: SupportedLocale = 'en-US';

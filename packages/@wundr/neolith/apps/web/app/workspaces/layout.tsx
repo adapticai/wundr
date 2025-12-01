@@ -16,16 +16,16 @@ export default async function WorkspacesLayout({
   const session = await auth();
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center">
-          <div className="ml-auto">
+    <div className='min-h-screen flex flex-col'>
+      <header className='border-b'>
+        <div className='container mx-auto px-4 h-16 flex items-center'>
+          <div className='ml-auto'>
             <AppHeader user={session?.user} compact />
           </div>
         </div>
       </header>
-      <main className="flex-1">
-        <div className="container mx-auto p-6">{children}</div>
+      <main className='flex-1'>
+        <div className='container mx-auto p-6'>{children}</div>
       </main>
     </div>
   );

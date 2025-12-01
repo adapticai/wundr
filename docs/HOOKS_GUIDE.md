@@ -2,7 +2,8 @@
 
 ## Overview
 
-Claude Code hooks provide lifecycle automation for development workflows, integrating seamlessly with claude-flow for swarm coordination, memory management, and neural pattern learning.
+Claude Code hooks provide lifecycle automation for development workflows, integrating seamlessly
+with claude-flow for swarm coordination, memory management, and neural pattern learning.
 
 ## Table of Contents
 
@@ -66,6 +67,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 **Purpose:** Prepare environment before task execution
 
 **Features:**
+
 - Environment validation
 - Agent assignment (auto-detect or manual)
 - Topology optimization based on complexity
@@ -87,6 +89,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Parameters:**
+
 - `task_description` (required): Task description
 - `task_id` (optional): Unique task identifier
 - `session_id` (optional): Session identifier
@@ -98,6 +101,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 **Purpose:** Cleanup and finalization after task completion
 
 **Features:**
+
 - Task validation
 - Results collection
 - Memory update
@@ -118,6 +122,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Parameters:**
+
 - `task_id` (required): Task identifier
 - `session_id` (optional): Session identifier
 - `status` (optional): completed/failed/cancelled
@@ -128,6 +133,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 **Purpose:** Prepare file for editing
 
 **Features:**
+
 - File validation
 - Lock checking
 - Backup creation
@@ -147,6 +153,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Parameters:**
+
 - `file_path` (required): File to edit
 - `edit_type` (optional): modify/create/delete
 - `session_id` (optional): Session identifier
@@ -157,6 +164,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 **Purpose:** Finalize file after editing
 
 **Features:**
+
 - Change verification
 - Syntax validation
 - Auto-formatting (Prettier, etc.)
@@ -179,6 +187,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Parameters:**
+
 - `file_path` (required): Edited file
 - `edit_type` (optional): modify/create/delete
 - `session_id` (optional): Session identifier
@@ -190,6 +199,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 **Purpose:** Restore previous session state
 
 **Features:**
+
 - Session validation
 - Memory restoration
 - Topology rebuild
@@ -212,6 +222,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Parameters:**
+
 - `session_id` (required): Session to restore
 - `restore_memory` (optional): true/false
 - `restore_metrics` (optional): true/false
@@ -222,6 +233,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 **Purpose:** Clean shutdown and session archival
 
 **Features:**
+
 - Session validation
 - Metrics collection
 - Memory snapshot
@@ -245,6 +257,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Parameters:**
+
 - `session_id` (required): Session identifier
 - `export_metrics` (optional): true/false
 - `archive_session` (optional): true/false
@@ -719,4 +732,5 @@ function runWithHooks(taskDescription, work) {
 
 ---
 
-**Remember:** Hooks are powerful automation tools. Always test in a safe environment before production use.
+**Remember:** Hooks are powerful automation tools. Always test in a safe environment before
+production use.

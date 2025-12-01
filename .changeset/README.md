@@ -1,21 +1,25 @@
 # Changesets
 
-Hello! This folder contains [Changesets](https://github.com/changesets/changesets) configuration and changelog files.
+Hello! This folder contains [Changesets](https://github.com/changesets/changesets) configuration and
+changelog files.
 
 ## What are changesets?
 
-Changesets are a way to track changes to packages in a monorepo and generate changelogs and version bumps automatically.
+Changesets are a way to track changes to packages in a monorepo and generate changelogs and version
+bumps automatically.
 
 ## How to use changesets
 
 1. **Adding a changeset**: When you make a change that should be released, run:
+
    ```bash
    npx changeset
    ```
-   
+
    This will prompt you to describe your changes and select which packages are affected.
 
 2. **Version packages**: To bump versions and update changelogs:
+
    ```bash
    npx changeset version
    ```
@@ -43,6 +47,7 @@ Our CI/CD pipeline automatically:
 ## Examples
 
 ### Adding a patch changeset
+
 ```bash
 npx changeset
 # Select: patch
@@ -50,13 +55,15 @@ npx changeset
 ```
 
 ### Adding a minor changeset
+
 ```bash
 npx changeset
-# Select: minor  
+# Select: minor
 # Description: Add new consolidation algorithms
 ```
 
 ### Adding a major changeset
+
 ```bash
 npx changeset
 # Select: major
@@ -79,4 +86,5 @@ The changeset configuration is in `.changeset/config.json` and includes:
 - **Base branch** set to main
 - **Automatic dependency updates** for internal packages
 
-For more information, see the [Changesets documentation](https://github.com/changesets/changesets/tree/main/docs).
+For more information, see the
+[Changesets documentation](https://github.com/changesets/changesets/tree/main/docs).

@@ -142,7 +142,8 @@ export const BillingStatus = {
   Trialing: 'TRIALING',
 } as const;
 
-export type BillingStatusValue = (typeof BillingStatus)[keyof typeof BillingStatus];
+export type BillingStatusValue =
+  (typeof BillingStatus)[keyof typeof BillingStatus];
 
 /**
  * Permission resource enum values
@@ -161,7 +162,8 @@ export const PermissionResource = {
   Billing: 'BILLING',
 } as const;
 
-export type PermissionResourceType = (typeof PermissionResource)[keyof typeof PermissionResource];
+export type PermissionResourceType =
+  (typeof PermissionResource)[keyof typeof PermissionResource];
 
 /**
  * Permission action enum values
@@ -174,7 +176,8 @@ export const PermissionAction = {
   Manage: 'MANAGE',
 } as const;
 
-export type PermissionActionType = (typeof PermissionAction)[keyof typeof PermissionAction];
+export type PermissionActionType =
+  (typeof PermissionAction)[keyof typeof PermissionAction];
 
 /**
  * Admin action type enum values
@@ -195,7 +198,8 @@ export const AdminActionType = {
   PlanDowngraded: 'PLAN_DOWNGRADED',
 } as const;
 
-export type AdminActionTypeValue = (typeof AdminActionType)[keyof typeof AdminActionType];
+export type AdminActionTypeValue =
+  (typeof AdminActionType)[keyof typeof AdminActionType];
 
 // =============================================================================
 // ENTITY TYPES
@@ -601,7 +605,7 @@ export const SETTINGS_UPDATED = 'SETTINGS_UPDATED';
  * Type guard to check if user is authenticated
  */
 function isAuthenticated(
-  context: AdminGraphQLContext,
+  context: AdminGraphQLContext
 ): context is AdminGraphQLContext & { user: ContextUser } {
   return context.user !== null;
 }
@@ -611,7 +615,7 @@ function isAuthenticated(
  */
 async function isWorkspaceAdmin(
   context: AdminGraphQLContext,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<boolean> {
   if (!isAuthenticated(context)) {
     return false;
@@ -641,7 +645,7 @@ async function isWorkspaceAdmin(
  */
 async function requireAdmin(
   context: AdminGraphQLContext,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<void> {
   if (!isAuthenticated(context)) {
     throw new GraphQLError('Authentication required', {
@@ -673,7 +677,7 @@ async function logAdminAction(
   action: AdminActionTypeValue,
   resource: string,
   resourceId: string | null,
-  details: Record<string, unknown>,
+  details: Record<string, unknown>
 ): Promise<void> {
   if (!isAuthenticated(context)) {
     return;
@@ -717,17 +721,17 @@ function getAdminActions(
   workspaceId: string,
   action?: AdminActionTypeValue | null,
   actorId?: string | null,
-  limit?: number | null,
+  limit?: number | null
 ): AdminAction[] {
   const actions = adminActionLogs.get(workspaceId) ?? [];
   let filtered = actions;
 
   if (action) {
-    filtered = filtered.filter((a) => a.action === action);
+    filtered = filtered.filter(a => a.action === action);
   }
 
   if (actorId) {
-    filtered = filtered.filter((a) => a.actorId === actorId);
+    filtered = filtered.filter(a => a.actorId === actorId);
   }
 
   return filtered.slice(0, limit ?? 50);
@@ -736,7 +740,10 @@ function getAdminActions(
 /**
  * Get default settings
  */
-function getDefaultSettings(): Omit<WorkspaceSettings, 'id' | 'workspaceId' | 'updatedAt' | 'updatedBy'> {
+function getDefaultSettings(): Omit<
+  WorkspaceSettings,
+  'id' | 'workspaceId' | 'updatedAt' | 'updatedBy'
+> {
   return {
     general: {
       name: '',
@@ -883,7 +890,7 @@ export const adminQueries = {
   workspaceSettings: async (
     _parent: unknown,
     args: WorkspaceSettingsArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<WorkspaceSettings> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -917,19 +924,27 @@ export const adminQueries = {
       },
       messaging: {
         ...defaults.messaging,
-        ...(storedSettings?.messaging as Partial<MessagingSettings> | undefined),
+        ...(storedSettings?.messaging as
+          | Partial<MessagingSettings>
+          | undefined),
       },
       notifications: {
         ...defaults.notifications,
-        ...(storedSettings?.notifications as Partial<NotificationSettings> | undefined),
+        ...(storedSettings?.notifications as
+          | Partial<NotificationSettings>
+          | undefined),
       },
       integrations: {
         ...defaults.integrations,
-        ...(storedSettings?.integrations as Partial<IntegrationSettings> | undefined),
+        ...(storedSettings?.integrations as
+          | Partial<IntegrationSettings>
+          | undefined),
       },
       compliance: {
         ...defaults.compliance,
-        ...(storedSettings?.compliance as Partial<ComplianceSettings> | undefined),
+        ...(storedSettings?.compliance as
+          | Partial<ComplianceSettings>
+          | undefined),
       },
       branding: {
         ...defaults.branding,
@@ -946,7 +961,7 @@ export const adminQueries = {
   role: async (
     _parent: unknown,
     args: RoleArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Role | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
@@ -962,7 +977,7 @@ export const adminQueries = {
     // Mock: In real implementation, fetch from database
     // For now, return null if not a system role
     const systemRoles = getSystemRoles('mock_workspace');
-    return systemRoles.find((r) => r.id === args.id) ?? null;
+    return systemRoles.find(r => r.id === args.id) ?? null;
   },
 
   /**
@@ -971,7 +986,7 @@ export const adminQueries = {
   roles: async (
     _parent: unknown,
     args: RolesArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Role[]> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -986,7 +1001,7 @@ export const adminQueries = {
   member: async (
     _parent: unknown,
     args: MemberArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<MemberInfo | null> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1023,7 +1038,7 @@ export const adminQueries = {
   members: async (
     _parent: unknown,
     args: MembersArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<MemberInfo[]> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1061,17 +1076,19 @@ export const adminQueries = {
       orderBy: { joinedAt: 'desc' },
     });
 
-    return members.map((m: Prisma.workspaceMemberGetPayload<{ include: { user: true } }>) => ({
-      id: m.id,
-      userId: m.userId,
-      workspaceId: m.workspaceId,
-      roleId: `role_${m.role.toLowerCase()}`,
-      status: MemberStatus.Active,
-      joinedAt: m.joinedAt,
-      lastActiveAt: null,
-      invitedBy: null,
-      customFields: null,
-    }));
+    return members.map(
+      (m: Prisma.workspaceMemberGetPayload<{ include: { user: true } }>) => ({
+        id: m.id,
+        userId: m.userId,
+        workspaceId: m.workspaceId,
+        roleId: `role_${m.role.toLowerCase()}`,
+        status: MemberStatus.Active,
+        joinedAt: m.joinedAt,
+        lastActiveAt: null,
+        invitedBy: null,
+        customFields: null,
+      })
+    );
   },
 
   /**
@@ -1080,7 +1097,7 @@ export const adminQueries = {
   invites: async (
     _parent: unknown,
     args: InvitesArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Invite[]> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1095,7 +1112,7 @@ export const adminQueries = {
   billingInfo: async (
     _parent: unknown,
     args: BillingInfoArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<BillingInfo> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1125,7 +1142,7 @@ export const adminQueries = {
   adminActions: async (
     _parent: unknown,
     args: AdminActionsArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<AdminAction[]> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1133,7 +1150,7 @@ export const adminQueries = {
       args.workspaceId,
       args.action,
       args.actorId,
-      args.limit,
+      args.limit
     );
   },
 };
@@ -1152,7 +1169,7 @@ export const adminMutations = {
   updateSettings: async (
     _parent: unknown,
     args: UpdateSettingsArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<WorkspaceSettings> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1167,29 +1184,51 @@ export const adminMutations = {
     }
 
     // Merge settings
-    const existingSettings = (workspace.settings as Record<string, unknown>) ?? {};
+    const existingSettings =
+      (workspace.settings as Record<string, unknown>) ?? {};
     const newSettings = { ...existingSettings };
 
     if (args.input.general) {
-      newSettings.general = { ...(existingSettings.general as object), ...args.input.general };
+      newSettings.general = {
+        ...(existingSettings.general as object),
+        ...args.input.general,
+      };
     }
     if (args.input.security) {
-      newSettings.security = { ...(existingSettings.security as object), ...args.input.security };
+      newSettings.security = {
+        ...(existingSettings.security as object),
+        ...args.input.security,
+      };
     }
     if (args.input.messaging) {
-      newSettings.messaging = { ...(existingSettings.messaging as object), ...args.input.messaging };
+      newSettings.messaging = {
+        ...(existingSettings.messaging as object),
+        ...args.input.messaging,
+      };
     }
     if (args.input.notifications) {
-      newSettings.notifications = { ...(existingSettings.notifications as object), ...args.input.notifications };
+      newSettings.notifications = {
+        ...(existingSettings.notifications as object),
+        ...args.input.notifications,
+      };
     }
     if (args.input.integrations) {
-      newSettings.integrations = { ...(existingSettings.integrations as object), ...args.input.integrations };
+      newSettings.integrations = {
+        ...(existingSettings.integrations as object),
+        ...args.input.integrations,
+      };
     }
     if (args.input.compliance) {
-      newSettings.compliance = { ...(existingSettings.compliance as object), ...args.input.compliance };
+      newSettings.compliance = {
+        ...(existingSettings.compliance as object),
+        ...args.input.compliance,
+      };
     }
     if (args.input.branding) {
-      newSettings.branding = { ...(existingSettings.branding as object), ...args.input.branding };
+      newSettings.branding = {
+        ...(existingSettings.branding as object),
+        ...args.input.branding,
+      };
     }
 
     newSettings.updatedBy = context.user!.id;
@@ -1210,7 +1249,7 @@ export const adminMutations = {
       AdminActionType.SettingsUpdated,
       'settings',
       args.workspaceId,
-      { sections: Object.keys(args.input) },
+      { sections: Object.keys(args.input) }
     );
 
     // Publish update
@@ -1227,7 +1266,7 @@ export const adminMutations = {
   resetSettings: async (
     _parent: unknown,
     args: ResetSettingsArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<WorkspaceSettings> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1241,7 +1280,8 @@ export const adminMutations = {
       });
     }
 
-    const existingSettings = (workspace.settings as Record<string, unknown>) ?? {};
+    const existingSettings =
+      (workspace.settings as Record<string, unknown>) ?? {};
     const defaults = getDefaultSettings();
 
     let newSettings: Record<string, unknown>;
@@ -1275,10 +1315,14 @@ export const adminMutations = {
       AdminActionType.SettingsReset,
       'settings',
       args.workspaceId,
-      { section: args.section ?? 'all' },
+      { section: args.section ?? 'all' }
     );
 
-    return adminQueries.workspaceSettings(_parent, { workspaceId: args.workspaceId }, context);
+    return adminQueries.workspaceSettings(
+      _parent,
+      { workspaceId: args.workspaceId },
+      context
+    );
   },
 
   /**
@@ -1287,12 +1331,16 @@ export const adminMutations = {
   createRole: async (
     _parent: unknown,
     args: CreateRoleArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Role> => {
     await requireAdmin(context, args.workspaceId);
 
     // Check plan allows custom roles
-    const billing = await adminQueries.billingInfo(_parent, { workspaceId: args.workspaceId }, context);
+    const billing = await adminQueries.billingInfo(
+      _parent,
+      { workspaceId: args.workspaceId },
+      context
+    );
     if (!billing.features.customRoles) {
       throw new GraphQLError('Custom roles not available on current plan', {
         extensions: { code: 'FORBIDDEN' },
@@ -1320,7 +1368,7 @@ export const adminMutations = {
       AdminActionType.RoleCreated,
       'role',
       role.id,
-      { name: role.name },
+      { name: role.name }
     );
 
     return role;
@@ -1332,11 +1380,11 @@ export const adminMutations = {
   updateRole: async (
     _parent: unknown,
     args: UpdateRoleArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Role> => {
     // Find role first to get workspaceId
     const systemRoles = getSystemRoles('mock');
-    const existingRole = systemRoles.find((r) => r.id === args.id);
+    const existingRole = systemRoles.find(r => r.id === args.id);
 
     if (!existingRole) {
       throw new GraphQLError('Role not found', {
@@ -1355,7 +1403,10 @@ export const adminMutations = {
     const updatedRole: Role = {
       ...existingRole,
       name: args.input.name ?? existingRole.name,
-      description: args.input.description !== undefined ? args.input.description : existingRole.description,
+      description:
+        args.input.description !== undefined
+          ? args.input.description
+          : existingRole.description,
       permissions: args.input.permissions ?? existingRole.permissions,
       priority: args.input.priority ?? existingRole.priority,
       updatedAt: new Date(),
@@ -1367,7 +1418,7 @@ export const adminMutations = {
       AdminActionType.RoleUpdated,
       'role',
       args.id,
-      { changes: args.input },
+      { changes: args.input }
     );
 
     return updatedRole;
@@ -1379,10 +1430,10 @@ export const adminMutations = {
   deleteRole: async (
     _parent: unknown,
     args: DeleteRoleArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<boolean> => {
     const systemRoles = getSystemRoles('mock');
-    const existingRole = systemRoles.find((r) => r.id === args.id);
+    const existingRole = systemRoles.find(r => r.id === args.id);
 
     if (!existingRole) {
       throw new GraphQLError('Role not found', {
@@ -1404,7 +1455,7 @@ export const adminMutations = {
       AdminActionType.RoleDeleted,
       'role',
       args.id,
-      { name: existingRole.name },
+      { name: existingRole.name }
     );
 
     return true;
@@ -1416,7 +1467,7 @@ export const adminMutations = {
   updateMember: async (
     _parent: unknown,
     args: UpdateMemberArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<MemberInfo> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1463,10 +1514,14 @@ export const adminMutations = {
       AdminActionType.MemberUpdated,
       'member',
       args.userId,
-      { changes: args.input },
+      { changes: args.input }
     );
 
-    return (await adminQueries.member(_parent, { workspaceId: args.workspaceId, userId: args.userId }, context))!;
+    return (await adminQueries.member(
+      _parent,
+      { workspaceId: args.workspaceId, userId: args.userId },
+      context
+    ))!;
   },
 
   /**
@@ -1475,11 +1530,15 @@ export const adminMutations = {
   suspendMember: async (
     _parent: unknown,
     args: SuspendMemberArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<MemberInfo> => {
     await requireAdmin(context, args.workspaceId);
 
-    const member = await adminQueries.member(_parent, { workspaceId: args.workspaceId, userId: args.userId }, context);
+    const member = await adminQueries.member(
+      _parent,
+      { workspaceId: args.workspaceId, userId: args.userId },
+      context
+    );
 
     if (!member) {
       throw new GraphQLError('Member not found', {
@@ -1494,13 +1553,16 @@ export const adminMutations = {
       AdminActionType.MemberSuspended,
       'member',
       args.userId,
-      { reason: args.reason },
+      { reason: args.reason }
     );
 
     // Publish status change
-    await context.pubsub.publish(`${MEMBER_STATUS_CHANGED}_${args.workspaceId}`, {
-      memberStatusChanged: { ...member, status: MemberStatus.Suspended },
-    });
+    await context.pubsub.publish(
+      `${MEMBER_STATUS_CHANGED}_${args.workspaceId}`,
+      {
+        memberStatusChanged: { ...member, status: MemberStatus.Suspended },
+      }
+    );
 
     return { ...member, status: MemberStatus.Suspended };
   },
@@ -1511,11 +1573,15 @@ export const adminMutations = {
   unsuspendMember: async (
     _parent: unknown,
     args: UnsuspendMemberArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<MemberInfo> => {
     await requireAdmin(context, args.workspaceId);
 
-    const member = await adminQueries.member(_parent, { workspaceId: args.workspaceId, userId: args.userId }, context);
+    const member = await adminQueries.member(
+      _parent,
+      { workspaceId: args.workspaceId, userId: args.userId },
+      context
+    );
 
     if (!member) {
       throw new GraphQLError('Member not found', {
@@ -1529,12 +1595,15 @@ export const adminMutations = {
       AdminActionType.MemberUnsuspended,
       'member',
       args.userId,
-      {},
+      {}
     );
 
-    await context.pubsub.publish(`${MEMBER_STATUS_CHANGED}_${args.workspaceId}`, {
-      memberStatusChanged: { ...member, status: MemberStatus.Active },
-    });
+    await context.pubsub.publish(
+      `${MEMBER_STATUS_CHANGED}_${args.workspaceId}`,
+      {
+        memberStatusChanged: { ...member, status: MemberStatus.Active },
+      }
+    );
 
     return { ...member, status: MemberStatus.Active };
   },
@@ -1545,7 +1614,7 @@ export const adminMutations = {
   removeMember: async (
     _parent: unknown,
     args: RemoveMemberArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<boolean> => {
     await requireAdmin(context, args.workspaceId);
 
@@ -1586,7 +1655,7 @@ export const adminMutations = {
       AdminActionType.MemberRemoved,
       'member',
       args.userId,
-      {},
+      {}
     );
 
     return true;
@@ -1598,11 +1667,11 @@ export const adminMutations = {
   inviteMembers: async (
     _parent: unknown,
     args: InviteMembersArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Invite[]> => {
     await requireAdmin(context, args.workspaceId);
 
-    const invites: Invite[] = args.invites.map((invite) => ({
+    const invites: Invite[] = args.invites.map(invite => ({
       id: generateId('invite'),
       workspaceId: args.workspaceId,
       email: invite.email,
@@ -1621,7 +1690,7 @@ export const adminMutations = {
       AdminActionType.InviteSent,
       'invite',
       null,
-      { emails: args.invites.map((i) => i.email) },
+      { emails: args.invites.map(i => i.email) }
     );
 
     return invites;
@@ -1633,7 +1702,7 @@ export const adminMutations = {
   revokeInvite: async (
     _parent: unknown,
     args: RevokeInviteArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<boolean> => {
     // In real implementation, find invite and check permissions
     if (!isAuthenticated(context)) {
@@ -1648,7 +1717,7 @@ export const adminMutations = {
       AdminActionType.InviteRevoked,
       'invite',
       args.id,
-      {},
+      {}
     );
 
     return true;
@@ -1660,20 +1729,30 @@ export const adminMutations = {
   upgradePlan: async (
     _parent: unknown,
     args: UpgradePlanArgs,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<BillingUpgradeResult> => {
     await requireAdmin(context, args.workspaceId);
 
-    const currentBilling = await adminQueries.billingInfo(_parent, { workspaceId: args.workspaceId }, context);
+    const currentBilling = await adminQueries.billingInfo(
+      _parent,
+      { workspaceId: args.workspaceId },
+      context
+    );
 
     // Check if downgrade
-    const planOrder: PlanTypeValue[] = [PlanType.Free, PlanType.Starter, PlanType.Professional, PlanType.Enterprise];
+    const planOrder: PlanTypeValue[] = [
+      PlanType.Free,
+      PlanType.Starter,
+      PlanType.Professional,
+      PlanType.Enterprise,
+    ];
     const currentIndex = planOrder.indexOf(currentBilling.plan);
     const newIndex = planOrder.indexOf(args.plan);
 
-    const actionType = newIndex > currentIndex
-      ? AdminActionType.PlanUpgraded
-      : AdminActionType.PlanDowngraded;
+    const actionType =
+      newIndex > currentIndex
+        ? AdminActionType.PlanUpgraded
+        : AdminActionType.PlanDowngraded;
 
     // In real implementation, integrate with Stripe/billing provider
     const updatedBilling: BillingInfo = {
@@ -1688,7 +1767,7 @@ export const adminMutations = {
       actionType,
       'billing',
       args.workspaceId,
-      { from: currentBilling.plan, to: args.plan },
+      { from: currentBilling.plan, to: args.plan }
     );
 
     return {
@@ -1715,7 +1794,7 @@ export const adminSubscriptions = {
     subscribe: (
       _parent: unknown,
       args: { workspaceId: string },
-      context: AdminGraphQLContext,
+      context: AdminGraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -1723,7 +1802,9 @@ export const adminSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${MEMBER_STATUS_CHANGED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${MEMBER_STATUS_CHANGED}_${args.workspaceId}`
+      );
     },
   },
 
@@ -1734,7 +1815,7 @@ export const adminSubscriptions = {
     subscribe: (
       _parent: unknown,
       args: { workspaceId: string },
-      context: AdminGraphQLContext,
+      context: AdminGraphQLContext
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -1742,7 +1823,9 @@ export const adminSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${SETTINGS_UPDATED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${SETTINGS_UPDATED}_${args.workspaceId}`
+      );
     },
   },
 };
@@ -1761,7 +1844,7 @@ export const RoleFieldResolvers = {
   memberCount: async (
     parent: Role,
     _args: unknown,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<number> => {
     // Map roleId to role enum
     const roleMap: Record<string, string> = {
@@ -1795,7 +1878,7 @@ export const MemberInfoFieldResolvers = {
   user: async (
     parent: MemberInfo,
     _args: unknown,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<User | null> => {
     // Use DataLoader if available
     if (context.loaders?.userLoader) {
@@ -1827,7 +1910,7 @@ export const MemberInfoFieldResolvers = {
   role: async (
     parent: MemberInfo,
     _args: unknown,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Role | null> => {
     // Use DataLoader if available
     if (context.loaders?.roleLoader) {
@@ -1835,7 +1918,7 @@ export const MemberInfoFieldResolvers = {
     }
 
     const systemRoles = getSystemRoles(parent.workspaceId);
-    return systemRoles.find((r) => r.id === parent.roleId) ?? null;
+    return systemRoles.find(r => r.id === parent.roleId) ?? null;
   },
 };
 
@@ -1849,14 +1932,14 @@ export const InviteFieldResolvers = {
   role: async (
     parent: Invite,
     _args: unknown,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<Role | null> => {
     if (context.loaders?.roleLoader) {
       return context.loaders.roleLoader.load(parent.roleId);
     }
 
     const systemRoles = getSystemRoles(parent.workspaceId);
-    return systemRoles.find((r) => r.id === parent.roleId) ?? null;
+    return systemRoles.find(r => r.id === parent.roleId) ?? null;
   },
 
   /**
@@ -1865,7 +1948,7 @@ export const InviteFieldResolvers = {
   creator: async (
     parent: Invite,
     _args: unknown,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<User | null> => {
     if (context.loaders?.userLoader) {
       return context.loaders.userLoader.load(parent.createdBy);
@@ -1901,7 +1984,7 @@ export const AdminActionFieldResolvers = {
   actor: async (
     parent: AdminAction,
     _args: unknown,
-    context: AdminGraphQLContext,
+    context: AdminGraphQLContext
   ): Promise<User | null> => {
     if (context.loaders?.userLoader) {
       return context.loaders.userLoader.load(parent.actorId);
@@ -1941,7 +2024,7 @@ function getSystemRoles(workspaceId: string): Role[] {
       workspaceId,
       name: 'Owner',
       description: 'Full control over the workspace',
-      permissions: Object.values(PermissionResource).map((resource) => ({
+      permissions: Object.values(PermissionResource).map(resource => ({
         resource,
         actions: Object.values(PermissionAction),
       })),
@@ -1957,8 +2040,8 @@ function getSystemRoles(workspaceId: string): Role[] {
       name: 'Admin',
       description: 'Manage workspace settings and members',
       permissions: Object.values(PermissionResource)
-        .filter((r) => r !== PermissionResource.Billing)
-        .map((resource) => ({
+        .filter(r => r !== PermissionResource.Billing)
+        .map(resource => ({
           resource,
           actions: Object.values(PermissionAction),
         })),
@@ -1974,10 +2057,31 @@ function getSystemRoles(workspaceId: string): Role[] {
       name: 'Member',
       description: 'Standard workspace member',
       permissions: [
-        { resource: PermissionResource.Workspace, actions: [PermissionAction.Read] },
-        { resource: PermissionResource.Channels, actions: [PermissionAction.Create, PermissionAction.Read, PermissionAction.Update] },
-        { resource: PermissionResource.Messages, actions: [PermissionAction.Create, PermissionAction.Read, PermissionAction.Update, PermissionAction.Delete] },
-        { resource: PermissionResource.Members, actions: [PermissionAction.Read] },
+        {
+          resource: PermissionResource.Workspace,
+          actions: [PermissionAction.Read],
+        },
+        {
+          resource: PermissionResource.Channels,
+          actions: [
+            PermissionAction.Create,
+            PermissionAction.Read,
+            PermissionAction.Update,
+          ],
+        },
+        {
+          resource: PermissionResource.Messages,
+          actions: [
+            PermissionAction.Create,
+            PermissionAction.Read,
+            PermissionAction.Update,
+            PermissionAction.Delete,
+          ],
+        },
+        {
+          resource: PermissionResource.Members,
+          actions: [PermissionAction.Read],
+        },
       ],
       isDefault: true,
       isSystemRole: true,
@@ -1991,9 +2095,18 @@ function getSystemRoles(workspaceId: string): Role[] {
       name: 'Guest',
       description: 'Limited access - specific channels only',
       permissions: [
-        { resource: PermissionResource.Workspace, actions: [PermissionAction.Read] },
-        { resource: PermissionResource.Channels, actions: [PermissionAction.Read] },
-        { resource: PermissionResource.Messages, actions: [PermissionAction.Create, PermissionAction.Read] },
+        {
+          resource: PermissionResource.Workspace,
+          actions: [PermissionAction.Read],
+        },
+        {
+          resource: PermissionResource.Channels,
+          actions: [PermissionAction.Read],
+        },
+        {
+          resource: PermissionResource.Messages,
+          actions: [PermissionAction.Create, PermissionAction.Read],
+        },
       ],
       isDefault: false,
       isSystemRole: true,

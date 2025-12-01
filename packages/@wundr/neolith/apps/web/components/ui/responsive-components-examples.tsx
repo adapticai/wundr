@@ -49,15 +49,15 @@ export function ResponsiveModalExample() {
             This is a dialog on desktop and a drawer on mobile
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
-        <div className="p-4">
-          <p className="text-sm text-muted-foreground">
+        <div className='p-4'>
+          <p className='text-sm text-muted-foreground'>
             Modal content goes here. This component automatically adapts to the
-            viewport size, showing a centered dialog on desktop and a bottom drawer
-            on mobile.
+            viewport size, showing a centered dialog on desktop and a bottom
+            drawer on mobile.
           </p>
         </div>
         <ResponsiveModalFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant='outline' onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button onClick={() => setOpen(false)}>Confirm</Button>
@@ -92,36 +92,42 @@ export function ResponsiveFormModalExample() {
             Update your profile information
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 p-4">
+        <form onSubmit={handleSubmit} className='space-y-4 p-4'>
           <div>
-            <label htmlFor="name" className="text-sm font-medium">
+            <label htmlFor='name' className='text-sm font-medium'>
               Name
             </label>
             <input
-              id="name"
-              type="text"
+              id='name'
+              type='text'
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full mt-1 px-3 py-2 border rounded-md"
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              className='w-full mt-1 px-3 py-2 border rounded-md'
             />
           </div>
           <div>
-            <label htmlFor="email" className="text-sm font-medium">
+            <label htmlFor='email' className='text-sm font-medium'>
               Email
             </label>
             <input
-              id="email"
-              type="email"
+              id='email'
+              type='email'
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full mt-1 px-3 py-2 border rounded-md"
+              onChange={e =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className='w-full mt-1 px-3 py-2 border rounded-md'
             />
           </div>
           <ResponsiveModalFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type='submit'>Save Changes</Button>
           </ResponsiveModalFooter>
         </form>
       </ResponsiveModalContent>
@@ -134,17 +140,33 @@ export function ResponsiveFormModalExample() {
  */
 export function MobileNavDrawerExample() {
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" /> },
-    { href: '/profile', label: 'Profile', icon: <User className="h-5 w-5" /> },
-    { href: '/messages', label: 'Messages', icon: <Mail className="h-5 w-5" /> },
-    { href: '/notifications', label: 'Notifications', icon: <Bell className="h-5 w-5" /> },
-    { href: '/settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
+    {
+      href: '/dashboard',
+      label: 'Dashboard',
+      icon: <Home className='h-5 w-5' />,
+    },
+    { href: '/profile', label: 'Profile', icon: <User className='h-5 w-5' /> },
+    {
+      href: '/messages',
+      label: 'Messages',
+      icon: <Mail className='h-5 w-5' />,
+    },
+    {
+      href: '/notifications',
+      label: 'Notifications',
+      icon: <Bell className='h-5 w-5' />,
+    },
+    {
+      href: '/settings',
+      label: 'Settings',
+      icon: <Settings className='h-5 w-5' />,
+    },
   ];
 
   return (
     <MobileNavDrawer
-      title="Navigation"
-      description="Select a page to navigate"
+      title='Navigation'
+      description='Select a page to navigate'
       items={navItems}
     />
   );
@@ -155,20 +177,28 @@ export function MobileNavDrawerExample() {
  */
 export function MobileNavDrawerWithFooterExample() {
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" /> },
-    { href: '/settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
+    {
+      href: '/dashboard',
+      label: 'Dashboard',
+      icon: <Home className='h-5 w-5' />,
+    },
+    {
+      href: '/settings',
+      label: 'Settings',
+      icon: <Settings className='h-5 w-5' />,
+    },
   ];
 
   return (
     <MobileNavDrawer
-      title="Menu"
+      title='Menu'
       items={navItems}
       footer={
-        <div className="flex flex-col gap-2">
-          <Button variant="outline" className="w-full">
+        <div className='flex flex-col gap-2'>
+          <Button variant='outline' className='w-full'>
             Help & Support
           </Button>
-          <Button variant="ghost" className="w-full">
+          <Button variant='ghost' className='w-full'>
             Sign Out
           </Button>
         </div>
@@ -186,45 +216,47 @@ export function MobileNavDrawerWithFooterExample() {
 export function ResponsiveSidebarExample() {
   return (
     <ResponsiveSidebar
-      title="Main Menu"
-      description="Navigate your workspace"
+      title='Main Menu'
+      description='Navigate your workspace'
       collapsible
       defaultCollapsed={false}
       header={
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-primary" />
-          <span className="font-bold">My App</span>
+        <div className='flex items-center gap-2'>
+          <div className='h-8 w-8 rounded bg-primary' />
+          <span className='font-bold'>My App</span>
         </div>
       }
       footer={
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-accent" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">John Doe</p>
-            <p className="text-xs text-muted-foreground truncate">john@example.com</p>
+        <div className='flex items-center gap-2'>
+          <div className='h-8 w-8 rounded-full bg-accent' />
+          <div className='flex-1 min-w-0'>
+            <p className='text-sm font-medium truncate'>John Doe</p>
+            <p className='text-xs text-muted-foreground truncate'>
+              john@example.com
+            </p>
           </div>
         </div>
       }
     >
-      <SidebarSection title="Main">
+      <SidebarSection title='Main'>
         <SidebarNavItem
-          href="/dashboard"
-          icon={<Home className="h-5 w-5" />}
-          label="Dashboard"
+          href='/dashboard'
+          icon={<Home className='h-5 w-5' />}
+          label='Dashboard'
           isActive
         />
         <SidebarNavItem
-          href="/profile"
-          icon={<User className="h-5 w-5" />}
-          label="Profile"
+          href='/profile'
+          icon={<User className='h-5 w-5' />}
+          label='Profile'
         />
       </SidebarSection>
 
-      <SidebarSection title="Settings">
+      <SidebarSection title='Settings'>
         <SidebarNavItem
-          href="/settings"
-          icon={<Settings className="h-5 w-5" />}
-          label="Settings"
+          href='/settings'
+          icon={<Settings className='h-5 w-5' />}
+          label='Settings'
         />
       </SidebarSection>
     </ResponsiveSidebar>
@@ -236,49 +268,49 @@ export function ResponsiveSidebarExample() {
  */
 export function ResponsiveLayoutExample() {
   return (
-    <div className="flex min-h-screen">
+    <div className='flex min-h-screen'>
       <ResponsiveSidebar
-        title="App Menu"
+        title='App Menu'
         collapsible
         header={
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
+          <div className='flex items-center gap-2'>
+            <div className='h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold'>
               A
             </div>
-            <span className="font-bold">App Name</span>
+            <span className='font-bold'>App Name</span>
           </div>
         }
       >
-        <nav className="space-y-1">
+        <nav className='space-y-1'>
           <SidebarNavItem
-            href="/dashboard"
-            icon={<Home className="h-5 w-5" />}
-            label="Dashboard"
+            href='/dashboard'
+            icon={<Home className='h-5 w-5' />}
+            label='Dashboard'
             isActive
           />
           <SidebarNavItem
-            href="/messages"
-            icon={<Mail className="h-5 w-5" />}
-            label="Messages"
+            href='/messages'
+            icon={<Mail className='h-5 w-5' />}
+            label='Messages'
           />
           <SidebarNavItem
-            href="/notifications"
-            icon={<Bell className="h-5 w-5" />}
-            label="Notifications"
+            href='/notifications'
+            icon={<Bell className='h-5 w-5' />}
+            label='Notifications'
           />
           <SidebarNavItem
-            href="/settings"
-            icon={<Settings className="h-5 w-5" />}
-            label="Settings"
+            href='/settings'
+            icon={<Settings className='h-5 w-5' />}
+            label='Settings'
           />
         </nav>
       </ResponsiveSidebar>
 
       {/* Main content area - adjust margin based on sidebar presence */}
-      <main className="flex-1 md:ml-16 lg:ml-64 transition-all duration-300">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-          <p className="text-muted-foreground">
+      <main className='flex-1 md:ml-16 lg:ml-64 transition-all duration-300'>
+        <div className='p-6'>
+          <h1 className='text-2xl font-bold mb-4'>Dashboard</h1>
+          <p className='text-muted-foreground'>
             Main content area. The sidebar automatically adapts to screen size.
           </p>
         </div>
@@ -292,7 +324,9 @@ export function ResponsiveLayoutExample() {
  */
 export function ControlledResponsiveModalExample() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [confirmAction, setConfirmAction] = React.useState<'delete' | 'archive' | null>(null);
+  const [confirmAction, setConfirmAction] = React.useState<
+    'delete' | 'archive' | null
+  >(null);
 
   const handleAction = () => {
     console.log('Action confirmed:', confirmAction);
@@ -301,9 +335,9 @@ export function ControlledResponsiveModalExample() {
   };
 
   return (
-    <div className="space-x-2">
+    <div className='space-x-2'>
       <Button
-        variant="destructive"
+        variant='destructive'
         onClick={() => {
           setConfirmAction('delete');
           setIsOpen(true);
@@ -312,7 +346,7 @@ export function ControlledResponsiveModalExample() {
         Delete Item
       </Button>
       <Button
-        variant="secondary"
+        variant='secondary'
         onClick={() => {
           setConfirmAction('archive');
           setIsOpen(true);
@@ -334,7 +368,7 @@ export function ControlledResponsiveModalExample() {
             </ResponsiveModalDescription>
           </ResponsiveModalHeader>
           <ResponsiveModalFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
+            <Button variant='outline' onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
             <Button

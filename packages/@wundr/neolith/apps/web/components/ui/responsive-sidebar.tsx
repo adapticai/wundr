@@ -91,7 +91,7 @@ export function ResponsiveSidebar({
         onCollapsedChange(collapsed);
       }
     },
-    [onCollapsedChange],
+    [onCollapsedChange]
   );
 
   // Mobile: Render drawer
@@ -99,39 +99,41 @@ export function ResponsiveSidebar({
     return (
       <>
         <Button
-          variant="ghost"
-          size="icon"
-          className="fixed top-4 left-4 z-40 md:hidden"
+          variant='ghost'
+          size='icon'
+          className='fixed top-4 left-4 z-40 md:hidden'
           onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
+          aria-label='Open menu'
         >
-          <Menu className="h-5 w-5" />
+          <Menu className='h-5 w-5' />
         </Button>
 
         <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
-          <DrawerContent className="max-h-[85vh]">
-            <DrawerHeader className="text-left">
-              <div className="flex items-center justify-between">
+          <DrawerContent className='max-h-[85vh]'>
+            <DrawerHeader className='text-left'>
+              <div className='flex items-center justify-between'>
                 <div>
                   <DrawerTitle>{title}</DrawerTitle>
-                  {description && <DrawerDescription>{description}</DrawerDescription>}
+                  {description && (
+                    <DrawerDescription>{description}</DrawerDescription>
+                  )}
                 </div>
                 <DrawerClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X className="h-5 w-5" />
-                    <span className="sr-only">Close</span>
+                  <Button variant='ghost' size='icon'>
+                    <X className='h-5 w-5' />
+                    <span className='sr-only'>Close</span>
                   </Button>
                 </DrawerClose>
               </div>
             </DrawerHeader>
 
-            <div className="flex flex-col h-full overflow-hidden">
-              {header && <div className="px-4 py-2">{header}</div>}
+            <div className='flex flex-col h-full overflow-hidden'>
+              {header && <div className='px-4 py-2'>{header}</div>}
 
-              <div className="flex-1 overflow-y-auto px-4">{children}</div>
+              <div className='flex-1 overflow-y-auto px-4'>{children}</div>
 
               {footer && (
-                <div className="border-t border-border px-4 py-2 mt-auto">
+                <div className='border-t border-border px-4 py-2 mt-auto'>
                   {footer}
                 </div>
               )}
@@ -152,22 +154,22 @@ export function ResponsiveSidebar({
         'fixed inset-y-0 left-0 z-30 flex flex-col border-r bg-background',
         'transition-all duration-300 ease-in-out',
         sidebarWidth,
-        className,
+        className
       )}
     >
       {/* Collapse button */}
       {showCollapse && (
         <Button
-          variant="ghost"
-          size="icon"
-          className="absolute -right-3 top-6 z-40 h-6 w-6 rounded-full border bg-background shadow-md"
+          variant='ghost'
+          size='icon'
+          className='absolute -right-3 top-6 z-40 h-6 w-6 rounded-full border bg-background shadow-md'
           onClick={() => handleCollapsedChange(!isCollapsed)}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className='h-4 w-4' />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className='h-4 w-4' />
           )}
         </Button>
       )}
@@ -177,7 +179,7 @@ export function ResponsiveSidebar({
         <div
           className={cn(
             'border-b p-4',
-            isCollapsed && 'px-2 flex justify-center',
+            isCollapsed && 'px-2 flex justify-center'
           )}
         >
           {header}
@@ -185,23 +187,13 @@ export function ResponsiveSidebar({
       )}
 
       {/* Main content */}
-      <div
-        className={cn(
-          'flex-1 overflow-y-auto p-4',
-          isCollapsed && 'px-2',
-        )}
-      >
+      <div className={cn('flex-1 overflow-y-auto p-4', isCollapsed && 'px-2')}>
         {children}
       </div>
 
       {/* Footer */}
       {footer && (
-        <div
-          className={cn(
-            'border-t p-4 mt-auto',
-            isCollapsed && 'px-2',
-          )}
-        >
+        <div className={cn('border-t p-4 mt-auto', isCollapsed && 'px-2')}>
           {footer}
         </div>
       )}
@@ -217,15 +209,17 @@ export interface ResponsiveSidebarTriggerProps {
  * Trigger button for mobile sidebar drawer
  * Only visible on mobile devices
  */
-export function ResponsiveSidebarTrigger({ className }: ResponsiveSidebarTriggerProps) {
+export function ResponsiveSidebarTrigger({
+  className,
+}: ResponsiveSidebarTriggerProps) {
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant='ghost'
+      size='icon'
       className={cn('md:hidden', className)}
-      aria-label="Open menu"
+      aria-label='Open menu'
     >
-      <Menu className="h-5 w-5" />
+      <Menu className='h-5 w-5' />
     </Button>
   );
 }
@@ -257,7 +251,7 @@ export function SidebarNavItem({
   const content = (
     <>
       {icon && (
-        <span className="flex h-5 w-5 items-center justify-center shrink-0">
+        <span className='flex h-5 w-5 items-center justify-center shrink-0'>
           {icon}
         </span>
       )}
@@ -272,7 +266,7 @@ export function SidebarNavItem({
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     isActive && 'bg-accent text-accent-foreground',
     isCollapsed && 'justify-center px-2',
-    className,
+    className
   );
 
   if (href) {
@@ -299,11 +293,15 @@ export interface SidebarSectionProps {
 /**
  * Sidebar section with optional title
  */
-export function SidebarSection({ title, children, className }: SidebarSectionProps) {
+export function SidebarSection({
+  title,
+  children,
+  className,
+}: SidebarSectionProps) {
   return (
     <div className={cn('space-y-1', className)}>
       {title && (
-        <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <h3 className='mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
           {title}
         </h3>
       )}

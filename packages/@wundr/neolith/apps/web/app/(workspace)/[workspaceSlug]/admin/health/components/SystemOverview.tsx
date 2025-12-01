@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import type { SystemOverview as SystemOverviewType } from '@neolith/core/src/types/health-dashboard';
+import type { SystemOverview as SystemOverviewType } from '@neolith/core/types';
 import { Activity, Users, Coins, AlertTriangle } from 'lucide-react';
 
 interface SystemOverviewProps {
@@ -29,7 +29,10 @@ export function SystemOverview({ data }: SystemOverviewProps) {
       value: `${data.tokenUsage.percentUsed.toFixed(1)}%`,
       subtitle: `${data.tokenUsage.daily.toLocaleString()} / ${data.tokenUsage.limit.toLocaleString()}`,
       icon: Coins,
-      color: data.tokenUsage.percentUsed > 80 ? 'text-orange-600' : 'text-purple-600',
+      color:
+        data.tokenUsage.percentUsed > 80
+          ? 'text-orange-600'
+          : 'text-purple-600',
       bgColor:
         data.tokenUsage.percentUsed > 80
           ? 'bg-orange-50 dark:bg-orange-950'
@@ -48,22 +51,24 @@ export function SystemOverview({ data }: SystemOverviewProps) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => {
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      {stats.map(stat => {
         const Icon = stat.icon;
         return (
           <Card key={stat.label}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between space-x-4">
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
+            <CardContent className='p-6'>
+              <div className='flex items-center justify-between space-x-4'>
+                <div className='flex-1 space-y-1'>
+                  <p className='text-sm font-medium text-muted-foreground'>
                     {stat.label}
                   </p>
-                  <div className="flex items-baseline space-x-2">
-                    <p className="text-2xl font-bold">{stat.value}</p>
+                  <div className='flex items-baseline space-x-2'>
+                    <p className='text-2xl font-bold'>{stat.value}</p>
                   </div>
                   {stat.subtitle && (
-                    <p className="text-xs text-muted-foreground">{stat.subtitle}</p>
+                    <p className='text-xs text-muted-foreground'>
+                      {stat.subtitle}
+                    </p>
                   )}
                 </div>
                 <div className={`rounded-full p-3 ${stat.bgColor}`}>

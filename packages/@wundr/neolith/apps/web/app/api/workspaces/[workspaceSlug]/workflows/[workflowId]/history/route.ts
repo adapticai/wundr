@@ -26,8 +26,14 @@ import {
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
 
-import type { ExecutionFiltersInput, WorkflowStepResult } from '@/lib/validations/workflow';
-import type { Prisma, WorkflowExecution as PrismaworkflowExecution } from '@neolith/database';
+import type {
+  ExecutionFiltersInput,
+  WorkflowStepResult,
+} from '@/lib/validations/workflow';
+import type {
+  Prisma,
+  WorkflowExecution as PrismaworkflowExecution,
+} from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -106,8 +112,13 @@ interface SingleExecutionResponse {
 /**
  * Format execution for response
  */
-function formatExecution(execution: ExecutionWithWorkflow, includeSteps = false): FormattedExecution {
-  const steps = includeSteps ? (execution.steps as unknown as WorkflowStepResult[]) : undefined;
+function formatExecution(
+  execution: ExecutionWithWorkflow,
+  includeSteps = false
+): FormattedExecution {
+  const steps = includeSteps
+    ? (execution.steps as unknown as WorkflowStepResult[])
+    : undefined;
 
   const formatted: FormattedExecution = {
     id: execution.id,
@@ -173,15 +184,24 @@ function formatExecution(execution: ExecutionWithWorkflow, includeSteps = false)
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
-): Promise<NextResponse<ListExecutionsResponse | SingleExecutionResponse | { error: string; code: string; details?: Record<string, unknown> }>> {
+  context: RouteContext
+): Promise<
+  NextResponse<
+    | ListExecutionsResponse
+    | SingleExecutionResponse
+    | { error: string; code: string; details?: Record<string, unknown> }
+  >
+> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -198,8 +218,11 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -214,8 +237,11 @@ export async function GET(
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found or access denied',
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -229,8 +255,11 @@ export async function GET(
 
     if (!workflow) {
       return NextResponse.json(
-        createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workflow not found',
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -257,13 +286,19 @@ export async function GET(
 
       if (!execution) {
         return NextResponse.json(
-          createErrorResponse('Execution not found', WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Execution not found',
+            WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
 
       // Format with full step details
-      const formatted = formatExecution(execution as ExecutionWithWorkflow, true);
+      const formatted = formatExecution(
+        execution as ExecutionWithWorkflow,
+        true
+      );
 
       return NextResponse.json({
         execution: formatted,
@@ -279,9 +314,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -320,7 +355,7 @@ export async function GET(
 
     // Format executions (without step details for list)
     const formattedExecutions = executions.map(exec =>
-      formatExecution(exec as ExecutionWithWorkflow, false),
+      formatExecution(exec as ExecutionWithWorkflow, false)
     );
 
     return NextResponse.json({
@@ -333,10 +368,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId/history] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/workflows/:workflowId/history] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

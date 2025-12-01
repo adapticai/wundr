@@ -166,7 +166,11 @@ interface SharpInstance {
   grayscale: () => SharpInstance;
   sharpen: () => SharpInstance;
   normalise: () => SharpInstance;
-  resize: (options: { width?: number; height?: number; fit?: string }) => SharpInstance;
+  resize: (options: {
+    width?: number;
+    height?: number;
+    fit?: string;
+  }) => SharpInstance;
   toBuffer: () => Promise<Buffer>;
   toFile: (path: string) => Promise<void>;
 }
@@ -249,7 +253,7 @@ export class ImageProcessor {
    */
   async process(
     filePath: string,
-    options: ImageProcessingOptions = {},
+    options: ImageProcessingOptions = {}
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -359,7 +363,7 @@ export class ImageProcessor {
    */
   private async preprocessImage(
     filePath: string,
-    options: ImageProcessingOptions,
+    options: ImageProcessingOptions
   ): Promise<string> {
     if (!options.preprocessing) {
       return filePath;
@@ -414,7 +418,7 @@ export class ImageProcessor {
    */
   private async performOcr(
     filePath: string,
-    options: ImageProcessingOptions,
+    options: ImageProcessingOptions
   ): Promise<OcrResult> {
     // Ensure worker is initialized
     if (!this.workerPool) {
@@ -581,7 +585,10 @@ export class ImageProcessor {
  * Tesseract worker interface
  */
 interface TesseractWorker {
-  recognize: (image: string | Buffer, options?: TesseractOptions) => Promise<TesseractRecognizeResult>;
+  recognize: (
+    image: string | Buffer,
+    options?: TesseractOptions
+  ) => Promise<TesseractRecognizeResult>;
   terminate: () => Promise<void>;
 }
 
@@ -657,7 +664,7 @@ type TesseractWorkerPool = TesseractWorker;
  * Create image processor instance
  */
 export function createImageProcessor(
-  config: FileProcessorConfig,
+  config: FileProcessorConfig
 ): ImageProcessor {
   return new ImageProcessor(config);
 }

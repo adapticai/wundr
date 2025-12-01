@@ -37,23 +37,29 @@ export function DashboardStatsCard({
   className,
 }: DashboardStatsCardProps) {
   const content = (
-    <Card className={cn('transition-colors', href && 'cursor-pointer hover:bg-accent/50', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{label}</CardTitle>
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+    <Card
+      className={cn(
+        'transition-colors',
+        href && 'cursor-pointer hover:bg-accent/50',
+        className
+      )}
+    >
+      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardTitle className='text-sm font-medium'>{label}</CardTitle>
+        {Icon && <Icon className='h-4 w-4 text-muted-foreground' />}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className='text-2xl font-bold'>{value}</div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className='text-xs text-muted-foreground mt-1'>{description}</p>
         )}
         {trend && (
-          <div className="flex items-center gap-1 mt-2">
+          <div className='flex items-center gap-1 mt-2'>
             {trend.direction === 'up' && (
-              <ArrowUpIcon className="h-3 w-3 text-green-600" />
+              <ArrowUpIcon className='h-3 w-3 text-green-600' />
             )}
             {trend.direction === 'down' && (
-              <ArrowDownIcon className="h-3 w-3 text-red-600" />
+              <ArrowDownIcon className='h-3 w-3 text-red-600' />
             )}
             <span
               className={cn(
@@ -66,7 +72,9 @@ export function DashboardStatsCard({
               {trend.value}
             </span>
             {trend.label && (
-              <span className="text-xs text-muted-foreground ml-1">{trend.label}</span>
+              <span className='text-xs text-muted-foreground ml-1'>
+                {trend.label}
+              </span>
             )}
           </div>
         )}
@@ -76,7 +84,10 @@ export function DashboardStatsCard({
 
   if (href) {
     return (
-      <Link href={href} className="block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg">
+      <Link
+        href={href}
+        className='block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg'
+      >
         {content}
       </Link>
     );

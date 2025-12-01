@@ -2,7 +2,8 @@
 
 ## Overview
 
-The `DynamicPageHeader` component provides a flexible, context-driven page header system that allows pages to dynamically update the header content including title, subtitle, and breadcrumb navigation.
+The `DynamicPageHeader` component provides a flexible, context-driven page header system that allows
+pages to dynamically update the header content including title, subtitle, and breadcrumb navigation.
 
 ## Architecture
 
@@ -109,10 +110,7 @@ export function WorkflowDetailPage({ workflowId }: { workflowId: string }) {
       .then(data => {
         setWorkflow(data);
         setPageHeader(data.name, `Last updated: ${data.updatedAt}`);
-        setBreadcrumbs([
-          { label: 'Workflows', href: '/workflows' },
-          { label: data.name },
-        ]);
+        setBreadcrumbs([{ label: 'Workflows', href: '/workflows' }, { label: data.name }]);
       });
   }, [workflowId, setPageHeader, setBreadcrumbs]);
 
@@ -189,21 +187,21 @@ The workspace layout (`/app/(workspace)/layout.tsx`) has been updated to:
 
 ### Error: "usePageHeader must be used within a PageHeaderProvider"
 
-**Cause**: Component is not wrapped in PageHeaderProvider
-**Solution**: Ensure the component is rendered within the workspace layout or manually wrap with PageHeaderProvider
+**Cause**: Component is not wrapped in PageHeaderProvider **Solution**: Ensure the component is
+rendered within the workspace layout or manually wrap with PageHeaderProvider
 
 ### Header Not Updating
 
-**Cause**: Hook not being called or context not triggering re-render
-**Solution**:
+**Cause**: Hook not being called or context not triggering re-render **Solution**:
+
 - Verify setPageHeader is called in useEffect
 - Check that component is client-side ('use client')
 - Ensure PageHeaderProvider is present in parent tree
 
 ### Build Errors
 
-**Cause**: Server/client component mismatch
-**Solution**:
+**Cause**: Server/client component mismatch **Solution**:
+
 - Ensure all components using usePageHeader have 'use client' directive
 - Verify PageHeaderProvider is in a client component wrapper
 

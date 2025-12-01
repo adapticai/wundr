@@ -7,7 +7,11 @@
  * @packageDocumentation
  */
 
-import { ExtractionError, DocxExtractionError, XlsxExtractionError } from '../types/extraction';
+import {
+  ExtractionError,
+  DocxExtractionError,
+  XlsxExtractionError,
+} from '../types/extraction';
 
 import type { FileProcessorConfig } from '../config';
 import type {
@@ -45,7 +49,10 @@ export interface OfficeExtractor {
    * @param options - Extraction options
    * @returns DOCX extraction result
    */
-  extractDocx(buffer: Buffer, options?: DocxOptions): Promise<DocxExtractionResult>;
+  extractDocx(
+    buffer: Buffer,
+    options?: DocxOptions
+  ): Promise<DocxExtractionResult>;
 
   /**
    * Extract content from an XLSX spreadsheet.
@@ -54,7 +61,10 @@ export interface OfficeExtractor {
    * @param options - Extraction options
    * @returns XLSX extraction result
    */
-  extractXlsx(buffer: Buffer, options?: XlsxOptions): Promise<XlsxExtractionResult>;
+  extractXlsx(
+    buffer: Buffer,
+    options?: XlsxOptions
+  ): Promise<XlsxExtractionResult>;
 
   /**
    * Check if buffer is a valid DOCX file.
@@ -179,7 +189,10 @@ interface XLSXProperties {
 interface XLSXModule {
   read: (data: Buffer, options?: Record<string, unknown>) => XLSXWorkbook;
   utils: {
-    decode_range: (range: string) => { s: { r: number; c: number }; e: { r: number; c: number } };
+    decode_range: (range: string) => {
+      s: { r: number; c: number };
+      e: { r: number; c: number };
+    };
     encode_cell: (cell: { r: number; c: number }) => string;
   };
 }
@@ -188,7 +201,10 @@ interface XLSXModule {
  * Mammoth module interface for document conversion.
  */
 interface MammothModule {
-  convertToHtml: (input: { buffer: Buffer }, options?: Record<string, unknown>) => Promise<MammothResult>;
+  convertToHtml: (
+    input: { buffer: Buffer },
+    options?: Record<string, unknown>
+  ) => Promise<MammothResult>;
   extractRawText: (input: { buffer: Buffer }) => Promise<MammothResult>;
 }
 
@@ -227,7 +243,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new ExtractionError(
           'mammoth library not available. Please install: npm install mammoth',
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
     }
@@ -246,7 +262,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new ExtractionError(
           'xlsx library not available. Please install: npm install xlsx',
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
     }
@@ -256,7 +272,10 @@ export class OfficeExtractorImpl implements OfficeExtractor {
   /**
    * Extract content from a DOCX document.
    */
-  async extractDocx(buffer: Buffer, options?: DocxOptions): Promise<DocxExtractionResult> {
+  async extractDocx(
+    buffer: Buffer,
+    options?: DocxOptions
+  ): Promise<DocxExtractionResult> {
     const startTime = Date.now();
     const warnings: string[] = [];
 
@@ -265,7 +284,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       if (!this.isDocx(buffer)) {
         throw new DocxExtractionError(
           'Invalid DOCX: Buffer does not appear to be a valid DOCX file',
-          'INVALID_FILE',
+          'INVALID_FILE'
         );
       }
 
@@ -286,7 +305,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new DocxExtractionError(
           `Failed to convert DOCX to HTML: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
 
@@ -298,7 +317,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new DocxExtractionError(
           `Failed to extract DOCX text: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
 
@@ -316,7 +335,9 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       const headings = this.extractHeadingsFromHtml(html);
 
       // Extract tables from HTML
-      const tables = options?.extractTables ? this.extractTablesFromHtml(html) : undefined;
+      const tables = options?.extractTables
+        ? this.extractTablesFromHtml(html)
+        : undefined;
 
       // Build metadata
       const metadata = this.buildDocxMetadata(text);
@@ -325,8 +346,14 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       const result: DocxExtractionResult = {
         text,
         documentType: 'docx',
-        html: options?.outputFormat === 'html' || options?.preserveFormatting ? html : undefined,
-        markdown: options?.outputFormat === 'markdown' ? this.htmlToMarkdown(html) : undefined,
+        html:
+          options?.outputFormat === 'html' || options?.preserveFormatting
+            ? html
+            : undefined,
+        markdown:
+          options?.outputFormat === 'markdown'
+            ? this.htmlToMarkdown(html)
+            : undefined,
         headings,
         tables,
         metadata,
@@ -337,14 +364,17 @@ export class OfficeExtractorImpl implements OfficeExtractor {
 
       return result;
     } catch (error) {
-      if (error instanceof DocxExtractionError || error instanceof ExtractionError) {
+      if (
+        error instanceof DocxExtractionError ||
+        error instanceof ExtractionError
+      ) {
         throw error;
       }
 
       throw new DocxExtractionError(
         `DOCX extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'EXTRACTION_FAILED',
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -352,7 +382,10 @@ export class OfficeExtractorImpl implements OfficeExtractor {
   /**
    * Extract content from an XLSX spreadsheet.
    */
-  async extractXlsx(buffer: Buffer, options?: XlsxOptions): Promise<XlsxExtractionResult> {
+  async extractXlsx(
+    buffer: Buffer,
+    options?: XlsxOptions
+  ): Promise<XlsxExtractionResult> {
     const startTime = Date.now();
     const warnings: string[] = [];
 
@@ -361,7 +394,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       if (!this.isXlsx(buffer)) {
         throw new XlsxExtractionError(
           'Invalid XLSX: Buffer does not appear to be a valid XLSX file',
-          'INVALID_FILE',
+          'INVALID_FILE'
         );
       }
 
@@ -381,7 +414,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
           `Failed to parse XLSX: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'EXTRACTION_FAILED',
           undefined,
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
 
@@ -391,11 +424,18 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       const maxSheets = options?.sheets?.length ?? this.config.maxSheets ?? 50;
 
       let processedSheets = 0;
-      for (let i = 0; i < sheetNames.length && processedSheets < maxSheets; i++) {
+      for (
+        let i = 0;
+        i < sheetNames.length && processedSheets < maxSheets;
+        i++
+      ) {
         const sheetName = sheetNames[i];
 
         // Check if we should process this sheet
-        if (options?.sheets && !this.shouldProcessSheet(sheetName, i, options.sheets)) {
+        if (
+          options?.sheets &&
+          !this.shouldProcessSheet(sheetName, i, options.sheets)
+        ) {
           continue;
         }
 
@@ -405,7 +445,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
           sheetName,
           i,
           options,
-          XLSX,
+          XLSX
         );
 
         // Skip hidden sheets if requested
@@ -430,7 +470,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       const metadata = this.buildXlsxMetadata(sheets, workbookProperties);
 
       // Build tables from sheets
-      const tables = sheets.map((sheet) => this.sheetToTable(sheet));
+      const tables = sheets.map(sheet => this.sheetToTable(sheet));
 
       // Build result
       const result: XlsxExtractionResult = {
@@ -448,7 +488,10 @@ export class OfficeExtractorImpl implements OfficeExtractor {
 
       return result;
     } catch (error) {
-      if (error instanceof XlsxExtractionError || error instanceof ExtractionError) {
+      if (
+        error instanceof XlsxExtractionError ||
+        error instanceof ExtractionError
+      ) {
         throw error;
       }
 
@@ -456,7 +499,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         `XLSX extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'EXTRACTION_FAILED',
         undefined,
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -467,11 +510,11 @@ export class OfficeExtractorImpl implements OfficeExtractor {
   isDocx(buffer: Buffer): boolean {
     // Check for ZIP signature (PK) and look for word/ content
     if (buffer.length < 4) {
-return false;
-}
+      return false;
+    }
     if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) {
-return false;
-}
+      return false;
+    }
 
     // Check for word processor content markers
     const content = buffer.toString('utf8', 0, Math.min(buffer.length, 2000));
@@ -484,11 +527,11 @@ return false;
   isXlsx(buffer: Buffer): boolean {
     // Check for ZIP signature (PK) and look for xl/ content
     if (buffer.length < 4) {
-return false;
-}
+      return false;
+    }
     if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) {
-return false;
-}
+      return false;
+    }
 
     // Check for spreadsheet content markers
     const content = buffer.toString('utf8', 0, Math.min(buffer.length, 2000));
@@ -571,8 +614,8 @@ return false;
     }
 
     // Normalize column count
-    const maxCols = Math.max(...rows.map((r) => r.length));
-    const normalizedRows = rows.map((row) => {
+    const maxCols = Math.max(...rows.map(r => r.length));
+    const normalizedRows = rows.map(row => {
       while (row.length < maxCols) {
         row.push('');
       }
@@ -662,7 +705,7 @@ return false;
   private shouldProcessSheet(
     name: string,
     index: number,
-    filter: (string | number)[],
+    filter: (string | number)[]
   ): boolean {
     for (const item of filter) {
       if (typeof item === 'string' && item === name) {
@@ -683,7 +726,7 @@ return false;
     name: string,
     index: number,
     options: XlsxOptions | undefined,
-    XLSX: XLSXModule,
+    XLSX: XLSXModule
   ): XlsxSheet {
     const range = worksheet['!ref'];
     if (!range) {
@@ -708,7 +751,7 @@ return false;
     const rows: XlsxCellValue[][] = [];
     const maxRows = Math.min(
       rowCount,
-      options?.maxRowsPerSheet ?? this.config.maxRowsPerSheet ?? 10000,
+      options?.maxRowsPerSheet ?? this.config.maxRowsPerSheet ?? 10000
     );
 
     for (let r = decoded.s.r; r <= decoded.s.r + maxRows - 1; r++) {
@@ -726,7 +769,7 @@ return false;
       }
 
       // Skip empty rows if requested
-      if (options?.skipEmptyRows && row.every((v) => v === null || v === '')) {
+      if (options?.skipEmptyRows && row.every(v => v === null || v === '')) {
         continue;
       }
 
@@ -738,7 +781,7 @@ return false;
     let dataRows: XlsxCellValue[][] = rows;
 
     if (options?.firstRowAsHeaders && rows.length > 0) {
-      headers = rows[0].map((v) => this.cellToString(v));
+      headers = rows[0].map(v => this.cellToString(v));
       dataRows = rows.slice(1);
     }
 
@@ -831,7 +874,7 @@ return false;
       }
 
       for (const row of sheet.rows) {
-        lines.push(row.map((v) => this.cellToString(v)).join('\t'));
+        lines.push(row.map(v => this.cellToString(v)).join('\t'));
       }
 
       lines.push('');
@@ -846,7 +889,7 @@ return false;
   private sheetToTable(sheet: XlsxSheet): ExtractedTable {
     return {
       headers: sheet.headers,
-      rows: sheet.rows.map((row) => row.map((v) => this.cellToString(v))),
+      rows: sheet.rows.map(row => row.map(v => this.cellToString(v))),
       columnCount: sheet.columnCount,
       rowCount: sheet.rowCount,
     };
@@ -863,7 +906,10 @@ return false;
         ranges.push({
           name: name.Name,
           range: name.Ref,
-          sheet: name.Sheet !== undefined ? workbook.SheetNames[name.Sheet] : undefined,
+          sheet:
+            name.Sheet !== undefined
+              ? workbook.SheetNames[name.Sheet]
+              : undefined,
         });
       }
     }
@@ -874,7 +920,9 @@ return false;
   /**
    * Extract workbook properties.
    */
-  private extractWorkbookProperties(workbook: XLSXWorkbook): XlsxWorkbookProperties | undefined {
+  private extractWorkbookProperties(
+    workbook: XLSXWorkbook
+  ): XlsxWorkbookProperties | undefined {
     const props = workbook.Props;
     if (!props) {
       return undefined;
@@ -900,12 +948,12 @@ return false;
    */
   private buildXlsxMetadata(
     sheets: XlsxSheet[],
-    props?: XlsxWorkbookProperties,
+    props?: XlsxWorkbookProperties
   ): DocumentMetadata {
     const totalRows = sheets.reduce((sum, s) => sum + s.rowCount, 0);
     const totalCells = sheets.reduce(
       (sum, s) => sum + s.rowCount * s.columnCount,
-      0,
+      0
     );
 
     return {
@@ -926,7 +974,10 @@ return false;
    * Count words in text.
    */
   private countWords(text: string): number {
-    return text.trim().split(/\s+/).filter((word) => word.length > 0).length;
+    return text
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0).length;
   }
 
   /**
@@ -969,7 +1020,9 @@ return false;
  * });
  * ```
  */
-export function createOfficeExtractor(config?: FileProcessorConfig): OfficeExtractor {
+export function createOfficeExtractor(
+  config?: FileProcessorConfig
+): OfficeExtractor {
   return new OfficeExtractorImpl({ fileProcessorConfig: config });
 }
 

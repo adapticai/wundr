@@ -8,7 +8,6 @@ import { usePageHeader } from '@/contexts/page-header-context';
 import { useAdminActivity, type AdminAction } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
-
 type ActivityFilterType =
   | 'all'
   | 'member.invited'
@@ -36,17 +35,25 @@ export default function AdminActivityPage() {
 
   // Set page header
   useEffect(() => {
-    setPageHeader('Activity Log', 'Review admin actions and audit trail for your workspace');
+    setPageHeader(
+      'Activity Log',
+      'Review admin actions and audit trail for your workspace'
+    );
   }, [setPageHeader]);
 
   const [filterAction, setFilterAction] = useState<ActivityFilterType>('all');
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>(
+    '30d'
+  );
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { activities, isLoading, hasMore, loadMore } = useAdminActivity(workspaceSlug, {
-    type: filterAction === 'all' ? undefined : (filterAction as any),
-    limit: 50,
-  });
+  const { activities, isLoading, hasMore, loadMore } = useAdminActivity(
+    workspaceSlug,
+    {
+      type: filterAction === 'all' ? undefined : (filterAction as any),
+      limit: 50,
+    }
+  );
 
   // Filter activities based on search and date
   const filteredActivities = useMemo(() => {
@@ -57,18 +64,20 @@ export default function AdminActivityPage() {
       const days = parseInt(dateRange);
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - days);
-      filtered = filtered.filter((activity) => new Date(activity.createdAt) >= cutoff);
+      filtered = filtered.filter(
+        activity => new Date(activity.createdAt) >= cutoff
+      );
     }
 
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (activity) =>
+        activity =>
           activity.actor?.name?.toLowerCase().includes(query) ||
           activity.action.toLowerCase().includes(query) ||
           activity.targetName?.toLowerCase().includes(query) ||
-          (activity.metadata?.reason as string)?.toLowerCase().includes(query),
+          (activity.metadata?.reason as string)?.toLowerCase().includes(query)
       );
     }
 
@@ -77,16 +86,25 @@ export default function AdminActivityPage() {
 
   const handleExport = useCallback(() => {
     const csv = [
-      ['Timestamp', 'Action', 'Actor', 'Resource', 'Details', 'IP Address'].join(','),
-      ...filteredActivities.map((activity) =>
+      [
+        'Timestamp',
+        'Action',
+        'Actor',
+        'Resource',
+        'Details',
+        'IP Address',
+      ].join(','),
+      ...filteredActivities.map(activity =>
         [
-          activity.createdAt instanceof Date ? activity.createdAt.toISOString() : activity.createdAt,
+          activity.createdAt instanceof Date
+            ? activity.createdAt.toISOString()
+            : activity.createdAt,
           activity.action,
           activity.actor?.name || 'Unknown',
           activity.targetName || activity.targetType || '',
           (activity.metadata?.reason as string) || '',
           activity.ipAddress || '',
-        ].join(','),
+        ].join(',')
       ),
     ].join('\n');
 
@@ -122,35 +140,37 @@ export default function AdminActivityPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Action Button */}
-      <div className="flex justify-end">
+      <div className='flex justify-end'>
         <button
-          type="button"
+          type='button'
           onClick={handleExport}
           className={cn(
             'inline-flex items-center gap-2 rounded-md border border-input',
-            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted',
+            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted'
           )}
         >
-          <DownloadIcon className="h-4 w-4" />
+          <DownloadIcon className='h-4 w-4' />
           Export CSV
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-3">
+      <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
+        <div className='flex flex-wrap gap-3'>
           {/* Action Filter */}
           <select
             value={filterAction}
-            onChange={(e) => setFilterAction(e.target.value as ActivityFilterType)}
+            onChange={e =>
+              setFilterAction(e.target.value as ActivityFilterType)
+            }
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             )}
           >
-            {actionFilterOptions.map((option) => (
+            {actionFilterOptions.map(option => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -160,13 +180,13 @@ export default function AdminActivityPage() {
           {/* Date Range Filter */}
           <select
             value={dateRange}
-            onChange={(e) => setDateRange(e.target.value as typeof dateRange)}
+            onChange={e => setDateRange(e.target.value as typeof dateRange)}
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             )}
           >
-            {dateRangeOptions.map((option) => (
+            {dateRangeOptions.map(option => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -175,69 +195,71 @@ export default function AdminActivityPage() {
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className='relative'>
+          <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
           <input
-            type="text"
-            placeholder="Search activity..."
+            type='text'
+            placeholder='Search activity...'
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className={cn(
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'lg:w-64',
+              'lg:w-64'
             )}
           />
         </div>
       </div>
 
       {/* Activity Stats */}
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className='grid gap-4 sm:grid-cols-4'>
         <StatCard
-          label="Total Actions"
+          label='Total Actions'
           value={filteredActivities.length}
           icon={ActivityIcon}
         />
         <StatCard
-          label="Member Changes"
+          label='Member Changes'
           value={
-            filteredActivities.filter((a) => a.action.startsWith('member.')).length
+            filteredActivities.filter(a => a.action.startsWith('member.'))
+              .length
           }
           icon={UsersIcon}
         />
         <StatCard
-          label="Settings Updates"
+          label='Settings Updates'
           value={
-            filteredActivities.filter((a) => a.action === 'settings.updated').length
+            filteredActivities.filter(a => a.action === 'settings.updated')
+              .length
           }
           icon={SettingsIcon}
         />
         <StatCard
-          label="Unique Actors"
-          value={new Set(filteredActivities.map((a) => a.actorId)).size}
+          label='Unique Actors'
+          value={new Set(filteredActivities.map(a => a.actorId)).size}
           icon={UserIcon}
         />
       </div>
 
       {/* Activity Timeline */}
-      <div className="rounded-lg border bg-card">
-        <div className="border-b px-4 py-3">
-          <h2 className="font-semibold text-foreground">Timeline</h2>
+      <div className='rounded-lg border bg-card'>
+        <div className='border-b px-4 py-3'>
+          <h2 className='font-semibold text-foreground'>Timeline</h2>
         </div>
 
         {isLoading ? (
           <ActivitySkeleton count={10} />
         ) : filteredActivities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <ActivityIcon className="h-12 w-12 text-muted-foreground/50" />
-            <p className="mt-2 text-muted-foreground">No activity found</p>
-            <p className="text-sm text-muted-foreground">
+          <div className='flex flex-col items-center justify-center py-12'>
+            <ActivityIcon className='h-12 w-12 text-muted-foreground/50' />
+            <p className='mt-2 text-muted-foreground'>No activity found</p>
+            <p className='text-sm text-muted-foreground'>
               Try adjusting your filters
             </p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className='divide-y'>
             {filteredActivities.map((activity, index) => (
               <ActivityRow
                 key={activity.id}
@@ -246,7 +268,7 @@ export default function AdminActivityPage() {
                   index === 0 ||
                   !isSameDay(
                     new Date(activity.createdAt),
-                    new Date(filteredActivities[index - 1].createdAt),
+                    new Date(filteredActivities[index - 1].createdAt)
                   )
                 }
               />
@@ -256,12 +278,12 @@ export default function AdminActivityPage() {
 
         {/* Load More */}
         {hasMore && (
-          <div className="border-t px-4 py-3 text-center">
+          <div className='border-t px-4 py-3 text-center'>
             <button
-              type="button"
+              type='button'
               onClick={loadMore}
               disabled={isLoading}
-              className="text-sm text-primary hover:underline disabled:opacity-50"
+              className='text-sm text-primary hover:underline disabled:opacity-50'
             >
               Load more activity
             </button>
@@ -292,12 +314,12 @@ function StatCard({
   icon: React.FC<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-4 w-4" />
-        <span className="text-sm">{label}</span>
+    <div className='rounded-lg border bg-card p-4'>
+      <div className='flex items-center gap-2 text-muted-foreground'>
+        <Icon className='h-4 w-4' />
+        <span className='text-sm'>{label}</span>
       </div>
-      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
+      <p className='mt-1 text-2xl font-bold text-foreground'>{value}</p>
     </div>
   );
 }
@@ -313,59 +335,65 @@ function ActivityRow({
   const actionConfig = getActionConfig(activity.action);
   const timestamp = getTimestamp(activity);
   const reason = activity.metadata?.reason;
-  const reasonText = typeof reason === 'string' ? reason : reason ? JSON.stringify(reason) : null;
+  const reasonText =
+    typeof reason === 'string'
+      ? reason
+      : reason
+        ? JSON.stringify(reason)
+        : null;
 
   return (
     <>
       {showDate && (
-        <div className="border-t bg-stone/50 px-4 py-2 text-xs font-medium text-muted-foreground">
+        <div className='border-t bg-stone/50 px-4 py-2 text-xs font-medium text-muted-foreground'>
           {formatDate(timestamp)}
         </div>
       )}
-      <div className="flex items-start gap-4 px-4 py-4">
+      <div className='flex items-start gap-4 px-4 py-4'>
         {/* Actor Avatar */}
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-stone">
-          <UserIcon className="h-5 w-5 text-muted-foreground" />
+        <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-stone'>
+          <UserIcon className='h-5 w-5 text-muted-foreground' />
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-start justify-between gap-2'>
             <div>
-              <p className="text-sm text-foreground">
-                <span className="font-medium">{activity.actor?.name || 'Unknown'}</span>
-                {' '}
+              <p className='text-sm text-foreground'>
+                <span className='font-medium'>
+                  {activity.actor?.name || 'Unknown'}
+                </span>{' '}
                 {actionConfig.description}
                 {activity.targetName && (
                   <>
                     {' '}
-                    <span className="font-medium">{activity.targetName}</span>
+                    <span className='font-medium'>{activity.targetName}</span>
                   </>
                 )}
               </p>
               {reasonText && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className='mt-1 text-sm text-muted-foreground'>
                   {reasonText}
                 </p>
               )}
             </div>
-            <span className="flex-shrink-0 text-xs text-muted-foreground">
+            <span className='flex-shrink-0 text-xs text-muted-foreground'>
               {formatTime(timestamp)}
             </span>
           </div>
 
           {/* Metadata */}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className='mt-2 flex flex-wrap items-center gap-2'>
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                actionConfig.className,
+                actionConfig.className
               )}
             >
               {actionConfig.label}
             </span>
             {activity.ipAddress && (
-              <span className="text-xs text-muted-foreground">
+              <span className='text-xs text-muted-foreground'>
                 IP: {activity.ipAddress}
               </span>
             )}
@@ -378,13 +406,13 @@ function ActivityRow({
 
 function ActivitySkeleton({ count }: { count: number }) {
   return (
-    <div className="divide-y">
+    <div className='divide-y'>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-start gap-4 px-4 py-4">
-          <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+        <div key={i} className='flex items-start gap-4 px-4 py-4'>
+          <div className='h-10 w-10 animate-pulse rounded-full bg-muted' />
+          <div className='flex-1 space-y-2'>
+            <div className='h-4 w-3/4 animate-pulse rounded bg-muted' />
+            <div className='h-3 w-1/2 animate-pulse rounded bg-muted' />
           </div>
         </div>
       ))}
@@ -398,11 +426,15 @@ function getActionConfig(actionType: string): {
   description: string;
   className: string;
 } {
-  const configs: Record<string, { label: string; description: string; className: string }> = {
+  const configs: Record<
+    string,
+    { label: string; description: string; className: string }
+  > = {
     'member.invited': {
       label: 'Invite',
       description: 'invited',
-      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
+      className:
+        'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'member.removed': {
       label: 'Remove',
@@ -412,27 +444,32 @@ function getActionConfig(actionType: string): {
     'member.suspended': {
       label: 'Suspend',
       description: 'suspended member',
-      className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      className:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     },
     'member.unsuspended': {
       label: 'Unsuspend',
       description: 'unsuspended member',
-      className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      className:
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     },
     'member.role_changed': {
       label: 'Role Change',
       description: 'changed role for',
-      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
+      className:
+        'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'role.created': {
       label: 'Create',
       description: 'created role',
-      className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      className:
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     },
     'role.updated': {
       label: 'Update',
       description: 'updated role',
-      className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      className:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     },
     'role.deleted': {
       label: 'Delete',
@@ -442,17 +479,20 @@ function getActionConfig(actionType: string): {
     'settings.updated': {
       label: 'Settings',
       description: 'updated workspace settings',
-      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
+      className:
+        'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'billing.plan_changed': {
       label: 'Billing',
       description: 'updated billing information',
-      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
+      className:
+        'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'channel.created': {
       label: 'Channel',
       description: 'created channel',
-      className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      className:
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     },
     'channel.deleted': {
       label: 'Channel',
@@ -462,7 +502,8 @@ function getActionConfig(actionType: string): {
     'channel.archived': {
       label: 'Channel',
       description: 'archived channel',
-      className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+      className:
+        'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
     },
   };
 
@@ -470,7 +511,8 @@ function getActionConfig(actionType: string): {
     configs[actionType] || {
       label: 'Action',
       description: `performed ${actionType}`,
-      className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+      className:
+        'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
     }
   );
 }
@@ -513,48 +555,110 @@ function formatTime(timestamp: string): string {
 // Icons
 function DownloadIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' />
+      <polyline points='7 10 12 15 17 10' />
+      <line x1='12' x2='12' y1='15' y2='3' />
     </svg>
   );
 }
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <circle cx='11' cy='11' r='8' />
+      <path d='m21 21-4.3-4.3' />
     </svg>
   );
 }
 
 function ActivityIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2' />
     </svg>
   );
 }
 
 function UsersIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+      <circle cx='9' cy='7' r='4' />
+      <path d='M22 21v-2a4 4 0 0 0-3-3.87' />
+      <path d='M16 3.13a4 4 0 0 1 0 7.75' />
     </svg>
   );
 }
 
 function SettingsIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z' />
+      <circle cx='12' cy='12' r='3' />
     </svg>
   );
 }
 
 function UserIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+    >
+      <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
+      <circle cx='12' cy='7' r='4' />
     </svg>
   );
 }

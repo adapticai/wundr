@@ -176,9 +176,7 @@
           "description": "Test Orchestrator work hours enforcement",
           "status": "NOT_STARTED",
           "completion": 0,
-          "evidence": [
-            "No work hours enforcement test found"
-          ],
+          "evidence": ["No work hours enforcement test found"],
           "blocking": false
         },
         {
@@ -186,9 +184,7 @@
           "description": "Test Orchestrator capacity management",
           "status": "NOT_STARTED",
           "completion": 0,
-          "evidence": [
-            "No capacity management test found"
-          ],
+          "evidence": ["No capacity management test found"],
           "blocking": false
         },
         {
@@ -305,9 +301,7 @@
           "description": "Load test with 16 concurrent VPs",
           "status": "NOT_STARTED",
           "completion": 0,
-          "evidence": [
-            "No load testing infrastructure found"
-          ],
+          "evidence": ["No load testing infrastructure found"],
           "blocking": true,
           "priority": "HIGH"
         },

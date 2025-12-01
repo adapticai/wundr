@@ -60,15 +60,18 @@ const idParamSchema = z.object({
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -77,8 +80,11 @@ export async function GET(
     const paramResult = idParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createPresenceErrorResponse('Invalid user ID format', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createPresenceErrorResponse(
+          'Invalid user ID format',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -95,8 +101,11 @@ export async function GET(
 
     if (!user) {
       return NextResponse.json(
-        createPresenceErrorResponse('User not found', PRESENCE_ERROR_CODES.USER_NOT_FOUND),
-        { status: 404 },
+        createPresenceErrorResponse(
+          'User not found',
+          PRESENCE_ERROR_CODES.USER_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -115,7 +124,9 @@ export async function GET(
     return NextResponse.json({
       data: {
         userId: user.id,
-        status: prefs.presenceStatus ?? (user.status === 'ACTIVE' ? 'ONLINE' : 'OFFLINE'),
+        status:
+          prefs.presenceStatus ??
+          (user.status === 'ACTIVE' ? 'ONLINE' : 'OFFLINE'),
         customStatus: (prefs.customStatus as string | null | undefined) ?? null,
         lastSeen: user.lastActiveAt?.toISOString() ?? new Date(0).toISOString(),
         isOnline,
@@ -126,9 +137,9 @@ export async function GET(
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

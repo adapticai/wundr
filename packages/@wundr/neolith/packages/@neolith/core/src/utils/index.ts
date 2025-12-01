@@ -34,9 +34,13 @@ export function generateSlug(
     maxLength?: number;
     separator?: string;
     appendUniqueSuffix?: boolean;
-  } = {},
+  } = {}
 ): string {
-  const { maxLength = 50, separator = '-', appendUniqueSuffix = false } = options;
+  const {
+    maxLength = 50,
+    separator = '-',
+    appendUniqueSuffix = false,
+  } = options;
 
   // Convert to lowercase and replace non-alphanumeric chars with separator
   let slug = input
@@ -51,7 +55,9 @@ export function generateSlug(
   const targetLength = maxLength - suffixLength;
 
   if (slug.length > targetLength) {
-    slug = slug.substring(0, targetLength).replace(new RegExp(`${separator}+$`), '');
+    slug = slug
+      .substring(0, targetLength)
+      .replace(new RegExp(`${separator}+$`), '');
   }
 
   // Append unique suffix if requested
@@ -74,7 +80,7 @@ export function generateSlug(
 export function generateOrchestratorEmail(
   name: string,
   organizationSlug: string,
-  domain: string = 'vp.genesis.local',
+  domain: string = 'vp.genesis.local'
 ): string {
   const slug = generateSlug(name, { maxLength: 30 });
   const uniqueId = generateShortId(6);
@@ -159,7 +165,10 @@ export function hashAPIKey(key: string): string {
  * @param prefixLength - Length of the prefix to extract (default: 12)
  * @returns The key prefix
  */
-export function extractKeyPrefix(key: string, prefixLength: number = 12): string {
+export function extractKeyPrefix(
+  key: string,
+  prefixLength: number = 12
+): string {
   return key.substring(0, prefixLength);
 }
 
@@ -170,7 +179,10 @@ export function extractKeyPrefix(key: string, prefixLength: number = 12): string
  * @param expectedPrefix - Expected prefix (default: 'gns_')
  * @returns Whether the key format is valid
  */
-export function isValidAPIKeyFormat(key: string, expectedPrefix: string = 'gns_'): boolean {
+export function isValidAPIKeyFormat(
+  key: string,
+  expectedPrefix: string = 'gns_'
+): boolean {
   if (!key || typeof key !== 'string') {
     return false;
   }
@@ -202,7 +214,10 @@ export function verifyAPIKey(key: string, storedHash: string): boolean {
 
   // Use constant-time comparison to prevent timing attacks
   try {
-    return crypto.timingSafeEqual(Buffer.from(keyHash), Buffer.from(storedHash));
+    return crypto.timingSafeEqual(
+      Buffer.from(keyHash),
+      Buffer.from(storedHash)
+    );
   } catch {
     // If buffers are different lengths, timingSafeEqual throws
     return false;
@@ -277,10 +292,7 @@ export function isValidSlug(slug: string): boolean {
  * @param source - The source object to merge
  * @returns The merged object
  */
-export function deepMerge<T extends object>(
-  target: T,
-  source: Partial<T>,
-): T {
+export function deepMerge<T extends object>(target: T, source: Partial<T>): T {
   const result = { ...target } as T;
 
   for (const key of Object.keys(source) as (keyof T)[]) {
@@ -298,7 +310,7 @@ export function deepMerge<T extends object>(
     ) {
       (result as Record<string, unknown>)[key as string] = deepMerge(
         targetValue as object,
-        sourceValue as object,
+        sourceValue as object
       );
     } else if (sourceValue !== undefined) {
       (result as Record<string, unknown>)[key as string] = sourceValue;
@@ -319,7 +331,7 @@ export function deepMerge<T extends object>(
 export function safeGet<T>(
   obj: Record<string, unknown>,
   path: string,
-  defaultValue?: T,
+  defaultValue?: T
 ): T | undefined {
   const keys = path.split('.');
   let current: unknown = obj;

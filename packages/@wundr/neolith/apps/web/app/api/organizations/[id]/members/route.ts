@@ -56,15 +56,18 @@ async function checkOrganizationAccess(orgId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -73,20 +76,26 @@ export async function GET(
     const paramResult = organizationIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid organization ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid organization ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Check membership
-    const membership = await checkOrganizationAccess(params.id, session.user.id);
+    const membership = await checkOrganizationAccess(
+      params.id,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Organization not found or access denied',
-          ORG_ERROR_CODES.ORG_NOT_FOUND,
+          ORG_ERROR_CODES.ORG_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -105,10 +114,7 @@ export async function GET(
           },
         },
       },
-      orderBy: [
-        { role: 'asc' },
-        { joinedAt: 'asc' },
-      ],
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
     });
 
     return NextResponse.json({
@@ -120,9 +126,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -138,15 +144,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -155,20 +164,26 @@ export async function POST(
     const paramResult = organizationIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid organization ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid organization ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Check membership and permission
-    const membership = await checkOrganizationAccess(params.id, session.user.id);
+    const membership = await checkOrganizationAccess(
+      params.id,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Organization not found or access denied',
-          ORG_ERROR_CODES.ORG_NOT_FOUND,
+          ORG_ERROR_CODES.ORG_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -176,9 +191,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Admin or Owner role required.',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -188,8 +203,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -200,9 +218,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -215,11 +233,8 @@ export async function POST(
 
     if (!user) {
       return NextResponse.json(
-        createErrorResponse(
-          'User not found',
-          ORG_ERROR_CODES.USER_NOT_FOUND,
-        ),
-        { status: 404 },
+        createErrorResponse('User not found', ORG_ERROR_CODES.USER_NOT_FOUND),
+        { status: 404 }
       );
     }
 
@@ -237,9 +252,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'User is already a member of this organization',
-          ORG_ERROR_CODES.ALREADY_MEMBER,
+          ORG_ERROR_CODES.ALREADY_MEMBER
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -269,16 +284,16 @@ export async function POST(
 
     return NextResponse.json(
       { data: newMembership, message: 'Member added successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/organizations/:id/members] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

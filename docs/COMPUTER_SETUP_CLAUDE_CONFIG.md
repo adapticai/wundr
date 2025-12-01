@@ -2,21 +2,26 @@
 
 ## Overview
 
-The enhanced `computer-setup` command now includes comprehensive Claude Code configuration management, enabling automated installation of CLAUDE.md, hooks, conventions, agent templates, git-worktree workflows, and validation scripts.
+The enhanced `computer-setup` command now includes comprehensive Claude Code configuration
+management, enabling automated installation of CLAUDE.md, hooks, conventions, agent templates,
+git-worktree workflows, and validation scripts.
 
 ## Features
 
 ### 1. Enhanced CLAUDE.md Installation
+
 - Copies enhanced CLAUDE.md to `~/.claude/`
 - Includes SPARC methodology, MCP tools integration, and best practices
 - Automatically backs up existing configurations
 
 ### 2. Hooks Installation
+
 - Pre-commit hooks for linting and type checking
 - Post-checkout hooks for dependency installation
 - Executable scripts with proper permissions
 
 ### 3. Conventions Configuration
+
 - File naming conventions (PascalCase, camelCase, etc.)
 - Code style settings (indentation, quotes, semicolons)
 - Import ordering and grouping
@@ -24,22 +29,26 @@ The enhanced `computer-setup` command now includes comprehensive Claude Code con
 - Git commit message standards
 
 ### 4. Agent Templates
+
 - Backend Developer template
 - Frontend Developer template
 - Fullstack Developer template
 - Customizable agent roles and responsibilities
 
 ### 5. Git-Worktree Workflows
+
 - Feature development workflow
 - Bug fix workflow
 - Isolation-based development patterns
 
 ### 6. Validation Scripts
+
 - Setup validation script (`validate-setup.sh`)
 - Configuration check script (`check-config.sh`)
 - Automated health checks
 
 ### 7. Backup and Rollback
+
 - Automatic backup creation before installation
 - Manual backup management
 - One-command rollback capability
@@ -125,7 +134,9 @@ After installation, your `~/.claude/` directory will have:
 ## Installed Files
 
 ### CLAUDE.md
+
 Enhanced configuration including:
+
 - SPARC methodology guidelines
 - MCP tools integration
 - Concurrent execution patterns
@@ -134,6 +145,7 @@ Enhanced configuration including:
 - Advanced features (v2.0.0)
 
 ### conventions.json
+
 ```json
 {
   "fileNaming": {
@@ -171,12 +183,14 @@ Enhanced configuration including:
 ### Agent Templates
 
 Each template includes:
+
 - Name and role
 - Responsibilities
 - Required tools
 - Development patterns
 
 Example (Backend Developer):
+
 ```json
 {
   "name": "Backend Developer",
@@ -188,17 +202,14 @@ Example (Backend Developer):
     "Write comprehensive API documentation"
   ],
   "tools": ["node", "typescript", "postgresql", "redis"],
-  "patterns": [
-    "Controller-Service-Repository",
-    "DTO pattern",
-    "Middleware pattern"
-  ]
+  "patterns": ["Controller-Service-Repository", "DTO pattern", "Middleware pattern"]
 }
 ```
 
 ### Git-Worktree Workflows
 
 Example (Feature Development):
+
 ```json
 {
   "name": "Feature Development Workflow",
@@ -227,13 +238,17 @@ Example (Feature Development):
 ### Validation Scripts
 
 #### validate-setup.sh
+
 Checks for:
+
 - Required files (CLAUDE.md, conventions.json)
 - Required directories (hooks, agents, workflows)
 - Proper permissions
 
 #### check-config.sh
+
 Verifies:
+
 - Claude CLI installation
 - Node.js version
 - Git installation
@@ -289,7 +304,8 @@ wundr computer-setup backup --cleanup
 
 ## Integration with Computer Setup
 
-The Claude Code configuration installation integrates seamlessly with the main computer-setup workflow:
+The Claude Code configuration installation integrates seamlessly with the main computer-setup
+workflow:
 
 ```bash
 # During interactive setup
@@ -369,6 +385,7 @@ chmod +x ~/.claude/hooks/pre-push
 **Problem**: Installation fails with permission error
 
 **Solution**:
+
 ```bash
 # Ensure ~/.claude directory is writable
 chmod -R u+w ~/.claude
@@ -380,6 +397,7 @@ wundr computer-setup claude-config --claude-dir ~/custom-claude
 **Problem**: CLAUDE.md not found in source
 
 **Solution**:
+
 ```bash
 # Ensure you're running from project root
 cd /path/to/wundr
@@ -391,6 +409,7 @@ wundr computer-setup claude-config
 **Problem**: Backup verification fails
 
 **Solution**:
+
 ```bash
 # List backups
 wundr computer-setup backup --list
@@ -407,6 +426,7 @@ wundr computer-setup backup --create
 **Problem**: Rollback doesn't restore files
 
 **Solution**:
+
 ```bash
 # Check backup integrity first
 wundr computer-setup backup --verify <backup-id>
@@ -421,21 +441,25 @@ wundr computer-setup rollback --backup <backup-id> --verbose
 ## Best Practices
 
 1. **Always backup before major changes**
+
    ```bash
    wundr computer-setup backup --create
    ```
 
 2. **Test with dry-run first**
+
    ```bash
    wundr computer-setup claude-config --dry-run
    ```
 
 3. **Verify after installation**
+
    ```bash
    ~/.claude/scripts/validate-setup.sh
    ```
 
 4. **Keep backups clean**
+
    ```bash
    wundr computer-setup backup --cleanup
    ```
@@ -519,14 +543,14 @@ tar -xzf claude-config.tar.gz -C ~/
 
 ```typescript
 class BackupRollbackManager {
-  constructor(backupDir?: string)
+  constructor(backupDir?: string);
 
-  async initialize(): Promise<void>
-  async createBackup(files: string[], reason: string): Promise<BackupMetadata>
-  async rollback(options: RollbackOptions): Promise<boolean>
-  async listBackups(): Promise<BackupMetadata[]>
-  async verifyBackup(backupId: string): Promise<boolean>
-  async cleanupOldBackups(retainCount: number): Promise<void>
+  async initialize(): Promise<void>;
+  async createBackup(files: string[], reason: string): Promise<BackupMetadata>;
+  async rollback(options: RollbackOptions): Promise<boolean>;
+  async listBackups(): Promise<BackupMetadata[]>;
+  async verifyBackup(backupId: string): Promise<boolean>;
+  async cleanupOldBackups(retainCount: number): Promise<void>;
 }
 ```
 
@@ -534,16 +558,17 @@ class BackupRollbackManager {
 
 ```typescript
 class ClaudeConfigInstaller {
-  constructor(options?: ClaudeConfigOptions)
+  constructor(options?: ClaudeConfigOptions);
 
-  async initialize(): Promise<void>
-  async install(options?: ClaudeConfigOptions): Promise<InstallResult>
+  async initialize(): Promise<void>;
+  async install(options?: ClaudeConfigOptions): Promise<InstallResult>;
 }
 ```
 
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: https://github.com/adapticai/wundr/issues
 - Documentation: https://wundr.io/docs
 - Community: https://wundr.io/community
@@ -551,6 +576,7 @@ For issues or questions:
 ## Contributing
 
 Contributions welcome! See:
+
 - [Contributing Guide](../CONTRIBUTING.md)
 - [Development Setup](../docs/DEVELOPMENT.md)
 - [Code of Conduct](../CODE_OF_CONDUCT.md)

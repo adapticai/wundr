@@ -325,7 +325,12 @@
     "external_setup_required": [
       {
         "platform": "Apple Developer",
-        "tasks": ["Account registration", "App ID creation", "Provisioning profiles", "APNs certificates"],
+        "tasks": [
+          "Account registration",
+          "App ID creation",
+          "Provisioning profiles",
+          "APNs certificates"
+        ],
         "cost": "$99/year",
         "timeline": "1-2 days for approval"
       },
@@ -337,7 +342,12 @@
       },
       {
         "platform": "Firebase",
-        "tasks": ["Project creation", "iOS app setup", "Android app setup", "Service account creation"],
+        "tasks": [
+          "Project creation",
+          "iOS app setup",
+          "Android app setup",
+          "Service account creation"
+        ],
         "cost": "Free tier available",
         "timeline": "Instant setup"
       }

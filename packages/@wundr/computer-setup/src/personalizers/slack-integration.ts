@@ -47,7 +47,9 @@ interface SlackPhotoResponse {
 interface SlackClientInterface {
   users: {
     profile: {
-      set: (params: { profile: SlackProfilePayload }) => Promise<SlackProfileResponse>;
+      set: (params: {
+        profile: SlackProfilePayload;
+      }) => Promise<SlackProfileResponse>;
       get: () => Promise<SlackProfileResponse>;
     };
     setPhoto: (params: { image: Buffer }) => Promise<SlackPhotoResponse>;
@@ -81,10 +83,16 @@ class MockWebClient implements SlackClientInterface {
 
   users = {
     profile: {
-      set: async (_params: { profile: SlackProfilePayload }) => ({ ok: false, error: 'slack_api_unavailable' }),
+      set: async (_params: { profile: SlackProfilePayload }) => ({
+        ok: false,
+        error: 'slack_api_unavailable',
+      }),
       get: async () => ({ ok: false, error: 'slack_api_unavailable' }),
     },
-    setPhoto: async (_params: { image: Buffer }) => ({ ok: false, error: 'slack_api_unavailable' }),
+    setPhoto: async (_params: { image: Buffer }) => ({
+      ok: false,
+      error: 'slack_api_unavailable',
+    }),
   };
 
   auth = {
@@ -96,7 +104,10 @@ class MockWebClient implements SlackClientInterface {
   };
 
   dnd = {
-    setSnooze: async (_params: { num_minutes: number }) => ({ ok: false, error: 'slack_api_unavailable' }),
+    setSnooze: async (_params: { num_minutes: number }) => ({
+      ok: false,
+      error: 'slack_api_unavailable',
+    }),
     endSnooze: async () => ({ ok: false, error: 'slack_api_unavailable' }),
   };
 }
@@ -173,7 +184,6 @@ export class SlackIntegration {
       if (profileData.photoPath) {
         await this.uploadProfilePhoto(profileData.photoPath);
       }
-
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to update Slack profile: ${error.message}`);
@@ -193,7 +203,6 @@ export class SlackIntegration {
       await client.users.setPhoto({
         image: photoData,
       });
-
     } catch (_error) {
       throw new Error(`Failed to upload Slack profile photo: ${_error}`);
     }
@@ -215,7 +224,11 @@ export class SlackIntegration {
   /**
    * Set Slack status with custom message and emoji
    */
-  async setStatus(statusText: string, statusEmoji: string = ':computer:', expiration?: number): Promise<void> {
+  async setStatus(
+    statusText: string,
+    statusEmoji: string = ':computer:',
+    expiration?: number
+  ): Promise<void> {
     try {
       const client = await this.getClient();
       const profile: SlackProfilePayload = {
@@ -228,7 +241,6 @@ export class SlackIntegration {
       }
 
       await client.users.profile.set({ profile });
-
     } catch (_error) {
       throw new Error(`Failed to set Slack status: ${_error}`);
     }
@@ -237,7 +249,9 @@ export class SlackIntegration {
   /**
    * Update only the profile fields without affecting other settings
    */
-  async updateProfileFields(fields: Record<string, { value: string; alt: string }>): Promise<void> {
+  async updateProfileFields(
+    fields: Record<string, { value: string; alt: string }>
+  ): Promise<void> {
     try {
       const client = await this.getClient();
       const profile: SlackProfilePayload = {
@@ -245,7 +259,6 @@ export class SlackIntegration {
       };
 
       await client.users.profile.set({ profile });
-
     } catch (_error) {
       throw new Error(`Failed to update Slack profile fields: ${_error}`);
     }
@@ -260,7 +273,6 @@ export class SlackIntegration {
       await client.dnd.setSnooze({
         num_minutes: minutes,
       });
-
     } catch (_error) {
       throw new Error(`Failed to set Do Not Disturb: ${_error}`);
     }
@@ -294,7 +306,11 @@ export class SlackIntegration {
   /**
    * Validate token and check permissions
    */
-  async validateToken(): Promise<{ valid: boolean; user?: string; team?: string }> {
+  async validateToken(): Promise<{
+    valid: boolean;
+    user?: string;
+    team?: string;
+  }> {
     try {
       const client = await this.getClient();
       const authResponse = await client.auth.test();
@@ -308,7 +324,6 @@ export class SlackIntegration {
       } else {
         return { valid: false };
       }
-
     } catch (_error) {
       return { valid: false };
     }
@@ -321,7 +336,8 @@ export class SlackIntegration {
     try {
       // First get the current profile to understand available fields
       const currentProfile = await this.getCurrentProfile();
-      const fields: Record<string, { value: string; alt: string }> = currentProfile?.fields || {};
+      const fields: Record<string, { value: string; alt: string }> =
+        currentProfile?.fields || {};
 
       // Update with new custom fields
       Object.entries(customFields).forEach(([key, value]) => {
@@ -337,7 +353,6 @@ export class SlackIntegration {
       });
 
       await this.updateProfileFields(fields);
-
     } catch (_error) {
       throw new Error(`Failed to set custom fields: ${_error}`);
     }
@@ -346,12 +361,14 @@ export class SlackIntegration {
   /**
    * Bulk update profile with all information at once
    */
-  async bulkUpdateProfile(profileData: SlackProfileData & {
-    customFields?: Record<string, string>;
-    pronouns?: string;
-    phone?: string;
-    timezone?: string;
-  }): Promise<void> {
+  async bulkUpdateProfile(
+    profileData: SlackProfileData & {
+      customFields?: Record<string, string>;
+      pronouns?: string;
+      phone?: string;
+      timezone?: string;
+    }
+  ): Promise<void> {
     try {
       const client = await this.getClient();
       const profile: SlackProfilePayload = {
@@ -372,7 +389,8 @@ export class SlackIntegration {
       // Handle custom fields
       if (profileData.customFields) {
         const currentProfile = await this.getCurrentProfile();
-        const existingFields: Record<string, { value: string; alt: string }> = currentProfile?.fields || {};
+        const existingFields: Record<string, { value: string; alt: string }> =
+          currentProfile?.fields || {};
 
         Object.entries(profileData.customFields).forEach(([key, value]) => {
           existingFields[key] = { value, alt: '' };
@@ -399,7 +417,6 @@ export class SlackIntegration {
       if (profileData.photoPath) {
         await this.uploadProfilePhoto(profileData.photoPath);
       }
-
     } catch (_error) {
       throw new Error(`Failed to bulk update profile: ${_error}`);
     }

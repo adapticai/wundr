@@ -39,15 +39,18 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -71,9 +74,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -88,7 +91,7 @@ export async function GET(
         endedAt: string | null;
         createdBy: { id: string; name: string | null };
         participantCount: number;
-      }
+      };
     } | null;
 
     const activeHuddle = settings?.activeHuddle;
@@ -122,8 +125,11 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/channels/:channelId/huddle/status] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -46,7 +46,10 @@ function validateConfig(config: CreateLLMClientConfig): void {
   }
 
   // Validate provider
-  if (config.provider && !['openai', 'anthropic', 'azure', 'custom'].includes(config.provider)) {
+  if (
+    config.provider &&
+    !['openai', 'anthropic', 'azure', 'custom'].includes(config.provider)
+  ) {
     throw new LLMInvalidRequestError(
       `Invalid provider: ${config.provider}. Supported providers: openai, anthropic, azure, custom`,
       config.provider
@@ -213,7 +216,10 @@ export function createLLMClient(config: CreateLLMClientConfig): LLMClient {
  * @param apiKey - Optional API key (loaded from env if not provided)
  * @returns LLM client instance
  */
-export function createSimpleLLMClient(model: string, apiKey?: string): LLMClient {
+export function createSimpleLLMClient(
+  model: string,
+  apiKey?: string
+): LLMClient {
   const provider = detectProvider(model);
 
   return createLLMClient({
@@ -229,7 +235,9 @@ export function createSimpleLLMClient(model: string, apiKey?: string): LLMClient
  * @param config - Configuration to check
  * @returns True if configuration is valid
  */
-export function isValidLLMConfig(config: Partial<CreateLLMClientConfig>): config is CreateLLMClientConfig {
+export function isValidLLMConfig(
+  config: Partial<CreateLLMClientConfig>
+): config is CreateLLMClientConfig {
   try {
     if (!config.apiKey && !config.provider) {
       return false;

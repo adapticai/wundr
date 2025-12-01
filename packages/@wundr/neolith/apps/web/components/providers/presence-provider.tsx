@@ -63,12 +63,15 @@ export function PresenceProvider({
   userId,
   enabled = true,
 }: PresenceProviderProps) {
-  const [currentUserPresence, setCurrentUserPresence] = useState<UserPresence | null>(
-    null,
+  const [currentUserPresence, setCurrentUserPresence] =
+    useState<UserPresence | null>(null);
+  const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(
+    new Map()
   );
-  const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(new Map());
   const [isConnected, setIsConnected] = useState(false);
-  const [subscribedUserIds, setSubscribedUserIds] = useState<Set<string>>(new Set());
+  const [subscribedUserIds, setSubscribedUserIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,8 +81,8 @@ export function PresenceProvider({
   // Send heartbeat to maintain presence
   const sendHeartbeat = useCallback(async () => {
     if (!userId || !enabled) {
-return;
-}
+      return;
+    }
 
     try {
       const response = await fetch('/api/presence/heartbeat', {
@@ -105,8 +108,8 @@ return;
   const setStatus = useCallback(
     async (status: PresenceStatus) => {
       if (!userId) {
-return;
-}
+        return;
+      }
 
       try {
         const response = await fetch('/api/presence/me', {
@@ -116,23 +119,23 @@ return;
         });
 
         if (response.ok) {
-          setCurrentUserPresence((prev) =>
-            prev ? { ...prev, status, updatedAt: new Date() } : null,
+          setCurrentUserPresence(prev =>
+            prev ? { ...prev, status, updatedAt: new Date() } : null
           );
         }
       } catch {
         // Silently fail
       }
     },
-    [userId],
+    [userId]
   );
 
   // Set custom status text
   const setCustomStatus = useCallback(
     async (text: string) => {
       if (!userId) {
-return;
-}
+        return;
+      }
 
       try {
         const response = await fetch('/api/presence/me', {
@@ -142,22 +145,22 @@ return;
         });
 
         if (response.ok) {
-          setCurrentUserPresence((prev) =>
-            prev ? { ...prev, customStatus: text, updatedAt: new Date() } : null,
+          setCurrentUserPresence(prev =>
+            prev ? { ...prev, customStatus: text, updatedAt: new Date() } : null
           );
         }
       } catch {
         // Silently fail
       }
     },
-    [userId],
+    [userId]
   );
 
   // Clear custom status
   const clearCustomStatus = useCallback(async () => {
     if (!userId) {
-return;
-}
+      return;
+    }
 
     try {
       const response = await fetch('/api/presence/me/custom-status', {
@@ -165,8 +168,10 @@ return;
       });
 
       if (response.ok) {
-        setCurrentUserPresence((prev) =>
-          prev ? { ...prev, customStatus: undefined, updatedAt: new Date() } : null,
+        setCurrentUserPresence(prev =>
+          prev
+            ? { ...prev, customStatus: undefined, updatedAt: new Date() }
+            : null
         );
       }
     } catch {
@@ -182,12 +187,12 @@ return;
       }
       return presenceMap.get(targetUserId);
     },
-    [userId, currentUserPresence, presenceMap],
+    [userId, currentUserPresence, presenceMap]
   );
 
   // Subscribe to presence updates for specific users
   const subscribeToPresence = useCallback((userIds: string[]) => {
-    setSubscribedUserIds((prev) => {
+    setSubscribedUserIds(prev => {
       const next = new Set(prev);
       for (const id of userIds) {
         next.add(id);
@@ -198,7 +203,7 @@ return;
 
   // Unsubscribe from presence updates
   const unsubscribeFromPresence = useCallback((userIds: string[]) => {
-    setSubscribedUserIds((prev) => {
+    setSubscribedUserIds(prev => {
       const next = new Set(prev);
       for (const id of userIds) {
         next.delete(id);
@@ -210,8 +215,8 @@ return;
   // Connect to presence SSE stream
   const connect = useCallback(() => {
     if (!userId || !enabled) {
-return;
-}
+      return;
+    }
 
     // Close existing connection
     if (eventSourceRef.current) {
@@ -225,7 +230,7 @@ return;
       reconnectAttemptsRef.current = 0;
     };
 
-    eventSource.onmessage = (event) => {
+    eventSource.onmessage = event => {
       try {
         const data = JSON.parse(event.data);
 
@@ -241,7 +246,7 @@ return;
           if (data.userId === userId) {
             setCurrentUserPresence(presence);
           } else {
-            setPresenceMap((prev) => {
+            setPresenceMap(prev => {
               const next = new Map(prev);
               next.set(data.userId, presence);
               return next;
@@ -276,8 +281,8 @@ return;
   // Fetch presence for subscribed users
   useEffect(() => {
     if (subscribedUserIds.size === 0) {
-return;
-}
+      return;
+    }
 
     const fetchPresence = async () => {
       try {
@@ -289,7 +294,7 @@ return;
 
         if (response.ok) {
           const data = await response.json();
-          setPresenceMap((prev) => {
+          setPresenceMap(prev => {
             const next = new Map(prev);
             for (const item of data.presence) {
               next.set(item.userId, {
@@ -312,15 +317,18 @@ return;
   // Set up heartbeat and connection
   useEffect(() => {
     if (!userId || !enabled) {
-return;
-}
+      return;
+    }
 
     // Initial heartbeat and connection
     sendHeartbeat();
     connect();
 
     // Set up heartbeat interval
-    heartbeatIntervalRef.current = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
+    heartbeatIntervalRef.current = setInterval(
+      sendHeartbeat,
+      HEARTBEAT_INTERVAL
+    );
 
     // Handle visibility change
     const handleVisibilityChange = () => {
@@ -386,11 +394,13 @@ return;
       unsubscribeFromPresence,
       isConnected,
       reconnect,
-    ],
+    ]
   );
 
   return (
-    <PresenceContext.Provider value={value}>{children}</PresenceContext.Provider>
+    <PresenceContext.Provider value={value}>
+      {children}
+    </PresenceContext.Provider>
   );
 }
 
@@ -400,7 +410,9 @@ return;
 export function usePresenceContext(): PresenceContextValue {
   const context = useContext(PresenceContext);
   if (!context) {
-    throw new Error('usePresenceContext must be used within a PresenceProvider');
+    throw new Error(
+      'usePresenceContext must be used within a PresenceProvider'
+    );
   }
   return context;
 }

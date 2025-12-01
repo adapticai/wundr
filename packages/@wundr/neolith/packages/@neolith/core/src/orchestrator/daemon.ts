@@ -20,7 +20,12 @@ import type { OrchestratorWithUser } from '../types/orchestrator';
 /**
  * Daemon status enumeration
  */
-export type DaemonStatus = 'stopped' | 'initializing' | 'running' | 'error' | 'stopping';
+export type DaemonStatus =
+  | 'stopped'
+  | 'initializing'
+  | 'running'
+  | 'error'
+  | 'stopping';
 
 /**
  * Daemon configuration
@@ -74,7 +79,12 @@ export interface OutgoingMessage {
  * Orchestrator action to be executed
  */
 export interface OrchestratorAction {
-  type: 'send_message' | 'react' | 'update_status' | 'join_channel' | 'leave_channel';
+  type:
+    | 'send_message'
+    | 'react'
+    | 'update_status'
+    | 'join_channel'
+    | 'leave_channel';
   payload: Record<string, unknown>;
 }
 
@@ -151,7 +161,8 @@ export class OrchestratorDaemon extends EventEmitter {
       this.log('Orchestrator daemon started successfully');
     } catch (error) {
       this.status = 'error';
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.errors.push(errorMessage);
       this.emit('status:changed', this.status);
       this.emit('error', error);
@@ -190,7 +201,8 @@ export class OrchestratorDaemon extends EventEmitter {
 
       this.log('Orchestrator daemon stopped');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.errors.push(errorMessage);
       this.emit('error', error);
       throw error;
@@ -221,15 +233,20 @@ export class OrchestratorDaemon extends EventEmitter {
     }
 
     try {
-      this.log(`Processing message: ${message.id} from channel ${message.channelId}`);
+      this.log(
+        `Processing message: ${message.id} from channel ${message.channelId}`
+      );
 
       // Check if this message mentions the orchestrator
       const isMentioned = this.isOrchestratorMentioned(message);
 
       // Check concurrent conversation limit
-      const conversationCount = this.activeConversations.get(message.channelId) || 0;
+      const conversationCount =
+        this.activeConversations.get(message.channelId) || 0;
       if (conversationCount >= (this.config.maxConcurrentConversations || 10)) {
-        this.log(`Max concurrent conversations reached for channel ${message.channelId}`);
+        this.log(
+          `Max concurrent conversations reached for channel ${message.channelId}`
+        );
         return;
       }
 
@@ -246,7 +263,8 @@ export class OrchestratorDaemon extends EventEmitter {
 
       this.emit('message:processed', message);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.errors.push(`Message processing error: ${errorMessage}`);
       this.emit('message:error', { message, error });
     }
@@ -300,7 +318,10 @@ export class OrchestratorDaemon extends EventEmitter {
     return {
       status: this.status,
       uptime: this.startTime > 0 ? Date.now() - this.startTime : 0,
-      activeConversations: Array.from(this.activeConversations.values()).reduce((a, b) => a + b, 0),
+      activeConversations: Array.from(this.activeConversations.values()).reduce(
+        (a, b) => a + b,
+        0
+      ),
       totalMessagesProcessed: this.processedMessages,
       lastHeartbeat: new Date(),
       errors: [...this.errors],
@@ -367,8 +388,10 @@ export class OrchestratorDaemon extends EventEmitter {
     }
 
     // Check for orchestrator role mentions
-    if (this.config.orchestrator.role &&
-        content.includes(this.config.orchestrator.role.toLowerCase())) {
+    if (
+      this.config.orchestrator.role &&
+      content.includes(this.config.orchestrator.role.toLowerCase())
+    ) {
       return true;
     }
 
@@ -378,7 +401,9 @@ export class OrchestratorDaemon extends EventEmitter {
   /**
    * Generate AI response to a message
    */
-  private async generateResponse(message: IncomingMessage): Promise<OutgoingMessage> {
+  private async generateResponse(
+    message: IncomingMessage
+  ): Promise<OutgoingMessage> {
     // This will be implemented by the integration layer
     // Use the orchestrator's charter and personality to generate responses
     // For now, return a placeholder
@@ -412,7 +437,9 @@ export class OrchestratorDaemon extends EventEmitter {
 /**
  * Create a new orchestrator daemon instance
  */
-export function createOrchestratorDaemon(config: DaemonConfig): OrchestratorDaemon {
+export function createOrchestratorDaemon(
+  config: DaemonConfig
+): OrchestratorDaemon {
   return new OrchestratorDaemon(config);
 }
 

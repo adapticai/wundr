@@ -10,10 +10,7 @@
 
 import { prisma } from '@neolith/database';
 
-import {
-  GenesisError,
-  OrganizationNotFoundError,
-} from '../errors';
+import { GenesisError, OrganizationNotFoundError } from '../errors';
 import { generateSlug } from '../utils';
 
 import type {
@@ -25,7 +22,7 @@ import type {
   PaginatedDisciplineResult,
   UpdateDisciplineInput,
 } from '../types/organization';
-import type { Orchestrator, Prisma , PrismaClient } from '@neolith/database';
+import type { Orchestrator, Prisma, PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -40,7 +37,7 @@ export class DisciplineNotFoundError extends GenesisError {
       `Discipline not found with ${identifierType}: ${identifier}`,
       'DISCIPLINE_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'DisciplineNotFoundError';
   }
@@ -55,7 +52,7 @@ export class DisciplineAlreadyExistsError extends GenesisError {
       `Discipline '${name}' already exists in organization`,
       'DISCIPLINE_ALREADY_EXISTS',
       409,
-      { name, organizationId },
+      { name, organizationId }
     );
     this.name = 'DisciplineAlreadyExistsError';
   }
@@ -79,12 +76,7 @@ export class DisciplineValidationError extends GenesisError {
  */
 export class OrchestratorNotFoundError extends GenesisError {
   constructor(vpId: string) {
-    super(
-      `Orchestrator not found: ${vpId}`,
-      'VP_NOT_FOUND',
-      404,
-      { vpId },
-    );
+    super(`Orchestrator not found: ${vpId}`, 'VP_NOT_FOUND', 404, { vpId });
     this.name = 'VPNotFoundError';
   }
 }
@@ -136,7 +128,10 @@ export interface DisciplineService {
    * @returns The updated discipline
    * @throws {DisciplineNotFoundError} If the discipline doesn't exist
    */
-  updateDiscipline(id: string, data: UpdateDisciplineInput): Promise<Discipline>;
+  updateDiscipline(
+    id: string,
+    data: UpdateDisciplineInput
+  ): Promise<Discipline>;
 
   /**
    * Deletes a discipline (removes metadata, does not delete Orchestrators).
@@ -171,7 +166,7 @@ export interface DisciplineService {
    * @param disciplineId - The discipline ID (name)
    * @returns Array of Orchestrators
    */
-  getVPsInDiscipline(disciplineId: string): Promise<Orchestrator []>;
+  getVPsInDiscipline(disciplineId: string): Promise<Orchestrator[]>;
 }
 
 // =============================================================================
@@ -242,7 +237,8 @@ export class DisciplineServiceImpl implements DisciplineService {
     const disciplineId = generateSlug(data.name);
 
     // Get current settings
-    const settings = (organization.settings as OrganizationDisciplineSettings) || {};
+    const settings =
+      (organization.settings as OrganizationDisciplineSettings) || {};
     const disciplines = settings.disciplines || {};
 
     // Check if discipline already exists
@@ -339,7 +335,10 @@ export class DisciplineServiceImpl implements DisciplineService {
    * @param organizationId - The organization ID
    * @returns The discipline, or null if not found
    */
-  async getDisciplineInOrg(id: string, organizationId: string): Promise<Discipline | null> {
+  async getDisciplineInOrg(
+    id: string,
+    organizationId: string
+  ): Promise<Discipline | null> {
     const organization = await this.db.organization.findUnique({
       where: { id: organizationId },
     });
@@ -348,7 +347,8 @@ export class DisciplineServiceImpl implements DisciplineService {
       return null;
     }
 
-    const settings = (organization.settings as OrganizationDisciplineSettings) || {};
+    const settings =
+      (organization.settings as OrganizationDisciplineSettings) || {};
     const disciplines = settings.disciplines || {};
 
     if (!disciplines[id]) {
@@ -385,7 +385,8 @@ export class DisciplineServiceImpl implements DisciplineService {
       throw new OrganizationNotFoundError(orgId);
     }
 
-    const settings = (organization.settings as OrganizationDisciplineSettings) || {};
+    const settings =
+      (organization.settings as OrganizationDisciplineSettings) || {};
     const disciplineMetadata = settings.disciplines || {};
 
     // Also get disciplines from Orchestrators that may not have metadata
@@ -443,7 +444,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
     // Sort by name
     return Array.from(disciplineMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name),
+      a.name.localeCompare(b.name)
     );
   }
 
@@ -456,7 +457,7 @@ export class DisciplineServiceImpl implements DisciplineService {
    */
   async listDisciplinesWithPagination(
     orgId: string,
-    options: ListDisciplinesOptions = {},
+    options: ListDisciplinesOptions = {}
   ): Promise<PaginatedDisciplineResult> {
     const {
       includeEmpty = true,
@@ -470,7 +471,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
     // Filter empty disciplines if needed
     if (!includeEmpty) {
-      disciplines = disciplines.filter((d) => d.orchestratorCount > 0);
+      disciplines = disciplines.filter(d => d.orchestratorCount > 0);
     }
 
     // Sort
@@ -505,7 +506,10 @@ export class DisciplineServiceImpl implements DisciplineService {
   /**
    * Updates a discipline.
    */
-  async updateDiscipline(id: string, data: UpdateDisciplineInput): Promise<Discipline> {
+  async updateDiscipline(
+    id: string,
+    data: UpdateDisciplineInput
+  ): Promise<Discipline> {
     // Validate input
     this.validateUpdateInput(data);
 
@@ -523,7 +527,8 @@ export class DisciplineServiceImpl implements DisciplineService {
       throw new OrganizationNotFoundError(discipline.organizationId);
     }
 
-    const settings = (organization.settings as OrganizationDisciplineSettings) || {};
+    const settings =
+      (organization.settings as OrganizationDisciplineSettings) || {};
     const disciplines = settings.disciplines || {};
 
     if (!disciplines[id]) {
@@ -605,7 +610,8 @@ export class DisciplineServiceImpl implements DisciplineService {
       throw new OrganizationNotFoundError(discipline.organizationId);
     }
 
-    const settings = (organization.settings as OrganizationDisciplineSettings) || {};
+    const settings =
+      (organization.settings as OrganizationDisciplineSettings) || {};
     const disciplines = settings.disciplines || {};
 
     // Remove discipline metadata
@@ -630,7 +636,10 @@ export class DisciplineServiceImpl implements DisciplineService {
   /**
    * Assigns a Orchestrator to a discipline.
    */
-  async assignVPToDiscipline(vpId: string, disciplineId: string): Promise<void> {
+  async assignVPToDiscipline(
+    vpId: string,
+    disciplineId: string
+  ): Promise<void> {
     // Verify Orchestrator exists
     const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
@@ -641,7 +650,10 @@ export class DisciplineServiceImpl implements DisciplineService {
     }
 
     // Get discipline name from ID or use ID as name
-    const discipline = await this.getDisciplineInOrg(disciplineId, orchestrator.organizationId);
+    const discipline = await this.getDisciplineInOrg(
+      disciplineId,
+      orchestrator.organizationId
+    );
     const disciplineName = discipline?.name || disciplineId;
 
     // Update Orchestrator discipline
@@ -674,7 +686,7 @@ export class DisciplineServiceImpl implements DisciplineService {
   /**
    * Gets all Orchestrators in a discipline.
    */
-  async getVPsInDiscipline(disciplineId: string): Promise<Orchestrator []> {
+  async getVPsInDiscipline(disciplineId: string): Promise<Orchestrator[]> {
     // First try to find discipline metadata to get the name
     const discipline = await this.getDiscipline(disciplineId);
     const disciplineName = discipline?.name || disciplineId;
@@ -695,8 +707,14 @@ export class DisciplineServiceImpl implements DisciplineService {
    * @param organizationId - The organization ID
    * @returns Array of Orchestrators with user data
    */
-  async getVPsInDisciplineInOrg(disciplineId: string, organizationId: string): Promise<Orchestrator []> {
-    const discipline = await this.getDisciplineInOrg(disciplineId, organizationId);
+  async getVPsInDisciplineInOrg(
+    disciplineId: string,
+    organizationId: string
+  ): Promise<Orchestrator[]> {
+    const discipline = await this.getDisciplineInOrg(
+      disciplineId,
+      organizationId
+    );
     const disciplineName = discipline?.name || disciplineId;
 
     const orchestrators = await this.db.orchestrator.findMany({
@@ -718,23 +736,65 @@ export class DisciplineServiceImpl implements DisciplineService {
    * @param organizationId - The organization ID
    * @returns Discipline with Orchestrators, or null if not found
    */
-  async getDisciplineWithVPs(id: string, organizationId: string): Promise<DisciplineWithVPs | null> {
+  async getDisciplineWithVPs(
+    id: string,
+    organizationId: string
+  ): Promise<DisciplineWithVPs | null> {
     const discipline = await this.getDisciplineInOrg(id, organizationId);
     if (!discipline) {
       return null;
     }
 
-    const orchestrators = await this.getVPsInDisciplineInOrg(id, organizationId);
+    const orchestrators = await this.getVPsInDisciplineInOrg(
+      id,
+      organizationId
+    );
 
-    const vpBasics: OrchestratorBasic[] = orchestrators.map((vp) => ({
+    const vpBasics: OrchestratorBasic[] = orchestrators.map(vp => ({
       id: vp.id,
       role: vp.role,
       status: vp.status,
       user: {
-        id: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.id,
-        name: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.name,
-        email: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.email,
-        avatarUrl: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.avatarUrl,
+        id: (
+          vp as Orchestrator & {
+            user: {
+              id: string;
+              name: string | null;
+              email: string;
+              avatarUrl: string | null;
+            };
+          }
+        ).user.id,
+        name: (
+          vp as Orchestrator & {
+            user: {
+              id: string;
+              name: string | null;
+              email: string;
+              avatarUrl: string | null;
+            };
+          }
+        ).user.name,
+        email: (
+          vp as Orchestrator & {
+            user: {
+              id: string;
+              name: string | null;
+              email: string;
+              avatarUrl: string | null;
+            };
+          }
+        ).user.email,
+        avatarUrl: (
+          vp as Orchestrator & {
+            user: {
+              id: string;
+              name: string | null;
+              email: string;
+              avatarUrl: string | null;
+            };
+          }
+        ).user.avatarUrl,
       },
     }));
 
@@ -769,7 +829,10 @@ export class DisciplineServiceImpl implements DisciplineService {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new DisciplineValidationError('Discipline validation failed', errors);
+      throw new DisciplineValidationError(
+        'Discipline validation failed',
+        errors
+      );
     }
   }
 
@@ -792,7 +855,10 @@ export class DisciplineServiceImpl implements DisciplineService {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new DisciplineValidationError('Discipline validation failed', errors);
+      throw new DisciplineValidationError(
+        'Discipline validation failed',
+        errors
+      );
     }
   }
 }
@@ -825,7 +891,9 @@ export class DisciplineServiceImpl implements DisciplineService {
  * const orchestrators = await disciplineService.getVPsInDiscipline(discipline.id);
  * ```
  */
-export function createDisciplineService(database?: PrismaClient): DisciplineServiceImpl {
+export function createDisciplineService(
+  database?: PrismaClient
+): DisciplineServiceImpl {
   return new DisciplineServiceImpl(database);
 }
 

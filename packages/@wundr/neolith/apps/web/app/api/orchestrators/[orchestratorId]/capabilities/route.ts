@@ -85,14 +85,20 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
  * @param context - Route context containing orchestratorId
  * @returns Orchestrator capabilities
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -103,21 +109,24 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check access
-    const access = await checkOrchestratorAccess(params.orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      params.orchestratorId,
+      session.user.id
+    );
     if (!access.hasAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -152,9 +161,9 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_CONFIG_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_CONFIG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -168,14 +177,20 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
  * @param context - Route context containing orchestratorId
  * @returns Updated capabilities configuration
  */
-export async function PUT(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function PUT(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -186,9 +201,9 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -200,9 +215,9 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_CONFIG_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONFIG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -213,23 +228,26 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_CONFIG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: UpdateCapabilitiesInput = parseResult.data;
 
     // Check access
-    const access = await checkOrchestratorAccess(params.orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      params.orchestratorId,
+      session.user.id
+    );
     if (!access.hasAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -243,9 +261,9 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           'Configuration is locked by administrator',
-          ORCHESTRATOR_CONFIG_ERROR_CODES.CONFIG_LOCKED,
+          ORCHESTRATOR_CONFIG_ERROR_CODES.CONFIG_LOCKED
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -276,9 +294,9 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_CONFIG_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_CONFIG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

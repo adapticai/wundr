@@ -1,6 +1,6 @@
 /**
  * @wundr/ai-integration - AI Integration Hive Queen
- * 
+ *
  * Orchestrates Claude Code, Claude Flow, and MCP tools for comprehensive AI integration.
  * Implements neural pattern training, swarm intelligence, and cross-session memory.
  */

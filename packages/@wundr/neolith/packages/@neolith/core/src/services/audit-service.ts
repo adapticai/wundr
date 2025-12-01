@@ -185,9 +185,7 @@ export interface AuditLogDelegate {
   /**
    * Creates multiple audit log entries in a batch.
    */
-  createMany(args: {
-    data: AuditLogCreateInput[];
-  }): Promise<{ count: number }>;
+  createMany(args: { data: AuditLogCreateInput[] }): Promise<{ count: number }>;
   /**
    * Finds multiple audit log entries matching the criteria.
    */
@@ -214,9 +212,7 @@ export interface AuditLogDelegate {
   /**
    * Deletes multiple audit log entries matching the criteria.
    */
-  deleteMany(args: {
-    where: AuditLogWhereInput;
-  }): Promise<{ count: number }>;
+  deleteMany(args: { where: AuditLogWhereInput }): Promise<{ count: number }>;
 }
 
 /**
@@ -278,10 +274,7 @@ export interface AuditDatabaseClient {
   /** Audit log export operations */
   auditLogExport: AuditLogExportDelegate;
   /** Execute raw SQL query */
-  $queryRaw<T>(
-    query: TemplateStringsArray,
-    ...values: unknown[]
-  ): Promise<T>;
+  $queryRaw<T>(query: TemplateStringsArray, ...values: unknown[]): Promise<T>;
 }
 
 /**
@@ -452,15 +445,15 @@ export class AuditServiceImpl implements AuditService {
     }
 
     if (this.batchQueue.length === 0) {
-return;
-}
+      return;
+    }
 
     const entries = [...this.batchQueue];
     this.batchQueue = [];
 
     try {
       await this.prisma.auditLog.createMany({
-        data: entries.map((entry) => ({
+        data: entries.map(entry => ({
           ...entry,
           changes: entry.changes ? JSON.stringify(entry.changes) : null,
           metadata: entry.metadata ? JSON.stringify(entry.metadata) : null,
@@ -479,7 +472,7 @@ return;
   async query(
     filter: AuditLogFilter,
     pagination?: AuditLogPagination,
-    sort?: AuditLogSort,
+    sort?: AuditLogSort
   ): Promise<AuditLogResponse> {
     const limit = pagination?.limit ?? DEFAULT_AUDIT_PAGE_SIZE;
     const offset = pagination?.offset ?? 0;
@@ -500,7 +493,7 @@ return;
     ]);
 
     return {
-      entries: entries.map((e) => this.mapEntry(e)),
+      entries: entries.map(e => this.mapEntry(e)),
       total,
       pagination: {
         hasMore: total > offset + limit,
@@ -610,7 +603,7 @@ return;
    */
   async getStats(
     workspaceId: string,
-    dateRange?: { start: Date; end: Date },
+    dateRange?: { start: Date; end: Date }
   ): Promise<AuditLogStats> {
     const where: AuditLogWhereInput = { workspaceId };
     if (dateRange) {
@@ -650,13 +643,22 @@ return;
     return {
       totalEntries,
       byCategory: Object.fromEntries(
-        byCategory.map((c: AuditLogGroupByResult) => [c.category, this.extractCount(c._count)]),
+        byCategory.map((c: AuditLogGroupByResult) => [
+          c.category,
+          this.extractCount(c._count),
+        ])
       ) as Record<AuditCategory, number>,
       bySeverity: Object.fromEntries(
-        bySeverity.map((s: AuditLogGroupByResult) => [s.severity, this.extractCount(s._count)]),
+        bySeverity.map((s: AuditLogGroupByResult) => [
+          s.severity,
+          this.extractCount(s._count),
+        ])
       ) as Record<AuditSeverity, number>,
       byAction: Object.fromEntries(
-        byAction.map((a: AuditLogGroupByResult) => [a.action, this.extractCount(a._count)]),
+        byAction.map((a: AuditLogGroupByResult) => [
+          a.action,
+          this.extractCount(a._count),
+        ])
       ),
       byActor: byActor.map((a: AuditLogGroupByResult) => ({
         actorId: a.actorId ?? '',
@@ -670,7 +672,9 @@ return;
   /**
    * Extracts a numeric count from a group by result.
    */
-  private extractCount(count: number | { action: number } | { actorId: number }): number {
+  private extractCount(
+    count: number | { action: number } | { actorId: number }
+  ): number {
     if (typeof count === 'number') {
       return count;
     }
@@ -688,7 +692,7 @@ return;
    */
   private async getTimeline(
     workspaceId: string,
-    dateRange?: { start: Date; end: Date },
+    dateRange?: { start: Date; end: Date }
   ): Promise<Array<{ date: string; count: number }>> {
     const start =
       dateRange?.start ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -706,7 +710,7 @@ return;
       ORDER BY date ASC
     `;
 
-    return results.map((r) => ({
+    return results.map(r => ({
       date: r.date,
       count: Number(r.count),
     }));
@@ -719,7 +723,7 @@ return;
     workspaceId: string,
     requestedBy: string,
     filter: AuditLogFilter,
-    format: 'json' | 'csv' | 'pdf',
+    format: 'json' | 'csv' | 'pdf'
   ): Promise<AuditLogExport> {
     const exportRecord = await this.prisma.auditLogExport.create({
       data: {
@@ -768,8 +772,8 @@ return;
     });
 
     if (!record) {
-return null;
-}
+      return null;
+    }
 
     return {
       id: record.id as string,
@@ -777,7 +781,11 @@ return null;
       requestedBy: record.requestedBy as string,
       filter: JSON.parse(record.filter as string),
       format: record.format as 'json' | 'csv' | 'pdf',
-      status: record.status as 'pending' | 'processing' | 'completed' | 'failed',
+      status: record.status as
+        | 'pending'
+        | 'processing'
+        | 'completed'
+        | 'failed',
       fileUrl: (record.fileUrl as string | null) ?? undefined,
       fileSize: (record.fileSize as number | null) ?? undefined,
       entryCount: (record.entryCount as number | null) ?? undefined,
@@ -842,11 +850,11 @@ return null;
    */
   private getSeverity(action: AuditAction): AuditSeverity {
     if (CRITICAL_ACTIONS.includes(action)) {
-return 'critical';
-}
+      return 'critical';
+    }
     if (WARNING_ACTIONS.includes(action)) {
-return 'warning';
-}
+      return 'warning';
+    }
     return 'info';
   }
 
@@ -854,11 +862,11 @@ return 'warning';
    * Publish critical event for real-time alerting
    */
   private async publishCriticalEvent(
-    entry: Omit<AuditLogEntry, 'id'>,
+    entry: Omit<AuditLogEntry, 'id'>
   ): Promise<void> {
     await this.redis.publish(
       `audit:critical:${entry.workspaceId}`,
-      JSON.stringify(entry),
+      JSON.stringify(entry)
     );
   }
 
@@ -893,7 +901,7 @@ let auditServiceInstance: AuditService | null = null;
 export function getAuditService(): AuditService {
   if (!auditServiceInstance) {
     throw new AuditError(
-      'Audit service not initialized. Call createAuditService first.',
+      'Audit service not initialized. Call createAuditService first.'
     );
   }
   return auditServiceInstance;

@@ -138,8 +138,8 @@ export class LRUCache<T> {
   has(key: string): boolean {
     const entry = this.cache.get(key);
     if (!entry) {
-return false;
-}
+      return false;
+    }
     if (Date.now() > entry.expiresAt) {
       this.cache.delete(key);
       this.stats.size--;
@@ -180,7 +180,11 @@ export class MetricsCollector {
   }
 
   /** Record a counter metric */
-  counter(name: string, value: number = 1, tags: Record<string, string> = {}): void {
+  counter(
+    name: string,
+    value: number = 1,
+    tags: Record<string, string> = {}
+  ): void {
     this.addMetric({
       name,
       type: 'counter',
@@ -192,7 +196,12 @@ export class MetricsCollector {
   }
 
   /** Record a gauge metric */
-  gauge(name: string, value: number, unit: string, tags: Record<string, string> = {}): void {
+  gauge(
+    name: string,
+    value: number,
+    unit: string,
+    tags: Record<string, string> = {}
+  ): void {
     this.addMetric({
       name,
       type: 'gauge',
@@ -227,11 +236,11 @@ export class MetricsCollector {
 
     const threshold = thresholds[name];
     if (value <= threshold.good) {
-return 'good';
-}
+      return 'good';
+    }
     if (value <= threshold.needsImprovement) {
-return 'needs-improvement';
-}
+      return 'needs-improvement';
+    }
     return 'poor';
   }
 
@@ -284,8 +293,14 @@ return 'needs-improvement';
   }
 
   /** Get API metrics summary */
-  getApiMetricsSummary(): Record<string, { count: number; avgTime: number; errorRate: number }> {
-    const summary: Record<string, { count: number; totalTime: number; errors: number }> = {};
+  getApiMetricsSummary(): Record<
+    string,
+    { count: number; avgTime: number; errorRate: number }
+  > {
+    const summary: Record<
+      string,
+      { count: number; totalTime: number; errors: number }
+    > = {};
 
     for (const metric of this.apiMetrics) {
       const key = `${metric.method} ${metric.endpoint}`;
@@ -299,7 +314,10 @@ return 'needs-improvement';
       }
     }
 
-    const result: Record<string, { count: number; avgTime: number; errorRate: number }> = {};
+    const result: Record<
+      string,
+      { count: number; avgTime: number; errorRate: number }
+    > = {};
     for (const [key, data] of Object.entries(summary)) {
       result[key] = {
         count: data.count,
@@ -312,7 +330,11 @@ return 'needs-improvement';
   }
 
   /** Get all metrics */
-  getMetrics(filter?: { name?: string; type?: string; since?: number }): PerformanceMetric[] {
+  getMetrics(filter?: {
+    name?: string;
+    type?: string;
+    since?: number;
+  }): PerformanceMetric[] {
     let result = this.metrics;
 
     if (filter?.name) {
@@ -348,7 +370,7 @@ return 'needs-improvement';
 /** Memoization utility */
 export function memoize<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  config: Partial<MemoizationConfig> = {},
+  config: Partial<MemoizationConfig> = {}
 ): T {
   const { maxSize = 100, ttl = 60000, keyGenerator } = config;
   const cache = new LRUCache<ReturnType<T>>({ ttl, maxSize });
@@ -370,7 +392,7 @@ export function memoize<T extends (...args: unknown[]) => unknown>(
 /** Debounce utility */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -388,7 +410,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 /** Throttle utility */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  limit: number,
+  limit: number
 ): (...args: Parameters<T>) => void {
   let lastCall = 0;
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -472,12 +494,19 @@ export class RequestDeduplicator {
 
 /** Batch processor for optimizing multiple operations */
 export class BatchProcessor<T, R> {
-  private queue: Array<{ item: T; resolve: (r: R) => void; reject: (e: Error) => void }> = [];
+  private queue: Array<{
+    item: T;
+    resolve: (r: R) => void;
+    reject: (e: Error) => void;
+  }> = [];
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private processor: (items: T[]) => Promise<R[]>,
-    private options: { maxSize: number; maxWait: number } = { maxSize: 50, maxWait: 10 },
+    private options: { maxSize: number; maxWait: number } = {
+      maxSize: 50,
+      maxWait: 10,
+    }
   ) {}
 
   /** Add item to batch */
@@ -501,8 +530,8 @@ export class BatchProcessor<T, R> {
     }
 
     if (this.queue.length === 0) {
-return;
-}
+      return;
+    }
 
     const batch = this.queue.splice(0, this.options.maxSize);
     const items = batch.map(b => b.item);
@@ -526,14 +555,14 @@ return;
 /** Performance observer wrapper */
 export function observePerformance(
   entryTypes: string[],
-  callback: (entries: PerformanceEntry[]) => void,
+  callback: (entries: PerformanceEntry[]) => void
 ): (() => void) | null {
   if (typeof PerformanceObserver === 'undefined') {
     return null;
   }
 
   try {
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       callback(list.getEntries());
     });
 
@@ -616,14 +645,24 @@ export class PerformanceService {
    * @param tags - Optional tags to attach to the metric
    * @returns The result of the async operation
    */
-  async measure<T>(name: string, fn: () => Promise<T>, tags?: Record<string, string>): Promise<T> {
+  async measure<T>(
+    name: string,
+    fn: () => Promise<T>,
+    tags?: Record<string, string>
+  ): Promise<T> {
     const start = performance.now();
     try {
       const result = await fn();
-      this.metrics.timing(name, performance.now() - start, { ...tags, status: 'success' });
+      this.metrics.timing(name, performance.now() - start, {
+        ...tags,
+        status: 'success',
+      });
       return result;
     } catch (error) {
-      this.metrics.timing(name, performance.now() - start, { ...tags, status: 'error' });
+      this.metrics.timing(name, performance.now() - start, {
+        ...tags,
+        status: 'error',
+      });
       throw error;
     }
   }
@@ -636,7 +675,10 @@ export class PerformanceService {
   getReport(): {
     cache: CacheStats;
     webVitals: Partial<CoreWebVitals>;
-    apiSummary: Record<string, { count: number; avgTime: number; errorRate: number }>;
+    apiSummary: Record<
+      string,
+      { count: number; avgTime: number; errorRate: number }
+    >;
     slowQueries: QueryMetrics[];
     renderMetrics: RenderMetrics[];
   } {

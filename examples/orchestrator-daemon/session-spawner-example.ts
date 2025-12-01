@@ -94,9 +94,7 @@ async function example1_basicSpawning() {
   };
 
   // Spawn session
-  const { sessionId, status, completion } = await spawner.spawnSession(
-    config
-  );
+  const { sessionId, status, completion } = await spawner.spawnSession(config);
 
   console.log(`Session spawned: ${sessionId}`);
   console.log(`PID: ${status.pid}`);
@@ -165,7 +163,7 @@ async function example2_sessionPool() {
 
   // Request sessions (some will be queued)
   const results = await Promise.all(
-    requests.map((req) => pool.requestSession(req))
+    requests.map(req => pool.requestSession(req))
   );
 
   console.log(`\nRequested ${requests.length} sessions`);
@@ -179,7 +177,7 @@ async function example2_sessionPool() {
   console.log(`  Utilization: ${status.utilization.toFixed(1)}%`);
 
   // Wait a bit for sessions to complete
-  await new Promise((resolve) => setTimeout(resolve, 10000));
+  await new Promise(resolve => setTimeout(resolve, 10000));
 
   // Get metrics
   const metrics = pool.getMetrics();
@@ -228,13 +226,15 @@ async function example3_crashRecovery() {
     console.log(`  Confidence: ${(analysis.confidence * 100).toFixed(0)}%`);
     console.log(`  Recommendation: ${analysis.recommendation}`);
     console.log(`  Suggested fixes:`);
-    analysis.suggestedFixes.forEach((fix) => {
+    analysis.suggestedFixes.forEach(fix => {
       console.log(`    - ${fix}`);
     });
   });
 
   recovery.on('recovery-attempt', ({ sessionId, attemptNumber }) => {
-    console.log(`\nAttempting recovery for ${sessionId} (attempt ${attemptNumber})`);
+    console.log(
+      `\nAttempting recovery for ${sessionId} (attempt ${attemptNumber})`
+    );
   });
 
   recovery.on('recovery-succeeded', ({ sessionId, attemptNumber }) => {
@@ -254,7 +254,7 @@ async function example3_crashRecovery() {
   console.log(`Started session ${sessionId} (configured to timeout)`);
 
   // Wait for timeout and recovery
-  await new Promise((resolve) => setTimeout(resolve, 15000));
+  await new Promise(resolve => setTimeout(resolve, 15000));
 
   // Check recovery stats
   const stats = recovery.getRecoveryStats();
@@ -263,7 +263,9 @@ async function example3_crashRecovery() {
   console.log(`  Recovery attempts: ${stats.totalRecoveryAttempts}`);
   console.log(`  Successful recoveries: ${stats.successfulRecoveries}`);
   console.log(`  Recovery rate: ${(stats.recoveryRate * 100).toFixed(1)}%`);
-  console.log(`  Avg attempts per recovery: ${stats.avgAttemptsPerRecovery.toFixed(1)}`);
+  console.log(
+    `  Avg attempts per recovery: ${stats.avgAttemptsPerRecovery.toFixed(1)}`
+  );
 }
 
 // ============================================================================
@@ -296,7 +298,9 @@ async function example4_advancedMonitoring() {
   });
 
   spawner.on('session-ended', ({ sessionId, status }) => {
-    console.log(`[ENDED] Session ${sessionId} ended with state: ${status.state}`);
+    console.log(
+      `[ENDED] Session ${sessionId} ended with state: ${status.state}`
+    );
     console.log(`  Execution time: ${status.executionTime}ms`);
     console.log(`  Token usage: ${status.tokenUsage?.total ?? 'N/A'}`);
   });
@@ -315,7 +319,7 @@ async function example4_advancedMonitoring() {
     const active = spawner.getActiveSessions();
     console.log(`\n[MONITOR] Active sessions: ${active.length}`);
 
-    active.forEach((session) => {
+    active.forEach(session => {
       console.log(`  ${session.sessionId}:`);
       console.log(`    State: ${session.state}`);
       console.log(`    Uptime: ${Date.now() - session.startTime.getTime()}ms`);
@@ -328,7 +332,7 @@ async function example4_advancedMonitoring() {
   }, 5000);
 
   // Wait for all sessions to complete
-  await Promise.all(sessions.map((s) => s.completion));
+  await Promise.all(sessions.map(s => s.completion));
 
   console.log(`\nAll sessions completed`);
 
@@ -437,7 +441,7 @@ async function main() {
 
 // Run if executed directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

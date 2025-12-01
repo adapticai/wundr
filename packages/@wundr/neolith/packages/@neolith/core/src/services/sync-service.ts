@@ -41,7 +41,11 @@ import {
  * Error thrown for sync operations.
  */
 export class SyncError extends GenesisError {
-  constructor(message: string, code: string, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    metadata?: Record<string, unknown>
+  ) {
     super(message, code, 500, metadata);
     this.name = 'SyncError';
   }
@@ -55,7 +59,7 @@ export class SyncFailedError extends SyncError {
     super(
       `${syncType === 'initial' ? 'Initial' : 'Incremental'} sync failed: ${reason}`,
       'SYNC_FAILED',
-      { reason, syncType },
+      { reason, syncType }
     );
     this.name = 'SyncFailedError';
   }
@@ -66,11 +70,9 @@ export class SyncFailedError extends SyncError {
  */
 export class SyncInProgressError extends SyncError {
   constructor(userId: string) {
-    super(
-      `Sync already in progress for user ${userId}`,
-      'SYNC_IN_PROGRESS',
-      { userId },
-    );
+    super(`Sync already in progress for user ${userId}`, 'SYNC_IN_PROGRESS', {
+      userId,
+    });
     this.name = 'SyncInProgressError';
   }
 }
@@ -83,7 +85,7 @@ export class ConflictResolutionError extends SyncError {
     super(
       `Failed to resolve conflict ${conflictId}: ${reason}`,
       'CONFLICT_RESOLUTION_FAILED',
-      { conflictId, reason },
+      { conflictId, reason }
     );
     this.name = 'ConflictResolutionError';
   }
@@ -97,7 +99,7 @@ export class InvalidSyncTokenError extends SyncError {
     super(
       'Sync token is invalid or expired. Full sync required.',
       'INVALID_SYNC_TOKEN',
-      { token },
+      { token }
     );
     this.name = 'InvalidSyncTokenError';
   }
@@ -126,7 +128,10 @@ export interface SyncService {
    * @param lastSyncToken - Token from previous sync
    * @returns Incremental sync data
    */
-  syncSince(userId: string, lastSyncToken: string): Promise<IncrementalSyncData>;
+  syncSince(
+    userId: string,
+    lastSyncToken: string
+  ): Promise<IncrementalSyncData>;
 
   /**
    * Resolves a sync conflict.
@@ -134,7 +139,10 @@ export interface SyncService {
    * @param conflict - The conflict to resolve
    * @param resolution - Resolution strategy
    */
-  resolveConflict(conflict: SyncConflict, resolution: ConflictResolution): Promise<void>;
+  resolveConflict(
+    conflict: SyncConflict,
+    resolution: ConflictResolution
+  ): Promise<void>;
 
   /**
    * Gets the current sync state for a user.
@@ -179,12 +187,18 @@ export interface SyncDataFetcher {
   /**
    * Fetches initial sync data from the server.
    */
-  fetchInitialSyncData(userId: string, options: InitialSyncOptions): Promise<InitialSyncData>;
+  fetchInitialSyncData(
+    userId: string,
+    options: InitialSyncOptions
+  ): Promise<InitialSyncData>;
 
   /**
    * Fetches incremental sync data from the server.
    */
-  fetchIncrementalSyncData(userId: string, syncToken: string): Promise<IncrementalSyncData>;
+  fetchIncrementalSyncData(
+    userId: string,
+    syncToken: string
+  ): Promise<IncrementalSyncData>;
 
   /**
    * Uploads local changes to the server.
@@ -234,10 +248,7 @@ export class SyncServiceImpl implements SyncService {
    * @param config - Sync configuration
    * @param storage - Storage service instance
    */
-  constructor(
-    config: Partial<SyncConfig> = {},
-    storage?: LocalStorageService,
-  ) {
+  constructor(config: Partial<SyncConfig> = {}, storage?: LocalStorageService) {
     this.config = { ...DEFAULT_SYNC_CONFIG, ...config };
     this.storage = storage ?? createLocalStorageService();
     this.eventEmitter = new EventEmitter();
@@ -264,7 +275,10 @@ export class SyncServiceImpl implements SyncService {
 
     try {
       if (!this.dataFetcher) {
-        throw new SyncError('Data fetcher not configured', 'FETCHER_NOT_CONFIGURED');
+        throw new SyncError(
+          'Data fetcher not configured',
+          'FETCHER_NOT_CONFIGURED'
+        );
       }
 
       // Fetch initial data from server
@@ -273,7 +287,7 @@ export class SyncServiceImpl implements SyncService {
           messageDays: this.config.initialSyncMessageDays,
           includePreferences: true,
         }),
-        this.config.syncTimeoutMs,
+        this.config.syncTimeoutMs
       );
 
       // Store sync data locally
@@ -302,7 +316,8 @@ export class SyncServiceImpl implements SyncService {
 
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       await this.updateSyncState(userId, {
         status: 'error',
@@ -318,7 +333,10 @@ export class SyncServiceImpl implements SyncService {
   /**
    * Performs incremental sync since last sync.
    */
-  async syncSince(userId: string, lastSyncToken: string): Promise<IncrementalSyncData> {
+  async syncSince(
+    userId: string,
+    lastSyncToken: string
+  ): Promise<IncrementalSyncData> {
     if (this.syncInProgress.has(userId)) {
       throw new SyncInProgressError(userId);
     }
@@ -328,13 +346,16 @@ export class SyncServiceImpl implements SyncService {
 
     try {
       if (!this.dataFetcher) {
-        throw new SyncError('Data fetcher not configured', 'FETCHER_NOT_CONFIGURED');
+        throw new SyncError(
+          'Data fetcher not configured',
+          'FETCHER_NOT_CONFIGURED'
+        );
       }
 
       // Fetch incremental data
       const data = await this.withTimeout(
         this.dataFetcher.fetchIncrementalSyncData(userId, lastSyncToken),
-        this.config.syncTimeoutMs,
+        this.config.syncTimeoutMs
       );
 
       // Apply changes and detect conflicts
@@ -367,17 +388,21 @@ export class SyncServiceImpl implements SyncService {
         skippedCount: 0,
         durationMs: 0,
         failures: [],
-        processedIds: data.changes.map((c) => c.entityId),
+        processedIds: data.changes.map(c => c.entityId),
         complete: !data.hasMore,
       };
       this.eventEmitter.emit('sync:completed', 'incremental', result);
 
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       // Check if token is invalid
-      if (errorMessage.includes('invalid token') || errorMessage.includes('expired')) {
+      if (
+        errorMessage.includes('invalid token') ||
+        errorMessage.includes('expired')
+      ) {
         await this.updateSyncState(userId, {
           status: 'error',
           error: 'Sync token expired. Full sync required.',
@@ -403,7 +428,7 @@ export class SyncServiceImpl implements SyncService {
    */
   async resolveConflict(
     conflict: SyncConflict,
-    resolution: ConflictResolution,
+    resolution: ConflictResolution
   ): Promise<void> {
     try {
       switch (resolution.strategy) {
@@ -422,7 +447,7 @@ export class SyncServiceImpl implements SyncService {
           if (!resolution.mergedData) {
             throw new ConflictResolutionError(
               conflict.id,
-              'Merged data required for manual merge',
+              'Merged data required for manual merge'
             );
           }
           await this.applyMergedData(conflict, resolution.mergedData);
@@ -441,7 +466,7 @@ export class SyncServiceImpl implements SyncService {
         default:
           throw new ConflictResolutionError(
             conflict.id,
-            `Unknown resolution strategy: ${resolution.strategy}`,
+            `Unknown resolution strategy: ${resolution.strategy}`
           );
       }
 
@@ -456,7 +481,8 @@ export class SyncServiceImpl implements SyncService {
 
       this.eventEmitter.emit('conflict:resolved', conflict.id, resolution);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       throw new ConflictResolutionError(conflict.id, errorMessage);
     }
   }
@@ -468,13 +494,15 @@ export class SyncServiceImpl implements SyncService {
     const key = this.getSyncStateKey(userId);
     const state = await this.storage.get<SyncState>(key);
 
-    return state ?? {
-      userId,
-      hasCompletedInitialSync: false,
-      status: 'idle',
-      conflictCount: 0,
-      staleEntities: [],
-    };
+    return (
+      state ?? {
+        userId,
+        hasCompletedInitialSync: false,
+        status: 'idle',
+        conflictCount: 0,
+        staleEntities: [],
+      }
+    );
   }
 
   /**
@@ -569,7 +597,10 @@ export class SyncServiceImpl implements SyncService {
   /**
    * Stores initial sync data locally.
    */
-  private async storeInitialSyncData(userId: string, data: InitialSyncData): Promise<void> {
+  private async storeInitialSyncData(
+    userId: string,
+    data: InitialSyncData
+  ): Promise<void> {
     // Store workspaces
     for (const workspace of data.workspaces) {
       const key = generateStorageKey('genesis:sync', 'workspace', workspace.id);
@@ -607,7 +638,7 @@ export class SyncServiceImpl implements SyncService {
    */
   private async applyIncrementalChanges(
     _userId: string,
-    data: IncrementalSyncData,
+    data: IncrementalSyncData
   ): Promise<SyncConflict[]> {
     // Note: _userId reserved for future use (e.g., user-specific conflict handling)
     const conflicts: SyncConflict[] = [];
@@ -635,7 +666,11 @@ export class SyncServiceImpl implements SyncService {
    * @returns SyncConflict if local and server data conflict, null otherwise
    */
   private async applyChange(change: SyncChange): Promise<SyncConflict | null> {
-    const key = generateStorageKey('genesis:sync', change.entityType, change.entityId);
+    const key = generateStorageKey(
+      'genesis:sync',
+      change.entityType,
+      change.entityId
+    );
     const local = await this.storage.getWithMetadata<SyncEntityDataType>(key);
 
     if (!local) {
@@ -674,14 +709,21 @@ export class SyncServiceImpl implements SyncService {
    * Applies a deletion.
    */
   private async applyDeletion(deletion: SyncDeletion): Promise<void> {
-    const key = generateStorageKey('genesis:sync', deletion.entityType, deletion.entityId);
+    const key = generateStorageKey(
+      'genesis:sync',
+      deletion.entityType,
+      deletion.entityId
+    );
     await this.storage.delete(key);
   }
 
   /**
    * Updates sync state.
    */
-  private async updateSyncState(userId: string, updates: Partial<SyncState>): Promise<void> {
+  private async updateSyncState(
+    userId: string,
+    updates: Partial<SyncState>
+  ): Promise<void> {
     const current = await this.getSyncState(userId);
     const updated = { ...current, ...updates };
     const key = this.getSyncStateKey(userId);
@@ -691,7 +733,10 @@ export class SyncServiceImpl implements SyncService {
   /**
    * Stores a conflict.
    */
-  private async storeConflict(userId: string, conflict: SyncConflict): Promise<void> {
+  private async storeConflict(
+    userId: string,
+    conflict: SyncConflict
+  ): Promise<void> {
     const conflicts = await this.getConflicts(userId);
     conflicts.push(conflict);
     const key = this.getConflictsKey(userId);
@@ -708,7 +753,7 @@ export class SyncServiceImpl implements SyncService {
     for (const key of allKeys) {
       const conflicts = await this.storage.get<SyncConflict[]>(key);
       if (conflicts) {
-        const filtered = conflicts.filter((c) => c.id !== conflictId);
+        const filtered = conflicts.filter(c => c.id !== conflictId);
         if (filtered.length !== conflicts.length) {
           await this.storage.set(key, filtered);
           return;
@@ -739,7 +784,10 @@ export class SyncServiceImpl implements SyncService {
    */
   private async uploadLocalVersion(conflict: SyncConflict): Promise<void> {
     if (!this.dataFetcher) {
-      throw new SyncError('Data fetcher not configured', 'FETCHER_NOT_CONFIGURED');
+      throw new SyncError(
+        'Data fetcher not configured',
+        'FETCHER_NOT_CONFIGURED'
+      );
     }
 
     const change: SyncChange = {
@@ -760,7 +808,11 @@ export class SyncServiceImpl implements SyncService {
    * Applies server version locally.
    */
   private async applyServerVersion(conflict: SyncConflict): Promise<void> {
-    const key = generateStorageKey('genesis:sync', conflict.entityType, conflict.entityId);
+    const key = generateStorageKey(
+      'genesis:sync',
+      conflict.entityType,
+      conflict.entityId
+    );
     await this.storage.set(key, conflict.serverData);
   }
 
@@ -772,9 +824,13 @@ export class SyncServiceImpl implements SyncService {
    */
   private async applyMergedData(
     conflict: SyncConflict,
-    mergedData: SyncEntityDataType,
+    mergedData: SyncEntityDataType
   ): Promise<void> {
-    const key = generateStorageKey('genesis:sync', conflict.entityType, conflict.entityId);
+    const key = generateStorageKey(
+      'genesis:sync',
+      conflict.entityType,
+      conflict.entityId
+    );
     await this.storage.set(key, mergedData);
 
     // Also upload to server
@@ -795,7 +851,7 @@ export class SyncServiceImpl implements SyncService {
     const copyKey = generateStorageKey(
       'genesis:sync',
       conflict.entityType,
-      `${conflict.entityId}_local_copy`,
+      `${conflict.entityId}_local_copy`
     );
     await this.storage.set(copyKey, conflict.localData);
   }
@@ -823,19 +879,22 @@ export class SyncServiceImpl implements SyncService {
   /**
    * Updates indices for efficient lookups.
    */
-  private async updateIndices(userId: string, data: InitialSyncData): Promise<void> {
+  private async updateIndices(
+    userId: string,
+    data: InitialSyncData
+  ): Promise<void> {
     // Index: user -> workspaces
-    const workspaceIds = data.workspaces.map((w) => w.id);
+    const workspaceIds = data.workspaces.map(w => w.id);
     await this.storage.set(
       generateStorageKey('genesis:index', userId, 'workspaces'),
-      workspaceIds,
+      workspaceIds
     );
 
     // Index: user -> channels
-    const channelIds = data.channels.map((c) => c.id);
+    const channelIds = data.channels.map(c => c.id);
     await this.storage.set(
       generateStorageKey('genesis:index', userId, 'channels'),
-      channelIds,
+      channelIds
     );
 
     // Index: channel -> messages (per channel)
@@ -849,7 +908,7 @@ export class SyncServiceImpl implements SyncService {
     for (const [channelId, messageIds] of messagesByChannel) {
       await this.storage.set(
         generateStorageKey('genesis:index', 'channel', channelId, 'messages'),
-        messageIds,
+        messageIds
       );
     }
   }
@@ -857,18 +916,26 @@ export class SyncServiceImpl implements SyncService {
   /**
    * Wraps a promise with a timeout.
    */
-  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number
+  ): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        reject(new SyncError(`Sync operation timed out after ${timeoutMs}ms`, 'SYNC_TIMEOUT'));
+        reject(
+          new SyncError(
+            `Sync operation timed out after ${timeoutMs}ms`,
+            'SYNC_TIMEOUT'
+          )
+        );
       }, timeoutMs);
 
       promise
-        .then((result) => {
+        .then(result => {
           clearTimeout(timer);
           resolve(result);
         })
-        .catch((error) => {
+        .catch(error => {
           clearTimeout(timer);
           reject(error);
         });
@@ -942,7 +1009,7 @@ export class SyncServiceImpl implements SyncService {
  */
 export function createSyncService(
   config: Partial<SyncConfig> = {},
-  storage?: LocalStorageService,
+  storage?: LocalStorageService
 ): SyncServiceImpl {
   return new SyncServiceImpl(config, storage);
 }
@@ -983,7 +1050,7 @@ export const syncService = getSyncService();
  */
 export function mergeObjects<T extends Record<string, unknown>>(
   local: T,
-  server: T,
+  server: T
 ): T {
   const result = { ...server };
 
@@ -992,7 +1059,11 @@ export function mergeObjects<T extends Record<string, unknown>>(
     const serverValue = server[key];
 
     // Prefer non-null values
-    if (localValue !== null && localValue !== undefined && serverValue === null) {
+    if (
+      localValue !== null &&
+      localValue !== undefined &&
+      serverValue === null
+    ) {
       (result as Record<string, unknown>)[key] = localValue;
     }
 
@@ -1007,7 +1078,7 @@ export function mergeObjects<T extends Record<string, unknown>>(
     ) {
       (result as Record<string, unknown>)[key] = mergeObjects(
         localValue as Record<string, unknown>,
-        serverValue as Record<string, unknown>,
+        serverValue as Record<string, unknown>
       );
     }
   }

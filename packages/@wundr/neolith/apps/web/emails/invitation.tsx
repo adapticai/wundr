@@ -51,32 +51,32 @@ export const InvitationEmail = ({
           <EmailHeader />
 
           <Section style={contentSection}>
-            <EmailText variant="h1">You&apos;re invited!</EmailText>
+            <EmailText variant='h1'>You&apos;re invited!</EmailText>
 
             <EmailText>
-              <strong>{inviterName}</strong> ({inviterEmail}) has invited you to join{' '}
-              <strong>{workspaceName}</strong> on Neolith.
+              <strong>{inviterName}</strong> ({inviterEmail}) has invited you to
+              join <strong>{workspaceName}</strong> on Neolith.
             </EmailText>
 
             {workspaceDescription && (
               <Section style={descriptionSection}>
-                <EmailText style={descriptionText}>{workspaceDescription}</EmailText>
+                <EmailText style={descriptionText}>
+                  {workspaceDescription}
+                </EmailText>
               </Section>
             )}
 
             <EmailText>
-              Neolith is an AI-powered workspace platform that enables you to build
-              intelligent organizations with custom agent hierarchies, automated workflows,
-              and real-time collaboration.
+              Neolith is an AI-powered workspace platform that enables you to
+              build intelligent organizations with custom agent hierarchies,
+              automated workflows, and real-time collaboration.
             </EmailText>
 
             <Section style={buttonContainer}>
-              <EmailButton href={inviteUrl}>
-                Accept Invitation
-              </EmailButton>
+              <EmailButton href={inviteUrl}>Accept Invitation</EmailButton>
             </Section>
 
-            <EmailText variant="small">
+            <EmailText variant='small'>
               Or copy and paste this link into your browser:
             </EmailText>
             <EmailText style={urlText}>
@@ -87,13 +87,14 @@ export const InvitationEmail = ({
 
             <Section style={warningSection}>
               <EmailText style={warningText}>
-                This invitation expires in {expiresAt}. Accept it soon to join the workspace.
+                This invitation expires in {expiresAt}. Accept it soon to join
+                the workspace.
               </EmailText>
             </Section>
 
-            <EmailText variant="small">
-              If you weren&apos;t expecting this invitation, you can safely ignore this email.
-              The invitation will expire automatically.
+            <EmailText variant='small'>
+              If you weren&apos;t expecting this invitation, you can safely
+              ignore this email. The invitation will expire automatically.
             </EmailText>
           </Section>
 

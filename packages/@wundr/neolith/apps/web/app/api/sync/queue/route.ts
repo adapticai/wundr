@@ -37,7 +37,7 @@ import type { NextRequest } from 'next/server';
  */
 async function processQueueItem(
   item: OfflineQueueItem,
-  userId: string,
+  userId: string
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -75,7 +75,7 @@ async function processQueueItem(
  */
 async function processMessageOperation(
   item: OfflineQueueItem,
-  userId: string,
+  userId: string
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -99,8 +99,10 @@ async function processMessageOperation(
 
       const messageType = (payload.type as string) ?? 'TEXT';
       const validTypes = ['TEXT', 'FILE', 'SYSTEM', 'COMMAND'] as const;
-      const safeType = validTypes.includes(messageType as typeof validTypes[number])
-        ? (messageType as typeof validTypes[number])
+      const safeType = validTypes.includes(
+        messageType as (typeof validTypes)[number]
+      )
+        ? (messageType as (typeof validTypes)[number])
         : 'TEXT';
 
       const message = await prisma.message.create({
@@ -110,7 +112,7 @@ async function processMessageOperation(
           channelId,
           authorId: userId,
           parentId: payload.parentId as string | undefined,
-          metadata: payload.metadata as Prisma.InputJsonValue ?? {},
+          metadata: (payload.metadata as Prisma.InputJsonValue) ?? {},
         },
       });
 
@@ -133,7 +135,10 @@ async function processMessageOperation(
       }
 
       if (existing.authorId !== userId) {
-        return { success: false, error: 'Cannot edit message from another user' };
+        return {
+          success: false,
+          error: 'Cannot edit message from another user',
+        };
       }
 
       // Check for conflict (server was updated after client queued the change)
@@ -181,7 +186,10 @@ async function processMessageOperation(
       }
 
       if (existing.authorId !== userId) {
-        return { success: false, error: 'Cannot delete message from another user' };
+        return {
+          success: false,
+          error: 'Cannot delete message from another user',
+        };
       }
 
       await prisma.message.update({
@@ -202,7 +210,7 @@ async function processMessageOperation(
  */
 async function processChannelOperation(
   item: OfflineQueueItem,
-  userId: string,
+  userId: string
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -225,10 +233,11 @@ async function processChannelOperation(
 
       const name = payload.name as string;
       // Generate slug from name
-      const slug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '') || 'channel';
+      const slug =
+        name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') || 'channel';
 
       const channel = await prisma.channel.create({
         data: {
@@ -294,7 +303,7 @@ async function processChannelOperation(
  */
 async function processNotificationOperation(
   item: OfflineQueueItem,
-  userId: string,
+  userId: string
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -350,7 +359,10 @@ async function processNotificationOperation(
     }
 
     default:
-      return { success: false, error: `Operation ${item.operation} not supported for notifications` };
+      return {
+        success: false,
+        error: `Operation ${item.operation} not supported for notifications`,
+      };
   }
 }
 
@@ -409,8 +421,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -420,8 +435,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createNotificationErrorResponse('Invalid JSON body', NOTIFICATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createNotificationErrorResponse(
+          'Invalid JSON body',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -432,9 +450,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -442,7 +460,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Sort items by queuedAt for sequential processing
     const sortedItems = [...input.items].sort(
-      (a, b) => a.queuedAt.getTime() - b.queuedAt.getTime(),
+      (a, b) => a.queuedAt.getTime() - b.queuedAt.getTime()
     );
 
     const results: QueueProcessingResult['results'] = [];
@@ -473,10 +491,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } else {
       // Process in parallel
       const processingResults = await Promise.all(
-        sortedItems.map(async (item) => {
+        sortedItems.map(async item => {
           const result = await processQueueItem(item, session.user.id);
           return { item, result };
-        }),
+        })
       );
 
       for (const { item, result } of processingResults) {
@@ -513,15 +531,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ? (user.preferences as Record<string, unknown>)
           : {};
 
-      const existingConflicts = (currentPrefs.syncConflicts as ConflictItem[]) ?? [];
+      const existingConflicts =
+        (currentPrefs.syncConflicts as ConflictItem[]) ?? [];
 
       await prisma.user.update({
         where: { id: session.user.id },
         data: {
-          preferences: JSON.parse(JSON.stringify({
-            ...currentPrefs,
-            syncConflicts: [...existingConflicts, ...conflicts],
-          })) as Prisma.InputJsonValue,
+          preferences: JSON.parse(
+            JSON.stringify({
+              ...currentPrefs,
+              syncConflicts: [...existingConflicts, ...conflicts],
+            })
+          ) as Prisma.InputJsonValue,
         },
       });
     }
@@ -539,9 +560,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

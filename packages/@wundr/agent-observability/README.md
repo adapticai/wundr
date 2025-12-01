@@ -1,6 +1,7 @@
 # @wundr.io/agent-observability
 
-Observability pipeline for AI agent monitoring - centralized logging, metrics collection, alerting, and sensitive data redaction.
+Observability pipeline for AI agent monitoring - centralized logging, metrics collection, alerting,
+and sensitive data redaction.
 
 ## Table of Contents
 
@@ -21,7 +22,8 @@ Observability pipeline for AI agent monitoring - centralized logging, metrics co
 
 ## Overview
 
-`@wundr.io/agent-observability` provides a unified observability solution for AI agent systems. It combines:
+`@wundr.io/agent-observability` provides a unified observability solution for AI agent systems. It
+combines:
 
 - **Centralized Logging** - Structured event collection with categories and log levels
 - **Metrics Collection** - Counters, gauges, histograms, and summaries with dimensional labels
@@ -38,10 +40,7 @@ npm install @wundr.io/agent-observability
 ## Quick Start
 
 ```typescript
-import {
-  createObservabilityPipeline,
-  CommonAlerts,
-} from '@wundr.io/agent-observability';
+import { createObservabilityPipeline, CommonAlerts } from '@wundr.io/agent-observability';
 
 // Create the pipeline
 const pipeline = createObservabilityPipeline({
@@ -57,13 +56,18 @@ const pipeline = createObservabilityPipeline({
 pipeline.start();
 
 // Log events
-await pipeline.info('agent', 'Agent started processing', {
-  taskCount: 5,
-  queueDepth: 12,
-}, {
-  agentId: 'agent-001',
-  traceId: 'trace-abc123',
-});
+await pipeline.info(
+  'agent',
+  'Agent started processing',
+  {
+    taskCount: 5,
+    queueDepth: 12,
+  },
+  {
+    agentId: 'agent-001',
+    traceId: 'trace-abc123',
+  }
+);
 
 // Add alerts
 pipeline.alertManager.addAlert(CommonAlerts.highErrorRate({ threshold: 10 }));
@@ -82,13 +86,11 @@ await pipeline.stop();
 
 ### Observability Pipeline
 
-The `ObservabilityPipeline` is the central component that orchestrates logging, metrics, redaction, and alerting.
+The `ObservabilityPipeline` is the central component that orchestrates logging, metrics, redaction,
+and alerting.
 
 ```typescript
-import {
-  ObservabilityPipeline,
-  createObservabilityPipeline,
-} from '@wundr.io/agent-observability';
+import { ObservabilityPipeline, createObservabilityPipeline } from '@wundr.io/agent-observability';
 
 const pipeline = new ObservabilityPipeline({
   // Log store configuration
@@ -174,14 +176,14 @@ Events are categorized for filtering and analysis:
 
 #### Log Levels
 
-| Level   | Priority | Use Case                     |
-| ------- | -------- | ---------------------------- |
-| `trace` | 0        | Detailed debugging traces    |
-| `debug` | 1        | Debug information            |
-| `info`  | 2        | General information          |
-| `warn`  | 3        | Warning conditions           |
-| `error` | 4        | Error conditions             |
-| `fatal` | 5        | Critical failures            |
+| Level   | Priority | Use Case                  |
+| ------- | -------- | ------------------------- |
+| `trace` | 0        | Detailed debugging traces |
+| `debug` | 1        | Debug information         |
+| `info`  | 2        | General information       |
+| `warn`  | 3        | Warning conditions        |
+| `error` | 4        | Error conditions          |
+| `fatal` | 5        | Critical failures         |
 
 ### Tracing and Spans
 
@@ -195,20 +197,30 @@ const traceId = uuidv4();
 const rootSpanId = uuidv4();
 
 // Log parent operation
-await pipeline.info('agent', 'Starting agent workflow', {}, {
-  traceId,
-  spanId: rootSpanId,
-  agentId: 'agent-001',
-});
+await pipeline.info(
+  'agent',
+  'Starting agent workflow',
+  {},
+  {
+    traceId,
+    spanId: rootSpanId,
+    agentId: 'agent-001',
+  }
+);
 
 // Log child operation
 const childSpanId = uuidv4();
-await pipeline.info('task', 'Processing task', {}, {
-  traceId,
-  spanId: childSpanId,
-  parentSpanId: rootSpanId,
-  taskId: 'task-001',
-});
+await pipeline.info(
+  'task',
+  'Processing task',
+  {},
+  {
+    traceId,
+    spanId: childSpanId,
+    parentSpanId: rootSpanId,
+    taskId: 'task-001',
+  }
+);
 
 // Query by trace ID to see full request flow
 const traceEvents = await pipeline.query({
@@ -222,16 +234,16 @@ const traceEvents = await pipeline.query({
 
 ```typescript
 interface EventMetadata {
-  agentId?: string;       // Agent identifier
-  taskId?: string;        // Task identifier
-  sessionId?: string;     // User session ID
-  traceId?: string;       // Distributed trace ID
-  spanId?: string;        // Current span ID
-  parentSpanId?: string;  // Parent span for nesting
-  environment?: string;   // Deployment environment
-  service?: string;       // Service name
-  host?: string;          // Host identifier
-  labels: Record<string, string>;    // Custom string labels
+  agentId?: string; // Agent identifier
+  taskId?: string; // Task identifier
+  sessionId?: string; // User session ID
+  traceId?: string; // Distributed trace ID
+  spanId?: string; // Current span ID
+  parentSpanId?: string; // Parent span for nesting
+  environment?: string; // Deployment environment
+  service?: string; // Service name
+  host?: string; // Host identifier
+  labels: Record<string, string>; // Custom string labels
   attributes: Record<string, unknown>; // Custom attributes
 }
 ```
@@ -241,10 +253,7 @@ interface EventMetadata {
 The `MetricsCollector` provides comprehensive metrics collection with four metric types.
 
 ```typescript
-import {
-  MetricsCollector,
-  createMetricsCollector,
-} from '@wundr.io/agent-observability';
+import { MetricsCollector, createMetricsCollector } from '@wundr.io/agent-observability';
 
 const metrics = createMetricsCollector({
   maxDataPointsPerMetric: 10000,
@@ -275,10 +284,14 @@ metrics.incrementCounter('agent_requests_total', {
 });
 
 // Increment by specific value
-metrics.incrementCounter('agent_requests_total', {
-  agent_id: 'agent-001',
-  status: 'error',
-}, 5);
+metrics.incrementCounter(
+  'agent_requests_total',
+  {
+    agent_id: 'agent-001',
+    status: 'error',
+  },
+  5
+);
 
 // Get current value
 const count = metrics.getCounter('agent_requests_total', {
@@ -352,8 +365,8 @@ metrics.defineMetric({
 
 // Record observations
 metrics.observeSummary('request_duration_seconds', 0.125);
-metrics.observeSummary('request_duration_seconds', 0.250);
-metrics.observeSummary('request_duration_seconds', 0.500);
+metrics.observeSummary('request_duration_seconds', 0.25);
+metrics.observeSummary('request_duration_seconds', 0.5);
 
 // Get summary with quantiles
 const summary = metrics.getSummary('request_duration_seconds');
@@ -366,10 +379,10 @@ const summary = metrics.getSummary('request_duration_seconds');
 // Aggregate metrics over a time window
 const aggregation = metrics.aggregate(
   'agent_requests_total',
-  'sum',           // Aggregation type: sum, avg, min, max, count, p50, p90, p95, p99
+  'sum', // Aggregation type: sum, avg, min, max, count, p50, p90, p95, p99
   new Date(Date.now() - 3600000), // Start time (1 hour ago)
-  new Date(),      // End time (now)
-  { agent_id: 'agent-001' }  // Optional label filter
+  new Date(), // End time (now)
+  { agent_id: 'agent-001' } // Optional label filter
 );
 
 // Get raw data points
@@ -462,17 +475,14 @@ await pipeline.clear();
 
 ### Alerting Patterns
 
-The `AlertManager` provides configurable alerting with conditions, cooldowns, and notification channels.
+The `AlertManager` provides configurable alerting with conditions, cooldowns, and notification
+channels.
 
 ```typescript
-import {
-  AlertManager,
-  createAlertManager,
-  CommonAlerts,
-} from '@wundr.io/agent-observability';
+import { AlertManager, createAlertManager, CommonAlerts } from '@wundr.io/agent-observability';
 
 const alertManager = createAlertManager({
-  defaultCooldownMs: 300000,    // 5 minutes
+  defaultCooldownMs: 300000, // 5 minutes
   maxAlertHistory: 1000,
   autoResolveEnabled: true,
   autoResolveTimeoutMs: 3600000, // 1 hour
@@ -500,12 +510,12 @@ alertManager.addAlert({
       field: 'durationMs',
       operator: 'gte', // gt, gte, lt, lte, eq, neq, contains, matches
       threshold: 5000,
-      windowMs: 300000,     // Evaluation window (5 minutes)
-      minOccurrences: 5,    // Minimum events before triggering
+      windowMs: 300000, // Evaluation window (5 minutes)
+      minOccurrences: 5, // Minimum events before triggering
     },
   ],
 
-  cooldownMs: 600000,  // 10 minute cooldown between alerts
+  cooldownMs: 600000, // 10 minute cooldown between alerts
   notificationChannels: ['slack', 'pagerduty'],
   metadata: { team: 'platform' },
 });
@@ -515,55 +525,65 @@ alertManager.addAlert({
 
 ```typescript
 // High error rate
-alertManager.addAlert(CommonAlerts.highErrorRate({
-  threshold: 10,      // Number of errors
-  windowMs: 60000,    // In 1 minute
-  cooldownMs: 300000, // 5 minute cooldown
-}));
+alertManager.addAlert(
+  CommonAlerts.highErrorRate({
+    threshold: 10, // Number of errors
+    windowMs: 60000, // In 1 minute
+    cooldownMs: 300000, // 5 minute cooldown
+  })
+);
 
 // Agent failure
-alertManager.addAlert(CommonAlerts.agentFailure({
-  cooldownMs: 60000,
-}));
+alertManager.addAlert(
+  CommonAlerts.agentFailure({
+    cooldownMs: 60000,
+  })
+);
 
 // Slow response time
-alertManager.addAlert(CommonAlerts.slowResponseTime({
-  thresholdMs: 5000,
-  windowMs: 300000,
-  minOccurrences: 5,
-}));
+alertManager.addAlert(
+  CommonAlerts.slowResponseTime({
+    thresholdMs: 5000,
+    windowMs: 300000,
+    minOccurrences: 5,
+  })
+);
 
 // Memory pressure
-alertManager.addAlert(CommonAlerts.memoryPressure({
-  thresholdPercent: 90,
-  windowMs: 60000,
-}));
+alertManager.addAlert(
+  CommonAlerts.memoryPressure({
+    thresholdPercent: 90,
+    windowMs: 60000,
+  })
+);
 
 // Security event (immediate alert)
-alertManager.addAlert(CommonAlerts.securityEvent({
-  cooldownMs: 0,
-}));
+alertManager.addAlert(
+  CommonAlerts.securityEvent({
+    cooldownMs: 0,
+  })
+);
 ```
 
 #### Alert Handlers
 
 ```typescript
 // Global alert handler
-alertManager.onAlert((notification) => {
+alertManager.onAlert(notification => {
   console.log('Alert triggered:', notification.alert.message);
   console.log('Severity:', notification.alert.severity);
   console.log('Events:', notification.events.length);
 });
 
 // Channel-specific handlers
-alertManager.registerChannel('slack', async (notification) => {
+alertManager.registerChannel('slack', async notification => {
   await sendSlackMessage({
     channel: '#alerts',
     text: `[${notification.alert.severity.toUpperCase()}] ${notification.alert.message}`,
   });
 });
 
-alertManager.registerChannel('pagerduty', async (notification) => {
+alertManager.registerChannel('pagerduty', async notification => {
   if (notification.alert.severity === 'critical') {
     await triggerPagerDutyIncident(notification);
   }
@@ -603,10 +623,7 @@ const stats = alertManager.getStatistics();
 The `SensitiveDataRedactor` automatically removes or masks sensitive data from logs.
 
 ```typescript
-import {
-  SensitiveDataRedactor,
-  createDefaultRedactor,
-} from '@wundr.io/agent-observability';
+import { SensitiveDataRedactor, createDefaultRedactor } from '@wundr.io/agent-observability';
 
 // Create with default patterns
 const redactor = createDefaultRedactor();
@@ -614,17 +631,11 @@ const redactor = createDefaultRedactor();
 // Or customize configuration
 const redactor = new SensitiveDataRedactor({
   enabled: true,
-  preserveHash: true,  // Keep hash for verification
+  preserveHash: true, // Keep hash for verification
   hashAlgorithm: 'sha256', // sha256, sha512, md5
 
   // Field names to always redact
-  sensitiveFields: [
-    'password',
-    'secret',
-    'token',
-    'apiKey',
-    'authorization',
-  ],
+  sensitiveFields: ['password', 'secret', 'token', 'apiKey', 'authorization'],
 
   // Pattern-based redaction
   patterns: [
@@ -643,14 +654,14 @@ const redactor = new SensitiveDataRedactor({
 
 The default redactor includes patterns for:
 
-| Pattern        | Detects                         |
-| -------------- | ------------------------------- |
-| `api_key`      | API keys in various formats     |
-| `password`     | Password fields and values      |
-| `bearer_token` | Bearer authentication tokens    |
-| `credit_card`  | Credit card numbers             |
-| `email`        | Email addresses                 |
-| `ssn`          | Social Security Numbers         |
+| Pattern        | Detects                      |
+| -------------- | ---------------------------- |
+| `api_key`      | API keys in various formats  |
+| `password`     | Password fields and values   |
+| `bearer_token` | Bearer authentication tokens |
+| `credit_card`  | Credit card numbers          |
+| `email`        | Email addresses              |
+| `ssn`          | Social Security Numbers      |
 
 #### Manual Redaction
 
@@ -790,20 +801,20 @@ async function getDashboardData(pipeline: ObservabilityPipeline) {
 
 ```typescript
 // Listen for pipeline events
-pipeline.on('event:received', (event) => {
+pipeline.on('event:received', event => {
   // Real-time event processing
 });
 
-pipeline.on('event:redacted', (event) => {
+pipeline.on('event:redacted', event => {
   // Track redaction activity
 });
 
-pipeline.on('alert:triggered', (event) => {
+pipeline.on('alert:triggered', event => {
   // Handle triggered alerts
   const alert = event.data.triggeredAlert;
 });
 
-pipeline.on('metric:recorded', (event) => {
+pipeline.on('metric:recorded', event => {
   // Metric update notifications
 });
 
@@ -815,7 +826,7 @@ pipeline.on('pipeline:stopped', () => {
   console.log('Pipeline stopped');
 });
 
-pipeline.on('pipeline:error', (event) => {
+pipeline.on('pipeline:error', event => {
   console.error('Pipeline error:', event);
 });
 ```
@@ -824,89 +835,89 @@ pipeline.on('pipeline:error', (event) => {
 
 ### ObservabilityPipeline
 
-| Method | Description |
-| ------ | ----------- |
-| `start()` | Start the pipeline |
-| `stop()` | Stop the pipeline |
-| `log(options)` | Log an event with options |
-| `trace/debug/info/warn/error/fatal()` | Log at specific level |
-| `timed(category, message, durationMs, data?, metadata?)` | Log with duration |
-| `startTimer()` | Create a timer for duration tracking |
-| `query(options)` | Query stored events |
-| `get(id)` | Get event by ID |
-| `delete(criteria)` | Delete events |
-| `getStatistics()` | Get store statistics |
-| `clear()` | Clear all events |
-| `on(eventType, handler)` | Register event handler |
-| `off(eventType, handler)` | Remove event handler |
-| `getStore()` | Get underlying log store |
-| `setStore(store)` | Set custom log store |
-| `flushBuffer()` | Flush event buffer |
+| Method                                                   | Description                          |
+| -------------------------------------------------------- | ------------------------------------ |
+| `start()`                                                | Start the pipeline                   |
+| `stop()`                                                 | Stop the pipeline                    |
+| `log(options)`                                           | Log an event with options            |
+| `trace/debug/info/warn/error/fatal()`                    | Log at specific level                |
+| `timed(category, message, durationMs, data?, metadata?)` | Log with duration                    |
+| `startTimer()`                                           | Create a timer for duration tracking |
+| `query(options)`                                         | Query stored events                  |
+| `get(id)`                                                | Get event by ID                      |
+| `delete(criteria)`                                       | Delete events                        |
+| `getStatistics()`                                        | Get store statistics                 |
+| `clear()`                                                | Clear all events                     |
+| `on(eventType, handler)`                                 | Register event handler               |
+| `off(eventType, handler)`                                | Remove event handler                 |
+| `getStore()`                                             | Get underlying log store             |
+| `setStore(store)`                                        | Set custom log store                 |
+| `flushBuffer()`                                          | Flush event buffer                   |
 
 ### MetricsCollector
 
-| Method | Description |
-| ------ | ----------- |
-| `defineMetric(definition)` | Define a new metric |
-| `incrementCounter(name, labels?, value?)` | Increment counter |
-| `getCounter(name, labels?)` | Get counter value |
-| `setGauge(name, value, labels?)` | Set gauge value |
-| `incrementGauge/decrementGauge()` | Adjust gauge |
-| `getGauge(name, labels?)` | Get gauge value |
-| `observeHistogram(name, value, labels?)` | Record histogram observation |
-| `getHistogram(name, labels?)` | Get histogram statistics |
-| `observeSummary(name, value, labels?)` | Record summary observation |
-| `getSummary(name, labels?)` | Get summary with quantiles |
-| `aggregate(name, type, start, end, labels?)` | Aggregate metric data |
-| `getDataPoints(name, start?, end?)` | Get raw data points |
-| `exportMetrics()` | Export all metrics |
-| `resetMetric(name, labels?)` | Reset metric |
-| `clearAll()` | Clear all metrics |
-| `close()` | Stop cleanup timer |
+| Method                                       | Description                  |
+| -------------------------------------------- | ---------------------------- |
+| `defineMetric(definition)`                   | Define a new metric          |
+| `incrementCounter(name, labels?, value?)`    | Increment counter            |
+| `getCounter(name, labels?)`                  | Get counter value            |
+| `setGauge(name, value, labels?)`             | Set gauge value              |
+| `incrementGauge/decrementGauge()`            | Adjust gauge                 |
+| `getGauge(name, labels?)`                    | Get gauge value              |
+| `observeHistogram(name, value, labels?)`     | Record histogram observation |
+| `getHistogram(name, labels?)`                | Get histogram statistics     |
+| `observeSummary(name, value, labels?)`       | Record summary observation   |
+| `getSummary(name, labels?)`                  | Get summary with quantiles   |
+| `aggregate(name, type, start, end, labels?)` | Aggregate metric data        |
+| `getDataPoints(name, start?, end?)`          | Get raw data points          |
+| `exportMetrics()`                            | Export all metrics           |
+| `resetMetric(name, labels?)`                 | Reset metric                 |
+| `clearAll()`                                 | Clear all metrics            |
+| `close()`                                    | Stop cleanup timer           |
 
 ### AlertManager
 
-| Method | Description |
-| ------ | ----------- |
-| `addAlert(config)` | Add alert configuration |
-| `removeAlert(id)` | Remove alert |
-| `getAlert(id)` | Get alert config |
-| `getAllAlerts()` | Get all alert configs |
-| `setAlertEnabled(id, enabled)` | Enable/disable alert |
-| `updateAlert(id, updates)` | Update alert config |
-| `onAlert(handler)` | Register alert handler |
-| `offAlert(handler)` | Remove handler |
+| Method                           | Description                   |
+| -------------------------------- | ----------------------------- |
+| `addAlert(config)`               | Add alert configuration       |
+| `removeAlert(id)`                | Remove alert                  |
+| `getAlert(id)`                   | Get alert config              |
+| `getAllAlerts()`                 | Get all alert configs         |
+| `setAlertEnabled(id, enabled)`   | Enable/disable alert          |
+| `updateAlert(id, updates)`       | Update alert config           |
+| `onAlert(handler)`               | Register alert handler        |
+| `offAlert(handler)`              | Remove handler                |
 | `registerChannel(name, handler)` | Register notification channel |
-| `unregisterChannel(name)` | Remove channel |
-| `evaluate(event)` | Evaluate event against alerts |
-| `evaluateBatch(events)` | Batch evaluation |
-| `acknowledge(id, by)` | Acknowledge alert |
-| `resolve(id, notes?)` | Resolve alert |
-| `getActiveAlerts()` | Get active alerts |
-| `getAcknowledgedAlerts()` | Get acknowledged alerts |
-| `getAlertsBySeverity(severity)` | Filter by severity |
-| `getAlertHistory(limit?)` | Get resolved alerts |
-| `getStatistics()` | Get alert statistics |
-| `clearState()` | Clear alert state |
-| `clearAll()` | Clear all alerts |
-| `checkAutoResolve()` | Auto-resolve aged alerts |
+| `unregisterChannel(name)`        | Remove channel                |
+| `evaluate(event)`                | Evaluate event against alerts |
+| `evaluateBatch(events)`          | Batch evaluation              |
+| `acknowledge(id, by)`            | Acknowledge alert             |
+| `resolve(id, notes?)`            | Resolve alert                 |
+| `getActiveAlerts()`              | Get active alerts             |
+| `getAcknowledgedAlerts()`        | Get acknowledged alerts       |
+| `getAlertsBySeverity(severity)`  | Filter by severity            |
+| `getAlertHistory(limit?)`        | Get resolved alerts           |
+| `getStatistics()`                | Get alert statistics          |
+| `clearState()`                   | Clear alert state             |
+| `clearAll()`                     | Clear all alerts              |
+| `checkAutoResolve()`             | Auto-resolve aged alerts      |
 
 ### SensitiveDataRedactor
 
-| Method | Description |
-| ------ | ----------- |
-| `redact(data, path?)` | Redact an object |
-| `redactEvent(event)` | Redact an observability event |
-| `addPattern(pattern)` | Add redaction pattern |
-| `removePattern(name)` | Remove pattern |
-| `setPatternEnabled(name, enabled)` | Enable/disable pattern |
-| `addSensitiveField(name)` | Add sensitive field |
-| `removeSensitiveField(name)` | Remove sensitive field |
-| `setEnabled(enabled)` | Enable/disable redaction |
-| `isEnabled()` | Check if enabled |
-| `getConfig()` | Get current config |
-| `getActivePatterns()` | Get enabled patterns |
-| `wouldRedact(value)` | Test if value would be redacted |
+| Method                             | Description                     |
+| ---------------------------------- | ------------------------------- |
+| `redact(data, path?)`              | Redact an object                |
+| `redactEvent(event)`               | Redact an observability event   |
+| `addPattern(pattern)`              | Add redaction pattern           |
+| `removePattern(name)`              | Remove pattern                  |
+| `setPatternEnabled(name, enabled)` | Enable/disable pattern          |
+| `addSensitiveField(name)`          | Add sensitive field             |
+| `removeSensitiveField(name)`       | Remove sensitive field          |
+| `setEnabled(enabled)`              | Enable/disable redaction        |
+| `isEnabled()`                      | Check if enabled                |
+| `getConfig()`                      | Get current config              |
+| `getActivePatterns()`              | Get enabled patterns            |
+| `wouldRedact(value)`               | Test if value would be redacted |
 
 ## Configuration
 
@@ -931,13 +942,13 @@ interface ObservabilityPipelineConfig {
 
 ```typescript
 interface LogStoreConfig {
-  maxEvents: number;           // Default: 10000
-  ttlMs?: number;              // Default: 86400000 (24h)
+  maxEvents: number; // Default: 10000
+  ttlMs?: number; // Default: 86400000 (24h)
   persistenceEnabled: boolean; // Default: false
   persistencePath?: string;
-  flushIntervalMs: number;     // Default: 5000
+  flushIntervalMs: number; // Default: 5000
   compressionEnabled: boolean; // Default: false
-  batchSize: number;           // Default: 100
+  batchSize: number; // Default: 100
 }
 ```
 
@@ -945,11 +956,11 @@ interface LogStoreConfig {
 
 ```typescript
 interface MetricsCollectorConfig {
-  maxDataPointsPerMetric: number;    // Default: 10000
+  maxDataPointsPerMetric: number; // Default: 10000
   defaultAggregationWindowMs: number; // Default: 60000
-  autoCleanup: boolean;              // Default: true
-  cleanupIntervalMs: number;         // Default: 60000
-  retentionPeriodMs: number;         // Default: 86400000
+  autoCleanup: boolean; // Default: true
+  cleanupIntervalMs: number; // Default: 60000
+  retentionPeriodMs: number; // Default: 86400000
 }
 ```
 
@@ -957,11 +968,11 @@ interface MetricsCollectorConfig {
 
 ```typescript
 interface AlertManagerConfig {
-  defaultCooldownMs: number;       // Default: 300000 (5min)
-  maxAlertHistory: number;         // Default: 1000
-  autoResolveEnabled: boolean;     // Default: true
-  autoResolveTimeoutMs: number;    // Default: 3600000 (1h)
-  maxEventsPerEvaluation: number;  // Default: 1000
+  defaultCooldownMs: number; // Default: 300000 (5min)
+  maxAlertHistory: number; // Default: 1000
+  autoResolveEnabled: boolean; // Default: true
+  autoResolveTimeoutMs: number; // Default: 3600000 (1h)
+  maxEventsPerEvaluation: number; // Default: 1000
 }
 ```
 
@@ -969,10 +980,10 @@ interface AlertManagerConfig {
 
 ```typescript
 interface RedactionConfig {
-  enabled: boolean;                    // Default: true
-  patterns: RedactionPattern[];        // Default: built-in patterns
-  sensitiveFields: string[];           // Default: common field names
-  preserveHash: boolean;               // Default: false
+  enabled: boolean; // Default: true
+  patterns: RedactionPattern[]; // Default: built-in patterns
+  sensitiveFields: string[]; // Default: common field names
+  preserveHash: boolean; // Default: false
   hashAlgorithm: 'sha256' | 'sha512' | 'md5'; // Default: 'sha256'
 }
 ```
@@ -983,18 +994,23 @@ interface RedactionConfig {
 
 ```typescript
 // Good: Structured, queryable metadata
-await pipeline.info('agent', 'Task completed', {
-  result: 'success',
-  itemsProcessed: 100,
-}, {
-  agentId: 'agent-001',
-  taskId: 'task-123',
-  traceId: 'trace-abc',
-  labels: {
-    environment: 'production',
-    region: 'us-east-1',
+await pipeline.info(
+  'agent',
+  'Task completed',
+  {
+    result: 'success',
+    itemsProcessed: 100,
   },
-});
+  {
+    agentId: 'agent-001',
+    taskId: 'task-123',
+    traceId: 'trace-abc',
+    labels: {
+      environment: 'production',
+      region: 'us-east-1',
+    },
+  }
+);
 
 // Avoid: Unstructured messages
 await pipeline.info('agent', 'agent-001 completed task-123 with 100 items');
@@ -1034,13 +1050,15 @@ alertManager.addAlert({
   name: 'Task Backlog Growing',
   severity: 'medium',
   categories: ['task'],
-  conditions: [{
-    field: 'data.queueDepth',
-    operator: 'gte',
-    threshold: 100,
-    windowMs: 300000,
-    minOccurrences: 3,
-  }],
+  conditions: [
+    {
+      field: 'data.queueDepth',
+      operator: 'gte',
+      threshold: 100,
+      windowMs: 300000,
+      minOccurrences: 3,
+    },
+  ],
   cooldownMs: 600000,
   notificationChannels: ['slack'],
 });
@@ -1056,10 +1074,15 @@ const traceId = generateTraceId();
 async function processRequest(request, traceId) {
   const spanId = generateSpanId();
 
-  await pipeline.info('api', 'Request received', { request }, {
-    traceId,
-    spanId,
-  });
+  await pipeline.info(
+    'api',
+    'Request received',
+    { request },
+    {
+      traceId,
+      spanId,
+    }
+  );
 
   // Pass to downstream services
   await callDownstreamService(request, traceId, spanId);

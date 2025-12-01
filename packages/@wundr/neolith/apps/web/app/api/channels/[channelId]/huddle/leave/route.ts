@@ -40,15 +40,18 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -69,23 +72,25 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Get active huddle from channel settings
-    const settings = channel.settings as { activeHuddle?: { status: string } } | null;
+    const settings = channel.settings as {
+      activeHuddle?: { status: string };
+    } | null;
     const activeHuddle = settings?.activeHuddle;
 
     if (!activeHuddle || activeHuddle.status !== 'active') {
       return NextResponse.json(
         createErrorResponse(
           'No active huddle in this channel',
-          CALL_ERROR_CODES.HUDDLE_NOT_FOUND,
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -100,8 +105,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/channels/:channelId/huddle/leave] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

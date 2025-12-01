@@ -40,7 +40,7 @@ const exportRequestSchema = z.object({
     'members',
     'vps',
     'workflows',
-    'all'
+    'all',
   ]),
   format: z.enum(['json', 'csv']).default('json'),
   startDate: z.string().datetime().optional(),
@@ -74,15 +74,12 @@ interface ExportData {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug: workspaceId } = await params;
@@ -110,7 +107,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -118,20 +115,27 @@ export async function GET(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can export data' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Build date filter if provided
-    const dateFilter = (startDate || endDate) ? {
-      createdAt: {
-        ...(startDate ? { gte: new Date(startDate) } : {}),
-        ...(endDate ? { lte: new Date(endDate) } : {}),
-      },
-    } : {};
+    const dateFilter =
+      startDate || endDate
+        ? {
+            createdAt: {
+              ...(startDate ? { gte: new Date(startDate) } : {}),
+              ...(endDate ? { lte: new Date(endDate) } : {}),
+            },
+          }
+        : {};
 
     // First, check total record count to determine if async is needed
-    const recordCount = await estimateRecordCount(workspaceId, type, dateFilter);
+    const recordCount = await estimateRecordCount(
+      workspaceId,
+      type,
+      dateFilter
+    );
 
     // If dataset is large, create async job instead
     if (shouldUseAsyncExport(recordCount)) {
@@ -151,7 +155,8 @@ export async function GET(
         jobId: job.id,
         status: 'PENDING',
         estimatedRecords: recordCount,
-        message: 'Export job created. Use GET /api/workspaces/{workspaceId}/export/jobs/{jobId} to check status.',
+        message:
+          'Export job created. Use GET /api/workspaces/{workspaceId}/export/jobs/{jobId} to check status.',
       });
     }
 
@@ -204,14 +209,16 @@ export async function GET(
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
-        { status: 400 },
+        {
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+        },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Failed to export workspace data' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -230,15 +237,19 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
-): Promise<NextResponse<{ data?: unknown, error?: string, async?: boolean, jobId?: string }>> {
+  { params }: { params: Promise<{ workspaceSlug: string }> }
+): Promise<
+  NextResponse<{
+    data?: unknown;
+    error?: string;
+    async?: boolean;
+    jobId?: string;
+  }>
+> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug: workspaceId } = await params;
@@ -254,7 +265,7 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -262,7 +273,7 @@ export async function POST(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can export data' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -271,10 +282,7 @@ export async function POST(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     const validated = exportRequestSchema.parse(body);
@@ -297,7 +305,8 @@ export async function POST(
       jobId: job.id,
       status: job.status,
       createdAt: job.createdAt.toISOString(),
-      message: 'Export job created. Use GET /api/workspaces/{workspaceId}/export/jobs/{jobId} to check status.',
+      message:
+        'Export job created. Use GET /api/workspaces/{workspaceId}/export/jobs/{jobId} to check status.',
     });
   } catch (error) {
     console.error('Export job creation error:', error);
@@ -305,14 +314,16 @@ export async function POST(
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
-        { status: 400 },
+        {
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+        },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Failed to create export job' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -512,52 +523,94 @@ function convertExportToCSV(exportData: ExportData, type: string): string {
 
   if (type === 'channels' && exportData.channels) {
     csvSections.push('# Channels');
-    csvSections.push(convertToCSV(flattenData(exportData.channels as Record<string, unknown>[])));
+    csvSections.push(
+      convertToCSV(
+        flattenData(exportData.channels as Record<string, unknown>[])
+      )
+    );
   } else if (type === 'messages' && exportData.messages) {
     csvSections.push('# Messages');
-    csvSections.push(convertToCSV(flattenData(exportData.messages as Record<string, unknown>[])));
+    csvSections.push(
+      convertToCSV(
+        flattenData(exportData.messages as Record<string, unknown>[])
+      )
+    );
   } else if (type === 'tasks' && exportData.tasks) {
     csvSections.push('# Tasks');
-    csvSections.push(convertToCSV(flattenData(exportData.tasks as Record<string, unknown>[])));
+    csvSections.push(
+      convertToCSV(flattenData(exportData.tasks as Record<string, unknown>[]))
+    );
   } else if (type === 'members' && exportData.members) {
     csvSections.push('# Members');
-    csvSections.push(convertToCSV(flattenData(exportData.members as Record<string, unknown>[])));
+    csvSections.push(
+      convertToCSV(flattenData(exportData.members as Record<string, unknown>[]))
+    );
   } else if (type === 'vps' && exportData.orchestrators) {
     csvSections.push('# VPs');
-    csvSections.push(convertToCSV(flattenData(exportData.orchestrators as Record<string, unknown>[])));
+    csvSections.push(
+      convertToCSV(
+        flattenData(exportData.orchestrators as Record<string, unknown>[])
+      )
+    );
   } else if (type === 'workflows' && exportData.workflows) {
     csvSections.push('# Workflows');
-    csvSections.push(convertToCSV(flattenData(exportData.workflows as Record<string, unknown>[])));
+    csvSections.push(
+      convertToCSV(
+        flattenData(exportData.workflows as Record<string, unknown>[])
+      )
+    );
   } else if (type === 'all') {
     // Export all sections
     if (exportData.channels?.length) {
       csvSections.push('# Channels');
-      csvSections.push(convertToCSV(flattenData(exportData.channels as Record<string, unknown>[])));
+      csvSections.push(
+        convertToCSV(
+          flattenData(exportData.channels as Record<string, unknown>[])
+        )
+      );
       csvSections.push('');
     }
     if (exportData.messages?.length) {
       csvSections.push('# Messages');
-      csvSections.push(convertToCSV(flattenData(exportData.messages as Record<string, unknown>[])));
+      csvSections.push(
+        convertToCSV(
+          flattenData(exportData.messages as Record<string, unknown>[])
+        )
+      );
       csvSections.push('');
     }
     if (exportData.tasks?.length) {
       csvSections.push('# Tasks');
-      csvSections.push(convertToCSV(flattenData(exportData.tasks as Record<string, unknown>[])));
+      csvSections.push(
+        convertToCSV(flattenData(exportData.tasks as Record<string, unknown>[]))
+      );
       csvSections.push('');
     }
     if (exportData.members?.length) {
       csvSections.push('# Members');
-      csvSections.push(convertToCSV(flattenData(exportData.members as Record<string, unknown>[])));
+      csvSections.push(
+        convertToCSV(
+          flattenData(exportData.members as Record<string, unknown>[])
+        )
+      );
       csvSections.push('');
     }
     if (exportData.orchestrators?.length) {
       csvSections.push('# VPs');
-      csvSections.push(convertToCSV(flattenData(exportData.orchestrators as Record<string, unknown>[])));
+      csvSections.push(
+        convertToCSV(
+          flattenData(exportData.orchestrators as Record<string, unknown>[])
+        )
+      );
       csvSections.push('');
     }
     if (exportData.workflows?.length) {
       csvSections.push('# Workflows');
-      csvSections.push(convertToCSV(flattenData(exportData.workflows as Record<string, unknown>[])));
+      csvSections.push(
+        convertToCSV(
+          flattenData(exportData.workflows as Record<string, unknown>[])
+        )
+      );
     }
   }
 

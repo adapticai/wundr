@@ -14,8 +14,14 @@ export class MonorepoManageHandler {
   private checkDepsPath: string;
 
   constructor() {
-    this.scriptPath = path.resolve(process.cwd(), 'scripts/monorepo/monorepo-setup.ts');
-    this.checkDepsPath = path.resolve(process.cwd(), 'scripts/monorepo/check-dependencies.ts');
+    this.scriptPath = path.resolve(
+      process.cwd(),
+      'scripts/monorepo/monorepo-setup.ts'
+    );
+    this.checkDepsPath = path.resolve(
+      process.cwd(),
+      'scripts/monorepo/check-dependencies.ts'
+    );
   }
 
   async execute(args: MonorepoManageArgs): Promise<string> {
@@ -28,7 +34,9 @@ export class MonorepoManageHandler {
 
         case 'plan':
           if (!analysisReport) {
-            throw new Error('Analysis report path required for migration planning');
+            throw new Error(
+              'Analysis report path required for migration planning'
+            );
           }
           return this.generateMigrationPlan(analysisReport);
 
@@ -73,24 +81,28 @@ export class MonorepoManageHandler {
       '.npmrc',
     ];
 
-    return JSON.stringify({
-      success: true,
-      action: 'init',
-      structure: {
-        directories: createdDirs,
-        configs: createdConfigs,
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'init',
+        structure: {
+          directories: createdDirs,
+          configs: createdConfigs,
+        },
+        packageManager: 'pnpm',
+        nextSteps: [
+          'Run: pnpm install',
+          'Migrate existing code to packages/',
+          'Update imports to use package names',
+          'Run: pnpm run build',
+          'Start development: pnpm run dev',
+        ],
+        message: 'Monorepo structure created successfully!',
+        details: output,
       },
-      packageManager: 'pnpm',
-      nextSteps: [
-        'Run: pnpm install',
-        'Migrate existing code to packages/',
-        'Update imports to use package names',
-        'Run: pnpm run build',
-        'Start development: pnpm run dev',
-      ],
-      message: 'Monorepo structure created successfully!',
-      details: output,
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private generateMigrationPlan(analysisReport: string): string {
@@ -98,78 +110,98 @@ export class MonorepoManageHandler {
       throw new Error(`Analysis report not found: ${analysisReport}`);
     }
 
-    const output = execSync(`npx ts-node ${this.scriptPath} plan ${analysisReport}`, {
-      encoding: 'utf-8',
-      cwd: process.cwd(),
-    });
+    const output = execSync(
+      `npx ts-node ${this.scriptPath} plan ${analysisReport}`,
+      {
+        encoding: 'utf-8',
+        cwd: process.cwd(),
+      }
+    );
 
     // Read the generated migration plan
     const migrationPlanPath = path.join(process.cwd(), 'MIGRATION_PLAN.md');
     let migrationPlan = '';
-    
+
     if (fs.existsSync(migrationPlanPath)) {
       migrationPlan = fs.readFileSync(migrationPlanPath, 'utf-8');
     }
 
-    return JSON.stringify({
-      success: true,
-      action: 'plan',
-      planPath: 'MIGRATION_PLAN.md',
-      summary: 'Migration plan generated successfully',
-      phases: this.extractPhasesFromPlan(migrationPlan),
-      verificationSteps: [
-        'Run type checking: pnpm run type-check',
-        'Run tests: pnpm run test',
-        'Check circular dependencies: pnpm run check:deps',
-        'Build all packages: pnpm run build',
-      ],
-      details: output,
-    }, null, 2);
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'plan',
+        planPath: 'MIGRATION_PLAN.md',
+        summary: 'Migration plan generated successfully',
+        phases: this.extractPhasesFromPlan(migrationPlan),
+        verificationSteps: [
+          'Run type checking: pnpm run type-check',
+          'Run tests: pnpm run test',
+          'Check circular dependencies: pnpm run check:deps',
+          'Build all packages: pnpm run build',
+        ],
+        details: output,
+      },
+      null,
+      2
+    );
   }
 
-  private addPackage(packageName: string, packageType: 'app' | 'package' | 'tool'): string {
+  private addPackage(
+    packageName: string,
+    packageType: 'app' | 'package' | 'tool'
+  ): string {
     const addPackageScript = path.join(process.cwd(), 'scripts/add-package.sh');
-    
+
     // Create the script if it doesn't exist
     if (!fs.existsSync(addPackageScript)) {
       this.createAddPackageScript(addPackageScript);
     }
 
-    const output = execSync(`bash ${addPackageScript} ${packageName} ${packageType}`, {
-      encoding: 'utf-8',
-      cwd: process.cwd(),
-    });
+    const output = execSync(
+      `bash ${addPackageScript} ${packageName} ${packageType}`,
+      {
+        encoding: 'utf-8',
+        cwd: process.cwd(),
+      }
+    );
 
-    const packageDir = packageType === 'app' ? `apps/${packageName}` : `packages/${packageName}`;
+    const packageDir =
+      packageType === 'app' ? `apps/${packageName}` : `packages/${packageName}`;
     const fullPackageName = `@company/${packageName}`;
 
-    return JSON.stringify({
-      success: true,
-      action: 'add-package',
-      package: {
-        name: fullPackageName,
-        type: packageType,
-        path: packageDir,
+    return JSON.stringify(
+      {
+        success: true,
+        action: 'add-package',
+        package: {
+          name: fullPackageName,
+          type: packageType,
+          path: packageDir,
+        },
+        createdFiles: [
+          `${packageDir}/package.json`,
+          `${packageDir}/tsconfig.json`,
+          `${packageDir}/src/index.ts`,
+          `${packageDir}/README.md`,
+        ],
+        nextSteps: [
+          `cd ${packageDir}`,
+          'Start adding your code in src/',
+          'Run "pnpm install" from the root',
+        ],
+        message: `Package ${fullPackageName} created successfully!`,
+        details: output,
       },
-      createdFiles: [
-        `${packageDir}/package.json`,
-        `${packageDir}/tsconfig.json`,
-        `${packageDir}/src/index.ts`,
-        `${packageDir}/README.md`,
-      ],
-      nextSteps: [
-        `cd ${packageDir}`,
-        'Start adding your code in src/',
-        'Run "pnpm install" from the root',
-      ],
-      message: `Package ${fullPackageName} created successfully!`,
-      details: output,
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   private checkDependencies(): string {
     if (!fs.existsSync(this.checkDepsPath)) {
-      throw new Error(`Check dependencies script not found at: ${this.checkDepsPath}`);
+      throw new Error(
+        `Check dependencies script not found at: ${this.checkDepsPath}`
+      );
     }
 
     try {
@@ -192,35 +224,46 @@ export class MonorepoManageHandler {
         }
       }
 
-      return JSON.stringify({
-        success: !hasCircular,
-        action: 'check-deps',
-        hasCircularDependencies: hasCircular,
-        circularDependencies: circularDeps,
-        message: hasCircular
-          ? `Found ${circularDeps.length} circular dependencies`
-          : 'No circular dependencies found!',
-        recommendation: hasCircular
-          ? 'Refactor to remove circular dependencies before proceeding'
-          : 'Dependencies are healthy',
-        details: output,
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: !hasCircular,
+          action: 'check-deps',
+          hasCircularDependencies: hasCircular,
+          circularDependencies: circularDeps,
+          message: hasCircular
+            ? `Found ${circularDeps.length} circular dependencies`
+            : 'No circular dependencies found!',
+          recommendation: hasCircular
+            ? 'Refactor to remove circular dependencies before proceeding'
+            : 'Dependencies are healthy',
+          details: output,
+        },
+        null,
+        2
+      );
     } catch (error) {
       // Script exits with 1 if circular deps found
-      const errorOutput = error instanceof Error ? error.message : String(error);
-      return JSON.stringify({
-        success: false,
-        action: 'check-deps',
-        hasCircularDependencies: true,
-        error: 'Circular dependencies detected',
-        details: errorOutput,
-      }, null, 2);
+      const errorOutput =
+        error instanceof Error ? error.message : String(error);
+      return JSON.stringify(
+        {
+          success: false,
+          action: 'check-deps',
+          hasCircularDependencies: true,
+          error: 'Circular dependencies detected',
+          details: errorOutput,
+        },
+        null,
+        2
+      );
     }
   }
 
   private extractPhasesFromPlan(planContent: string): any[] {
     const phases: any[] = [];
-    const phaseMatches = planContent.matchAll(/### Phase (\d+): (.+)\n\n\*\*Target Package\*\*: (.+)\n\*\*Files to Move\*\*: (\d+)/g);
+    const phaseMatches = planContent.matchAll(
+      /### Phase (\d+): (.+)\n\n\*\*Target Package\*\*: (.+)\n\*\*Files to Move\*\*: (\d+)/g
+    );
 
     for (const match of phaseMatches) {
       phases.push({

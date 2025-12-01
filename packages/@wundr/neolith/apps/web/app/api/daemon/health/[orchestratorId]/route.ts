@@ -10,7 +10,12 @@
  * @module app/api/daemon/health/[orchestratorId]/route
  */
 
-import { createHeartbeatService, getRedisClient, type HeartbeatMetrics, type RedisClient } from '@neolith/core';
+import {
+  createHeartbeatService,
+  getRedisClient,
+  type HeartbeatMetrics,
+  type RedisClient,
+} from '@neolith/core';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
@@ -22,7 +27,9 @@ import type { NextRequest } from 'next/server';
  * Creates a RedisClient adapter from the ioredis instance.
  * This wraps the raw Redis client to match the RedisClient interface.
  */
-function createRedisClientAdapter(rawRedis: ReturnType<typeof getRedisClient>): RedisClient {
+function createRedisClientAdapter(
+  rawRedis: ReturnType<typeof getRedisClient>
+): RedisClient {
   return {
     async get(key: string) {
       return rawRedis.get(key);
@@ -65,7 +72,11 @@ function createRedisClientAdapter(rawRedis: ReturnType<typeof getRedisClient>): 
     async zrange(key: string, start: number, stop: number) {
       return rawRedis.zrange(key, start, stop);
     },
-    async zrangebyscore(key: string, min: number | string, max: number | string) {
+    async zrangebyscore(
+      key: string,
+      min: number | string,
+      max: number | string
+    ) {
       return rawRedis.zrangebyscore(key, min, max);
     },
     async zremrangebyrank(key: string, start: number, stop: number) {
@@ -119,7 +130,7 @@ function getHealthDetailsFromStatus(status: string): string {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -169,15 +180,18 @@ function createErrorResponse(
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', HEALTH_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          HEALTH_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -207,8 +221,11 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', HEALTH_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          HEALTH_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -224,9 +241,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this Orchestrator',
-          HEALTH_ERROR_CODES.FORBIDDEN,
+          HEALTH_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -300,7 +317,11 @@ export async function GET(
       healthData = {
         orchestratorId,
         healthy: isOnline,
-        status: isOnline ? 'healthy' : (orchestrator.status === 'AWAY' ? 'degraded' : 'unknown'),
+        status: isOnline
+          ? 'healthy'
+          : orchestrator.status === 'AWAY'
+            ? 'degraded'
+            : 'unknown',
         lastHeartbeat: null,
         missedHeartbeats: isOnline ? 0 : -1,
         details: isOnline
@@ -330,9 +351,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        HEALTH_ERROR_CODES.INTERNAL_ERROR,
+        HEALTH_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

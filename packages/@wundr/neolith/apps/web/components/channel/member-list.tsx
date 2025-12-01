@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 
 import type { ChannelMember, ChannelPermissions } from '@/types/channel';
 
-
 /**
  * Props for the MemberList component
  */
@@ -55,8 +54,8 @@ export function MemberList({
   const handleChangeRole = useCallback(
     async (userId: string, role: 'admin' | 'member') => {
       if (isProcessing) {
-return;
-}
+        return;
+      }
       setIsProcessing(true);
       try {
         await onChangeRole?.(userId, role);
@@ -65,14 +64,14 @@ return;
         setActionMenuUserId(null);
       }
     },
-    [isProcessing, onChangeRole],
+    [isProcessing, onChangeRole]
   );
 
   const handleRemoveMember = useCallback(
     async (userId: string) => {
       if (isProcessing) {
-return;
-}
+        return;
+      }
       setIsProcessing(true);
       try {
         await onRemoveMember?.(userId);
@@ -81,43 +80,45 @@ return;
         setActionMenuUserId(null);
       }
     },
-    [isProcessing, onRemoveMember],
+    [isProcessing, onRemoveMember]
   );
 
   if (!isOpen) {
-return null;
-}
+    return null;
+  }
 
   return (
     <div
       className={cn(
         'fixed inset-y-0 right-0 z-40 w-72 border-l bg-card shadow-lg transition-transform duration-200',
         isOpen ? 'translate-x-0' : 'translate-x-full',
-        className,
+        className
       )}
     >
       {/* Header */}
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <h2 className="font-semibold text-foreground">Members ({members.length})</h2>
+      <div className='flex h-14 items-center justify-between border-b px-4'>
+        <h2 className='font-semibold text-foreground'>
+          Members ({members.length})
+        </h2>
         <button
-          type="button"
+          type='button'
           onClick={onClose}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-          aria-label="Close member list"
+          className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
+          aria-label='Close member list'
         >
-          <XIcon className="h-5 w-5" />
+          <XIcon className='h-5 w-5' />
         </button>
       </div>
 
       {/* Member list */}
-      <div className="h-[calc(100%-3.5rem)] overflow-y-auto">
+      <div className='h-[calc(100%-3.5rem)] overflow-y-auto'>
         {/* Online members */}
         {onlineMembers.length > 0 && (
-          <div className="py-2">
-            <h3 className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className='py-2'>
+            <h3 className='px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
               Online - {onlineMembers.length}
             </h3>
-            {onlineMembers.map((member) => (
+            {onlineMembers.map(member => (
               <MemberItem
                 key={member.id}
                 member={member}
@@ -126,7 +127,7 @@ return null;
                 showMenu={actionMenuUserId === member.userId}
                 onToggleMenu={() =>
                   setActionMenuUserId(
-                    actionMenuUserId === member.userId ? null : member.userId,
+                    actionMenuUserId === member.userId ? null : member.userId
                   )
                 }
                 onCloseMenu={() => setActionMenuUserId(null)}
@@ -141,11 +142,11 @@ return null;
 
         {/* Offline members */}
         {offlineMembers.length > 0 && (
-          <div className="py-2">
-            <h3 className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className='py-2'>
+            <h3 className='px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
               Offline - {offlineMembers.length}
             </h3>
-            {offlineMembers.map((member) => (
+            {offlineMembers.map(member => (
               <MemberItem
                 key={member.id}
                 member={member}
@@ -154,7 +155,7 @@ return null;
                 showMenu={actionMenuUserId === member.userId}
                 onToggleMenu={() =>
                   setActionMenuUserId(
-                    actionMenuUserId === member.userId ? null : member.userId,
+                    actionMenuUserId === member.userId ? null : member.userId
                   )
                 }
                 onCloseMenu={() => setActionMenuUserId(null)}
@@ -201,11 +202,13 @@ function MemberItem({
   const showActions = canManage && !isCurrentUser;
 
   return (
-    <div className="relative">
+    <div className='relative'>
       <button
-        type="button"
-        onClick={() => (showActions ? onToggleMenu() : onViewProfile?.(member.userId))}
-        className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-accent"
+        type='button'
+        onClick={() =>
+          showActions ? onToggleMenu() : onViewProfile?.(member.userId)
+        }
+        className='flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-accent'
         aria-label={`${member.user.name}${isCurrentUser ? ' (you)' : ''}`}
       >
         {/* Avatar with status */}
@@ -215,35 +218,39 @@ function MemberItem({
             image: member.user.image,
             status: member.user.status || 'offline',
           }}
-          size="lg"
-          shape="rounded"
+          size='lg'
+          shape='rounded'
           showStatus
         />
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium text-foreground">
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2'>
+            <span className='truncate text-sm font-medium text-foreground'>
               {member.user.name}
               {isCurrentUser && (
-                <span className="ml-1 text-xs text-muted-foreground">(you)</span>
+                <span className='ml-1 text-xs text-muted-foreground'>
+                  (you)
+                </span>
               )}
             </span>
             {member.role === 'admin' && (
-              <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+              <span className='shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary'>
                 Admin
               </span>
             )}
           </div>
           {member.user.email && (
-            <p className="truncate text-xs text-muted-foreground">{member.user.email}</p>
+            <p className='truncate text-xs text-muted-foreground'>
+              {member.user.email}
+            </p>
           )}
         </div>
 
         {/* More button for admins */}
         {showActions && (
-          <span className="text-muted-foreground">
-            <MoreIcon className="h-4 w-4" />
+          <span className='text-muted-foreground'>
+            <MoreIcon className='h-4 w-4' />
           </span>
         )}
       </button>
@@ -251,17 +258,17 @@ function MemberItem({
       {/* Action menu */}
       {showMenu && showActions && (
         <>
-          <div className="fixed inset-0 z-10" onClick={onCloseMenu} />
-          <div className="absolute right-4 top-full z-20 mt-1 w-48 rounded-md border bg-card py-1 shadow-lg">
+          <div className='fixed inset-0 z-10' onClick={onCloseMenu} />
+          <div className='absolute right-4 top-full z-20 mt-1 w-48 rounded-md border bg-card py-1 shadow-lg'>
             <button
-              type="button"
+              type='button'
               onClick={() => {
                 onViewProfile?.(member.userId);
                 onCloseMenu();
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
+              className='flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent'
             >
-              <ProfileIcon className="h-4 w-4" />
+              <ProfileIcon className='h-4 w-4' />
               View profile
             </button>
 
@@ -269,22 +276,22 @@ function MemberItem({
               <>
                 {member.role === 'member' ? (
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => onChangeRole?.(member.userId, 'admin')}
                     disabled={isProcessing}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50"
+                    className='flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50'
                   >
-                    <ShieldIcon className="h-4 w-4" />
+                    <ShieldIcon className='h-4 w-4' />
                     Make admin
                   </button>
                 ) : (
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => onChangeRole?.(member.userId, 'member')}
                     disabled={isProcessing}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50"
+                    className='flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50'
                   >
-                    <ShieldOffIcon className="h-4 w-4" />
+                    <ShieldOffIcon className='h-4 w-4' />
                     Remove admin
                   </button>
                 )}
@@ -293,14 +300,14 @@ function MemberItem({
 
             {permissions.canRemoveMembers && (
               <>
-                <div className="my-1 h-px bg-border" />
+                <div className='my-1 h-px bg-border' />
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => onRemove?.(member.userId)}
                   disabled={isProcessing}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent disabled:opacity-50"
+                  className='flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent disabled:opacity-50'
                 >
-                  <RemoveIcon className="h-4 w-4" />
+                  <RemoveIcon className='h-4 w-4' />
                   Remove from channel
                 </button>
               </>
@@ -316,15 +323,15 @@ function XIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }
@@ -333,16 +340,16 @@ function MoreIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="12" cy="5" r="1" />
-      <circle cx="12" cy="19" r="1" />
+      <circle cx='12' cy='12' r='1' />
+      <circle cx='12' cy='5' r='1' />
+      <circle cx='12' cy='19' r='1' />
     </svg>
   );
 }
@@ -351,15 +358,15 @@ function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+      <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
+      <circle cx='12' cy='7' r='4' />
     </svg>
   );
 }
@@ -368,15 +375,15 @@ function ShieldIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-      <path d="m9 12 2 2 4-4" />
+      <path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10' />
+      <path d='m9 12 2 2 4-4' />
     </svg>
   );
 }
@@ -385,14 +392,14 @@ function ShieldOffIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+      <path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10' />
     </svg>
   );
 }
@@ -401,16 +408,16 @@ function RemoveIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <line x1="17" x2="22" y1="11" y2="11" />
+      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+      <circle cx='9' cy='7' r='4' />
+      <line x1='17' x2='22' y1='11' y2='11' />
     </svg>
   );
 }

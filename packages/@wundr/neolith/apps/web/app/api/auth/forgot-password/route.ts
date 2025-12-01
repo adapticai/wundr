@@ -16,11 +16,7 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { sendPasswordResetEmail } from '@/lib/email';
-import {
-  AUTH_ERROR_CODES,
-  createAuthErrorResponse,
-  forgotPasswordSchema,
-} from '@/lib/validations/auth';
+import { AUTH_ERROR_CODES, forgotPasswordSchema } from '@/lib/validations/auth';
 
 import type { ForgotPasswordInput } from '@/lib/validations/auth';
 import type { NextRequest } from 'next/server';
@@ -70,8 +66,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAuthErrorResponse('Invalid JSON body', AUTH_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        {
+          error: AUTH_ERROR_CODES.VALIDATION_ERROR,
+          message: 'Invalid JSON body',
+        },
+        { status: 400 }
       );
     }
 
@@ -79,10 +78,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = forgotPasswordSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createAuthErrorResponse('Validation failed', AUTH_ERROR_CODES.VALIDATION_ERROR, {
+        {
+          error: AUTH_ERROR_CODES.VALIDATION_ERROR,
+          message: 'Validation failed',
           errors: parseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        },
+        { status: 400 }
       );
     }
 
@@ -96,7 +97,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (user) {
       // Generate secure reset token
       const resetToken = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+      const hashedToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
       const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_MS);
 
       // Store reset token in the Account table (using access_token field for reset tokens)
@@ -149,18 +153,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               email: user.email,
               error: emailResult.error,
               timestamp: new Date().toISOString(),
-            },
+            }
           );
         }
 
         // SECURITY: Only log reset details in development
         if (process.env.NODE_ENV === 'development') {
           // eslint-disable-next-line no-console
-          console.log('[DEVELOPMENT] Password reset requested for:', user.email);
+          console.log(
+            '[DEVELOPMENT] Password reset requested for:',
+            user.email
+          );
           // eslint-disable-next-line no-console
           console.log('[DEVELOPMENT] Reset URL:', resetUrl);
           // eslint-disable-next-line no-console
-          console.log('[DEVELOPMENT] Token expires at:', expiresAt.toISOString());
+          console.log(
+            '[DEVELOPMENT] Token expires at:',
+            expiresAt.toISOString()
+          );
           // eslint-disable-next-line no-console
           console.log('[DEVELOPMENT] Email sent:', emailResult.success);
         }
@@ -171,9 +181,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           '[POST /api/auth/forgot-password] Unexpected error sending password reset email:',
           {
             email: user.email,
-            error: emailError instanceof Error ? emailError.message : String(emailError),
+            error:
+              emailError instanceof Error
+                ? emailError.message
+                : String(emailError),
             timestamp: new Date().toISOString(),
-          },
+          }
         );
         // Continue execution - we still return success to prevent email enumeration
       }
@@ -183,21 +196,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // This prevents email enumeration attacks
     return NextResponse.json(
       {
-        message: "If an account exists with that email, we've sent password reset instructions.",
+        message:
+          "If an account exists with that email, we've sent password reset instructions.",
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     // Only log detailed error in development
     if (process.env.NODE_ENV === 'development') {
       console.error('[POST /api/auth/forgot-password] Error:', error);
     } else {
-      console.error('[POST /api/auth/forgot-password] Password reset request error');
+      console.error(
+        '[POST /api/auth/forgot-password] Password reset request error'
+      );
     }
 
     return NextResponse.json(
-      createAuthErrorResponse('An internal error occurred', AUTH_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      {
+        error: AUTH_ERROR_CODES.INTERNAL_ERROR,
+        message: 'An internal error occurred',
+      },
+      { status: 500 }
     );
   }
 }

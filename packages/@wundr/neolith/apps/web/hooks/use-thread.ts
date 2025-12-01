@@ -23,7 +23,10 @@ export interface UseThreadReturn {
   /** Fetch thread replies */
   fetchReplies: () => Promise<void>;
   /** Add a reply to the thread */
-  addReply: (content: string, metadata?: Record<string, unknown>) => Promise<Message | null>;
+  addReply: (
+    content: string,
+    metadata?: Record<string, unknown>
+  ) => Promise<Message | null>;
   /** Load more replies (pagination) */
   loadMore: () => Promise<void>;
   /** Refetch thread */
@@ -41,7 +44,7 @@ export interface UseThreadReturn {
 export function useThread(
   workspaceId: string,
   channelId: string,
-  messageId: string,
+  messageId: string
 ): UseThreadReturn {
   const [replies, setReplies] = useState<Message[]>([]);
   const [parentMessage, setParentMessage] = useState<Message | null>(null);
@@ -63,7 +66,7 @@ export function useThread(
       try {
         const url = new URL(
           `/api/workspaces/${workspaceId}/channels/${channelId}/messages/${messageId}/thread`,
-          window.location.origin,
+          window.location.origin
         );
         if (cursor) {
           url.searchParams.set('after', cursor);
@@ -77,16 +80,18 @@ export function useThread(
         const result = await response.json();
 
         // Transform dates
-        const transformedReplies = (result.data || []).map((reply: Message) => ({
-          ...reply,
-          createdAt: new Date(reply.createdAt),
-          updatedAt: new Date(reply.updatedAt),
-          editedAt: reply.editedAt ? new Date(reply.editedAt) : null,
-        }));
+        const transformedReplies = (result.data || []).map(
+          (reply: Message) => ({
+            ...reply,
+            createdAt: new Date(reply.createdAt),
+            updatedAt: new Date(reply.updatedAt),
+            editedAt: reply.editedAt ? new Date(reply.editedAt) : null,
+          })
+        );
 
         if (cursor) {
           // Append to existing replies
-          setReplies((prev) => [...prev, ...transformedReplies]);
+          setReplies(prev => [...prev, ...transformedReplies]);
         } else {
           // Replace replies
           setReplies(transformedReplies);
@@ -94,7 +99,9 @@ export function useThread(
 
         setParentMessage(result.parentMessage);
         setHasMore(result.pagination?.hasMore || false);
-        setTotalCount(result.pagination?.totalCount || transformedReplies.length);
+        setTotalCount(
+          result.pagination?.totalCount || transformedReplies.length
+        );
         setNextCursor(result.pagination?.nextCursor || null);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -102,11 +109,14 @@ export function useThread(
         setIsLoading(false);
       }
     },
-    [workspaceId, channelId, messageId],
+    [workspaceId, channelId, messageId]
   );
 
   const addReply = useCallback(
-    async (content: string, metadata?: Record<string, unknown>): Promise<Message | null> => {
+    async (
+      content: string,
+      metadata?: Record<string, unknown>
+    ): Promise<Message | null> => {
       if (!workspaceId || !channelId || !messageId) {
         return null;
       }
@@ -125,7 +135,7 @@ export function useThread(
               content,
               metadata: metadata || {},
             }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -138,12 +148,14 @@ export function useThread(
           ...result.data,
           createdAt: new Date(result.data.createdAt),
           updatedAt: new Date(result.data.updatedAt),
-          editedAt: result.data.editedAt ? new Date(result.data.editedAt) : null,
+          editedAt: result.data.editedAt
+            ? new Date(result.data.editedAt)
+            : null,
         };
 
         // Optimistically add reply to list
-        setReplies((prev) => [...prev, newReply]);
-        setTotalCount((prev) => prev + 1);
+        setReplies(prev => [...prev, newReply]);
+        setTotalCount(prev => prev + 1);
 
         return newReply;
       } catch (err) {
@@ -151,7 +163,7 @@ export function useThread(
         return null;
       }
     },
-    [workspaceId, channelId, messageId],
+    [workspaceId, channelId, messageId]
   );
 
   const loadMore = useCallback(async () => {

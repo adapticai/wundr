@@ -24,7 +24,8 @@ const questionPatterns: TriggerPattern[] = [
   {
     id: 'where-implemented',
     description: 'Questions about where something is implemented',
-    pattern: /where\s+(?:is|are|was|were)\s+(.+?)\s*(?:implemented|defined|declared|located|found)/i,
+    pattern:
+      /where\s+(?:is|are|was|were)\s+(.+?)\s*(?:implemented|defined|declared|located|found)/i,
     type: 'question',
     weight: 0.9,
     suggestedGoal: 'understanding',
@@ -33,7 +34,8 @@ const questionPatterns: TriggerPattern[] = [
   {
     id: 'how-does-work',
     description: 'Questions about how something works',
-    pattern: /how\s+(?:does|do|did)\s+(.+?)\s*(?:work|function|operate|behave)/i,
+    pattern:
+      /how\s+(?:does|do|did)\s+(.+?)\s*(?:work|function|operate|behave)/i,
     type: 'question',
     weight: 0.85,
     suggestedGoal: 'understanding',
@@ -42,7 +44,8 @@ const questionPatterns: TriggerPattern[] = [
   {
     id: 'find-usages',
     description: 'Questions about finding usages of something',
-    pattern: /(?:find|show|list|get)\s+(?:all\s+)?(?:usages?|references?|occurrences?|instances?)\s+(?:of\s+)?(.+)/i,
+    pattern:
+      /(?:find|show|list|get)\s+(?:all\s+)?(?:usages?|references?|occurrences?|instances?)\s+(?:of\s+)?(.+)/i,
     type: 'question',
     weight: 0.95,
     suggestedGoal: 'analysis',
@@ -60,7 +63,8 @@ const questionPatterns: TriggerPattern[] = [
   {
     id: 'where-defined',
     description: 'Questions about where something is defined',
-    pattern: /where\s+(?:is|are)\s+(?:the\s+)?(.+?)\s*(?:defined|declared|created)/i,
+    pattern:
+      /where\s+(?:is|are)\s+(?:the\s+)?(.+?)\s*(?:defined|declared|created)/i,
     type: 'question',
     weight: 0.9,
     suggestedGoal: 'understanding',
@@ -69,7 +73,8 @@ const questionPatterns: TriggerPattern[] = [
   {
     id: 'what-is',
     description: 'Questions about what something is',
-    pattern: /what\s+(?:is|are)\s+(?:the\s+)?(.+?)(?:\s+used\s+for|\s+doing|\?|$)/i,
+    pattern:
+      /what\s+(?:is|are)\s+(?:the\s+)?(.+?)(?:\s+used\s+for|\s+doing|\?|$)/i,
     type: 'question',
     weight: 0.7,
     suggestedGoal: 'understanding',
@@ -87,7 +92,8 @@ const questionPatterns: TriggerPattern[] = [
   {
     id: 'show-code',
     description: 'Requests to show specific code',
-    pattern: /(?:show|display|print|output)\s+(?:me\s+)?(?:the\s+)?(?:code\s+(?:for|in)\s+)?(.+)/i,
+    pattern:
+      /(?:show|display|print|output)\s+(?:me\s+)?(?:the\s+)?(?:code\s+(?:for|in)\s+)?(.+)/i,
     type: 'question',
     weight: 0.8,
     suggestedGoal: 'understanding',
@@ -119,12 +125,17 @@ const actionPatterns: TriggerPattern[] = [
     type: 'action',
     weight: 0.95,
     suggestedGoal: 'migration',
-    queryTemplates: ['$1 implementation', '$1 configuration', '$1 dependencies'],
+    queryTemplates: [
+      '$1 implementation',
+      '$1 configuration',
+      '$1 dependencies',
+    ],
   },
   {
     id: 'update-across',
     description: 'Updates across multiple files',
-    pattern: /(?:update|change|modify)\s+(?:all\s+)?(.+?)\s+(?:across|throughout|in\s+all)/i,
+    pattern:
+      /(?:update|change|modify)\s+(?:all\s+)?(.+?)\s+(?:across|throughout|in\s+all)/i,
     type: 'action',
     weight: 0.95,
     suggestedGoal: 'refactoring',
@@ -133,7 +144,8 @@ const actionPatterns: TriggerPattern[] = [
   {
     id: 'change-all',
     description: 'Changing all occurrences',
-    pattern: /(?:change|replace|rename)\s+all\s+(?:occurrences?\s+of\s+)?(.+?)(?:\s+to\s+|\s+with\s+)/i,
+    pattern:
+      /(?:change|replace|rename)\s+all\s+(?:occurrences?\s+of\s+)?(.+?)(?:\s+to\s+|\s+with\s+)/i,
     type: 'action',
     weight: 0.95,
     suggestedGoal: 'refactoring',
@@ -142,7 +154,8 @@ const actionPatterns: TriggerPattern[] = [
   {
     id: 'implement-feature',
     description: 'Feature implementation requests',
-    pattern: /(?:implement|add|create|build)\s+(?:a\s+)?(?:new\s+)?(.+?)(?:\s+feature|\s+functionality|\s+component)/i,
+    pattern:
+      /(?:implement|add|create|build)\s+(?:a\s+)?(?:new\s+)?(.+?)(?:\s+feature|\s+functionality|\s+component)/i,
     type: 'action',
     weight: 0.8,
     suggestedGoal: 'implementation',
@@ -151,7 +164,8 @@ const actionPatterns: TriggerPattern[] = [
   {
     id: 'fix-bug',
     description: 'Bug fix requests',
-    pattern: /(?:fix|resolve|debug|repair)\s+(?:the\s+)?(?:bug|issue|problem|error)\s+(?:in|with|where)\s+(.+)/i,
+    pattern:
+      /(?:fix|resolve|debug|repair)\s+(?:the\s+)?(?:bug|issue|problem|error)\s+(?:in|with|where)\s+(.+)/i,
     type: 'action',
     weight: 0.85,
     suggestedGoal: 'debugging',
@@ -169,7 +183,8 @@ const actionPatterns: TriggerPattern[] = [
   {
     id: 'remove-deprecation',
     description: 'Deprecation removal requests',
-    pattern: /(?:remove|eliminate|get\s+rid\s+of)\s+(?:all\s+)?(?:deprecated|obsolete)\s+(.+)/i,
+    pattern:
+      /(?:remove|eliminate|get\s+rid\s+of)\s+(?:all\s+)?(?:deprecated|obsolete)\s+(.+)/i,
     type: 'action',
     weight: 0.9,
     suggestedGoal: 'migration',
@@ -178,7 +193,8 @@ const actionPatterns: TriggerPattern[] = [
   {
     id: 'extract',
     description: 'Extraction/abstraction requests',
-    pattern: /(?:extract|abstract|pull\s+out|separate)\s+(.+?)(?:\s+into|\s+from)/i,
+    pattern:
+      /(?:extract|abstract|pull\s+out|separate)\s+(.+?)(?:\s+into|\s+from)/i,
     type: 'action',
     weight: 0.85,
     suggestedGoal: 'refactoring',
@@ -316,7 +332,8 @@ const prioritySettings: PrioritySettings = {
 export const defaultConfig: RagContextHookConfig = {
   enabled: true,
   name: 'rag-context-enhancer',
-  description: 'Pre-action hook that analyzes requests and injects relevant RAG context',
+  description:
+    'Pre-action hook that analyzes requests and injects relevant RAG context',
   version: '1.0.0',
   questionPatterns,
   actionPatterns,
@@ -339,17 +356,22 @@ export const defaultConfig: RagContextHookConfig = {
 /**
  * Question pattern regexes for quick access
  */
-export const questionPatternRegexes: readonly RegExp[] = questionPatterns.map(p => p.pattern);
+export const questionPatternRegexes: readonly RegExp[] = questionPatterns.map(
+  p => p.pattern
+);
 
 /**
  * Action pattern regexes for quick access
  */
-export const actionPatternRegexes: readonly RegExp[] = actionPatterns.map(p => p.pattern);
+export const actionPatternRegexes: readonly RegExp[] = actionPatterns.map(
+  p => p.pattern
+);
 
 /**
  * Complexity pattern regexes for quick access
  */
-export const complexityPatternRegexes: readonly RegExp[] = complexityPatterns.map(p => p.pattern);
+export const complexityPatternRegexes: readonly RegExp[] =
+  complexityPatterns.map(p => p.pattern);
 
 /**
  * All trigger pattern regexes combined

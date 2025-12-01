@@ -3,6 +3,7 @@
 ## Overview
 
 The typing indicator API endpoint has been successfully implemented at:
+
 ```
 /Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/typing/route.ts
 ```
@@ -14,13 +15,15 @@ The typing indicator API endpoint has been successfully implemented at:
 Send a typing indicator signal for a channel.
 
 **Request:**
+
 ```json
 {
-  "isTyping": true  // optional, defaults to true
+  "isTyping": true // optional, defaults to true
 }
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -37,6 +40,7 @@ Send a typing indicator signal for a channel.
 ```
 
 **Features:**
+
 - Validates user authentication
 - Checks channel membership
 - Stores typing state with 5-second TTL
@@ -48,6 +52,7 @@ Send a typing indicator signal for a channel.
 Get currently typing users in a channel.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -63,6 +68,7 @@ Get currently typing users in a channel.
 ```
 
 **Features:**
+
 - Returns currently typing users
 - Automatically cleans up expired typing indicators
 - Excludes the requesting user from the list
@@ -72,6 +78,7 @@ Get currently typing users in a channel.
 ### Storage Strategy
 
 **In-Memory Store (Development):**
+
 ```typescript
 const typingStore = new Map<
   string,
@@ -80,6 +87,7 @@ const typingStore = new Map<
 ```
 
 **TTL Configuration:**
+
 ```typescript
 const TYPING_TTL_MS = 5000; // 5 seconds
 ```
@@ -87,11 +95,13 @@ const TYPING_TTL_MS = 5000; // 5 seconds
 ### Production Considerations
 
 For production deployments, the in-memory store should be replaced with:
+
 - **Redis** (recommended) - Fast, distributed, built-in TTL support
 - **Memcached** - Alternative distributed cache
 - **Any key-value store with TTL support**
 
 Example Redis migration:
+
 ```typescript
 // Store typing indicator
 await redis.setex(
@@ -102,9 +112,7 @@ await redis.setex(
 
 // Get typing users
 const keys = await redis.keys(`typing:${channelId}:*`);
-const typingUsers = await Promise.all(
-  keys.map(key => redis.get(key))
-);
+const typingUsers = await Promise.all(keys.map(key => redis.get(key)));
 ```
 
 ### Security Features
@@ -116,16 +124,17 @@ const typingUsers = await Promise.all(
 
 ### Error Codes
 
-| Code | Description |
-|------|-------------|
-| `UNAUTHORIZED` | User not authenticated |
-| `VALIDATION_ERROR` | Invalid request data |
+| Code                 | Description                  |
+| -------------------- | ---------------------------- |
+| `UNAUTHORIZED`       | User not authenticated       |
+| `VALIDATION_ERROR`   | Invalid request data         |
 | `NOT_CHANNEL_MEMBER` | User not a member of channel |
-| `INTERNAL_ERROR` | Server error |
+| `INTERNAL_ERROR`     | Server error                 |
 
 ## Validation Schemas
 
 ### Typing Indicator Schema
+
 ```typescript
 export const typingIndicatorSchema = z.object({
   isTyping: z.boolean().optional().default(true),
@@ -133,6 +142,7 @@ export const typingIndicatorSchema = z.object({
 ```
 
 ### Channel ID Parameter Schema
+
 ```typescript
 export const channelIdParamSchema = z.object({
   channelId: z.string().cuid('Invalid channel ID format'),
@@ -144,6 +154,7 @@ export const channelIdParamSchema = z.object({
 ### Client-Side Implementation
 
 **Start Typing:**
+
 ```typescript
 const sendTypingIndicator = async (channelId: string, isTyping: boolean) => {
   const response = await fetch(`/api/channels/${channelId}/typing`, {
@@ -159,12 +170,14 @@ await sendTypingIndicator('ch_123', true);
 ```
 
 **Stop Typing:**
+
 ```typescript
 // User stops typing
 await sendTypingIndicator('ch_123', false);
 ```
 
 **Periodic Updates:**
+
 ```typescript
 let typingInterval: NodeJS.Timeout | null = null;
 
@@ -188,6 +201,7 @@ const stopTyping = (channelId: string) => {
 ```
 
 **Get Typing Users:**
+
 ```typescript
 const getTypingUsers = async (channelId: string) => {
   const response = await fetch(`/api/channels/${channelId}/typing`);
@@ -206,6 +220,7 @@ const pollTypingUsers = (channelId: string) => {
 ## Build Verification
 
 The API has been verified to:
+
 - ✅ Compile successfully with TypeScript
 - ✅ Pass Next.js build process
 - ✅ Follow project validation patterns
@@ -213,6 +228,7 @@ The API has been verified to:
 - ✅ Use correct authentication middleware
 
 **Build Command:**
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
 npm run build

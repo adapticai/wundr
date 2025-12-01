@@ -1,17 +1,18 @@
 # Orchestrators Page - QA Test Report
 
-**Date:** 2025-11-27
-**Tester:** QA Engineer Agent
-**Test Type:** Static Code Analysis + Manual Review
-**Status:** CRITICAL ISSUES FOUND
+**Date:** 2025-11-27 **Tester:** QA Engineer Agent **Test Type:** Static Code Analysis + Manual
+Review **Status:** CRITICAL ISSUES FOUND
 
 ---
 
 ## Executive Summary
 
-The Orchestrators (Orchestrators) page has been analyzed for functionality, API integration, and user experience. Several critical issues were identified that will prevent the page from functioning correctly in production.
+The Orchestrators (Orchestrators) page has been analyzed for functionality, API integration, and
+user experience. Several critical issues were identified that will prevent the page from functioning
+correctly in production.
 
 ### Severity Breakdown
+
 - **CRITICAL:** 2 issues
 - **HIGH:** 3 issues
 - **MEDIUM:** 2 issues
@@ -34,13 +35,16 @@ The Orchestrators (Orchestrators) page has been analyzed for functionality, API 
 
 **Location:** `/hooks/use-vp.ts` (Lines 369-388)
 
-**Issue:** The `createVP` function calls `/api/orchestrators` but should call `/api/workspaces/${workspaceId}/orchestrators`
+**Issue:** The `createVP` function calls `/api/orchestrators` but should call
+`/api/workspaces/${workspaceId}/orchestrators`
 
 **Current Code:**
+
 ```typescript
-const createVP = useCallback(async (input: CreateVPInput): Promise<Orchestrator  | null> => {
+const createVP = useCallback(async (input: CreateVPInput): Promise<Orchestrator | null> => {
   // ...
-  const response = await fetch('/api/orchestrators', {  // WRONG!
+  const response = await fetch('/api/orchestrators', {
+    // WRONG!
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -50,20 +54,26 @@ const createVP = useCallback(async (input: CreateVPInput): Promise<Orchestrator 
 ```
 
 **Expected Code:**
+
 ```typescript
-const createVP = useCallback(async (input: CreateVPInput & { workspaceId: string }): Promise<Orchestrator  | null> => {
-  const response = await fetch(`/api/workspaces/${input.workspaceId}/orchestrators`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-  // ...
-}, []);
+const createVP = useCallback(
+  async (input: CreateVPInput & { workspaceId: string }): Promise<Orchestrator | null> => {
+    const response = await fetch(`/api/workspaces/${input.workspaceId}/orchestrators`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    // ...
+  },
+  []
+);
 ```
 
-**Impact:** The "Create VP" button will fail with a 404 error. Orchestrators cannot be created from the UI.
+**Impact:** The "Create VP" button will fail with a 404 error. Orchestrators cannot be created from
+the UI.
 
 **Steps to Reproduce:**
+
 1. Navigate to `/{workspaceId}/orchestrators`
 2. Click "Create VP" button
 3. Fill in the multi-step form
@@ -71,8 +81,11 @@ const createVP = useCallback(async (input: CreateVPInput & { workspaceId: string
 5. Check browser console - observe 404 error
 
 **Evidence:**
-- API route exists at: `/app/api/workspaces/[workspaceId]/orchestrators/route.ts` (POST handler confirmed)
-- Hook incorrectly targets: `/api/orchestrators` (no such route exists for workspace-scoped creation)
+
+- API route exists at: `/app/api/workspaces/[workspaceId]/orchestrators/route.ts` (POST handler
+  confirmed)
+- Hook incorrectly targets: `/api/orchestrators` (no such route exists for workspace-scoped
+  creation)
 
 ---
 
@@ -83,28 +96,31 @@ const createVP = useCallback(async (input: CreateVPInput & { workspaceId: string
 **Issue:** The `handleCreateVP` callback doesn't pass `workspaceId` to the `createVP` mutation
 
 **Current Code:**
+
 ```typescript
 const handleCreateVP = useCallback(
   async (input: CreateVPInput) => {
-    await createVP(input);  // Missing workspaceId!
+    await createVP(input); // Missing workspaceId!
     refetch();
   },
-  [createVP, refetch],
+  [createVP, refetch]
 );
 ```
 
 **Expected Code:**
+
 ```typescript
 const handleCreateVP = useCallback(
   async (input: CreateVPInput) => {
     await createVP({ ...input, workspaceId });
     refetch();
   },
-  [createVP, refetch, workspaceId],
+  [createVP, refetch, workspaceId]
 );
 ```
 
-**Impact:** Even after fixing issue #1, Orchestrator creation will fail because the API requires the workspace context.
+**Impact:** Even after fixing issue #1, Orchestrator creation will fail because the API requires the
+workspace context.
 
 ---
 
@@ -117,14 +133,16 @@ const handleCreateVP = useCallback(
 **Issue:** The dialog doesn't collect or pass `organizationId`, but the API route requires it
 
 **API Validation (route.ts:442-445):**
+
 ```typescript
 const parseResult = createVPSchema.safeParse({
   ...body,
-  organizationId: access.workspace.organizationId,  // API adds this server-side
+  organizationId: access.workspace.organizationId, // API adds this server-side
 });
 ```
 
 **Current Dialog Logic:**
+
 ```typescript
 await onCreate({
   title,
@@ -135,9 +153,11 @@ await onCreate({
 });
 ```
 
-**Impact:** API handles this server-side, but frontend types are misaligned. No immediate failure, but potential type safety issues.
+**Impact:** API handles this server-side, but frontend types are misaligned. No immediate failure,
+but potential type safety issues.
 
-**Severity Justification:** HIGH (not CRITICAL) because the API route auto-fills `organizationId` from workspace context (line 444).
+**Severity Justification:** HIGH (not CRITICAL) because the API route auto-fills `organizationId`
+from workspace context (line 444).
 
 ---
 
@@ -145,9 +165,11 @@ await onCreate({
 
 **Location:** `/app/(workspace)/[workspaceId]/orchestrators/page.tsx` (Lines 115-140)
 
-**Issue:** Task description mentions "Test status filter buttons (Online, Offline, Busy, Away)" but the page only has a status dropdown select, not individual filter buttons.
+**Issue:** Task description mentions "Test status filter buttons (Online, Offline, Busy, Away)" but
+the page only has a status dropdown select, not individual filter buttons.
 
 **Current Implementation:**
+
 ```typescript
 <select
   value={filters.status || ''}
@@ -163,10 +185,11 @@ await onCreate({
 </select>
 ```
 
-**Expected Implementation:**
-Quick-access filter buttons like the stat cards (lines 115-140) should be clickable to filter by status.
+**Expected Implementation:** Quick-access filter buttons like the stat cards (lines 115-140) should
+be clickable to filter by status.
 
-**Impact:** UX discrepancy - users cannot quickly filter by clicking status stat cards. Requires extra clicks through dropdown.
+**Impact:** UX discrepancy - users cannot quickly filter by clicking status stat cards. Requires
+extra clicks through dropdown.
 
 ---
 
@@ -174,19 +197,26 @@ Quick-access filter buttons like the stat cards (lines 115-140) should be clicka
 
 **Location:** `/hooks/use-vp.ts` (Lines 442-446)
 
-**Issue:** The `toggleVPStatus` mutation calls `/api/orchestrators/${id}` (workspace-agnostic endpoint) instead of the workspace-scoped endpoint
+**Issue:** The `toggleVPStatus` mutation calls `/api/orchestrators/${id}` (workspace-agnostic
+endpoint) instead of the workspace-scoped endpoint
 
 **Current Code:**
+
 ```typescript
-const toggleVPStatus = useCallback(async (id: string, currentStatus: VP['status']): Promise<Orchestrator  | null> => {
-  const newStatus = currentStatus === 'ONLINE' ? 'OFFLINE' : 'ONLINE';
-  return updateVP(id, { status: newStatus });
-}, [updateVP]);
+const toggleVPStatus = useCallback(
+  async (id: string, currentStatus: VP['status']): Promise<Orchestrator | null> => {
+    const newStatus = currentStatus === 'ONLINE' ? 'OFFLINE' : 'ONLINE';
+    return updateVP(id, { status: newStatus });
+  },
+  [updateVP]
+);
 ```
 
 **Update Orchestrator Implementation (lines 391-416):**
+
 ```typescript
-const response = await fetch(`/api/orchestrators/${id}`, {  // Wrong endpoint
+const response = await fetch(`/api/orchestrators/${id}`, {
+  // Wrong endpoint
   method: 'PATCH',
   // ...
 });
@@ -194,7 +224,8 @@ const response = await fetch(`/api/orchestrators/${id}`, {  // Wrong endpoint
 
 **Correct Endpoint:** `/api/workspaces/${workspaceId}/orchestrators/${vpId}/status`
 
-**Impact:** Status toggle button on Orchestrator cards will fail. Users cannot change Orchestrator online/offline status.
+**Impact:** Status toggle button on Orchestrator cards will fail. Users cannot change Orchestrator
+online/offline status.
 
 ---
 
@@ -207,6 +238,7 @@ const response = await fetch(`/api/orchestrators/${id}`, {  // Wrong endpoint
 **Issue:** No error boundary wrapping the page component. Runtime errors will crash the entire page.
 
 **Current Error Handling:**
+
 - API errors: Displayed inline with retry button (lines 211-226) ✓
 - Runtime errors: No boundary, will propagate to root
 
@@ -218,10 +250,11 @@ const response = await fetch(`/api/orchestrators/${id}`, {  // Wrong endpoint
 
 **Location:** `/hooks/use-vp.ts` (Lines 253-271)
 
-**Issue:** Orchestrator data transformation from API response is duplicated in `useVP` (lines 130-148) and `useVPs` (lines 253-271). DRY violation.
+**Issue:** Orchestrator data transformation from API response is duplicated in `useVP` (lines
+130-148) and `useVPs` (lines 253-271). DRY violation.
 
-**Code Duplication:**
-Both hooks have identical transformation logic:
+**Code Duplication:** Both hooks have identical transformation logic:
+
 ```typescript
 const transformedVP: Orchestrator = {
   id: apiVP.id,
@@ -245,6 +278,7 @@ const transformedVP: Orchestrator = {
 **Issue:** Shows 6 skeleton cards regardless of actual pagination limit
 
 **Current Code:**
+
 ```typescript
 {Array.from({ length: 6 }).map((_, i) => (
   <Orchestrator CardSkeleton key={i} />
@@ -274,12 +308,12 @@ const transformedVP: Orchestrator = {
 
 ### Endpoints Used
 
-| Endpoint | Method | Purpose | Status |
-|----------|--------|---------|--------|
-| `/api/workspaces/${workspaceId}/orchestrators` | GET | List Orchestrators | ✅ Correctly implemented |
-| `/api/workspaces/${workspaceId}/orchestrators` | POST | Create Orchestrator | ❌ Hook uses wrong endpoint |
-| `/api/orchestrators/${id}` | PATCH | Update Orchestrator | ⚠️ Should be workspace-scoped |
-| `/api/orchestrators/${id}` | DELETE | Delete Orchestrator | ⚠️ Should be workspace-scoped |
+| Endpoint                                       | Method | Purpose             | Status                        |
+| ---------------------------------------------- | ------ | ------------------- | ----------------------------- |
+| `/api/workspaces/${workspaceId}/orchestrators` | GET    | List Orchestrators  | ✅ Correctly implemented      |
+| `/api/workspaces/${workspaceId}/orchestrators` | POST   | Create Orchestrator | ❌ Hook uses wrong endpoint   |
+| `/api/orchestrators/${id}`                     | PATCH  | Update Orchestrator | ⚠️ Should be workspace-scoped |
+| `/api/orchestrators/${id}`                     | DELETE | Delete Orchestrator | ⚠️ Should be workspace-scoped |
 
 ### Missing Endpoints (Not Critical)
 
@@ -293,12 +327,14 @@ const transformedVP: Orchestrator = {
 ### Expected Errors When Testing
 
 1. **404 on Orchestrator Creation:**
+
    ```
    POST /api/orchestrators 404 (Not Found)
    Failed to create Orchestrator
    ```
 
 2. **Missing Parameter Errors:**
+
    ```
    TypeError: Cannot read property 'workspaceId' of undefined
    ```
@@ -365,11 +401,13 @@ The following could not be verified without Playwright tools:
 ## Test Execution Notes
 
 **Playwright MCP Status:** Not available in Claude Code environment
+
 - Attempted to use `mcp__playwright__*` tools
 - MCP inspector port conflict (6277 in use)
 - Playwright server not configured in Claude desktop config
 
 **Alternative Testing Performed:**
+
 - Static code analysis of all VP-related files
 - API route structure verification
 - Hook dependency analysis
@@ -377,6 +415,7 @@ The following could not be verified without Playwright tools:
 - Error handling pattern review
 
 **Confidence Level:** HIGH (85%)
+
 - Code analysis is thorough and precise
 - Cannot verify runtime behavior without browser
 - API authentication prevents direct HTTP testing
@@ -386,7 +425,9 @@ The following could not be verified without Playwright tools:
 
 ## Conclusion
 
-The Orchestrators page has a solid foundation with good UI/UX patterns, but **cannot function in production** due to critical API endpoint mismatches. The `createVP` and `toggleVPStatus` functions will fail immediately when invoked.
+The Orchestrators page has a solid foundation with good UI/UX patterns, but **cannot function in
+production** due to critical API endpoint mismatches. The `createVP` and `toggleVPStatus` functions
+will fail immediately when invoked.
 
 **Recommendation:** BLOCK release until Critical issues #1 and #2 are resolved.
 
@@ -398,14 +439,18 @@ The Orchestrators page has a solid foundation with good UI/UX patterns, but **ca
 
 All file paths are absolute from repository root:
 
-- **Page Component:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/orchestrators/page.tsx`
+- **Page Component:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/orchestrators/page.tsx`
 - **VP Hooks:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts`
-- **VP Card Component:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-card.tsx`
-- **Create Dialog:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/create-orchestrator-dialog.tsx`
-- **API Route (GET/POST):** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/orchestrators/route.ts`
+- **VP Card Component:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-card.tsx`
+- **Create Dialog:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/create-orchestrator-dialog.tsx`
+- **API Route (GET/POST):**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/orchestrators/route.ts`
 - **Types:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/types/vp.ts`
 
 ---
 
-**Report Generated By:** QA Engineer Agent (Adaptic.ai)
-**Next Steps:** Share findings with development team for immediate remediation
+**Report Generated By:** QA Engineer Agent (Adaptic.ai) **Next Steps:** Share findings with
+development team for immediate remediation

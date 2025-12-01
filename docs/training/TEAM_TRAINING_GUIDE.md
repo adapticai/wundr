@@ -9,12 +9,15 @@ This guide helps team members understand and contribute to the monorepo refactor
 ### Module 1: Understanding the Problem (1 hour)
 
 #### Learning Objectives
+
 - Understand technical debt accumulation
 - Identify anti-patterns in the codebase
 - Recognize the impact on productivity
 
 #### Activities
+
 1. **Code Review Exercise**
+
    ```typescript
    // Example 1: Spot the issues
    export interface User {
@@ -49,6 +52,7 @@ This guide helps team members understand and contribute to the monorepo refactor
 ### Module 2: Monorepo Architecture (2 hours)
 
 #### Learning Objectives
+
 - Understand monorepo benefits
 - Learn package boundaries
 - Master import patterns
@@ -56,6 +60,7 @@ This guide helps team members understand and contribute to the monorepo refactor
 #### Key Concepts
 
 1. **Package Structure**
+
    ```
    monorepo/
    ├── packages/           # Shared libraries
@@ -71,6 +76,7 @@ This guide helps team members understand and contribute to the monorepo refactor
    ```
 
 2. **Import Patterns**
+
    ```typescript
    // ❌ Bad: Relative imports across packages
    import { User } from '../../../packages/core-types/src/user';
@@ -97,6 +103,7 @@ This guide helps team members understand and contribute to the monorepo refactor
    - Apps: Can depend on any package
 
 #### Hands-on Exercise
+
 ```bash
 # Create a new feature following architecture
 1. Add type to core-types
@@ -118,6 +125,7 @@ pnpm build
 ### Module 3: Refactoring Tools and Scripts (2 hours)
 
 #### Learning Objectives
+
 - Master analysis tools
 - Use consolidation scripts
 - Understand automation
@@ -125,6 +133,7 @@ pnpm build
 #### Tool Overview
 
 1. **Analysis Tools**
+
    ```bash
    # Complete analysis
    ./scripts/analyze-all.sh
@@ -136,6 +145,7 @@ pnpm build
    ```
 
 2. **Consolidation Tools**
+
    ```bash
    # Process a batch
    npx ts-node scripts/consolidation-manager.ts process batch-001.json
@@ -148,6 +158,7 @@ pnpm build
    ```
 
 3. **Standardization Tools**
+
    ```bash
    # Apply patterns
    npx ts-node scripts/pattern-standardizer.ts run
@@ -157,6 +168,7 @@ pnpm build
    ```
 
 #### Practice Session
+
 1. Run analysis on a sample directory
 2. Interpret the results
 3. Create a consolidation plan
@@ -166,6 +178,7 @@ pnpm build
 ### Module 4: Golden Standards and Patterns (1.5 hours)
 
 #### Learning Objectives
+
 - Internalize coding standards
 - Recognize approved patterns
 - Avoid anti-patterns
@@ -173,6 +186,7 @@ pnpm build
 #### Key Standards
 
 1. **Error Handling**
+
    ```typescript
    // ❌ Bad
    throw 'User not found';
@@ -184,6 +198,7 @@ pnpm build
    ```
 
 2. **Service Pattern**
+
    ```typescript
    // ✅ Standard service
    export class FeatureService extends BaseService {
@@ -213,6 +228,7 @@ pnpm build
    ```
 
 3. **Type Definitions**
+
    ```typescript
    // ✅ Good: Interface for objects
    export interface Feature {
@@ -228,12 +244,14 @@ pnpm build
    export enum FeatureFlag {
      BETA = 'BETA',
      EXPERIMENTAL = 'EXPERIMENTAL',
-     STABLE = 'STABLE'
+     STABLE = 'STABLE',
    }
    ```
 
 #### Code Review Exercise
+
 Review PRs together, focusing on:
+
 - Adherence to standards
 - Pattern recognition
 - Suggesting improvements
@@ -241,6 +259,7 @@ Review PRs together, focusing on:
 ### Module 5: Testing During Refactoring (1 hour)
 
 #### Learning Objectives
+
 - Maintain test coverage
 - Update tests efficiently
 - Use tests as safety net
@@ -248,6 +267,7 @@ Review PRs together, focusing on:
 #### Testing Strategy
 
 1. **Before Refactoring**
+
    ```bash
    # Capture baseline
    pnpm test -- --coverage --json > baseline-coverage.json
@@ -257,6 +277,7 @@ Review PRs together, focusing on:
    ```
 
 2. **During Refactoring**
+
    ```typescript
    // Update imports in tests
    // Before:
@@ -268,12 +289,13 @@ Review PRs together, focusing on:
    // Update mocks
    jest.mock('@company/services', () => ({
      UserService: jest.fn().mockImplementation(() => ({
-       findById: jest.fn().mockResolvedValue(mockUser)
-     }))
+       findById: jest.fn().mockResolvedValue(mockUser),
+     })),
    }));
    ```
 
 3. **After Refactoring**
+
    ```bash
    # Verify coverage maintained
    pnpm test -- --coverage
@@ -288,6 +310,7 @@ Review PRs together, focusing on:
 ### Module 6: Git Workflow for Large Refactors (1 hour)
 
 #### Learning Objectives
+
 - Manage long-lived branches
 - Handle conflicts efficiently
 - Maintain clean history
@@ -295,6 +318,7 @@ Review PRs together, focusing on:
 #### Best Practices
 
 1. **Commit Strategy**
+
    ```bash
    # Atomic commits
    git add packages/core-types/src/user.ts
@@ -309,6 +333,7 @@ Review PRs together, focusing on:
    ```
 
 2. **Rebase Strategy**
+
    ```bash
    # Daily rebase from main
    git fetch origin
@@ -321,6 +346,7 @@ Review PRs together, focusing on:
    ```
 
 3. **Conflict Resolution**
+
    ```bash
    # For import conflicts, prefer refactored version
    git checkout --theirs -- '**/imports.ts'
@@ -337,6 +363,7 @@ Review PRs together, focusing on:
 ### Skills Checklist
 
 #### Level 1: Basic Contributor
+
 - [ ] Can run analysis scripts
 - [ ] Understands monorepo structure
 - [ ] Can process simple consolidation batches
@@ -344,6 +371,7 @@ Review PRs together, focusing on:
 - [ ] Updates tests after refactoring
 
 #### Level 2: Independent Contributor
+
 - [ ] Can interpret analysis results
 - [ ] Creates consolidation plans
 - [ ] Uses AI assistance effectively
@@ -351,6 +379,7 @@ Review PRs together, focusing on:
 - [ ] Identifies anti-patterns
 
 #### Level 3: Lead Contributor
+
 - [ ] Can modify analysis scripts
 - [ ] Designs package boundaries
 - [ ] Reviews and guides others
@@ -380,22 +409,26 @@ Complete these tasks independently:
 ## Resources and Support
 
 ### Documentation
+
 - `GOLDEN_STANDARDS.md` - Coding standards
 - `docs/architecture/` - Architecture decisions
 - `TROUBLESHOOTING.md` - Common issues
 
 ### Tools Reference
+
 - Analysis scripts: `scripts/README.md`
 - Monorepo setup: `MONOREPO.md`
 - CI/CD: `.github/workflows/README.md`
 
 ### Communication Channels
+
 - Slack: #refactoring-team
 - Daily standup: 9:30 AM
 - Weekly review: Friday 2 PM
 - Office hours: Tuesday/Thursday 3-4 PM
 
 ### Pair Programming Schedule
+
 - New team members paired for first week
 - Complex refactors always paired
 - Knowledge sharing sessions weekly
@@ -403,6 +436,7 @@ Complete these tasks independently:
 ## Quick Reference Card
 
 ### Daily Commands
+
 ```bash
 # Start your day
 git pull origin refactor/monorepo
@@ -423,6 +457,7 @@ git push origin refactor/monorepo
 ```
 
 ### Decision Tree
+
 ```
 Is it a duplicate?
 ├─ Yes → Use consolidation-manager
@@ -434,6 +469,7 @@ Is it a duplicate?
 ```
 
 ### Emergency Contacts
+
 - Tech Lead: @tech-lead
 - Architecture: @architect
 - DevOps: @devops-team
@@ -441,17 +477,20 @@ Is it a duplicate?
 ## Continuous Learning
 
 ### Weekly Learning Topics
+
 - Week 1: Advanced TypeScript patterns
 - Week 2: Performance optimization
 - Week 3: Testing strategies
 - Week 4: Build optimization
 
 ### Recommended Reading
+
 1. "Effective TypeScript" by Dan Vanderkam
 2. "Clean Architecture" by Robert Martin
 3. Monorepo tools documentation
 
 ### Experimentation Time
+
 - 20% time for refactoring improvements
 - Propose new tools or patterns
 - Share learnings with team

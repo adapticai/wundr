@@ -21,15 +21,17 @@ function MetricCard({ title, value, change, trend, icon }: MetricCardProps) {
         : 'text-gray-600';
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <div className="text-muted-foreground">{icon}</div>
+    <div className='rounded-lg border bg-card p-4'>
+      <div className='flex items-center justify-between'>
+        <p className='text-sm font-medium text-muted-foreground'>{title}</p>
+        <div className='text-muted-foreground'>{icon}</div>
       </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <p className="text-2xl font-bold">{value}</p>
+      <div className='mt-2 flex items-baseline gap-2'>
+        <p className='text-2xl font-bold'>{value}</p>
         {change && (
-          <span className={cn('text-xs font-medium', trendColor)}>{change}</span>
+          <span className={cn('text-xs font-medium', trendColor)}>
+            {change}
+          </span>
         )}
       </div>
     </div>
@@ -58,32 +60,32 @@ export function OrchestratorMetrics({
         <CardTitle>Performance Metrics</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           <MetricCard
-            title="Total Messages"
+            title='Total Messages'
             value={totalMessages.toLocaleString()}
-            change="+12%"
-            trend="up"
-            icon={<MessageSquare className="h-4 w-4" />}
+            change='+12%'
+            trend='up'
+            icon={<MessageSquare className='h-4 w-4' />}
           />
           <MetricCard
-            title="Active Conversations"
+            title='Active Conversations'
             value={activeConversations}
-            icon={<Users className="h-4 w-4" />}
+            icon={<Users className='h-4 w-4' />}
           />
           <MetricCard
-            title="Avg Response Time"
+            title='Avg Response Time'
             value={avgResponseTime}
-            change="-5%"
-            trend="up"
-            icon={<Activity className="h-4 w-4" />}
+            change='-5%'
+            trend='up'
+            icon={<Activity className='h-4 w-4' />}
           />
           <MetricCard
-            title="Success Rate"
+            title='Success Rate'
             value={successRate}
-            change="+2%"
-            trend="up"
-            icon={<TrendingUp className="h-4 w-4" />}
+            change='+2%'
+            trend='up'
+            icon={<TrendingUp className='h-4 w-4' />}
           />
         </div>
       </CardContent>

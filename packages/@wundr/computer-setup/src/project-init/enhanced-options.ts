@@ -569,7 +569,7 @@ export function createEnhancedOptions(
     projectPath: string;
     projectName: string;
     projectType: ProjectType;
-  },
+  }
 ): EnhancedProjectOptions {
   const memoryArchitecture = options.memoryConfig?.architecture || 'basic';
   const orchestrationFramework =

@@ -13,7 +13,13 @@ import {
   ResponsiveModalTitle,
   ResponsiveModalFooter,
 } from '@/components/ui/responsive-modal';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 /**
@@ -91,7 +97,10 @@ export function WorkspaceInviteModal({
   // Handle sending invitations
   const handleSendInvites = async () => {
     const emails = isBulkMode
-      ? bulkEmails.split(/[,\n]/).map((e) => e.trim()).filter(Boolean)
+      ? bulkEmails
+          .split(/[,\n]/)
+          .map(e => e.trim())
+          .filter(Boolean)
       : [email.trim()];
 
     if (emails.length === 0) {
@@ -106,15 +115,18 @@ export function WorkspaceInviteModal({
 
     setIsSending(true);
     try {
-      const response = await fetch(`/api/workspaces/${workspaceSlug}/admin/invites`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          emails,
-          role: selectedRole,
-          message: message || undefined,
-        }),
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/invites`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            emails,
+            role: selectedRole,
+            message: message || undefined,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -132,7 +144,9 @@ export function WorkspaceInviteModal({
           .map((r: any) => r.email)
           .join(', ');
         console.warn(`Some invitation emails failed: ${failedEmails}`);
-        toast.warning(`${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`);
+        toast.warning(
+          `${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`
+        );
       } else {
         // All succeeded
         if (emails.length === 1) {
@@ -148,7 +162,8 @@ export function WorkspaceInviteModal({
       // Reset and close
       handleClose();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send invites';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to send invites';
       toast.error(errorMessage);
       console.error('Failed to send invites:', err);
     } finally {
@@ -170,7 +185,7 @@ export function WorkspaceInviteModal({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: selectedRole }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -182,7 +197,8 @@ export function WorkspaceInviteModal({
       setInviteLink(data.link);
       toast.success('Invite link generated successfully');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate invite link';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to generate invite link';
       toast.error(errorMessage);
       console.error('Failed to generate invite link:', err);
     }
@@ -196,27 +212,29 @@ export function WorkspaceInviteModal({
 
   return (
     <ResponsiveModal open={isOpen} onOpenChange={handleClose}>
-      <ResponsiveModalContent className="max-w-md">
+      <ResponsiveModalContent className='max-w-md'>
         <ResponsiveModalHeader>
-          <ResponsiveModalTitle>Invite Members to Workspace</ResponsiveModalTitle>
+          <ResponsiveModalTitle>
+            Invite Members to Workspace
+          </ResponsiveModalTitle>
         </ResponsiveModalHeader>
 
-        <div className="space-y-4 px-4 md:px-0">
+        <div className='space-y-4 px-4 md:px-0'>
           {/* Mode toggle */}
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button
               variant={!isBulkMode ? 'default' : 'outline'}
               onClick={() => setIsBulkMode(false)}
-              className="flex-1"
-              type="button"
+              className='flex-1'
+              type='button'
             >
               Single
             </Button>
             <Button
               variant={isBulkMode ? 'default' : 'outline'}
               onClick={() => setIsBulkMode(true)}
-              className="flex-1"
-              type="button"
+              className='flex-1'
+              type='button'
             >
               Bulk
             </Button>
@@ -225,41 +243,41 @@ export function WorkspaceInviteModal({
           {/* Email input */}
           {isBulkMode ? (
             <div>
-              <Label htmlFor="bulk-emails">Email Addresses</Label>
+              <Label htmlFor='bulk-emails'>Email Addresses</Label>
               <Textarea
-                id="bulk-emails"
+                id='bulk-emails'
                 value={bulkEmails}
-                onChange={(e) => setBulkEmails(e.target.value)}
-                placeholder="Enter emails separated by commas or newlines&#10;example@company.com, another@company.com"
+                onChange={e => setBulkEmails(e.target.value)}
+                placeholder='Enter emails separated by commas or newlines&#10;example@company.com, another@company.com'
                 rows={4}
-                className="font-mono text-sm"
+                className='font-mono text-sm'
               />
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className='mt-1 text-xs text-muted-foreground'>
                 Separate multiple emails with commas or line breaks
               </p>
             </div>
           ) : (
             <div>
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor='email'>Email Address</Label>
               <Input
-                id="email"
-                type="email"
+                id='email'
+                type='email'
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="colleague@example.com"
+                onChange={e => setEmail(e.target.value)}
+                placeholder='colleague@example.com'
               />
             </div>
           )}
 
           {/* Role selector */}
           <div>
-            <Label htmlFor="role">Role *</Label>
+            <Label htmlFor='role'>Role *</Label>
             <Select value={selectedRole} onValueChange={setSelectedRole}>
-              <SelectTrigger id="role">
-                <SelectValue placeholder="Select a role" />
+              <SelectTrigger id='role'>
+                <SelectValue placeholder='Select a role' />
               </SelectTrigger>
               <SelectContent>
-                {availableRoles.map((role) => (
+                {availableRoles.map(role => (
                   <SelectItem key={role.id} value={role.id}>
                     {role.name}
                   </SelectItem>
@@ -270,62 +288,59 @@ export function WorkspaceInviteModal({
 
           {/* Custom message */}
           <div>
-            <Label htmlFor="message">Personal Message (optional)</Label>
+            <Label htmlFor='message'>Personal Message (optional)</Label>
             <Textarea
-              id="message"
+              id='message'
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Add a personal message to the invite email"
+              onChange={e => setMessage(e.target.value)}
+              placeholder='Add a personal message to the invite email'
               rows={2}
             />
           </div>
 
           {/* Invite link section */}
-          <div className="p-3 bg-muted rounded-lg space-y-2">
-            <p className="text-sm text-foreground font-medium">
+          <div className='p-3 bg-muted rounded-lg space-y-2'>
+            <p className='text-sm text-foreground font-medium'>
               Or share an invite link
             </p>
             {inviteLink ? (
-              <div className="flex gap-2">
+              <div className='flex gap-2'>
                 <Input
-                  type="text"
+                  type='text'
                   value={inviteLink}
                   readOnly
-                  className="flex-1 font-mono text-xs"
+                  className='flex-1 font-mono text-xs'
                 />
                 <Button
-                  variant="secondary"
-                  size="sm"
+                  variant='secondary'
+                  size='sm'
                   onClick={() => copyToClipboard(inviteLink)}
-                  type="button"
+                  type='button'
                 >
                   Copy
                 </Button>
               </div>
             ) : (
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={handleGenerateLink}
-                className="w-full"
-                type="button"
+                className='w-full'
+                type='button'
                 disabled={!selectedRole}
               >
                 Generate invite link
               </Button>
             )}
-            <p className="text-xs text-muted-foreground">
-              Invite links can be shared with anyone and allow them to join with the selected role
+            <p className='text-xs text-muted-foreground'>
+              Invite links can be shared with anyone and allow them to join with
+              the selected role
             </p>
           </div>
         </div>
 
-        <ResponsiveModalFooter className="px-4 md:px-0">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            type="button"
-          >
+        <ResponsiveModalFooter className='px-4 md:px-0'>
+          <Button variant='outline' onClick={handleClose} type='button'>
             Cancel
           </Button>
           <Button
@@ -335,7 +350,7 @@ export function WorkspaceInviteModal({
               !selectedRole ||
               (isBulkMode ? !bulkEmails.trim() : !email.trim())
             }
-            type="button"
+            type='button'
           >
             {isSending ? 'Sending...' : 'Send Invite'}
           </Button>

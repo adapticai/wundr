@@ -56,7 +56,11 @@ export function CreateConversationDialog({
   const [error, setError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
 
-  const { users, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
+  const {
+    users,
+    searchUsers,
+    isLoading: isSearchingUsers,
+  } = useWorkspaceUsers(workspaceId);
 
   // Search users when query changes
   useEffect(() => {
@@ -87,20 +91,25 @@ export function CreateConversationDialog({
     setInviteSuccess(null);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/admin/invites`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          invites: [{ email: userSearch.trim(), role: 'MEMBER' }],
-        }),
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/admin/invites`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            invites: [{ email: userSearch.trim(), role: 'MEMBER' }],
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 403) {
-          throw new Error('You do not have permission to invite users to this workspace');
+          throw new Error(
+            'You do not have permission to invite users to this workspace'
+          );
         }
         throw new Error(errorData.error?.message || 'Failed to send invite');
       }
@@ -109,7 +118,9 @@ export function CreateConversationDialog({
       setUserSearch('');
     } catch (err) {
       console.error('Failed to send invite:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send invitation');
+      setError(
+        err instanceof Error ? err.message : 'Failed to send invitation'
+      );
     } finally {
       setIsInviting(false);
     }
@@ -141,7 +152,9 @@ export function CreateConversationDialog({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || 'Failed to create conversation');
+        throw new Error(
+          errorData.error?.message || 'Failed to create conversation'
+        );
       }
 
       const result: CreateDMResponse = await response.json();
@@ -159,11 +172,21 @@ export function CreateConversationDialog({
       onClose();
     } catch (err) {
       console.error('Failed to create DM:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create conversation');
+      setError(
+        err instanceof Error ? err.message : 'Failed to create conversation'
+      );
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedUser, workspaceId, isSubmitting, onCreateDM, router, resetForm, onClose]);
+  }, [
+    selectedUser,
+    workspaceId,
+    isSubmitting,
+    onCreateDM,
+    router,
+    resetForm,
+    onClose,
+  ]);
 
   const handleSelectUser = useCallback((user: User) => {
     setSelectedUser(user);
@@ -180,65 +203,71 @@ export function CreateConversationDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'
       onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="create-conversation-title"
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby='create-conversation-title'
     >
       <div
-        className="w-full max-w-lg rounded-lg bg-card shadow-lg"
-        onClick={(e) => e.stopPropagation()}
+        className='w-full max-w-lg rounded-lg bg-card shadow-lg'
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 id="create-conversation-title" className="text-lg font-semibold text-foreground">
+        <div className='flex items-center justify-between border-b px-6 py-4'>
+          <h2
+            id='create-conversation-title'
+            className='text-lg font-semibold text-foreground'
+          >
             Start a conversation
           </h2>
           <button
-            type="button"
+            type='button'
             onClick={handleClose}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Close dialog"
+            className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
+            aria-label='Close dialog'
           >
-            <XIcon className="h-5 w-5" />
+            <XIcon className='h-5 w-5' />
           </button>
         </div>
 
         {/* Content */}
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
-          <p className="mb-4 text-sm text-muted-foreground">
-            Direct messages are private conversations between you and another person.
+        <div className='max-h-[70vh] overflow-y-auto px-6 py-4'>
+          <p className='mb-4 text-sm text-muted-foreground'>
+            Direct messages are private conversations between you and another
+            person.
           </p>
 
           {/* Error message */}
           {error && (
-            <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2">
-              <p className="text-sm text-destructive">{error}</p>
+            <div className='mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2'>
+              <p className='text-sm text-destructive'>{error}</p>
             </div>
           )}
 
           {/* Success message */}
           {inviteSuccess && (
-            <div className="mb-4 rounded-md border border-green-500/50 bg-green-50 dark:bg-green-900/10 px-3 py-2">
-              <p className="text-sm text-green-700 dark:text-green-300">{inviteSuccess}</p>
+            <div className='mb-4 rounded-md border border-green-500/50 bg-green-50 dark:bg-green-900/10 px-3 py-2'>
+              <p className='text-sm text-green-700 dark:text-green-300'>
+                {inviteSuccess}
+              </p>
             </div>
           )}
 
           {/* Selected user */}
           {selectedUser && (
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+            <div className='mb-4'>
+              <label className='mb-2 block text-sm font-medium text-foreground'>
                 Selected user
               </label>
-              <div className="flex items-center gap-3 rounded-lg border bg-secondary p-3">
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
+              <div className='flex items-center gap-3 rounded-lg border bg-secondary p-3'>
+                <div className='relative flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium'>
                   {selectedUser.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={selectedUser.image}
                       alt={selectedUser.name}
-                      className="h-full w-full rounded-lg object-cover"
+                      className='h-full w-full rounded-lg object-cover'
                     />
                   ) : (
                     getInitials(selectedUser.name || selectedUser.email)
@@ -252,23 +281,27 @@ export function CreateConversationDialog({
                           'bg-gray-400': selectedUser.status === 'offline',
                           'bg-yellow-500': selectedUser.status === 'away',
                           'bg-red-500': selectedUser.status === 'busy',
-                        },
+                        }
                       )}
                     />
                   )}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{selectedUser.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedUser.email}</p>
+                <div className='flex-1'>
+                  <p className='text-sm font-medium text-foreground'>
+                    {selectedUser.name}
+                  </p>
+                  <p className='text-xs text-muted-foreground'>
+                    {selectedUser.email}
+                  </p>
                 </div>
                 <button
-                  type="button"
+                  type='button'
                   onClick={handleClearSelection}
                   disabled={isSubmitting}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                  aria-label="Clear selection"
+                  className='rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground'
+                  aria-label='Clear selection'
                 >
-                  <XIcon className="h-4 w-4" />
+                  <XIcon className='h-4 w-4' />
                 </button>
               </div>
             </div>
@@ -277,47 +310,50 @@ export function CreateConversationDialog({
           {/* User search */}
           {!selectedUser && (
             <div>
-              <label htmlFor="user-search" className="mb-2 block text-sm font-medium text-foreground">
+              <label
+                htmlFor='user-search'
+                className='mb-2 block text-sm font-medium text-foreground'
+              >
                 Search for a user
               </label>
 
               {/* Search input */}
-              <div className="relative">
+              <div className='relative'>
                 <input
-                  id="user-search"
-                  type="text"
+                  id='user-search'
+                  type='text'
                   value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  placeholder="Type a name or email..."
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  onChange={e => setUserSearch(e.target.value)}
+                  placeholder='Type a name or email...'
+                  className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                   disabled={isSubmitting}
                   autoFocus
-                  aria-label="Search for users by name or email"
+                  aria-label='Search for users by name or email'
                 />
                 {isSearchingUsers && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <LoadingSpinner className="h-4 w-4" />
+                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
+                    <LoadingSpinner className='h-4 w-4' />
                   </div>
                 )}
               </div>
 
               {/* Search results */}
               {userSearch && users.length > 0 && (
-                <div className="mt-2 max-h-60 overflow-y-auto rounded-md border bg-background">
-                  {users.map((user) => (
+                <div className='mt-2 max-h-60 overflow-y-auto rounded-md border bg-background'>
+                  {users.map(user => (
                     <button
                       key={user.id}
-                      type="button"
+                      type='button'
                       onClick={() => handleSelectUser(user)}
-                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent"
+                      className='flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent'
                     >
-                      <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
+                      <div className='relative flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium'>
                         {user.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={user.image}
                             alt={user.name}
-                            className="h-full w-full rounded-lg object-cover"
+                            className='h-full w-full rounded-lg object-cover'
                           />
                         ) : (
                           getInitials(user.name || user.email)
@@ -331,14 +367,18 @@ export function CreateConversationDialog({
                                 'bg-gray-400': user.status === 'offline',
                                 'bg-yellow-500': user.status === 'away',
                                 'bg-red-500': user.status === 'busy',
-                              },
+                              }
                             )}
                           />
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className='text-sm font-medium text-foreground'>
+                          {user.name}
+                        </p>
+                        <p className='text-xs text-muted-foreground'>
+                          {user.email}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -346,30 +386,32 @@ export function CreateConversationDialog({
               )}
 
               {userSearch && users.length === 0 && !isSearchingUsers && (
-                <div className="mt-2 rounded-md border bg-muted/50 px-3 py-6 text-center">
-                  <p className="text-sm text-muted-foreground">No users found</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                <div className='mt-2 rounded-md border bg-muted/50 px-3 py-6 text-center'>
+                  <p className='text-sm text-muted-foreground'>
+                    No users found
+                  </p>
+                  <p className='mt-1 text-xs text-muted-foreground'>
                     Try a different name or email
                   </p>
                   {isValidEmail(userSearch) && (
-                    <div className="mt-4 border-t pt-4">
-                      <p className="text-xs text-muted-foreground mb-2">
+                    <div className='mt-4 border-t pt-4'>
+                      <p className='text-xs text-muted-foreground mb-2'>
                         Not a workspace member yet?
                       </p>
                       <button
-                        type="button"
+                        type='button'
                         onClick={handleInviteUser}
                         disabled={isInviting}
-                        className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                        className='inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50'
                       >
                         {isInviting ? (
                           <>
-                            <LoadingSpinner className="h-3 w-3" />
+                            <LoadingSpinner className='h-3 w-3' />
                             Sending invite...
                           </>
                         ) : (
                           <>
-                            <InviteIcon className="h-3 w-3" />
+                            <InviteIcon className='h-3 w-3' />
                             Invite {userSearch} to workspace
                           </>
                         )}
@@ -380,8 +422,8 @@ export function CreateConversationDialog({
               )}
 
               {!userSearch && (
-                <div className="mt-2 rounded-md border bg-muted/50 px-3 py-8 text-center">
-                  <p className="text-sm text-muted-foreground">
+                <div className='mt-2 rounded-md border bg-muted/50 px-3 py-8 text-center'>
+                  <p className='text-sm text-muted-foreground'>
                     Start typing to search for users
                   </p>
                 </div>
@@ -391,24 +433,24 @@ export function CreateConversationDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
+        <div className='flex items-center justify-end gap-2 border-t px-6 py-4'>
           <button
-            type="button"
+            type='button'
             onClick={handleClose}
             disabled={isSubmitting}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+            className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50'
           >
             Cancel
           </button>
           <button
-            type="button"
+            type='button'
             onClick={handleSubmit}
             disabled={!selectedUser || isSubmitting}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50'
           >
             {isSubmitting ? (
-              <span className="flex items-center gap-2">
-                <LoadingSpinner className="h-4 w-4" />
+              <span className='flex items-center gap-2'>
+                <LoadingSpinner className='h-4 w-4' />
                 Starting...
               </span>
             ) : (
@@ -424,17 +466,17 @@ export function CreateConversationDialog({
 function XIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }
@@ -443,22 +485,22 @@ function LoadingSpinner({ className }: { className?: string }) {
   return (
     <svg
       className={cn('animate-spin', className)}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
     >
       <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
+        className='opacity-25'
+        cx='12'
+        cy='12'
+        r='10'
+        stroke='currentColor'
+        strokeWidth='4'
       />
       <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        className='opacity-75'
+        fill='currentColor'
+        d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
       />
     </svg>
   );
@@ -467,19 +509,19 @@ function LoadingSpinner({ className }: { className?: string }) {
 function InviteIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <line x1="19" x2="19" y1="8" y2="14" />
-      <line x1="22" x2="16" y1="11" y2="11" />
+      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+      <circle cx='9' cy='7' r='4' />
+      <line x1='19' x2='19' y1='8' y2='14' />
+      <line x1='22' x2='16' y1='11' y2='11' />
     </svg>
   );
 }

@@ -109,7 +109,11 @@ export interface OrchestratorPersonality {
 /**
  * Communication tone preference
  */
-export type CommunicationTone = 'formal' | 'casual' | 'professional' | 'friendly';
+export type CommunicationTone =
+  | 'formal'
+  | 'casual'
+  | 'professional'
+  | 'friendly';
 
 /**
  * Response length preference
@@ -304,7 +308,10 @@ export interface StatusConfig {
  *
  * @constant
  */
-export const ORCHESTRATOR_STATUS_CONFIG: Record<OrchestratorStatus, StatusConfig> = {
+export const ORCHESTRATOR_STATUS_CONFIG: Record<
+  OrchestratorStatus,
+  StatusConfig
+> = {
   ONLINE: { label: 'Online', color: 'text-green-700', bgColor: 'bg-green-100' },
   OFFLINE: { label: 'Offline', color: 'text-gray-700', bgColor: 'bg-gray-100' },
   BUSY: { label: 'Busy', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
@@ -368,8 +375,13 @@ export type OrchestratorListResponse = PaginatedResponse<Orchestrator>;
  * @param {unknown} value - Value to check
  * @returns {boolean} True if value is a valid OrchestratorStatus
  */
-export function isOrchestratorStatus(value: unknown): value is OrchestratorStatus {
-  return typeof value === 'string' && ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'].includes(value);
+export function isOrchestratorStatus(
+  value: unknown
+): value is OrchestratorStatus {
+  return (
+    typeof value === 'string' &&
+    ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'].includes(value)
+  );
 }
 
 /**
@@ -378,6 +390,11 @@ export function isOrchestratorStatus(value: unknown): value is OrchestratorStatu
  * @param {unknown} value - Value to check
  * @returns {boolean} True if value is a valid OrchestratorDiscipline
  */
-export function isOrchestratorDiscipline(value: unknown): value is OrchestratorDiscipline {
-  return typeof value === 'string' && ORCHESTRATOR_DISCIPLINES.includes(value as OrchestratorDiscipline);
+export function isOrchestratorDiscipline(
+  value: unknown
+): value is OrchestratorDiscipline {
+  return (
+    typeof value === 'string' &&
+    ORCHESTRATOR_DISCIPLINES.includes(value as OrchestratorDiscipline)
+  );
 }

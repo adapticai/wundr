@@ -58,8 +58,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -69,8 +72,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -81,9 +87,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -97,8 +103,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!assignee) {
       return NextResponse.json(
-        createErrorResponse('Assignee not found', TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Assignee not found',
+          TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -114,12 +123,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (tasks.length === 0) {
       return NextResponse.json(
         createErrorResponse('No valid tasks found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Get unique workspace IDs
-    const workspaceIds = [...new Set(tasks.map((t) => t.workspaceId))];
+    const workspaceIds = [...new Set(tasks.map(t => t.workspaceId))];
 
     // Check user has access to all workspaces
     const membershipCount = await prisma.workspaceMember.count({
@@ -131,67 +140,78 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (membershipCount !== workspaceIds.length) {
       return NextResponse.json(
-        createErrorResponse('Access denied to one or more workspaces', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Access denied to one or more workspaces',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Check if not found tasks exist
-    const foundTaskIds = tasks.map((t) => t.id);
-    const notFoundIds = input.taskIds.filter((id) => !foundTaskIds.includes(id));
+    const foundTaskIds = tasks.map(t => t.id);
+    const notFoundIds = input.taskIds.filter(id => !foundTaskIds.includes(id));
 
     // Assign tasks in a transaction
-    const assignedTasks = await prisma.$transaction(
-      async (tx) => {
-        const results = [];
+    const assignedTasks = await prisma.$transaction(async tx => {
+      const results = [];
 
-        for (const taskId of foundTaskIds) {
-          try {
-            // Fetch current metadata
-            const currentTask = await tx.task.findUnique({
-              where: { id: taskId },
-              select: { metadata: true },
-            });
+      for (const taskId of foundTaskIds) {
+        try {
+          // Fetch current metadata
+          const currentTask = await tx.task.findUnique({
+            where: { id: taskId },
+            select: { metadata: true },
+          });
 
-            const currentMetadata = currentTask?.metadata as Record<string, unknown> | null;
+          const currentMetadata = currentTask?.metadata as Record<
+            string,
+            unknown
+          > | null;
 
-            const updated = await tx.task.update({
-              where: { id: taskId },
-              data: {
-                assignedToId: input.assigneeId,
-                metadata: {
-                  ...(currentMetadata || {}),
-                  ...(input.metadata || {}),
-                  ...(input.reason && { assignmentReason: input.reason }),
-                  lastAssignedAt: new Date().toISOString(),
-                } as Prisma.InputJsonValue,
+          const updated = await tx.task.update({
+            where: { id: taskId },
+            data: {
+              assignedToId: input.assigneeId,
+              metadata: {
+                ...(currentMetadata || {}),
+                ...(input.metadata || {}),
+                ...(input.reason && { assignmentReason: input.reason }),
+                lastAssignedAt: new Date().toISOString(),
+              } as Prisma.InputJsonValue,
+            },
+            include: {
+              assignedTo: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  isOrchestrator: true,
+                },
               },
-              include: {
-                assignedTo: { select: { id: true, name: true, email: true, isOrchestrator: true } },
-              },
-            });
+            },
+          });
 
-            results.push({
-              taskId,
-              success: true,
-              data: updated,
-            });
-          } catch (error) {
-            results.push({
-              taskId,
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            });
-          }
+          results.push({
+            taskId,
+            success: true,
+            data: updated,
+          });
+        } catch (error) {
+          results.push({
+            taskId,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
         }
+      }
 
-        return results;
-      },
-    );
+      return results;
+    });
 
     // Determine overall success
-    const successCount = assignedTasks.filter((r) => r.success).length;
-    const failureCount = assignedTasks.filter((r) => !r.success).length;
+    const successCount = assignedTasks.filter(r => r.success).length;
+    const failureCount = assignedTasks.filter(r => !r.success).length;
 
     // Send notifications to the assignee for each successfully assigned task (if different from assigner)
     if (input.assigneeId !== session.user.id) {
@@ -199,7 +219,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         where: { id: session.user.id },
         select: { name: true, displayName: true },
       });
-      const assignerName = currentUser?.displayName || currentUser?.name || 'Someone';
+      const assignerName =
+        currentUser?.displayName || currentUser?.name || 'Someone';
 
       // Send notifications for successfully assigned tasks
       for (const result of assignedTasks.filter(r => r.success)) {
@@ -209,9 +230,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           input.assigneeId,
           result.taskId,
           taskTitle,
-          assignerName,
+          assignerName
         ).catch(err => {
-          console.error(`[POST /api/tasks/assign] Failed to send notification for task ${result.taskId}:`, err);
+          console.error(
+            `[POST /api/tasks/assign] Failed to send notification for task ${result.taskId}:`,
+            err
+          );
         });
       }
     }
@@ -219,8 +243,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         data: {
-          assigned: assignedTasks.filter((r) => r.success),
-          failed: assignedTasks.filter((r) => !r.success),
+          assigned: assignedTasks.filter(r => r.success),
+          failed: assignedTasks.filter(r => !r.success),
           notFound: notFoundIds,
         },
         summary: {
@@ -236,7 +260,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       {
         status: failureCount > 0 || notFoundIds.length > 0 ? 207 : 200,
-      },
+      }
     );
   } catch (error) {
     console.error('[POST /api/tasks/assign] Error:', error);
@@ -244,15 +268,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          createErrorResponse('One or more tasks not found', TASK_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'One or more tasks not found',
+            TASK_ERROR_CODES.NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

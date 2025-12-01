@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from 'react';
 
 /**
  * Accessibility preferences - matches @neolith/core/types AccessibilityPreferences
@@ -35,7 +41,10 @@ interface A11yContextValue {
   /** Current accessibility preferences */
   preferences: A11yPreferences;
   /** Function to update a specific preference */
-  setPreference: <K extends keyof A11yPreferences>(key: K, value: A11yPreferences[K]) => void;
+  setPreference: <K extends keyof A11yPreferences>(
+    key: K,
+    value: A11yPreferences[K]
+  ) => void;
 }
 
 const A11yContext = createContext<A11yContextValue | null>(null);
@@ -52,13 +61,18 @@ export interface A11yProviderProps {
  * Accessibility provider that manages user preferences
  */
 export function A11yProvider({ children }: A11yProviderProps) {
-  const [preferences, setPreferences] = useState<A11yPreferences>(defaultPreferences);
+  const [preferences, setPreferences] =
+    useState<A11yPreferences>(defaultPreferences);
 
   useEffect(() => {
     // Detect system preferences
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const prefersContrast = window.matchMedia('(prefers-contrast: more)').matches;
-    
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    const prefersContrast = window.matchMedia(
+      '(prefers-contrast: more)'
+    ).matches;
+
     setPreferences(prev => ({
       ...prev,
       reduceMotion: prefersReducedMotion,
@@ -78,15 +92,30 @@ export function A11yProvider({ children }: A11yProviderProps) {
 
   useEffect(() => {
     // Apply preferences to document
-    document.documentElement.classList.toggle('reduce-motion', preferences.reduceMotion);
-    document.documentElement.classList.toggle('high-contrast', preferences.highContrast);
-    document.documentElement.classList.toggle('large-text', preferences.largeText);
-    document.documentElement.classList.toggle('enhanced-focus', preferences.focusIndicators === 'enhanced');
-    
+    document.documentElement.classList.toggle(
+      'reduce-motion',
+      preferences.reduceMotion
+    );
+    document.documentElement.classList.toggle(
+      'high-contrast',
+      preferences.highContrast
+    );
+    document.documentElement.classList.toggle(
+      'large-text',
+      preferences.largeText
+    );
+    document.documentElement.classList.toggle(
+      'enhanced-focus',
+      preferences.focusIndicators === 'enhanced'
+    );
+
     localStorage.setItem('a11y-preferences', JSON.stringify(preferences));
   }, [preferences]);
 
-  const setPreference = <K extends keyof A11yPreferences>(key: K, value: A11yPreferences[K]) => {
+  const setPreference = <K extends keyof A11yPreferences>(
+    key: K,
+    value: A11yPreferences[K]
+  ) => {
     setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
@@ -123,11 +152,14 @@ export interface SkipLinkProps {
 /**
  * Skip to main content link for keyboard navigation
  */
-export function SkipLink({ href = '#main-content', children = 'Skip to main content' }: SkipLinkProps) {
+export function SkipLink({
+  href = '#main-content',
+  children = 'Skip to main content',
+}: SkipLinkProps) {
   return (
     <a
       href={href}
-      className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg"
+      className='sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg'
     >
       {children}
     </a>
@@ -146,7 +178,7 @@ export interface VisuallyHiddenProps {
  * Screen reader only text - visually hidden but accessible
  */
 export function VisuallyHidden({ children }: VisuallyHiddenProps) {
-  return <span className="sr-only">{children}</span>;
+  return <span className='sr-only'>{children}</span>;
 }
 
 /**
@@ -170,7 +202,7 @@ export function LiveRegion({
   atomic = true,
 }: LiveRegionProps) {
   return (
-    <div aria-live={politeness} aria-atomic={atomic} className="sr-only">
+    <div aria-live={politeness} aria-atomic={atomic} className='sr-only'>
       {children}
     </div>
   );
@@ -181,23 +213,26 @@ export function LiveRegion({
  * @param containerRef - Reference to the container element
  * @param active - Whether the focus trap is active
  */
-export function useFocusTrap(containerRef: React.RefObject<HTMLElement>, active: boolean): void {
+export function useFocusTrap(
+  containerRef: React.RefObject<HTMLElement>,
+  active: boolean
+): void {
   useEffect(() => {
     if (!active || !containerRef.current) {
-return;
-}
+      return;
+    }
 
     const container = containerRef.current;
     const focusableElements = container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') {
-return;
-}
+        return;
+      }
 
       if (e.shiftKey && document.activeElement === firstElement) {
         e.preventDefault();
@@ -217,14 +252,20 @@ return;
 /**
  * Announce function type for screen reader announcements
  */
-export type AnnounceFn = (message: string, politeness?: 'polite' | 'assertive') => void;
+export type AnnounceFn = (
+  message: string,
+  politeness?: 'polite' | 'assertive'
+) => void;
 
 /**
  * Hook to announce messages to screen readers
  * @returns Function to announce messages
  */
 export function useAnnounce(): AnnounceFn {
-  const announce: AnnounceFn = (message: string, politeness: 'polite' | 'assertive' = 'polite') => {
+  const announce: AnnounceFn = (
+    message: string,
+    politeness: 'polite' | 'assertive' = 'polite'
+  ) => {
     const el = document.createElement('div');
     el.setAttribute('aria-live', politeness);
     el.setAttribute('aria-atomic', 'true');

@@ -71,7 +71,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -95,7 +95,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const severityFilter = searchParams.get('severity') as AlertSeverity | null;
     const typeFilter = searchParams.get('type') as HealthAlertType | null;
     const acknowledgedFilter = searchParams.get('acknowledged');
-    const limit = Math.min(200, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
+    const limit = Math.min(
+      200,
+      Math.max(1, parseInt(searchParams.get('limit') || '50', 10))
+    );
 
     // Build where clause for budget alerts
     const budgetWhere: any = {};
@@ -202,7 +205,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Apply filters
     if (severityFilter) {
-      healthAlerts = healthAlerts.filter(alert => alert.severity === severityFilter);
+      healthAlerts = healthAlerts.filter(
+        alert => alert.severity === severityFilter
+      );
     }
 
     if (typeFilter) {
@@ -220,7 +225,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health/alerts] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -240,7 +245,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -255,7 +260,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -264,10 +269,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Validate alertIds
@@ -275,20 +277,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!Array.isArray(alertIds) || alertIds.length === 0) {
       return NextResponse.json(
         { error: 'alertIds must be a non-empty array' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Filter for budget alert IDs (system alerts can't be acknowledged)
     // Budget alerts start with cuid format, system alerts have prefixes
-    const budgetAlertIds = alertIds.filter(id =>
-      typeof id === 'string' && !id.includes('-') === false && !id.startsWith('error-') && !id.startsWith('node-')
+    const budgetAlertIds = alertIds.filter(
+      id =>
+        typeof id === 'string' &&
+        !id.includes('-') === false &&
+        !id.startsWith('error-') &&
+        !id.startsWith('node-')
     );
 
     if (budgetAlertIds.length === 0) {
       return NextResponse.json(
-        { error: 'No acknowledgeable alerts found. System alerts are auto-generated and cannot be acknowledged.' },
-        { status: 400 },
+        {
+          error:
+            'No acknowledgeable alerts found. System alerts are auto-generated and cannot be acknowledged.',
+        },
+        { status: 400 }
       );
     }
 
@@ -313,7 +322,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/admin/health/alerts] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

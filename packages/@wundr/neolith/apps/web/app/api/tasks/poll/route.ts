@@ -65,8 +65,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -77,9 +80,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -98,9 +101,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found in workspace',
-          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -125,9 +128,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       };
 
       const minValue = priorityOrder[input.minPriority as TaskPriority];
-      const includedPriorities = (Object.keys(priorityOrder) as TaskPriority[]).filter(
-        (p) => priorityOrder[p] <= minValue,
-      );
+      const includedPriorities = (
+        Object.keys(priorityOrder) as TaskPriority[]
+      ).filter(p => priorityOrder[p] <= minValue);
 
       where.priority = { in: includedPriorities };
     }
@@ -151,7 +154,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       include: {
         workspace: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true, email: true } },
-        assignedTo: { select: { id: true, name: true, email: true, isOrchestrator: true } },
+        assignedTo: {
+          select: { id: true, name: true, email: true, isOrchestrator: true },
+        },
       },
     });
 
@@ -172,8 +177,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/tasks/poll] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

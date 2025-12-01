@@ -46,7 +46,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -61,7 +61,10 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -74,10 +77,13 @@ export async function GET(
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/admin/retention/stats] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/admin/retention/stats] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to fetch stats' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

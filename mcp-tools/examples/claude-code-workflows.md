@@ -1,6 +1,7 @@
 # Claude Code Workflow Examples
 
-This guide demonstrates powerful workflows combining multiple MCP tools for common development scenarios.
+This guide demonstrates powerful workflows combining multiple MCP tools for common development
+scenarios.
 
 ## 🚀 Automated Workflows
 
@@ -21,6 +22,7 @@ graph TD
 ```
 
 **Example Output:**
+
 ```
 ✅ Code Review Complete
 
@@ -44,6 +46,7 @@ Ready for PR: YES ✅
 **Claude's Process:**
 
 1. **Baseline Creation**
+
    ```
    Creating safety baselines...
    ✓ Drift baseline created
@@ -52,6 +55,7 @@ Ready for PR: YES ✅
    ```
 
 2. **Impact Analysis**
+
    ```
    Analyzing authentication module...
    - 12 files directly affected
@@ -60,6 +64,7 @@ Ready for PR: YES ✅
    ```
 
 3. **Guided Refactoring**
+
    ```
    Step 1: Extract interfaces (I'll help)
    Step 2: Apply dependency injection
@@ -91,7 +96,7 @@ Claude: "Analyzing your codebase structure..."
 // Phase 2: Planning
 Claude: "Here's your migration plan:"
 1. Core types → @company/core-types
-2. Error handling → @company/errors  
+2. Error handling → @company/errors
 3. Utilities → @company/utils
 4. API service → apps/api
 5. Worker service → apps/worker
@@ -127,6 +132,7 @@ Shall I run preventive standardization?"
 ### Smart Commit Assistant
 
 **Natural Flow:**
+
 ```
 You: "I'm done with my changes"
 
@@ -143,7 +149,7 @@ Suggested commit message:
 'feat: Add user authentication with OAuth2 support
 
 - Implemented OAuth2 flow
-- Added token refresh logic  
+- Added token refresh logic
 - Standardized error handling
 - Test coverage: 86%'
 
@@ -153,6 +159,7 @@ Ready to commit? (y/n)"
 ### Continuous Improvement Loop
 
 **Weekly Automation:**
+
 ```
 Every Friday, Claude automatically:
 
@@ -175,7 +182,7 @@ Every Friday, Claude automatically:
 
 ```typescript
 // When you open UserService.ts
-Claude: "I notice this service doesn't extend BaseService. 
+Claude: "I notice this service doesn't extend BaseService.
 Would you like me to:
 1. Refactor to follow the service pattern?
 2. Add lifecycle methods?
@@ -187,11 +194,11 @@ Would you like me to:
 ```yaml
 # When creating a PR
 Claude automatically:
-- Validates against quality gates
-- Generates PR description
-- Adds checklist items
-- Suggests reviewers
-- Labels based on changes
+  - Validates against quality gates
+  - Generates PR description
+  - Adds checklist items
+  - Suggests reviewers
+  - Labels based on changes
 ```
 
 ### 3. Learning from Feedback
@@ -266,7 +273,7 @@ Ready for release: YES (with warnings)"
 // Claude connects insights across tools
 "I noticed:
 - Your new error handling (from standardization)
-- Increased complexity (from drift detection)  
+- Increased complexity (from drift detection)
 - Missing tests (from coverage analysis)
 
 Suggestion: Add error handling tests to maintain quality"

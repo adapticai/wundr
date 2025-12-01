@@ -7,7 +7,13 @@ import { useForm } from 'react-hook-form';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -35,7 +41,6 @@ import {
 
 import { OrgPreview } from './org-preview';
 
-
 /**
  * Multi-Step Organization Genesis Wizard
  *
@@ -57,7 +62,8 @@ export function OrgGenesisWizard() {
     description: {},
     config: {},
   });
-  const [generatedOrg, setGeneratedOrg] = useState<OrgGenerationResponse | null>(null);
+  const [generatedOrg, setGeneratedOrg] =
+    useState<OrgGenerationResponse | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,17 +76,17 @@ export function OrgGenesisWizard() {
   };
 
   const handleBasicInfoSubmit = (data: OrgBasicInfo) => {
-    setWizardData((prev) => ({ ...prev, basicInfo: data }));
+    setWizardData(prev => ({ ...prev, basicInfo: data }));
     setCurrentStep('description');
   };
 
   const handleDescriptionSubmit = (data: OrgDescription) => {
-    setWizardData((prev) => ({ ...prev, description: data }));
+    setWizardData(prev => ({ ...prev, description: data }));
     setCurrentStep('config');
   };
 
   const handleConfigSubmit = async (data: OrgConfig) => {
-    setWizardData((prev) => ({ ...prev, config: data }));
+    setWizardData(prev => ({ ...prev, config: data }));
 
     // Generate organization
     const fullInput: GenerateOrgInput = {
@@ -112,7 +118,8 @@ export function OrgGenesisWizard() {
       setGeneratedOrg(result.data);
       setCurrentStep('preview');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('Failed to generate organization:', err);
     } finally {
@@ -136,8 +143,8 @@ export function OrgGenesisWizard() {
 
   const handleAccept = async () => {
     if (!generatedOrg) {
-return;
-}
+      return;
+    }
 
     setIsGenerating(true);
     setError(null);
@@ -151,7 +158,8 @@ return;
         throw new Error('No workspace ID returned from generation');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to navigate to workspace';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to navigate to workspace';
       setError(errorMessage);
       console.error('Failed to navigate to workspace:', err);
     } finally {
@@ -160,21 +168,25 @@ return;
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className='mx-auto max-w-4xl space-y-6'>
       {/* Progress Header */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Create Organization</h2>
-          <Badge variant="outline">
-            Step {['basic', 'description', 'config', 'preview'].indexOf(currentStep) + 1} of 4
+      <div className='space-y-2'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-2xl font-bold'>Create Organization</h2>
+          <Badge variant='outline'>
+            Step{' '}
+            {['basic', 'description', 'config', 'preview'].indexOf(
+              currentStep
+            ) + 1}{' '}
+            of 4
           </Badge>
         </div>
-        <Progress value={stepProgress[currentStep]} className="h-2" />
+        <Progress value={stepProgress[currentStep]} className='h-2' />
       </div>
 
       {/* Error Display */}
       {error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className='rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
           {error}
         </div>
       )}
@@ -244,15 +256,18 @@ function BasicInfoStep({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
-              name="organizationName"
+              name='organizationName'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Adaptive Investments LLC" {...field} />
+                    <Input
+                      placeholder='e.g., Adaptive Investments LLC'
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     The legal or primary name of your organization
@@ -264,12 +279,15 @@ function BasicInfoStep({
 
             <FormField
               control={form.control}
-              name="organizationType"
+              name='organizationType'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization Type</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Hedge Fund, VC Firm, Startup" {...field} />
+                    <Input
+                      placeholder='e.g., Hedge Fund, VC Firm, Startup'
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     What industry or sector does your organization operate in?
@@ -279,8 +297,8 @@ function BasicInfoStep({
               )}
             />
 
-            <div className="flex justify-end">
-              <Button type="submit">Next Step</Button>
+            <div className='flex justify-end'>
+              <Button type='submit'>Next Step</Button>
             </div>
           </form>
         </Form>
@@ -311,21 +329,23 @@ function DescriptionStep({
       <CardHeader>
         <CardTitle>Describe Your Organization</CardTitle>
         <CardDescription>
-          Tell us about your organization&apos;s purpose and strategy. Be as detailed as you like - we&apos;ll use this to generate a tailored structure.
+          Tell us about your organization&apos;s purpose and strategy. Be as
+          detailed as you like - we&apos;ll use this to generate a tailored
+          structure.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
-              name="description"
+              name='description'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., We are a quantitative hedge fund specializing in algorithmic trading strategies across global equity markets. We focus on high-frequency trading and machine learning-driven investment decisions..."
+                      placeholder='e.g., We are a quantitative hedge fund specializing in algorithmic trading strategies across global equity markets. We focus on high-frequency trading and machine learning-driven investment decisions...'
                       rows={6}
                       {...field}
                     />
@@ -340,13 +360,13 @@ function DescriptionStep({
 
             <FormField
               control={form.control}
-              name="strategy"
+              name='strategy'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Strategy & Focus</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., Our strategy combines momentum trading with mean reversion across multiple timeframes. We target mid-cap stocks with strong liquidity..."
+                      placeholder='e.g., Our strategy combines momentum trading with mean reversion across multiple timeframes. We target mid-cap stocks with strong liquidity...'
                       rows={4}
                       {...field}
                     />
@@ -359,11 +379,11 @@ function DescriptionStep({
               )}
             />
 
-            <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={onBack}>
+            <div className='flex justify-between'>
+              <Button type='button' variant='outline' onClick={onBack}>
                 Back
               </Button>
-              <Button type="submit">Next Step</Button>
+              <Button type='submit'>Next Step</Button>
             </div>
           </form>
         </Form>
@@ -404,7 +424,7 @@ function ConfigStep({
   const handleRemoveAsset = (asset: string) => {
     form.setValue(
       'targetAssets',
-      assets.filter((a) => a !== asset),
+      assets.filter(a => a !== asset)
     );
   };
 
@@ -418,40 +438,48 @@ function ConfigStep({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
-              name="targetAssets"
+              name='targetAssets'
               render={() => (
                 <FormItem>
                   <FormLabel>Target Assets / Markets</FormLabel>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
+                  <div className='space-y-3'>
+                    <div className='flex gap-2'>
                       <Input
-                        placeholder="e.g., US Equities, Crypto, Commodities"
+                        placeholder='e.g., US Equities, Crypto, Commodities'
                         value={assetInput}
-                        onChange={(e) => setAssetInput(e.target.value)}
-                        onKeyDown={(e) => {
+                        onChange={e => setAssetInput(e.target.value)}
+                        onKeyDown={e => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
                             handleAddAsset();
                           }
                         }}
                       />
-                      <Button type="button" variant="outline" onClick={handleAddAsset}>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={handleAddAsset}
+                      >
                         Add
                       </Button>
                     </div>
 
                     {assets.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {assets.map((asset) => (
-                          <Badge key={asset} variant="secondary" className="gap-1">
+                      <div className='flex flex-wrap gap-2'>
+                        {assets.map(asset => (
+                          <Badge
+                            key={asset}
+                            variant='secondary'
+                            className='gap-1'
+                          >
                             {asset}
                             <button
-                              type="button"
+                              type='button'
                               onClick={() => handleRemoveAsset(asset)}
-                              className="ml-1 rounded-full hover:bg-muted-foreground/20"
+                              className='ml-1 rounded-full hover:bg-muted-foreground/20'
                             >
                               ×
                             </button>
@@ -470,16 +498,18 @@ function ConfigStep({
 
             <FormField
               control={form.control}
-              name="riskTolerance"
+              name='riskTolerance'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Risk Tolerance</FormLabel>
                   <FormControl>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['conservative', 'moderate', 'aggressive'] as const).map((level) => (
+                    <div className='grid grid-cols-3 gap-3'>
+                      {(
+                        ['conservative', 'moderate', 'aggressive'] as const
+                      ).map(level => (
                         <button
                           key={level}
-                          type="button"
+                          type='button'
                           onClick={() => field.onChange(level)}
                           className={`rounded-lg border-2 p-4 text-center transition-all ${
                             field.value === level
@@ -487,7 +517,7 @@ function ConfigStep({
                               : 'border-border hover:border-primary/50'
                           }`}
                         >
-                          <div className="font-medium capitalize">{level}</div>
+                          <div className='font-medium capitalize'>{level}</div>
                         </button>
                       ))}
                     </div>
@@ -502,16 +532,16 @@ function ConfigStep({
 
             <FormField
               control={form.control}
-              name="teamSize"
+              name='teamSize'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Team Size</FormLabel>
                   <FormControl>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['small', 'medium', 'large'] as const).map((size) => (
+                    <div className='grid grid-cols-3 gap-3'>
+                      {(['small', 'medium', 'large'] as const).map(size => (
                         <button
                           key={size}
-                          type="button"
+                          type='button'
                           onClick={() => field.onChange(size)}
                           className={`rounded-lg border-2 p-4 text-center transition-all ${
                             field.value === size
@@ -519,8 +549,8 @@ function ConfigStep({
                               : 'border-border hover:border-primary/50'
                           }`}
                         >
-                          <div className="font-medium capitalize">{size}</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className='font-medium capitalize'>{size}</div>
+                          <div className='text-xs text-muted-foreground'>
                             {size === 'small' && '1-10'}
                             {size === 'medium' && '10-50'}
                             {size === 'large' && '50+'}
@@ -537,12 +567,14 @@ function ConfigStep({
               )}
             />
 
-            <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={onBack}>
+            <div className='flex justify-between'>
+              <Button type='button' variant='outline' onClick={onBack}>
                 Back
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Generating Organization...' : 'Generate Organization'}
+              <Button type='submit' disabled={isSubmitting}>
+                {isSubmitting
+                  ? 'Generating Organization...'
+                  : 'Generate Organization'}
               </Button>
             </div>
           </form>
@@ -559,27 +591,27 @@ function GeneratingState() {
   return (
     <Card>
       <CardHeader>
-        <Skeleton className="h-8 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className='h-8 w-3/4' />
+        <Skeleton className='h-4 w-1/2' />
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-4/6" />
+      <CardContent className='space-y-6'>
+        <div className='space-y-3'>
+          <Skeleton className='h-4 w-full' />
+          <Skeleton className='h-4 w-5/6' />
+          <Skeleton className='h-4 w-4/6' />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
+        <div className='grid grid-cols-3 gap-4'>
+          <Skeleton className='h-24 w-full' />
+          <Skeleton className='h-24 w-full' />
+          <Skeleton className='h-24 w-full' />
         </div>
 
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-6 w-1/3" />
-              <Skeleton className="h-20 w-full" />
+        <div className='space-y-4'>
+          {[1, 2, 3].map(i => (
+            <div key={i} className='space-y-2'>
+              <Skeleton className='h-6 w-1/3' />
+              <Skeleton className='h-20 w-full' />
             </div>
           ))}
         </div>

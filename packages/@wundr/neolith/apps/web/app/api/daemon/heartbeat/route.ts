@@ -12,7 +12,7 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -22,16 +22,18 @@ import { z } from 'zod';
 const heartbeatSchema = z.object({
   sessionId: z.string().optional(),
   status: z.enum(['active', 'idle', 'busy']).optional().default('active'),
-  metrics: z.object({
-    memoryUsageMB: z.number().optional(),
-    cpuUsagePercent: z.number().optional(),
-    activeConnections: z.number().optional(),
-    messagesProcessed: z.number().optional(),
-    errorsCount: z.number().optional(),
-    uptimeSeconds: z.number().optional(),
-    lastTaskCompletedAt: z.string().optional(),
-    queueDepth: z.number().optional(),
-  }).optional(),
+  metrics: z
+    .object({
+      memoryUsageMB: z.number().optional(),
+      cpuUsagePercent: z.number().optional(),
+      activeConnections: z.number().optional(),
+      messagesProcessed: z.number().optional(),
+      errorsCount: z.number().optional(),
+      uptimeSeconds: z.number().optional(),
+      lastTaskCompletedAt: z.string().optional(),
+      queueDepth: z.number().optional(),
+    })
+    .optional(),
 });
 
 /** Inferred type from heartbeat schema */
@@ -40,7 +42,8 @@ type HeartbeatInput = z.infer<typeof heartbeatSchema>;
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
  * Heartbeat interval (ms) - daemon should send heartbeats at this interval
@@ -80,7 +83,9 @@ export type DaemonMetrics = NonNullable<HeartbeatInput['metrics']>;
 /**
  * Verify daemon token from Authorization header
  */
-async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+async function verifyDaemonToken(
+  request: NextRequest
+): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid authorization header');
@@ -132,7 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -148,8 +153,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = heartbeatSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Invalid heartbeat data', code: HEARTBEAT_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Invalid heartbeat data',
+          code: HEARTBEAT_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -157,7 +165,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const now = new Date();
     const serverTime = now.toISOString();
-    const nextHeartbeat = new Date(now.getTime() + HEARTBEAT_INTERVAL_MS).toISOString();
+    const nextHeartbeat = new Date(
+      now.getTime() + HEARTBEAT_INTERVAL_MS
+    ).toISOString();
 
     // Get Orchestrator info
     const orchestrator = await prisma.orchestrator.findUnique({
@@ -172,12 +182,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     // Update Orchestrator status
-    const orchestratorStatus = status === 'idle' ? 'AWAY' : status === 'busy' ? 'BUSY' : 'ONLINE';
+    const orchestratorStatus =
+      status === 'idle' ? 'AWAY' : status === 'busy' ? 'BUSY' : 'ONLINE';
     await prisma.orchestrator.update({
       where: { id: token.orchestratorId },
       data: {
@@ -201,7 +212,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         heartbeatKey,
         HEARTBEAT_TTL_SECONDS,
-        JSON.stringify(heartbeatData),
+        JSON.stringify(heartbeatData)
       );
 
       // Store metrics history (last 100 heartbeats)
@@ -212,7 +223,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           JSON.stringify({
             ...metrics,
             timestamp: serverTime,
-          }),
+          })
         );
         await redis.ltrim(metricsKey, 0, 99);
         await redis.expire(metricsKey, 24 * 60 * 60); // 24 hours
@@ -231,7 +242,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               ...session,
               lastHeartbeat: serverTime,
               lastStatus: status,
-            }),
+            })
           );
         }
       }
@@ -244,7 +255,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           orchestratorId: token.orchestratorId,
           status,
           receivedAt: serverTime,
-        }),
+        })
       );
     } catch (redisError) {
       console.error('Redis heartbeat error:', redisError);
@@ -261,7 +272,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/daemon/heartbeat] Error:', error);
     return NextResponse.json(
       { error: 'Heartbeat failed', code: HEARTBEAT_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

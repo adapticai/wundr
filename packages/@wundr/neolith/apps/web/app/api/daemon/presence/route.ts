@@ -12,14 +12,15 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
  * Schema for presence update request body
@@ -53,7 +54,9 @@ interface AccessTokenPayload {
 /**
  * Verify daemon token from Authorization header
  */
-async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+async function verifyDaemonToken(
+  request: NextRequest
+): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid authorization header');
@@ -98,7 +101,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: PRESENCE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -108,8 +111,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JSON body', code: PRESENCE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Invalid JSON body',
+          code: PRESENCE_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -121,7 +127,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid status. Must be one of: online, away, busy, offline',
           code: PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,12 +146,13 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: PRESENCE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     // Map presence status to Orchestrator status
-    const orchestratorStatus = status === 'offline' ? 'OFFLINE' : status === 'busy' ? 'BUSY' : 'ONLINE';
+    const orchestratorStatus =
+      status === 'offline' ? 'OFFLINE' : status === 'busy' ? 'BUSY' : 'ONLINE';
 
     // Update Orchestrator status in database
     await prisma.orchestrator.update({
@@ -176,7 +183,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         presenceKey,
         5 * 60, // 5 minutes TTL
-        JSON.stringify(presenceData),
+        JSON.stringify(presenceData)
       );
 
       // Publish presence update for real-time subscriptions
@@ -186,7 +193,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           type: 'orchestrator_presence_update',
           orchestratorId: token.orchestratorId,
           ...presenceData,
-        }),
+        })
       );
     } catch (redisError) {
       console.error('Redis presence update error:', redisError);
@@ -197,8 +204,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[PUT /api/daemon/presence] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to update presence', code: PRESENCE_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Failed to update presence',
+        code: PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }

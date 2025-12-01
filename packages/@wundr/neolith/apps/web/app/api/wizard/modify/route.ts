@@ -25,7 +25,13 @@ import type { NextRequest } from 'next/server';
 /**
  * Supported entity types for modification
  */
-type EntityType = 'workspace' | 'orchestrator' | 'session-manager' | 'subagent' | 'workflow' | 'channel';
+type EntityType =
+  | 'workspace'
+  | 'orchestrator'
+  | 'session-manager'
+  | 'subagent'
+  | 'workflow'
+  | 'channel';
 
 /**
  * Chat message structure
@@ -88,7 +94,10 @@ interface ModifyResponse {
 /**
  * Build system prompt for entity modification
  */
-function buildSystemPrompt(entityType: EntityType, currentData: EntityData): string {
+function buildSystemPrompt(
+  entityType: EntityType,
+  currentData: EntityData
+): string {
   return `You are an AI assistant helping users modify an existing ${entityType} in a collaborative AI platform.
 
 CURRENT ENTITY DATA:
@@ -146,7 +155,8 @@ function buildTools(entityType: EntityType) {
                 },
                 reason: {
                   type: 'string',
-                  description: 'Explanation for why this change is being suggested',
+                  description:
+                    'Explanation for why this change is being suggested',
                 },
               },
               required: ['field', 'oldValue', 'newValue', 'reason'],
@@ -158,7 +168,8 @@ function buildTools(entityType: EntityType) {
           },
           reasoning: {
             type: 'string',
-            description: 'Overall explanation of why these changes address the user request',
+            description:
+              'Overall explanation of why these changes address the user request',
           },
         },
         required: ['modifications', 'summary', 'reasoning'],
@@ -173,7 +184,7 @@ function buildTools(entityType: EntityType) {
 async function callClaude(
   systemPrompt: string,
   messages: ChatMessage[],
-  tools: unknown[],
+  tools: unknown[]
 ): Promise<ModifyResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -192,7 +203,7 @@ async function callClaude(
       max_tokens: parseInt(process.env.DEFAULT_MAX_TOKENS || '4096', 10),
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
       system: systemPrompt,
-      messages: messages.map((m) => ({
+      messages: messages.map(m => ({
         role: m.role,
         content: m.content,
       })),
@@ -221,7 +232,10 @@ async function callClaude(
       // Extract questions from text
       const questions = extractQuestions(block.text);
       clarifyingQuestions.push(...questions);
-    } else if (block.type === 'tool_use' && block.name === 'suggest_modifications') {
+    } else if (
+      block.type === 'tool_use' &&
+      block.name === 'suggest_modifications'
+    ) {
       suggestedChanges = block.input as SuggestedChanges;
       needsMoreInfo = false;
     }
@@ -231,7 +245,8 @@ async function callClaude(
     message: message.trim(),
     suggestedChanges,
     needsMoreInfo,
-    clarifyingQuestions: clarifyingQuestions.length > 0 ? clarifyingQuestions : undefined,
+    clarifyingQuestions:
+      clarifyingQuestions.length > 0 ? clarifyingQuestions : undefined,
   };
 }
 
@@ -239,8 +254,11 @@ async function callClaude(
  * Extract questions from text
  */
 function extractQuestions(text: string): string[] {
-  const sentences = text.split(/[.!?]+/).map((s) => s.trim()).filter((s) => s.length > 0);
-  return sentences.filter((s) => s.endsWith('?')).map((s) => s + '?');
+  const sentences = text
+    .split(/[.!?]+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+  return sentences.filter(s => s.endsWith('?')).map(s => s + '?');
 }
 
 /**
@@ -249,7 +267,7 @@ function extractQuestions(text: string): string[] {
 async function callOpenAI(
   systemPrompt: string,
   messages: ChatMessage[],
-  tools: unknown[],
+  tools: unknown[]
 ): Promise<ModifyResponse> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -257,7 +275,9 @@ async function callOpenAI(
   }
 
   // Convert tools to OpenAI function format
-  const functions = (tools as Array<{ name: string; description: string; input_schema: object }>).map((tool) => ({
+  const functions = (
+    tools as Array<{ name: string; description: string; input_schema: object }>
+  ).map(tool => ({
     name: tool.name,
     description: tool.description,
     parameters: tool.input_schema,
@@ -275,7 +295,7 @@ async function callOpenAI(
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map((m) => ({
+        ...messages.map(m => ({
           role: m.role,
           content: m.content,
         })),
@@ -301,7 +321,9 @@ async function callOpenAI(
   // Check for function call
   if (choice?.message?.function_call?.name === 'suggest_modifications') {
     try {
-      suggestedChanges = JSON.parse(choice.message.function_call.arguments) as SuggestedChanges;
+      suggestedChanges = JSON.parse(
+        choice.message.function_call.arguments
+      ) as SuggestedChanges;
       needsMoreInfo = false;
     } catch {
       // Invalid JSON in function call
@@ -316,7 +338,8 @@ async function callOpenAI(
     message: message.trim(),
     suggestedChanges,
     needsMoreInfo,
-    clarifyingQuestions: clarifyingQuestions.length > 0 ? clarifyingQuestions : undefined,
+    clarifyingQuestions:
+      clarifyingQuestions.length > 0 ? clarifyingQuestions : undefined,
   };
 }
 
@@ -325,7 +348,7 @@ async function callOpenAI(
  */
 function validateModifications(
   modifications: Modification[],
-  currentData: EntityData,
+  currentData: EntityData
 ): { valid: boolean; errors?: string[] } {
   const errors: string[] = [];
 
@@ -337,7 +360,9 @@ function validateModifications(
     }
 
     // Check if old value matches current value
-    if (JSON.stringify(currentData[mod.field]) !== JSON.stringify(mod.oldValue)) {
+    if (
+      JSON.stringify(currentData[mod.field]) !== JSON.stringify(mod.oldValue)
+    ) {
       errors.push(
         `Old value for '${mod.field}' does not match current value. Current: ${JSON.stringify(currentData[mod.field])}, Expected: ${JSON.stringify(mod.oldValue)}`
       );
@@ -408,7 +433,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: { message: 'Authentication required' } }, { status: 401 });
+      return NextResponse.json(
+        { error: { message: 'Authentication required' } },
+        { status: 401 }
+      );
     }
 
     // Parse request body
@@ -416,12 +444,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: { message: 'Invalid JSON body' } }, { status: 400 });
+      return NextResponse.json(
+        { error: { message: 'Invalid JSON body' } },
+        { status: 400 }
+      );
     }
 
     // Validate request structure
     if (!body || typeof body !== 'object') {
-      return NextResponse.json({ error: { message: 'Invalid request body' } }, { status: 400 });
+      return NextResponse.json(
+        { error: { message: 'Invalid request body' } },
+        { status: 400 }
+      );
     }
 
     const modifyReq = body as ModifyRequest;
@@ -435,14 +469,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       'workflow',
       'channel',
     ];
-    if (!modifyReq.entityType || !validEntityTypes.includes(modifyReq.entityType)) {
+    if (
+      !modifyReq.entityType ||
+      !validEntityTypes.includes(modifyReq.entityType)
+    ) {
       return NextResponse.json(
         {
           error: {
             message: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -450,27 +487,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!modifyReq.entityId || typeof modifyReq.entityId !== 'string') {
       return NextResponse.json(
         { error: { message: 'entityId is required and must be a string' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!modifyReq.currentData || typeof modifyReq.currentData !== 'object') {
       return NextResponse.json(
         { error: { message: 'currentData is required and must be an object' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate messages
     if (!Array.isArray(modifyReq.messages) || modifyReq.messages.length === 0) {
       return NextResponse.json(
-        { error: { message: 'messages array is required and must not be empty' } },
-        { status: 400 },
+        {
+          error: {
+            message: 'messages array is required and must not be empty',
+          },
+        },
+        { status: 400 }
       );
     }
 
     // Build system prompt and tools
-    const systemPrompt = buildSystemPrompt(modifyReq.entityType, modifyReq.currentData);
+    const systemPrompt = buildSystemPrompt(
+      modifyReq.entityType,
+      modifyReq.currentData
+    );
     const tools = buildTools(modifyReq.entityType);
 
     // Determine which LLM provider to use
@@ -492,10 +536,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           {
             error: {
-              message: 'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
+              message:
+                'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
             },
           },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
@@ -504,7 +549,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (response.suggestedChanges) {
       const validation = validateModifications(
         response.suggestedChanges.modifications,
-        modifyReq.currentData,
+        modifyReq.currentData
       );
 
       if (!validation.valid) {
@@ -516,7 +561,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               details: validation.errors,
             },
           },
-          { status: 422 },
+          { status: 422 }
         );
       }
     }
@@ -529,8 +574,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/wizard/modify] Error:', error);
     return NextResponse.json(
-      { error: { message: error instanceof Error ? error.message : 'An internal error occurred' } },
-      { status: 500 },
+      {
+        error: {
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An internal error occurred',
+        },
+      },
+      { status: 500 }
     );
   }
 }

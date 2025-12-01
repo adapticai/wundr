@@ -2,17 +2,21 @@
 
 ## Overview
 
-The Wundr platform uses PostgreSQL as the primary database with Redis for caching and session management. This document defines the complete database schema, relationships, and optimization strategies.
+The Wundr platform uses PostgreSQL as the primary database with Redis for caching and session
+management. This document defines the complete database schema, relationships, and optimization
+strategies.
 
 ## Database Architecture
 
 ### Technology Stack
+
 - **PostgreSQL 15+** - Primary relational database
 - **Redis 7+** - Caching and session storage
 - **Connection Pooling** - PgBouncer for connection management
 - **Monitoring** - pg_stat_statements and pgBadger
 
 ### Schema Organization
+
 ```
 wundr_platform
 ├── public (core tables)
@@ -27,6 +31,7 @@ wundr_platform
 ### Users and Authentication
 
 #### users
+
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -45,7 +50,7 @@ CREATE TABLE users (
 
 CREATE TYPE user_role AS ENUM (
   'admin',
-  'manager', 
+  'manager',
   'developer',
   'viewer'
 );
@@ -56,6 +61,7 @@ CREATE INDEX idx_users_active ON users(is_active);
 ```
 
 #### user_sessions
+
 ```sql
 CREATE TABLE user_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -77,6 +83,7 @@ CREATE INDEX idx_user_sessions_expires ON user_sessions(expires_at);
 ### Projects and Workspaces
 
 #### organizations
+
 ```sql
 CREATE TABLE organizations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -99,6 +106,7 @@ CREATE INDEX idx_organizations_slug ON organizations(slug);
 ```
 
 #### organization_members
+
 ```sql
 CREATE TABLE organization_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -107,7 +115,7 @@ CREATE TABLE organization_members (
   role organization_role NOT NULL,
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   invited_by UUID REFERENCES users(id),
-  
+
   UNIQUE(organization_id, user_id)
 );
 
@@ -123,6 +131,7 @@ CREATE INDEX idx_org_members_user_id ON organization_members(user_id);
 ```
 
 #### projects
+
 ```sql
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -139,7 +148,7 @@ CREATE TABLE projects (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   last_analyzed_at TIMESTAMPTZ,
-  
+
   CONSTRAINT valid_repo_url CHECK (repository_url IS NULL OR repository_url ~* '^https?://')
 );
 
@@ -170,6 +179,7 @@ CREATE INDEX idx_projects_updated_at ON projects(updated_at);
 ```
 
 #### project_members
+
 ```sql
 CREATE TABLE project_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -178,7 +188,7 @@ CREATE TABLE project_members (
   role project_role NOT NULL,
   added_at TIMESTAMPTZ DEFAULT NOW(),
   added_by UUID REFERENCES users(id),
-  
+
   UNIQUE(project_id, user_id)
 );
 
@@ -196,6 +206,7 @@ CREATE INDEX idx_project_members_user_id ON project_members(user_id);
 ## Analysis Schema
 
 #### analyses
+
 ```sql
 CREATE TABLE analyses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -212,7 +223,7 @@ CREATE TABLE analyses (
   duration_seconds INTEGER,
   created_by UUID NOT NULL REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   CONSTRAINT valid_duration CHECK (
     (completed_at IS NULL AND duration_seconds IS NULL) OR
     (completed_at IS NOT NULL AND started_at IS NOT NULL AND duration_seconds > 0)
@@ -245,6 +256,7 @@ CREATE INDEX idx_analyses_completed_at ON analyses(completed_at);
 ```
 
 #### analysis_results
+
 ```sql
 CREATE TABLE analysis_results (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -263,6 +275,7 @@ CREATE INDEX idx_analysis_results_file_hash ON analysis_results(file_hash);
 ```
 
 #### analysis_issues
+
 ```sql
 CREATE TABLE analysis_issues (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -320,6 +333,7 @@ CREATE INDEX idx_analysis_issues_file_path ON analysis_issues(file_path);
 ```
 
 #### analysis_metrics
+
 ```sql
 CREATE TABLE analysis_metrics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -354,6 +368,7 @@ CREATE INDEX idx_analysis_metrics_category ON analysis_metrics(category);
 ```
 
 #### dependency_graphs
+
 ```sql
 CREATE TABLE dependency_graphs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -369,6 +384,7 @@ CREATE INDEX idx_dependency_graphs_analysis_id ON dependency_graphs(analysis_id)
 ```
 
 #### duplicate_groups
+
 ```sql
 CREATE TABLE duplicate_groups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -388,6 +404,7 @@ CREATE INDEX idx_duplicate_groups_similarity ON duplicate_groups(similarity_perc
 ## Setup Schema
 
 #### setup_profiles
+
 ```sql
 CREATE TABLE setup_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -431,6 +448,7 @@ CREATE INDEX idx_setup_profiles_org_id ON setup_profiles(organization_id);
 ```
 
 #### setup_sessions
+
 ```sql
 CREATE TABLE setup_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -463,6 +481,7 @@ CREATE INDEX idx_setup_sessions_created_at ON setup_sessions(created_at);
 ```
 
 #### setup_steps
+
 ```sql
 CREATE TABLE setup_steps (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -495,6 +514,7 @@ CREATE INDEX idx_setup_steps_order ON setup_steps(step_order);
 ```
 
 #### tools
+
 ```sql
 CREATE TABLE tools (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -542,6 +562,7 @@ CREATE INDEX idx_tools_platforms ON tools USING GIN(supported_platforms);
 ## Configuration Schema
 
 #### configurations
+
 ```sql
 CREATE TABLE configurations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -556,7 +577,7 @@ CREATE TABLE configurations (
   created_by UUID NOT NULL REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   CONSTRAINT config_scope_check CHECK (
     (scope = 'global' AND organization_id IS NULL AND project_id IS NULL) OR
     (scope = 'organization' AND organization_id IS NOT NULL AND project_id IS NULL) OR
@@ -586,6 +607,7 @@ CREATE INDEX idx_configurations_project_id ON configurations(project_id);
 ```
 
 #### integrations
+
 ```sql
 CREATE TABLE integrations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -633,6 +655,7 @@ CREATE INDEX idx_integrations_enabled ON integrations(is_enabled);
 ## Audit and Logging Schema
 
 #### audit_logs
+
 ```sql
 CREATE TABLE audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -669,6 +692,7 @@ CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 ```
 
 #### system_logs
+
 ```sql
 CREATE TABLE system_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -700,15 +724,16 @@ CREATE INDEX idx_system_logs_created_at ON system_logs(created_at);
 ## Views and Functions
 
 ### Project Statistics View
+
 ```sql
 CREATE VIEW project_stats AS
-SELECT 
+SELECT
   p.id,
   p.name,
   COUNT(DISTINCT a.id) as total_analyses,
   COUNT(DISTINCT CASE WHEN a.status = 'completed' THEN a.id END) as completed_analyses,
   MAX(a.completed_at) as last_analysis_at,
-  AVG(CASE WHEN a.status = 'completed' THEN 
+  AVG(CASE WHEN a.status = 'completed' THEN
     CAST((a.summary->>'overallScore')::text AS DECIMAL)
   END) as avg_quality_score,
   COUNT(DISTINCT pm.user_id) as member_count
@@ -720,6 +745,7 @@ GROUP BY p.id, p.name;
 ```
 
 ### Analysis Performance Function
+
 ```sql
 CREATE OR REPLACE FUNCTION get_analysis_trends(
   project_id_param UUID,
@@ -733,7 +759,7 @@ CREATE OR REPLACE FUNCTION get_analysis_trends(
 BEGIN
   RETURN QUERY
   WITH daily_metrics AS (
-    SELECT 
+    SELECT
       DATE(a.completed_at) as analysis_date,
       AVG(CAST(am.metric_value AS DECIMAL)) as avg_value
     FROM analyses a
@@ -746,10 +772,10 @@ BEGIN
     ORDER BY analysis_date
   ),
   trends AS (
-    SELECT 
+    SELECT
       analysis_date,
       avg_value,
-      CASE 
+      CASE
         WHEN LAG(avg_value) OVER (ORDER BY analysis_date) IS NULL THEN 'stable'
         WHEN avg_value > LAG(avg_value) OVER (ORDER BY analysis_date) THEN 'improving'
         WHEN avg_value < LAG(avg_value) OVER (ORDER BY analysis_date) THEN 'declining'
@@ -765,6 +791,7 @@ $$ LANGUAGE plpgsql;
 ## Indexes and Constraints
 
 ### Performance Indexes
+
 ```sql
 -- Composite indexes for common queries
 CREATE INDEX idx_analyses_project_status_created ON analyses(project_id, status, created_at DESC);
@@ -782,14 +809,15 @@ CREATE INDEX idx_analysis_results_metrics ON analysis_results USING GIN(metrics)
 ```
 
 ### Data Integrity Constraints
+
 ```sql
 -- Analysis constraints
-ALTER TABLE analyses ADD CONSTRAINT check_progress_status 
+ALTER TABLE analyses ADD CONSTRAINT check_progress_status
   CHECK ((status = 'completed' AND progress = 100) OR status != 'completed');
 
 -- Session duration constraints
 ALTER TABLE setup_sessions ADD CONSTRAINT check_session_duration
-  CHECK ((completed_at IS NULL AND duration_seconds IS NULL) OR 
+  CHECK ((completed_at IS NULL AND duration_seconds IS NULL) OR
          (completed_at IS NOT NULL AND started_at IS NOT NULL));
 
 -- Configuration scope constraints
@@ -800,6 +828,7 @@ ALTER TABLE configurations ADD CONSTRAINT unique_config_scope
 ## Partitioning Strategy
 
 ### Time-based Partitioning for Logs
+
 ```sql
 -- Partition audit logs by month
 CREATE TABLE audit_logs_template () INHERITS (audit_logs);
@@ -818,11 +847,11 @@ DECLARE
 BEGIN
   partition_name := table_name || '_' || TO_CHAR(start_date, 'YYYY_MM');
   end_date := start_date + INTERVAL '1 month';
-  
+
   EXECUTE format('CREATE TABLE %I (CHECK (created_at >= %L AND created_at < %L)) INHERITS (%I)',
                 partition_name, start_date, end_date, table_name);
-  
-  EXECUTE format('CREATE INDEX %I ON %I (created_at)', 
+
+  EXECUTE format('CREATE INDEX %I ON %I (created_at)',
                 'idx_' || partition_name || '_created_at', partition_name);
 END;
 $$ LANGUAGE plpgsql;
@@ -831,6 +860,7 @@ $$ LANGUAGE plpgsql;
 ## Backup and Recovery
 
 ### Backup Strategy
+
 ```sql
 -- Full backup script
 pg_dump --verbose --clean --no-acl --no-owner --format=custom wundr_platform > wundr_backup.dump
@@ -841,6 +871,7 @@ archive_command = 'cp %p /backup/archive/%f'
 ```
 
 ### Recovery Procedures
+
 ```sql
 -- Point-in-time recovery
 pg_restore --verbose --clean --no-acl --no-owner --dbname=wundr_platform wundr_backup.dump
@@ -851,4 +882,5 @@ SELECT pg_start_backup('backup_label');
 SELECT pg_stop_backup();
 ```
 
-This database schema provides a robust foundation for the Wundr platform with proper normalization, indexing, and constraints to ensure data integrity and optimal performance.
+This database schema provides a robust foundation for the Wundr platform with proper normalization,
+indexing, and constraints to ensure data integrity and optimal performance.

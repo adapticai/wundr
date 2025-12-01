@@ -1,6 +1,7 @@
 # Branch Protection Rules Setup
 
-This document outlines the required branch protection rules for the Wundr repository to ensure code quality, security, and deployment safety.
+This document outlines the required branch protection rules for the Wundr repository to ensure code
+quality, security, and deployment safety.
 
 ## Master Branch Protection
 
@@ -15,7 +16,7 @@ Configure the following branch protection rules for the `master` branch:
     "contexts": [
       "Security Scan",
       "Build & Test (ubuntu-latest)",
-      "Build & Test (macos-latest)", 
+      "Build & Test (macos-latest)",
       "Build & Test (windows-latest)",
       "E2E Tests",
       "Quality Gates",
@@ -106,11 +107,7 @@ Configure lighter protection for the `develop` branch:
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": [
-      "Security Scan",
-      "Build & Test (ubuntu-latest)",
-      "Quality Gates"
-    ]
+    "contexts": ["Security Scan", "Build & Test (ubuntu-latest)", "Quality Gates"]
   },
   "enforce_admins": false,
   "required_pull_request_reviews": {
@@ -132,6 +129,7 @@ Configure lighter protection for the `develop` branch:
 Enforce branch naming patterns using additional rules:
 
 ### Allowed Branch Patterns
+
 - `feature/*` - New features
 - `bugfix/*` - Bug fixes
 - `hotfix/*` - Critical fixes
@@ -139,6 +137,7 @@ Enforce branch naming patterns using additional rules:
 - `docs/*` - Documentation updates
 
 ### Prohibited Patterns
+
 - Direct commits to `master`
 - Direct commits to `develop`
 - Branches without proper prefixes
@@ -186,19 +185,22 @@ Create `.github/CODEOWNERS` file to define code ownership:
 ## Environment-Specific Protection
 
 ### Staging Environment
+
 - **Required Reviewers**: 1
 - **Auto-deployment**: Enabled
 - **Deployment Restrictions**: None
 
 ### Production Environment
+
 - **Required Reviewers**: 2 (including 1 admin)
 - **Auto-deployment**: Disabled (manual approval required)
-- **Deployment Restrictions**: 
+- **Deployment Restrictions**:
   - Business hours only (9 AM - 5 PM UTC)
   - Not on weekends
   - Deployment freeze during holidays
 
 ### Production Rollback Environment
+
 - **Purpose**: Emergency rollback procedures
 - **Required Reviewers**: 1 admin (break-glass access)
 - **Deployment Restrictions**: None (emergency use)
@@ -306,6 +308,7 @@ Only allow bypass in emergency situations:
 ### Alerting
 
 Configure alerts for:
+
 - Branch protection rule changes
 - Bypass activities
 - Failed status checks on master
@@ -323,7 +326,7 @@ on:
   push:
     branches: [master]
   schedule:
-    - cron: '0 9 * * 1'  # Weekly on Monday
+    - cron: '0 9 * * 1' # Weekly on Monday
 
 jobs:
   validate-protection:
@@ -338,7 +341,7 @@ jobs:
               repo: context.repo.repo,
               branch: 'master'
             });
-            
+
             // Validate required checks
             const requiredChecks = [
               'Security Scan',
@@ -346,10 +349,10 @@ jobs:
               'E2E Tests',
               'Quality Gates'
             ];
-            
+
             const actualChecks = protection.data.required_status_checks.contexts;
             const missing = requiredChecks.filter(check => !actualChecks.includes(check));
-            
+
             if (missing.length > 0) {
               throw new Error(`Missing required status checks: ${missing.join(', ')}`);
             }
@@ -359,20 +362,20 @@ jobs:
 
 ### Common Issues
 
-**Issue**: Status checks not appearing in required list
-**Solution**: 
+**Issue**: Status checks not appearing in required list **Solution**:
+
 - Ensure workflow names match exactly
 - Check if workflows have run at least once
 - Verify workflow files are in `.github/workflows/`
 
-**Issue**: CODEOWNERS not being enforced
-**Solution**:
+**Issue**: CODEOWNERS not being enforced **Solution**:
+
 - Check file location (must be in `.github/CODEOWNERS`)
 - Verify syntax and team/user references
 - Ensure "Require review from CODEOWNERS" is enabled
 
-**Issue**: Administrators can't bypass rules
-**Solution**:
+**Issue**: Administrators can't bypass rules **Solution**:
+
 - Check "Include administrators" setting
 - Verify admin permissions are correctly set
 - Consider using bypass actors for specific cases
@@ -380,6 +383,7 @@ jobs:
 ### Support
 
 For issues with branch protection:
+
 1. Check GitHub documentation
 2. Verify repository permissions
 3. Contact DevOps team for assistance

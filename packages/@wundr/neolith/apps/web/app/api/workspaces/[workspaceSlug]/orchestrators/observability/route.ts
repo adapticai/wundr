@@ -88,7 +88,7 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -97,9 +97,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -112,9 +112,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid workspace ID',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -124,24 +124,25 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const parseResult = observabilityDashboardQuerySchema.safeParse(searchParams);
+    const parseResult =
+      observabilityDashboardQuerySchema.safeParse(searchParams);
 
     if (!parseResult.success) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -149,20 +150,22 @@ export async function GET(
 
     // Get workspace observability data
     const healthStatuses = await getWorkspaceObservability(
-      access.workspace.organizationId,
+      access.workspace.organizationId
     );
 
     // Filter by status if specified
     let filteredStatuses = healthStatuses;
     if (query.statusFilter && query.statusFilter.length > 0) {
-      filteredStatuses = healthStatuses.filter((status) =>
-        query.statusFilter?.includes(status.status as 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY'),
+      filteredStatuses = healthStatuses.filter(status =>
+        query.statusFilter?.includes(
+          status.status as 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY'
+        )
       );
     }
 
     // Get Orchestrator details if requested
     const orchestratorDetails = await Promise.all(
-      filteredStatuses.map(async (status) => {
+      filteredStatuses.map(async status => {
         const orchestrator = await prisma.orchestrator.findUnique({
           where: { id: status.orchestratorId },
           include: {
@@ -219,36 +222,41 @@ export async function GET(
           },
           ...(tasks && { currentTasks: tasks }),
         };
-      }),
+      })
     );
 
     // Calculate dashboard summary
     const summary = {
       totalOrchestrators: filteredStatuses.length,
       byStatus: {
-        online: filteredStatuses.filter((s) => s.status === 'ONLINE').length,
-        offline: filteredStatuses.filter((s) => s.status === 'OFFLINE').length,
-        busy: filteredStatuses.filter((s) => s.status === 'BUSY').length,
-        away: filteredStatuses.filter((s) => s.status === 'AWAY').length,
+        online: filteredStatuses.filter(s => s.status === 'ONLINE').length,
+        offline: filteredStatuses.filter(s => s.status === 'OFFLINE').length,
+        busy: filteredStatuses.filter(s => s.status === 'BUSY').length,
+        away: filteredStatuses.filter(s => s.status === 'AWAY').length,
       },
       health: {
-        healthy: filteredStatuses.filter((s) => s.isHealthy).length,
-        unhealthy: filteredStatuses.filter((s) => !s.isHealthy).length,
+        healthy: filteredStatuses.filter(s => s.isHealthy).length,
+        unhealthy: filteredStatuses.filter(s => !s.isHealthy).length,
         avgHealthScore:
           filteredStatuses.length > 0
             ? Math.round(
                 filteredStatuses.reduce((sum, s) => sum + s.healthScore, 0) /
-                  filteredStatuses.length,
+                  filteredStatuses.length
               )
             : 0,
       },
       tasks: {
-        totalActive: filteredStatuses.reduce((sum, s) => sum + s.currentTasksCount, 0),
+        totalActive: filteredStatuses.reduce(
+          (sum, s) => sum + s.currentTasksCount,
+          0
+        ),
         avgPerOrchestrator:
           filteredStatuses.length > 0
             ? Math.round(
-                filteredStatuses.reduce((sum, s) => sum + s.currentTasksCount, 0) /
-                  filteredStatuses.length,
+                filteredStatuses.reduce(
+                  (sum, s) => sum + s.currentTasksCount,
+                  0
+                ) / filteredStatuses.length
               )
             : 0,
       },
@@ -262,14 +270,23 @@ export async function GET(
       timestamp: new Date().toISOString(),
       summary,
       orchestrators: orchestratorDetails,
-      alerts: [] as Array<{ severity: string; message: string; orchestratorId: string }>,
+      alerts: [] as Array<{
+        severity: string;
+        message: string;
+        orchestratorId: string;
+      }>,
     };
 
     // Generate alerts for unhealthy Orchestrators
-    filteredStatuses.forEach((status) => {
+    filteredStatuses.forEach(status => {
       if (!status.isHealthy) {
         response.alerts.push({
-          severity: status.healthScore < 40 ? 'critical' : status.healthScore < 60 ? 'high' : 'medium',
+          severity:
+            status.healthScore < 40
+              ? 'critical'
+              : status.healthScore < 60
+                ? 'high'
+                : 'medium',
           message: `Orchestrator health degraded: ${status.issues.join(', ')}`,
           orchestratorId: status.orchestratorId,
         });
@@ -299,14 +316,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/observability] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -346,7 +363,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -355,9 +372,9 @@ export async function POST(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -370,9 +387,9 @@ export async function POST(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid workspace ID',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -382,9 +399,9 @@ export async function POST(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -396,9 +413,9 @@ export async function POST(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -409,9 +426,9 @@ export async function POST(
         createAnalyticsErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -430,9 +447,9 @@ export async function POST(
         return NextResponse.json(
           createAnalyticsErrorResponse(
             'Orchestrator not found',
-            ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+            ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -459,19 +476,19 @@ export async function POST(
         message: 'Observability event recorded successfully',
         data: event,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/observability] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

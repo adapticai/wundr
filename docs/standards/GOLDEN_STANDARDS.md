@@ -1,29 +1,33 @@
-
 # Golden Standards
 
 ## Naming Conventions
 
 ### Services
+
 - Use `*Service` suffix (e.g., `UserService`, `OrderService`)
 - No abbreviations (❌ `UserSvc`, ✅ `UserService`)
 - Service names should reflect their domain responsibility
 
 ### Interfaces & Types
+
 - No `I` prefix for interfaces (❌ `IUser`, ✅ `User`)
 - Use interfaces for object shapes
 - Use type aliases for unions, intersections, and mapped types
 
 ### Enums
+
 - PascalCase names with UPPER_SNAKE_CASE values
+
 ```typescript
 enum UserRole {
   ADMIN = 'ADMIN',
   USER = 'USER',
-  GUEST = 'GUEST'
+  GUEST = 'GUEST',
 }
 ```
 
 ### Functions & Methods
+
 - camelCase for function names
 - Verb-first naming (e.g., `getUserById`, `calculateTotal`)
 - Boolean-returning functions should start with `is`, `has`, `can`
@@ -31,6 +35,7 @@ enum UserRole {
 ## Type System Guidelines
 
 ### When to Use Interfaces
+
 ```typescript
 // ✅ Good - object shapes
 interface User {
@@ -47,6 +52,7 @@ interface Repository<T> {
 ```
 
 ### When to Use Type Aliases
+
 ```typescript
 // ✅ Good - unions
 type Status = 'pending' | 'approved' | 'rejected';
@@ -61,6 +67,7 @@ type ReadonlyUser = Readonly<User>;
 ## Error Handling
 
 ### Base Error Class
+
 ```typescript
 export class AppError extends Error {
   constructor(
@@ -76,7 +83,10 @@ export class AppError extends Error {
 
 // Domain-specific errors
 export class ValidationError extends AppError {
-  constructor(message: string, public fields: string[]) {
+  constructor(
+    message: string,
+    public fields: string[]
+  ) {
     super(message, 'VALIDATION_ERROR', 400);
   }
 }
@@ -89,6 +99,7 @@ export class NotFoundError extends AppError {
 ```
 
 ### Error Handling Pattern
+
 ```typescript
 // ✅ Good
 try {
@@ -113,6 +124,7 @@ throw 'User not found'; // Never do this!
 ## Service Architecture
 
 ### Base Service Pattern
+
 ```typescript
 export abstract class BaseService {
   protected logger: Logger;
@@ -152,6 +164,7 @@ export abstract class BaseService {
 ```
 
 ### Service Implementation
+
 ```typescript
 export class UserService extends BaseService {
   constructor(
@@ -178,6 +191,7 @@ export class UserService extends BaseService {
 ## Async/Await Patterns
 
 ### Always Use Async/Await
+
 ```typescript
 // ✅ Good
 async function getUser(id: string): Promise<User> {
@@ -190,21 +204,21 @@ async function getUser(id: string): Promise<User> {
 
 // ❌ Bad - avoid promise chains
 function getUser(id: string): Promise<User> {
-  return userRepository.findById(id)
-    .then(user => {
-      if (!user) throw new NotFoundError('User', id);
-      return user;
-    });
+  return userRepository.findById(id).then(user => {
+    if (!user) throw new NotFoundError('User', id);
+    return user;
+  });
 }
 ```
 
 ### Parallel Execution
+
 ```typescript
 // ✅ Good - parallel when independent
 const [user, orders, preferences] = await Promise.all([
   getUserById(userId),
   getOrdersByUserId(userId),
-  getPreferencesByUserId(userId)
+  getPreferencesByUserId(userId),
 ]);
 
 // ❌ Bad - sequential when could be parallel
@@ -216,6 +230,7 @@ const preferences = await getPreferencesByUserId(userId);
 ## Module Organization
 
 ### File Structure
+
 ```
 src/
 ├── types/           # Shared types and interfaces
@@ -237,6 +252,7 @@ src/
 ```
 
 ### Import Order
+
 ```typescript
 // 1. Node built-ins
 import { promises as fs } from 'fs';
@@ -257,6 +273,7 @@ import { validateEmail } from './utils';
 ## Anti-Patterns to Avoid
 
 ### ❌ Wrapper Services
+
 ```typescript
 // Bad - unnecessary wrapper
 class EnhancedUserService {
@@ -270,6 +287,7 @@ class EnhancedUserService {
 ```
 
 ### ❌ Mixed Concerns
+
 ```typescript
 // Bad - service doing too much
 class UserService {
@@ -291,12 +309,13 @@ class UserService {
 ```
 
 ### ❌ Inconsistent Error Handling
+
 ```typescript
 // Bad - mixing error types
 function processData(data: any) {
-  if (!data) throw 'No data';  // String
-  if (!data.id) throw new Error('No ID');  // Generic Error
-  if (!data.valid) return null;  // Null return
+  if (!data) throw 'No data'; // String
+  if (!data.id) throw new Error('No ID'); // Generic Error
+  if (!data.valid) return null; // Null return
   // Inconsistent!
 }
 ```

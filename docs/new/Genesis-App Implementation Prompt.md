@@ -6,16 +6,20 @@
 
 ## Mission: Autonomous Genesis-App Implementation
 
-You are tasked with implementing the **Genesis-App** - a comprehensive enterprise communication platform with VP-Daemon integration. You must work through the implementation **fully autonomously** using parallel swarm-based execution.
+You are tasked with implementing the **Genesis-App** - a comprehensive enterprise communication
+platform with VP-Daemon integration. You must work through the implementation **fully autonomously**
+using parallel swarm-based execution.
 
 ### Primary Reference Document
 
 **READ THIS FIRST - It contains the complete specification:**
+
 ```
 docs/new/Genesis-App Integration Specification.md
 ```
 
 This document contains:
+
 - Complete system architecture
 - Prisma database schema
 - 10 implementation phases with detailed backlogs
@@ -26,7 +30,8 @@ This document contains:
 
 ### Execution Protocol
 
-You will implement the Genesis-App in **successive waves**, with each wave completing one phase from the specification. Each wave deploys **20 parallel agents** working simultaneously.
+You will implement the Genesis-App in **successive waves**, with each wave completing one phase from
+the specification. Each wave deploys **20 parallel agents** working simultaneously.
 
 #### Wave Execution Pattern
 
@@ -75,34 +80,35 @@ END FOR
 
 Execute these phases in order:
 
-| Wave | Phase | Name | Key Deliverables |
-|------|-------|------|------------------|
-| 1 | 0 | Infrastructure | Monorepo setup, Turborepo, Docker, CI/CD |
-| 2 | 0.5 | Schema Extensions | Prisma schema with VP/org-genesis models |
-| 3 | 1 | Authentication | NextAuth, OAuth, org-genesis wizard UI |
-| 4 | 1.5 | VP Provisioning | VP user creation, service accounts |
-| 5 | 2 | Messaging Core | Real-time chat, threads, optimistic UI |
-| 6 | 3 | Organization | Channels, RBAC, discipline mapping |
-| 7 | 3.5 | Presence | Redis presence, daemon heartbeat |
-| 8 | 4 | Rich Media | S3 uploads, image optimization |
-| 9 | 4.5 | File Processing | PDF/XLSX/DOCX extraction, OCR |
-| 10 | 5 | Voice/Video | LiveKit integration, huddles |
-| 11 | 6 | Native Polish | Push notifications, offline queue |
-| 12 | 7 | Enterprise | Search, audit logs, retention |
-| 13 | 8 | VP-Daemon Gateway | Machine auth, daemon API |
-| 14 | 8.5 | Daemon File Sync | Inbound file pipeline |
-| 15 | 8.6 | Session Injection | Claude session file context |
-| 16 | 8.7 | Daemon Upload | Outbound file pipeline |
-| 17 | 8.8 | Session Outputs | Auto-upload session files |
-| 18 | 8.9 | Multi-Party Sharing | Channel/DM file sharing |
-| 19 | 9 | Wundr Refactor | Package extraction, interfaces |
-| 20 | 9.5 | Wundr Integration | genesis-client package |
+| Wave | Phase | Name                | Key Deliverables                         |
+| ---- | ----- | ------------------- | ---------------------------------------- |
+| 1    | 0     | Infrastructure      | Monorepo setup, Turborepo, Docker, CI/CD |
+| 2    | 0.5   | Schema Extensions   | Prisma schema with VP/org-genesis models |
+| 3    | 1     | Authentication      | NextAuth, OAuth, org-genesis wizard UI   |
+| 4    | 1.5   | VP Provisioning     | VP user creation, service accounts       |
+| 5    | 2     | Messaging Core      | Real-time chat, threads, optimistic UI   |
+| 6    | 3     | Organization        | Channels, RBAC, discipline mapping       |
+| 7    | 3.5   | Presence            | Redis presence, daemon heartbeat         |
+| 8    | 4     | Rich Media          | S3 uploads, image optimization           |
+| 9    | 4.5   | File Processing     | PDF/XLSX/DOCX extraction, OCR            |
+| 10   | 5     | Voice/Video         | LiveKit integration, huddles             |
+| 11   | 6     | Native Polish       | Push notifications, offline queue        |
+| 12   | 7     | Enterprise          | Search, audit logs, retention            |
+| 13   | 8     | VP-Daemon Gateway   | Machine auth, daemon API                 |
+| 14   | 8.5   | Daemon File Sync    | Inbound file pipeline                    |
+| 15   | 8.6   | Session Injection   | Claude session file context              |
+| 16   | 8.7   | Daemon Upload       | Outbound file pipeline                   |
+| 17   | 8.8   | Session Outputs     | Auto-upload session files                |
+| 18   | 8.9   | Multi-Party Sharing | Channel/DM file sharing                  |
+| 19   | 9     | Wundr Refactor      | Package extraction, interfaces           |
+| 20   | 9.5   | Wundr Integration   | genesis-client package                   |
 
 ### Quality Standards (MANDATORY)
 
 Every file produced must meet these standards:
 
 #### 1. TypeScript Strict Mode
+
 ```typescript
 // tsconfig.json must include:
 {
@@ -117,8 +123,10 @@ Every file produced must meet these standards:
 ```
 
 #### 2. JSDoc Documentation
+
 Every exported function, class, type, and interface MUST have JSDoc:
-```typescript
+
+````typescript
 /**
  * Creates a new Genesis-App client for VP-Daemon communication.
  *
@@ -142,10 +150,12 @@ Every exported function, class, type, and interface MUST have JSDoc:
 export function createGenesisClient(config: GenesisClientConfig): GenesisClient {
   // ...
 }
-```
+````
 
 #### 3. README Documentation
+
 Each package/app MUST have a README.md with:
+
 - Overview and purpose
 - Installation instructions
 - Configuration options
@@ -154,21 +164,27 @@ Each package/app MUST have a README.md with:
 - Contributing guidelines
 
 #### 4. Lint Rules
+
 Must pass ESLint with zero errors:
+
 ```bash
 pnpm lint
 # Exit code: 0
 ```
 
 #### 5. Type Safety
+
 Must pass TypeScript with zero errors:
+
 ```bash
 pnpm typecheck
 # Exit code: 0
 ```
 
 #### 6. Build Success
+
 Must build successfully:
+
 ```bash
 pnpm build
 # Exit code: 0
@@ -230,6 +246,7 @@ genesis-app/                          # New monorepo (create in packages/@wundr/
 When spawning agents, use these task templates:
 
 #### Infrastructure Agent (Phase 0)
+
 ```
 You are implementing Phase 0 of the Genesis-App.
 
@@ -248,6 +265,7 @@ Output the files you created and any issues encountered.
 ```
 
 #### API Engineer Agent (Phases 8.x)
+
 ```
 You are implementing the VP-Daemon Gateway API for Genesis-App.
 
@@ -267,6 +285,7 @@ Output the implementation and test files.
 ```
 
 #### Frontend Engineer Agent (Phases 1, 2, 3)
+
 ```
 You are implementing UI components for Genesis-App.
 
@@ -309,6 +328,7 @@ cd packages/@wundr/genesis-app && pnpm test
 ### Git Commit Convention
 
 Use conventional commits:
+
 ```
 feat(genesis-app): Phase X.X - Description
 
@@ -363,6 +383,7 @@ Wave 4 (Phase 1.5): ⏳ Pending
 Start now by:
 
 1. Reading the full specification document:
+
    ```
    Read docs/new/Genesis-App Integration Specification.md
    ```
@@ -373,7 +394,8 @@ Start now by:
 
 4. Continue autonomously through all phases
 
-**IMPORTANT**: Do not stop until ALL phases are complete and the entire Genesis-App is production-ready.
+**IMPORTANT**: Do not stop until ALL phases are complete and the entire Genesis-App is
+production-ready.
 
 ---
 

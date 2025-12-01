@@ -18,6 +18,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ## Available Hooks
 
 ### 1. Pre-Task Hook (`pre-task.sh`)
+
 **Executes before task begins**
 
 ```bash
@@ -30,6 +31,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Features:**
+
 - ✅ Environment validation
 - ✅ Auto-detect agent type and complexity
 - ✅ Topology optimization
@@ -40,6 +42,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 - ✅ Pre-flight checks
 
 ### 2. Post-Task Hook (`post-task.sh`)
+
 **Executes after task completion**
 
 ```bash
@@ -50,6 +53,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Features:**
+
 - ✅ Task validation
 - ✅ Results collection
 - ✅ Memory update
@@ -60,6 +64,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 - ✅ Notifications
 
 ### 3. Pre-Edit Hook (`pre-edit.sh`)
+
 **Executes before file editing**
 
 ```bash
@@ -71,6 +76,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Features:**
+
 - ✅ File validation
 - ✅ Lock checking (prevents conflicts)
 - ✅ Automatic backup creation
@@ -80,6 +86,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 - ✅ Metadata collection
 
 ### 4. Post-Edit Hook (`post-edit.sh`)
+
 **Executes after file editing**
 
 ```bash
@@ -91,6 +98,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Features:**
+
 - ✅ Change verification
 - ✅ Syntax validation
 - ✅ Auto-formatting (Prettier, ESLint)
@@ -102,6 +110,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 - ✅ Lock release
 
 ### 5. Session-Restore Hook (`session-restore.sh`)
+
 **Restores previous session state**
 
 ```bash
@@ -113,6 +122,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Features:**
+
 - ✅ Session validation
 - ✅ Memory restoration
 - ✅ Topology rebuild
@@ -124,6 +134,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 - ✅ Health check
 
 ### 6. Session-End Hook (`session-end.sh`)
+
 **Clean shutdown and archival**
 
 ```bash
@@ -135,6 +146,7 @@ cp hooks/hooks.config.json .claude/hooks.config.json
 ```
 
 **Features:**
+
 - ✅ Metrics collection and export
 - ✅ Memory snapshot
 - ✅ Topology save
@@ -176,6 +188,7 @@ All hooks are configured via `hooks.config.json`:
 ## Integration with Claude Flow
 
 ### Initialize Swarm
+
 ```bash
 npx claude-flow@alpha hooks swarm-init \
     --topology mesh \
@@ -184,6 +197,7 @@ npx claude-flow@alpha hooks swarm-init \
 ```
 
 ### Spawn Agents
+
 ```bash
 npx claude-flow@alpha hooks agent-spawn \
     --type "coder" \
@@ -191,6 +205,7 @@ npx claude-flow@alpha hooks agent-spawn \
 ```
 
 ### Store Memory
+
 ```bash
 npx claude-flow@alpha hooks memory-store \
     --key "swarm/123/custom" \
@@ -198,6 +213,7 @@ npx claude-flow@alpha hooks memory-store \
 ```
 
 ### Train Patterns
+
 ```bash
 npx claude-flow@alpha hooks neural-train \
     --pattern-type "task-completion" \
@@ -223,6 +239,7 @@ cd .worktrees/task/task-123
 ## Examples
 
 ### Complete Task Workflow
+
 ```bash
 #!/usr/bin/env bash
 SESSION_ID="swarm-$(date +%s)"
@@ -247,6 +264,7 @@ echo "export const login = () => {};" >> src/auth.js
 ```
 
 ### Session Management
+
 ```bash
 # End session with full archival
 ./hooks/templates/session-end.sh "swarm-123" true true true
@@ -286,18 +304,14 @@ hooks/
 
 ## Verification Status
 
-✅ All bash scripts validated (syntax check passed)
-✅ Configuration JSON validated
-✅ All hooks executable
-✅ Error handling implemented
-✅ Logging configured
-✅ Git worktree integration working
-✅ Memory management integrated
-✅ Neural pattern learning enabled
+✅ All bash scripts validated (syntax check passed) ✅ Configuration JSON validated ✅ All hooks
+executable ✅ Error handling implemented ✅ Logging configured ✅ Git worktree integration working
+✅ Memory management integrated ✅ Neural pattern learning enabled
 
 ## Documentation
 
-- **Complete Guide**: See [/Users/iroselli/wundr/docs/HOOKS_GUIDE.md](/Users/iroselli/wundr/docs/HOOKS_GUIDE.md)
+- **Complete Guide**: See
+  [/Users/iroselli/wundr/docs/HOOKS_GUIDE.md](/Users/iroselli/wundr/docs/HOOKS_GUIDE.md)
 - **Project Config**: See [/Users/iroselli/wundr/CLAUDE.md](/Users/iroselli/wundr/CLAUDE.md)
 - **Examples**: Run `./hooks/examples/usage-example.sh`
 
@@ -325,6 +339,7 @@ hooks/
 ## Support
 
 For issues or questions:
+
 - Documentation: [HOOKS_GUIDE.md](/Users/iroselli/wundr/docs/HOOKS_GUIDE.md)
 - Claude Flow: https://github.com/ruvnet/claude-flow
 - Project Issues: https://github.com/adapticai/wundr/issues

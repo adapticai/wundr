@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
-
 /**
  * Error messages for different authentication error types.
  * Based on NextAuth.js error codes.

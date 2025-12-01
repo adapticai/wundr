@@ -59,9 +59,11 @@ export function OrchestratorActivity({
           <CardTitle>Activity Feed</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <p className="text-sm text-muted-foreground">No activity recorded yet</p>
+          <div className='flex flex-col items-center justify-center py-8 text-center'>
+            <MessageSquare className='h-12 w-12 text-muted-foreground/50 mb-4' />
+            <p className='text-sm text-muted-foreground'>
+              No activity recorded yet
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -74,29 +76,34 @@ export function OrchestratorActivity({
         <CardTitle>Activity Feed</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="max-h-[400px] overflow-y-auto pr-4">
-          <div className="space-y-4">
-            {activities.map((activity) => {
+        <div className='max-h-[400px] overflow-y-auto pr-4'>
+          <div className='space-y-4'>
+            {activities.map(activity => {
               const Icon = activityIcons[activity.type];
               const iconColor = activityColors[activity.type];
 
               return (
-                <div key={activity.id} className="flex gap-3 border-b pb-4 last:border-0">
+                <div
+                  key={activity.id}
+                  className='flex gap-3 border-b pb-4 last:border-0'
+                >
                   <div
                     className={cn(
                       'flex h-8 w-8 items-center justify-center rounded-full bg-muted shrink-0',
                       iconColor
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className='h-4 w-4' />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{activity.description}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-sm font-medium'>
+                      {activity.description}
+                    </p>
+                    <p className='text-xs text-muted-foreground mt-1'>
                       {formatRelativeTime(activity.timestamp)}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-xs shrink-0">
+                  <Badge variant='outline' className='text-xs shrink-0'>
                     {activity.type}
                   </Badge>
                 </div>

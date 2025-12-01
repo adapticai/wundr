@@ -1,6 +1,8 @@
 # @wundr.io/agent-eval
 
-Agent evaluation framework with LLM-based grading for AI agent quality assessment. Provides comprehensive tools for testing, evaluating, and improving AI agents through automated evaluation suites, LLM-based grading, and continuous feedback loops.
+Agent evaluation framework with LLM-based grading for AI agent quality assessment. Provides
+comprehensive tools for testing, evaluating, and improving AI agents through automated evaluation
+suites, LLM-based grading, and continuous feedback loops.
 
 ## Table of Contents
 
@@ -179,13 +181,13 @@ interface GradingCriterion {
 
 The package includes a default rubric with five criteria:
 
-| Criterion     | Weight | Min Score | Description                            |
-| ------------- | ------ | --------- | -------------------------------------- |
-| Accuracy      | 0.30   | 6         | Factual correctness of the response    |
-| Relevance     | 0.25   | 6         | How relevant the response is to input  |
-| Completeness  | 0.20   | 5         | Coverage of all aspects in the input   |
-| Clarity       | 0.15   | 5         | Structure and readability              |
-| Helpfulness   | 0.10   | 5         | Actionable value for the user          |
+| Criterion    | Weight | Min Score | Description                           |
+| ------------ | ------ | --------- | ------------------------------------- |
+| Accuracy     | 0.30   | 6         | Factual correctness of the response   |
+| Relevance    | 0.25   | 6         | How relevant the response is to input |
+| Completeness | 0.20   | 5         | Coverage of all aspects in the input  |
+| Clarity      | 0.15   | 5         | Structure and readability             |
+| Helpfulness  | 0.10   | 5         | Actionable value for the user         |
 
 ## Evaluation Metrics and Scoring
 
@@ -253,11 +255,7 @@ const summary = generateSummary(testResults);
 ### Creating a Benchmark Suite
 
 ```typescript
-import {
-  createEvalSuite,
-  createTestCase,
-  createGradingRubric,
-} from '@wundr.io/agent-eval';
+import { createEvalSuite, createTestCase, createGradingRubric } from '@wundr.io/agent-eval';
 
 // Create custom rubric for coding tasks
 const codingRubric = createGradingRubric(
@@ -362,7 +360,7 @@ import { createEvaluator } from '@wundr.io/agent-eval';
 const evaluator = createEvaluator();
 
 // Register event handlers for detailed tracking
-evaluator.onEvent((event) => {
+evaluator.onEvent(event => {
   switch (event.type) {
     case 'eval:started':
       console.log(`Starting evaluation: ${event.payload.runId}`);
@@ -386,7 +384,7 @@ evaluator.onEvent((event) => {
 const results = await evaluator.runEvalSuite(suite, agent, {
   agentId: 'my-agent-v1',
   agentVersion: '1.0.0',
-  onProgress: (progress) => {
+  onProgress: progress => {
     const pct = ((progress.currentTest + 1) / progress.totalTests) * 100;
     console.log(`Progress: ${pct.toFixed(1)}% - ${progress.currentTestName}`);
   },
@@ -399,9 +397,7 @@ const results = await evaluator.runEvalSuite(suite, agent, {
 import { aggregateIterationMetrics } from '@wundr.io/agent-eval';
 
 // Get results for a specific test case across iterations
-const testCaseResults = results.testResults.filter(
-  (r) => r.testCaseId === 'my-test'
-);
+const testCaseResults = results.testResults.filter(r => r.testCaseId === 'my-test');
 
 const aggregated = aggregateIterationMetrics(testCaseResults);
 // Returns:
@@ -570,7 +566,8 @@ for (const rec of analysis.recommendations) {
 
 ## Integration with IPRE Governance
 
-The `@wundr.io/agent-eval` package integrates with the IPRE (Immutable Performance and Reward Engine) governance framework to provide reward signals based on agent performance.
+The `@wundr.io/agent-eval` package integrates with the IPRE (Immutable Performance and Reward
+Engine) governance framework to provide reward signals based on agent performance.
 
 ### Generating Reward Signals
 
@@ -668,7 +665,7 @@ const results = await evaluator.runEvalSuite(suite, agent, {
   agentVersion: '1.0.0',
   metadata: { environment: 'production' },
   configOverrides: { parallel: true, maxConcurrency: 10 },
-  onProgress: (progress) => console.log(progress),
+  onProgress: progress => console.log(progress),
 });
 
 // Register custom validator
@@ -678,7 +675,7 @@ evaluator.registerValidator('custom-check', async (output, testCase) => {
 });
 
 // Register event handler
-const unsubscribe = evaluator.onEvent((event) => {
+const unsubscribe = evaluator.onEvent(event => {
   console.log(event.type, event.payload);
 });
 ```
@@ -707,22 +704,22 @@ const jsonReport = generateReport(results, 'json');
 
 ### Metrics Functions
 
-| Function | Description |
-|----------|-------------|
-| `calculateMean(values)` | Calculate arithmetic mean |
-| `calculateStdDev(values)` | Calculate standard deviation |
-| `calculateMedian(values)` | Calculate median value |
-| `calculatePercentile(values, p)` | Calculate p-th percentile |
-| `calculateConfidenceInterval(values, confidence, iterations)` | Bootstrap confidence interval |
-| `calculateWeightedScore(criterionResults, rubric)` | Calculate weighted overall score |
-| `determinePassStatus(criterionResults, score, rubric)` | Determine pass/fail status |
-| `calculateConsistencyScore(scores)` | Calculate consistency (0-1) |
-| `generateSummary(testResults)` | Generate summary statistics |
-| `calculateScoreTrend(evalResults[])` | Analyze score trend over time |
-| `compareEvalRuns(baseline, current)` | Compare two evaluation runs |
-| `analyzeFailures(evalResults)` | Analyze failure patterns |
-| `aggregateIterationMetrics(results)` | Aggregate metrics from iterations |
-| `calculateInterRaterReliability(llmScores, humanScores)` | Calculate LLM-human agreement |
+| Function                                                      | Description                       |
+| ------------------------------------------------------------- | --------------------------------- |
+| `calculateMean(values)`                                       | Calculate arithmetic mean         |
+| `calculateStdDev(values)`                                     | Calculate standard deviation      |
+| `calculateMedian(values)`                                     | Calculate median value            |
+| `calculatePercentile(values, p)`                              | Calculate p-th percentile         |
+| `calculateConfidenceInterval(values, confidence, iterations)` | Bootstrap confidence interval     |
+| `calculateWeightedScore(criterionResults, rubric)`            | Calculate weighted overall score  |
+| `determinePassStatus(criterionResults, score, rubric)`        | Determine pass/fail status        |
+| `calculateConsistencyScore(scores)`                           | Calculate consistency (0-1)       |
+| `generateSummary(testResults)`                                | Generate summary statistics       |
+| `calculateScoreTrend(evalResults[])`                          | Analyze score trend over time     |
+| `compareEvalRuns(baseline, current)`                          | Compare two evaluation runs       |
+| `analyzeFailures(evalResults)`                                | Analyze failure patterns          |
+| `aggregateIterationMetrics(results)`                          | Aggregate metrics from iterations |
+| `calculateInterRaterReliability(llmScores, humanScores)`      | Calculate LLM-human agreement     |
 
 ## Examples
 

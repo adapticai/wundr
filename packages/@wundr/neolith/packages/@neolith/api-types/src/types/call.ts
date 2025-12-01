@@ -65,7 +65,8 @@ export const ParticipantStatus = {
   Declined: 'DECLINED',
 } as const;
 
-export type ParticipantStatusValue = (typeof ParticipantStatus)[keyof typeof ParticipantStatus];
+export type ParticipantStatusValue =
+  (typeof ParticipantStatus)[keyof typeof ParticipantStatus];
 
 /**
  * Track type enum - defines the type of media track
@@ -99,7 +100,8 @@ export const RecordingStatus = {
   Failed: 'FAILED',
 } as const;
 
-export type RecordingStatusValue = (typeof RecordingStatus)[keyof typeof RecordingStatus];
+export type RecordingStatusValue =
+  (typeof RecordingStatus)[keyof typeof RecordingStatus];
 
 /**
  * Huddle status enum - defines the state of a huddle
@@ -111,7 +113,8 @@ export const HuddleStatus = {
   Ended: 'ENDED',
 } as const;
 
-export type HuddleStatusValue = (typeof HuddleStatus)[keyof typeof HuddleStatus];
+export type HuddleStatusValue =
+  (typeof HuddleStatus)[keyof typeof HuddleStatus];
 
 // =============================================================================
 // CALL ENTITY TYPES
@@ -529,7 +532,11 @@ export interface HuddleUpdatedEvent {
   /** The updated huddle */
   huddle: Huddle;
   /** Type of update */
-  updateType: 'PARTICIPANT_JOINED' | 'PARTICIPANT_LEFT' | 'ENDED' | 'SETTINGS_CHANGED';
+  updateType:
+    | 'PARTICIPANT_JOINED'
+    | 'PARTICIPANT_LEFT'
+    | 'ENDED'
+    | 'SETTINGS_CHANGED';
   /** Participant count */
   participantCount: number;
 }
@@ -564,8 +571,12 @@ export function isCallStatus(value: unknown): value is CallStatusValue {
  * @param value - Value to check
  * @returns True if value is a valid ParticipantStatus
  */
-export function isParticipantStatus(value: unknown): value is ParticipantStatusValue {
-  return Object.values(ParticipantStatus).includes(value as ParticipantStatusValue);
+export function isParticipantStatus(
+  value: unknown
+): value is ParticipantStatusValue {
+  return Object.values(ParticipantStatus).includes(
+    value as ParticipantStatusValue
+  );
 }
 
 /**
@@ -574,7 +585,9 @@ export function isParticipantStatus(value: unknown): value is ParticipantStatusV
  * @param value - Value to check
  * @returns True if value is a valid RecordingStatus
  */
-export function isRecordingStatus(value: unknown): value is RecordingStatusValue {
+export function isRecordingStatus(
+  value: unknown
+): value is RecordingStatusValue {
   return Object.values(RecordingStatus).includes(value as RecordingStatusValue);
 }
 

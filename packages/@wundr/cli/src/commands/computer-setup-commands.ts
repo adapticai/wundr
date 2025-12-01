@@ -11,9 +11,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 
-import {
-  RealSetupOrchestrator,
-} from '@wundr.io/computer-setup';
+import { RealSetupOrchestrator } from '@wundr.io/computer-setup';
 import { BackupRollbackManager } from '../utils/backup-rollback-manager';
 import { ClaudeConfigInstaller } from '../utils/claude-config-installer';
 import { logger } from '../utils/logger';
@@ -22,11 +20,11 @@ import type {
   SetupPlatform,
   SetupProgress,
   SetupResult,
-  DeveloperProfile} from '@wundr.io/computer-setup';
+  DeveloperProfile,
+} from '@wundr.io/computer-setup';
 import type { PluginManager } from '../plugins/plugin-manager';
 import type { ConfigManager } from '../utils/config-manager';
 import type { Command } from 'commander';
-
 
 // Additional local types
 interface LocalSetupOptions {
@@ -49,7 +47,7 @@ export class ComputerSetupCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager,
+    private pluginManager: PluginManager
   ) {
     this.platform = this.detectPlatform();
     this.orchestrator = new RealSetupOrchestrator(this.platform);
@@ -64,7 +62,7 @@ export class ComputerSetupCommands {
       .alias('setup-machine')
       .alias('provision')
       .description(
-        'Set up a new developer machine with all required tools and configurations',
+        'Set up a new developer machine with all required tools and configurations'
       )
       .addHelpText(
         'after',
@@ -75,7 +73,7 @@ Examples:
   ${chalk.green('wundr computer-setup --team platform')}     Apply platform team configuration
   ${chalk.green('wundr computer-setup doctor')}              Diagnose setup issues
   ${chalk.green('wundr computer-setup validate')}            Validate current setup
-      `),
+      `)
       );
 
     // Main setup command
@@ -84,14 +82,14 @@ Examples:
       .description('Run computer setup for new developer machine')
       .option(
         '-p, --profile <profile>',
-        'Use specific profile (frontend, backend, fullstack, devops)',
+        'Use specific profile (frontend, backend, fullstack, devops)'
       )
       .option('-t, --team <team>', 'Apply team-specific configurations')
       .option('-m, --mode <mode>', 'Setup mode', 'interactive')
       .option('--os <os>', 'Target OS (auto-detected by default)')
       .option(
         '--dry-run',
-        'Show what would be installed without making changes',
+        'Show what would be installed without making changes'
       )
       .option('--skip-existing', 'Skip tools that are already installed')
       .option('--parallel', 'Install tools in parallel where possible')
@@ -246,24 +244,24 @@ Examples:
       // Validate profile
       const availableProfiles = this.orchestrator.getAvailableProfiles();
       const profile = availableProfiles.find(p =>
-        p.name.toLowerCase().includes(profileName.toLowerCase()),
+        p.name.toLowerCase().includes(profileName.toLowerCase())
       );
 
       if (!profile) {
         console.error(chalk.red(`❌ Unknown profile: ${profileName}`));
         console.log(chalk.cyan('\nAvailable profiles:'));
         availableProfiles.forEach(p =>
-          console.log(`  • ${p.name}: ${p.description}`),
+          console.log(`  • ${p.name}: ${p.description}`)
         );
         return;
       }
 
       console.log(
-        chalk.cyan(`\n📋 Selected Profile: ${chalk.white(profile.name)}`),
+        chalk.cyan(`\n📋 Selected Profile: ${chalk.white(profile.name)}`)
       );
       console.log(chalk.gray(`${profile.description}`));
       console.log(
-        chalk.gray(`Estimated time: ${profile.estimatedTimeMinutes} minutes\n`),
+        chalk.gray(`Estimated time: ${profile.estimatedTimeMinutes} minutes\n`)
       );
 
       // Show what will be installed
@@ -303,7 +301,7 @@ Examples:
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
         process.stdout.write(
-          `${chalk.cyan('[')}${progress.percentage.toFixed(1)}%${chalk.cyan(']')} ${progress.currentStep}`,
+          `${chalk.cyan('[')}${progress.percentage.toFixed(1)}%${chalk.cyan(']')} ${progress.currentStep}`
         );
       };
 
@@ -317,7 +315,7 @@ Examples:
           parallel: options.parallel,
           generateReport: options.report,
         },
-        progressCallback,
+        progressCallback
       );
 
       console.log('\n'); // New line after progress
@@ -326,13 +324,13 @@ Examples:
         console.log(chalk.green('✅ Computer setup completed successfully!'));
         console.log(
           chalk.gray(
-            `Setup took ${Math.round(result.duration / 1000)} seconds\n`,
-          ),
+            `Setup took ${Math.round(result.duration / 1000)} seconds\n`
+          )
         );
 
         if (result.completedSteps.length > 0) {
           console.log(
-            chalk.cyan(`🎯 Completed steps (${result.completedSteps.length}):`),
+            chalk.cyan(`🎯 Completed steps (${result.completedSteps.length}):`)
           );
           result.completedSteps
             .slice(0, 5)
@@ -344,7 +342,7 @@ Examples:
 
         if (result.skippedSteps.length > 0) {
           console.log(
-            chalk.yellow(`⏭️  Skipped steps (${result.skippedSteps.length}):`),
+            chalk.yellow(`⏭️  Skipped steps (${result.skippedSteps.length}):`)
           );
           result.skippedSteps.forEach(step => console.log(`  ⏭️  ${step}`));
         }
@@ -355,7 +353,7 @@ Examples:
 
         if (result.failedSteps.length > 0) {
           console.log(
-            chalk.red(`Failed steps (${result.failedSteps.length}):`),
+            chalk.red(`Failed steps (${result.failedSteps.length}):`)
           );
           result.failedSteps.forEach(step => console.log(`  ❌ ${step}`));
         }
@@ -367,8 +365,8 @@ Examples:
 
         console.log(
           chalk.cyan(
-            '\n💡 You can resume setup by running: wundr computer-setup resume',
-          ),
+            '\n💡 You can resume setup by running: wundr computer-setup resume'
+          )
         );
         process.exit(1);
       }
@@ -376,8 +374,8 @@ Examples:
       console.error(chalk.red('\n❌ Setup failed with error:'), error);
       console.log(
         chalk.cyan(
-          '\n💡 You can resume setup by running: wundr computer-setup resume',
-        ),
+          '\n💡 You can resume setup by running: wundr computer-setup resume'
+        )
       );
       process.exit(1);
     }
@@ -584,7 +582,7 @@ Examples:
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
       process.stdout.write(
-        `${chalk.cyan('[')}${progress.percentage.toFixed(1)}%${chalk.cyan(']')} ${progress.currentStep}`,
+        `${chalk.cyan('[')}${progress.percentage.toFixed(1)}%${chalk.cyan(']')} ${progress.currentStep}`
       );
     };
 
@@ -594,7 +592,7 @@ Examples:
 
       if (result.success) {
         console.log(
-          chalk.green('✅ Setup resumed and completed successfully!'),
+          chalk.green('✅ Setup resumed and completed successfully!')
         );
         this.displayNextSteps();
       } else {
@@ -619,20 +617,20 @@ Examples:
       console.log(chalk.white(`📋 ${profile.name}`));
       console.log(chalk.gray(`   ${profile.description}`));
       console.log(
-        chalk.gray(`   Categories: ${profile.categories.join(', ')}`),
+        chalk.gray(`   Categories: ${profile.categories.join(', ')}`)
       );
       console.log(chalk.gray(`   Tools: ${profile.requiredTools.join(', ')}`));
       console.log(
-        chalk.gray(`   Estimated time: ${profile.estimatedTimeMinutes} minutes`),
+        chalk.gray(`   Estimated time: ${profile.estimatedTimeMinutes} minutes`)
       );
       console.log();
     });
 
     console.log(
-      chalk.cyan('Usage: wundr computer-setup --profile <profile-name>'),
+      chalk.cyan('Usage: wundr computer-setup --profile <profile-name>')
     );
     console.log(
-      chalk.gray('Example: wundr computer-setup --profile frontend\n'),
+      chalk.gray('Example: wundr computer-setup --profile frontend\n')
     );
   }
 
@@ -821,7 +819,7 @@ Examples:
       const fileList = files.split(',').map((f: string) => f.trim());
       const backup = await this.backupManager.createBackup(
         fileList,
-        'Manual backup',
+        'Manual backup'
       );
 
       this.backupManager.displayBackupInfo(backup);
@@ -838,7 +836,9 @@ Examples:
       await this.backupManager.cleanupOldBackups();
       console.log(chalk.green('✅ Old backups cleaned up'));
     } else {
-      console.log(chalk.yellow('Please specify an option. Use --help for details.'));
+      console.log(
+        chalk.yellow('Please specify an option. Use --help for details.')
+      );
     }
   }
 

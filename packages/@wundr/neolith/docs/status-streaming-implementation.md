@@ -2,7 +2,9 @@
 
 ## Overview
 
-This implementation adds comprehensive real-time user status updates to the Neolith Next.js application, building on the existing Redis-based presence infrastructure with Server-Sent Events (SSE) streaming.
+This implementation adds comprehensive real-time user status updates to the Neolith Next.js
+application, building on the existing Redis-based presence infrastructure with Server-Sent Events
+(SSE) streaming.
 
 ## Implementation Summary
 
@@ -11,6 +13,7 @@ This implementation adds comprehensive real-time user status updates to the Neol
 A centralized service for managing user status with advanced features:
 
 **Features:**
+
 - Status management (ONLINE, AWAY, BUSY, OFFLINE)
 - Auto-away detection based on user activity
 - DND (Do Not Disturb) scheduling with timezone support
@@ -19,35 +22,38 @@ A centralized service for managing user status with advanced features:
 - Subscription-based notifications
 
 **Key Components:**
+
 ```typescript
 class StatusService {
   // Update user status
-  updateStatus(status: PresenceStatusType, options?: StatusUpdateOptions): Promise<boolean>
+  updateStatus(status: PresenceStatusType, options?: StatusUpdateOptions): Promise<boolean>;
 
   // Configure auto-away behavior
-  configureAutoAway(config: Partial<AutoAwayConfig>): void
+  configureAutoAway(config: Partial<AutoAwayConfig>): void;
 
   // Configure DND schedule
-  configureDNDSchedule(schedule: DNDSchedule | null): void
+  configureDNDSchedule(schedule: DNDSchedule | null): void;
 
   // Subscribe to status changes
-  subscribe(callback: StatusUpdateCallback): () => void
+  subscribe(callback: StatusUpdateCallback): () => void;
 
   // Check if in DND time window
-  isInDNDWindow(): boolean
+  isInDNDWindow(): boolean;
 
   // Track activity
-  recordActivity(): void
+  recordActivity(): void;
 }
 ```
 
 **Auto-Away Detection:**
+
 - Monitors mouse, keyboard, scroll, touch, and focus events
 - Debounced activity detection (1 second)
 - Configurable idle timeout (default: 5 minutes)
 - Automatically returns to previous status when activity resumes
 
 **DND Scheduling:**
+
 - Time-based scheduling with start/end times
 - Day of week selection (0-6, Sunday-Saturday)
 - Timezone support (IANA timezone identifiers)
@@ -59,62 +65,72 @@ class StatusService {
 Enhanced hooks for React components with SSE integration:
 
 #### `useUserStatus()`
+
 Get and update current user's status:
+
 ```typescript
 const {
-  status,           // Current status
-  customStatus,     // Custom status message
-  isUpdating,       // Loading state
-  updateStatus,     // Update status function
-  setCustomStatus,  // Set custom message
-  clearCustomStatus // Clear custom message
+  status, // Current status
+  customStatus, // Custom status message
+  isUpdating, // Loading state
+  updateStatus, // Update status function
+  setCustomStatus, // Set custom message
+  clearCustomStatus, // Clear custom message
 } = useUserStatus();
 ```
 
 #### `useAutoAway(initialConfig?)`
+
 Configure auto-away behavior:
+
 ```typescript
 const {
-  config,              // Current configuration
-  updateConfig,        // Update configuration
-  timeSinceActivity    // Time since last activity (ms)
+  config, // Current configuration
+  updateConfig, // Update configuration
+  timeSinceActivity, // Time since last activity (ms)
 } = useAutoAway({
   enabled: true,
-  idleTimeoutMs: 5 * 60 * 1000
+  idleTimeoutMs: 5 * 60 * 1000,
 });
 ```
 
 #### `useDNDSchedule(initialSchedule?)`
+
 Manage DND scheduling:
+
 ```typescript
 const {
-  schedule,        // Current schedule
-  updateSchedule,  // Update schedule function
-  isInDNDWindow    // Whether currently in DND window
+  schedule, // Current schedule
+  updateSchedule, // Update schedule function
+  isInDNDWindow, // Whether currently in DND window
 } = useDNDSchedule({
   enabled: true,
   startTime: '22:00',
   endTime: '08:00',
   daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-  timezone: 'America/New_York'
+  timezone: 'America/New_York',
 });
 ```
 
 #### `useStatusStream({ userIds?, channelIds? })`
+
 Subscribe to real-time status updates via SSE:
+
 ```typescript
 const {
-  statuses,      // Map<userId, UserStatus>
-  isConnected,   // Connection status
-  error          // Connection error if any
+  statuses, // Map<userId, UserStatus>
+  isConnected, // Connection status
+  error, // Connection error if any
 } = useStatusStream({
   userIds: ['user1', 'user2'],
-  channelIds: ['channel1']
+  channelIds: ['channel1'],
 });
 ```
 
 #### `useMultiUserStatus(userIds)`
+
 Convenience hook for multiple users:
+
 ```typescript
 const statuses = useMultiUserStatus(['user1', 'user2', 'user3']);
 // Returns Map<userId, UserStatus>
@@ -124,8 +140,8 @@ const statuses = useMultiUserStatus(['user1', 'user2', 'user3']);
 
 #### Status Management
 
-**PUT /api/users/status**
-Update current user's status:
+**PUT /api/users/status** Update current user's status:
+
 ```typescript
 PUT /api/users/status
 Content-Type: application/json
@@ -149,8 +165,8 @@ Response:
 }
 ```
 
-**GET /api/users/:userId/status**
-Get status for a specific user:
+**GET /api/users/:userId/status** Get status for a specific user:
+
 ```typescript
 GET /api/users/user_123/status
 
@@ -166,8 +182,8 @@ Response:
 }
 ```
 
-**POST /api/users/status/subscribe**
-Get SSE stream URL for status updates:
+**POST /api/users/status/subscribe** Get SSE stream URL for status updates:
+
 ```typescript
 POST /api/users/status/subscribe
 Content-Type: application/json
@@ -186,8 +202,8 @@ Response:
 
 #### Existing SSE Streaming (Already Implemented)
 
-**GET /api/presence/stream**
-Server-Sent Events endpoint for real-time updates:
+**GET /api/presence/stream** Server-Sent Events endpoint for real-time updates:
+
 ```typescript
 GET /api/presence/stream?channelIds=ch_123&userIds=user_456
 
@@ -211,6 +227,7 @@ model User {
 ```
 
 **Preferences Schema:**
+
 ```typescript
 {
   presenceStatus?: 'ONLINE' | 'AWAY' | 'BUSY' | 'OFFLINE',
@@ -220,20 +237,24 @@ model User {
 ```
 
 **Online Detection:**
+
 - User is considered online if `lastActiveAt` is within 5 minutes
 - Status is derived from `preferences.presenceStatus` or mapped from `User.status`
 
 ### 5. Integration with Orchestrator Status
 
-Orchestrators (VPs) are also users in the system, so they benefit from the same status infrastructure:
+Orchestrators (VPs) are also users in the system, so they benefit from the same status
+infrastructure:
 
 **Existing Infrastructure:**
+
 - `OrchestratorPresence` type in core types
 - Redis-based presence tracking
 - Pub/sub for orchestrator presence events
 - Daemon heartbeat monitoring
 
 **Unified Status:**
+
 - Orchestrators can use the same status service
 - Status updates broadcast to relevant channels
 - Unified SSE streaming for both users and orchestrators
@@ -280,6 +301,7 @@ Orchestrators (VPs) are also users in the system, so they benefit from the same 
 ### Data Flow
 
 1. **Status Update Flow:**
+
    ```
    Component → useUserStatus hook → StatusService.updateStatus()
    → API PUT /api/users/status → Prisma update
@@ -287,6 +309,7 @@ Orchestrators (VPs) are also users in the system, so they benefit from the same 
    ```
 
 2. **Auto-Away Flow:**
+
    ```
    Browser events → StatusService activity detection
    → Reset idle timer → On timeout: StatusService.handleAutoAway()
@@ -294,6 +317,7 @@ Orchestrators (VPs) are also users in the system, so they benefit from the same 
    ```
 
 3. **DND Scheduling Flow:**
+
    ```
    Time check (every minute) → StatusService.checkDNDSchedule()
    → If in DND window: Set BUSY status
@@ -318,20 +342,17 @@ function StatusWidget() {
 
   return (
     <div>
-      <select
-        value={status}
-        onChange={(e) => updateStatus(e.target.value as PresenceStatusType)}
-      >
-        <option value="ONLINE">Online</option>
-        <option value="AWAY">Away</option>
-        <option value="BUSY">Busy</option>
-        <option value="OFFLINE">Offline</option>
+      <select value={status} onChange={e => updateStatus(e.target.value as PresenceStatusType)}>
+        <option value='ONLINE'>Online</option>
+        <option value='AWAY'>Away</option>
+        <option value='BUSY'>Busy</option>
+        <option value='OFFLINE'>Offline</option>
       </select>
 
       <input
         value={customStatus ?? ''}
-        onChange={(e) => setCustomStatus(e.target.value)}
-        placeholder="Custom status..."
+        onChange={e => setCustomStatus(e.target.value)}
+        placeholder='Custom status...'
       />
     </div>
   );
@@ -348,9 +369,9 @@ function AutoAwaySettings() {
     <div>
       <label>
         <input
-          type="checkbox"
+          type='checkbox'
           checked={config.enabled}
-          onChange={(e) => updateConfig({ enabled: e.target.checked })}
+          onChange={e => updateConfig({ enabled: e.target.checked })}
         />
         Enable auto-away
       </label>
@@ -358,11 +379,13 @@ function AutoAwaySettings() {
       <label>
         Idle timeout (minutes):
         <input
-          type="number"
+          type='number'
           value={config.idleTimeoutMs / 60000}
-          onChange={(e) => updateConfig({
-            idleTimeoutMs: parseInt(e.target.value) * 60000
-          })}
+          onChange={e =>
+            updateConfig({
+              idleTimeoutMs: parseInt(e.target.value) * 60000,
+            })
+          }
         />
       </label>
 
@@ -380,43 +403,45 @@ function DNDScheduleSettings() {
 
   return (
     <div>
-      {isInDNDWindow && <span className="badge">DND Active</span>}
+      {isInDNDWindow && <span className='badge'>DND Active</span>}
 
       <label>
         <input
-          type="checkbox"
+          type='checkbox'
           checked={schedule?.enabled ?? false}
-          onChange={(e) => updateSchedule({ enabled: e.target.checked })}
+          onChange={e => updateSchedule({ enabled: e.target.checked })}
         />
         Enable DND schedule
       </label>
 
       <input
-        type="time"
+        type='time'
         value={schedule?.startTime ?? '22:00'}
-        onChange={(e) => updateSchedule({ startTime: e.target.value })}
+        onChange={e => updateSchedule({ startTime: e.target.value })}
       />
 
       <input
-        type="time"
+        type='time'
         value={schedule?.endTime ?? '08:00'}
-        onChange={(e) => updateSchedule({ endTime: e.target.value })}
+        onChange={e => updateSchedule({ endTime: e.target.value })}
       />
 
       <select
         multiple
         value={schedule?.daysOfWeek?.map(String) ?? []}
-        onChange={(e) => updateSchedule({
-          daysOfWeek: Array.from(e.target.selectedOptions, o => parseInt(o.value))
-        })}
+        onChange={e =>
+          updateSchedule({
+            daysOfWeek: Array.from(e.target.selectedOptions, o => parseInt(o.value)),
+          })
+        }
       >
-        <option value="0">Sunday</option>
-        <option value="1">Monday</option>
-        <option value="2">Tuesday</option>
-        <option value="3">Wednesday</option>
-        <option value="4">Thursday</option>
-        <option value="5">Friday</option>
-        <option value="6">Saturday</option>
+        <option value='0'>Sunday</option>
+        <option value='1'>Monday</option>
+        <option value='2'>Tuesday</option>
+        <option value='3'>Wednesday</option>
+        <option value='4'>Thursday</option>
+        <option value='5'>Friday</option>
+        <option value='6'>Saturday</option>
       </select>
     </div>
   );
@@ -433,14 +458,12 @@ function TeamMembersList({ teamUserIds }: { teamUserIds: string[] }) {
     <div>
       <h3>Team Members</h3>
       {Array.from(statuses.entries()).map(([userId, status]) => (
-        <div key={userId} className="member">
+        <div key={userId} className='member'>
           <StatusBadge status={status.status} />
           <span>{userId}</span>
-          {status.customStatus && (
-            <span className="custom">{status.customStatus}</span>
-          )}
+          {status.customStatus && <span className='custom'>{status.customStatus}</span>}
           {!status.isOnline && (
-            <span className="last-seen">
+            <span className='last-seen'>
               Last seen: {new Date(status.lastSeen).toLocaleString()}
             </span>
           )}
@@ -476,6 +499,7 @@ function ChannelMembersStatus({ channelId }: { channelId: string }) {
 ### Manual Testing
 
 1. **Status Updates:**
+
    ```bash
    # Update status
    curl -X PUT http://localhost:3000/api/users/status \
@@ -487,6 +511,7 @@ function ChannelMembersStatus({ channelId }: { channelId: string }) {
    ```
 
 2. **SSE Streaming:**
+
    ```bash
    # Connect to SSE stream
    curl -N http://localhost:3000/api/presence/stream?userIds=user_123,user_456
@@ -508,6 +533,7 @@ function ChannelMembersStatus({ channelId }: { channelId: string }) {
 ### Integration Testing
 
 The implementation integrates with:
+
 - Existing Prisma database schema (no changes needed)
 - Redis-based presence service (already implemented)
 - SSE streaming endpoint (already implemented)
@@ -599,6 +625,7 @@ The implementation integrates with:
 ## Conclusion
 
 This implementation provides a complete real-time user status system with:
+
 - Comprehensive status management (online, away, busy, offline)
 - Auto-away detection based on user activity
 - DND scheduling with timezone support
@@ -608,6 +635,7 @@ This implementation provides a complete real-time user status system with:
 - Orchestrator status support
 
 The system is production-ready and follows best practices for:
+
 - Type safety (TypeScript)
 - Input validation (Zod)
 - Authentication and authorization

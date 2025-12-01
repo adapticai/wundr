@@ -33,7 +33,7 @@ export class FileRecordNotFoundError extends GenesisError {
       `File record not found with ${identifierType}: ${identifier}`,
       'FILE_RECORD_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'FileRecordNotFoundError';
   }
@@ -57,12 +57,9 @@ export class FileRecordValidationError extends GenesisError {
  */
 export class WorkspaceNotFoundError extends GenesisError {
   constructor(workspaceId: string) {
-    super(
-      `Workspace not found: ${workspaceId}`,
-      'WORKSPACE_NOT_FOUND',
-      404,
-      { workspaceId },
-    );
+    super(`Workspace not found: ${workspaceId}`, 'WORKSPACE_NOT_FOUND', 404, {
+      workspaceId,
+    });
     this.name = 'WorkspaceNotFoundError';
   }
 }
@@ -72,12 +69,7 @@ export class WorkspaceNotFoundError extends GenesisError {
  */
 export class UserNotFoundError extends GenesisError {
   constructor(userId: string) {
-    super(
-      `User not found: ${userId}`,
-      'USER_NOT_FOUND',
-      404,
-      { userId },
-    );
+    super(`User not found: ${userId}`, 'USER_NOT_FOUND', 404, { userId });
     this.name = 'UserNotFoundError';
   }
 }
@@ -169,7 +161,10 @@ export interface FileRecordService {
    * @returns The updated file record
    * @throws {FileRecordNotFoundError} If file record doesn't exist
    */
-  updateRecord(id: string, data: UpdateFileRecordInput): Promise<FileRecordWithRelations>;
+  updateRecord(
+    id: string,
+    data: UpdateFileRecordInput
+  ): Promise<FileRecordWithRelations>;
 
   /**
    * Updates file record status.
@@ -285,7 +280,9 @@ export class FileRecordServiceImpl implements FileRecordService {
   /**
    * Creates a new file record.
    */
-  async createRecord(input: CreateFileRecordInput): Promise<FileRecordWithRelations> {
+  async createRecord(
+    input: CreateFileRecordInput
+  ): Promise<FileRecordWithRelations> {
     // Validate input
     this.validateCreateInput(input);
 
@@ -327,7 +324,10 @@ export class FileRecordServiceImpl implements FileRecordService {
 
       return this.mapToFileRecord(file);
     } catch (error) {
-      throw new TransactionError('createFileRecord', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createFileRecord',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -350,7 +350,9 @@ export class FileRecordServiceImpl implements FileRecordService {
   /**
    * Gets a file record by S3 key.
    */
-  async getRecordByS3Key(s3Key: string): Promise<FileRecordWithRelations | null> {
+  async getRecordByS3Key(
+    s3Key: string
+  ): Promise<FileRecordWithRelations | null> {
     const file = await this.db.file.findFirst({
       where: { s3Key },
       include: this.getIncludeOptions(true, true),
@@ -362,7 +364,9 @@ export class FileRecordServiceImpl implements FileRecordService {
   /**
    * Gets file records attached to a message.
    */
-  async getRecordsByMessage(messageId: string): Promise<FileRecordWithRelations[]> {
+  async getRecordsByMessage(
+    messageId: string
+  ): Promise<FileRecordWithRelations[]> {
     const attachments = await this.db.messageAttachment.findMany({
       where: { messageId },
       include: {
@@ -373,7 +377,9 @@ export class FileRecordServiceImpl implements FileRecordService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return attachments.map((a: typeof attachments[number]) => this.mapToFileRecord(a.file));
+    return attachments.map((a: (typeof attachments)[number]) =>
+      this.mapToFileRecord(a.file)
+    );
   }
 
   /**
@@ -381,7 +387,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async getRecordsByChannel(
     channelId: string,
-    options: FileRecordListOptions = {},
+    options: FileRecordListOptions = {}
   ): Promise<PaginatedFileRecordResult> {
     const {
       status,
@@ -419,7 +425,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     ]);
 
     return {
-      files: files.map((f: typeof files[number]) => this.mapToFileRecord(f)),
+      files: files.map((f: (typeof files)[number]) => this.mapToFileRecord(f)),
       total,
       hasMore: skip + files.length < total,
     };
@@ -430,7 +436,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async getRecordsByWorkspace(
     workspaceId: string,
-    options: FileRecordListOptions = {},
+    options: FileRecordListOptions = {}
   ): Promise<PaginatedFileRecordResult> {
     const {
       status,
@@ -461,7 +467,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     ]);
 
     return {
-      files: files.map((f: typeof files[number]) => this.mapToFileRecord(f)),
+      files: files.map((f: (typeof files)[number]) => this.mapToFileRecord(f)),
       total,
       hasMore: skip + files.length < total,
     };
@@ -472,7 +478,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async getRecordsByUser(
     userId: string,
-    options: FileRecordListOptions = {},
+    options: FileRecordListOptions = {}
   ): Promise<PaginatedFileRecordResult> {
     const {
       status,
@@ -503,7 +509,7 @@ export class FileRecordServiceImpl implements FileRecordService {
     ]);
 
     return {
-      files: files.map((f: typeof files[number]) => this.mapToFileRecord(f)),
+      files: files.map((f: (typeof files)[number]) => this.mapToFileRecord(f)),
       total,
       hasMore: skip + files.length < total,
     };
@@ -518,7 +524,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async updateRecord(
     id: string,
-    data: UpdateFileRecordInput,
+    data: UpdateFileRecordInput
   ): Promise<FileRecordWithRelations> {
     // Check record exists
     const existing = await this.getRecord(id);
@@ -558,7 +564,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async updateStatus(
     id: string,
-    status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED',
+    status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'
   ): Promise<FileRecordWithRelations> {
     // Check record exists
     const existing = await this.getRecord(id);
@@ -602,7 +608,10 @@ export class FileRecordServiceImpl implements FileRecordService {
         });
       });
     } catch (error) {
-      throw new TransactionError('deleteFileRecord', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteFileRecord',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -627,7 +636,10 @@ export class FileRecordServiceImpl implements FileRecordService {
         });
       });
     } catch (error) {
-      throw new TransactionError('deleteFileRecords', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteFileRecords',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -761,7 +773,10 @@ export class FileRecordServiceImpl implements FileRecordService {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new FileRecordValidationError('File record validation failed', errors);
+      throw new FileRecordValidationError(
+        'File record validation failed',
+        errors
+      );
     }
   }
 
@@ -770,7 +785,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   private getIncludeOptions(
     includeWorkspace: boolean,
-    includeUploader: boolean,
+    includeUploader: boolean
   ): Prisma.fileInclude {
     return {
       ...(includeWorkspace && {
@@ -877,7 +892,9 @@ export class FileRecordServiceImpl implements FileRecordService {
  * await fileRecordService.attachToMessage(record.id, 'message789');
  * ```
  */
-export function createFileRecordService(database?: PrismaClient): FileRecordServiceImpl {
+export function createFileRecordService(
+  database?: PrismaClient
+): FileRecordServiceImpl {
   return new FileRecordServiceImpl(database);
 }
 

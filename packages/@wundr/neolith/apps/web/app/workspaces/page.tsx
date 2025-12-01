@@ -57,7 +57,9 @@ export default function WorkspacesPage() {
       setWorkspaces(data.workspaces || []);
     } catch (err) {
       console.error('Error fetching workspaces:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load workspaces');
+      setError(
+        err instanceof Error ? err.message : 'Failed to load workspaces'
+      );
     } finally {
       setIsLoadingWorkspaces(false);
     }
@@ -89,9 +91,12 @@ export default function WorkspacesPage() {
   const handleAcceptInvite = async (inviteId: string) => {
     try {
       setProcessingInvite(inviteId);
-      const response = await fetch(`/api/workspaces/invites/${inviteId}/accept`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/workspaces/invites/${inviteId}/accept`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to accept invite');
@@ -110,9 +115,12 @@ export default function WorkspacesPage() {
   const handleDeclineInvite = async (inviteId: string) => {
     try {
       setProcessingInvite(inviteId);
-      const response = await fetch(`/api/workspaces/invites/${inviteId}/decline`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/workspaces/invites/${inviteId}/decline`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to decline invite');
@@ -150,24 +158,24 @@ export default function WorkspacesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-8">
+    <div className='max-w-5xl mx-auto py-8'>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Workspaces</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold'>Workspaces</h1>
+        <p className='text-muted-foreground mt-2'>
           Access and manage your workspaces or link another account
         </p>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="mb-6 rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-          <p className="font-medium">Error</p>
-          <p className="mt-1">{error}</p>
+        <div className='mb-6 rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
+          <p className='font-medium'>Error</p>
+          <p className='mt-1'>{error}</p>
           <Button
-            variant="outline"
-            size="sm"
-            className="mt-2"
+            variant='outline'
+            size='sm'
+            className='mt-2'
             onClick={() => setError(null)}
           >
             Dismiss
@@ -176,42 +184,42 @@ export default function WorkspacesPage() {
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="workspaces" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="workspaces">Your Workspaces</TabsTrigger>
-          <TabsTrigger value="invites">
+      <Tabs defaultValue='workspaces' className='w-full'>
+        <TabsList className='grid w-full grid-cols-3'>
+          <TabsTrigger value='workspaces'>Your Workspaces</TabsTrigger>
+          <TabsTrigger value='invites'>
             Pending Invites
             {invites.length > 0 && (
-              <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+              <span className='ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground'>
                 {invites.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="link">Link Account</TabsTrigger>
+          <TabsTrigger value='link'>Link Account</TabsTrigger>
         </TabsList>
 
         {/* Your Workspaces Tab */}
-        <TabsContent value="workspaces" className="mt-6">
+        <TabsContent value='workspaces' className='mt-6'>
           {isLoadingWorkspaces ? (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className='grid gap-4 md:grid-cols-2'>
               {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
+                <Card key={i} className='animate-pulse'>
                   <CardHeader>
-                    <div className="h-6 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-1/2 mt-2" />
+                    <div className='h-6 bg-muted rounded w-3/4' />
+                    <div className='h-4 bg-muted rounded w-1/2 mt-2' />
                   </CardHeader>
                   <CardContent>
-                    <div className="h-10 bg-muted rounded" />
+                    <div className='h-10 bg-muted rounded' />
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : workspaces.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {workspaces.map((workspace) => (
+            <div className='grid gap-4 md:grid-cols-2'>
+              {workspaces.map(workspace => (
                 <Card
                   key={workspace.id}
-                  className="hover:border-primary transition-colors cursor-pointer"
+                  className='hover:border-primary transition-colors cursor-pointer'
                   onClick={() => handleWorkspaceClick(workspace.id)}
                 >
                   <CardHeader>
@@ -221,11 +229,12 @@ export default function WorkspacesPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Role: <span className="font-medium">{workspace.role}</span>
+                    <div className='flex items-center justify-between'>
+                      <span className='text-sm text-muted-foreground'>
+                        Role:{' '}
+                        <span className='font-medium'>{workspace.role}</span>
                       </span>
-                      <Button size="sm" variant="outline">
+                      <Button size='sm' variant='outline'>
                         Open
                       </Button>
                     </div>
@@ -235,15 +244,15 @@ export default function WorkspacesPage() {
 
               {/* Create New Workspace Tile */}
               <Card
-                className="hover:border-primary transition-colors cursor-pointer border-dashed"
+                className='hover:border-primary transition-colors cursor-pointer border-dashed'
                 onClick={handleCreateWorkspace}
               >
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="rounded-full bg-primary/10 p-4 mb-4">
-                    <PlusIcon className="h-8 w-8 text-primary" />
+                <CardContent className='flex flex-col items-center justify-center py-12'>
+                  <div className='rounded-full bg-primary/10 p-4 mb-4'>
+                    <PlusIcon className='h-8 w-8 text-primary' />
                   </div>
-                  <p className="text-lg font-medium">Create New Workspace</p>
-                  <p className="text-sm text-muted-foreground text-center mt-1">
+                  <p className='text-lg font-medium'>Create New Workspace</p>
+                  <p className='text-sm text-muted-foreground text-center mt-1'>
                     Set up a new workspace
                   </p>
                 </CardContent>
@@ -251,17 +260,17 @@ export default function WorkspacesPage() {
             </div>
           ) : (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="rounded-full bg-muted p-4 mb-4">
+              <CardContent className='flex flex-col items-center justify-center py-12'>
+                <div className='rounded-full bg-muted p-4 mb-4'>
                   <WorkspaceIcon />
                 </div>
-                <p className="text-lg font-medium mb-2">No workspaces found</p>
-                <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-                  You don&apos;t have access to any workspaces with this account.
-                  Create a new workspace to get started.
+                <p className='text-lg font-medium mb-2'>No workspaces found</p>
+                <p className='text-sm text-muted-foreground text-center max-w-md mb-6'>
+                  You don&apos;t have access to any workspaces with this
+                  account. Create a new workspace to get started.
                 </p>
-                <Button onClick={handleCreateWorkspace} size="lg">
-                  <PlusIcon className="mr-2 h-5 w-5" />
+                <Button onClick={handleCreateWorkspace} size='lg'>
+                  <PlusIcon className='mr-2 h-5 w-5' />
                   Create New Workspace
                 </Button>
               </CardContent>
@@ -270,27 +279,27 @@ export default function WorkspacesPage() {
         </TabsContent>
 
         {/* Pending Invites Tab */}
-        <TabsContent value="invites" className="mt-6">
+        <TabsContent value='invites' className='mt-6'>
           {isLoadingInvites ? (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
+                <Card key={i} className='animate-pulse'>
                   <CardHeader>
-                    <div className="h-6 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-1/2 mt-2" />
+                    <div className='h-6 bg-muted rounded w-3/4' />
+                    <div className='h-4 bg-muted rounded w-1/2 mt-2' />
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-2">
-                      <div className="h-10 bg-muted rounded flex-1" />
-                      <div className="h-10 bg-muted rounded flex-1" />
+                    <div className='flex gap-2'>
+                      <div className='h-10 bg-muted rounded flex-1' />
+                      <div className='h-10 bg-muted rounded flex-1' />
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : invites.length > 0 ? (
-            <div className="space-y-4">
-              {invites.map((invite) => (
+            <div className='space-y-4'>
+              {invites.map(invite => (
                 <Card key={invite.id}>
                   <CardHeader>
                     <CardTitle>{invite.workspaceName}</CardTitle>
@@ -300,21 +309,25 @@ export default function WorkspacesPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-2">
+                    <div className='flex gap-2'>
                       <Button
-                        className="flex-1"
+                        className='flex-1'
                         onClick={() => handleAcceptInvite(invite.id)}
                         disabled={processingInvite === invite.id}
                       >
-                        {processingInvite === invite.id ? 'Accepting...' : 'Accept'}
+                        {processingInvite === invite.id
+                          ? 'Accepting...'
+                          : 'Accept'}
                       </Button>
                       <Button
-                        variant="outline"
-                        className="flex-1"
+                        variant='outline'
+                        className='flex-1'
                         onClick={() => handleDeclineInvite(invite.id)}
                         disabled={processingInvite === invite.id}
                       >
-                        {processingInvite === invite.id ? 'Declining...' : 'Decline'}
+                        {processingInvite === invite.id
+                          ? 'Declining...'
+                          : 'Decline'}
                       </Button>
                     </div>
                   </CardContent>
@@ -323,13 +336,14 @@ export default function WorkspacesPage() {
             </div>
           ) : (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="rounded-full bg-muted p-4 mb-4">
+              <CardContent className='flex flex-col items-center justify-center py-12'>
+                <div className='rounded-full bg-muted p-4 mb-4'>
                   <InboxIcon />
                 </div>
-                <p className="text-lg font-medium mb-2">No pending invites</p>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  You don&apos;t have any pending workspace invitations at the moment.
+                <p className='text-lg font-medium mb-2'>No pending invites</p>
+                <p className='text-sm text-muted-foreground text-center max-w-md'>
+                  You don&apos;t have any pending workspace invitations at the
+                  moment.
                 </p>
               </CardContent>
             </Card>
@@ -337,43 +351,43 @@ export default function WorkspacesPage() {
         </TabsContent>
 
         {/* Link Account Tab */}
-        <TabsContent value="link" className="mt-6">
+        <TabsContent value='link' className='mt-6'>
           <Card>
             <CardHeader>
               <CardTitle>Link Another Account</CardTitle>
               <CardDescription>
-                Sign in with another email account to access workspaces associated
-                with that account
+                Sign in with another email account to access workspaces
+                associated with that account
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
+            <CardContent className='space-y-4'>
+              <div className='space-y-3'>
                 <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
+                  variant='outline'
+                  size='lg'
+                  className='w-full'
                   onClick={() => handleLinkAccount('google')}
                   disabled={linkingAccount}
                 >
-                  <GoogleIcon className="mr-2 h-5 w-5" />
+                  <GoogleIcon className='mr-2 h-5 w-5' />
                   {linkingAccount ? 'Connecting...' : 'Link Google Account'}
                 </Button>
 
                 <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
+                  variant='outline'
+                  size='lg'
+                  className='w-full'
                   onClick={() => handleLinkAccount('github')}
                   disabled={linkingAccount}
                 >
-                  <GitHubIcon className="mr-2 h-5 w-5" />
+                  <GitHubIcon className='mr-2 h-5 w-5' />
                   {linkingAccount ? 'Connecting...' : 'Link GitHub Account'}
                 </Button>
               </div>
 
-              <div className="rounded-md bg-muted p-4 text-sm">
-                <p className="font-medium mb-2">How it works</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <div className='rounded-md bg-muted p-4 text-sm'>
+                <p className='font-medium mb-2'>How it works</p>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>Sign in with another email account</li>
                   <li>Your accounts will be linked automatically</li>
                   <li>
@@ -393,19 +407,19 @@ export default function WorkspacesPage() {
 function PlusIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
+      <path d='M5 12h14' />
+      <path d='M12 5v14' />
     </svg>
   );
 }
@@ -413,21 +427,21 @@ function PlusIcon({ className }: { className?: string }) {
 function WorkspaceIcon() {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-muted-foreground"
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className='text-muted-foreground'
     >
-      <rect width="7" height="9" x="3" y="3" rx="1" />
-      <rect width="7" height="5" x="14" y="3" rx="1" />
-      <rect width="7" height="9" x="14" y="12" rx="1" />
-      <rect width="7" height="5" x="3" y="16" rx="1" />
+      <rect width='7' height='9' x='3' y='3' rx='1' />
+      <rect width='7' height='5' x='14' y='3' rx='1' />
+      <rect width='7' height='9' x='14' y='12' rx='1' />
+      <rect width='7' height='5' x='3' y='16' rx='1' />
     </svg>
   );
 }
@@ -435,19 +449,19 @@ function WorkspaceIcon() {
 function InboxIcon() {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-muted-foreground"
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className='text-muted-foreground'
     >
-      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+      <polyline points='22 12 16 12 14 15 10 15 8 12 2 12' />
+      <path d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z' />
     </svg>
   );
 }

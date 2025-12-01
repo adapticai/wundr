@@ -1,6 +1,7 @@
 # Git-Worktree Guide: Parallel Development with Claude Flow
 
-Learn how to leverage Git worktrees with Claude Flow for ultra-efficient parallel development workflows.
+Learn how to leverage Git worktrees with Claude Flow for ultra-efficient parallel development
+workflows.
 
 ## Table of Contents
 
@@ -16,9 +17,11 @@ Learn how to leverage Git worktrees with Claude Flow for ultra-efficient paralle
 
 ## What are Git Worktrees?
 
-Git worktrees allow you to have multiple working directories from a single repository, each on a different branch. This enables true parallel development without branch switching.
+Git worktrees allow you to have multiple working directories from a single repository, each on a
+different branch. This enables true parallel development without branch switching.
 
 ### Traditional Git Flow
+
 ```bash
 # Switch branches (slow, loses context)
 git checkout feature-a    # Work on feature A
@@ -27,6 +30,7 @@ git checkout main         # Back to main
 ```
 
 ### Worktree Flow
+
 ```bash
 # All branches available simultaneously
 cd ~/project/main         # Main branch
@@ -37,6 +41,7 @@ cd ~/project/feature-b    # Feature B branch
 ## Why Use Worktrees with Claude Flow?
 
 ### 1. True Parallel Agent Execution
+
 ```bash
 # Each agent gets its own workspace
 /project/
@@ -58,6 +63,7 @@ cd ~/project/feature-b    # Feature B branch
 ### 3. Memory Isolation
 
 Each worktree has independent:
+
 - Memory context
 - Session state
 - Metrics tracking
@@ -133,6 +139,7 @@ npx claude-flow@alpha worktree setup-feature "user-management"
 ```
 
 This creates:
+
 ```
 project/
 ├── main/                           # Your main workspace
@@ -186,6 +193,7 @@ npx claude-flow@alpha worktree review \
 ```
 
 Each reviewer gets isolated workspace:
+
 ```
 .worktrees/
 ├── review-security/    # Security review
@@ -223,6 +231,7 @@ Each reviewer gets isolated workspace:
 ```
 
 Run hierarchical coordination:
+
 ```bash
 npx claude-flow@alpha swarm start \
   --topology hierarchical \
@@ -270,6 +279,7 @@ npx claude-flow@alpha worktree multi-repo \
 ```
 
 Creates:
+
 ```
 projects/
 ├── frontend/
@@ -291,21 +301,21 @@ Claude Flow automatically assigns agents to worktrees based on file types and ta
 module.exports = {
   rules: [
     {
-      pattern: "**/*.{ts,js}",
-      agents: ["coder", "reviewer"],
-      worktree: "backend"
+      pattern: '**/*.{ts,js}',
+      agents: ['coder', 'reviewer'],
+      worktree: 'backend',
     },
     {
-      pattern: "**/*.test.{ts,js}",
-      agents: ["tester"],
-      worktree: "testing"
+      pattern: '**/*.test.{ts,js}',
+      agents: ['tester'],
+      worktree: 'testing',
     },
     {
-      pattern: "**/docs/**/*.md",
-      agents: ["api-docs"],
-      worktree: "docs"
-    }
-  ]
+      pattern: '**/docs/**/*.md',
+      agents: ['api-docs'],
+      worktree: 'docs',
+    },
+  ],
 };
 ```
 
@@ -333,11 +343,7 @@ Define when worktrees sync:
 ```json
 {
   "sync": {
-    "events": [
-      "pre-commit",
-      "post-test",
-      "agent-complete"
-    ],
+    "events": ["pre-commit", "post-test", "agent-complete"],
     "strategy": "rebase",
     "conflictResolution": "coordinator-decides"
   }
@@ -557,11 +563,7 @@ npx claude-flow@alpha worktree remove feature/auth-backend
       "imports": true,
       "formatting": true
     },
-    "manualReview": [
-      "business-logic",
-      "security",
-      "performance-critical"
-    ]
+    "manualReview": ["business-logic", "security", "performance-critical"]
   }
 }
 ```
@@ -697,7 +699,7 @@ module.exports = {
     // Log merge
     await memory.store(`merge/${from}-to-${to}`, {
       timestamp: Date.now(),
-      conflicts: conflicts.length
+      conflicts: conflicts.length,
     });
   },
 
@@ -709,7 +711,7 @@ module.exports = {
 
     // Clear memory
     await memory.clearScope(`worktree/${worktree}`);
-  }
+  },
 };
 ```
 
@@ -745,6 +747,7 @@ Git worktrees with Claude Flow enable:
 - ✅ **Rapid Development**: Simultaneous feature work
 
 **Next Steps**:
+
 - [Agent Configuration Guide](./AGENT_CONFIGURATION.md)
 - [Hook Development Guide](./HOOK_DEVELOPMENT.md)
 - [Template Customization](./TEMPLATE_CUSTOMIZATION.md)

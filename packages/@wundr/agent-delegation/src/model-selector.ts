@@ -293,7 +293,7 @@ export class ModelSelector {
    */
   async selectModel(
     task: DelegationTask,
-    criteria: ModelSelectionCriteriaInput = {},
+    criteria: ModelSelectionCriteriaInput = {}
   ): Promise<ModelSelectionResult> {
     // Check cache
     const cacheKey = this.getCacheKey(task, criteria);
@@ -321,7 +321,7 @@ export class ModelSelector {
       throw new DelegationError(
         DelegationErrorCode.MODEL_SELECTION_FAILED,
         'No suitable model found for the given criteria',
-        { criteria: fullCriteria },
+        { criteria: fullCriteria }
       );
     }
 
@@ -355,7 +355,7 @@ export class ModelSelector {
    */
   async selectModelByTier(
     tier: ModelTier,
-    criteria: ModelSelectionCriteriaInput = {},
+    criteria: ModelSelectionCriteriaInput = {}
   ): Promise<ModelSelectionResult> {
     const tieredCriteria = {
       ...criteria,
@@ -385,7 +385,7 @@ export class ModelSelector {
     if (!model) {
       throw new DelegationError(
         DelegationErrorCode.MODEL_SELECTION_FAILED,
-        `Default model not found: ${this.options.defaultModelId}`,
+        `Default model not found: ${this.options.defaultModelId}`
       );
     }
     return model;
@@ -449,7 +449,7 @@ export class ModelSelector {
       // Check required capabilities
       if (criteria.requiredCapabilities.length > 0) {
         const hasCapabilities = criteria.requiredCapabilities.every(cap =>
-          model.capabilities.includes(cap),
+          model.capabilities.includes(cap)
         );
         if (!hasCapabilities) {
           return false;
@@ -465,7 +465,7 @@ export class ModelSelector {
    */
   private scoreModel(
     model: ModelConfig,
-    criteria: ModelSelectionCriteria,
+    criteria: ModelSelectionCriteria
   ): number {
     let capabilityScore = 0;
     let costScore = 0;
@@ -475,7 +475,7 @@ export class ModelSelector {
     // Capability score (0-1)
     if (criteria.requiredCapabilities.length > 0) {
       const matchCount = criteria.requiredCapabilities.filter(cap =>
-        model.capabilities.includes(cap),
+        model.capabilities.includes(cap)
       ).length;
       capabilityScore = matchCount / criteria.requiredCapabilities.length;
     } else {
@@ -556,7 +556,7 @@ export class ModelSelector {
    * Infers task complexity from the task
    */
   private inferComplexity(
-    task: DelegationTask,
+    task: DelegationTask
   ): 'simple' | 'moderate' | 'complex' | 'expert' {
     const description = task.description.toLowerCase();
     const capabilities = task.requiredCapabilities ?? [];
@@ -597,23 +597,23 @@ export class ModelSelector {
    */
   private generateReasoning(
     model: ModelConfig,
-    criteria: ModelSelectionCriteria,
+    criteria: ModelSelectionCriteria
   ): string[] {
     const reasons: string[] = [];
 
     // Capability match
     if (criteria.requiredCapabilities.length > 0) {
       const matches = criteria.requiredCapabilities.filter(cap =>
-        model.capabilities.includes(cap),
+        model.capabilities.includes(cap)
       );
       reasons.push(
-        `Matches ${matches.length}/${criteria.requiredCapabilities.length} required capabilities`,
+        `Matches ${matches.length}/${criteria.requiredCapabilities.length} required capabilities`
       );
     }
 
     // Tier match
     reasons.push(
-      `Model tier (${model.tier}) appropriate for ${criteria.taskComplexity} complexity`,
+      `Model tier (${model.tier}) appropriate for ${criteria.taskComplexity} complexity`
     );
 
     // Cost
@@ -638,7 +638,7 @@ export class ModelSelector {
    */
   private getCacheKey(
     task: DelegationTask,
-    criteria: ModelSelectionCriteriaInput,
+    criteria: ModelSelectionCriteriaInput
   ): string {
     const parts = [
       task.requiredCapabilities?.join(',') ?? '',

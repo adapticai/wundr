@@ -57,42 +57,51 @@ export class ProfilePersonalizer {
    * Main orchestration method to personalize the entire profile
    */
   async personalize(): Promise<void> {
-    logger.debug('Starting profile personalization', { config: this.config.fullName });
+    logger.debug('Starting profile personalization', {
+      config: this.config.fullName,
+    });
     this.spinner.start(chalk.blue('🎨 Starting profile personalization...'));
 
     try {
       // Generate random profile data if not provided
       this.generateRandomProfileData();
-      
+
       // Create necessary directories
       await this.createDirectories();
-      
+
       // Generate profile photo if OpenAI API key is available
       let profilePhotos: ProfilePhoto | undefined;
       if (this.config.openaiApiKey) {
         profilePhotos = await this.generateProfilePhoto();
       } else {
-        this.spinner.warn(chalk.yellow('⚠️  OpenAI API key not provided, skipping profile photo generation'));
+        this.spinner.warn(
+          chalk.yellow(
+            '⚠️  OpenAI API key not provided, skipping profile photo generation'
+          )
+        );
       }
-      
+
       // Update external services
       await Promise.allSettled([
         this.updateSlackProfile(profilePhotos),
         this.updateGmailProfile(),
       ]);
-      
+
       // Personalize Mac if on macOS
       if (process.platform === 'darwin') {
         await this.personalizeMac(profilePhotos);
       }
-      
+
       // Create welcome script
       await this.createWelcomeScript();
-      
-      this.spinner.succeed(chalk.green('✅ Profile personalization completed successfully!'));
-      
+
+      this.spinner.succeed(
+        chalk.green('✅ Profile personalization completed successfully!')
+      );
     } catch (error) {
-      this.spinner.fail(chalk.red(`❌ Profile personalization failed: ${error}`));
+      this.spinner.fail(
+        chalk.red(`❌ Profile personalization failed: ${error}`)
+      );
       throw error;
     }
   }
@@ -104,13 +113,24 @@ export class ProfilePersonalizer {
     if (!this.config.age) {
       this.config.age = 22 + Math.floor(Math.random() * 34);
     }
-    
+
     if (!this.config.location) {
-      const locations = ['San Francisco', 'New York', 'London', 'Sydney', 'Singapore'];
-      this.config.location = locations[Math.floor(Math.random() * locations.length)];
+      const locations = [
+        'San Francisco',
+        'New York',
+        'London',
+        'Sydney',
+        'Singapore',
+      ];
+      this.config.location =
+        locations[Math.floor(Math.random() * locations.length)];
     }
-    
-    this.spinner.info(chalk.cyan(`📊 Generated profile: Age ${this.config.age}, Location: ${this.config.location}`));
+
+    this.spinner.info(
+      chalk.cyan(
+        `📊 Generated profile: Age ${this.config.age}, Location: ${this.config.location}`
+      )
+    );
   }
 
   /**
@@ -126,7 +146,7 @@ export class ProfilePersonalizer {
    */
   private async generateProfilePhoto(): Promise<ProfilePhoto> {
     this.spinner.start(chalk.blue('🎨 Generating AI profile photo...'));
-    
+
     try {
       const { default: OpenAI } = await import('openai');
       const client = new OpenAI({
@@ -146,15 +166,19 @@ export class ProfilePersonalizer {
       });
 
       const imageUrl = response.data[0].url;
-      
+
       // Download and process image
       let fetchFn: (url: string) => Promise<FetchResponse>;
       let sharpFn: (input: Buffer) => Sharp;
 
       try {
-        fetchFn = (await import('node-fetch')).default as unknown as (url: string) => Promise<FetchResponse>;
+        fetchFn = (await import('node-fetch')).default as unknown as (
+          url: string
+        ) => Promise<FetchResponse>;
       } catch {
-        throw new Error('node-fetch not available - required for profile photo generation');
+        throw new Error(
+          'node-fetch not available - required for profile photo generation'
+        );
       }
 
       try {
@@ -165,32 +189,35 @@ export class ProfilePersonalizer {
 
       const imageResponse = await fetchFn(imageUrl);
       const imageBuffer = await imageResponse.buffer();
-      
+
       // Save in multiple sizes
       const originalPath = join(this.profilePhotosDir, 'profile_original.png');
       const slackPath = join(this.profilePhotosDir, 'profile_slack.png');
       const gmailPath = join(this.profilePhotosDir, 'profile_gmail.png');
       const avatarPath = join(this.profilePhotosDir, 'profile_avatar.png');
-      
+
       // Original size
       await fs.writeFile(originalPath, imageBuffer);
-      
+
       // Resize for different platforms
       await sharpFn(imageBuffer).resize(512, 512).png().toFile(slackPath);
       await sharpFn(imageBuffer).resize(250, 250).png().toFile(gmailPath);
       await sharpFn(imageBuffer).resize(128, 128).png().toFile(avatarPath);
-      
-      this.spinner.succeed(chalk.green('📸 Profile photos generated successfully'));
-      
+
+      this.spinner.succeed(
+        chalk.green('📸 Profile photos generated successfully')
+      );
+
       return {
         originalPath,
         slackPath,
         gmailPath,
         avatarPath,
       };
-      
     } catch (error) {
-      this.spinner.fail(chalk.red(`❌ Failed to generate profile photo: ${error}`));
+      this.spinner.fail(
+        chalk.red(`❌ Failed to generate profile photo: ${error}`)
+      );
       throw error;
     }
   }
@@ -198,15 +225,21 @@ export class ProfilePersonalizer {
   /**
    * Update Slack profile with photo and details
    */
-  private async updateSlackProfile(profilePhotos?: ProfilePhoto): Promise<void> {
+  private async updateSlackProfile(
+    profilePhotos?: ProfilePhoto
+  ): Promise<void> {
     if (!this.config.slackUserToken) {
-      this.spinner.warn(chalk.yellow('⚠️  Slack user token not provided, skipping Slack profile update'));
+      this.spinner.warn(
+        chalk.yellow(
+          '⚠️  Slack user token not provided, skipping Slack profile update'
+        )
+      );
       return;
     }
 
     try {
       this.spinner.start(chalk.blue('💬 Updating Slack profile...'));
-      
+
       const slackIntegration = new SlackIntegration(this.config.slackUserToken);
       await slackIntegration.updateProfile({
         realName: this.config.fullName,
@@ -216,11 +249,14 @@ export class ProfilePersonalizer {
         company: this.config.company,
         photoPath: profilePhotos?.slackPath,
       });
-      
-      this.spinner.succeed(chalk.green('💬 Slack profile updated successfully'));
-      
+
+      this.spinner.succeed(
+        chalk.green('💬 Slack profile updated successfully')
+      );
     } catch (error) {
-      this.spinner.warn(chalk.yellow(`⚠️  Failed to update Slack profile: ${error}`));
+      this.spinner.warn(
+        chalk.yellow(`⚠️  Failed to update Slack profile: ${error}`)
+      );
     }
   }
 
@@ -230,7 +266,7 @@ export class ProfilePersonalizer {
   private async updateGmailProfile(): Promise<void> {
     try {
       this.spinner.start(chalk.blue('📧 Updating Gmail profile...'));
-      
+
       const { GmailIntegrationService } = await import('./gmail-integration');
       const gmailIntegration = new GmailIntegrationService();
       await gmailIntegration.updateProfile({
@@ -239,11 +275,14 @@ export class ProfilePersonalizer {
         jobTitle: this.config.jobTitle || '',
         email: this.config.githubEmail,
       });
-      
-      this.spinner.succeed(chalk.green('📧 Gmail profile updated successfully'));
-      
+
+      this.spinner.succeed(
+        chalk.green('📧 Gmail profile updated successfully')
+      );
     } catch (error) {
-      this.spinner.warn(chalk.yellow(`⚠️  Gmail profile update failed: ${error}`));
+      this.spinner.warn(
+        chalk.yellow(`⚠️  Gmail profile update failed: ${error}`)
+      );
     }
   }
 
@@ -252,41 +291,46 @@ export class ProfilePersonalizer {
    */
   private async personalizeMac(profilePhotos?: ProfilePhoto): Promise<void> {
     if (process.platform !== 'darwin') {
-      this.spinner.info(chalk.cyan('ℹ️  Skipping Mac personalization (not on macOS)'));
+      this.spinner.info(
+        chalk.cyan('ℹ️  Skipping Mac personalization (not on macOS)')
+      );
       return;
     }
 
     try {
       this.spinner.start(chalk.blue('🍎 Personalizing Mac settings...'));
-      
+
       const macPersonalizer = new MacPersonalizer(this.config);
-      
+
       // Set computer name
       await macPersonalizer.setComputerName();
-      
+
       // Set user profile picture
       if (profilePhotos?.avatarPath) {
         await macPersonalizer.setUserPicture(profilePhotos.avatarPath);
       }
-      
+
       // Create personalized wallpaper
       const wallpaperGenerator = new WallpaperGenerator(this.config);
-      const wallpaperPath = await wallpaperGenerator.createWallpaper(this.wallpaperDir);
+      const wallpaperPath = await wallpaperGenerator.createWallpaper(
+        this.wallpaperDir
+      );
       await macPersonalizer.setDesktopWallpaper(wallpaperPath);
-      
+
       // Configure Dock
       await macPersonalizer.configureDock();
-      
+
       // Set up hot corners
       await macPersonalizer.setupHotCorners();
-      
+
       // Setup terminal profile
       await macPersonalizer.setupTerminalProfile();
-      
+
       this.spinner.succeed(chalk.green('🍎 Mac personalization completed'));
-      
     } catch (error) {
-      this.spinner.warn(chalk.yellow(`⚠️  Mac personalization failed: ${error}`));
+      this.spinner.warn(
+        chalk.yellow(`⚠️  Mac personalization failed: ${error}`)
+      );
     }
   }
 
@@ -296,7 +340,7 @@ export class ProfilePersonalizer {
   private async createWelcomeScript(): Promise<void> {
     try {
       this.spinner.start(chalk.blue('👋 Creating welcome script...'));
-      
+
       const welcomeScript = `#!/bin/bash
 echo ""
 echo "👋 Welcome back, ${this.config.fullName}!"
@@ -310,16 +354,16 @@ echo "  💻 code .              - Open VS Code in current directory"
 echo "  🐳 docker ps           - Check running containers"
 echo ""
 `;
-      
+
       const welcomePath = join(homedir(), '.welcome');
       await fs.writeFile(welcomePath, welcomeScript, { mode: 0o755 });
-      
+
       // Add to shell profiles
       const profiles = [
         join(homedir(), '.zshrc'),
         join(homedir(), '.bash_profile'),
       ];
-      
+
       for (const profile of profiles) {
         try {
           await fs.access(profile);
@@ -331,11 +375,12 @@ echo ""
           // Profile doesn't exist, skip
         }
       }
-      
+
       this.spinner.succeed(chalk.green('👋 Welcome script created'));
-      
     } catch (error) {
-      this.spinner.warn(chalk.yellow(`⚠️  Failed to create welcome script: ${error}`));
+      this.spinner.warn(
+        chalk.yellow(`⚠️  Failed to create welcome script: ${error}`)
+      );
     }
   }
 

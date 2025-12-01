@@ -14,6 +14,7 @@ Get up and running with enhanced Claude Code and Claude Flow integration in just
 ## Day 1: Essential Setup (30 minutes)
 
 ### 1. Clone and Setup (5 minutes)
+
 ```bash
 # Clone the repository
 git clone <your-repo-url>
@@ -27,6 +28,7 @@ npm install
 ```
 
 ### 2. Install Analysis Tools (10 minutes)
+
 ```bash
 # Create scripts directory
 mkdir -p scripts
@@ -46,6 +48,7 @@ npm install --save-dev \
 ```
 
 ### 3. Run First Analysis (10 minutes)
+
 ```bash
 # Create analysis script
 chmod +x scripts/analyze-all.sh
@@ -58,7 +61,9 @@ open analysis-output/*/dashboard.html
 ```
 
 ### 4. Review Results (5 minutes)
+
 Look for:
+
 - **Red numbers**: Critical duplicates
 - **Yellow numbers**: High priority issues
 - **File list**: Biggest problem areas
@@ -66,6 +71,7 @@ Look for:
 ## Day 2-5: First Consolidation Sprint
 
 ### Day 2: Pick Low-Hanging Fruit
+
 ```bash
 # Find easiest wins
 cat analysis-output/latest/consolidation-batches.json | \
@@ -76,6 +82,7 @@ npx ts-node scripts/consolidation-manager.ts process batch-001.json
 ```
 
 ### Day 3: Use AI Assistance
+
 ```bash
 # Generate prompts for complex merges
 npx ts-node scripts/ai-merge-helper.ts generate batch-002.json
@@ -87,6 +94,7 @@ cat ai-prompts/*/merge-interface-1.md
 ```
 
 ### Day 4: Standardize Patterns
+
 ```bash
 # Auto-fix common issues
 npx ts-node scripts/pattern-standardizer.ts run
@@ -96,6 +104,7 @@ npx ts-node scripts/pattern-standardizer.ts review
 ```
 
 ### Day 5: Measure Progress
+
 ```bash
 # Re-run analysis
 ./scripts/analyze-all.sh .
@@ -110,6 +119,7 @@ npx ts-node scripts/governance-system.ts weekly-report
 ## Week 2: Scale Up
 
 ### Establish Routine
+
 ```yaml
 Monday:
   - Run fresh analysis
@@ -128,6 +138,7 @@ Friday:
 ```
 
 ### Key Commands Cheatsheet
+
 ```bash
 # Analysis
 ./scripts/analyze-all.sh                    # Full analysis
@@ -154,6 +165,7 @@ npm run type-check                                           # Type checking
 ## Common Scenarios
 
 ### "I have 3 similar interfaces"
+
 ```bash
 # 1. Check similarity report
 grep -A5 "YourInterface" analysis-output/latest/similarities.csv
@@ -170,6 +182,7 @@ npx ts-node scripts/consolidation-manager.ts process temp-batch.json
 ```
 
 ### "Build is failing after refactor"
+
 ```bash
 # 1. Check TypeScript errors
 npx tsc --noEmit
@@ -185,6 +198,7 @@ npm run clean && npm run build
 ```
 
 ### "Tests are failing"
+
 ```bash
 # 1. Run specific test
 npm test -- path/to/test.spec.ts
@@ -200,6 +214,7 @@ npm test -- --coverage
 ## Monorepo Migration (When Ready)
 
 ### Initial Setup
+
 ```bash
 # 1. Create monorepo structure
 npx ts-node scripts/monorepo-setup.ts init
@@ -215,6 +230,7 @@ npx ts-node scripts/monorepo-setup.ts plan analysis-output/latest/analysis-repor
 ```
 
 ### Migration Steps
+
 ```bash
 # 1. Move types
 mv src/types/* packages/core-types/src/
@@ -232,6 +248,7 @@ pnpm test
 ## Getting Help
 
 ### Quick Diagnostics
+
 ```bash
 # Check environment
 node --version  # Should be 18+
@@ -248,21 +265,25 @@ npx ts-node scripts/enhanced-ast-analyzer.ts --help
 ### Common Issues
 
 **"Cannot find module ts-morph"**
+
 ```bash
 npm install --save-dev ts-morph
 ```
 
 **"Out of memory"**
+
 ```bash
 NODE_OPTIONS="--max-old-space-size=8192" npx ts-node scripts/enhanced-ast-analyzer.ts
 ```
 
 **"Permission denied"**
+
 ```bash
 chmod +x scripts/*.sh
 ```
 
 ### Resources
+
 - Full guide: See complete documentation
 - Golden standards: `GOLDEN_STANDARDS.md`
 - Troubleshooting: `TROUBLESHOOTING.md`
@@ -272,12 +293,12 @@ chmod +x scripts/*.sh
 
 Track your progress:
 
-| Metric | Start | Week 1 | Week 2 | Target |
-|--------|-------|--------|--------|--------|
-| Duplicates | ??? | -20% | -40% | -90% |
-| Unused exports | ??? | -50% | -75% | -100% |
-| Build time | ??? | -10% | -20% | -50% |
-| Test coverage | ??? | +5% | +10% | +20% |
+| Metric         | Start | Week 1 | Week 2 | Target |
+| -------------- | ----- | ------ | ------ | ------ |
+| Duplicates     | ???   | -20%   | -40%   | -90%   |
+| Unused exports | ???   | -50%   | -75%   | -100%  |
+| Build time     | ???   | -10%   | -20%   | -50%   |
+| Test coverage  | ???   | +5%    | +10%   | +20%   |
 
 ## Next Steps
 

@@ -47,7 +47,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (Orchestrator service account)
@@ -56,9 +56,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -71,9 +71,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -85,9 +85,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -98,9 +98,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -116,9 +116,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -144,9 +144,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -155,9 +155,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Unauthorized: You can only escalate tasks as your own Orchestrator',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -181,9 +181,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Task not found or not assigned to this Orchestrator',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.TASK_NOT_ASSIGNED,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.TASK_NOT_ASSIGNED
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -208,13 +208,13 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'One or more target users not found or do not have workspace access',
-            ORCHESTRATOR_CONVERSATION_ERROR_CODES.USER_NOT_FOUND,
+            ORCHESTRATOR_CONVERSATION_ERROR_CODES.USER_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
-      targetUserIds = targetUsers.map((u) => u.id);
+      targetUserIds = targetUsers.map(u => u.id);
     } else {
       // Default to workspace admins/owners
       const workspaceAdmins = await prisma.workspaceMember.findMany({
@@ -231,13 +231,13 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'No workspace admins found to escalate to',
-            ORCHESTRATOR_CONVERSATION_ERROR_CODES.USER_NOT_FOUND,
+            ORCHESTRATOR_CONVERSATION_ERROR_CODES.USER_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
-      targetUserIds = workspaceAdmins.map((admin) => admin.userId);
+      targetUserIds = workspaceAdmins.map(admin => admin.userId);
     }
 
     // Update task status to BLOCKED
@@ -260,14 +260,17 @@ export async function POST(
 
     // Create notifications for target users
     const notifications = await Promise.all(
-      targetUserIds.map((userId) =>
+      targetUserIds.map(userId =>
         prisma.notification.create({
           data: {
             userId,
             type: 'SYSTEM' as const,
             title: `Task Escalation: ${task.title}`,
             body: input.reason,
-            priority: input.severity === 'critical' ? ('URGENT' as const) : ('HIGH' as const),
+            priority:
+              input.severity === 'critical'
+                ? ('URGENT' as const)
+                : ('HIGH' as const),
             resourceId: task.id,
             resourceType: 'task',
             metadata: {
@@ -278,8 +281,8 @@ export async function POST(
               context: input.context,
             } as unknown as Prisma.InputJsonValue,
           },
-        }),
-      ),
+        })
+      )
     );
 
     // If channel ID provided, post escalation message to channel
@@ -313,7 +316,7 @@ export async function POST(
       {
         data: {
           task: updatedTask,
-          notifications: notifications.map((n) => ({
+          notifications: notifications.map(n => ({
             id: n.id,
             userId: n.userId,
             title: n.title,
@@ -323,16 +326,19 @@ export async function POST(
         },
         message: `Task escalated successfully to ${targetUserIds.length} user(s)`,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/escalate] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/escalate] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

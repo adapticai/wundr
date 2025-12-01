@@ -55,7 +55,8 @@ export async function GET(): Promise<NextResponse<HealthStatus>> {
   };
 
   // Return appropriate status code
-  const statusCode = status === 'healthy' ? 200 : status === 'degraded' ? 200 : 503;
+  const statusCode =
+    status === 'healthy' ? 200 : status === 'degraded' ? 200 : 503;
 
   return NextResponse.json(healthResponse, { status: statusCode });
 }

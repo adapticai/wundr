@@ -46,7 +46,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -55,9 +55,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -68,9 +68,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Invalid job ID format',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -80,9 +80,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Processing job not found',
-          PROCESSING_ERROR_CODES.NOT_FOUND,
+          PROCESSING_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -100,9 +100,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Not a member of this workspace',
-          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -111,9 +111,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           `Cannot retry a job with status '${originalJob.status}'. Only failed or cancelled jobs can be retried.`,
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -127,9 +127,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'The original file no longer exists',
-          PROCESSING_ERROR_CODES.FILE_NOT_FOUND,
+          PROCESSING_ERROR_CODES.FILE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -196,16 +196,16 @@ export async function POST(
         },
         message: 'Processing job retried successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/processing/:jobId/retry] Error:', error);
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

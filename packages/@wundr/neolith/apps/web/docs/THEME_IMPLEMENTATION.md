@@ -2,16 +2,20 @@
 
 ## Overview
 
-The theme toggle system provides users with the ability to switch between Light, Dark, and System themes. The implementation uses `next-themes` for theme management with localStorage persistence, and is fully integrated into the Neolith application.
+The theme toggle system provides users with the ability to switch between Light, Dark, and System
+themes. The implementation uses `next-themes` for theme management with localStorage persistence,
+and is fully integrated into the Neolith application.
 
 ## Architecture
 
 ### Components
 
 #### 1. `ThemeToggle` (Dropdown Variant)
+
 The main theme toggle component with a dropdown menu interface.
 
 **Features:**
+
 - Three theme options: Light, Dark, System
 - Dropdown interface with descriptions
 - Smooth theme transitions
@@ -21,27 +25,31 @@ The main theme toggle component with a dropdown menu interface.
 - Full accessibility (WCAG compliant)
 
 **Usage:**
+
 ```tsx
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export function Header() {
   return (
     <header>
-      <ThemeToggle variant="dropdown" showLabel={true} />
+      <ThemeToggle variant='dropdown' showLabel={true} />
     </header>
   );
 }
 ```
 
 **Props:**
+
 - `variant?: 'dropdown' | 'compact'` - UI variant (default: 'dropdown')
 - `showLabel?: boolean` - Show current theme label (default: false)
 - `className?: string` - Additional CSS classes
 
 #### 2. `ThemeToggleButton` (Compact Variant)
+
 A compact button that cycles through themes on each click.
 
 **Usage:**
+
 ```tsx
 import { ThemeToggleButton } from '@/components/layout/theme-toggle';
 
@@ -51,14 +59,17 @@ export function Header() {
 ```
 
 **Behavior:**
+
 - Clicking cycles through: Light → Dark → System → Light
 - Shows current theme icon
 - Minimal UI footprint
 
 #### 3. `ThemeToggleLarge` (Settings Variant)
+
 A large radio button interface for the settings page.
 
 **Usage:**
+
 ```tsx
 import { ThemeToggleLarge } from '@/components/layout/theme-toggle';
 
@@ -73,6 +84,7 @@ export function ThemeSettings() {
 ```
 
 **Features:**
+
 - Radio button interface
 - Detailed descriptions for each theme
 - Visual selection indicator
@@ -81,24 +93,27 @@ export function ThemeSettings() {
 ## Integration Points
 
 ### 1. App Header (`components/layout/app-header.tsx`)
-The theme toggle is integrated as a compact button in the main application header, positioned between the notifications button and user menu.
+
+The theme toggle is integrated as a compact button in the main application header, positioned
+between the notifications button and user menu.
 
 ```tsx
-<div className="flex items-center gap-4">
+<div className='flex items-center gap-4'>
   {/* Search Button */}
   {/* Notifications Button */}
-  <ThemeToggle variant="compact" />
+  <ThemeToggle variant='compact' />
   {/* User Menu */}
 </div>
 ```
 
 ### 2. Profile Settings (`app/(workspace)/[workspaceId]/settings/profile/page.tsx`)
+
 The large theme toggle is integrated in the Appearance section of profile settings.
 
 ```tsx
-<div className="rounded-lg border bg-card p-6">
-  <h2 className="text-lg font-semibold">Appearance</h2>
-  <label className="block text-sm font-medium mb-3">Theme</label>
+<div className='rounded-lg border bg-card p-6'>
+  <h2 className='text-lg font-semibold'>Appearance</h2>
+  <label className='block text-sm font-medium mb-3'>Theme</label>
   <ThemeToggleLarge />
 </div>
 ```
@@ -113,7 +128,7 @@ import { ThemeProvider } from 'next-themes';
 export function Providers({ children }) {
   return (
     <SessionProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
         {children}
       </ThemeProvider>
     </SessionProvider>
@@ -122,6 +137,7 @@ export function Providers({ children }) {
 ```
 
 **Configuration:**
+
 - `attribute="class"` - Theme class is applied to HTML element
 - `defaultTheme="system"` - Default to system preference
 - `enableSystem={true}` - Respect system color scheme preference
@@ -129,16 +145,19 @@ export function Providers({ children }) {
 ## Theme Options
 
 ### Light Theme
+
 - **Icon:** Sun icon
 - **Description:** Light theme
 - **Use case:** Daytime, bright environments
 
 ### Dark Theme
+
 - **Icon:** Moon icon
 - **Description:** Dark theme
 - **Use case:** Nighttime, reduced eye strain
 
 ### System Theme
+
 - **Icon:** Monitor icon
 - **Description:** Follow system preference
 - **Use case:** Automatic adjustment based on device settings
@@ -146,6 +165,7 @@ export function Providers({ children }) {
 ## Data Persistence
 
 ### localStorage
+
 Theme preference is automatically persisted using the browser's localStorage:
 
 ```
@@ -153,25 +173,29 @@ localStorage.next-themes = 'light' | 'dark' | 'system'
 ```
 
 ### Sync Across Tabs
-When users change the theme in one tab, all other tabs are automatically updated through the StorageEvent API (handled by next-themes).
+
+When users change the theme in one tab, all other tabs are automatically updated through the
+StorageEvent API (handled by next-themes).
 
 ### Server-Side Safety
-The component uses `suppressHydrationWarning` to prevent hydration mismatches and renders a skeleton loading state before mounting.
+
+The component uses `suppressHydrationWarning` to prevent hydration mismatches and renders a skeleton
+loading state before mounting.
 
 ## Styling & Dark Mode Support
 
 ### Root Layout
+
 The root layout uses semantic CSS variables that adapt to the theme:
 
 ```tsx
 <html suppressHydrationWarning>
-  <body className="bg-background text-foreground">
-    {/* Content */}
-  </body>
+  <body className='bg-background text-foreground'>{/* Content */}</body>
 </html>
 ```
 
 **CSS Variables (from Tailwind theme):**
+
 - `background` - Page background color
 - `foreground` - Text color
 - `accent` - Accent color
@@ -179,31 +203,34 @@ The root layout uses semantic CSS variables that adapt to the theme:
 - `muted-foreground` - Muted text
 
 ### Component Styling
+
 All components use semantic color classes that respect the current theme:
 
 ```tsx
-<button className="bg-background text-foreground hover:bg-accent">
-  {/* Button */}
-</button>
+<button className='bg-background text-foreground hover:bg-accent'>{/* Button */}</button>
 ```
 
 ## Keyboard Navigation
 
 ### Dropdown Menu
+
 - **Click Button** - Toggle menu open/closed
 - **ArrowDown** - Open menu when closed
 - **Escape** - Close menu when open
 - **Enter/Space** - Select option (when focused)
 
 ### Compact Variant
+
 - **Click** - Cycle to next theme
 
 ### Large Variant
+
 - **Click/Space** - Toggle radio selection
 
 ## Accessibility Features
 
 ### ARIA Attributes
+
 - `aria-expanded` - Indicates if dropdown is open
 - `aria-haspopup="listbox"` - Indicates trigger button has popup
 - `aria-label` - Descriptive labels for screen readers
@@ -211,12 +238,14 @@ All components use semantic color classes that respect the current theme:
 - `aria-selected` - Indicates which option is selected
 
 ### Focus Management
+
 - Focus ring visible on all interactive elements
 - Focus trap within dropdown menu
 - Keyboard navigation support
 - High contrast mode support
 
 ### Screen Reader Support
+
 - Descriptive button labels
 - Option descriptions for context
 - Current theme indication
@@ -224,11 +253,13 @@ All components use semantic color classes that respect the current theme:
 ## Testing
 
 ### Running Tests
+
 ```bash
 npm run test
 ```
 
 ### Test Coverage
+
 - Component rendering
 - Theme switching functionality
 - Dropdown open/close behavior
@@ -238,11 +269,12 @@ npm run test
 - Hydration safety
 
 Example test:
+
 ```tsx
 it('opens and closes the dropdown menu', async () => {
   render(
     <ThemeTestWrapper>
-      <ThemeToggle variant="dropdown" />
+      <ThemeToggle variant='dropdown' />
     </ThemeTestWrapper>
   );
 
@@ -258,9 +290,11 @@ it('opens and closes the dropdown menu', async () => {
 ## Theming Guide for Developers
 
 ### Adding New Themes
+
 To add a new theme (e.g., 'high-contrast'):
 
 1. Update `THEME_OPTIONS` in `theme-toggle.tsx`:
+
 ```tsx
 const THEME_OPTIONS: ThemeConfig[] = [
   // ... existing options
@@ -274,8 +308,9 @@ const THEME_OPTIONS: ThemeConfig[] = [
 ```
 
 2. Create theme CSS file (e.g., `globals.css`):
+
 ```css
-html[data-theme="high-contrast"] {
+html[data-theme='high-contrast'] {
   --background: #000;
   --foreground: #fff;
   /* ... more variables */
@@ -285,13 +320,13 @@ html[data-theme="high-contrast"] {
 3. Update theme provider if needed
 
 ### Ensuring Dark Mode Support
+
 For any new component:
 
 1. Use semantic color classes:
+
 ```tsx
-<div className="bg-background text-foreground border-border">
-  {/* Content */}
-</div>
+<div className='bg-background text-foreground border-border'>{/* Content */}</div>
 ```
 
 2. Test in both light and dark modes
@@ -302,21 +337,25 @@ For any new component:
 ## Troubleshooting
 
 ### Theme Not Persisting
+
 1. Check if localStorage is enabled in browser
 2. Clear localStorage: `localStorage.clear()`
 3. Verify `ThemeProvider` is in the component tree
 
 ### Flash of Wrong Theme
+
 - This is normal on first load (expected behavior)
 - Add `suppressHydrationWarning` to HTML tag
 - Use theme skeleton loading state while mounting
 
 ### Contrast Issues in Dark Mode
+
 1. Use a contrast checker: https://webaim.org/resources/contrastchecker/
 2. Adjust color variables in tailwind config
 3. Test with browser accessibility inspector
 
 ### Component Not Showing
+
 1. Verify it's wrapped with `ThemeProvider`
 2. Check that it's a client component (`'use client'`)
 3. Verify no hydration mismatches in console
@@ -324,16 +363,19 @@ For any new component:
 ## Performance Considerations
 
 ### Bundle Size
+
 - `next-themes`: ~2KB (gzipped)
 - Theme toggle component: ~5KB (minified)
 - Total impact: Minimal
 
 ### Rendering
+
 - Theme toggle uses React hooks, no external dependencies for rendering
 - Leverages CSS variables for instant theme switching
 - No layout shifts during theme change
 
 ### localStorage Operations
+
 - Single read on app load
 - Single write on theme change
 - No polling or watchers

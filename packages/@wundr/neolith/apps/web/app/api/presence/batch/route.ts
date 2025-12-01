@@ -63,8 +63,14 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
 /**
  * Get presence from user preferences
  */
-function getPresenceFromPreferences(preferences: Prisma.JsonValue): UserPreferences {
-  if (typeof preferences === 'object' && preferences !== null && !Array.isArray(preferences)) {
+function getPresenceFromPreferences(
+  preferences: Prisma.JsonValue
+): UserPreferences {
+  if (
+    typeof preferences === 'object' &&
+    preferences !== null &&
+    !Array.isArray(preferences)
+  ) {
     return preferences as UserPreferences;
   }
   return {};
@@ -85,15 +91,15 @@ function mapUserStatusToPresence(
   // Check user preferences first
   if (prefs.presenceStatus) {
     const statusMap: Record<string, 'online' | 'offline' | 'away' | 'busy'> = {
-      'ONLINE': 'online',
-      'OFFLINE': 'offline',
-      'AWAY': 'away',
-      'BUSY': 'busy',
-      'DND': 'busy',
-      'online': 'online',
-      'offline': 'offline',
-      'away': 'away',
-      'busy': 'busy',
+      ONLINE: 'online',
+      OFFLINE: 'offline',
+      AWAY: 'away',
+      BUSY: 'busy',
+      DND: 'busy',
+      online: 'online',
+      offline: 'offline',
+      away: 'away',
+      busy: 'busy',
     };
     return statusMap[prefs.presenceStatus] || 'online';
   }
@@ -169,8 +175,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -180,8 +189,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createPresenceErrorResponse('Invalid JSON body', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createPresenceErrorResponse(
+          'Invalid JSON body',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -190,9 +202,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Invalid request parameters',
-          PRESENCE_ERROR_CODES.VALIDATION_ERROR,
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -215,7 +227,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const presence: BatchUserPresence[] = users.map(buildBatchPresenceResponse);
 
     // For any requested userIds not found, return offline status
-    const foundUserIds = new Set(users.map((u) => u.id));
+    const foundUserIds = new Set(users.map(u => u.id));
     for (const userId of userIds) {
       if (!foundUserIds.has(userId)) {
         presence.push({
@@ -234,9 +246,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

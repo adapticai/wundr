@@ -243,7 +243,7 @@ async function runComplianceCheck(options: CheckOptions): Promise<void> {
       'WUNDR_GOV_CHECK_FAILED',
       'Failed to run IPRE compliance check',
       { options },
-      true,
+      true
     );
   }
 }
@@ -289,7 +289,7 @@ async function generateAlignmentReport(options: ReportOptions): Promise<void> {
         totalDebt: calculateAlignmentDebt(
           complianceResult,
           alignmentEvalResult,
-          driftEvalResult,
+          driftEvalResult
         ),
         criticalIssues: countCriticalIssues(complianceResult),
         highPriorityItems: countHighPriorityItems(alignmentEvalResult),
@@ -310,7 +310,7 @@ async function generateAlignmentReport(options: ReportOptions): Promise<void> {
       recommendations: generateRecommendations(
         complianceResult,
         alignmentEvalResult,
-        driftEvalResult,
+        driftEvalResult
       ),
     };
 
@@ -327,17 +327,17 @@ async function generateAlignmentReport(options: ReportOptions): Promise<void> {
     // Display summary
     console.log(chalk.blue('\n--- Report Summary ---'));
     console.log(
-      `Total Alignment Debt: ${chalk.yellow(report.summary.totalDebt.toFixed(2))}`,
+      `Total Alignment Debt: ${chalk.yellow(report.summary.totalDebt.toFixed(2))}`
     );
     console.log(`Critical Issues: ${chalk.red(report.summary.criticalIssues)}`);
     console.log(
-      `High Priority Items: ${chalk.yellow(report.summary.highPriorityItems)}`,
+      `High Priority Items: ${chalk.yellow(report.summary.highPriorityItems)}`
     );
     console.log(
-      `Alignment Score: ${colorScore(report.summary.alignmentScore)}`,
+      `Alignment Score: ${colorScore(report.summary.alignmentScore)}`
     );
     console.log(
-      `Compliance Score: ${colorScore(report.summary.complianceScore)}`,
+      `Compliance Score: ${colorScore(report.summary.complianceScore)}`
     );
     console.log(`Drift Score: ${colorScore(1 - report.summary.driftScore)}`);
   } catch (error) {
@@ -345,7 +345,7 @@ async function generateAlignmentReport(options: ReportOptions): Promise<void> {
       'WUNDR_GOV_REPORT_FAILED',
       'Failed to generate alignment debt report',
       { options },
-      true,
+      true
     );
   }
 }
@@ -381,7 +381,7 @@ async function showGovernanceStatus(): Promise<void> {
     console.log(chalk.bold('Alignment Score:'));
     displayProgressBar(status.alignmentScore);
     console.log(
-      `  ${colorScore(status.alignmentScore)} (${(status.alignmentScore * 100).toFixed(1)}%)\n`,
+      `  ${colorScore(status.alignmentScore)} (${(status.alignmentScore * 100).toFixed(1)}%)\n`
     );
 
     // Policy Violations
@@ -393,7 +393,7 @@ async function showGovernanceStatus(): Promise<void> {
       console.log(`    - Security: ${violationStats.byCategory.security}`);
       console.log(`    - Compliance: ${violationStats.byCategory.compliance}`);
       console.log(
-        `    - Operational: ${violationStats.byCategory.operational}`,
+        `    - Operational: ${violationStats.byCategory.operational}`
       );
     }
     console.log();
@@ -408,7 +408,7 @@ async function showGovernanceStatus(): Promise<void> {
           ? chalk.green('[RESOLVED]')
           : chalk.yellow('[OPEN]');
         console.log(
-          `  ${statusIcon} ${intervention.type}: ${intervention.description}`,
+          `  ${statusIcon} ${intervention.type}: ${intervention.description}`
         );
       }
     }
@@ -424,7 +424,7 @@ async function showGovernanceStatus(): Promise<void> {
         const direction = indicator.change > 0 ? '+' : '';
         console.log(
           `  ${severityColor(`[${indicator.severity.toUpperCase()}]`)} ` +
-            `${indicator.pattern}: ${direction}${(indicator.change * 100).toFixed(1)}%`,
+            `${indicator.pattern}: ${direction}${(indicator.change * 100).toFixed(1)}%`
         );
       }
     }
@@ -433,13 +433,13 @@ async function showGovernanceStatus(): Promise<void> {
     // Last Check
     if (status.lastCheck) {
       console.log(
-        chalk.gray(`Last check: ${status.lastCheck.toLocaleString()}`),
+        chalk.gray(`Last check: ${status.lastCheck.toLocaleString()}`)
       );
     } else {
       console.log(
         chalk.gray(
-          'No previous checks found. Run "wundr governance check" to start.',
-        ),
+          'No previous checks found. Run "wundr governance check" to start.'
+        )
       );
     }
   } catch (error) {
@@ -447,7 +447,7 @@ async function showGovernanceStatus(): Promise<void> {
       'WUNDR_GOV_STATUS_FAILED',
       'Failed to fetch governance status',
       {},
-      true,
+      true
     );
   }
 }
@@ -504,7 +504,7 @@ async function validateIPREConfig(file: string): Promise<void> {
       'WUNDR_GOV_VALIDATE_FAILED',
       `Failed to validate IPRE config: ${message}`,
       { file },
-      true,
+      true
     );
   }
 }
@@ -515,7 +515,7 @@ async function validateIPREConfig(file: string): Promise<void> {
 
 function displayComplianceResult(
   result: ComplianceResult,
-  verbose: boolean,
+  verbose: boolean
 ): void {
   const statusIcon = result.compliant
     ? chalk.green('[PASS]')
@@ -529,7 +529,7 @@ function displayComplianceResult(
     console.log(chalk.yellow('\n  Violations:'));
     for (const violation of result.violations) {
       console.log(
-        `    - [${violation.severity.toUpperCase()}] ${violation.policyName}`,
+        `    - [${violation.severity.toUpperCase()}] ${violation.policyName}`
       );
       console.log(`      ${violation.description}`);
       if (violation.suggestedFix) {
@@ -541,7 +541,7 @@ function displayComplianceResult(
 
 function displayAlignmentResult(
   result: EvaluationResult,
-  verbose: boolean,
+  verbose: boolean
 ): void {
   const statusIcon = result.passed
     ? chalk.green('[PASS]')
@@ -572,7 +572,7 @@ function displayDriftResult(result: EvaluationResult, verbose: boolean): void {
     ? chalk.green('[PASS]')
     : chalk.red('[FAIL]');
   console.log(
-    `${statusIcon} Drift Score: ${colorScore(result.score)} (${(driftScore * 100).toFixed(1)}% drift)`,
+    `${statusIcon} Drift Score: ${colorScore(result.score)} (${(driftScore * 100).toFixed(1)}% drift)`
   );
   console.log(`  Drift Alerts: ${result.issues.length}`);
 
@@ -594,19 +594,19 @@ function displaySummary(result: {
     ? chalk.green('[PASSED]')
     : chalk.red('[FAILED]');
   console.log(
-    `\n${statusIcon} Overall Score: ${colorScore(result.overallScore)}`,
+    `\n${statusIcon} Overall Score: ${colorScore(result.overallScore)}`
   );
 
   if (result.criticalIssues.length > 0) {
     console.log(
-      chalk.red(`\nCritical Issues (${result.criticalIssues.length}):`),
+      chalk.red(`\nCritical Issues (${result.criticalIssues.length}):`)
     );
     for (const issue of result.criticalIssues.slice(0, 5)) {
       console.log(chalk.red(`  - ${issue}`));
     }
     if (result.criticalIssues.length > 5) {
       console.log(
-        chalk.gray(`  ... and ${result.criticalIssues.length - 5} more`),
+        chalk.gray(`  ... and ${result.criticalIssues.length - 5} more`)
       );
     }
   }
@@ -648,7 +648,7 @@ function displayProgressBar(score: number): void {
 function calculateAlignmentDebt(
   compliance: ComplianceResult,
   alignment: EvaluationResult,
-  drift: EvaluationResult,
+  drift: EvaluationResult
 ): number {
   // Calculate debt as weighted sum of issues
   const complianceDebt = (1 - compliance.score) * 0.4;
@@ -666,7 +666,7 @@ function countHighPriorityItems(alignment: EvaluationResult): number {
   return alignment.issues.filter(
     issue =>
       issue.toLowerCase().includes('critical') ||
-      issue.toLowerCase().includes('high'),
+      issue.toLowerCase().includes('high')
   ).length;
 }
 
@@ -723,21 +723,21 @@ function extractDriftAlerts(result: EvaluationResult): DriftAlertDetail[] {
 function generateRecommendations(
   compliance: ComplianceResult,
   alignment: EvaluationResult,
-  drift: EvaluationResult,
+  drift: EvaluationResult
 ): string[] {
   const recommendations: string[] = [];
 
   // Add compliance recommendations
   if (compliance.violations.length > 0) {
     recommendations.push(
-      'Address policy violations immediately, especially critical ones',
+      'Address policy violations immediately, especially critical ones'
     );
     const criticalCount = compliance.violations.filter(
-      v => v.severity === 'critical',
+      v => v.severity === 'critical'
     ).length;
     if (criticalCount > 0) {
       recommendations.push(
-        `Fix ${criticalCount} critical policy violation(s) before deployment`,
+        `Fix ${criticalCount} critical policy violation(s) before deployment`
       );
     }
   }
@@ -893,10 +893,10 @@ function displayConfigSummary(config: IPREConfig): void {
   console.log(`Values: ${config.intent?.values?.length || 0} defined`);
   console.log(`Security Policies: ${config.policies?.security?.length || 0}`);
   console.log(
-    `Compliance Policies: ${config.policies?.compliance?.length || 0}`,
+    `Compliance Policies: ${config.policies?.compliance?.length || 0}`
   );
   console.log(
-    `Operational Policies: ${config.policies?.operational?.length || 0}`,
+    `Operational Policies: ${config.policies?.operational?.length || 0}`
   );
   console.log(`Evaluators: ${config.evaluators?.length || 0}`);
   if (config.rewards?.threshold) {
@@ -935,7 +935,7 @@ async function saveGovernanceState(
       results: readonly EvaluationResult[];
       criticalIssues: readonly string[];
     };
-  },
+  }
 ): Promise<void> {
   const statePath = path.join(process.cwd(), GOVERNANCE_STATE_PATH);
   await fs.ensureDir(path.dirname(statePath));
@@ -973,7 +973,7 @@ async function loadRecentInterventions(): Promise<Intervention[]> {
 }
 
 function extractDriftIndicatorsFromState(
-  state: GovernanceState | null,
+  state: GovernanceState | null
 ): DriftIndicator[] {
   if (!state?.driftResult) {
     return [];

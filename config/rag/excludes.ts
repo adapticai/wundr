@@ -239,7 +239,13 @@ export const DEFAULT_INCLUDE_PATTERNS: readonly string[] = [
 /**
  * File type category
  */
-export type FileTypeCategory = 'code' | 'config' | 'docs' | 'tests' | 'scripts' | 'data';
+export type FileTypeCategory =
+  | 'code'
+  | 'config'
+  | 'docs'
+  | 'tests'
+  | 'scripts'
+  | 'data';
 
 /**
  * File type mapping configuration
@@ -264,38 +270,76 @@ export const FILE_TYPE_MAPPINGS: Record<FileTypeCategory, FileTypeMapping> = {
     category: 'code',
     description: 'Source code files',
     extensions: [
-      'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs',
-      'py', 'pyi',
-      'go', 'rs',
-      'java', 'kt', 'scala',
-      'rb', 'php',
-      'c', 'cpp', 'h', 'hpp', 'cc', 'cxx',
-      'cs', 'swift', 'm', 'mm',
-      'vue', 'svelte',
+      'ts',
+      'tsx',
+      'js',
+      'jsx',
+      'mjs',
+      'cjs',
+      'py',
+      'pyi',
+      'go',
+      'rs',
+      'java',
+      'kt',
+      'scala',
+      'rb',
+      'php',
+      'c',
+      'cpp',
+      'h',
+      'hpp',
+      'cc',
+      'cxx',
+      'cs',
+      'swift',
+      'm',
+      'mm',
+      'vue',
+      'svelte',
     ],
     patterns: [
-      '**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs',
-      '**/*.py', '**/*.pyi',
-      '**/*.go', '**/*.rs',
-      '**/*.java', '**/*.kt', '**/*.scala',
-      '**/*.rb', '**/*.php',
-      '**/*.c', '**/*.cpp', '**/*.h', '**/*.hpp', '**/*.cc', '**/*.cxx',
-      '**/*.cs', '**/*.swift', '**/*.m', '**/*.mm',
-      '**/*.vue', '**/*.svelte',
+      '**/*.ts',
+      '**/*.tsx',
+      '**/*.js',
+      '**/*.jsx',
+      '**/*.mjs',
+      '**/*.cjs',
+      '**/*.py',
+      '**/*.pyi',
+      '**/*.go',
+      '**/*.rs',
+      '**/*.java',
+      '**/*.kt',
+      '**/*.scala',
+      '**/*.rb',
+      '**/*.php',
+      '**/*.c',
+      '**/*.cpp',
+      '**/*.h',
+      '**/*.hpp',
+      '**/*.cc',
+      '**/*.cxx',
+      '**/*.cs',
+      '**/*.swift',
+      '**/*.m',
+      '**/*.mm',
+      '**/*.vue',
+      '**/*.svelte',
     ],
   },
   config: {
     category: 'config',
     description: 'Configuration files',
-    extensions: [
-      'json', 'yaml', 'yml', 'toml', 'xml', 'ini', 'conf', 'env',
-    ],
+    extensions: ['json', 'yaml', 'yml', 'toml', 'xml', 'ini', 'conf', 'env'],
     patterns: [
       '**/*.json',
-      '**/*.yaml', '**/*.yml',
+      '**/*.yaml',
+      '**/*.yml',
       '**/*.toml',
       '**/*.xml',
-      '**/*.ini', '**/*.conf',
+      '**/*.ini',
+      '**/*.conf',
       '**/.*rc',
       '**/.*rc.js',
       '**/.*rc.json',
@@ -315,9 +359,7 @@ export const FILE_TYPE_MAPPINGS: Record<FileTypeCategory, FileTypeMapping> = {
   docs: {
     category: 'docs',
     description: 'Documentation files',
-    extensions: [
-      'md', 'mdx', 'rst', 'txt', 'adoc', 'asciidoc',
-    ],
+    extensions: ['md', 'mdx', 'rst', 'txt', 'adoc', 'asciidoc'],
     patterns: [
       '**/*.md',
       '**/*.mdx',
@@ -340,12 +382,21 @@ export const FILE_TYPE_MAPPINGS: Record<FileTypeCategory, FileTypeMapping> = {
     description: 'Test files',
     extensions: [],
     patterns: [
-      '**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx',
-      '**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.jsx',
-      '**/*_test.py', '**/test_*.py',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.test.js',
+      '**/*.test.jsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/*.spec.js',
+      '**/*.spec.jsx',
+      '**/*_test.py',
+      '**/test_*.py',
       '**/*_test.go',
-      '**/*Test.java', '**/*Spec.java',
-      '**/*_spec.rb', '**/spec/**/*.rb',
+      '**/*Test.java',
+      '**/*Spec.java',
+      '**/*_spec.rb',
+      '**/spec/**/*.rb',
       '**/__tests__/**/*',
       '**/tests/**/*',
       '**/test/**/*',
@@ -355,9 +406,7 @@ export const FILE_TYPE_MAPPINGS: Record<FileTypeCategory, FileTypeMapping> = {
   scripts: {
     category: 'scripts',
     description: 'Shell scripts and automation',
-    extensions: [
-      'sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd',
-    ],
+    extensions: ['sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd'],
     patterns: [
       '**/*.sh',
       '**/*.bash',
@@ -376,9 +425,7 @@ export const FILE_TYPE_MAPPINGS: Record<FileTypeCategory, FileTypeMapping> = {
   data: {
     category: 'data',
     description: 'Data files (JSON, CSV, etc.)',
-    extensions: [
-      'json', 'csv', 'tsv', 'xml', 'graphql', 'gql', 'sql', 'proto',
-    ],
+    extensions: ['json', 'csv', 'tsv', 'xml', 'graphql', 'gql', 'sql', 'proto'],
     patterns: [
       '**/*.csv',
       '**/*.tsv',
@@ -400,7 +447,9 @@ export const FILE_TYPE_MAPPINGS: Record<FileTypeCategory, FileTypeMapping> = {
  * @param category - The file type category
  * @returns Array of glob patterns for the category
  */
-export const getPatternsForCategory = (category: FileTypeCategory): readonly string[] => {
+export const getPatternsForCategory = (
+  category: FileTypeCategory
+): readonly string[] => {
   return FILE_TYPE_MAPPINGS[category].patterns;
 };
 
@@ -410,7 +459,9 @@ export const getPatternsForCategory = (category: FileTypeCategory): readonly str
  * @param category - The file type category
  * @returns Array of file extensions (without dots)
  */
-export const getExtensionsForCategory = (category: FileTypeCategory): readonly string[] => {
+export const getExtensionsForCategory = (
+  category: FileTypeCategory
+): readonly string[] => {
   return FILE_TYPE_MAPPINGS[category].extensions;
 };
 
@@ -420,7 +471,9 @@ export const getExtensionsForCategory = (category: FileTypeCategory): readonly s
  * @param filePath - Path to the file
  * @returns The file type category or undefined if not matched
  */
-export const categorizeFile = (filePath: string): FileTypeCategory | undefined => {
+export const categorizeFile = (
+  filePath: string
+): FileTypeCategory | undefined => {
   const extension = filePath.split('.').pop()?.toLowerCase();
 
   if (!extension) {
@@ -485,8 +538,12 @@ export const shouldExclude = (
 
   for (const pattern of allExcludes) {
     // Simple pattern matching for common cases
-    const normalizedPattern = pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*');
-    const regex = new RegExp(`^${normalizedPattern}$|/${normalizedPattern}$|${normalizedPattern}/`);
+    const normalizedPattern = pattern
+      .replace(/\*\*/g, '.*')
+      .replace(/\*/g, '[^/]*');
+    const regex = new RegExp(
+      `^${normalizedPattern}$|/${normalizedPattern}$|${normalizedPattern}/`
+    );
 
     if (regex.test(normalizedPath)) {
       return true;

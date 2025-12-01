@@ -2,7 +2,8 @@
 
 ## Overview
 
-This guide provides instructions for QA Engineers, Test Automation Engineers, and other agents to integrate Playwright MCP for browser automation testing in the Wundr development workflow.
+This guide provides instructions for QA Engineers, Test Automation Engineers, and other agents to
+integrate Playwright MCP for browser automation testing in the Wundr development workflow.
 
 ## Prerequisites
 
@@ -52,6 +53,7 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000" }
 ### QA Engineer
 
 **Responsibilities**:
+
 - Create and maintain test plans
 - Design test cases for new features
 - Validate page navigation and flows
@@ -68,6 +70,7 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000" }
 ```
 
 **Example Task**:
+
 ```
 "Create comprehensive test suite for user login flow:
 1. Test valid credentials
@@ -81,6 +84,7 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000" }
 ### Test Automation Engineer
 
 **Responsibilities**:
+
 - Implement automated test scripts
 - Maintain test framework
 - Optimize test performance
@@ -110,16 +114,17 @@ import {
 
 // Execute login flow
 await executeFlow(page, [
-  async (p) => await navigateToRoute(p, '/login'),
-  async (p) => await fillLoginForm(p, 'user@test.com', 'pass123'),
-  async (p) => await submitLoginForm(p),
-  async (p) => await takeScreenshot(p, 'login_success'),
+  async p => await navigateToRoute(p, '/login'),
+  async p => await fillLoginForm(p, 'user@test.com', 'pass123'),
+  async p => await submitLoginForm(p),
+  async p => await takeScreenshot(p, 'login_success'),
 ]);
 ```
 
 ### Backend Engineer (Testing APIs)
 
 **Responsibilities**:
+
 - Validate API responses through UI
 - Test integration points
 - Verify data flow
@@ -134,6 +139,7 @@ await executeFlow(page, [
 ```
 
 **Example**:
+
 ```
 "Validate agent creation API integration:
 1. Navigate to /agents page
@@ -147,6 +153,7 @@ await executeFlow(page, [
 ### Frontend Engineer (UI Implementation)
 
 **Responsibilities**:
+
 - Validate UI implementation
 - Test interactive components
 - Verify responsive behavior
@@ -162,6 +169,7 @@ await executeFlow(page, [
 ```
 
 **Example**:
+
 ```
 "Test profile settings page implementation:
 1. Navigate to /[workspaceId]/settings/profile
@@ -177,16 +185,12 @@ await executeFlow(page, [
 **File Location**: `/Users/iroselli/wundr/.claude/agents/qa/qa-engineer.json`
 
 **Configuration**:
+
 ```json
 {
   "name": "qa-engineer",
   "type": "qa-engineer",
-  "capabilities": [
-    "test_planning",
-    "test_execution",
-    "defect_analysis",
-    "quality_metrics"
-  ],
+  "capabilities": ["test_planning", "test_execution", "defect_analysis", "quality_metrics"],
   "tools": ["playwright-mcp"],
   "specialization": "Quality assurance and test automation"
 }
@@ -253,6 +257,7 @@ Steps:
 ```
 
 **MCP Commands Used**:
+
 ```
 playwright_navigate
 playwright_click
@@ -279,6 +284,7 @@ Steps:
 ```
 
 **MCP Commands Used**:
+
 ```
 playwright_create_context
 playwright_navigate
@@ -307,6 +313,7 @@ Steps:
 ```
 
 **MCP Commands Used**:
+
 ```
 playwright_navigate
 playwright_fill
@@ -334,6 +341,7 @@ Steps:
 ```
 
 **MCP Commands Used**:
+
 ```
 playwright_navigate
 playwright_press
@@ -345,6 +353,7 @@ playwright_query_selector_all
 ## Integration with SPARC Methodology
 
 ### Specification Phase
+
 ```bash
 npx claude-flow sparc run spec-pseudocode "Create test specification for login page"
 
@@ -356,6 +365,7 @@ npx claude-flow sparc run spec-pseudocode "Create test specification for login p
 ```
 
 ### Pseudocode Phase
+
 ```bash
 npx claude-flow sparc run spec-pseudocode "Write test algorithm for form validation"
 
@@ -367,6 +377,7 @@ npx claude-flow sparc run spec-pseudocode "Write test algorithm for form validat
 ```
 
 ### Architecture Phase
+
 ```bash
 npx claude-flow sparc run architect "Design test framework for Neolith"
 
@@ -378,6 +389,7 @@ npx claude-flow sparc run architect "Design test framework for Neolith"
 ```
 
 ### Refinement Phase
+
 ```bash
 npx claude-flow sparc tdd "Implement login tests with TDD"
 
@@ -389,6 +401,7 @@ npx claude-flow sparc tdd "Implement login tests with TDD"
 ```
 
 ### Completion Phase
+
 ```bash
 npx claude-flow sparc run integration "Integrate tests into CI/CD"
 
@@ -484,13 +497,13 @@ mcp_tool__playwright_wait_for_load_state { state: "networkidle" }
 
 ### Common Issues for Agents
 
-| Issue | Solution | MCP Command |
-|-------|----------|-------------|
-| Page not loading | Wait for specific element | `wait_for_selector` |
-| Element not found | Verify selector | `query_selector` |
-| Navigation failed | Check URL format | `get_url` |
-| Form not submitting | Check for errors | `get_text` on error elements |
-| Session expired | Clear and re-login | `clear_cookies` + re-login |
+| Issue               | Solution                  | MCP Command                  |
+| ------------------- | ------------------------- | ---------------------------- |
+| Page not loading    | Wait for specific element | `wait_for_selector`          |
+| Element not found   | Verify selector           | `query_selector`             |
+| Navigation failed   | Check URL format          | `get_url`                    |
+| Form not submitting | Check for errors          | `get_text` on error elements |
+| Session expired     | Clear and re-login        | `clear_cookies` + re-login   |
 
 ### Error Recovery Pattern
 
@@ -519,6 +532,7 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000/login" }
 ## Test Execution Report
 
 ### Summary
+
 - Total Pages Tested: 24
 - Pass: 20
 - Fail: 2
@@ -526,13 +540,16 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000/login" }
 - Coverage: 83%
 
 ### Failed Tests
+
 1. VP Health Monitoring - Element not found
 2. Integration Settings - Form submission timeout
 
 ### Screenshots
+
 - See `/screenshots` directory
 
 ### Recommendations
+
 - Investigate VP Health page rendering
 - Check Integration Settings form timeout
 - Increase timeout to 10000ms
@@ -650,12 +667,14 @@ mcp_tool__playwright_get_html { selector: "body" }
 ## Resources & Support
 
 ### Documentation
+
 - [Playwright MCP Guide](/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_GUIDE.md)
 - [Playwright MCP Commands](/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_COMMANDS.md)
 - [Test Template](/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/playwright-mcp-test-template.ts)
 - [Page Validation Tests](/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/neolith-page-validation.test.ts)
 
 ### Support Channels
+
 1. Check this guide for your agent type
 2. Review relevant documentation
 3. Inspect test template for patterns
@@ -663,6 +682,7 @@ mcp_tool__playwright_get_html { selector: "body" }
 5. Open issue with reproduction steps
 
 ### Key Contacts
+
 - QA Lead: Review test plans
 - DevOps: Integrate into CI/CD
 - Backend: Validate API integration
@@ -670,7 +690,5 @@ mcp_tool__playwright_get_html { selector: "body" }
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2025-11-26
-**Status**: Ready for Production
-**Supported Agents**: QA, Test Automation, Frontend, Backend, DevOps
+**Version**: 1.0.0 **Last Updated**: 2025-11-26 **Status**: Ready for Production **Supported
+Agents**: QA, Test Automation, Frontend, Backend, DevOps

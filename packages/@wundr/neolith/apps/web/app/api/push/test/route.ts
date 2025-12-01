@@ -38,7 +38,9 @@ interface TestPushNotificationParams {
  * @param params - Push notification parameters
  * @throws Error if notification fails to send
  */
-async function sendTestPushNotification(params: TestPushNotificationParams): Promise<void> {
+async function sendTestPushNotification(
+  params: TestPushNotificationParams
+): Promise<void> {
   const { token, platform, title, body } = params;
 
   // For web push, use web-push library
@@ -161,8 +163,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -202,19 +207,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'No active devices found',
-          NOTIFICATION_ERROR_CODES.DEVICE_NOT_FOUND,
+          NOTIFICATION_ERROR_CODES.DEVICE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Prepare test notification content
     const title = input.title ?? 'Test Notification';
-    const body = input.body ?? 'This is a test notification from Neolith App. If you see this, push notifications are working!';
+    const body =
+      input.body ??
+      'This is a test notification from Neolith App. If you see this, push notifications are working!';
 
     // Send test notifications to each device using the notification service
     const results = await Promise.all(
-      devices.map(async (device) => {
+      devices.map(async device => {
         try {
           // Send push notification via platform-specific service
           // The actual implementation delegates to web-push or Expo SDK
@@ -246,10 +253,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             error: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      }),
+      })
     );
 
-    const successCount = results.filter((r) => r.success).length;
+    const successCount = results.filter(r => r.success).length;
     const message = input.token
       ? 'Test notification sent'
       : `Test notification sent to ${successCount} device${successCount !== 1 ? 's' : ''}`;
@@ -269,9 +276,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

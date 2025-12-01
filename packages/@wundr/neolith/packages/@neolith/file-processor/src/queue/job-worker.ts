@@ -132,7 +132,7 @@ export class JobWorker {
   constructor(
     queue: ProcessingQueue,
     processors: ProcessorRegistry,
-    config: JobWorkerConfig = {},
+    config: JobWorkerConfig = {}
   ) {
     this.queue = queue;
     this.registry = processors;
@@ -162,7 +162,9 @@ export class JobWorker {
     this.setupEventHandlers();
 
     this.config.logger.info('Job worker started');
-    this.config.logger.info(`Registered processors: ${this.registry.getTypes().join(', ')}`);
+    this.config.logger.info(
+      `Registered processors: ${this.registry.getTypes().join(', ')}`
+    );
   }
 
   /**
@@ -277,25 +279,29 @@ export class JobWorker {
    */
   private setupEventHandlers(): void {
     // Job started
-    const onJobStarted: EventHandler = (data) => {
+    const onJobStarted: EventHandler = data => {
       const { jobId, job } = data as { jobId: string; job: ProcessingJob };
       if (this.config.verbose) {
         this.config.logger.debug(`Job started: ${jobId} (type: ${job.type})`);
       }
     };
     this.queue.on(QueueEvent.JOB_STARTED, onJobStarted);
-    this.eventCleanup.push(() => this.queue.off(QueueEvent.JOB_STARTED, onJobStarted));
+    this.eventCleanup.push(() =>
+      this.queue.off(QueueEvent.JOB_STARTED, onJobStarted)
+    );
 
     // Job completed
-    const onJobCompleted: EventHandler = (data) => {
+    const onJobCompleted: EventHandler = data => {
       const { jobId, duration } = data as { jobId: string; duration: number };
       this.config.logger.info(`Job completed: ${jobId} (${duration}ms)`);
     };
     this.queue.on(QueueEvent.JOB_COMPLETED, onJobCompleted);
-    this.eventCleanup.push(() => this.queue.off(QueueEvent.JOB_COMPLETED, onJobCompleted));
+    this.eventCleanup.push(() =>
+      this.queue.off(QueueEvent.JOB_COMPLETED, onJobCompleted)
+    );
 
     // Job failed
-    const onJobFailed: EventHandler = (data) => {
+    const onJobFailed: EventHandler = data => {
       const { jobId, error, willRetry } = data as {
         jobId: string;
         error: string;
@@ -308,22 +314,26 @@ export class JobWorker {
       }
     };
     this.queue.on(QueueEvent.JOB_FAILED, onJobFailed);
-    this.eventCleanup.push(() => this.queue.off(QueueEvent.JOB_FAILED, onJobFailed));
+    this.eventCleanup.push(() =>
+      this.queue.off(QueueEvent.JOB_FAILED, onJobFailed)
+    );
 
     // Job progress
     if (this.config.verbose) {
-      const onJobProgress: EventHandler = (data) => {
+      const onJobProgress: EventHandler = data => {
         const { jobId, progress, message } = data as {
           jobId: string;
           progress: number;
           message?: string;
         };
         this.config.logger.debug(
-          `Job progress: ${jobId} - ${progress}%${message ? ` (${message})` : ''}`,
+          `Job progress: ${jobId} - ${progress}%${message ? ` (${message})` : ''}`
         );
       };
       this.queue.on(QueueEvent.JOB_PROGRESS, onJobProgress);
-      this.eventCleanup.push(() => this.queue.off(QueueEvent.JOB_PROGRESS, onJobProgress));
+      this.eventCleanup.push(() =>
+        this.queue.off(QueueEvent.JOB_PROGRESS, onJobProgress)
+      );
     }
 
     // Queue drained
@@ -333,15 +343,21 @@ export class JobWorker {
       }
     };
     this.queue.on(QueueEvent.QUEUE_DRAINED, onQueueDrained);
-    this.eventCleanup.push(() => this.queue.off(QueueEvent.QUEUE_DRAINED, onQueueDrained));
+    this.eventCleanup.push(() =>
+      this.queue.off(QueueEvent.QUEUE_DRAINED, onQueueDrained)
+    );
 
     // Queue error
-    const onQueueError: EventHandler = (data) => {
+    const onQueueError: EventHandler = data => {
       const { error, context } = data as { error: Error; context?: string };
-      this.config.logger.error(`Queue error${context ? ` (${context})` : ''}: ${error.message}`);
+      this.config.logger.error(
+        `Queue error${context ? ` (${context})` : ''}: ${error.message}`
+      );
     };
     this.queue.on(QueueEvent.QUEUE_ERROR, onQueueError);
-    this.eventCleanup.push(() => this.queue.off(QueueEvent.QUEUE_ERROR, onQueueError));
+    this.eventCleanup.push(() =>
+      this.queue.off(QueueEvent.QUEUE_ERROR, onQueueError)
+    );
   }
 }
 
@@ -356,7 +372,7 @@ export class JobWorker {
 export function createJobWorker(
   queue: ProcessingQueue,
   processors: ProcessorRegistry,
-  config?: JobWorkerConfig,
+  config?: JobWorkerConfig
 ): JobWorker {
   return new JobWorker(queue, processors, config);
 }

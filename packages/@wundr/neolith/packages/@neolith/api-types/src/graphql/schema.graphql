@@ -259,12 +259,20 @@ type Organization implements Node & Timestamped {
   """
   Workspaces within this organization
   """
-  workspaces(first: Int, after: String, filter: WorkspaceFilterInput): WorkspaceConnection!
+  workspaces(
+    first: Int
+    after: String
+    filter: WorkspaceFilterInput
+  ): WorkspaceConnection!
 
   """
   Members of this organization
   """
-  members(first: Int, after: String, filter: OrganizationMemberFilterInput): OrganizationMemberConnection!
+  members(
+    first: Int
+    after: String
+    filter: OrganizationMemberFilterInput
+  ): OrganizationMemberConnection!
 
   """
   Count of workspaces
@@ -536,12 +544,20 @@ type Workspace implements Node & Timestamped {
   """
   Channels within this workspace
   """
-  channels(first: Int, after: String, filter: ChannelFilterInput): ChannelConnection!
+  channels(
+    first: Int
+    after: String
+    filter: ChannelFilterInput
+  ): ChannelConnection!
 
   """
   Members of this workspace
   """
-  members(first: Int, after: String, filter: WorkspaceMemberFilterInput): WorkspaceMemberConnection!
+  members(
+    first: Int
+    after: String
+    filter: WorkspaceMemberFilterInput
+  ): WorkspaceMemberConnection!
 
   """
   Files in this workspace
@@ -692,7 +708,12 @@ type Channel implements Node & Timestamped {
   """
   Messages in this channel (cursor-based for infinite scroll)
   """
-  messages(first: Int, after: String, before: String, last: Int): MessageConnection!
+  messages(
+    first: Int
+    after: String
+    before: String
+    last: Int
+  ): MessageConnection!
 
   """
   Pinned messages
@@ -1279,7 +1300,11 @@ type Query {
   """
   List organizations accessible to the current user
   """
-  organizations(first: Int, after: String, filter: OrganizationFilterInput): OrganizationConnection!
+  organizations(
+    first: Int
+    after: String
+    filter: OrganizationFilterInput
+  ): OrganizationConnection!
 
   """
   Get a workspace by ID
@@ -1294,7 +1319,11 @@ type Query {
   """
   List workspaces accessible to the current user
   """
-  workspaces(first: Int, after: String, filter: WorkspaceFilterInput): WorkspaceConnection!
+  workspaces(
+    first: Int
+    after: String
+    filter: WorkspaceFilterInput
+  ): WorkspaceConnection!
 
   """
   Get a channel by ID
@@ -1384,7 +1413,10 @@ type Mutation {
   """
   Update an organization
   """
-  updateOrganization(id: ID!, input: UpdateOrganizationInput!): OrganizationPayload!
+  updateOrganization(
+    id: ID!
+    input: UpdateOrganizationInput!
+  ): OrganizationPayload!
 
   """
   Delete an organization
@@ -1394,7 +1426,11 @@ type Mutation {
   """
   Add a member to an organization
   """
-  addOrganizationMember(organizationId: ID!, userId: ID!, role: OrganizationMemberRole!): OrganizationPayload!
+  addOrganizationMember(
+    organizationId: ID!
+    userId: ID!
+    role: OrganizationMemberRole!
+  ): OrganizationPayload!
 
   """
   Remove a member from an organization
@@ -1472,7 +1508,10 @@ type Mutation {
   """
   Invite a user to a workspace
   """
-  inviteToWorkspace(workspaceId: ID!, input: InviteToWorkspaceInput!): MemberPayload!
+  inviteToWorkspace(
+    workspaceId: ID!
+    input: InviteToWorkspaceInput!
+  ): MemberPayload!
 
   """
   Remove a user from a workspace
@@ -1482,7 +1521,11 @@ type Mutation {
   """
   Update a workspace member's role
   """
-  updateWorkspaceMemberRole(workspaceId: ID!, userId: ID!, role: WorkspaceMemberRole!): MemberPayload!
+  updateWorkspaceMemberRole(
+    workspaceId: ID!
+    userId: ID!
+    role: WorkspaceMemberRole!
+  ): MemberPayload!
 
   # Channel mutations
   """
@@ -1523,7 +1566,11 @@ type Mutation {
   """
   Add a user to a channel
   """
-  addChannelMember(channelId: ID!, userId: ID!, role: ChannelMemberRole): ChannelPayload!
+  addChannelMember(
+    channelId: ID!
+    userId: ID!
+    role: ChannelMemberRole
+  ): ChannelPayload!
 
   """
   Remove a user from a channel

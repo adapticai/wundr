@@ -1,6 +1,7 @@
 # Migration Guide: Updating to Enhanced Claude Code / Claude Flow
 
-Complete guide for migrating existing projects to use the enhanced Claude Code and Claude Flow integration.
+Complete guide for migrating existing projects to use the enhanced Claude Code and Claude Flow
+integration.
 
 ## Table of Contents
 
@@ -16,6 +17,7 @@ Complete guide for migrating existing projects to use the enhanced Claude Code a
 ## Overview
 
 This guide helps you migrate from:
+
 - **Standard Claude Code setup** → Enhanced Claude Flow integration
 - **Claude Flow v1.x** → Claude Flow v2.0+
 - **Manual workflows** → Automated SPARC workflows
@@ -24,6 +26,7 @@ This guide helps you migrate from:
 ### What Changes?
 
 **Before**:
+
 ```
 Project
 ├── .claude/          # Basic config
@@ -31,6 +34,7 @@ Project
 ```
 
 **After**:
+
 ```
 Project
 ├── .claude-flow/     # Enhanced config
@@ -186,6 +190,7 @@ npx claude-flow@alpha init
 ```
 
 **What this creates**:
+
 ```
 .claude-flow/
 ├── config.json           # Main configuration
@@ -229,6 +234,7 @@ npx claude-flow@alpha agent configure reviewer \
 ```
 
 **Edit `.claude-flow/agents.config.json`**:
+
 ```json
 {
   "agents": {
@@ -271,6 +277,7 @@ npx claude-flow@alpha hooks configure post-edit \
 ```
 
 **Edit `.claude-flow/hooks.config.json`**:
+
 ```json
 {
   "hooks": {
@@ -547,6 +554,7 @@ npx claude-flow@alpha sparc tdd "Add user feature across packages"
 #### Configuration Format Changed
 
 **Before (v1.x)**:
+
 ```json
 {
   "agents": {
@@ -556,6 +564,7 @@ npx claude-flow@alpha sparc tdd "Add user feature across packages"
 ```
 
 **After (v2.0)**:
+
 ```json
 {
   "agents": {
@@ -568,6 +577,7 @@ npx claude-flow@alpha sparc tdd "Add user feature across packages"
 ```
 
 **Migration**:
+
 ```bash
 npx claude-flow@alpha migrate config --from v1 --to v2
 ```
@@ -587,6 +597,7 @@ npx claude-flow@alpha migrate config --from v1 --to v2
 **After**: Structured database
 
 **Migration**:
+
 ```bash
 npx claude-flow@alpha migrate memory --from v1
 ```
@@ -596,12 +607,14 @@ npx claude-flow@alpha migrate memory --from v1
 #### Directory Structure
 
 **Before**:
+
 ```
 .claude/
 └── config.json
 ```
 
 **After**:
+
 ```
 .claude-flow/
 ├── config.json
@@ -636,10 +649,12 @@ Migration checklist:
 10. ✅ **Document changes**
 
 **Next Steps**:
+
 - [Quick Start Guide](./QUICK_START.md)
 - [Agent Configuration](./AGENT_CONFIGURATION.md)
 - [Hook Development](./HOOK_DEVELOPMENT.md)
 
 ---
 
-**Pro Tip**: Migrate incrementally. Start with basic setup, add features gradually, validate at each step.
+**Pro Tip**: Migrate incrementally. Start with basic setup, add features gradually, validate at each
+step.

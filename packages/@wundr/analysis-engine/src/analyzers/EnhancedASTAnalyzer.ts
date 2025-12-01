@@ -145,7 +145,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
    * Perform comprehensive AST analysis
    */
   protected override async performAnalysis(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<EnhancedAnalysisResults> {
     this.emitProgress({
       type: 'phase',
@@ -196,7 +196,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
    */
   protected override extractEntityFromNode(
     node: ts.Node,
-    sourceFile: ts.SourceFile,
+    sourceFile: ts.SourceFile
   ): EntityInfo | null {
     const filePath = normalizeFilePath(sourceFile.fileName);
     const position = this.getPositionInfo(node, sourceFile);
@@ -206,42 +206,42 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         return this.extractClassEntity(
           node as ts.ClassDeclaration,
           filePath,
-          position,
+          position
         );
 
       case ts.SyntaxKind.InterfaceDeclaration:
         return this.extractInterfaceEntity(
           node as ts.InterfaceDeclaration,
           filePath,
-          position,
+          position
         );
 
       case ts.SyntaxKind.TypeAliasDeclaration:
         return this.extractTypeAliasEntity(
           node as ts.TypeAliasDeclaration,
           filePath,
-          position,
+          position
         );
 
       case ts.SyntaxKind.EnumDeclaration:
         return this.extractEnumEntity(
           node as ts.EnumDeclaration,
           filePath,
-          position,
+          position
         );
 
       case ts.SyntaxKind.FunctionDeclaration:
         return this.extractFunctionEntity(
           node as ts.FunctionDeclaration,
           filePath,
-          position,
+          position
         );
 
       case ts.SyntaxKind.VariableStatement:
         return this.extractVariableEntity(
           node as ts.VariableStatement,
           filePath,
-          position,
+          position
         );
 
       default:
@@ -255,12 +255,12 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractClassEntity(
     classDecl: ts.ClassDeclaration,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo | null {
     const name = classDecl.name?.getText();
     if (!name) {
-return null;
-}
+      return null;
+    }
 
     const isService = this.isServiceClass(classDecl, name);
     const isComponent = this.isReactComponent(classDecl, name);
@@ -300,7 +300,7 @@ return null;
   private extractInterfaceEntity(
     interfaceDecl: ts.InterfaceDeclaration,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo {
     const name = interfaceDecl.name.getText();
     const properties = this.extractInterfaceProperties(interfaceDecl);
@@ -337,7 +337,7 @@ return null;
   private extractTypeAliasEntity(
     typeAlias: ts.TypeAliasDeclaration,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo {
     const name = typeAlias.name.getText();
     const typeText = typeAlias.type.getText();
@@ -364,7 +364,7 @@ return null;
   private extractEnumEntity(
     enumDecl: ts.EnumDeclaration,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo {
     const name = enumDecl.name.getText();
     const members = enumDecl.members.map(member => ({
@@ -395,12 +395,12 @@ return null;
   private extractFunctionEntity(
     func: ts.FunctionDeclaration,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo | null {
     const name = func.name?.getText();
     if (!name) {
-return null;
-}
+      return null;
+    }
 
     const signature = func.getText();
     const complexity = this.calculateNodeComplexity(func);
@@ -434,7 +434,7 @@ return null;
   private extractVariableEntity(
     varStatement: ts.VariableStatement,
     filePath: string,
-    position: { line: number; column: number },
+    position: { line: number; column: number }
   ): EntityInfo | null {
     if (!this.hasExportModifier(varStatement)) {
       return null;
@@ -467,7 +467,7 @@ return null;
    * Optimized duplicate detection with clustering
    */
   private async detectDuplicatesOptimized(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): Promise<DuplicateCluster[]> {
     this.emitProgress({
       type: 'phase',
@@ -536,7 +536,7 @@ return null;
           encoding: 'utf-8',
           timeout: 30000,
           cwd: this.config.targetDir,
-        },
+        }
       );
 
       const madgeOutput = JSON.parse(result.toString());
@@ -552,9 +552,12 @@ return null;
       }));
     } catch (error) {
       if (this.config.verbose) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.warn(
-          chalk.yellow(`⚠️ Could not run madge for circular dependencies: ${errorMessage}`),
+          chalk.yellow(
+            `⚠️ Could not run madge for circular dependencies: ${errorMessage}`
+          )
         );
       }
 
@@ -682,7 +685,7 @@ return null;
         const smells = this.analyzeEntityForCodeSmells(entity);
         codeSmells.push(...smells);
       },
-      this.config.performance.maxConcurrency,
+      this.config.performance.maxConcurrency
     );
 
     return codeSmells;
@@ -785,7 +788,7 @@ return null;
         } else if (pattern.suffix && entity.name.endsWith(pattern.suffix)) {
           baseName = entity.name.substring(
             0,
-            entity.name.length - pattern.suffix.length,
+            entity.name.length - pattern.suffix.length
           );
           matched = true;
         }
@@ -796,7 +799,7 @@ return null;
             e =>
               e.name === baseName &&
               e.type === entity.type &&
-              e.file !== entity.file,
+              e.file !== entity.file
           );
 
           if (baseEntity) {
@@ -820,7 +823,7 @@ return null;
 
   private isServiceClass(
     classDecl: ts.ClassDeclaration,
-    name: string,
+    name: string
   ): boolean {
     return (
       name.toLowerCase().includes('service') ||
@@ -831,7 +834,7 @@ return null;
 
   private isReactComponent(
     classDecl: ts.ClassDeclaration,
-    name: string,
+    name: string
   ): boolean {
     return (
       this.extendsBaseClass(classDecl, 'Component') ||
@@ -846,7 +849,7 @@ return null;
 
   private isUtilityFunction(
     func: ts.FunctionDeclaration,
-    name: string,
+    name: string
   ): boolean {
     return (
       name.includes('util') ||
@@ -857,12 +860,12 @@ return null;
 
   private extendsBaseClass(
     classDecl: ts.ClassDeclaration,
-    baseClassName: string,
+    baseClassName: string
   ): boolean {
     const heritage = classDecl.heritageClauses;
     if (!heritage) {
-return false;
-}
+      return false;
+    }
 
     for (const clause of heritage) {
       if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
@@ -911,7 +914,7 @@ return false;
   }
 
   private extractInterfaceProperties(
-    interfaceDecl: ts.InterfaceDeclaration,
+    interfaceDecl: ts.InterfaceDeclaration
   ): PropertyInfo[] {
     return interfaceDecl.members
       .filter(member => ts.isPropertySignature(member))
@@ -926,7 +929,7 @@ return false;
   }
 
   private extractInterfaceMethods(
-    interfaceDecl: ts.InterfaceDeclaration,
+    interfaceDecl: ts.InterfaceDeclaration
   ): MethodInfo[] {
     return interfaceDecl.members
       .filter(member => ts.isMethodSignature(member))
@@ -940,7 +943,7 @@ return false;
   }
 
   private getVisibility(
-    node: ts.ClassElement,
+    node: ts.ClassElement
   ): 'public' | 'private' | 'protected' {
     const modifiers = ts.canHaveModifiers(node)
       ? ts.getModifiers(node)
@@ -948,11 +951,11 @@ return false;
     if (modifiers) {
       for (const modifier of modifiers) {
         if (modifier.kind === ts.SyntaxKind.PrivateKeyword) {
-return 'private';
-}
+          return 'private';
+        }
         if (modifier.kind === ts.SyntaxKind.ProtectedKeyword) {
-return 'protected';
-}
+          return 'protected';
+        }
       }
     }
     return 'public';
@@ -963,19 +966,19 @@ return 'protected';
       ? ts.getModifiers(node)
       : undefined;
     if (!modifiers) {
-return 'none';
-}
+      return 'none';
+    }
 
     let hasExport = false;
     let hasDefault = false;
 
     for (const modifier of modifiers) {
       if (modifier.kind === ts.SyntaxKind.ExportKeyword) {
-hasExport = true;
-}
+        hasExport = true;
+      }
       if (modifier.kind === ts.SyntaxKind.DefaultKeyword) {
-hasDefault = true;
-}
+        hasDefault = true;
+      }
     }
 
     if (hasExport) {
@@ -990,19 +993,19 @@ hasDefault = true;
       ? ts.getModifiers(node)
       : undefined;
     if (!modifiers) {
-return false;
-}
+      return false;
+    }
 
     return modifiers.some(
-      modifier => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      modifier => modifier.kind === ts.SyntaxKind.ExportKeyword
     );
   }
 
   private extractJsDoc(node: ts.Node): string {
     const jsDocTags = ts.getJSDocTags(node);
     if (jsDocTags.length === 0) {
-return '';
-}
+      return '';
+    }
 
     const comments = ts.getJSDocCommentsAndTags(node);
     return comments
@@ -1078,8 +1081,8 @@ return '';
         171 -
           5.2 * Math.log(lines || 1) -
           0.23 * cyclomatic -
-          16.2 * Math.log(parameters + 1),
-      ),
+          16.2 * Math.log(parameters + 1)
+      )
     );
 
     return {
@@ -1107,7 +1110,7 @@ return '';
 
   private extractNodeDependencies(
     node: ts.Node,
-    currentFile: string,
+    currentFile: string
   ): string[] {
     const dependencies = new Set<string>();
 
@@ -1133,7 +1136,7 @@ return '';
 
   private extractImportedNames(
     importClause: ts.ImportClause,
-    usedNames: Set<string>,
+    usedNames: Set<string>
   ): void {
     // Default import
     if (importClause.name) {
@@ -1154,7 +1157,7 @@ return '';
 
   private resolveImportPath(
     importPath: string,
-    fromFile: string,
+    fromFile: string
   ): string | null {
     try {
       const basePath = fromFile.substring(0, fromFile.lastIndexOf('/'));
@@ -1187,12 +1190,12 @@ return '';
   }
 
   private calculateDuplicateSeverity(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): 'critical' | 'high' | 'medium' | 'low' {
     const count = entities.length;
     const totalComplexity = entities.reduce(
       (sum, e) => sum + (e.complexity?.cyclomatic || 0),
-      0,
+      0
     );
     const avgDependencies =
       entities.reduce((sum, e) => sum + e.dependencies.length, 0) / count;
@@ -1208,29 +1211,29 @@ return '';
   }
 
   private calculateCircularDependencySeverity(
-    cycle: string[],
+    cycle: string[]
   ): 'critical' | 'high' | 'medium' | 'low' {
     const depth = cycle.length;
 
     if (depth > 5) {
-return 'critical';
-}
+      return 'critical';
+    }
     if (depth > 3) {
-return 'high';
-}
+      return 'high';
+    }
     if (depth > 2) {
-return 'medium';
-}
+      return 'medium';
+    }
     return 'low';
   }
 
   private generateConsolidationSuggestion(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): ConsolidationSuggestion | null {
     const primaryEntity = entities[0];
     if (!primaryEntity) {
-return null;
-}
+      return null;
+    }
 
     const strategy =
       primaryEntity.type === 'interface'
@@ -1277,7 +1280,7 @@ return null;
     if (cycle.length === 2) {
       suggestions.push(
         `Consider merging '${firstFile}' and '${lastFile}' into a single module`,
-        `Extract shared types/interfaces to break the bidirectional dependency between: ${cycleFileNames.join(' <-> ')}`,
+        `Extract shared types/interfaces to break the bidirectional dependency between: ${cycleFileNames.join(' <-> ')}`
       );
     } else if (cycle.length <= 4) {
       const cycleDescription = cycleFileNames.join(' -> ');
@@ -1285,34 +1288,31 @@ return null;
         `Use dependency injection to break the cycle between: ${firstFile} and ${lastFile}`,
         `Identify the most central file in the cycle (${firstFile}) and refactor its imports`,
         `Break cycle by extracting shared functionality from: ${cycleFileNames.join(', ')}`,
-        `Consider using dependency injection between: ${firstFile} and ${lastFile}`,
+        `Consider using dependency injection between: ${firstFile} and ${lastFile}`
       );
-      suggestions.push(
-        `Current cycle path: ${cycleDescription}`,
-      );
+      suggestions.push(`Current cycle path: ${cycleDescription}`);
     } else {
-      const cycleDescription = cycleFileNames.slice(0, 3).join(' -> ') + ' -> ...';
+      const cycleDescription =
+        cycleFileNames.slice(0, 3).join(' -> ') + ' -> ...';
       suggestions.push(
         `Deep circular dependency detected (${cycle.length} files) - consider major refactoring`,
         'Introduce an intermediate abstraction layer',
         `Review module boundaries for: ${cycleFileNames.slice(0, 5).join(', ')}${cycle.length > 5 ? ` and ${cycle.length - 5} more files` : ''}`,
-        `Break cycle by extracting shared functionality to a new module from: ${cycleFileNames.join(', ')}`,
+        `Break cycle by extracting shared functionality to a new module from: ${cycleFileNames.join(', ')}`
       );
-      suggestions.push(
-        `Cycle starts at: ${cycleDescription}`,
-      );
+      suggestions.push(`Cycle starts at: ${cycleDescription}`);
     }
 
     // Include specific actionable suggestions based on cycle participants
     suggestions.push(
-      `Move shared types to a separate module that can be imported by: ${cycleFileNames.join(', ')}`,
+      `Move shared types to a separate module that can be imported by: ${cycleFileNames.join(', ')}`
     );
 
     return suggestions;
   }
 
   private generateRecommendations(
-    analysisResults: AnalysisResultsInput,
+    analysisResults: AnalysisResultsInput
   ): Recommendation[] {
     const recommendations: Recommendation[] = [];
 
@@ -1394,20 +1394,20 @@ return null;
     analysisResults: {
       duplicates: DuplicateCluster[];
       circularDeps: CircularDependency[];
-    },
+    }
   ): VisualizationData {
     // Generate data for dependency graphs, duplicate networks, and complexity heatmaps
     return {
       dependencyGraph: this.generateDependencyGraphData(entities),
       duplicateNetworks: this.generateDuplicateNetworkData(
-        analysisResults.duplicates,
+        analysisResults.duplicates
       ),
       complexityHeatmap: this.generateComplexityHeatmapData(entities),
     };
   }
 
   private generateDependencyGraphData(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): VisualizationData['dependencyGraph'] {
     const nodes: DependencyGraphNode[] = entities.map(entity => ({
       id: entity.id,
@@ -1445,7 +1445,7 @@ return null;
   }
 
   private generateDuplicateNetworkData(
-    duplicates: DuplicateCluster[],
+    duplicates: DuplicateCluster[]
   ): VisualizationData['duplicateNetworks'] {
     return duplicates.map(cluster => ({
       clusterId: cluster.id,
@@ -1461,7 +1461,7 @@ return null;
 
   private generateDuplicateEdges(
     entities: EntityInfo[],
-    similarity: number,
+    similarity: number
   ): Array<{ source: string; target: string; similarity: number }> {
     const edges: Array<{ source: string; target: string; similarity: number }> =
       [];
@@ -1480,7 +1480,7 @@ return null;
   }
 
   private generateComplexityHeatmapData(
-    entities: EntityInfo[],
+    entities: EntityInfo[]
   ): VisualizationData['complexityHeatmap'] {
     const fileComplexity = new Map<
       string,

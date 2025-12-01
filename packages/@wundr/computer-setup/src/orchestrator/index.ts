@@ -15,7 +15,8 @@ import type {
   SetupOptions,
   SetupResult,
   SetupStep,
-  SetupProgress} from '../types';
+  SetupProgress,
+} from '../types';
 import type { SetupValidator } from '../validators';
 
 /**
@@ -59,7 +60,10 @@ class EventBus extends EventEmitter {
 
   override emit(event: string, data?: unknown): boolean {
     if (process.env.LOG_LEVEL === 'debug') {
-      this.busLogger.debug(`[EVENT] ${event}`, data ? JSON.stringify(data) : '');
+      this.busLogger.debug(
+        `[EVENT] ${event}`,
+        data ? JSON.stringify(data) : ''
+      );
     }
     return super.emit(event, data);
   }
@@ -94,7 +98,7 @@ export class SetupOrchestrator extends EventEmitter {
     profileManager: ProfileManager,
     installerRegistry: InstallerRegistry,
     configuratorService: ConfiguratorService,
-    validator: SetupValidator,
+    validator: SetupValidator
   ) {
     super();
     this.profileManager = profileManager;
@@ -123,7 +127,7 @@ export class SetupOrchestrator extends EventEmitter {
    */
   async orchestrate(options: SetupOptions): Promise<SetupResult> {
     const startTime = Date.now();
-    
+
     logger.info('Starting setup orchestration', {
       profile: options.profile.name,
       platform: options.platform.os,
@@ -163,13 +167,12 @@ export class SetupOrchestrator extends EventEmitter {
       await this.finalizationPhase(options, result);
 
       result.success = result.failedSteps.length === 0;
-
     } catch (error) {
       logger.error('Setup orchestration failed', error);
       result.errors.push(error as Error);
     } finally {
       result.duration = Date.now() - startTime;
-      
+
       // Emit setup completed event
       eventBus.emit('setup:completed', { result });
     }
@@ -180,18 +183,25 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 1: Validation
    */
-  private async validatePhase(options: SetupOptions, result: SetupResult): Promise<void> {
+  private async validatePhase(
+    options: SetupOptions,
+    result: SetupResult
+  ): Promise<void> {
     logger.info('Phase 1: Validation');
     this.updateProgress('Validating system requirements', 0);
 
     // Validate platform
-    const platformValid = await this.validator.validatePlatform(options.platform);
+    const platformValid = await this.validator.validatePlatform(
+      options.platform
+    );
     if (!platformValid) {
       throw new Error('Platform validation failed');
     }
 
     // Check disk space
-    const hasSpace = await this.validator.checkDiskSpace(10 * 1024 * 1024 * 1024);
+    const hasSpace = await this.validator.checkDiskSpace(
+      10 * 1024 * 1024 * 1024
+    );
     if (!hasSpace) {
       result.warnings.push('Low disk space detected');
     }
@@ -208,7 +218,10 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 2: Preparation
    */
-  private async preparationPhase(options: SetupOptions, _result: SetupResult): Promise<void> {
+  private async preparationPhase(
+    options: SetupOptions,
+    _result: SetupResult
+  ): Promise<void> {
     logger.info('Phase 2: Preparation');
     this.updateProgress('Preparing installation', 15);
 
@@ -231,12 +244,17 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 3: Installation
    */
-  private async installationPhase(options: SetupOptions, result: SetupResult): Promise<void> {
+  private async installationPhase(
+    options: SetupOptions,
+    result: SetupResult
+  ): Promise<void> {
     logger.info('Phase 3: Installation');
     this.updateProgress('Installing tools', 25);
 
     const steps = Array.from(this.activeSteps.values());
-    const installSteps = steps.filter(s => s.category === 'system' || s.category === 'development');
+    const installSteps = steps.filter(
+      s => s.category === 'system' || s.category === 'development'
+    );
 
     if (options.parallel) {
       await this.executeParallel(installSteps, options, result);
@@ -250,7 +268,10 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 4: Configuration
    */
-  private async configurationPhase(options: SetupOptions, result: SetupResult): Promise<void> {
+  private async configurationPhase(
+    options: SetupOptions,
+    result: SetupResult
+  ): Promise<void> {
     logger.info('Phase 4: Configuration');
     this.updateProgress('Configuring tools', 65);
 
@@ -268,7 +289,10 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 5: Verification
    */
-  private async verificationPhase(options: SetupOptions, result: SetupResult): Promise<void> {
+  private async verificationPhase(
+    options: SetupOptions,
+    result: SetupResult
+  ): Promise<void> {
     logger.info('Phase 5: Verification');
     this.updateProgress('Verifying setup', 85);
 
@@ -285,7 +309,10 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 6: Finalization
    */
-  private async finalizationPhase(options: SetupOptions, result: SetupResult): Promise<void> {
+  private async finalizationPhase(
+    options: SetupOptions,
+    result: SetupResult
+  ): Promise<void> {
     logger.info('Phase 6: Finalization');
     this.updateProgress('Finalizing setup', 98);
 
@@ -308,29 +335,47 @@ export class SetupOrchestrator extends EventEmitter {
    */
   private async generateInstallationPlan(
     profile: DeveloperProfile,
-    options: SetupOptions,
+    options: SetupOptions
   ): Promise<SetupStep[]> {
     const steps: SetupStep[] = [];
 
     // Get platform-specific steps
-    steps.push(...await this.installerRegistry.getSystemSteps(options.platform));
+    steps.push(
+      ...(await this.installerRegistry.getSystemSteps(options.platform))
+    );
 
     // Get tool installation steps
     if (profile.tools?.languages?.node) {
-      steps.push(...await this.installerRegistry.getNodeSteps(profile.tools.languages.node));
+      steps.push(
+        ...(await this.installerRegistry.getNodeSteps(
+          profile.tools.languages.node
+        ))
+      );
     }
 
     if (profile.tools?.languages?.python) {
-      steps.push(...await this.installerRegistry.getPythonSteps(profile.tools.languages.python));
+      steps.push(
+        ...(await this.installerRegistry.getPythonSteps(
+          profile.tools.languages.python
+        ))
+      );
     }
 
     if (profile.tools?.containers?.docker) {
-      steps.push(...await this.installerRegistry.getDockerSteps());
+      steps.push(...(await this.installerRegistry.getDockerSteps()));
     }
 
     // Get configuration steps
-    steps.push(...await this.configuratorService.getGitConfigSteps(profile.preferences.gitConfig));
-    steps.push(...await this.configuratorService.getEditorSteps(profile.preferences?.editor || 'vscode'));
+    steps.push(
+      ...(await this.configuratorService.getGitConfigSteps(
+        profile.preferences.gitConfig
+      ))
+    );
+    steps.push(
+      ...(await this.configuratorService.getEditorSteps(
+        profile.preferences?.editor || 'vscode'
+      ))
+    );
 
     // Sort by dependencies
     return this.sortByDependencies(steps);
@@ -342,13 +387,15 @@ export class SetupOrchestrator extends EventEmitter {
   private async executeParallel(
     steps: SetupStep[],
     options: SetupOptions,
-    result: SetupResult,
+    result: SetupResult
   ): Promise<void> {
     // Group steps by dependencies
     const groups = this.groupByDependencies(steps);
 
     for (const group of groups) {
-      const promises = group.map(step => this.executeStep(step, options, result));
+      const promises = group.map(step =>
+        this.executeStep(step, options, result)
+      );
       await Promise.allSettled(promises);
     }
   }
@@ -359,7 +406,7 @@ export class SetupOrchestrator extends EventEmitter {
   private async executeSequential(
     steps: SetupStep[],
     options: SetupOptions,
-    result: SetupResult,
+    result: SetupResult
   ): Promise<void> {
     for (const step of steps) {
       await this.executeStep(step, options, result);
@@ -372,7 +419,7 @@ export class SetupOrchestrator extends EventEmitter {
   private async executeStep(
     step: SetupStep,
     options: SetupOptions,
-    result: SetupResult,
+    result: SetupResult
   ): Promise<void> {
     try {
       this.updateProgress(`Executing: ${step.name}`, null);
@@ -402,20 +449,19 @@ export class SetupOrchestrator extends EventEmitter {
 
       // Execute installation
       await step.installer();
-      
+
       this.completedSteps.add(step.id);
       result.completedSteps.push(step.id);
-      
+
       logger.info(`Step completed: ${step.name}`);
       eventBus.emit('step:completed', { step });
-
     } catch (error) {
       logger.error(`Step failed: ${step.name}`, error);
-      
+
       this.failedSteps.add(step.id);
       result.failedSteps.push(step.id);
       result.errors.push(error as Error);
-      
+
       eventBus.emit('step:failed', { step, error });
 
       // Attempt rollback
@@ -444,8 +490,8 @@ export class SetupOrchestrator extends EventEmitter {
 
     const visit = (step: SetupStep) => {
       if (visited.has(step.id)) {
-return;
-}
+        return;
+      }
       if (visiting.has(step.id)) {
         logger.warn(`Circular dependency detected: ${step.id}`);
         return;
@@ -456,8 +502,8 @@ return;
       for (const depId of step.dependencies) {
         const dep = steps.find(s => s.id === depId);
         if (dep) {
-visit(dep);
-}
+          visit(dep);
+        }
       }
 
       visiting.delete(step.id);
@@ -513,7 +559,7 @@ visit(dep);
    */
   private async applyTeamConfiguration(team: string): Promise<void> {
     logger.info(`Applying team configuration: ${team}`);
-    
+
     // This would fetch and apply team-specific settings
     // For now, we'll just log it
     eventBus.emit('team:config:applied', { team });
@@ -524,7 +570,7 @@ visit(dep);
    */
   private async generateSetupReport(
     options: SetupOptions,
-    result: SetupResult,
+    result: SetupResult
   ): Promise<SetupReport> {
     const report = {
       timestamp: new Date(),
@@ -554,13 +600,13 @@ visit(dep);
    */
   private updateProgress(step: string, percentage: number | null): void {
     this.progress.currentStep = step;
-    
+
     if (percentage !== null) {
       this.progress.percentage = percentage;
     }
 
     this.progress.logs.push(`[${new Date().toISOString()}] ${step}`);
-    
+
     this.emit('progress', this.progress);
     eventBus.emit('progress:updated', this.progress);
   }
@@ -604,7 +650,10 @@ visit(dep);
   /**
    * Generate next steps for the user
    */
-  private generateNextSteps(profile: DeveloperProfile, result: SetupResult): string[] {
+  private generateNextSteps(
+    profile: DeveloperProfile,
+    result: SetupResult
+  ): string[] {
     const steps: string[] = [];
 
     steps.push('1. Restart your terminal to apply shell configurations');
@@ -619,7 +668,9 @@ visit(dep);
     }
 
     if (result.failedSteps.length > 0) {
-      steps.push('5. Review failed steps and run "wundr setup --retry" to complete');
+      steps.push(
+        '5. Review failed steps and run "wundr setup --retry" to complete'
+      );
     }
 
     steps.push('6. Review team onboarding documentation');

@@ -43,8 +43,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -54,8 +57,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -64,15 +70,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Validate required fields
     if (!workspaceSlug) {
       return NextResponse.json(
-        createErrorResponse('Workspace slug is required', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Workspace slug is required',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (!recipientIds || recipientIds.length === 0) {
       return NextResponse.json(
-        createErrorResponse('At least one recipient is required', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'At least one recipient is required',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -83,8 +95,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', ORG_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Workspace not found',
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -100,8 +115,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!requesterMembership) {
       return NextResponse.json(
-        createErrorResponse('You are not a member of this workspace', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'You are not a member of this workspace',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -123,16 +141,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    const foundRecipientIds = new Set(recipientMemberships.map(rm => rm.userId));
-    const missingRecipients = recipientIds.filter(id => !foundRecipientIds.has(id));
+    const foundRecipientIds = new Set(
+      recipientMemberships.map(rm => rm.userId)
+    );
+    const missingRecipients = recipientIds.filter(
+      id => !foundRecipientIds.has(id)
+    );
 
     if (missingRecipients.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           `Some recipients are not workspace members: ${missingRecipients.join(', ')}`,
-          ORG_ERROR_CODES.USER_NOT_FOUND,
+          ORG_ERROR_CODES.USER_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -201,7 +223,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       channelName = `dm:${sortedIds[0]}:${sortedIds[1]}`;
     }
 
-    const newChannel = await prisma.$transaction(async (tx) => {
+    const newChannel = await prisma.$transaction(async tx => {
       // Create the channel
       const channel = await tx.channel.create({
         data: {
@@ -262,16 +284,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         isNew: true,
         message: 'Conversation created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/conversations] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

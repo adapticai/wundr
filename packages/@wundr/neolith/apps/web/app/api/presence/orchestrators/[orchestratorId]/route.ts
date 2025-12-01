@@ -37,8 +37,8 @@ interface RouteContext {
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
   if (!lastActiveAt) {
-return false;
-}
+    return false;
+  }
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
@@ -71,15 +71,18 @@ return false;
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -88,8 +91,11 @@ export async function GET(
     const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createPresenceErrorResponse('Invalid OrchestratorID format', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createPresenceErrorResponse(
+          'Invalid OrchestratorID format',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -108,8 +114,11 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createPresenceErrorResponse('Orchestrator not found', PRESENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createPresenceErrorResponse(
+          'Orchestrator not found',
+          PRESENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -119,7 +128,9 @@ export async function GET(
     });
 
     // Determine if Orchestrator is healthy (online and recent activity)
-    const isHealthy = orchestrator.status === 'ONLINE' && isUserOnline(orchestrator.user.lastActiveAt);
+    const isHealthy =
+      orchestrator.status === 'ONLINE' &&
+      isUserOnline(orchestrator.user.lastActiveAt);
 
     const response: OrchestratorPresenceResponse = {
       orchestratorId: orchestrator.id,
@@ -134,13 +145,16 @@ export async function GET(
       data: response,
     });
   } catch (error) {
-    console.error('[GET /api/presence/orchestrators/:orchestratorId] Error:', error);
+    console.error(
+      '[GET /api/presence/orchestrators/:orchestratorId] Error:',
+      error
+    );
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

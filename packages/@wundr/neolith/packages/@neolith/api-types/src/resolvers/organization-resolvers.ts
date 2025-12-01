@@ -8,7 +8,6 @@
  * @module @genesis/api-types/resolvers/organization-resolvers
  */
 
-
 import type {
   Prisma,
   PrismaClient,
@@ -30,7 +29,8 @@ export const OrganizationRole = {
   Member: 'MEMBER',
 } as const;
 
-export type OrganizationRoleType = (typeof OrganizationRole)[keyof typeof OrganizationRole];
+export type OrganizationRoleType =
+  (typeof OrganizationRole)[keyof typeof OrganizationRole];
 
 /**
  * User role for authorization checks
@@ -338,7 +338,9 @@ function generateSlug(name: string): string {
  * @returns Base64 encoded cursor
  */
 function generateCursor(item: { createdAt: Date; id: string }): string {
-  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString('base64');
+  return Buffer.from(`${item.createdAt.toISOString()}:${item.id}`).toString(
+    'base64'
+  );
 }
 
 /**
@@ -558,7 +560,9 @@ export const organizationQueries = {
       orderBy: { joinedAt: 'desc' },
     });
 
-    return memberships.map((m: typeof memberships[number]) => toOrganization(m.organization));
+    return memberships.map((m: (typeof memberships)[number]) =>
+      toOrganization(m.organization)
+    );
   },
 
   /**
@@ -634,19 +638,28 @@ export const organizationQueries = {
       orderBy: [{ joinedAt: 'desc' }, { id: 'desc' }],
       include: {
         user: {
-          select: { id: true, email: true, name: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
     });
 
     const totalCount = await context.prisma.organizationMember.count({
-      where: { organizationId: orgId, ...(role ? { role: role as PrismaOrgRole } : {}) },
+      where: {
+        organizationId: orgId,
+        ...(role ? { role: role as PrismaOrgRole } : {}),
+      },
     });
 
     const hasNextPage = members.length > first;
     const nodes = hasNextPage ? members.slice(0, -1) : members;
 
-    const edges = nodes.map((member: typeof nodes[number]) => ({
+    const edges = nodes.map((member: (typeof nodes)[number]) => ({
       node: {
         id: member.id,
         role: member.role,
@@ -807,9 +820,12 @@ export const organizationMutations = {
     // Check modification permission
     const canModify = await canModifyOrganization(context, id);
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify this organization', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify this organization',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Validate input
@@ -897,9 +913,12 @@ export const organizationMutations = {
     // Only owner or system admin can delete organization
     const memberInfo = await getOrganizationMemberInfo(context, args.id);
     if (memberInfo.role !== 'OWNER' && !isSystemAdmin(context)) {
-      throw new GraphQLError('Only organization owner can delete the organization', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'Only organization owner can delete the organization',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Delete organization (cascades to workspaces, members, etc.)
@@ -1000,7 +1019,12 @@ export const organizationMutations = {
     if (role === 'OWNER') {
       return {
         member: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role directly' }],
+        errors: [
+          {
+            code: 'BAD_USER_INPUT',
+            message: 'Cannot assign OWNER role directly',
+          },
+        ],
       };
     }
 
@@ -1084,7 +1108,9 @@ export const organizationMutations = {
       return {
         success: false,
         deletedId: null,
-        errors: [{ code: 'FORBIDDEN', message: 'Cannot remove organization owner' }],
+        errors: [
+          { code: 'FORBIDDEN', message: 'Cannot remove organization owner' },
+        ],
       };
     }
 
@@ -1098,9 +1124,12 @@ export const organizationMutations = {
       isSelfRemoval;
 
     if (!canRemove) {
-      throw new GraphQLError('You do not have permission to remove this member', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to remove this member',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Remove member
@@ -1183,16 +1212,21 @@ export const organizationMutations = {
     // Only owner or system admin can change roles
     const memberInfo = await getOrganizationMemberInfo(context, orgId);
     if (memberInfo.role !== 'OWNER' && !isSystemAdmin(context)) {
-      throw new GraphQLError('Only organization owner can change member roles', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'Only organization owner can change member roles',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Prevent assigning OWNER role
     if (role === 'OWNER') {
       return {
         member: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role' }],
+        errors: [
+          { code: 'BAD_USER_INPUT', message: 'Cannot assign OWNER role' },
+        ],
       };
     }
 
@@ -1268,7 +1302,13 @@ export const OrganizationFieldResolvers = {
       where: { organizationId: parent.id },
       include: {
         user: {
-          select: { id: true, email: true, name: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
       orderBy: { joinedAt: 'asc' },

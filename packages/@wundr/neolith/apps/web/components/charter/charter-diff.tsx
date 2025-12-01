@@ -1,8 +1,20 @@
 'use client';
 
 import * as React from 'react';
-import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ChevronDown,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -123,8 +135,18 @@ function computeCharterDiff(
 
   // Mission & Vision section
   const missionVisionChanges: DiffChange[] = [];
-  const missionDiff = computeDiff(oldCharter.mission, newCharter.mission, 'mission', 'Mission');
-  const visionDiff = computeDiff(oldCharter.vision, newCharter.vision, 'vision', 'Vision');
+  const missionDiff = computeDiff(
+    oldCharter.mission,
+    newCharter.mission,
+    'mission',
+    'Mission'
+  );
+  const visionDiff = computeDiff(
+    oldCharter.vision,
+    newCharter.vision,
+    'vision',
+    'Vision'
+  );
 
   if (missionDiff) missionVisionChanges.push(missionDiff);
   if (visionDiff) missionVisionChanges.push(visionDiff);
@@ -138,7 +160,12 @@ function computeCharterDiff(
   }
 
   // Values section
-  const valuesDiff = computeDiff(oldCharter.values, newCharter.values, 'values', 'Values');
+  const valuesDiff = computeDiff(
+    oldCharter.values,
+    newCharter.values,
+    'values',
+    'Values'
+  );
   if (valuesDiff) {
     sections.push({
       section: 'Values',
@@ -302,7 +329,11 @@ function computeCharterDiff(
 /**
  * Compute statistics for a set of changes
  */
-function computeStats(changes: DiffChange[]): { added: number; removed: number; modified: number } {
+function computeStats(changes: DiffChange[]): {
+  added: number;
+  removed: number;
+  modified: number;
+} {
   return changes.reduce(
     (acc, change) => {
       if (change.type === 'added') acc.added++;
@@ -318,7 +349,10 @@ function computeStats(changes: DiffChange[]): { added: number; removed: number; 
  * Component to render a single diff change
  */
 function DiffChangeItem({ change }: { change: DiffChange }) {
-  const renderValue = (value: string | string[] | undefined, type: 'old' | 'new') => {
+  const renderValue = (
+    value: string | string[] | undefined,
+    type: 'old' | 'new'
+  ) => {
     if (!value) return null;
 
     const isOld = type === 'old';
@@ -332,13 +366,19 @@ function DiffChangeItem({ change }: { change: DiffChange }) {
 
       return (
         <div className={cn('rounded-md border p-3', bgColor, borderColor)}>
-          <div className="flex flex-wrap gap-1.5">
+          <div className='flex flex-wrap gap-1.5'>
             {value.map((item, idx) => {
               const isChanged = !otherSet.has(item);
               return (
                 <Badge
                   key={idx}
-                  variant={isChanged ? (isOld ? 'destructive' : 'default') : 'secondary'}
+                  variant={
+                    isChanged
+                      ? isOld
+                        ? 'destructive'
+                        : 'default'
+                      : 'secondary'
+                  }
                   className={cn(!isChanged && 'opacity-60')}
                 >
                   {item}
@@ -358,22 +398,36 @@ function DiffChangeItem({ change }: { change: DiffChange }) {
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-700">{change.label}</span>
-        {change.type === 'added' && <Badge variant="default" className="bg-green-600">Added</Badge>}
-        {change.type === 'removed' && <Badge variant="destructive">Removed</Badge>}
-        {change.type === 'modified' && <Badge variant="secondary">Modified</Badge>}
+    <div className='space-y-2'>
+      <div className='flex items-center gap-2'>
+        <span className='text-sm font-medium text-gray-700'>
+          {change.label}
+        </span>
+        {change.type === 'added' && (
+          <Badge variant='default' className='bg-green-600'>
+            Added
+          </Badge>
+        )}
+        {change.type === 'removed' && (
+          <Badge variant='destructive'>Removed</Badge>
+        )}
+        {change.type === 'modified' && (
+          <Badge variant='secondary'>Modified</Badge>
+        )}
       </div>
 
       {change.type === 'modified' && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className='grid grid-cols-2 gap-4'>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-gray-500">Old Value</p>
+            <p className='mb-1.5 text-xs font-medium text-gray-500'>
+              Old Value
+            </p>
             {renderValue(change.oldValue, 'old')}
           </div>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-gray-500">New Value</p>
+            <p className='mb-1.5 text-xs font-medium text-gray-500'>
+              New Value
+            </p>
             {renderValue(change.newValue, 'new')}
           </div>
         </div>
@@ -381,14 +435,14 @@ function DiffChangeItem({ change }: { change: DiffChange }) {
 
       {change.type === 'added' && (
         <div>
-          <p className="mb-1.5 text-xs font-medium text-gray-500">New Value</p>
+          <p className='mb-1.5 text-xs font-medium text-gray-500'>New Value</p>
           {renderValue(change.newValue, 'new')}
         </div>
       )}
 
       {change.type === 'removed' && (
         <div>
-          <p className="mb-1.5 text-xs font-medium text-gray-500">Old Value</p>
+          <p className='mb-1.5 text-xs font-medium text-gray-500'>Old Value</p>
           {renderValue(change.oldValue, 'old')}
         </div>
       )}
@@ -399,49 +453,56 @@ function DiffChangeItem({ change }: { change: DiffChange }) {
 /**
  * Component to render a section diff
  */
-function SectionDiffCard({ sectionDiff, defaultExpanded = true }: { sectionDiff: SectionDiff; defaultExpanded?: boolean }) {
+function SectionDiffCard({
+  sectionDiff,
+  defaultExpanded = true,
+}: {
+  sectionDiff: SectionDiff;
+  defaultExpanded?: boolean;
+}) {
   const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <CardHeader className='pb-3'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3'>
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 w-8 p-0"
+              className='h-8 w-8 p-0'
             >
               {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className='h-4 w-4' />
               ) : (
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className='h-4 w-4' />
               )}
             </Button>
             <div>
-              <CardTitle className="text-lg">{sectionDiff.section}</CardTitle>
+              <CardTitle className='text-lg'>{sectionDiff.section}</CardTitle>
               <CardDescription>
-                {sectionDiff.changes.length} {sectionDiff.changes.length === 1 ? 'change' : 'changes'}
+                {sectionDiff.changes.length}{' '}
+                {sectionDiff.changes.length === 1 ? 'change' : 'changes'}
               </CardDescription>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {sectionDiff.stats.added > 0 && (
-              <div className="flex items-center gap-1 text-sm text-green-600">
-                <TrendingUp className="h-4 w-4" />
+              <div className='flex items-center gap-1 text-sm text-green-600'>
+                <TrendingUp className='h-4 w-4' />
                 <span>{sectionDiff.stats.added}</span>
               </div>
             )}
             {sectionDiff.stats.removed > 0 && (
-              <div className="flex items-center gap-1 text-sm text-red-600">
-                <TrendingDown className="h-4 w-4" />
+              <div className='flex items-center gap-1 text-sm text-red-600'>
+                <TrendingDown className='h-4 w-4' />
                 <span>{sectionDiff.stats.removed}</span>
               </div>
             )}
             {sectionDiff.stats.modified > 0 && (
-              <div className="flex items-center gap-1 text-sm text-blue-600">
-                <Minus className="h-4 w-4" />
+              <div className='flex items-center gap-1 text-sm text-blue-600'>
+                <Minus className='h-4 w-4' />
                 <span>{sectionDiff.stats.modified}</span>
               </div>
             )}
@@ -449,7 +510,7 @@ function SectionDiffCard({ sectionDiff, defaultExpanded = true }: { sectionDiff:
         </div>
       </CardHeader>
       {isExpanded && (
-        <CardContent className="space-y-4">
+        <CardContent className='space-y-4'>
           {sectionDiff.changes.map((change, idx) => (
             <DiffChangeItem key={idx} change={change} />
           ))}
@@ -500,7 +561,8 @@ export function CharterDiff({
     );
   }, [sectionDiffs]);
 
-  const totalChanges = totalStats.added + totalStats.removed + totalStats.modified;
+  const totalChanges =
+    totalStats.added + totalStats.removed + totalStats.modified;
 
   if (sectionDiffs.length === 0) {
     return (
@@ -509,12 +571,13 @@ export function CharterDiff({
           <CardTitle>No Changes</CardTitle>
           <CardDescription>
             The charters are identical
-            {oldVersion !== undefined && newVersion !== undefined &&
+            {oldVersion !== undefined &&
+              newVersion !== undefined &&
               ` (v${oldVersion} vs v${newVersion})`}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500">
+          <p className='text-sm text-gray-500'>
             There are no differences between the selected charter versions.
           </p>
         </CardContent>
@@ -535,34 +598,39 @@ export function CharterDiff({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Total Changes:</span>
-              <Badge variant="outline" className="font-semibold">
+          <div className='flex items-center gap-6'>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm font-medium text-gray-700'>
+                Total Changes:
+              </span>
+              <Badge variant='outline' className='font-semibold'>
                 {totalChanges}
               </Badge>
             </div>
             {totalStats.added > 0 && (
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-green-600">
-                  {totalStats.added} {totalStats.added === 1 ? 'addition' : 'additions'}
+              <div className='flex items-center gap-2'>
+                <TrendingUp className='h-4 w-4 text-green-600' />
+                <span className='text-sm text-green-600'>
+                  {totalStats.added}{' '}
+                  {totalStats.added === 1 ? 'addition' : 'additions'}
                 </span>
               </div>
             )}
             {totalStats.removed > 0 && (
-              <div className="flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-                <span className="text-sm text-red-600">
-                  {totalStats.removed} {totalStats.removed === 1 ? 'removal' : 'removals'}
+              <div className='flex items-center gap-2'>
+                <TrendingDown className='h-4 w-4 text-red-600' />
+                <span className='text-sm text-red-600'>
+                  {totalStats.removed}{' '}
+                  {totalStats.removed === 1 ? 'removal' : 'removals'}
                 </span>
               </div>
             )}
             {totalStats.modified > 0 && (
-              <div className="flex items-center gap-2">
-                <Minus className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-blue-600">
-                  {totalStats.modified} {totalStats.modified === 1 ? 'modification' : 'modifications'}
+              <div className='flex items-center gap-2'>
+                <Minus className='h-4 w-4 text-blue-600' />
+                <span className='text-sm text-blue-600'>
+                  {totalStats.modified}{' '}
+                  {totalStats.modified === 1 ? 'modification' : 'modifications'}
                 </span>
               </div>
             )}
@@ -571,7 +639,7 @@ export function CharterDiff({
       </Card>
 
       {/* Section Diffs */}
-      <div className="max-h-[600px] space-y-3 overflow-y-auto pr-2">
+      <div className='max-h-[600px] space-y-3 overflow-y-auto pr-2'>
         {sectionDiffs.map((sectionDiff, idx) => (
           <SectionDiffCard key={idx} sectionDiff={sectionDiff} />
         ))}

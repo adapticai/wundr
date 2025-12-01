@@ -22,7 +22,10 @@ import {
   getFileCategory,
 } from '@/lib/validations/upload';
 
-import type { MultipartInitInput, MultipartInitResponse } from '@/lib/validations/upload';
+import type {
+  MultipartInitInput,
+  MultipartInitResponse,
+} from '@/lib/validations/upload';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -59,14 +62,15 @@ function generateUploadId(): string {
 async function initiateMultipartUpload(
   s3Key: string,
   s3Bucket: string,
-  contentType: string,
+  contentType: string
 ): Promise<MultipartInitResponse> {
   const region = process.env.AWS_REGION ?? 'us-east-1';
   const expiresIn = 24 * 3600; // 24 hours for multipart uploads
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
   try {
-    const { S3Client, CreateMultipartUploadCommand } = await import('@aws-sdk/client-s3');
+    const { S3Client, CreateMultipartUploadCommand } =
+      await import('@aws-sdk/client-s3');
 
     const client = new S3Client({
       region,
@@ -81,7 +85,7 @@ async function initiateMultipartUpload(
         Bucket: s3Bucket,
         Key: s3Key,
         ContentType: contentType,
-      }),
+      })
     );
 
     return {
@@ -158,8 +162,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -169,8 +176,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -181,23 +191,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: MultipartInitInput = parseResult.data;
 
     // Check workspace membership
-    const membership = await checkWorkspaceMembership(input.workspaceId, session.user.id);
+    const membership = await checkWorkspaceMembership(
+      input.workspaceId,
+      session.user.id
+    );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -206,7 +219,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const s3Key = generateS3Key(input.workspaceId, input.filename);
 
     // Initiate multipart upload
-    const multipartData = await initiateMultipartUpload(s3Key, s3Bucket, input.contentType);
+    const multipartData = await initiateMultipartUpload(
+      s3Key,
+      s3Bucket,
+      input.contentType
+    );
 
     // Create pending file record with multipart upload metadata
     await prisma.file.create({
@@ -240,9 +257,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

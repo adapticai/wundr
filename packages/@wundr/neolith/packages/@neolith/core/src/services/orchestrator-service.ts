@@ -17,7 +17,10 @@ import {
   OrganizationNotFoundError,
   TransactionError,
 } from '../errors';
-import { DEFAULT_ORCHESTRATOR_CHARTER, isOrchestratorServiceAccountConfig } from '../types/orchestrator';
+import {
+  DEFAULT_ORCHESTRATOR_CHARTER,
+  isOrchestratorServiceAccountConfig,
+} from '../types/orchestrator';
 import {
   deepMerge,
   extractKeyPrefix,
@@ -78,7 +81,10 @@ export interface OrchestratorService {
    * @param organizationId - The organization ID for scoping
    * @returns The Orchestrator with user data, or null if not found
    */
-  getVPBySlug(slug: string, organizationId: string): Promise<OrchestratorWithUser | null>;
+  getVPBySlug(
+    slug: string,
+    organizationId: string
+  ): Promise<OrchestratorWithUser | null>;
 
   /**
    * Lists Orchestrators by organization.
@@ -87,7 +93,10 @@ export interface OrchestratorService {
    * @param options - Listing options
    * @returns Paginated Orchestrator results
    */
-  listVPsByOrganization(orgId: string, options?: ListOrchestratorsOptions): Promise<PaginatedOrchestratorResult>;
+  listVPsByOrganization(
+    orgId: string,
+    options?: ListOrchestratorsOptions
+  ): Promise<PaginatedOrchestratorResult>;
 
   /**
    * Lists Orchestrators by discipline.
@@ -96,7 +105,10 @@ export interface OrchestratorService {
    * @param organizationId - Optional organization ID for scoping
    * @returns List of Orchestrators in the discipline
    */
-  listVPsByDiscipline(discipline: string, organizationId?: string): Promise<OrchestratorWithUser[]>;
+  listVPsByDiscipline(
+    discipline: string,
+    organizationId?: string
+  ): Promise<OrchestratorWithUser[]>;
 
   /**
    * Updates a Orchestrator.
@@ -106,7 +118,10 @@ export interface OrchestratorService {
    * @returns The updated Orchestrator
    * @throws {VPNotFoundError} If the Orchestrator doesn't exist
    */
-  updateVP(id: string, data: UpdateOrchestratorInput): Promise<OrchestratorWithUser>;
+  updateVP(
+    id: string,
+    data: UpdateOrchestratorInput
+  ): Promise<OrchestratorWithUser>;
 
   /**
    * Deletes a Orchestrator and associated User record.
@@ -182,7 +197,9 @@ export interface ServiceAccountService {
 /**
  * OrchestratorService implementation providing CRUD operations and service account management.
  */
-export class OrchestratorServiceImpl implements OrchestratorService, ServiceAccountService {
+export class OrchestratorServiceImpl
+  implements OrchestratorService, ServiceAccountService
+{
   private readonly db: PrismaClient;
 
   /**
@@ -215,7 +232,8 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
     }
 
     // Generate email if not provided
-    const email = data.email || generateOrchestratorEmail(data.name, organization.slug);
+    const email =
+      data.email || generateOrchestratorEmail(data.name, organization.slug);
 
     // Check if email is already taken
     const existingUser = await this.db.user.findUnique({
@@ -231,7 +249,7 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
 
     try {
       // Create Orchestrator and User in a transaction
-      const result = await this.db.$transaction(async (tx) => {
+      const result = await this.db.$transaction(async tx => {
         // Create User first
         const user = await tx.user.create({
           data: {
@@ -267,7 +285,10 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
 
       return result as OrchestratorWithUser;
     } catch (error) {
-      throw new TransactionError('createOrchestrator', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createOrchestrator',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -286,7 +307,10 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
   /**
    * Gets a Orchestrator by slug within an organization.
    */
-  async getVPBySlug(slug: string, organizationId: string): Promise<OrchestratorWithUser | null> {
+  async getVPBySlug(
+    slug: string,
+    organizationId: string
+  ): Promise<OrchestratorWithUser | null> {
     // We need to find by user email slug pattern since Orchestrator doesn't have a slug field
     const orchestrators = await this.db.orchestrator.findMany({
       where: {
@@ -309,7 +333,7 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
    */
   async listVPsByOrganization(
     orgId: string,
-    options: ListOrchestratorsOptions = {},
+    options: ListOrchestratorsOptions = {}
   ): Promise<PaginatedOrchestratorResult> {
     const {
       status,
@@ -353,7 +377,10 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
   /**
    * Lists Orchestrators by discipline.
    */
-  async listVPsByDiscipline(discipline: string, organizationId?: string): Promise<OrchestratorWithUser[]> {
+  async listVPsByDiscipline(
+    discipline: string,
+    organizationId?: string
+  ): Promise<OrchestratorWithUser[]> {
     const where: Prisma.orchestratorWhereInput = {
       discipline,
       ...(organizationId && { organizationId }),
@@ -371,7 +398,10 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
   /**
    * Updates a Orchestrator.
    */
-  async updateVP(id: string, data: UpdateOrchestratorInput): Promise<OrchestratorWithUser> {
+  async updateVP(
+    id: string,
+    data: UpdateOrchestratorInput
+  ): Promise<OrchestratorWithUser> {
     // Check Orchestrator exists
     const existing = await this.getVP(id);
     if (!existing) {
@@ -379,7 +409,7 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
     }
 
     try {
-      const result = await this.db.$transaction(async (tx) => {
+      const result = await this.db.$transaction(async tx => {
         // Update User if name or bio changed
         if (data.name || data.bio || data.avatarUrl || data.charter) {
           const userUpdate: Prisma.userUpdateInput = {};
@@ -399,10 +429,12 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
 
           if (data.charter) {
             // Merge with existing charter
-            const existingConfig = this.parseOrchestratorConfig(existing.user.orchestratorConfig);
+            const existingConfig = this.parseOrchestratorConfig(
+              existing.user.orchestratorConfig
+            );
             const mergedCharter = deepMerge(
               existingConfig.charter ?? DEFAULT_ORCHESTRATOR_CHARTER,
-              data.charter,
+              data.charter
             );
             userUpdate.orchestratorConfig = {
               ...existingConfig,
@@ -430,7 +462,8 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
         }
 
         if (data.capabilities !== undefined) {
-          orchestratorUpdate.capabilities = data.capabilities as Prisma.InputJsonValue;
+          orchestratorUpdate.capabilities =
+            data.capabilities as Prisma.InputJsonValue;
         }
 
         if (data.daemonEndpoint !== undefined) {
@@ -451,7 +484,10 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
       if (error instanceof OrchestratorNotFoundError) {
         throw error;
       }
-      throw new TransactionError('updateOrchestrator', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'updateOrchestrator',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -465,7 +501,7 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async tx => {
         // Delete Orchestrator first (due to foreign key constraint)
         await tx.orchestrator.delete({
           where: { id },
@@ -477,7 +513,10 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
         });
       });
     } catch (error) {
-      throw new TransactionError('deleteOrchestrator', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteOrchestrator',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -537,11 +576,13 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
     }
 
     // Check if there's already an active key
-    const existingConfig = this.parseOrchestratorConfig(orchestrator.user.orchestratorConfig);
+    const existingConfig = this.parseOrchestratorConfig(
+      orchestrator.user.orchestratorConfig
+    );
     if (existingConfig.apiKeyHash && !existingConfig.apiKeyRevoked) {
       throw new APIKeyGenerationError(
         vpId,
-        'Orchestrator already has an active API key. Use rotateAPIKey to replace it.',
+        'Orchestrator already has an active API key. Use rotateAPIKey to replace it.'
       );
     }
 
@@ -589,7 +630,9 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
     const previousKeyRevokedAt = new Date();
 
     // Update Orchestrator config with new key hash
-    const existingConfig = this.parseOrchestratorConfig(orchestrator.user.orchestratorConfig);
+    const existingConfig = this.parseOrchestratorConfig(
+      orchestrator.user.orchestratorConfig
+    );
     const newConfig: OrchestratorServiceAccountConfig = {
       ...existingConfig,
       apiKeyHash: keyHash,
@@ -622,7 +665,9 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
       throw new OrchestratorNotFoundError(vpId);
     }
 
-    const existingConfig = this.parseOrchestratorConfig(orchestrator.user.orchestratorConfig);
+    const existingConfig = this.parseOrchestratorConfig(
+      orchestrator.user.orchestratorConfig
+    );
 
     if (!existingConfig.apiKeyHash) {
       return; // No key to revoke
@@ -725,14 +770,19 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new OrchestratorValidationError('Orchestrator validation failed', errors);
+      throw new OrchestratorValidationError(
+        'Orchestrator validation failed',
+        errors
+      );
     }
   }
 
   /**
    * Builds Orchestrator config with charter.
    */
-  private buildVPConfig(charter?: Partial<OrchestratorCharter>): OrchestratorServiceAccountConfig {
+  private buildVPConfig(
+    charter?: Partial<OrchestratorCharter>
+  ): OrchestratorServiceAccountConfig {
     const config: OrchestratorServiceAccountConfig = {};
 
     if (charter) {
@@ -754,8 +804,14 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
    * @param orchestratorConfig - Raw config from database (Prisma JSON field)
    * @returns Typed Orchestrator service account config, or empty object if invalid
    */
-  private parseOrchestratorConfig(orchestratorConfig: Prisma.JsonValue | null | undefined): OrchestratorServiceAccountConfig {
-    if (orchestratorConfig !== null && orchestratorConfig !== undefined && isOrchestratorServiceAccountConfig(orchestratorConfig)) {
+  private parseOrchestratorConfig(
+    orchestratorConfig: Prisma.JsonValue | null | undefined
+  ): OrchestratorServiceAccountConfig {
+    if (
+      orchestratorConfig !== null &&
+      orchestratorConfig !== undefined &&
+      isOrchestratorServiceAccountConfig(orchestratorConfig)
+    ) {
       return orchestratorConfig;
     }
     return {};
@@ -788,7 +844,9 @@ export class OrchestratorServiceImpl implements OrchestratorService, ServiceAcco
  * const { key } = await orchestratorService.generateAPIKey(vp.id);
  * ```
  */
-export function createOrchestratorService(database?: PrismaClient): OrchestratorServiceImpl {
+export function createOrchestratorService(
+  database?: PrismaClient
+): OrchestratorServiceImpl {
   return new OrchestratorServiceImpl(database);
 }
 

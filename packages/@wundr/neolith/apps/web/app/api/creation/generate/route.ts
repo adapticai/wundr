@@ -13,7 +13,14 @@ import { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import type { ChannelSpec, OrchestratorSpec, SessionManagerSpec, SubagentSpec, WorkflowSpec, WorkspaceSpec } from '@/lib/validations/creation';
+import type {
+  ChannelSpec,
+  OrchestratorSpec,
+  SessionManagerSpec,
+  SubagentSpec,
+  WorkflowSpec,
+  WorkspaceSpec,
+} from '@/lib/validations/creation';
 import {
   CREATION_ERROR_CODES,
   channelSpecSchema,
@@ -79,7 +86,11 @@ async function createOrchestrator(spec: OrchestratorSpec, workspaceId: string) {
 /**
  * Create a workflow from spec
  */
-async function createWorkflow(spec: WorkflowSpec, userId: string, workspaceId: string) {
+async function createWorkflow(
+  spec: WorkflowSpec,
+  userId: string,
+  workspaceId: string
+) {
   const workflow = await prisma.workflow.create({
     data: {
       workspaceId,
@@ -103,7 +114,11 @@ async function createWorkflow(spec: WorkflowSpec, userId: string, workspaceId: s
 /**
  * Create a channel from spec
  */
-async function createChannel(spec: ChannelSpec, userId: string, workspaceId: string) {
+async function createChannel(
+  spec: ChannelSpec,
+  userId: string,
+  workspaceId: string
+) {
   // Create a slug from the name (remove # prefix if present)
   const slug = spec.name.replace(/^#/, '').toLowerCase();
 
@@ -127,7 +142,7 @@ async function createChannel(spec: ChannelSpec, userId: string, workspaceId: str
   // Add initial members
   if (spec.initialMembers && spec.initialMembers.length > 0) {
     await prisma.channelMember.createMany({
-      data: spec.initialMembers.map((memberId) => ({
+      data: spec.initialMembers.map(memberId => ({
         channelId: channel.id,
         userId: memberId,
         role: 'MEMBER',
@@ -150,10 +165,17 @@ async function createChannel(spec: ChannelSpec, userId: string, workspaceId: str
 /**
  * Create a workspace from spec
  */
-async function createWorkspace(spec: WorkspaceSpec, userId: string, organizationId: string) {
-  const workspace = await prisma.$transaction(async (tx) => {
+async function createWorkspace(
+  spec: WorkspaceSpec,
+  userId: string,
+  organizationId: string
+) {
+  const workspace = await prisma.$transaction(async tx => {
     // Create a slug from the name
-    const slug = spec.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const slug = spec.name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
 
     // Create workspace
     const ws = await tx.workspace.create({
@@ -220,8 +242,10 @@ async function createSessionManager(spec: SessionManagerSpec) {
     throw new Error('Parent orchestrator not found');
   }
 
-  const capabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
-  const sessionManagers = (capabilities.sessionManagers as Array<unknown>) || [];
+  const capabilities =
+    (orchestrator.capabilities as Record<string, unknown>) || {};
+  const sessionManagers =
+    (capabilities.sessionManagers as Array<unknown>) || [];
 
   sessionManagers.push({
     name: spec.name,
@@ -260,7 +284,8 @@ async function createSubagent(spec: SubagentSpec) {
     throw new Error('Parent not found');
   }
 
-  const capabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
+  const capabilities =
+    (orchestrator.capabilities as Record<string, unknown>) || {};
   const subagents = (capabilities.subagents as Array<unknown>) || [];
 
   subagents.push({
@@ -319,8 +344,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createCreationErrorResponse('Authentication required', CREATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createCreationErrorResponse(
+          'Authentication required',
+          CREATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -330,8 +358,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createCreationErrorResponse('Invalid JSON body', CREATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createCreationErrorResponse(
+          'Invalid JSON body',
+          CREATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -339,14 +370,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const requestParseResult = generateRequestSchema.safeParse(body);
     if (!requestParseResult.success) {
       return NextResponse.json(
-        createCreationErrorResponse('Invalid request structure', CREATION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: requestParseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        createCreationErrorResponse(
+          'Invalid request structure',
+          CREATION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: requestParseResult.error.flatten().fieldErrors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
-    const { entityType, spec, workspaceId, organizationId } = requestParseResult.data;
+    const { entityType, spec, workspaceId, organizationId } =
+      requestParseResult.data;
 
     // Validate and create entity based on type
     let entity;
@@ -356,8 +392,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       case 'orchestrator':
         if (!workspaceId) {
           return NextResponse.json(
-            createCreationErrorResponse('workspaceId is required for orchestrators', CREATION_ERROR_CODES.VALIDATION_ERROR),
-            { status: 400 },
+            createCreationErrorResponse(
+              'workspaceId is required for orchestrators',
+              CREATION_ERROR_CODES.VALIDATION_ERROR
+            ),
+            { status: 400 }
           );
         }
 
@@ -367,18 +406,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
         if (!workspace) {
           return NextResponse.json(
-            createCreationErrorResponse('Workspace not found', CREATION_ERROR_CODES.WORKSPACE_NOT_FOUND),
-            { status: 404 },
+            createCreationErrorResponse(
+              'Workspace not found',
+              CREATION_ERROR_CODES.WORKSPACE_NOT_FOUND
+            ),
+            { status: 404 }
           );
         }
 
         specParseResult = orchestratorSpecSchema.safeParse(spec);
         if (!specParseResult.success) {
           return NextResponse.json(
-            createCreationErrorResponse('Invalid orchestrator spec', CREATION_ERROR_CODES.SPEC_PARSE_ERROR, {
-              errors: specParseResult.error.flatten().fieldErrors,
-            }),
-            { status: 422 },
+            createCreationErrorResponse(
+              'Invalid orchestrator spec',
+              CREATION_ERROR_CODES.SPEC_PARSE_ERROR,
+              {
+                errors: specParseResult.error.flatten().fieldErrors,
+              }
+            ),
+            { status: 422 }
           );
         }
 
@@ -388,74 +434,111 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       case 'workflow':
         if (!workspaceId) {
           return NextResponse.json(
-            createCreationErrorResponse('workspaceId is required for workflows', CREATION_ERROR_CODES.VALIDATION_ERROR),
-            { status: 400 },
+            createCreationErrorResponse(
+              'workspaceId is required for workflows',
+              CREATION_ERROR_CODES.VALIDATION_ERROR
+            ),
+            { status: 400 }
           );
         }
 
         specParseResult = workflowSpecSchema.safeParse(spec);
         if (!specParseResult.success) {
           return NextResponse.json(
-            createCreationErrorResponse('Invalid workflow spec', CREATION_ERROR_CODES.SPEC_PARSE_ERROR, {
-              errors: specParseResult.error.flatten().fieldErrors,
-            }),
-            { status: 422 },
+            createCreationErrorResponse(
+              'Invalid workflow spec',
+              CREATION_ERROR_CODES.SPEC_PARSE_ERROR,
+              {
+                errors: specParseResult.error.flatten().fieldErrors,
+              }
+            ),
+            { status: 422 }
           );
         }
 
-        entity = await createWorkflow(specParseResult.data, session.user.id, workspaceId);
+        entity = await createWorkflow(
+          specParseResult.data,
+          session.user.id,
+          workspaceId
+        );
         break;
 
       case 'channel':
         if (!workspaceId) {
           return NextResponse.json(
-            createCreationErrorResponse('workspaceId is required for channels', CREATION_ERROR_CODES.VALIDATION_ERROR),
-            { status: 400 },
+            createCreationErrorResponse(
+              'workspaceId is required for channels',
+              CREATION_ERROR_CODES.VALIDATION_ERROR
+            ),
+            { status: 400 }
           );
         }
 
         specParseResult = channelSpecSchema.safeParse(spec);
         if (!specParseResult.success) {
           return NextResponse.json(
-            createCreationErrorResponse('Invalid channel spec', CREATION_ERROR_CODES.SPEC_PARSE_ERROR, {
-              errors: specParseResult.error.flatten().fieldErrors,
-            }),
-            { status: 422 },
+            createCreationErrorResponse(
+              'Invalid channel spec',
+              CREATION_ERROR_CODES.SPEC_PARSE_ERROR,
+              {
+                errors: specParseResult.error.flatten().fieldErrors,
+              }
+            ),
+            { status: 422 }
           );
         }
 
-        entity = await createChannel(specParseResult.data, session.user.id, workspaceId);
+        entity = await createChannel(
+          specParseResult.data,
+          session.user.id,
+          workspaceId
+        );
         break;
 
       case 'workspace':
         if (!organizationId) {
           return NextResponse.json(
-            createCreationErrorResponse('organizationId is required for workspaces', CREATION_ERROR_CODES.VALIDATION_ERROR),
-            { status: 400 },
+            createCreationErrorResponse(
+              'organizationId is required for workspaces',
+              CREATION_ERROR_CODES.VALIDATION_ERROR
+            ),
+            { status: 400 }
           );
         }
 
         specParseResult = workspaceSpecSchema.safeParse(spec);
         if (!specParseResult.success) {
           return NextResponse.json(
-            createCreationErrorResponse('Invalid workspace spec', CREATION_ERROR_CODES.SPEC_PARSE_ERROR, {
-              errors: specParseResult.error.flatten().fieldErrors,
-            }),
-            { status: 422 },
+            createCreationErrorResponse(
+              'Invalid workspace spec',
+              CREATION_ERROR_CODES.SPEC_PARSE_ERROR,
+              {
+                errors: specParseResult.error.flatten().fieldErrors,
+              }
+            ),
+            { status: 422 }
           );
         }
 
-        entity = await createWorkspace(specParseResult.data, session.user.id, organizationId);
+        entity = await createWorkspace(
+          specParseResult.data,
+          session.user.id,
+          organizationId
+        );
         break;
 
       case 'session-manager':
         specParseResult = sessionManagerFullSpecSchema.safeParse(spec);
         if (!specParseResult.success) {
           return NextResponse.json(
-            createCreationErrorResponse('Invalid session manager spec', CREATION_ERROR_CODES.SPEC_PARSE_ERROR, {
-              errors: specParseResult.error.flatten().fieldErrors,
-            }),
-            { status: 422 },
+            createCreationErrorResponse(
+              'Invalid session manager spec',
+              CREATION_ERROR_CODES.SPEC_PARSE_ERROR,
+              {
+                errors: specParseResult.error.flatten().fieldErrors,
+              }
+            ),
+            { status: 422 }
           );
         }
 
@@ -465,8 +548,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
         if (!parentOrch) {
           return NextResponse.json(
-            createCreationErrorResponse('Parent orchestrator not found', CREATION_ERROR_CODES.PARENT_NOT_FOUND),
-            { status: 404 },
+            createCreationErrorResponse(
+              'Parent orchestrator not found',
+              CREATION_ERROR_CODES.PARENT_NOT_FOUND
+            ),
+            { status: 404 }
           );
         }
 
@@ -477,10 +563,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         specParseResult = subagentFullSpecSchema.safeParse(spec);
         if (!specParseResult.success) {
           return NextResponse.json(
-            createCreationErrorResponse('Invalid subagent spec', CREATION_ERROR_CODES.SPEC_PARSE_ERROR, {
-              errors: specParseResult.error.flatten().fieldErrors,
-            }),
-            { status: 422 },
+            createCreationErrorResponse(
+              'Invalid subagent spec',
+              CREATION_ERROR_CODES.SPEC_PARSE_ERROR,
+              {
+                errors: specParseResult.error.flatten().fieldErrors,
+              }
+            ),
+            { status: 422 }
           );
         }
 
@@ -490,8 +580,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
         if (!parentOrchestrator) {
           return NextResponse.json(
-            createCreationErrorResponse('Parent orchestrator not found', CREATION_ERROR_CODES.PARENT_NOT_FOUND),
-            { status: 404 },
+            createCreationErrorResponse(
+              'Parent orchestrator not found',
+              CREATION_ERROR_CODES.PARENT_NOT_FOUND
+            ),
+            { status: 404 }
           );
         }
 
@@ -500,8 +593,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       default:
         return NextResponse.json(
-          createCreationErrorResponse(`Unsupported entity type: ${entityType}`, CREATION_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 },
+          createCreationErrorResponse(
+            `Unsupported entity type: ${entityType}`,
+            CREATION_ERROR_CODES.VALIDATION_ERROR
+          ),
+          { status: 400 }
         );
     }
 
@@ -513,22 +609,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         entityType,
         message: `${entityType} created successfully`,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/creation/generate] Error:', error);
 
     // Handle Prisma unique constraint errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
       return NextResponse.json(
-        createCreationErrorResponse('An entity with these details already exists', CREATION_ERROR_CODES.ENTITY_EXISTS),
-        { status: 409 },
+        createCreationErrorResponse(
+          'An entity with these details already exists',
+          CREATION_ERROR_CODES.ENTITY_EXISTS
+        ),
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
-      createCreationErrorResponse('An internal error occurred', CREATION_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createCreationErrorResponse(
+        'An internal error occurred',
+        CREATION_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

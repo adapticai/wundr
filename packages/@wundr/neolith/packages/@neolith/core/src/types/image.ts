@@ -215,7 +215,13 @@ export interface ImageMetadata {
 /**
  * Raw EXIF data value types that can be stored.
  */
-export type ExifRawValue = string | number | boolean | Date | string[] | number[];
+export type ExifRawValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | string[]
+  | number[];
 
 /**
  * Raw EXIF data with typed values.
@@ -394,7 +400,10 @@ export interface ImageValidationOptions {
 /**
  * Predefined thumbnail size dimensions.
  */
-export const THUMBNAIL_SIZES: Record<ThumbnailSize, { width: number; height: number }> = {
+export const THUMBNAIL_SIZES: Record<
+  ThumbnailSize,
+  { width: number; height: number }
+> = {
   xs: { width: 40, height: 40 },
   sm: { width: 80, height: 80 },
   md: { width: 200, height: 200 },
@@ -464,8 +473,20 @@ export const DEFAULT_OPTIMIZE_OPTIONS: OptimizeOptions = {
 export const DEFAULT_VARIANTS: VariantConfig[] = [
   { name: 'thumb_xs', width: 40, height: 40, fit: 'cover', isThumbnail: true },
   { name: 'thumb_sm', width: 80, height: 80, fit: 'cover', isThumbnail: true },
-  { name: 'thumb_md', width: 200, height: 200, fit: 'cover', isThumbnail: true },
-  { name: 'thumb_lg', width: 400, height: 400, fit: 'cover', isThumbnail: true },
+  {
+    name: 'thumb_md',
+    width: 200,
+    height: 200,
+    fit: 'cover',
+    isThumbnail: true,
+  },
+  {
+    name: 'thumb_lg',
+    width: 400,
+    height: 400,
+    fit: 'cover',
+    isThumbnail: true,
+  },
   { name: 'small', width: 640, height: 480, fit: 'inside' },
   { name: 'medium', width: 1280, height: 960, fit: 'inside' },
   { name: 'large', width: 1920, height: 1440, fit: 'inside' },
@@ -480,7 +501,8 @@ export const DEFAULT_VARIANTS: VariantConfig[] = [
  */
 export function isImageFormat(value: unknown): value is ImageFormat {
   return (
-    typeof value === 'string' && ['jpeg', 'png', 'webp', 'avif', 'gif'].includes(value)
+    typeof value === 'string' &&
+    ['jpeg', 'png', 'webp', 'avif', 'gif'].includes(value)
   );
 }
 
@@ -488,7 +510,9 @@ export function isImageFormat(value: unknown): value is ImageFormat {
  * Checks if a string is a valid ThumbnailSize.
  */
 export function isThumbnailSize(value: unknown): value is ThumbnailSize {
-  return typeof value === 'string' && ['xs', 'sm', 'md', 'lg', 'xl'].includes(value);
+  return (
+    typeof value === 'string' && ['xs', 'sm', 'md', 'lg', 'xl'].includes(value)
+  );
 }
 
 /**
@@ -500,14 +524,16 @@ export function isResizeOptions(value: unknown): value is ResizeOptions {
   }
   const obj = value as Record<string, unknown>;
   if (obj['width'] !== undefined && typeof obj['width'] !== 'number') {
-return false;
-}
+    return false;
+  }
   if (obj['height'] !== undefined && typeof obj['height'] !== 'number') {
-return false;
-}
+    return false;
+  }
   if (
     obj['fit'] !== undefined &&
-    !['cover', 'contain', 'fill', 'inside', 'outside'].includes(obj['fit'] as string)
+    !['cover', 'contain', 'fill', 'inside', 'outside'].includes(
+      obj['fit'] as string
+    )
   ) {
     return false;
   }
@@ -524,19 +550,25 @@ export function isOptimizeOptions(value: unknown): value is OptimizeOptions {
   const obj = value as Record<string, unknown>;
   if (obj['quality'] !== undefined) {
     if (typeof obj['quality'] !== 'number') {
-return false;
-}
+      return false;
+    }
     if (obj['quality'] < 1 || obj['quality'] > 100) {
-return false;
-}
+      return false;
+    }
   }
   if (obj['format'] !== undefined && !isImageFormat(obj['format'])) {
-return false;
-}
-  if (obj['progressive'] !== undefined && typeof obj['progressive'] !== 'boolean') {
-return false;
-}
-  if (obj['stripMetadata'] !== undefined && typeof obj['stripMetadata'] !== 'boolean') {
+    return false;
+  }
+  if (
+    obj['progressive'] !== undefined &&
+    typeof obj['progressive'] !== 'boolean'
+  ) {
+    return false;
+  }
+  if (
+    obj['stripMetadata'] !== undefined &&
+    typeof obj['stripMetadata'] !== 'boolean'
+  ) {
     return false;
   }
   return true;

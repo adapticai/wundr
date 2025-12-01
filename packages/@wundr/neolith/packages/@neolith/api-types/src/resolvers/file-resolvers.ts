@@ -46,7 +46,8 @@ export const UploadStatus = {
   Failed: 'FAILED',
 } as const;
 
-export type UploadStatusValue = (typeof UploadStatus)[keyof typeof UploadStatus];
+export type UploadStatusValue =
+  (typeof UploadStatus)[keyof typeof UploadStatus];
 
 /**
  * User role for authorization checks
@@ -410,11 +411,7 @@ const ALLOWED_DOCUMENT_TYPES = [
 ];
 
 /** Allowed video MIME types */
-const ALLOWED_VIDEO_TYPES = [
-  'video/mp4',
-  'video/webm',
-  'video/quicktime',
-];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
 /** Allowed audio MIME types */
 const ALLOWED_AUDIO_TYPES = [
@@ -501,7 +498,11 @@ function getFileType(mimeType: string): FileTypeValue {
   if (ALLOWED_DOCUMENT_TYPES.includes(mimeType)) {
     return 'DOCUMENT';
   }
-  if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('gzip')) {
+  if (
+    mimeType.includes('zip') ||
+    mimeType.includes('tar') ||
+    mimeType.includes('gzip')
+  ) {
     return 'ARCHIVE';
   }
   return 'OTHER';
@@ -557,7 +558,9 @@ function generateStorageKey(
  * Generate cursor from file for pagination
  */
 function generateCursor(file: PrismaFile): string {
-  return Buffer.from(`${file.createdAt.toISOString()}:${file.id}`).toString('base64');
+  return Buffer.from(`${file.createdAt.toISOString()}:${file.id}`).toString(
+    'base64'
+  );
 }
 
 /**
@@ -720,7 +723,11 @@ export const fileQueries = {
     });
 
     const totalCount = await context.prisma.file.count({
-      where: { workspaceId, status: { not: 'FAILED' }, ...(mimeType && { mimeType }) },
+      where: {
+        workspaceId,
+        status: { not: 'FAILED' },
+        ...(mimeType && { mimeType }),
+      },
     });
 
     const hasNextPage = files.length > limit;
@@ -782,10 +789,16 @@ export const fileQueries = {
       where.status = filter.status;
     }
     if (filter?.after) {
-      where.createdAt = { ...((where.createdAt as object) ?? {}), gte: filter.after };
+      where.createdAt = {
+        ...((where.createdAt as object) ?? {}),
+        gte: filter.after,
+      };
     }
     if (filter?.before) {
-      where.createdAt = { ...((where.createdAt as object) ?? {}), lte: filter.before };
+      where.createdAt = {
+        ...((where.createdAt as object) ?? {}),
+        lte: filter.before,
+      };
     }
 
     const files = await context.prisma.file.findMany({
@@ -874,7 +887,9 @@ export const fileMutations = {
           bucket: null,
           fields: null,
           expiresAt: null,
-          errors: [{ code: error.extensions?.code as string, message: error.message }],
+          errors: [
+            { code: error.extensions?.code as string, message: error.message },
+          ],
         };
       }
       throw error;
@@ -883,9 +898,12 @@ export const fileMutations = {
     // Check workspace membership
     const hasAccess = await canAccessWorkspace(context, input.workspaceId);
     if (!hasAccess) {
-      throw new GraphQLError('You must be a member of this workspace to upload files', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You must be a member of this workspace to upload files',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Check storage service availability
@@ -896,12 +914,21 @@ export const fileMutations = {
         bucket: null,
         fields: null,
         expiresAt: null,
-        errors: [{ code: 'SERVICE_UNAVAILABLE', message: 'Storage service unavailable' }],
+        errors: [
+          {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Storage service unavailable',
+          },
+        ],
       };
     }
 
     // Generate storage key
-    const key = generateStorageKey(input.workspaceId, context.user.id, input.filename);
+    const key = generateStorageKey(
+      input.workspaceId,
+      context.user.id,
+      input.filename
+    );
 
     // Get signed upload URL
     const result = await context.storageService.getSignedUploadUrl(
@@ -1083,7 +1110,9 @@ export const fileMutations = {
         return {
           uploadId: null,
           key: null,
-          errors: [{ code: error.extensions?.code as string, message: error.message }],
+          errors: [
+            { code: error.extensions?.code as string, message: error.message },
+          ],
         };
       }
       throw error;
@@ -1092,21 +1121,36 @@ export const fileMutations = {
     // Check workspace membership
     const hasAccess = await canAccessWorkspace(context, input.workspaceId);
     if (!hasAccess) {
-      throw new GraphQLError('You must be a member of this workspace to upload files', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You must be a member of this workspace to upload files',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     if (!context.storageService) {
       return {
         uploadId: null,
         key: null,
-        errors: [{ code: 'SERVICE_UNAVAILABLE', message: 'Storage service unavailable' }],
+        errors: [
+          {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Storage service unavailable',
+          },
+        ],
       };
     }
 
-    const key = generateStorageKey(input.workspaceId, context.user.id, input.filename);
-    const result = await context.storageService.initiateMultipartUpload(key, input.contentType);
+    const key = generateStorageKey(
+      input.workspaceId,
+      context.user.id,
+      input.filename
+    );
+    const result = await context.storageService.initiateMultipartUpload(
+      key,
+      input.contentType
+    );
 
     return {
       uploadId: result.uploadId,
@@ -1132,7 +1176,12 @@ export const fileMutations = {
     if (!context.storageService) {
       return {
         url: null,
-        errors: [{ code: 'SERVICE_UNAVAILABLE', message: 'Storage service unavailable' }],
+        errors: [
+          {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Storage service unavailable',
+          },
+        ],
       };
     }
 
@@ -1160,15 +1209,27 @@ export const fileMutations = {
     }
 
     if (!context.storageService) {
-      return createErrorPayload('SERVICE_UNAVAILABLE', 'Storage service unavailable');
+      return createErrorPayload(
+        'SERVICE_UNAVAILABLE',
+        'Storage service unavailable'
+      );
     }
 
-    await context.storageService.completeMultipartUpload(args.key, args.uploadId, args.parts);
+    await context.storageService.completeMultipartUpload(
+      args.key,
+      args.uploadId,
+      args.parts
+    );
 
     // Complete upload using the regular completeUpload flow
     return fileMutations.completeUpload(
       _parent,
-      { key: args.key, bucket: args.bucket, workspaceId: args.workspaceId, metadata: null },
+      {
+        key: args.key,
+        bucket: args.bucket,
+        workspaceId: args.workspaceId,
+        metadata: null,
+      },
       context
     );
   },
@@ -1191,7 +1252,12 @@ export const fileMutations = {
       return {
         success: false,
         deletedId: null,
-        errors: [{ code: 'SERVICE_UNAVAILABLE', message: 'Storage service unavailable' }],
+        errors: [
+          {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Storage service unavailable',
+          },
+        ],
       };
     }
 
@@ -1235,7 +1301,9 @@ export const fileSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${FILE_UPLOADED}_${args.workspaceId}`);
+      return context.pubsub.asyncIterator(
+        `${FILE_UPLOADED}_${args.workspaceId}`
+      );
     },
   },
 
@@ -1254,7 +1322,9 @@ export const fileSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${UPLOAD_PROGRESS}_${args.uploadId}`);
+      return context.pubsub.asyncIterator(
+        `${UPLOAD_PROGRESS}_${args.uploadId}`
+      );
     },
   },
 };
@@ -1303,11 +1373,7 @@ export const FileFieldResolvers = {
   /**
    * Resolve the uploader (author) for a file
    */
-  uploader: async (
-    parent: File,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  uploader: async (parent: File, _args: unknown, context: GraphQLContext) => {
     return context.prisma.user.findUnique({
       where: { id: parent.uploadedById },
     });
@@ -1316,11 +1382,7 @@ export const FileFieldResolvers = {
   /**
    * Resolve the workspace for a file
    */
-  workspace: async (
-    parent: File,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  workspace: async (parent: File, _args: unknown, context: GraphQLContext) => {
     return context.prisma.workspace.findUnique({
       where: { id: parent.workspaceId },
     });
@@ -1348,7 +1410,7 @@ export const FileFieldResolvers = {
 
     // Generate signed URLs for each variant
     return Promise.all(
-      variants.map(async (v) => ({
+      variants.map(async v => ({
         ...v,
         url: await context.storageService!.getSignedDownloadUrl(
           `${parent.s3Key.replace(/\.[^.]+$/, '')}_${v.size}.webp`

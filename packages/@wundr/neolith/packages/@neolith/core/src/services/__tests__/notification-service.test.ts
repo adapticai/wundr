@@ -47,7 +47,7 @@ function createMockPrismaClient() {
     user: {
       findUnique: vi.fn(),
     },
-    $transaction: vi.fn().mockImplementation(async (callback) => {
+    $transaction: vi.fn().mockImplementation(async callback => {
       const tx = {
         notification: createMockPrismaNotificationModel(),
         pushDevice: createMockPrismaPushDeviceModel(),
@@ -88,7 +88,7 @@ describe('NotificationService', () => {
 
       mockPrisma.pushDevice.findMany.mockResolvedValue([webDevice]);
       mockPrisma.notificationPreference.findUnique.mockResolvedValue(
-        createMockPreferences({ userId }),
+        createMockPreferences({ userId })
       );
 
       // Get active devices for user
@@ -118,7 +118,7 @@ describe('NotificationService', () => {
           payload: expect.objectContaining({
             title: notification.title,
           }),
-        }),
+        })
       );
     });
 
@@ -129,7 +129,7 @@ describe('NotificationService', () => {
 
       mockPrisma.pushDevice.findMany.mockResolvedValue([iosDevice]);
       mockPrisma.notificationPreference.findUnique.mockResolvedValue(
-        createMockPreferences({ userId }),
+        createMockPreferences({ userId })
       );
 
       // Get active devices
@@ -155,7 +155,7 @@ describe('NotificationService', () => {
       expect(mockPushProvider.sendFCM).toHaveBeenCalledWith(
         expect.objectContaining({
           token: iosDevice.token,
-        }),
+        })
       );
     });
 
@@ -169,7 +169,9 @@ describe('NotificationService', () => {
         quietHoursTimezone: 'America/New_York',
       });
 
-      mockPrisma.notificationPreference.findUnique.mockResolvedValue(preferences);
+      mockPrisma.notificationPreference.findUnique.mockResolvedValue(
+        preferences
+      );
 
       // Check if in quiet hours
       const prefs = await mockPrisma.notificationPreference.findUnique({
@@ -184,7 +186,7 @@ describe('NotificationService', () => {
         start: string,
         end: string,
         _timezone: string,
-        currentTime: Date,
+        currentTime: Date
       ): boolean => {
         const hours = currentTime.getHours();
         const startHour = parseInt(start.split(':')[0]!);
@@ -200,19 +202,25 @@ describe('NotificationService', () => {
       // Test at 23:00 (should be in quiet hours)
       const lateNight = new Date();
       lateNight.setHours(23, 0, 0, 0);
-      expect(isInQuietHours('22:00', '08:00', 'America/New_York', lateNight)).toBe(true);
+      expect(
+        isInQuietHours('22:00', '08:00', 'America/New_York', lateNight)
+      ).toBe(true);
 
       // Test at 12:00 (should not be in quiet hours)
       const noon = new Date();
       noon.setHours(12, 0, 0, 0);
-      expect(isInQuietHours('22:00', '08:00', 'America/New_York', noon)).toBe(false);
+      expect(isInQuietHours('22:00', '08:00', 'America/New_York', noon)).toBe(
+        false
+      );
     });
 
     it('respects user preferences', async () => {
       const userId = generateUserId();
       const disabledPreferences = createMockDisabledPreferences({ userId });
 
-      mockPrisma.notificationPreference.findUnique.mockResolvedValue(disabledPreferences);
+      mockPrisma.notificationPreference.findUnique.mockResolvedValue(
+        disabledPreferences
+      );
 
       const prefs = await mockPrisma.notificationPreference.findUnique({
         where: { userId },
@@ -242,7 +250,7 @@ describe('NotificationService', () => {
 
       // Send to all devices
       const sendResults = await Promise.all(
-        userDevices.map((device) => {
+        userDevices.map(device => {
           if (device.platform === 'WEB') {
             return mockPushProvider.sendWebPush({
               endpoint: device.endpoint!,
@@ -253,12 +261,15 @@ describe('NotificationService', () => {
           }
           return mockPushProvider.sendFCM({
             token: device.token,
-            notification: { title: notification.title, body: notification.body },
+            notification: {
+              title: notification.title,
+              body: notification.body,
+            },
           });
-        }),
+        })
       );
 
-      expect(sendResults.every((r) => r.success)).toBe(true);
+      expect(sendResults.every(r => r.success)).toBe(true);
     });
 
     it('handles push provider errors gracefully', async () => {
@@ -266,7 +277,7 @@ describe('NotificationService', () => {
       const device = createMockWebPushDevice({ userId });
 
       mockPushProvider.sendWebPush.mockRejectedValue(
-        new Error('Push service unavailable'),
+        new Error('Push service unavailable')
       );
 
       await expect(
@@ -275,7 +286,7 @@ describe('NotificationService', () => {
           p256dh: device.p256dh!,
           auth: device.auth!,
           payload: { title: 'Test', body: 'Test' },
-        }),
+        })
       ).rejects.toThrow('Push service unavailable');
     });
 
@@ -288,7 +299,9 @@ describe('NotificationService', () => {
         threadReplyEnabled: true,
       });
 
-      mockPrisma.notificationPreference.findUnique.mockResolvedValue(preferences);
+      mockPrisma.notificationPreference.findUnique.mockResolvedValue(
+        preferences
+      );
 
       const prefs = await mockPrisma.notificationPreference.findUnique({
         where: { userId },
@@ -428,7 +441,8 @@ describe('NotificationService', () => {
 
       // With valid token
       mockPushProvider.validateToken.mockResolvedValue(true);
-      const isValidToken = await mockPushProvider.validateToken('valid_token_123');
+      const isValidToken =
+        await mockPushProvider.validateToken('valid_token_123');
       expect(isValidToken).toBe(true);
     });
 
@@ -436,7 +450,7 @@ describe('NotificationService', () => {
       const userId = generateUserId();
       const staleDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 days ago
 
-      const staleDevices = createMockPushDeviceList(3, { userId }).map((d) => ({
+      const staleDevices = createMockPushDeviceList(3, { userId }).map(d => ({
         ...d,
         lastUsedAt: staleDate,
       }));
@@ -456,7 +470,7 @@ describe('NotificationService', () => {
 
       // Deactivate them
       const result = await mockPrisma.pushDevice.updateMany({
-        where: { id: { in: devices.map((d) => d.id) } },
+        where: { id: { in: devices.map(d => d.id) } },
         data: { isActive: false },
       });
 

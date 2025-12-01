@@ -8,8 +8,8 @@ import { ConversationalWizard } from '@/components/wizard';
 function CreateDialog() {
   return (
     <ConversationalWizard
-      entityType="workspace"
-      onComplete={(data) => console.log('Created:', data)}
+      entityType='workspace'
+      onComplete={data => console.log('Created:', data)}
       onCancel={() => console.log('Cancelled')}
     />
   );
@@ -19,12 +19,14 @@ function CreateDialog() {
 ## 2-Minute Integration
 
 ### Step 1: Import
+
 ```tsx
 import { ConversationalWizard } from '@/components/wizard';
 import type { EntityData } from '@/components/wizard';
 ```
 
 ### Step 2: Add to Your Component
+
 ```tsx
 export function CreateEntityDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,10 +36,10 @@ export function CreateEntityDialog() {
       <DialogTrigger asChild>
         <Button>Create New</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className='max-w-4xl'>
         <ConversationalWizard
-          entityType="orchestrator"
-          onComplete={(data) => {
+          entityType='orchestrator'
+          onComplete={data => {
             // Your API call here
             createEntity(data);
             setIsOpen(false);
@@ -51,6 +53,7 @@ export function CreateEntityDialog() {
 ```
 
 ### Step 3: Connect to Your API (Optional)
+
 ```tsx
 const handleMessage = async (message, history) => {
   const res = await fetch('/api/chat', {
@@ -65,23 +68,23 @@ const handleMessage = async (message, history) => {
 };
 
 <ConversationalWizard
-  entityType="workflow"
+  entityType='workflow'
   onSendMessage={handleMessage}
   onComplete={handleComplete}
   onCancel={handleCancel}
-/>
+/>;
 ```
 
 ## Props Cheat Sheet
 
-| Prop | Type | Required | Use Case |
-|------|------|----------|----------|
-| `entityType` | `'workspace' \| 'orchestrator' \| ...` | Yes | What you're creating |
-| `onComplete` | `(data) => void` | Yes | Handle the final data |
-| `onCancel` | `() => void` | Yes | Close/cancel action |
-| `onSendMessage` | `async (msg, history) => {...}` | No | Custom LLM API |
-| `initialContext` | `string` | No | Starting message |
-| `initialData` | `EntityData` | No | Edit existing entity |
+| Prop             | Type                                   | Required | Use Case              |
+| ---------------- | -------------------------------------- | -------- | --------------------- |
+| `entityType`     | `'workspace' \| 'orchestrator' \| ...` | Yes      | What you're creating  |
+| `onComplete`     | `(data) => void`                       | Yes      | Handle the final data |
+| `onCancel`       | `() => void`                           | Yes      | Close/cancel action   |
+| `onSendMessage`  | `async (msg, history) => {...}`        | No       | Custom LLM API        |
+| `initialContext` | `string`                               | No       | Starting message      |
+| `initialData`    | `EntityData`                           | No       | Edit existing entity  |
 
 ## Component Files
 
@@ -101,17 +104,18 @@ wizard/
 ## Entity Types Supported
 
 ```typescript
-'workspace'         // New workspace creation
-'orchestrator'      // AI agent orchestrator
-'session-manager'   // Session management agent
-'subagent'         // Task-specific subagent
-'workflow'         // Automated workflow
-'channel'          // Communication channel
+'workspace'; // New workspace creation
+'orchestrator'; // AI agent orchestrator
+'session-manager'; // Session management agent
+'subagent'; // Task-specific subagent
+'workflow'; // Automated workflow
+'channel'; // Communication channel
 ```
 
 ## Default Behavior
 
 Without `onSendMessage`, the wizard uses a mock LLM that:
+
 1. Acknowledges first message
 2. After 2-3 exchanges, enables "Review Details"
 3. Allows form editing
@@ -121,32 +125,35 @@ Without `onSendMessage`, the wizard uses a mock LLM that:
 ## Common Patterns
 
 ### Pattern 1: Create in Modal
+
 ```tsx
 <Dialog>
-  <DialogContent className="max-w-4xl">
+  <DialogContent className='max-w-4xl'>
     <ConversationalWizard {...props} />
   </DialogContent>
 </Dialog>
 ```
 
 ### Pattern 2: Standalone Page
+
 ```tsx
-<div className="container max-w-4xl py-8">
+<div className='container max-w-4xl py-8'>
   <ConversationalWizard {...props} />
 </div>
 ```
 
 ### Pattern 3: With Loading State
+
 ```tsx
 const [isSubmitting, setIsSubmitting] = useState(false);
 
 <ConversationalWizard
-  onComplete={async (data) => {
+  onComplete={async data => {
     setIsSubmitting(true);
     await createEntity(data);
     setIsSubmitting(false);
   }}
-/>
+/>;
 ```
 
 ## User Flow
@@ -169,6 +176,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 ## Styling
 
 Uses your theme automatically:
+
 - Light/dark mode
 - Primary colors
 - Font family
@@ -178,14 +186,17 @@ Uses your theme automatically:
 ## Troubleshooting
 
 ### "Review Details" button not appearing
+
 - Make sure `onSendMessage` returns `extractedData`
 - Or wait 2-3 messages with default mock handler
 
 ### Form fields not showing
+
 - Check `entityType` is valid
 - Verify `extractedData` has `name` and `description`
 
 ### TypeScript errors
+
 - Import types: `import type { EntityData } from '@/components/wizard'`
 - Ensure `onComplete` accepts `EntityData` parameter
 
@@ -197,8 +208,8 @@ Uses your theme automatically:
 
 ## Support
 
-File Location: `/components/wizard/`
-Import: `import { ConversationalWizard } from '@/components/wizard'`
+File Location: `/components/wizard/` Import:
+`import { ConversationalWizard } from '@/components/wizard'`
 
 ---
 

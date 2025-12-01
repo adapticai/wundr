@@ -1,6 +1,7 @@
 # Settings Navigation Component
 
-Enhanced settings navigation component with grouped sections, badges, collapsible sections, and mobile support.
+Enhanced settings navigation component with grouped sections, badges, collapsible sections, and
+mobile support.
 
 ## Components
 
@@ -12,9 +13,9 @@ Desktop settings navigation with vertical layout and section grouping.
 
 ```typescript
 interface SettingsNavProps {
-  workspaceId: string;        // Workspace identifier for URL generation
-  sections?: NavSection[];    // Custom navigation sections
-  className?: string;         // Additional CSS classes
+  workspaceId: string; // Workspace identifier for URL generation
+  sections?: NavSection[]; // Custom navigation sections
+  className?: string; // Additional CSS classes
 }
 ```
 
@@ -26,9 +27,9 @@ Mobile-optimized horizontal scrollable navigation.
 
 ```typescript
 interface MobileSettingsNavProps {
-  workspaceId: string;        // Workspace identifier for URL generation
-  sections?: NavSection[];    // Custom navigation sections
-  className?: string;         // Additional CSS classes
+  workspaceId: string; // Workspace identifier for URL generation
+  sections?: NavSection[]; // Custom navigation sections
+  className?: string; // Additional CSS classes
 }
 ```
 
@@ -38,11 +39,11 @@ interface MobileSettingsNavProps {
 
 ```typescript
 interface NavItem {
-  href: string;              // Navigation link URL
-  label: string;             // Display label
-  icon: LucideIcon;         // Icon from lucide-react
-  badge?: string | number;   // Optional badge (e.g., notification count)
-  disabled?: boolean;        // Disable the navigation item
+  href: string; // Navigation link URL
+  label: string; // Display label
+  icon: LucideIcon; // Icon from lucide-react
+  badge?: string | number; // Optional badge (e.g., notification count)
+  disabled?: boolean; // Disable the navigation item
 }
 ```
 
@@ -50,10 +51,10 @@ interface NavItem {
 
 ```typescript
 interface NavSection {
-  label: string;                 // Section header label
-  items: NavItem[];             // Navigation items in this section
-  collapsible?: boolean;        // Allow section to be collapsed
-  defaultCollapsed?: boolean;   // Start section in collapsed state
+  label: string; // Section header label
+  items: NavItem[]; // Navigation items in this section
+  collapsible?: boolean; // Allow section to be collapsed
+  defaultCollapsed?: boolean; // Start section in collapsed state
 }
 ```
 
@@ -144,7 +145,7 @@ Interactive hover effects on navigation items.
 Horizontal scrollable layout optimized for mobile:
 
 ```tsx
-<MobileSettingsNav workspaceId="my-workspace" sections={sections} />
+<MobileSettingsNav workspaceId='my-workspace' sections={sections} />
 ```
 
 ## Usage Examples
@@ -157,7 +158,7 @@ import { SettingsNav } from '@/components/settings/settings-nav';
 export function SettingsLayout() {
   return (
     <div>
-      <SettingsNav workspaceId="my-workspace" />
+      <SettingsNav workspaceId='my-workspace' />
     </div>
   );
 }
@@ -192,7 +193,7 @@ const customSections: NavSection[] = [
 ];
 
 export function CustomSettingsNav() {
-  return <SettingsNav workspaceId="my-workspace" sections={customSections} />;
+  return <SettingsNav workspaceId='my-workspace' sections={customSections} />;
 }
 ```
 
@@ -209,13 +210,13 @@ export function ResponsiveSettings() {
   return (
     <>
       {/* Desktop */}
-      <div className="hidden md:block">
-        <SettingsNav workspaceId="my-workspace" sections={sections} />
+      <div className='hidden md:block'>
+        <SettingsNav workspaceId='my-workspace' sections={sections} />
       </div>
 
       {/* Mobile */}
-      <div className="block md:hidden">
-        <MobileSettingsNav workspaceId="my-workspace" sections={sections} />
+      <div className='block md:hidden'>
+        <MobileSettingsNav workspaceId='my-workspace' sections={sections} />
       </div>
     </>
   );
@@ -238,13 +239,11 @@ const sectionsWithCollapse: NavSection[] = [
     label: 'Advanced',
     collapsible: true,
     defaultCollapsed: true,
-    items: [
-      { href: '/settings/api', label: 'API Keys', icon: Zap },
-    ],
+    items: [{ href: '/settings/api', label: 'API Keys', icon: Zap }],
   },
 ];
 
-<SettingsNav workspaceId="my-workspace" sections={sectionsWithCollapse} />
+<SettingsNav workspaceId='my-workspace' sections={sectionsWithCollapse} />;
 ```
 
 ## Styling
@@ -299,7 +298,12 @@ If no sections are provided, the component uses these defaults:
     label: 'Preferences',
     items: [
       { href: '/{workspaceId}/settings/appearance', label: 'Appearance', icon: Palette },
-      { href: '/{workspaceId}/settings/notifications', label: 'Notifications', icon: Bell, badge: 3 },
+      {
+        href: '/{workspaceId}/settings/notifications',
+        label: 'Notifications',
+        icon: Bell,
+        badge: 3,
+      },
     ],
   },
   {
@@ -309,15 +313,16 @@ If no sections are provided, the component uses these defaults:
       { href: '/{workspaceId}/settings/security', label: 'Security', icon: Shield },
     ],
   },
-]
+];
 ```
 
 ## Migration from Old Component
 
 Old:
+
 ```tsx
 <SettingsNav
-  workspaceId="my-workspace"
+  workspaceId='my-workspace'
   items={[
     { href: '/settings', label: 'General', icon: SettingsIcon },
     { href: '/settings/profile', label: 'Profile', icon: UserIcon },
@@ -326,9 +331,10 @@ Old:
 ```
 
 New:
+
 ```tsx
 <SettingsNav
-  workspaceId="my-workspace"
+  workspaceId='my-workspace'
   sections={[
     {
       label: 'Account',
@@ -342,6 +348,7 @@ New:
 ```
 
 Key changes:
+
 - `items` → `sections` (array of sections with items)
 - Inline SVG icons → lucide-react icons
 - Added badge support

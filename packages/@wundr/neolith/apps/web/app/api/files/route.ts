@@ -38,10 +38,13 @@ import type { NextRequest } from 'next/server';
  * @returns Prisma where clause for mimeType
  */
 function buildMimeTypeFilter(
-  type: 'image' | 'document' | 'audio' | 'video' | 'archive',
+  type: 'image' | 'document' | 'audio' | 'video' | 'archive'
 ): Prisma.StringFilter {
-  const typeKey = type === 'image' ? 'images' : type === 'document' ? 'documents' : type;
-  const mimeTypes = ALLOWED_FILE_TYPES[typeKey as keyof typeof ALLOWED_FILE_TYPES] as readonly string[];
+  const typeKey =
+    type === 'image' ? 'images' : type === 'document' ? 'documents' : type;
+  const mimeTypes = ALLOWED_FILE_TYPES[
+    typeKey as keyof typeof ALLOWED_FILE_TYPES
+  ] as readonly string[];
   return {
     in: [...mimeTypes],
   };
@@ -67,8 +70,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -81,9 +87,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -95,16 +101,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       select: { workspaceId: true },
     });
 
-    const accessibleWorkspaceIds = userWorkspaces.map((w) => w.workspaceId);
+    const accessibleWorkspaceIds = userWorkspaces.map(w => w.workspaceId);
 
     // If specific workspace requested, verify access
-    if (filters.workspaceId && !accessibleWorkspaceIds.includes(filters.workspaceId)) {
+    if (
+      filters.workspaceId &&
+      !accessibleWorkspaceIds.includes(filters.workspaceId)
+    ) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -177,10 +186,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Check if there are more files
     const hasMore = files.length > filters.limit;
     const resultFiles = hasMore ? files.slice(0, filters.limit) : files;
-    const nextCursor = hasMore ? resultFiles[resultFiles.length - 1]?.id ?? null : null;
+    const nextCursor = hasMore
+      ? (resultFiles[resultFiles.length - 1]?.id ?? null)
+      : null;
 
     // Transform files to include computed URL
-    const transformedFiles = resultFiles.map((file) => ({
+    const transformedFiles = resultFiles.map(file => ({
       ...file,
       size: Number(file.size),
       url: generateFileUrl(file.s3Key, file.s3Bucket),
@@ -198,9 +209,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -229,8 +240,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -240,8 +254,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       formData = await request.formData();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid form data', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid form data',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -251,16 +268,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Validate file
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        createErrorResponse('File is required', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'File is required',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Validate workspace ID
     if (!workspaceId || typeof workspaceId !== 'string') {
       return NextResponse.json(
-        createErrorResponse('Workspace ID is required', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Workspace ID is required',
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -269,9 +292,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           `File type '${file.type}' is not allowed`,
-          UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED,
+          UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -282,9 +305,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'File too large for direct upload. Use multipart upload for files > 5MB.',
           UPLOAD_ERROR_CODES.FILE_TOO_LARGE,
-          { maxSize: maxDirectUploadSize, useMultipart: true },
+          { maxSize: maxDirectUploadSize, useMultipart: true }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -295,9 +318,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           `File size exceeds maximum allowed for ${getFileCategory(file.type)} files`,
           UPLOAD_ERROR_CODES.FILE_TOO_LARGE,
-          { maxSize },
+          { maxSize }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -315,9 +338,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -338,9 +361,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // }));
 
     const category = getFileCategory(file.type);
-    const thumbnailUrl = category === 'image' && process.env.CDN_DOMAIN
-      ? `https://${process.env.CDN_DOMAIN}/thumbnails/${s3Key}`
-      : null;
+    const thumbnailUrl =
+      category === 'image' && process.env.CDN_DOMAIN
+        ? `https://${process.env.CDN_DOMAIN}/thumbnails/${s3Key}`
+        : null;
 
     // Create file record
     const fileRecord = await prisma.file.create({
@@ -388,16 +412,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(
       { data: { file: responseData }, message: 'File uploaded successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/files] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

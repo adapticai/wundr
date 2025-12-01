@@ -52,7 +52,11 @@ function formatSSEMessage(event: string, data: unknown): string {
  * Create an SSE error response
  * Returns a proper SSE stream with an error event, then closes
  */
-function createSSEErrorResponse(error: string, code: string, status: number): Response {
+function createSSEErrorResponse(
+  error: string,
+  code: string,
+  status: number
+): Response {
   const encoder = new TextEncoder();
   const errorMessage = formatSSEMessage('error', { error, code, status });
 
@@ -118,36 +122,42 @@ async function checkChannelAccess(channelId: string, userId: string) {
 /**
  * Transform message for SSE response
  */
-function transformMessage(message: {
-  id: string;
-  content: string;
-  type: string;
-  authorId: string;
-  channelId: string;
-  parentId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  editedAt: Date | null;
-  isDeleted: boolean;
-  author: {
+function transformMessage(
+  message: {
     id: string;
-    name: string | null;
-    email: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    isOrchestrator: boolean;
-  };
-  reactions: Array<{
-    id: string;
-    emoji: string;
-    userId: string;
-  }>;
-  _count: {
-    replies: number;
-  };
-}, currentUserId: string) {
+    content: string;
+    type: string;
+    authorId: string;
+    channelId: string;
+    parentId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    editedAt: Date | null;
+    isDeleted: boolean;
+    author: {
+      id: string;
+      name: string | null;
+      email: string;
+      displayName: string | null;
+      avatarUrl: string | null;
+      isOrchestrator: boolean;
+    };
+    reactions: Array<{
+      id: string;
+      emoji: string;
+      userId: string;
+    }>;
+    _count: {
+      replies: number;
+    };
+  },
+  currentUserId: string
+) {
   // Group reactions by emoji
-  const reactionMap = new Map<string, { emoji: string; count: number; userIds: string[]; hasReacted: boolean }>();
+  const reactionMap = new Map<
+    string,
+    { emoji: string; count: number; userIds: string[]; hasReacted: boolean }
+  >();
   for (const reaction of message.reactions) {
     const existing = reactionMap.get(reaction.emoji);
     if (existing) {
@@ -179,7 +189,10 @@ function transformMessage(message: {
     isDeleted: message.isDeleted,
     author: {
       id: message.author.id,
-      name: message.author.displayName || message.author.name || message.author.email,
+      name:
+        message.author.displayName ||
+        message.author.name ||
+        message.author.email,
       email: message.author.email,
       displayName: message.author.displayName,
       avatarUrl: message.author.avatarUrl,
@@ -224,20 +237,28 @@ function transformMessage(message: {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<Response> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return createSSEErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED, 401);
+      return createSSEErrorResponse(
+        'Authentication required',
+        ORG_ERROR_CODES.UNAUTHORIZED,
+        401
+      );
     }
 
     // Validate channel ID parameter
     const params = await context.params;
     const paramResult = channelIdParamSchema.safeParse(params);
     if (!paramResult.success) {
-      return createSSEErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR, 400);
+      return createSSEErrorResponse(
+        'Invalid channel ID format',
+        ORG_ERROR_CODES.VALIDATION_ERROR,
+        400
+      );
     }
 
     const { channelId } = params;
@@ -248,7 +269,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Channel not found or access denied',
         ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
-        404,
+        404
       );
     }
 
@@ -279,8 +300,8 @@ export async function GET(
             formatSSEMessage('connected', {
               channelId,
               timestamp: new Date().toISOString(),
-            }),
-          ),
+            })
+          )
         );
 
         // Set up polling interval for new messages
@@ -341,8 +362,8 @@ export async function GET(
                   formatSSEMessage('new_message', {
                     type: 'new_message',
                     message: transformMessage(message, session.user.id),
-                  }),
-                ),
+                  })
+                )
               );
 
               lastMessageId = message.id;
@@ -385,7 +406,7 @@ export async function GET(
 
             for (const message of recentlyUpdated) {
               // Only emit if it's not a new message we just emitted
-              if (newMessages.some((m) => m.id === message.id)) {
+              if (newMessages.some(m => m.id === message.id)) {
                 continue;
               }
 
@@ -394,8 +415,8 @@ export async function GET(
                   formatSSEMessage('message_updated', {
                     type: 'message_updated',
                     message: transformMessage(message, session.user.id),
-                  }),
-                ),
+                  })
+                )
               );
             }
 
@@ -415,8 +436,8 @@ export async function GET(
                   formatSSEMessage('message_deleted', {
                     type: 'message_deleted',
                     messageId: message.id,
-                  }),
-                ),
+                  })
+                )
               );
             }
           } catch {
@@ -431,8 +452,8 @@ export async function GET(
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                }),
-              ),
+                })
+              )
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -462,7 +483,7 @@ export async function GET(
     return createSSEErrorResponse(
       'An internal error occurred',
       ORG_ERROR_CODES.INTERNAL_ERROR,
-      500,
+      500
     );
   }
 }

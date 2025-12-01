@@ -153,11 +153,13 @@ const mockGetServerSession = vi.fn();
 /**
  * Create mock NextRequest
  */
-function createMockRequest(options: {
-  method?: string;
-  body?: unknown;
-  searchParams?: Record<string, string>;
-} = {}): NextRequest {
+function createMockRequest(
+  options: {
+    method?: string;
+    body?: unknown;
+    searchParams?: Record<string, string>;
+  } = {}
+): NextRequest {
   const { method = 'GET', body, searchParams = {} } = options;
 
   const url = new URL('http://localhost:3000/api/processing');
@@ -193,7 +195,7 @@ function createJsonResponse(data: unknown, status = 200) {
  */
 async function handleExtractText(
   request: NextRequest,
-  params: { id: string },
+  params: { id: string }
 ): Promise<{ json: () => Promise<unknown>; status: number }> {
   // Check authentication
   const session = await mockGetServerSession();
@@ -237,7 +239,8 @@ async function handleExtractText(
     const job = await mockProcessingService.extractText(params.id, options);
     return createJsonResponse({ job }, 201);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create job';
+    const message =
+      error instanceof Error ? error.message : 'Failed to create job';
     return createJsonResponse({ error: message }, 500);
   }
 }
@@ -247,7 +250,7 @@ async function handleExtractText(
  */
 async function handleOCR(
   request: NextRequest,
-  params: { id: string },
+  params: { id: string }
 ): Promise<{ json: () => Promise<unknown>; status: number }> {
   // Check authentication
   const session = await mockGetServerSession();
@@ -286,15 +289,25 @@ async function handleOCR(
   };
 
   // Validate language options
-  const validLanguages = ['eng', 'spa', 'fra', 'deu', 'ita', 'por', 'chi_sim', 'jpn', 'kor'];
+  const validLanguages = [
+    'eng',
+    'spa',
+    'fra',
+    'deu',
+    'ita',
+    'por',
+    'chi_sim',
+    'jpn',
+    'kor',
+  ];
   const invalidLanguages = options.languages.filter(
-    (lang: string) => !validLanguages.includes(lang),
+    (lang: string) => !validLanguages.includes(lang)
   );
 
   if (invalidLanguages.length > 0) {
     return createJsonResponse(
       { error: `Invalid language(s): ${invalidLanguages.join(', ')}` },
-      400,
+      400
     );
   }
 
@@ -303,7 +316,8 @@ async function handleOCR(
     const job = await mockProcessingService.runOCR(params.id, options);
     return createJsonResponse({ job }, 201);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create job';
+    const message =
+      error instanceof Error ? error.message : 'Failed to create job';
     return createJsonResponse({ error: message }, 500);
   }
 }
@@ -313,7 +327,7 @@ async function handleOCR(
  */
 async function handleGetJobStatus(
   _request: NextRequest,
-  params: { jobId: string },
+  params: { jobId: string }
 ): Promise<{ json: () => Promise<unknown>; status: number }> {
   // Check authentication
   const session = await mockGetServerSession();
@@ -400,7 +414,7 @@ describe('Processing API', () => {
       expect(data.job?.type).toBe('TEXT_EXTRACTION');
       expect(mockProcessingService.extractText).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ extractTables: true }),
+        expect.objectContaining({ extractTables: true })
       );
     });
 
@@ -482,13 +496,13 @@ describe('Processing API', () => {
           extractTables: true,
           extractImages: true,
           maxPages: 50,
-        },
+        }
       );
     });
 
     it('handles service errors', async () => {
       mockProcessingService.extractText.mockRejectedValue(
-        new Error('Queue unavailable'),
+        new Error('Queue unavailable')
       );
 
       const request = createMockRequest({
@@ -547,7 +561,7 @@ describe('Processing API', () => {
       expect(response.status).toBe(201);
       expect(mockProcessingService.runOCR).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ languages: ['eng', 'fra', 'spa'] }),
+        expect.objectContaining({ languages: ['eng', 'fra', 'spa'] })
       );
     });
 
@@ -561,7 +575,7 @@ describe('Processing API', () => {
 
       expect(mockProcessingService.runOCR).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ languages: ['eng'] }),
+        expect.objectContaining({ languages: ['eng'] })
       );
     });
 
@@ -590,7 +604,7 @@ describe('Processing API', () => {
 
       expect(mockProcessingService.runOCR).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ enhanceImage: true }),
+        expect.objectContaining({ enhanceImage: true })
       );
     });
   });
@@ -637,7 +651,9 @@ describe('Processing API', () => {
 
       const request = createMockRequest();
 
-      const response = await handleGetJobStatus(request, { jobId: 'nonexistent' });
+      const response = await handleGetJobStatus(request, {
+        jobId: 'nonexistent',
+      });
       const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(404);
@@ -759,7 +775,9 @@ describe('Processing API Integration', () => {
       body: { extractTables: true },
     });
 
-    const createResponse = await handleExtractText(createRequest, { id: 'file_123' });
+    const createResponse = await handleExtractText(createRequest, {
+      id: 'file_123',
+    });
     const createData = (await createResponse.json()) as ProcessingApiResponse;
 
     expect(createResponse.status).toBe(201);
@@ -797,11 +815,16 @@ describe('Processing API Integration', () => {
     });
 
     const finalStatusRequest = createMockRequest();
-    const finalStatusResponse = await handleGetJobStatus(finalStatusRequest, { jobId });
-    const finalStatusData = (await finalStatusResponse.json()) as ProcessingApiResponse;
+    const finalStatusResponse = await handleGetJobStatus(finalStatusRequest, {
+      jobId,
+    });
+    const finalStatusData =
+      (await finalStatusResponse.json()) as ProcessingApiResponse;
 
     expect(finalStatusData.job!.status).toBe('COMPLETED');
-    expect(finalStatusData.job!.result!.content).toBe('Extracted document text');
+    expect(finalStatusData.job!.result!.content).toBe(
+      'Extracted document text'
+    );
   });
 
   it('complete OCR flow', async () => {
@@ -841,7 +864,9 @@ describe('Processing API Integration', () => {
     });
 
     const statusRequest = createMockRequest();
-    const statusResponse = await handleGetJobStatus(statusRequest, { jobId: 'ocr_job' });
+    const statusResponse = await handleGetJobStatus(statusRequest, {
+      jobId: 'ocr_job',
+    });
     const statusData = (await statusResponse.json()) as ProcessingApiResponse;
 
     expect(statusData.job!.status).toBe('COMPLETED');

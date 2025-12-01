@@ -30,7 +30,13 @@ import type {
   PaginatedOrgResult,
   UpdateOrgInput,
 } from '../types/organization';
-import type { Organization, OrganizationMember, OrganizationRole , Prisma, PrismaClient } from '@neolith/database';
+import type {
+  Organization,
+  OrganizationMember,
+  OrganizationRole,
+  Prisma,
+  PrismaClient,
+} from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -45,7 +51,7 @@ export class OrganizationAlreadyExistsError extends GenesisError {
       `Organization with slug '${slug}' already exists`,
       'ORGANIZATION_ALREADY_EXISTS',
       409,
-      { slug },
+      { slug }
     );
     this.name = 'OrganizationAlreadyExistsError';
   }
@@ -69,12 +75,7 @@ export class OrganizationValidationError extends GenesisError {
  */
 export class UserNotFoundError extends GenesisError {
   constructor(userId: string) {
-    super(
-      `User not found: ${userId}`,
-      'USER_NOT_FOUND',
-      404,
-      { userId },
-    );
+    super(`User not found: ${userId}`, 'USER_NOT_FOUND', 404, { userId });
     this.name = 'UserNotFoundError';
   }
 }
@@ -88,7 +89,7 @@ export class OrganizationMemberNotFoundError extends GenesisError {
       `User ${userId} is not a member of organization ${orgId}`,
       'ORGANIZATION_MEMBER_NOT_FOUND',
       404,
-      { orgId, userId },
+      { orgId, userId }
     );
     this.name = 'OrganizationMemberNotFoundError';
   }
@@ -150,7 +151,11 @@ export interface OrganizationService {
    * @throws {OrganizationNotFoundError} If the organization doesn't exist
    * @throws {UserNotFoundError} If the user doesn't exist
    */
-  addMember(orgId: string, userId: string, role: OrganizationMemberRole): Promise<OrganizationMember>;
+  addMember(
+    orgId: string,
+    userId: string,
+    role: OrganizationMemberRole
+  ): Promise<OrganizationMember>;
 
   /**
    * Removes a member from an organization.
@@ -172,7 +177,11 @@ export interface OrganizationService {
    * @throws {OrganizationNotFoundError} If the organization doesn't exist
    * @throws {OrganizationMemberNotFoundError} If the user is not a member
    */
-  updateMemberRole(orgId: string, userId: string, role: OrganizationMemberRole): Promise<OrganizationMember>;
+  updateMemberRole(
+    orgId: string,
+    userId: string,
+    role: OrganizationMemberRole
+  ): Promise<OrganizationMember>;
 
   /**
    * Gets all members of an organization.
@@ -237,7 +246,7 @@ export class OrganizationServiceImpl implements OrganizationService {
 
     try {
       // Create organization and add creator as owner in a transaction
-      const organization = await this.db.$transaction(async (tx) => {
+      const organization = await this.db.$transaction(async tx => {
         const newOrg = await tx.organization.create({
           data: {
             name: data.name,
@@ -262,7 +271,10 @@ export class OrganizationServiceImpl implements OrganizationService {
 
       return organization;
     } catch (error) {
-      throw new TransactionError('createOrganization', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createOrganization',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -315,7 +327,9 @@ export class OrganizationServiceImpl implements OrganizationService {
    * @param options - Query options
    * @returns Paginated organization results
    */
-  async listOrganizations(options: ListOrgsOptions = {}): Promise<PaginatedOrgResult> {
+  async listOrganizations(
+    options: ListOrgsOptions = {}
+  ): Promise<PaginatedOrgResult> {
     const {
       userId,
       skip = DEFAULT_ORG_LIST_OPTIONS.skip,
@@ -360,7 +374,10 @@ export class OrganizationServiceImpl implements OrganizationService {
   /**
    * Updates an organization.
    */
-  async updateOrganization(id: string, data: UpdateOrgInput): Promise<Organization> {
+  async updateOrganization(
+    id: string,
+    data: UpdateOrgInput
+  ): Promise<Organization> {
     // Validate input
     this.validateUpdateInput(data);
 
@@ -411,7 +428,7 @@ export class OrganizationServiceImpl implements OrganizationService {
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async tx => {
         // Delete all organization members
         await tx.organizationMember.deleteMany({
           where: { organizationId: id },
@@ -423,7 +440,7 @@ export class OrganizationServiceImpl implements OrganizationService {
           select: { id: true },
         });
 
-        const workspaceIds = workspaces.map((w) => w.id);
+        const workspaceIds = workspaces.map(w => w.id);
 
         if (workspaceIds.length > 0) {
           // Delete all workspace members
@@ -437,7 +454,7 @@ export class OrganizationServiceImpl implements OrganizationService {
             select: { id: true },
           });
 
-          const channelIds = channels.map((c) => c.id);
+          const channelIds = channels.map(c => c.id);
 
           if (channelIds.length > 0) {
             // Delete all channel members
@@ -478,7 +495,10 @@ export class OrganizationServiceImpl implements OrganizationService {
         });
       });
     } catch (error) {
-      throw new TransactionError('deleteOrganization', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteOrganization',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -492,7 +512,7 @@ export class OrganizationServiceImpl implements OrganizationService {
   async addMember(
     orgId: string,
     userId: string,
-    role: OrganizationMemberRole,
+    role: OrganizationMemberRole
   ): Promise<OrganizationMember> {
     // Verify organization exists
     const org = await this.getOrganization(orgId);
@@ -576,7 +596,7 @@ export class OrganizationServiceImpl implements OrganizationService {
   async updateMemberRole(
     orgId: string,
     userId: string,
-    role: OrganizationMemberRole,
+    role: OrganizationMemberRole
   ): Promise<OrganizationMember> {
     // Verify organization exists
     const org = await this.getOrganization(orgId);
@@ -672,7 +692,9 @@ export class OrganizationServiceImpl implements OrganizationService {
     }
 
     if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH) {
-      errors.description = [`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`];
+      errors.description = [
+        `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      ];
     }
 
     if (!data.createdById) {
@@ -680,7 +702,10 @@ export class OrganizationServiceImpl implements OrganizationService {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new OrganizationValidationError('Organization validation failed', errors);
+      throw new OrganizationValidationError(
+        'Organization validation failed',
+        errors
+      );
     }
   }
 
@@ -699,11 +724,16 @@ export class OrganizationServiceImpl implements OrganizationService {
     }
 
     if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH) {
-      errors.description = [`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`];
+      errors.description = [
+        `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      ];
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new OrganizationValidationError('Organization validation failed', errors);
+      throw new OrganizationValidationError(
+        'Organization validation failed',
+        errors
+      );
     }
   }
 }
@@ -732,7 +762,9 @@ export class OrganizationServiceImpl implements OrganizationService {
  * await organizationService.addMember(org.id, 'user_456', 'ADMIN');
  * ```
  */
-export function createOrganizationService(database?: PrismaClient): OrganizationServiceImpl {
+export function createOrganizationService(
+  database?: PrismaClient
+): OrganizationServiceImpl {
   return new OrganizationServiceImpl(database);
 }
 

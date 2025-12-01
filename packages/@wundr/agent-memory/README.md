@@ -1,6 +1,8 @@
 # @wundr.io/agent-memory
 
-MemGPT-inspired tiered memory architecture for AI agents. Provides intelligent context management with scratchpad (working), episodic (recent), and semantic (long-term) memory tiers, human-like forgetting curves, and cross-session persistence.
+MemGPT-inspired tiered memory architecture for AI agents. Provides intelligent context management
+with scratchpad (working), episodic (recent), and semantic (long-term) memory tiers, human-like
+forgetting curves, and cross-session persistence.
 
 ## Table of Contents
 
@@ -29,11 +31,14 @@ MemGPT-inspired tiered memory architecture for AI agents. Provides intelligent c
 
 ## Overview
 
-This package implements a sophisticated memory system inspired by [MemGPT](https://memgpt.ai/), featuring:
+This package implements a sophisticated memory system inspired by [MemGPT](https://memgpt.ai/),
+featuring:
 
-- **Tiered Memory Architecture**: Three distinct tiers (scratchpad, episodic, semantic) with automatic promotion and compaction
+- **Tiered Memory Architecture**: Three distinct tiers (scratchpad, episodic, semantic) with
+  automatic promotion and compaction
 - **Human-like Forgetting**: Ebbinghaus forgetting curve implementation for realistic memory decay
-- **Intelligent Context Compilation**: Optimizes context window usage by selecting the most relevant memories
+- **Intelligent Context Compilation**: Optimizes context window usage by selecting the most relevant
+  memories
 - **Session Persistence**: Cross-session memory management with automatic save/restore
 - **Event-Driven Architecture**: Subscribe to memory lifecycle events for custom integrations
 
@@ -111,11 +116,11 @@ The memory system uses three tiers inspired by human memory:
      4,000 tokens                           16,000 tokens                            32,000 tokens
 ```
 
-| Tier | Purpose | Default Size | TTL | Key Features |
-|------|---------|--------------|-----|--------------|
-| **Scratchpad** | Immediate working context | 4,000 tokens | 1 hour | Fast access, auto-eviction, priority-based |
-| **Episodic** | Recent events and interactions | 16,000 tokens | 7 days | Time-indexed, session-scoped, semantic search |
-| **Semantic** | Consolidated knowledge | 32,000 tokens | None | Confidence-scored, domain-indexed, knowledge graph |
+| Tier           | Purpose                        | Default Size  | TTL    | Key Features                                       |
+| -------------- | ------------------------------ | ------------- | ------ | -------------------------------------------------- |
+| **Scratchpad** | Immediate working context      | 4,000 tokens  | 1 hour | Fast access, auto-eviction, priority-based         |
+| **Episodic**   | Recent events and interactions | 16,000 tokens | 7 days | Time-indexed, session-scoped, semantic search      |
+| **Semantic**   | Consolidated knowledge         | 32,000 tokens | None   | Confidence-scored, domain-indexed, knowledge graph |
 
 ### Forgetting Curve
 
@@ -126,12 +131,15 @@ Retention = S * e^(-t / (k * stability))
 ```
 
 Where:
+
 - `S` = initial strength
 - `t` = time elapsed (hours)
 - `k` = decay rate modifier
-- `stability` = 1 + (accessCount * 0.5)
+- `stability` = 1 + (accessCount \* 0.5)
 
-Memories that drop below the minimum threshold (default: 0.1) are forgotten. Memories above the consolidation threshold (default: 0.7) with multiple accesses are candidates for promotion to semantic memory.
+Memories that drop below the minimum threshold (default: 0.1) are forgotten. Memories above the
+consolidation threshold (default: 0.7) with multiple accesses are candidates for promotion to
+semantic memory.
 
 ## Core API
 
@@ -144,14 +152,18 @@ import { AgentMemoryManager, createMemoryManager } from '@wundr.io/agent-memory'
 
 // Option 1: Factory function (recommended)
 const memory = await createMemoryManager({
-  config: { /* optional overrides */ },
-  tokenEstimator: (content) => Math.ceil(JSON.stringify(content).length / 4),
+  config: {
+    /* optional overrides */
+  },
+  tokenEstimator: content => Math.ceil(JSON.stringify(content).length / 4),
   autoConsolidation: true,
   autoCompaction: true,
 });
 
 // Option 2: Manual instantiation
-const manager = new AgentMemoryManager({ /* options */ });
+const manager = new AgentMemoryManager({
+  /* options */
+});
 await manager.initialize();
 ```
 
@@ -211,8 +223,8 @@ interface CompactionResult {
   beforeCount: number;
   afterCount: number;
   tokensFreed: number;
-  promoted: number;     // Moved to next tier
-  forgotten: number;    // Permanently removed
+  promoted: number; // Moved to next tier
+  forgotten: number; // Permanently removed
   durationMs: number;
 }
 ```
@@ -275,11 +287,11 @@ import { Scratchpad } from '@wundr.io/agent-memory';
 
 const scratchpad = new Scratchpad({
   maxTokens: 4000,
-  ttlMs: 3600000,             // 1 hour
-  compactionThreshold: 0.9,   // Compact at 90% capacity
+  ttlMs: 3600000, // 1 hour
+  compactionThreshold: 0.9, // Compact at 90% capacity
   compressionEnabled: false,
-  tokenEstimator: (content) => Math.ceil(JSON.stringify(content).length / 4),
-  onOverflow: async (evictedMemories) => {
+  tokenEstimator: content => Math.ceil(JSON.stringify(content).length / 4),
+  onOverflow: async evictedMemories => {
     // Handle evicted memories (e.g., promote to episodic)
   },
 });
@@ -293,7 +305,7 @@ scratchpad.get(id);
 scratchpad.getAll();
 scratchpad.getByTag('important');
 scratchpad.getByAgent('agent-1');
-scratchpad.pin(id);           // Prevent eviction
+scratchpad.pin(id); // Prevent eviction
 scratchpad.unpin(id);
 scratchpad.link(sourceId, targetId);
 scratchpad.clear(preservePinned);
@@ -313,11 +325,11 @@ import { EpisodicStore } from '@wundr.io/agent-memory';
 
 const episodic = new EpisodicStore({
   maxTokens: 16000,
-  ttlMs: 86400000 * 7,        // 7 days
+  ttlMs: 86400000 * 7, // 7 days
   compactionThreshold: 0.8,
   compressionEnabled: true,
   similarityThreshold: 0.7,
-  onConsolidate: async (memories) => {
+  onConsolidate: async memories => {
     // Handle consolidation candidates
   },
 });
@@ -328,19 +340,19 @@ await episodic.store(content, {
   episode: {
     sessionId: 'session-123',
     turnNumber: 5,
-    episodeType: 'conversation',  // 'conversation' | 'task' | 'error' | 'decision' | 'observation'
+    episodeType: 'conversation', // 'conversation' | 'task' | 'error' | 'decision' | 'observation'
     participants: ['user', 'agent-1'],
-    outcome: 'success',           // 'success' | 'failure' | 'partial' | 'pending'
-    valence: 0.8,                 // Emotional valence: -1 to 1
+    outcome: 'success', // 'success' | 'failure' | 'partial' | 'pending'
+    valence: 0.8, // Emotional valence: -1 to 1
     importance: 0.7,
   },
 });
 
 // Temporal queries
 const recent = await episodic.queryByTimeRange(
-  new Date(Date.now() - 3600000),  // 1 hour ago
+  new Date(Date.now() - 3600000), // 1 hour ago
   new Date(),
-  50  // limit
+  50 // limit
 );
 
 // Session queries
@@ -351,8 +363,8 @@ const similar = await episodic.findSimilar(queryEmbedding, 10);
 
 // Get consolidation candidates
 const candidates = episodic.getConsolidationCandidates(
-  0.7,  // strengthThreshold
-  2     // accessCountThreshold
+  0.7, // strengthThreshold
+  2 // accessCountThreshold
 );
 ```
 
@@ -375,7 +387,7 @@ const semantic = new SemanticStore({
 await semantic.store(content, {
   source: 'consolidation',
   semantic: {
-    category: 'preference',    // 'fact' | 'concept' | 'procedure' | 'preference' | 'pattern' | 'rule' | 'entity' | 'relationship'
+    category: 'preference', // 'fact' | 'concept' | 'procedure' | 'preference' | 'pattern' | 'rule' | 'entity' | 'relationship'
     confidence: 0.9,
     domain: 'coding',
     relatedConcepts: ['typescript', 'programming'],
@@ -387,14 +399,16 @@ await semantic.store(content, {
 });
 
 // Consolidate from episodic memories
-const created = await semantic.consolidate(episodes, (episodes) => {
+const created = await semantic.consolidate(episodes, episodes => {
   // Extract knowledge from episodes
-  return [{
-    content: { fact: 'User prefers TypeScript' },
-    category: 'preference',
-    domain: 'coding',
-    confidence: 0.9,
-  }];
+  return [
+    {
+      content: { fact: 'User prefers TypeScript' },
+      category: 'preference',
+      domain: 'coding',
+      confidence: 0.9,
+    },
+  ];
 });
 
 // Reinforce existing knowledge
@@ -424,7 +438,7 @@ The default strategy balances recency with semantic relevance:
 const results = await manager.search({
   sortBy: 'recency',
   sortDirection: 'desc',
-  queryEmbedding: embeddingVector,  // Optional semantic boost
+  queryEmbedding: embeddingVector, // Optional semantic boost
 });
 ```
 
@@ -464,7 +478,7 @@ const sessionManager = manager.getSessionManager();
 
 // Create session
 const session = sessionManager.createSession({
-  sessionId: 'custom-id',           // Optional
+  sessionId: 'custom-id', // Optional
   agentIds: ['agent-1', 'agent-2'],
   metadata: { project: 'demo' },
 });
@@ -482,26 +496,26 @@ await sessionManager.saveAllSessions();
 const restored = await sessionManager.getSession(sessionId);
 
 // Cleanup
-sessionManager.cleanupInactiveSessions(86400000);  // 24 hours
-await sessionManager.endSession(sessionId, true);   // persist = true
+sessionManager.cleanupInactiveSessions(86400000); // 24 hours
+await sessionManager.endSession(sessionId, true); // persist = true
 ```
 
 ### Session Persistence Configuration
 
 ```typescript
 const sessionManager = new SessionManager({
-  autoSaveIntervalMs: 60000,   // Auto-save every minute
-  maxCachedSessions: 10,       // LRU cache limit
+  autoSaveIntervalMs: 60000, // Auto-save every minute
+  maxCachedSessions: 10, // LRU cache limit
   compression: false,
 });
 
 // Initialize with persistence callbacks
 sessionManager.initialize(
-  async (state) => {
+  async state => {
     // Save to database/file
     await db.sessions.upsert(state);
   },
-  async (sessionId) => {
+  async sessionId => {
     // Load from database/file
     return await db.sessions.findOne({ sessionId });
   }
@@ -538,7 +552,8 @@ manager.restore(loaded);
 
 ## Integration with Orchestrator Daemon
 
-The agent-memory package integrates with Orchestrator (Virtual Process) daemon for multi-agent orchestration:
+The agent-memory package integrates with Orchestrator (Virtual Process) daemon for multi-agent
+orchestration:
 
 ```typescript
 import { createMemoryManager } from '@wundr.io/agent-memory';
@@ -549,7 +564,7 @@ const sharedMemory = await createMemoryManager({
     persistenceEnabled: true,
     persistencePath: '/var/orchestrator-daemon/memory',
     autoConsolidation: true,
-    consolidationIntervalMs: 300000,  // 5 minutes
+    consolidationIntervalMs: 300000, // 5 minutes
   },
 });
 
@@ -612,19 +627,19 @@ class VPDaemon {
 Subscribe to memory lifecycle events:
 
 ```typescript
-manager.on('memory:stored', (event) => {
+manager.on('memory:stored', event => {
   console.log(`Stored memory ${event.payload.memoryId} in ${event.payload.tier}`);
 });
 
-manager.on('memory:forgotten', (event) => {
+manager.on('memory:forgotten', event => {
   console.log(`Forgot memory ${event.payload.memoryId}`);
 });
 
-manager.on('memory:consolidated', (event) => {
+manager.on('memory:consolidated', event => {
   console.log(`Consolidated ${event.payload.details.episodicConsolidated} memories`);
 });
 
-manager.on('context:compiled', (event) => {
+manager.on('context:compiled', event => {
   console.log(`Context utilization: ${event.payload.details.utilization * 100}%`);
 });
 
@@ -651,13 +666,13 @@ type MemoryEventType =
 const DEFAULT_MEMORY_CONFIG = {
   scratchpad: {
     maxTokens: 4000,
-    ttlMs: 3600000,           // 1 hour
+    ttlMs: 3600000, // 1 hour
     compressionEnabled: false,
     compactionThreshold: 0.9,
   },
   episodic: {
     maxTokens: 16000,
-    ttlMs: 86400000 * 7,      // 7 days
+    ttlMs: 86400000 * 7, // 7 days
     compressionEnabled: true,
     compactionThreshold: 0.8,
   },
@@ -675,7 +690,7 @@ const DEFAULT_MEMORY_CONFIG = {
   },
   persistenceEnabled: true,
   autoConsolidation: true,
-  consolidationIntervalMs: 300000,  // 5 minutes
+  consolidationIntervalMs: 300000, // 5 minutes
 };
 ```
 
@@ -687,7 +702,15 @@ Key TypeScript types exported by the package:
 // Core types
 export type MemoryTier = 'scratchpad' | 'episodic' | 'semantic';
 export type MemorySource = 'user' | 'system' | 'agent' | 'consolidation';
-export type KnowledgeCategory = 'fact' | 'concept' | 'procedure' | 'preference' | 'pattern' | 'rule' | 'entity' | 'relationship';
+export type KnowledgeCategory =
+  | 'fact'
+  | 'concept'
+  | 'procedure'
+  | 'preference'
+  | 'pattern'
+  | 'rule'
+  | 'entity'
+  | 'relationship';
 
 // Memory structure
 export interface Memory {
@@ -735,7 +758,7 @@ export interface TierStatistics {
 ```typescript
 // Reserve tokens for system prompt and response
 const systemPromptTokens = estimateTokens(systemPrompt);
-const responseBuffer = 1000;  // Reserve for response
+const responseBuffer = 1000; // Reserve for response
 const availableForContext = maxTokens - systemPromptTokens - responseBuffer;
 
 const context = await manager.compileContext({
@@ -762,7 +785,7 @@ await manager.store(
 const context = await manager.compileContext({
   // ...
   queryEmbedding: await embedder.encode(userMessage),
-  episodicLimit: 5,  // Limit to most relevant
+  episodicLimit: 5, // Limit to most relevant
 });
 ```
 
@@ -774,7 +797,7 @@ setInterval(async () => {
   await manager.runCompaction();
   await manager.applyDecay();
   manager.getSessionManager().cleanupInactiveSessions(86400000);
-}, 3600000);  // Every hour
+}, 3600000); // Every hour
 ```
 
 ### 5. Graceful Shutdown

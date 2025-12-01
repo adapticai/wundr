@@ -42,38 +42,39 @@ export const PasswordResetEmail = ({
           <EmailHeader />
 
           <Section style={contentSection}>
-            <EmailText variant="h1">Password Reset Request</EmailText>
+            <EmailText variant='h1'>Password Reset Request</EmailText>
 
             <EmailText>Hello {username},</EmailText>
 
             <EmailText>
-              We received a request to reset the password for your Neolith account.
-              If you made this request, click the button below to set a new password.
+              We received a request to reset the password for your Neolith
+              account. If you made this request, click the button below to set a
+              new password.
             </EmailText>
 
             <Section style={buttonContainer}>
-              <EmailButton href={resetUrl}>
-                Reset Password
-              </EmailButton>
+              <EmailButton href={resetUrl}>Reset Password</EmailButton>
             </Section>
 
             <EmailText>
-              This link will expire in <strong>{expirationTime}</strong> for security
-              reasons.
+              This link will expire in <strong>{expirationTime}</strong> for
+              security reasons.
             </EmailText>
 
             <Section style={warningBox}>
-              <EmailText variant="h2" style={warningTitle}>Security Notice</EmailText>
+              <EmailText variant='h2' style={warningTitle}>
+                Security Notice
+              </EmailText>
               <EmailText style={warningText}>
-                For your security, please do not share this password reset link with
-                anyone. If you forward this email, the link will allow others to access
-                and change your account password.
+                For your security, please do not share this password reset link
+                with anyone. If you forward this email, the link will allow
+                others to access and change your account password.
               </EmailText>
             </Section>
 
-            <EmailText variant="small">
-              If you didn&apos;t request a password reset, you can safely ignore this
-              email. Your password will remain unchanged.
+            <EmailText variant='small'>
+              If you didn&apos;t request a password reset, you can safely ignore
+              this email. Your password will remain unchanged.
             </EmailText>
           </Section>
 

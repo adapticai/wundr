@@ -43,7 +43,10 @@ export function CollapsedChannelIcons({
 
   // Calculate unread counts for each section
   const channelsUnreadCount = React.useMemo(() => {
-    return channels.reduce((sum, channel) => sum + (channel.unreadCount || 0), 0);
+    return channels.reduce(
+      (sum, channel) => sum + (channel.unreadCount || 0),
+      0
+    );
   }, [channels]);
 
   const dmsUnreadCount = React.useMemo(() => {
@@ -51,8 +54,14 @@ export function CollapsedChannelIcons({
   }, [directMessages]);
 
   const starredUnreadCount = React.useMemo(() => {
-    const channelUnread = starredChannels.reduce((sum, channel) => sum + (channel.unreadCount || 0), 0);
-    const dmUnread = starredDMs.reduce((sum, dm) => sum + (dm.unreadCount || 0), 0);
+    const channelUnread = starredChannels.reduce(
+      (sum, channel) => sum + (channel.unreadCount || 0),
+      0
+    );
+    const dmUnread = starredDMs.reduce(
+      (sum, dm) => sum + (dm.unreadCount || 0),
+      0
+    );
     return channelUnread + dmUnread;
   }, [starredChannels, starredDMs]);
 
@@ -71,11 +80,16 @@ export function CollapsedChannelIcons({
         <SidebarMenuItem>
           <SidebarMenuButton
             onClick={handleIconClick}
-            tooltip="Starred"
-            className="relative"
+            tooltip='Starred'
+            className='relative'
           >
-            <Star className={cn('h-4 w-4', starredUnreadCount > 0 && 'text-yellow-500')} />
-            <span className="sr-only">Starred</span>
+            <Star
+              className={cn(
+                'h-4 w-4',
+                starredUnreadCount > 0 && 'text-yellow-500'
+              )}
+            />
+            <span className='sr-only'>Starred</span>
             {starredUnreadCount > 0 && (
               <UnreadBadge count={starredUnreadCount} />
             )}
@@ -87,11 +101,11 @@ export function CollapsedChannelIcons({
       <SidebarMenuItem>
         <SidebarMenuButton
           onClick={handleIconClick}
-          tooltip="Channels"
-          className="relative"
+          tooltip='Channels'
+          className='relative'
         >
-          <Hash className="h-4 w-4" />
-          <span className="sr-only">Channels</span>
+          <Hash className='h-4 w-4' />
+          <span className='sr-only'>Channels</span>
           {channelsUnreadCount > 0 && (
             <UnreadBadge count={channelsUnreadCount} />
           )}
@@ -102,14 +116,12 @@ export function CollapsedChannelIcons({
       <SidebarMenuItem>
         <SidebarMenuButton
           onClick={handleIconClick}
-          tooltip="Direct Messages"
-          className="relative"
+          tooltip='Direct Messages'
+          className='relative'
         >
-          <MessageSquare className="h-4 w-4" />
-          <span className="sr-only">Direct Messages</span>
-          {dmsUnreadCount > 0 && (
-            <UnreadBadge count={dmsUnreadCount} />
-          )}
+          <MessageSquare className='h-4 w-4' />
+          <span className='sr-only'>Direct Messages</span>
+          {dmsUnreadCount > 0 && <UnreadBadge count={dmsUnreadCount} />}
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
@@ -123,7 +135,7 @@ function UnreadBadge({ count }: { count: number }) {
   const displayCount = count > 99 ? '99+' : count;
 
   return (
-    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+    <span className='absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground'>
       {displayCount}
     </span>
   );

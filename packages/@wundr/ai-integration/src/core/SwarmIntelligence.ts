@@ -364,7 +364,11 @@ export class SwarmIntelligence extends EventEmitter {
     // Scalability match
     const scalabilityBonus = {
       high: (topology.metadata?.scalability || 0) > 0.7 ? 15 : 0,
-      medium: (topology.metadata?.scalability || 0) > 0.4 && (topology.metadata?.scalability || 0) <= 0.7 ? 10 : 0,
+      medium:
+        (topology.metadata?.scalability || 0) > 0.4 &&
+        (topology.metadata?.scalability || 0) <= 0.7
+          ? 10
+          : 0,
       low: (topology.metadata?.scalability || 0) <= 0.4 ? 5 : 0,
     };
     score += scalabilityBonus[analysis.scalabilityRequirement] || 0;
@@ -426,7 +430,8 @@ export class SwarmIntelligence extends EventEmitter {
 
     if (
       analysis.timeConstraints === 'tight' &&
-(topology.metadata?.decisionSpeed || 0) >= 0.5 && (topology.metadata?.decisionSpeed || 0) < 0.8
+      (topology.metadata?.decisionSpeed || 0) >= 0.5 &&
+      (topology.metadata?.decisionSpeed || 0) < 0.8
     ) {
       optimizations.push('Enable fast-track decision making');
     }

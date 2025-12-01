@@ -191,7 +191,10 @@ export class DaemonApiService {
   /**
    * Send a message to a channel as the VP
    */
-  async sendMessage(token: DaemonToken, params: SendMessageParams): Promise<string> {
+  async sendMessage(
+    token: DaemonToken,
+    params: SendMessageParams
+  ): Promise<string> {
     this.requireScope(token, 'messages:write');
 
     // Get the VP's associated user ID
@@ -205,9 +208,15 @@ export class DaemonApiService {
     }
 
     // Verify Orchestrator has access to channel
-    const hasAccess = await this.checkChannelAccess(orchestrator.userId, params.channelId);
+    const hasAccess = await this.checkChannelAccess(
+      orchestrator.userId,
+      params.channelId
+    );
     if (!hasAccess) {
-      throw new DaemonApiError('VP does not have access to this channel', 'CHANNEL_ACCESS_DENIED');
+      throw new DaemonApiError(
+        'VP does not have access to this channel',
+        'CHANNEL_ACCESS_DENIED'
+      );
     }
 
     // Create message
@@ -216,9 +225,13 @@ export class DaemonApiService {
         channel: { connect: { id: params.channelId } },
         author: { connect: { id: orchestrator.userId } },
         content: params.content,
-        parent: params.parentId ? { connect: { id: params.parentId } } : undefined,
+        parent: params.parentId
+          ? { connect: { id: params.parentId } }
+          : undefined,
         // Cast metadata to satisfy Prisma's InputJsonValue type
-        metadata: (params.metadata ?? {}) as Parameters<typeof this.prisma.message.create>[0]['data']['metadata'],
+        metadata: (params.metadata ?? {}) as Parameters<
+          typeof this.prisma.message.create
+        >[0]['data']['metadata'],
       },
     });
 
@@ -234,18 +247,26 @@ export class DaemonApiService {
     }
 
     // Publish event
-    await this.publishEvent(token.daemonId, token.orchestratorId, 'message.sent', {
-      messageId: message.id,
-      channelId: params.channelId,
-    });
+    await this.publishEvent(
+      token.daemonId,
+      token.orchestratorId,
+      'message.sent',
+      {
+        messageId: message.id,
+        channelId: params.channelId,
+      }
+    );
 
     // Notify via Redis pub/sub for real-time updates
-    await this.redis.publish(`channel:${params.channelId}:messages`, JSON.stringify({
-      type: 'message.new',
-      messageId: message.id,
-      authorId: orchestrator.userId,
-      orchestratorId: token.orchestratorId,
-    }));
+    await this.redis.publish(
+      `channel:${params.channelId}:messages`,
+      JSON.stringify({
+        type: 'message.new',
+        messageId: message.id,
+        authorId: orchestrator.userId,
+        orchestratorId: token.orchestratorId,
+      })
+    );
 
     return message.id;
   }
@@ -260,15 +281,17 @@ export class DaemonApiService {
       limit?: number;
       before?: string;
       after?: string;
-    },
-  ): Promise<Array<{
-    id: string;
-    content: string;
-    authorId: string;
-    authorName: string;
-    createdAt: Date;
-    parentId?: string;
-  }>> {
+    }
+  ): Promise<
+    Array<{
+      id: string;
+      content: string;
+      authorId: string;
+      authorName: string;
+      createdAt: Date;
+      parentId?: string;
+    }>
+  > {
     this.requireScope(token, 'messages:read');
 
     // Get the VP's associated user ID
@@ -281,9 +304,15 @@ export class DaemonApiService {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
-    const hasAccess = await this.checkChannelAccess(orchestrator.userId, channelId);
+    const hasAccess = await this.checkChannelAccess(
+      orchestrator.userId,
+      channelId
+    );
     if (!hasAccess) {
-      throw new DaemonApiError('VP does not have access to this channel', 'CHANNEL_ACCESS_DENIED');
+      throw new DaemonApiError(
+        'VP does not have access to this channel',
+        'CHANNEL_ACCESS_DENIED'
+      );
     }
 
     const limit = Math.min(options?.limit ?? 50, 100);
@@ -303,7 +332,7 @@ export class DaemonApiService {
 
     // Get author names for all messages
     // Note: Using type assertion since Prisma generates different types for mapped columns
-    type MessageWithAuthor = typeof messages[0] & { authorId: string };
+    type MessageWithAuthor = (typeof messages)[0] & { authorId: string };
     const messagesTyped = messages as unknown as MessageWithAuthor[];
     const authorIdsSet = new Set(messagesTyped.map(m => m.authorId));
     const authorIds = Array.from(authorIdsSet);
@@ -311,7 +340,9 @@ export class DaemonApiService {
       where: { id: { in: authorIds } },
       select: { id: true, name: true },
     });
-    const authorMap = new Map(authors.map((a: typeof authors[number]) => [a.id, a.name ?? 'Unknown']));
+    const authorMap = new Map(
+      authors.map((a: (typeof authors)[number]) => [a.id, a.name ?? 'Unknown'])
+    );
 
     return messagesTyped.map(msg => ({
       id: msg.id,
@@ -351,7 +382,7 @@ export class DaemonApiService {
       },
     });
 
-    return memberships.map((m: typeof memberships[number]) => ({
+    return memberships.map((m: (typeof memberships)[number]) => ({
       id: m.channel.id,
       name: m.channel.name,
       description: m.channel.description ?? undefined,
@@ -387,7 +418,10 @@ export class DaemonApiService {
     }
 
     if (channel.type === 'PRIVATE') {
-      throw new DaemonApiError('Cannot join private channel', 'CHANNEL_PRIVATE');
+      throw new DaemonApiError(
+        'Cannot join private channel',
+        'CHANNEL_PRIVATE'
+      );
     }
 
     // Add Orchestrator to channel
@@ -403,7 +437,12 @@ export class DaemonApiService {
       update: {},
     });
 
-    await this.publishEvent(token.daemonId, token.orchestratorId, 'channel.joined', { channelId });
+    await this.publishEvent(
+      token.daemonId,
+      token.orchestratorId,
+      'channel.joined',
+      { channelId }
+    );
   }
 
   /**
@@ -426,7 +465,12 @@ export class DaemonApiService {
       where: { channelId, userId: orchestrator.userId },
     });
 
-    await this.publishEvent(token.daemonId, token.orchestratorId, 'channel.left', { channelId });
+    await this.publishEvent(
+      token.daemonId,
+      token.orchestratorId,
+      'channel.left',
+      { channelId }
+    );
   }
 
   /**
@@ -434,7 +478,7 @@ export class DaemonApiService {
    */
   async getUsers(
     token: DaemonToken,
-    options?: { limit?: number; search?: string },
+    options?: { limit?: number; search?: string }
   ): Promise<UserInfo[]> {
     this.requireScope(token, 'users:read');
 
@@ -443,14 +487,16 @@ export class DaemonApiService {
     const members = await this.prisma.workspaceMember.findMany({
       where: {
         workspaceId: token.workspaceId,
-        ...(options?.search ? {
-          user: {
-            OR: [
-              { name: { contains: options.search, mode: 'insensitive' } },
-              { email: { contains: options.search, mode: 'insensitive' } },
-            ],
-          },
-        } : {}),
+        ...(options?.search
+          ? {
+              user: {
+                OR: [
+                  { name: { contains: options.search, mode: 'insensitive' } },
+                  { email: { contains: options.search, mode: 'insensitive' } },
+                ],
+              },
+            }
+          : {}),
       },
       take: limit,
       include: {
@@ -465,10 +511,10 @@ export class DaemonApiService {
     });
 
     // Get online status from Redis
-    const userIds = members.map((m: typeof members[number]) => m.user.id);
+    const userIds = members.map((m: (typeof members)[number]) => m.user.id);
     const onlineStatus = await this.getOnlineStatus(userIds);
 
-    return members.map((m: typeof members[number]) => ({
+    return members.map((m: (typeof members)[number]) => ({
       id: m.user.id,
       name: m.user.name ?? '',
       email: m.user.email,
@@ -483,7 +529,7 @@ export class DaemonApiService {
   async updatePresence(
     token: DaemonToken,
     status: 'online' | 'away' | 'busy' | 'offline',
-    statusText?: string,
+    statusText?: string
   ): Promise<void> {
     this.requireScope(token, 'presence:write');
 
@@ -502,12 +548,20 @@ export class DaemonApiService {
     }
 
     // Publish presence update
-    await this.redis.publish(`workspace:${token.workspaceId}:presence`, JSON.stringify({
-      userId: token.orchestratorId,
-      ...presenceData,
-    }));
+    await this.redis.publish(
+      `workspace:${token.workspaceId}:presence`,
+      JSON.stringify({
+        userId: token.orchestratorId,
+        ...presenceData,
+      })
+    );
 
-    await this.publishEvent(token.daemonId, token.orchestratorId, 'presence.updated', { status, statusText });
+    await this.publishEvent(
+      token.daemonId,
+      token.orchestratorId,
+      'presence.updated',
+      { status, statusText }
+    );
   }
 
   /**
@@ -540,7 +594,8 @@ export class DaemonApiService {
         messaging: true,
         presence: true,
         calls: Array.isArray(capabilities) && capabilities.includes('calls'),
-        fileAccess: Array.isArray(capabilities) && capabilities.includes('files'),
+        fileAccess:
+          Array.isArray(capabilities) && capabilities.includes('files'),
       },
     };
   }
@@ -551,12 +606,13 @@ export class DaemonApiService {
   async updateVPStatus(
     token: DaemonToken,
     status: 'active' | 'paused' | 'error',
-    message?: string,
+    message?: string
   ): Promise<void> {
     this.requireScope(token, 'vp:status');
 
     // Map status to VPStatus enum
-    const vpStatus = status === 'active' ? 'ONLINE' : status === 'paused' ? 'AWAY' : 'BUSY';
+    const vpStatus =
+      status === 'active' ? 'ONLINE' : status === 'paused' ? 'AWAY' : 'BUSY';
 
     await this.prisma.orchestrator.update({
       where: { id: token.orchestratorId },
@@ -569,14 +625,17 @@ export class DaemonApiService {
     await this.updatePresence(
       token,
       status === 'active' ? 'online' : status === 'paused' ? 'away' : 'busy',
-      message,
+      message
     );
   }
 
   /**
    * Report metrics
    */
-  async reportMetrics(token: DaemonToken, metrics: DaemonMetrics): Promise<void> {
+  async reportMetrics(
+    token: DaemonToken,
+    metrics: DaemonMetrics
+  ): Promise<void> {
     const metricsKey = `daemon:metrics:${token.daemonId}`;
 
     await this.redis.hset(metricsKey, {
@@ -595,7 +654,10 @@ export class DaemonApiService {
   /**
    * Subscribe to channel events
    */
-  async subscribeToChannel(token: DaemonToken, channelId: string): Promise<string> {
+  async subscribeToChannel(
+    token: DaemonToken,
+    channelId: string
+  ): Promise<string> {
     this.requireScope(token, 'messages:read');
 
     // Get the VP's associated user ID
@@ -608,9 +670,15 @@ export class DaemonApiService {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
-    const hasAccess = await this.checkChannelAccess(orchestrator.userId, channelId);
+    const hasAccess = await this.checkChannelAccess(
+      orchestrator.userId,
+      channelId
+    );
     if (!hasAccess) {
-      throw new DaemonApiError('VP does not have access to this channel', 'CHANNEL_ACCESS_DENIED');
+      throw new DaemonApiError(
+        'VP does not have access to this channel',
+        'CHANNEL_ACCESS_DENIED'
+      );
     }
 
     // Add to subscription set
@@ -622,7 +690,10 @@ export class DaemonApiService {
   /**
    * Unsubscribe from channel events
    */
-  async unsubscribeFromChannel(token: DaemonToken, channelId: string): Promise<void> {
+  async unsubscribeFromChannel(
+    token: DaemonToken,
+    channelId: string
+  ): Promise<void> {
     await this.redis.srem(`daemon:subscriptions:${token.daemonId}`, channelId);
   }
 
@@ -631,7 +702,7 @@ export class DaemonApiService {
    */
   async getPendingEvents(
     token: DaemonToken,
-    since?: Date,
+    since?: Date
   ): Promise<DaemonEvent[]> {
     const eventsKey = `${this.eventPrefix}${token.daemonId}`;
     const events = await this.redis.lrange(eventsKey, 0, 99);
@@ -644,7 +715,10 @@ export class DaemonApiService {
   /**
    * Acknowledge events
    */
-  async acknowledgeEvents(token: DaemonToken, eventIds: string[]): Promise<void> {
+  async acknowledgeEvents(
+    token: DaemonToken,
+    eventIds: string[]
+  ): Promise<void> {
     const eventsKey = `${this.eventPrefix}${token.daemonId}`;
 
     // Get all events and filter out acknowledged ones
@@ -670,7 +744,10 @@ export class DaemonApiService {
   /**
    * Check if Orchestrator has access to channel
    */
-  private async checkChannelAccess(userId: string, channelId: string): Promise<boolean> {
+  private async checkChannelAccess(
+    userId: string,
+    channelId: string
+  ): Promise<boolean> {
     const membership = await this.prisma.channelMember.findFirst({
       where: { channelId, userId },
     });
@@ -680,7 +757,9 @@ export class DaemonApiService {
   /**
    * Get online status for users
    */
-  private async getOnlineStatus(userIds: string[]): Promise<Map<string, boolean>> {
+  private async getOnlineStatus(
+    userIds: string[]
+  ): Promise<Map<string, boolean>> {
     const result = new Map<string, boolean>();
 
     for (const userId of userIds) {
@@ -703,7 +782,7 @@ export class DaemonApiService {
     daemonId: string,
     orchestratorId: string,
     type: DaemonEventType,
-    payload: DaemonEventPayload,
+    payload: DaemonEventPayload
   ): Promise<void> {
     const event: DaemonEvent = {
       id: `evt_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
@@ -725,7 +804,10 @@ export class DaemonApiService {
    */
   private requireScope(token: DaemonToken, scope: DaemonScope): void {
     if (!this.authService.hasScope(token, scope)) {
-      throw new DaemonApiError(`Missing required scope: ${scope}`, 'INSUFFICIENT_SCOPE');
+      throw new DaemonApiError(
+        `Missing required scope: ${scope}`,
+        'INSUFFICIENT_SCOPE'
+      );
     }
   }
 }
@@ -737,7 +819,9 @@ export class DaemonApiService {
 /**
  * Create a new DaemonApiService instance.
  */
-export function createDaemonApiService(config: DaemonApiServiceConfig): DaemonApiService {
+export function createDaemonApiService(
+  config: DaemonApiServiceConfig
+): DaemonApiService {
   return new DaemonApiService(config);
 }
 

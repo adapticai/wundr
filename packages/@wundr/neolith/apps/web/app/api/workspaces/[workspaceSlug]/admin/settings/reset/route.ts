@@ -67,14 +67,17 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -86,10 +89,16 @@ export async function POST(
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -111,14 +120,15 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { section } = parseResult.data;
-    const currentSettings = (membership.workspace.settings as WorkspaceSettings) || DEFAULT_SETTINGS;
+    const currentSettings =
+      (membership.workspace.settings as WorkspaceSettings) || DEFAULT_SETTINGS;
 
     let newSettings: WorkspaceSettings;
 
@@ -136,7 +146,11 @@ export async function POST(
     // Update workspace - serialize settings to ensure Prisma compatibility
     const updatedWorkspace = await prisma.workspace.update({
       where: { id: workspaceId },
-      data: { settings: JSON.parse(JSON.stringify(newSettings)) as Prisma.InputJsonValue },
+      data: {
+        settings: JSON.parse(
+          JSON.stringify(newSettings)
+        ) as Prisma.InputJsonValue,
+      },
     });
 
     // Log admin action
@@ -148,12 +162,20 @@ export async function POST(
       // Admin actions table may not exist yet, ignore
     });
 
-    return NextResponse.json({ settings: updatedWorkspace.settings as WorkspaceSettings });
+    return NextResponse.json({
+      settings: updatedWorkspace.settings as WorkspaceSettings,
+    });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/admin/settings/reset] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/admin/settings/reset] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to reset settings', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to reset settings',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

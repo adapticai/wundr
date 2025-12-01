@@ -22,7 +22,7 @@ export class BatchCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager,
+    private pluginManager: PluginManager
   ) {
     this.registerCommands();
   }
@@ -41,7 +41,7 @@ export class BatchCommands {
       .option('--continue-on-error', 'continue execution on command failures')
       .option(
         '--vars <vars>',
-        'variables to pass to batch job (JSON or key=value)',
+        'variables to pass to batch job (JSON or key=value)'
       )
       .option('--timeout <ms>', 'global timeout for batch job')
       .action(async (file, options) => {
@@ -111,7 +111,7 @@ export class BatchCommands {
       .option(
         '--format <format>',
         'export format (json, shell, dockerfile)',
-        'json',
+        'json'
       )
       .option('--output <path>', 'output file path')
       .action(async (file, options) => {
@@ -124,7 +124,7 @@ export class BatchCommands {
       .description('import batch job from different formats')
       .option(
         '--format <format>',
-        'source format (json, shell, package-scripts)',
+        'source format (json, shell, package-scripts)'
       )
       .option('--name <name>', 'batch job name')
       .action(async (file, options) => {
@@ -189,7 +189,7 @@ export class BatchCommands {
         'WUNDR_BATCH_RUN_FAILED',
         'Failed to run batch job',
         { file, options },
-        true,
+        true
       );
     }
   }
@@ -215,7 +215,7 @@ export class BatchCommands {
         process.cwd(),
         '.wundr',
         'batch',
-        `${name}.yaml`,
+        `${name}.yaml`
       );
       await fs.ensureDir(path.dirname(jobPath));
       await fs.writeFile(jobPath, YAML.stringify(job));
@@ -226,7 +226,7 @@ export class BatchCommands {
         'WUNDR_BATCH_CREATE_FAILED',
         'Failed to create batch job',
         { name, options },
-        true,
+        true
       );
     }
   }
@@ -246,7 +246,7 @@ export class BatchCommands {
 
       const files = await fs.readdir(batchDir);
       const yamlFiles = files.filter(
-        f => f.endsWith('.yaml') || f.endsWith('.yml'),
+        f => f.endsWith('.yaml') || f.endsWith('.yml')
       );
 
       if (yamlFiles.length === 0) {
@@ -288,7 +288,7 @@ export class BatchCommands {
         'WUNDR_BATCH_LIST_FAILED',
         'Failed to list batch jobs',
         { options },
-        true,
+        true
       );
     }
   }
@@ -325,7 +325,7 @@ export class BatchCommands {
         'WUNDR_BATCH_VALIDATE_FAILED',
         'Failed to validate batch job',
         { file },
-        true,
+        true
       );
     }
   }
@@ -352,7 +352,7 @@ export class BatchCommands {
         'WUNDR_BATCH_STOP_FAILED',
         'Failed to stop batch job',
         { jobId },
-        true,
+        true
       );
     }
   }
@@ -387,7 +387,7 @@ export class BatchCommands {
             File: path.basename(job.file),
             Status: job.status,
             Duration: `${Date.now() - job.startTime}ms`,
-          }),
+          })
         );
 
         console.table(jobData);
@@ -397,7 +397,7 @@ export class BatchCommands {
         'WUNDR_BATCH_STATUS_FAILED',
         'Failed to show job status',
         { jobId },
-        true,
+        true
       );
     }
   }
@@ -431,7 +431,7 @@ export class BatchCommands {
         'WUNDR_BATCH_SCHEDULE_FAILED',
         'Failed to schedule batch job',
         { file, options },
-        true,
+        true
       );
     }
   }
@@ -471,7 +471,7 @@ export class BatchCommands {
         'WUNDR_BATCH_EXPORT_FAILED',
         'Failed to export batch job',
         { file, options },
-        true,
+        true
       );
     }
   }
@@ -504,7 +504,7 @@ export class BatchCommands {
         process.cwd(),
         '.wundr',
         'batch',
-        `${jobName}.yaml`,
+        `${jobName}.yaml`
       );
 
       await fs.ensureDir(path.dirname(jobPath));
@@ -516,7 +516,7 @@ export class BatchCommands {
         'WUNDR_BATCH_IMPORT_FAILED',
         'Failed to import batch job',
         { file, options },
-        true,
+        true
       );
     }
   }
@@ -542,7 +542,7 @@ export class BatchCommands {
   }
 
   private async validateJobStructure(
-    job: BatchJob,
+    job: BatchJob
   ): Promise<{ valid: boolean; errors: string[] }> {
     const errors: string[] = [];
 
@@ -565,7 +565,7 @@ export class BatchCommands {
 
   private async processJobVariables(
     job: BatchJob,
-    vars?: string,
+    vars?: string
   ): Promise<BatchJob> {
     let variables: Record<string, any> = {};
 
@@ -627,7 +627,7 @@ export class BatchCommands {
   private async executeBatchJob(
     job: BatchJob,
     _jobId: string,
-    _options: any,
+    _options: any
   ): Promise<void> {
     const tasks = job.commands.map((cmd, _index) => ({
       title: cmd.command,
@@ -651,7 +651,7 @@ export class BatchCommands {
 
   private async executeCommand(
     cmd: BatchCommand,
-    _options: any,
+    _options: any
   ): Promise<void> {
     // Check condition if specified
     if (cmd.condition && !(await this.evaluateCondition(cmd.condition))) {
@@ -801,13 +801,13 @@ export class BatchCommands {
 
   private async createJobFromTemplate(
     name: string,
-    template: string,
+    template: string
   ): Promise<BatchJob> {
     // Load template and create job
     const templatePath = path.join(
       __dirname,
       '../../templates/batch',
-      `${template}.yaml`,
+      `${template}.yaml`
     );
     if (await fs.pathExists(templatePath)) {
       const templateJob = await this.loadBatchJob(templatePath);
@@ -860,7 +860,7 @@ export class BatchCommands {
 
   private async importFromShell(
     file: string,
-    name?: string,
+    name?: string
   ): Promise<BatchJob> {
     const content = await fs.readFile(file, 'utf8');
     const commands = content
@@ -877,7 +877,7 @@ export class BatchCommands {
 
   private async importFromPackageScripts(
     file: string,
-    name?: string,
+    name?: string
   ): Promise<BatchJob> {
     const packageJson = await fs.readJson(file);
     const scripts = packageJson.scripts || {};
@@ -900,7 +900,7 @@ export class BatchCommands {
     if (await fs.pathExists(templatesDir)) {
       const templates = await fs.readdir(templatesDir);
       const yamlTemplates = templates.filter(
-        t => t.endsWith('.yaml') || t.endsWith('.yml'),
+        t => t.endsWith('.yaml') || t.endsWith('.yml')
       );
 
       if (yamlTemplates.length > 0) {
@@ -924,7 +924,7 @@ export class BatchCommands {
       const templatePath = path.join(
         __dirname,
         '../../templates/batch',
-        `${name}.yaml`,
+        `${name}.yaml`
       );
 
       await fs.ensureDir(path.dirname(templatePath));

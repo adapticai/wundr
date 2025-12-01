@@ -43,8 +43,14 @@ export interface DocxProcessingOptions extends ProcessingOptions {
  * Mammoth module interface for document conversion
  */
 interface MammothModule {
-  convertToHtml: (input: { path?: string; buffer?: Buffer }, options?: MammothOptions) => Promise<MammothResult>;
-  extractRawText: (input: { path?: string; buffer?: Buffer }) => Promise<MammothResult>;
+  convertToHtml: (
+    input: { path?: string; buffer?: Buffer },
+    options?: MammothOptions
+  ) => Promise<MammothResult>;
+  extractRawText: (input: {
+    path?: string;
+    buffer?: Buffer;
+  }) => Promise<MammothResult>;
 }
 
 /**
@@ -105,7 +111,7 @@ export class DocxProcessor {
    */
   async process(
     filePath: string,
-    options: DocxProcessingOptions = {},
+    options: DocxProcessingOptions = {}
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -177,7 +183,7 @@ export class DocxProcessor {
    */
   private async parseDocx(
     filePath: string,
-    options: DocxProcessingOptions,
+    options: DocxProcessingOptions
   ): Promise<{
     text: string;
     html: string;
@@ -315,7 +321,9 @@ export class DocxProcessor {
    * @param image - Image element from mammoth
    * @returns Image source (base64 data URL)
    */
-  private async handleImage(image: MammothImageElement): Promise<{ src: string }> {
+  private async handleImage(
+    image: MammothImageElement
+  ): Promise<{ src: string }> {
     try {
       const buffer = await image.read();
       const base64 = buffer.toString('base64');
@@ -335,7 +343,8 @@ export class DocxProcessor {
     const headings: HeadingData[] = [];
 
     // Match h1-h6 tags
-    const headingRegex = /<h([1-6])[^>]*(?:\s+id="([^"]*)")?[^>]*>([\s\S]*?)<\/h\1>/gi;
+    const headingRegex =
+      /<h([1-6])[^>]*(?:\s+id="([^"]*)")?[^>]*>([\s\S]*?)<\/h\1>/gi;
 
     let match: RegExpExecArray | null;
     while ((match = headingRegex.exec(html)) !== null) {
@@ -408,7 +417,7 @@ interface HeadingData {
  * Create DOCX processor instance
  */
 export function createDocxProcessor(
-  config: FileProcessorConfig,
+  config: FileProcessorConfig
 ): DocxProcessor {
   return new DocxProcessor(config);
 }

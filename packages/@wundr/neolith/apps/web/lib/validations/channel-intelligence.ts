@@ -39,7 +39,9 @@ export const trackChannelActivitySchema = z.object({
   timestamp: z.string().datetime().optional(),
 });
 
-export type TrackChannelActivityInput = z.infer<typeof trackChannelActivitySchema>;
+export type TrackChannelActivityInput = z.infer<
+  typeof trackChannelActivitySchema
+>;
 
 /**
  * Schema for Orchestrator channel membership filters
@@ -153,7 +155,9 @@ export const activityMetricsFiltersSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
-export type ActivityMetricsFiltersInput = z.infer<typeof activityMetricsFiltersSchema>;
+export type ActivityMetricsFiltersInput = z.infer<
+  typeof activityMetricsFiltersSchema
+>;
 
 /**
  * Schema for channel relevance calculation
@@ -180,7 +184,9 @@ export const channelIntelligenceErrorSchema = z.object({
   details: z.record(z.unknown()).optional(),
 });
 
-export type ChannelIntelligenceError = z.infer<typeof channelIntelligenceErrorSchema>;
+export type ChannelIntelligenceError = z.infer<
+  typeof channelIntelligenceErrorSchema
+>;
 
 /**
  * Helper function to create standardized error response
@@ -188,7 +194,7 @@ export type ChannelIntelligenceError = z.infer<typeof channelIntelligenceErrorSc
 export function createChannelIntelligenceError(
   error: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): ChannelIntelligenceError {
   return {
     error,
@@ -251,4 +257,6 @@ export const channelActivityMetricsSchema = z.object({
   relevanceScore: z.number().min(0).max(1).optional(),
 });
 
-export type ChannelActivityMetrics = z.infer<typeof channelActivityMetricsSchema>;
+export type ChannelActivityMetrics = z.infer<
+  typeof channelActivityMetricsSchema
+>;

@@ -24,7 +24,9 @@ import * as path from 'path';
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
 // Use authenticated state for all tests
-test.use({ storageState: path.join(__dirname, '../playwright/.auth/user.json') });
+test.use({
+  storageState: path.join(__dirname, '../playwright/.auth/user.json'),
+});
 
 test.describe('Workflows Page - Full Test Suite', () => {
   test.beforeEach(async ({ page }) => {
@@ -61,8 +63,12 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await expect(createBtn).toBeVisible();
     });
 
-    test('should highlight Workflows in sidebar navigation', async ({ page }) => {
-      const workflowsLink = page.locator('aside').locator('a:has-text("Workflows")');
+    test('should highlight Workflows in sidebar navigation', async ({
+      page,
+    }) => {
+      const workflowsLink = page
+        .locator('aside')
+        .locator('a:has-text("Workflows")');
       const classes = await workflowsLink.getAttribute('class');
 
       expect(classes).toContain('bg-stone-900');
@@ -107,7 +113,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
       // Check if URL or state updated
       // Verify only active workflows are shown
-      const workflowCards = page.locator('[class*="grid"] > div').filter({ hasText: /Active/i });
+      const workflowCards = page
+        .locator('[class*="grid"] > div')
+        .filter({ hasText: /Active/i });
       const count = await workflowCards.count();
 
       // Should show active workflows or empty state
@@ -122,7 +130,8 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
       // Should show draft workflows or empty state
       const heading = await page.locator('h3').first().textContent();
-      const hasDraftWorkflows = heading?.includes('No Draft Workflows') === false;
+      const hasDraftWorkflows =
+        heading?.includes('No Draft Workflows') === false;
 
       if (hasDraftWorkflows) {
         const workflowCards = page.locator('[class*="grid"] > div');
@@ -130,7 +139,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
       }
     });
 
-    test('should show all workflows when All tab is active', async ({ page }) => {
+    test('should show all workflows when All tab is active', async ({
+      page,
+    }) => {
       const allTab = page.locator('button:has-text("All")').first();
       await allTab.click();
 
@@ -148,9 +159,11 @@ test.describe('Workflows Page - Full Test Suite', () => {
   });
 
   test.describe('Empty State', () => {
-    test('should show empty state when no workflows exist', async ({ page }) => {
+    test('should show empty state when no workflows exist', async ({
+      page,
+    }) => {
       // Mock empty workflows response
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -168,8 +181,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await expect(description).toBeVisible();
     });
 
-    test('should show Create Workflow button in empty state', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+    test('should show Create Workflow button in empty state', async ({
+      page,
+    }) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -184,8 +199,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await expect(createBtn).toBeVisible();
     });
 
-    test('should show Browse Templates button in empty state', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+    test('should show Browse Templates button in empty state', async ({
+      page,
+    }) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -202,9 +219,11 @@ test.describe('Workflows Page - Full Test Suite', () => {
   });
 
   test.describe('Workflow List Display', () => {
-    test('should display workflow cards when workflows exist', async ({ page }) => {
+    test('should display workflow cards when workflows exist', async ({
+      page,
+    }) => {
       // Mock workflows data
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -217,7 +236,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
                 description: 'A test workflow',
                 status: 'active',
                 trigger: { type: 'message' },
-                actions: [{ id: 'act_1', type: 'send_message', config: {}, order: 0 }],
+                actions: [
+                  { id: 'act_1', type: 'send_message', config: {}, order: 0 },
+                ],
                 variables: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -240,8 +261,8 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
     test('should show loading skeleton while loading', async ({ page }) => {
       // Delay the API response
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+      await page.route('**/api/workspaces/**/workflows*', async route => {
+        await new Promise(resolve => setTimeout(resolve, 2000));
         await route.continue();
       });
 
@@ -253,7 +274,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should handle API error gracefully', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -269,7 +290,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display Try again button on error', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -288,7 +309,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
   test.describe('Workflow Card Details', () => {
     test.beforeEach(async ({ page }) => {
       // Mock workflows with varied data
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -328,7 +349,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display workflow description', async ({ page }) => {
-      const description = page.locator('text=Send welcome message to new users');
+      const description = page.locator(
+        'text=Send welcome message to new users'
+      );
       await expect(description).toBeVisible();
     });
 
@@ -370,7 +393,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
   test.describe('Workflow Card Actions', () => {
     test.beforeEach(async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -383,7 +406,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
                 description: 'Test description',
                 status: 'active',
                 trigger: { type: 'message' },
-                actions: [{ id: 'act_1', type: 'send_message', config: {}, order: 0 }],
+                actions: [
+                  { id: 'act_1', type: 'send_message', config: {}, order: 0 },
+                ],
                 variables: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -425,8 +450,12 @@ test.describe('Workflows Page - Full Test Suite', () => {
   });
 
   test.describe('Create Workflow Modal', () => {
-    test('should open create workflow modal on button click', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+    test('should open create workflow modal on button click', async ({
+      page,
+    }) => {
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -436,7 +465,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display workflow name field in modal', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -445,8 +476,12 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await expect(nameField).toBeVisible();
     });
 
-    test('should display workflow description field in modal', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+    test('should display workflow description field in modal', async ({
+      page,
+    }) => {
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -456,7 +491,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display trigger selection in modal', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -466,7 +503,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display actions section in modal', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -476,7 +515,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should allow entering workflow name', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -489,7 +530,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should allow entering workflow description', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -502,7 +545,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display Save Workflow button', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -512,7 +557,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display Cancel button', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -522,7 +569,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should close modal on Cancel click', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
@@ -537,13 +586,18 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should close modal on X button click', async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
 
       await page.waitForTimeout(500);
 
       // Find close button (X icon)
-      const closeBtn = page.locator('button').filter({ has: page.locator('svg') }).last();
+      const closeBtn = page
+        .locator('button')
+        .filter({ has: page.locator('svg') })
+        .last();
       await closeBtn.click();
 
       await page.waitForTimeout(500);
@@ -555,19 +609,26 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
   test.describe('Trigger Selection', () => {
     test.beforeEach(async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
       await page.waitForTimeout(500);
     });
 
     test('should display trigger options', async ({ page }) => {
-      const triggerButtons = page.locator('button').filter({ hasText: /Schedule|Message|Keyword/i });
+      const triggerButtons = page
+        .locator('button')
+        .filter({ hasText: /Schedule|Message|Keyword/i });
       expect(await triggerButtons.count()).toBeGreaterThan(0);
     });
 
     test('should allow selecting a trigger type', async ({ page }) => {
       // Look for a trigger option button
-      const messageButton = page.locator('button').filter({ hasText: /Message/i }).first();
+      const messageButton = page
+        .locator('button')
+        .filter({ hasText: /Message/i })
+        .first();
 
       if (await messageButton.isVisible()) {
         await messageButton.click();
@@ -577,7 +638,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should highlight selected trigger', async ({ page }) => {
-      const triggerOption = page.locator('button').filter({ hasText: /Schedule|Message/i }).first();
+      const triggerOption = page
+        .locator('button')
+        .filter({ hasText: /Schedule|Message/i })
+        .first();
 
       if (await triggerOption.isVisible()) {
         await triggerOption.click();
@@ -591,7 +655,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
   test.describe('Actions Configuration', () => {
     test.beforeEach(async ({ page }) => {
-      const createBtn = page.locator('button:has-text("Create Workflow")').first();
+      const createBtn = page
+        .locator('button:has-text("Create Workflow")')
+        .first();
       await createBtn.click();
       await page.waitForTimeout(500);
     });
@@ -629,7 +695,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await page.waitForTimeout(500);
 
       // Find trash icon button
-      const removeBtn = page.locator('button').filter({ has: page.locator('svg') }).filter({ hasText: '' });
+      const removeBtn = page
+        .locator('button')
+        .filter({ has: page.locator('svg') })
+        .filter({ hasText: '' });
 
       if ((await removeBtn.count()) > 0) {
         const beforeCount = await page.locator('select').count();
@@ -669,7 +738,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
   });
 
   test.describe('Templates Modal', () => {
-    test('should open templates modal on Templates button click', async ({ page }) => {
+    test('should open templates modal on Templates button click', async ({
+      page,
+    }) => {
       const templatesBtn = page.locator('button:has-text("Templates")').first();
       await templatesBtn.click();
 
@@ -680,26 +751,29 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display template categories', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows/templates*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [
-              {
-                id: 'tmpl_1',
-                name: 'Welcome New Users',
-                description: 'Send welcome message to new users',
-                category: 'automation',
-                trigger: { type: 'user_join' },
-                actions: [{ type: 'send_message', config: {} }],
-                variables: [],
-                tags: ['welcome', 'onboarding'],
-              },
-            ],
-          }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/workflows/templates*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [
+                {
+                  id: 'tmpl_1',
+                  name: 'Welcome New Users',
+                  description: 'Send welcome message to new users',
+                  category: 'automation',
+                  trigger: { type: 'user_join' },
+                  actions: [{ type: 'send_message', config: {} }],
+                  variables: [],
+                  tags: ['welcome', 'onboarding'],
+                },
+              ],
+            }),
+          });
+        }
+      );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
       await templatesBtn.click();
@@ -712,26 +786,29 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should display template cards', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows/templates*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [
-              {
-                id: 'tmpl_1',
-                name: 'Welcome New Users',
-                description: 'Send welcome message to new users',
-                category: 'automation',
-                trigger: { type: 'user_join' },
-                actions: [{ type: 'send_message', config: {} }],
-                variables: [],
-                tags: ['welcome', 'onboarding'],
-              },
-            ],
-          }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/workflows/templates*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [
+                {
+                  id: 'tmpl_1',
+                  name: 'Welcome New Users',
+                  description: 'Send welcome message to new users',
+                  category: 'automation',
+                  trigger: { type: 'user_join' },
+                  actions: [{ type: 'send_message', config: {} }],
+                  variables: [],
+                  tags: ['welcome', 'onboarding'],
+                },
+              ],
+            }),
+          });
+        }
+      );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
       await templatesBtn.click();
@@ -743,26 +820,29 @@ test.describe('Workflows Page - Full Test Suite', () => {
     });
 
     test('should filter templates by category', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows/templates*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [
-              {
-                id: 'tmpl_1',
-                name: 'Automation Template',
-                description: 'Automate tasks',
-                category: 'automation',
-                trigger: { type: 'schedule' },
-                actions: [],
-                variables: [],
-                tags: ['auto'],
-              },
-            ],
-          }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/workflows/templates*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [
+                {
+                  id: 'tmpl_1',
+                  name: 'Automation Template',
+                  description: 'Automate tasks',
+                  category: 'automation',
+                  trigger: { type: 'schedule' },
+                  actions: [],
+                  variables: [],
+                  tags: ['auto'],
+                },
+              ],
+            }),
+          });
+        }
+      );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
       await templatesBtn.click();
@@ -770,7 +850,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await page.waitForTimeout(500);
 
       // Click category filter if available
-      const categoryBtn = page.locator('button').filter({ hasText: /Automation|Notification/i }).first();
+      const categoryBtn = page
+        .locator('button')
+        .filter({ hasText: /Automation|Notification/i })
+        .first();
 
       if (await categoryBtn.isVisible()) {
         await categoryBtn.click();
@@ -784,7 +867,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
       await page.waitForTimeout(500);
 
-      const closeBtn = page.locator('button').filter({ has: page.locator('svg') }).last();
+      const closeBtn = page
+        .locator('button')
+        .filter({ has: page.locator('svg') })
+        .last();
       await closeBtn.click();
 
       await page.waitForTimeout(300);
@@ -793,34 +879,41 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await expect(modal).not.toBeVisible();
     });
 
-    test('should select template and open workflow builder', async ({ page }) => {
-      await page.route('**/api/workspaces/**/workflows/templates*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [
-              {
-                id: 'tmpl_1',
-                name: 'Test Template',
-                description: 'Test description',
-                category: 'automation',
-                trigger: { type: 'message' },
-                actions: [{ type: 'send_message', config: {} }],
-                variables: [],
-                tags: ['test'],
-              },
-            ],
-          }),
-        });
-      });
+    test('should select template and open workflow builder', async ({
+      page,
+    }) => {
+      await page.route(
+        '**/api/workspaces/**/workflows/templates*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [
+                {
+                  id: 'tmpl_1',
+                  name: 'Test Template',
+                  description: 'Test description',
+                  category: 'automation',
+                  trigger: { type: 'message' },
+                  actions: [{ type: 'send_message', config: {} }],
+                  variables: [],
+                  tags: ['test'],
+                },
+              ],
+            }),
+          });
+        }
+      );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
       await templatesBtn.click();
 
       await page.waitForTimeout(1000);
 
-      const templateCard = page.locator('button').filter({ hasText: 'Test Template' });
+      const templateCard = page
+        .locator('button')
+        .filter({ hasText: 'Test Template' });
       if (await templateCard.isVisible()) {
         await templateCard.click();
         await page.waitForTimeout(500);
@@ -835,7 +928,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
   test.describe('Execution History', () => {
     test.beforeEach(async ({ page }) => {
       // Mock workflow with history
-      await page.route('**/api/workspaces/**/workflows*', async (route) => {
+      await page.route('**/api/workspaces/**/workflows*', async route => {
         if (route.request().url().includes('/executions')) {
           // Mock executions
           await route.fulfill({
@@ -872,7 +965,9 @@ test.describe('Workflows Page - Full Test Suite', () => {
                   description: 'Test',
                   status: 'active',
                   trigger: { type: 'message' },
-                  actions: [{ id: 'act_1', type: 'send_message', config: {}, order: 0 }],
+                  actions: [
+                    { id: 'act_1', type: 'send_message', config: {}, order: 0 },
+                  ],
                   variables: [],
                   createdAt: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
@@ -938,7 +1033,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
       await page.waitForTimeout(500);
 
-      const closeBtn = page.locator('button').filter({ has: page.locator('svg') }).last();
+      const closeBtn = page
+        .locator('button')
+        .filter({ has: page.locator('svg') })
+        .last();
       await closeBtn.click();
 
       await page.waitForTimeout(300);
@@ -949,16 +1047,19 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
     test('should show empty state when no executions', async ({ page }) => {
       // Override with empty executions
-      await page.route('**/api/workspaces/**/workflows/**/executions*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            data: [],
-            pagination: { hasMore: false, cursor: null },
-          }),
-        });
-      });
+      await page.route(
+        '**/api/workspaces/**/workflows/**/executions*',
+        async route => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              data: [],
+              pagination: { hasMore: false, cursor: null },
+            }),
+          });
+        }
+      );
 
       const historyBtn = page.locator('button:has-text("History")').first();
       await historyBtn.click();
@@ -978,7 +1079,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await expect(header).toBeVisible();
 
       // Workflow cards should still be visible
-      const hasWorkflows = await page.locator('[class*="grid"]').isVisible().catch(() => false);
+      const hasWorkflows = await page
+        .locator('[class*="grid"]')
+        .isVisible()
+        .catch(() => false);
       expect(hasWorkflows || true).toBeTruthy();
     });
 
@@ -990,7 +1094,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
       // Page should be scrollable
       const canScroll = await page.evaluate(() => {
-        return document.documentElement.scrollHeight > document.documentElement.clientHeight;
+        return (
+          document.documentElement.scrollHeight >
+          document.documentElement.clientHeight
+        );
       });
       expect(canScroll || true).toBeTruthy();
     });
@@ -1007,7 +1114,10 @@ test.describe('Workflows Page - Full Test Suite', () => {
         await page.waitForTimeout(300);
 
         const hasHorizontalScroll = await page.evaluate(() => {
-          return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+          return (
+            document.documentElement.scrollWidth >
+            document.documentElement.clientWidth
+          );
         });
 
         expect(hasHorizontalScroll).toBe(false);
@@ -1030,7 +1140,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
     test('should not have console errors', async ({ page }) => {
       const errors: string[] = [];
 
-      page.on('console', (msg) => {
+      page.on('console', msg => {
         if (msg.type() === 'error') {
           errors.push(msg.text());
         }
@@ -1040,7 +1150,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       const criticalErrors = errors.filter(
-        (err) =>
+        err =>
           !err.includes('favicon') &&
           !err.includes('Extension') &&
           !err.includes('chrome-extension')

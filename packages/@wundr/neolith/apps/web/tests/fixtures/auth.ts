@@ -62,7 +62,9 @@ export const ORCHESTRATOR_USER = {
 /**
  * Creates a session cookie for NextAuth.js
  */
-function createSessionToken(user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER) {
+function createSessionToken(
+  user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER
+) {
   // In production, this would be a proper JWT token
   // For testing, we create a mock session token
   const sessionData = {
@@ -84,7 +86,13 @@ function createSessionToken(user: typeof TEST_USER | typeof ADMIN_USER | typeof 
 /**
  * Authenticate a page with a test user
  */
-export async function authenticatePage(page: Page, user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER = TEST_USER) {
+export async function authenticatePage(
+  page: Page,
+  user:
+    | typeof TEST_USER
+    | typeof ADMIN_USER
+    | typeof ORCHESTRATOR_USER = TEST_USER
+) {
   const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
   // Create session cookie
@@ -161,7 +169,9 @@ export const test = base.extend<{
   authenticatedPage: Page;
   adminPage: Page;
   orchestratorPage: Page;
-  loginAsUser: (user?: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER) => Promise<void>;
+  loginAsUser: (
+    user?: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER
+  ) => Promise<void>;
 }>({
   /**
    * Page with regular user authentication
@@ -191,7 +201,12 @@ export const test = base.extend<{
    * Helper function to login as any user
    */
   loginAsUser: async ({ page }, use) => {
-    const login = async (user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER = TEST_USER) => {
+    const login = async (
+      user:
+        | typeof TEST_USER
+        | typeof ADMIN_USER
+        | typeof ORCHESTRATOR_USER = TEST_USER
+    ) => {
       await authenticatePage(page, user);
     };
     await use(login);
@@ -269,7 +284,8 @@ export const mockAuthResponses = {
     status: 200,
     contentType: 'application/json',
     body: JSON.stringify({
-      message: 'If an account exists with that email, we sent a password reset link',
+      message:
+        'If an account exists with that email, we sent a password reset link',
     }),
   },
 
@@ -299,12 +315,15 @@ export const mockAuthResponses = {
 /**
  * Setup mock API routes for authentication testing
  */
-export async function setupAuthMocks(page: Page, options: {
-  loginSucceeds?: boolean;
-  registerSucceeds?: boolean;
-  forgotPasswordSucceeds?: boolean;
-  resetPasswordSucceeds?: boolean;
-} = {}) {
+export async function setupAuthMocks(
+  page: Page,
+  options: {
+    loginSucceeds?: boolean;
+    registerSucceeds?: boolean;
+    forgotPasswordSucceeds?: boolean;
+    resetPasswordSucceeds?: boolean;
+  } = {}
+) {
   const {
     loginSucceeds = true,
     registerSucceeds = true,
@@ -313,26 +332,34 @@ export async function setupAuthMocks(page: Page, options: {
   } = options;
 
   // Mock login endpoint
-  await page.route('**/api/auth/callback/credentials*', async (route) => {
-    const response = loginSucceeds ? mockAuthResponses.loginSuccess : mockAuthResponses.loginFailure;
+  await page.route('**/api/auth/callback/credentials*', async route => {
+    const response = loginSucceeds
+      ? mockAuthResponses.loginSuccess
+      : mockAuthResponses.loginFailure;
     await route.fulfill(response);
   });
 
   // Mock registration endpoint
-  await page.route('**/api/auth/register*', async (route) => {
-    const response = registerSucceeds ? mockAuthResponses.registerSuccess : mockAuthResponses.registerFailure;
+  await page.route('**/api/auth/register*', async route => {
+    const response = registerSucceeds
+      ? mockAuthResponses.registerSuccess
+      : mockAuthResponses.registerFailure;
     await route.fulfill(response);
   });
 
   // Mock forgot password endpoint
-  await page.route('**/api/auth/forgot-password*', async (route) => {
-    const response = forgotPasswordSucceeds ? mockAuthResponses.forgotPasswordSuccess : mockAuthResponses.forgotPasswordSuccess;
+  await page.route('**/api/auth/forgot-password*', async route => {
+    const response = forgotPasswordSucceeds
+      ? mockAuthResponses.forgotPasswordSuccess
+      : mockAuthResponses.forgotPasswordSuccess;
     await route.fulfill(response);
   });
 
   // Mock reset password endpoint
-  await page.route('**/api/auth/reset-password*', async (route) => {
-    const response = resetPasswordSucceeds ? mockAuthResponses.resetPasswordSuccess : mockAuthResponses.resetPasswordFailure;
+  await page.route('**/api/auth/reset-password*', async route => {
+    const response = resetPasswordSucceeds
+      ? mockAuthResponses.resetPasswordSuccess
+      : mockAuthResponses.resetPasswordFailure;
     await route.fulfill(response);
   });
 }

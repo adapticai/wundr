@@ -68,28 +68,23 @@ export function ConversationalCreator({
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const {
-    sendMessage,
-    isLoading,
-    error,
-    generatedSpec,
-    hasGeneratedSpec,
-  } = useConversationalCreation({
-    entityType,
-    workspaceId,
-    existingSpec,
-    onSpecGenerated: (spec) => {
-      // When spec is generated, show it in the messages
-      const specMessage: ChatMessage = {
-        id: `spec-${Date.now()}`,
-        role: 'assistant',
-        content: `I've generated a ${entityType} specification based on our conversation. You can review and edit it by switching to Form View, or continue the conversation to make changes.`,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, specMessage]);
-      onSpecGenerated(spec);
-    },
-  });
+  const { sendMessage, isLoading, error, generatedSpec, hasGeneratedSpec } =
+    useConversationalCreation({
+      entityType,
+      workspaceId,
+      existingSpec,
+      onSpecGenerated: spec => {
+        // When spec is generated, show it in the messages
+        const specMessage: ChatMessage = {
+          id: `spec-${Date.now()}`,
+          role: 'assistant',
+          content: `I've generated a ${entityType} specification based on our conversation. You can review and edit it by switching to Form View, or continue the conversation to make changes.`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, specMessage]);
+        onSpecGenerated(spec);
+      },
+    });
 
   // Add initial greeting message
   React.useEffect(() => {
@@ -120,8 +115,8 @@ export function ConversationalCreator({
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) {
-return;
-}
+      return;
+    }
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -130,7 +125,7 @@ return;
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsStreaming(true);
 
@@ -145,7 +140,7 @@ return;
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      setMessages(prev => [...prev, aiMessage]);
     } catch (err) {
       // Error is handled by the hook
       console.error('Error sending message:', err);
@@ -170,47 +165,49 @@ return;
         entityType,
         name: '',
         description: messages
-          .filter((m) => m.role === 'user')
-          .map((m) => m.content)
+          .filter(m => m.role === 'user')
+          .map(m => m.content)
           .join(' '),
         confidence: 0.5,
         missingFields: ['name', 'role', 'charter'],
-        suggestions: ['Please provide more details about the role and responsibilities'],
+        suggestions: [
+          'Please provide more details about the role and responsibilities',
+        ],
       };
       onSpecGenerated(basicSpec);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <DialogContent className="flex max-h-[80vh] max-w-2xl flex-col gap-0 p-0">
-        <DialogHeader className="border-b px-6 py-4">
-          <div className="flex items-center justify-between">
+    <Dialog open={open} onOpenChange={isOpen => !isOpen && onCancel()}>
+      <DialogContent className='flex max-h-[80vh] max-w-2xl flex-col gap-0 p-0'>
+        <DialogHeader className='border-b px-6 py-4'>
+          <div className='flex items-center justify-between'>
             <DialogTitle>
               Create New {getEntityDisplayName(entityType)}
             </DialogTitle>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
+              variant='ghost'
+              size='icon'
+              className='h-6 w-6'
               onClick={onCancel}
             >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+              <X className='h-4 w-4' />
+              <span className='sr-only'>Close</span>
             </Button>
           </div>
         </DialogHeader>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <div className="space-y-4">
-            {messages.map((message) => (
+        <div className='flex-1 overflow-y-auto px-6 py-4'>
+          <div className='space-y-4'>
+            {messages.map(message => (
               <ChatMessageBubble key={message.id} message={message} />
             ))}
 
             {/* Streaming indicator */}
             {isStreaming && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                 <TypingDots />
                 <span>Thinking...</span>
               </div>
@@ -218,7 +215,7 @@ return;
 
             {/* Error display */}
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
                 {error}
               </div>
             )}
@@ -228,39 +225,39 @@ return;
         </div>
 
         {/* Input Area */}
-        <div className="border-t px-6 py-4">
-          <div className="flex gap-2">
+        <div className='border-t px-6 py-4'>
+          <div className='flex gap-2'>
             <Input
               ref={inputRef}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={e => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your response..."
+              placeholder='Type your response...'
               disabled={isLoading}
-              className="flex-1"
+              className='flex-1'
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isLoading}
-              size="icon"
+              size='icon'
             >
-              <Send className="h-4 w-4" />
-              <span className="sr-only">Send</span>
+              <Send className='h-4 w-4' />
+              <span className='sr-only'>Send</span>
             </Button>
           </div>
         </div>
 
         {/* Footer Actions */}
-        <DialogFooter className="border-t px-6 py-3">
-          <div className="flex w-full items-center justify-between">
+        <DialogFooter className='border-t px-6 py-3'>
+          <div className='flex w-full items-center justify-between'>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={handleSwitchToForm}
               disabled={isLoading}
             >
               Switch to Form View
             </Button>
-            <Button variant="ghost" onClick={onCancel}>
+            <Button variant='ghost' onClick={onCancel}>
               Cancel
             </Button>
           </div>
@@ -285,17 +282,17 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
           'max-w-[80%] rounded-lg px-4 py-3',
           isUser
             ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground',
+            : 'bg-muted text-muted-foreground'
         )}
       >
         {!isUser && (
-          <div className="mb-1 text-xs font-semibold">AI Assistant</div>
+          <div className='mb-1 text-xs font-semibold'>AI Assistant</div>
         )}
-        <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+        <div className='whitespace-pre-wrap text-sm'>{message.content}</div>
         <div
           className={cn(
             'mt-1 text-xs',
-            isUser ? 'text-primary-foreground/70' : 'text-muted-foreground/70',
+            isUser ? 'text-primary-foreground/70' : 'text-muted-foreground/70'
           )}
         >
           {message.timestamp.toLocaleTimeString([], {
@@ -313,10 +310,10 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
  */
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1">
-      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" />
+    <div className='flex items-center gap-1'>
+      <span className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]' />
+      <span className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]' />
+      <span className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground' />
     </div>
   );
 }
@@ -341,12 +338,18 @@ function getEntityDisplayName(entityType: EntityType): string {
  */
 function getGreetingMessage(entityType: EntityType): string {
   const greetings: Record<EntityType, string> = {
-    workspace: 'I\'ll help you create a new Workspace. Let\'s start with the basics - what kind of organization are you setting up? This could be a team, project, or company.',
-    orchestrator: 'I\'ll help you create a new Orchestrator. What role should this agent serve? For example: Customer Support Lead, Research Analyst, or Project Manager.',
-    'session-manager': 'I\'ll help you create a new Session Manager. Session Managers monitor channels and orchestrate conversations. What channel or context should this Session Manager focus on?',
-    subagent: 'I\'ll help you create a new Subagent. Subagents are specialized workers that handle specific tasks. What specific capability should this subagent provide?',
-    workflow: 'I\'ll help you create a new Workflow. Workflows automate tasks and connect different actions. What process would you like to automate?',
-    channel: 'I\'ll help you create a new Channel. Channels are communication spaces for teams and agents. What kind of channel do you need? (e.g., public, private, direct message)',
+    workspace:
+      "I'll help you create a new Workspace. Let's start with the basics - what kind of organization are you setting up? This could be a team, project, or company.",
+    orchestrator:
+      "I'll help you create a new Orchestrator. What role should this agent serve? For example: Customer Support Lead, Research Analyst, or Project Manager.",
+    'session-manager':
+      "I'll help you create a new Session Manager. Session Managers monitor channels and orchestrate conversations. What channel or context should this Session Manager focus on?",
+    subagent:
+      "I'll help you create a new Subagent. Subagents are specialized workers that handle specific tasks. What specific capability should this subagent provide?",
+    workflow:
+      "I'll help you create a new Workflow. Workflows automate tasks and connect different actions. What process would you like to automate?",
+    channel:
+      "I'll help you create a new Channel. Channels are communication spaces for teams and agents. What kind of channel do you need? (e.g., public, private, direct message)",
   };
   return greetings[entityType] || `I'll help you create a new ${entityType}.`;
 }

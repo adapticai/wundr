@@ -17,7 +17,7 @@ export function EmptySearch({ query, onClearSearch }: EmptySearchProps) {
   return (
     <EmptyState
       icon={Search}
-      title="No results found"
+      title='No results found'
       description={
         query
           ? `No results found for "${query}". Try adjusting your search terms.`

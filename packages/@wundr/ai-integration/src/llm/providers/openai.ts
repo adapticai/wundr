@@ -80,7 +80,10 @@ export class OpenAIClient implements LLMClient {
    */
   async chat(params: ChatParams): Promise<ChatResponse> {
     try {
-      const openaiParams = this.convertChatParams(params, false) as ChatCompletionCreateParamsNonStreaming;
+      const openaiParams = this.convertChatParams(
+        params,
+        false
+      ) as ChatCompletionCreateParamsNonStreaming;
       const response = await this.client.chat.completions.create(openaiParams);
       return this.convertChatResponse(response as ChatCompletion);
     } catch (error) {
@@ -93,14 +96,21 @@ export class OpenAIClient implements LLMClient {
    */
   async *chatStream(params: ChatParams): AsyncIterableIterator<ChatChunk> {
     try {
-      const openaiParams = this.convertChatParams(params, true) as ChatCompletionCreateParamsStreaming;
+      const openaiParams = this.convertChatParams(
+        params,
+        true
+      ) as ChatCompletionCreateParamsStreaming;
       const stream = await this.client.chat.completions.create(openaiParams);
 
       let chunkIndex = 0;
       const toolCallBuffers: Map<number, Partial<ToolCall>> = new Map();
 
       for await (const chunk of stream as AsyncIterable<ChatCompletionChunk>) {
-        const converted = this.convertStreamChunk(chunk, chunkIndex++, toolCallBuffers);
+        const converted = this.convertStreamChunk(
+          chunk,
+          chunkIndex++,
+          toolCallBuffers
+        );
         if (converted) {
           yield converted;
         }
@@ -125,13 +135,15 @@ export class OpenAIClient implements LLMClient {
           text = input;
         } else {
           // Convert messages to text representation
-          text = input.map(msg => {
-            let msgText = `${msg.role}: ${msg.content}`;
-            if (msg.toolCalls) {
-              msgText += ` [tool_calls: ${JSON.stringify(msg.toolCalls)}]`;
-            }
-            return msgText;
-          }).join('\n');
+          text = input
+            .map(msg => {
+              let msgText = `${msg.role}: ${msg.content}`;
+              if (msg.toolCalls) {
+                msgText += ` [tool_calls: ${JSON.stringify(msg.toolCalls)}]`;
+              }
+              return msgText;
+            })
+            .join('\n');
         }
 
         const tokens = encoding.encode(text);
@@ -139,7 +151,9 @@ export class OpenAIClient implements LLMClient {
         return tokens.length;
       } catch (tiktokenError) {
         // Fall back to estimation if tiktoken is not available
-        console.warn('tiktoken not available, using estimation for token counting');
+        console.warn(
+          'tiktoken not available, using estimation for token counting'
+        );
         return this.estimateTokens(input);
       }
     } catch (error) {
@@ -183,7 +197,9 @@ export class OpenAIClient implements LLMClient {
   private convertChatParams(
     params: ChatParams,
     stream: boolean
-  ): ChatCompletionCreateParamsNonStreaming | ChatCompletionCreateParamsStreaming {
+  ):
+    | ChatCompletionCreateParamsNonStreaming
+    | ChatCompletionCreateParamsStreaming {
     const messages = this.convertMessages(params.messages);
     const tools = params.tools ? this.convertTools(params.tools) : undefined;
 
@@ -324,9 +340,11 @@ export class OpenAIClient implements LLMClient {
 
         // Update buffer with delta
         if (toolCallDelta.id) buffer.id = toolCallDelta.id;
-        if (toolCallDelta.function?.name) buffer.name = toolCallDelta.function.name;
+        if (toolCallDelta.function?.name)
+          buffer.name = toolCallDelta.function.name;
         if (toolCallDelta.function?.arguments) {
-          buffer.arguments = (buffer.arguments || '') + toolCallDelta.function.arguments;
+          buffer.arguments =
+            (buffer.arguments || '') + toolCallDelta.function.arguments;
         }
 
         toolCallDeltas.push({ ...buffer });
@@ -397,7 +415,10 @@ export class OpenAIClient implements LLMClient {
       const openaiError = error as any;
 
       // Authentication errors
-      if (openaiError.status === 401 || openaiError.code === 'invalid_api_key') {
+      if (
+        openaiError.status === 401 ||
+        openaiError.code === 'invalid_api_key'
+      ) {
         return new LLMAuthenticationError(
           openaiError.message || 'Invalid API key',
           this.provider
@@ -429,7 +450,10 @@ export class OpenAIClient implements LLMClient {
       }
 
       // Network errors
-      if (openaiError.code === 'ECONNREFUSED' || openaiError.code === 'ETIMEDOUT') {
+      if (
+        openaiError.code === 'ECONNREFUSED' ||
+        openaiError.code === 'ETIMEDOUT'
+      ) {
         return new LLMNetworkError(
           openaiError.message || 'Network error',
           this.provider

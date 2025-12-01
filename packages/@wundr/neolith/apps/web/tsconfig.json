@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["./components/*"],

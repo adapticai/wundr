@@ -10,10 +10,7 @@ interface RouteContext {
   params: Promise<{ workspaceSlug: string }>;
 }
 
-export async function GET(
-  _request: Request,
-  context: RouteContext,
-) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -40,11 +37,15 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workspace not found' },
+        { status: 404 }
+      );
     }
 
     // Parse settings JSON if it exists
-    const workspaceSettings = (workspace.settings as Record<string, unknown>) || {};
+    const workspaceSettings =
+      (workspace.settings as Record<string, unknown>) || {};
 
     // Return combined workspace data and settings
     return NextResponse.json({
@@ -74,7 +75,8 @@ export async function GET(
           timezone: workspaceSettings.timezone ?? 'UTC',
           locale: workspaceSettings.locale ?? 'en-US',
           allowGuestAccess: workspaceSettings.allowGuestAccess ?? false,
-          requireApprovalToJoin: workspaceSettings.requireApprovalToJoin ?? true,
+          requireApprovalToJoin:
+            workspaceSettings.requireApprovalToJoin ?? true,
         },
         security: {
           sessionTimeout: workspaceSettings.sessionTimeout ?? 480,
@@ -94,14 +96,14 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching settings:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
-export async function PATCH(
-  request: Request,
-  context: RouteContext,
-) {
+export async function PATCH(request: Request, context: RouteContext) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -119,27 +121,50 @@ export async function PATCH(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workspace not found' },
+        { status: 404 }
+      );
     }
 
     // Prepare updates for workspace table
     const workspaceUpdates: Record<string, unknown> = {};
     if (updates.name !== undefined) workspaceUpdates.name = updates.name;
-    if (updates.description !== undefined) workspaceUpdates.description = updates.description;
+    if (updates.description !== undefined)
+      workspaceUpdates.description = updates.description;
 
     // Prepare settings JSON updates
-    const currentSettings = (workspace.settings as Record<string, unknown>) || {};
+    const currentSettings =
+      (workspace.settings as Record<string, unknown>) || {};
     const settingsUpdates = { ...currentSettings };
 
     // Copy settings-specific fields to settings JSON
     const settingsFields = [
-      'allowGuestAccess', 'defaultRole', 'messageRetention', 'fileRetention',
-      'twoFactorRequired', 'ssoEnabled', 'notificationDefaults', 'timezone',
-      'locale', 'requireApprovalToJoin', 'sessionTimeout', 'allowEditing',
-      'editWindowMinutes', 'allowDeleting', 'maxMessageLength', 'enableThreads',
-      'enableReactions', 'dataRetentionDays', 'exportEnabled', 'apiRateLimit',
-      'notifyOnNewMember', 'notifyOnSecurityEvent', 'weeklyDigest', 'requireTwoFactor',
-      'allowedDomains'
+      'allowGuestAccess',
+      'defaultRole',
+      'messageRetention',
+      'fileRetention',
+      'twoFactorRequired',
+      'ssoEnabled',
+      'notificationDefaults',
+      'timezone',
+      'locale',
+      'requireApprovalToJoin',
+      'sessionTimeout',
+      'allowEditing',
+      'editWindowMinutes',
+      'allowDeleting',
+      'maxMessageLength',
+      'enableThreads',
+      'enableReactions',
+      'dataRetentionDays',
+      'exportEnabled',
+      'apiRateLimit',
+      'notifyOnNewMember',
+      'notifyOnSecurityEvent',
+      'weeklyDigest',
+      'requireTwoFactor',
+      'allowedDomains',
     ];
 
     for (const field of settingsFields) {
@@ -167,7 +192,8 @@ export async function PATCH(
       },
     });
 
-    const finalSettings = (updatedWorkspace.settings as Record<string, unknown>) || {};
+    const finalSettings =
+      (updatedWorkspace.settings as Record<string, unknown>) || {};
 
     return NextResponse.json({
       settings: {
@@ -185,6 +211,9 @@ export async function PATCH(
     });
   } catch (error) {
     console.error('Error updating settings:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

@@ -311,14 +311,15 @@ export function createMockS3Client(): MockS3Client {
     /**
      * Mock createMultipartUpload - initiate multipart upload
      */
-    createMultipartUpload: vi.fn().mockImplementation(
-      (input: CreateMultipartUploadInput) =>
+    createMultipartUpload: vi
+      .fn()
+      .mockImplementation((input: CreateMultipartUploadInput) =>
         Promise.resolve({
           UploadId: `upload_${generateMockId()}`,
           Key: input.Key,
           Bucket: input.Bucket,
-        }),
-    ),
+        })
+      ),
 
     /**
      * Mock uploadPart - upload part of multipart upload
@@ -326,21 +327,22 @@ export function createMockS3Client(): MockS3Client {
     uploadPart: vi.fn().mockImplementation(() =>
       Promise.resolve({
         ETag: `"${generateMockETag()}"`,
-      }),
+      })
     ),
 
     /**
      * Mock completeMultipartUpload - complete multipart upload
      */
-    completeMultipartUpload: vi.fn().mockImplementation(
-      (input: CompleteMultipartUploadInput) =>
+    completeMultipartUpload: vi
+      .fn()
+      .mockImplementation((input: CompleteMultipartUploadInput) =>
         Promise.resolve({
           Location: `https://${input.Bucket}.s3.amazonaws.com/${input.Key}`,
           Bucket: input.Bucket,
           Key: input.Key,
           ETag: `"${generateMockETag()}"`,
-        }),
-    ),
+        })
+      ),
 
     /**
      * Mock abortMultipartUpload - cancel multipart upload
@@ -370,7 +372,7 @@ export function createMockS3Client(): MockS3Client {
  * @returns Mock response object
  */
 export function createMockS3Response<T extends Record<string, unknown>>(
-  overrides: Partial<T> = {},
+  overrides: Partial<T> = {}
 ): T {
   return {
     ...overrides,
@@ -386,7 +388,7 @@ export function createMockS3Response<T extends Record<string, unknown>>(
  */
 export function createMockS3Object(
   key: string,
-  overrides: Partial<S3Object> = {},
+  overrides: Partial<S3Object> = {}
 ): S3Object {
   return {
     Key: key,
@@ -406,10 +408,10 @@ export function createMockS3Object(
  */
 export function createMockListResponse(
   keys: string[],
-  isTruncated = false,
+  isTruncated = false
 ): ListObjectsOutput {
   return {
-    Contents: keys.map((key) => createMockS3Object(key)),
+    Contents: keys.map(key => createMockS3Object(key)),
     IsTruncated: isTruncated,
     NextContinuationToken: isTruncated ? 'mock_continuation_token' : undefined,
   };
@@ -446,7 +448,7 @@ export type S3ErrorType = (typeof S3ErrorTypes)[keyof typeof S3ErrorTypes];
  */
 export function createMockS3Error(
   type: S3ErrorType,
-  message?: string,
+  message?: string
 ): Error & { code: string; statusCode: number } {
   const statusCodes: Record<S3ErrorType, number> = {
     NoSuchKey: 404,
@@ -465,8 +467,10 @@ export function createMockS3Error(
     NoSuchKey: 'The specified key does not exist.',
     NoSuchBucket: 'The specified bucket does not exist.',
     AccessDenied: 'Access Denied',
-    InvalidAccessKeyId: 'The AWS Access Key Id you provided does not exist in our records.',
-    SignatureDoesNotMatch: 'The request signature we calculated does not match the signature you provided.',
+    InvalidAccessKeyId:
+      'The AWS Access Key Id you provided does not exist in our records.',
+    SignatureDoesNotMatch:
+      'The request signature we calculated does not match the signature you provided.',
     NoSuchUpload: 'The specified upload does not exist.',
     EntityTooLarge: 'Your proposed upload exceeds the maximum allowed size.',
     InvalidPart: 'One or more of the specified parts could not be found.',
@@ -499,7 +503,7 @@ export function createMockS3Error(
 export function createMockPresignedUploadUrl(
   bucket: string,
   key: string,
-  expiresIn = 3600,
+  expiresIn = 3600
 ): string {
   const expires = Date.now() + expiresIn * 1000;
   return `https://${bucket}.s3.amazonaws.com/${key}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=mock&X-Amz-Date=mock&X-Amz-Expires=${expiresIn}&X-Amz-SignedHeaders=host&X-Amz-Signature=mock_signature_${expires}`;
@@ -516,7 +520,7 @@ export function createMockPresignedUploadUrl(
 export function createMockPresignedDownloadUrl(
   bucket: string,
   key: string,
-  expiresIn = 3600,
+  expiresIn = 3600
 ): string {
   return `https://${bucket}.s3.amazonaws.com/${key}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=mock&X-Amz-Date=mock&X-Amz-Expires=${expiresIn}&X-Amz-SignedHeaders=host&X-Amz-Signature=mock_signature`;
 }
@@ -532,7 +536,7 @@ export function createMockPresignedDownloadUrl(
 export function createMockPresignedPostFields(
   bucket: string,
   key: string,
-  conditions: Record<string, string> = {},
+  conditions: Record<string, string> = {}
 ): Record<string, string> {
   const dateStr = new Date().toISOString().replace(/[:-]/g, '').split('.')[0];
   return {
@@ -576,7 +580,7 @@ function generateMockId(): string {
  * @param client - Mock S3 client to reset
  */
 export function resetMockS3Client(client: MockS3Client): void {
-  Object.values(client).forEach((mock) => {
+  Object.values(client).forEach(mock => {
     if (typeof mock === 'function' && 'mockReset' in mock) {
       (mock as Mock).mockReset();
     }

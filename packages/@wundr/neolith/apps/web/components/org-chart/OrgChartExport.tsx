@@ -20,7 +20,11 @@ interface OrgChartExportProps {
   className?: string;
 }
 
-export function OrgChartExport({ chartElementId, orgName, className }: OrgChartExportProps) {
+export function OrgChartExport({
+  chartElementId,
+  orgName,
+  className,
+}: OrgChartExportProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const exportAsPNG = async () => {
@@ -93,10 +97,12 @@ export function OrgChartExport({ chartElementId, orgName, className }: OrgChartE
         10,
         25,
         imgWidth * ratio * 0.26458, // Convert px to mm
-        imgHeight * ratio * 0.26458,
+        imgHeight * ratio * 0.26458
       );
 
-      pdf.save(`${orgName}-org-chart-${new Date().toISOString().split('T')[0]}.pdf`);
+      pdf.save(
+        `${orgName}-org-chart-${new Date().toISOString().split('T')[0]}.pdf`
+      );
     } catch (error) {
       console.error('Failed to export as PDF:', error);
     } finally {
@@ -108,30 +114,36 @@ export function OrgChartExport({ chartElementId, orgName, className }: OrgChartE
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
+          variant='outline'
+          size='sm'
           disabled={isExporting}
-          className={cn('bg-stone-900 border-stone-800 text-stone-100 hover:bg-stone-800', className)}
+          className={cn(
+            'bg-stone-900 border-stone-800 text-stone-100 hover:bg-stone-800',
+            className
+          )}
         >
-          <Download className="h-4 w-4 mr-2" />
+          <Download className='h-4 w-4 mr-2' />
           {isExporting ? 'Exporting...' : 'Export'}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-stone-900 border-stone-800">
+      <DropdownMenuContent
+        align='end'
+        className='bg-stone-900 border-stone-800'
+      >
         <DropdownMenuItem
           onClick={exportAsPNG}
           disabled={isExporting}
-          className="text-stone-300 focus:bg-stone-800 focus:text-stone-100"
+          className='text-stone-300 focus:bg-stone-800 focus:text-stone-100'
         >
-          <FileImage className="h-4 w-4 mr-2" />
+          <FileImage className='h-4 w-4 mr-2' />
           Export as PNG
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={exportAsPDF}
           disabled={isExporting}
-          className="text-stone-300 focus:bg-stone-800 focus:text-stone-100"
+          className='text-stone-300 focus:bg-stone-800 focus:text-stone-100'
         >
-          <FileText className="h-4 w-4 mr-2" />
+          <FileText className='h-4 w-4 mr-2' />
           Export as PDF
         </DropdownMenuItem>
       </DropdownMenuContent>

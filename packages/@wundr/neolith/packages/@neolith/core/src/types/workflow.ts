@@ -874,7 +874,9 @@ export function isWorkflow(value: unknown): value is Workflow {
 /**
  * Type guard for WorkflowExecution.
  */
-export function isWorkflowExecution(value: unknown): value is WorkflowExecution {
+export function isWorkflowExecution(
+  value: unknown
+): value is WorkflowExecution {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -894,7 +896,7 @@ export function isWorkflowExecution(value: unknown): value is WorkflowExecution 
  * Type guard for CreateWorkflowInput.
  */
 export function isValidCreateWorkflowInput(
-  value: unknown,
+  value: unknown
 ): value is CreateWorkflowInput {
   if (typeof value !== 'object' || value === null) {
     return false;

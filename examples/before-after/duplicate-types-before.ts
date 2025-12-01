@@ -1,6 +1,6 @@
 /**
  * BEFORE: Duplicate Types Across Packages
- * 
+ *
  * This demonstrates a common monorepo problem where similar types are duplicated
  * across different packages, leading to maintenance issues and inconsistencies.
  */
@@ -18,7 +18,7 @@ export namespace UserService {
     isActive: boolean;
     role: 'admin' | 'user' | 'moderator';
   }
-  
+
   // Duplicated address type
   export interface Address {
     street: string;
@@ -27,7 +27,7 @@ export namespace UserService {
     zipCode: string;
     country: string;
   }
-  
+
   // Service-specific but similar types
   export interface CreateUserRequest {
     email: string;
@@ -36,7 +36,7 @@ export namespace UserService {
     password: string;
     role?: 'admin' | 'user' | 'moderator';
   }
-  
+
   export interface UpdateUserRequest {
     firstName?: string;
     lastName?: string;
@@ -58,7 +58,7 @@ export namespace OrderService {
     role: string; // Less specific than user-service
     // Missing updatedAt field
   }
-  
+
   // Duplicate address type with different field names
   export interface ShippingAddress {
     streetAddress: string; // Different field name
@@ -67,7 +67,7 @@ export namespace OrderService {
     postalCode: string; // Different field name
     country: string;
   }
-  
+
   export interface Order {
     id: string;
     userId: string;
@@ -79,7 +79,7 @@ export namespace OrderService {
     createdAt: Date;
     updatedAt: Date;
   }
-  
+
   export interface OrderItem {
     productId: string;
     quantity: number;
@@ -102,19 +102,19 @@ export namespace AuthService {
     lastLoginAt?: Date;
     createdAt: Date;
   }
-  
+
   export interface LoginRequest {
     email: string;
     password: string;
   }
-  
+
   export interface RegisterRequest {
     email: string;
     firstName: string;
     lastName: string;
     password: string;
   }
-  
+
   export interface AuthToken {
     accessToken: string;
     refreshToken: string;
@@ -138,7 +138,7 @@ export namespace NotificationService {
       push: boolean;
     };
   }
-  
+
   // Duplicate address for notification preferences
   export interface ContactAddress {
     line1: string; // Different structure
@@ -148,7 +148,7 @@ export namespace NotificationService {
     postal: string; // Different from zipCode
     countryCode: string; // Different from country
   }
-  
+
   export interface NotificationTemplate {
     id: string;
     name: string;
@@ -157,7 +157,7 @@ export namespace NotificationService {
     type: 'email' | 'sms' | 'push';
     variables: string[];
   }
-  
+
   export interface Notification {
     id: string;
     userId: string;
@@ -182,7 +182,7 @@ export namespace PaymentService {
     billingAddress: BillingAddress;
     paymentMethods: PaymentMethod[];
   }
-  
+
   // Yet another address variation
   export interface BillingAddress {
     addressLine1: string;
@@ -192,7 +192,7 @@ export namespace PaymentService {
     postalCode: string;
     countryCode: string;
   }
-  
+
   export interface PaymentMethod {
     id: string;
     type: 'credit_card' | 'debit_card' | 'bank_account' | 'paypal';
@@ -201,7 +201,7 @@ export namespace PaymentService {
     expiryYear?: number;
     isDefault: boolean;
   }
-  
+
   export interface Payment {
     id: string;
     orderId: string;
@@ -228,7 +228,7 @@ export namespace AnalyticsService {
     totalSpent: number;
     averageOrderValue: number;
   }
-  
+
   export interface UserEvent {
     userId: string;
     eventType: string;
@@ -237,7 +237,7 @@ export namespace AnalyticsService {
     sessionId?: string;
     source: string;
   }
-  
+
   export interface UserSegment {
     id: string;
     name: string;
@@ -250,27 +250,27 @@ export namespace AnalyticsService {
 
 /**
  * Problems with this BEFORE structure:
- * 
+ *
  * 1. TYPE INCONSISTENCY:
  *    - Same concepts (User, Address) have different field names and types
  *    - createdAt is Date in some places, string in others
  *    - role field has different enum values and casing
- * 
+ *
  * 2. MAINTENANCE BURDEN:
  *    - Changes to user structure require updates in 6+ places
  *    - No single source of truth for common types
  *    - Risk of forgetting to update all instances
- * 
+ *
  * 3. INTEGRATION ISSUES:
  *    - Services can't easily share data due to type mismatches
  *    - Type conversions needed everywhere
  *    - API contracts become inconsistent
- * 
+ *
  * 4. DEVELOPMENT FRICTION:
  *    - Developers must remember subtle differences between types
  *    - Copy-paste programming leads to more duplicates
  *    - Refactoring becomes error-prone
- * 
+ *
  * 5. TESTING COMPLEXITY:
  *    - Mock data must account for all type variations
  *    - Integration tests need type adapters
@@ -279,7 +279,7 @@ export namespace AnalyticsService {
 
 /**
  * Symptoms in the codebase:
- * 
+ *
  * - Lots of type assertion and conversion functions
  * - Mapping/adapter layers between services
  * - Inconsistent API responses

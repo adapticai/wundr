@@ -71,42 +71,44 @@ export function DashboardActivityItem({
   href,
   className,
 }: DashboardActivityItemProps) {
-  const displayName = user.displayName || user.name || user.email || 'Unknown user';
+  const displayName =
+    user.displayName || user.name || user.email || 'Unknown user';
   const initials = getInitials(displayName);
   const relativeTime = formatRelativeTime(timestamp);
 
   const content = (
     <div className={cn('flex items-start gap-3 py-3', className)}>
-      <Avatar className="h-8 w-8 flex-shrink-0">
+      <Avatar className='h-8 w-8 flex-shrink-0'>
         <AvatarImage src={user.avatarUrl || undefined} alt={displayName} />
-        <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+        <AvatarFallback className='text-xs'>{initials}</AvatarFallback>
       </Avatar>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm">
-              <span className="font-medium">{displayName}</span>
-              {' '}
-              <span className="text-muted-foreground">{action.description}</span>
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-start justify-between gap-2'>
+          <div className='flex-1 min-w-0'>
+            <p className='text-sm'>
+              <span className='font-medium'>{displayName}</span>{' '}
+              <span className='text-muted-foreground'>
+                {action.description}
+              </span>
               {action.entityName && (
                 <>
                   {' '}
-                  <span className="font-medium">{action.entityName}</span>
+                  <span className='font-medium'>{action.entityName}</span>
                 </>
               )}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className='text-xs text-muted-foreground mt-0.5'>
               {relativeTime}
             </p>
           </div>
 
           {quickAction && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={quickAction.onClick}
-              className="flex-shrink-0"
+              className='flex-shrink-0'
             >
               {quickAction.icon}
               {quickAction.label}
@@ -121,12 +123,12 @@ export function DashboardActivityItem({
     return (
       <Link
         href={href}
-        className="block hover:bg-accent/50 rounded-lg px-2 -mx-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        className='block hover:bg-accent/50 rounded-lg px-2 -mx-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
       >
         {content}
       </Link>
     );
   }
 
-  return <div className="px-2">{content}</div>;
+  return <div className='px-2'>{content}</div>;
 }

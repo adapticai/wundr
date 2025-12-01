@@ -54,9 +54,7 @@
         "file": "src/policy-engine.ts",
         "purpose": "Enforces hard constraints for security, compliance, and operations",
         "linesOfCode": 844,
-        "exports": [
-          "PolicyEngine"
-        ],
+        "exports": ["PolicyEngine"],
         "features": [
           "Pattern-based policy validation (regex)",
           "Custom validator functions",
@@ -70,10 +68,7 @@
         "file": "src/reward-calculator.ts",
         "purpose": "Calculates weighted objective scores across governance dimensions",
         "linesOfCode": 372,
-        "exports": [
-          "RewardCalculator",
-          "createRewardCalculator"
-        ],
+        "exports": ["RewardCalculator", "createRewardCalculator"],
         "features": [
           "Weighted multi-dimensional scoring",
           "Score normalization",
@@ -171,7 +166,11 @@
           "drift_detection: Monitors behavioral drift over time"
         ],
         "frequencies": ["per_commit", "hourly", "daily"],
-        "actions": ["block_on_violation", "escalate_to_guardian", "alert_architect"]
+        "actions": [
+          "block_on_violation",
+          "escalate_to_guardian",
+          "alert_architect"
+        ]
       }
     },
 
@@ -225,7 +224,11 @@
         },
         {
           "role": "guardian",
-          "permissions": ["policy_override", "violation_review", "escalation_handling"],
+          "permissions": [
+            "policy_override",
+            "violation_review",
+            "escalation_handling"
+          ],
           "description": "Governance oversight and intervention"
         },
         {
@@ -263,19 +266,40 @@
     "aiAgentMonitoring": {
       "actionTracking": {
         "interface": "AgentAction",
-        "fields": ["id", "sessionId", "agentId", "type", "description", "timestamp", "affectedFiles", "codeContent", "metadata"],
+        "fields": [
+          "id",
+          "sessionId",
+          "agentId",
+          "type",
+          "description",
+          "timestamp",
+          "affectedFiles",
+          "codeContent",
+          "metadata"
+        ],
         "purpose": "Track all AI agent actions for policy enforcement"
       },
 
       "alignmentMonitoring": {
-        "evaluators": ["policy_compliance", "reward_alignment", "drift_detection"],
+        "evaluators": [
+          "policy_compliance",
+          "reward_alignment",
+          "drift_detection"
+        ],
         "objectives": {
           "helpfulness": "Measure value delivered to users",
           "harmlessness": "Ensure safety and prevent harmful outputs",
           "honesty": "Verify factual accuracy and truthfulness"
         },
         "driftDetection": {
-          "patterns": ["response_quality", "safety_score", "alignment_score", "latency_p99", "error_rate", "rejection_rate"],
+          "patterns": [
+            "response_quality",
+            "safety_score",
+            "alignment_score",
+            "latency_p99",
+            "error_rate",
+            "rejection_rate"
+          ],
           "baselines": "Historical comparison over 7-day windows",
           "thresholds": "Configurable per-pattern drift sensitivity"
         }
@@ -294,7 +318,12 @@
       },
 
       "rewardAlignment": {
-        "dimensions": ["alignmentScore", "helpfulnessScore", "harmlessnessScore", "honestyScore"],
+        "dimensions": [
+          "alignmentScore",
+          "helpfulnessScore",
+          "harmlessnessScore",
+          "honestyScore"
+        ],
         "thresholds": {
           "alignmentScore": 0.85,
           "helpfulnessScore": 0.8,

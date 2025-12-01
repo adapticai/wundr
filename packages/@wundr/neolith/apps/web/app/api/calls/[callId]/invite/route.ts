@@ -40,15 +40,18 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -57,8 +60,11 @@ export async function POST(
     const paramResult = callIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID format', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID format',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -68,8 +74,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -79,9 +88,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -97,13 +106,15 @@ export async function POST(
     } | null = null;
 
     try {
-      const calls = await prisma.$queryRaw<Array<{
-        id: string;
-        channel_id: string;
-        type: string;
-        status: string;
-        room_name: string;
-      }>>`
+      const calls = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          channel_id: string;
+          type: string;
+          status: string;
+          room_name: string;
+        }>
+      >`
         SELECT id, channel_id, type, status, room_name
         FROM calls
         WHERE id = ${params.callId}
@@ -132,7 +143,12 @@ export async function POST(
 
       if (channels.length > 0) {
         const settings = channels[0].settings as {
-          activeCall?: { id: string; type: string; status: string; roomName: string };
+          activeCall?: {
+            id: string;
+            type: string;
+            status: string;
+            roomName: string;
+          };
         };
         if (settings?.activeCall) {
           call = {
@@ -149,15 +165,18 @@ export async function POST(
     if (!call) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check if call is still active
     if (call.status === 'ended' || call.status === 'failed') {
       return NextResponse.json(
-        createErrorResponse('Call has already ended', CALL_ERROR_CODES.CALL_ALREADY_ENDED),
-        { status: 400 },
+        createErrorResponse(
+          'Call has already ended',
+          CALL_ERROR_CODES.CALL_ALREADY_ENDED
+        ),
+        { status: 400 }
       );
     }
 
@@ -169,8 +188,11 @@ export async function POST(
 
     if (!channel) {
       return NextResponse.json(
-        createErrorResponse('Channel not found', CALL_ERROR_CODES.CHANNEL_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Channel not found',
+          CALL_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -186,7 +208,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Access denied', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -196,17 +218,17 @@ export async function POST(
       select: { id: true, name: true, email: true },
     });
 
-    const foundUserIds = new Set(users.map((u) => u.id));
-    const invalidUserIds = userIds.filter((id) => !foundUserIds.has(id));
+    const foundUserIds = new Set(users.map(u => u.id));
+    const invalidUserIds = userIds.filter(id => !foundUserIds.has(id));
 
     if (invalidUserIds.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           'Some users were not found',
           CALL_ERROR_CODES.USER_NOT_FOUND,
-          { invalidUserIds },
+          { invalidUserIds }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -255,9 +277,9 @@ export async function POST(
         createErrorResponse(
           'No invited users have access to this channel',
           CALL_ERROR_CODES.FORBIDDEN,
-          { usersWithoutAccess },
+          { usersWithoutAccess }
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -288,7 +310,10 @@ export async function POST(
             created_at = ${now}
         `;
       } catch (invitationError) {
-        console.error('[POST /api/calls/:callId/invite] Invitation tracking not available:', invitationError);
+        console.error(
+          '[POST /api/calls/:callId/invite] Invitation tracking not available:',
+          invitationError
+        );
         // Invitations table may not exist
       }
     }
@@ -304,8 +329,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/calls/:callId/invite] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -2,7 +2,9 @@
 
 ## Overview
 
-Successfully implemented a comprehensive search API for channels, messages, and files within workspaces. The implementation provides full-text search with highlighting, advanced filtering, and pagination support.
+Successfully implemented a comprehensive search API for channels, messages, and files within
+workspaces. The implementation provides full-text search with highlighting, advanced filtering, and
+pagination support.
 
 ## File Location
 
@@ -61,15 +63,15 @@ GET /api/workspaces/{workspaceId}/search
 
 ### Query Parameters
 
-| Parameter | Type | Required | Default | Max | Description |
-|-----------|------|----------|---------|-----|-------------|
-| q | string | Yes | - | - | Search query |
-| type | enum | No | all | - | channels, messages, files, all |
-| channelId | string | No | - | - | Limit to specific channel |
-| limit | number | No | 20 | 100 | Results per page |
-| offset | number | No | 0 | - | Pagination offset |
-| highlight | boolean | No | true | - | Enable highlighting |
-| facets | boolean | No | false | - | Include facets |
+| Parameter | Type    | Required | Default | Max | Description                    |
+| --------- | ------- | -------- | ------- | --- | ------------------------------ |
+| q         | string  | Yes      | -       | -   | Search query                   |
+| type      | enum    | No       | all     | -   | channels, messages, files, all |
+| channelId | string  | No       | -       | -   | Limit to specific channel      |
+| limit     | number  | No       | 20      | 100 | Results per page               |
+| offset    | number  | No       | 0       | -   | Pagination offset              |
+| highlight | boolean | No       | true    | -   | Enable highlighting            |
+| facets    | boolean | No       | false   | -   | Include facets                 |
 
 ### Response Structure
 
@@ -92,6 +94,7 @@ GET /api/workspaces/{workspaceId}/search
 ### Result Types
 
 #### Channel Result
+
 ```typescript
 {
   type: 'channel';
@@ -112,6 +115,7 @@ GET /api/workspaces/{workspaceId}/search
 ```
 
 #### Message Result
+
 ```typescript
 {
   type: 'message';
@@ -133,6 +137,7 @@ GET /api/workspaces/{workspaceId}/search
 ```
 
 #### File Result
+
 ```typescript
 {
   type: 'file';
@@ -157,20 +162,26 @@ GET /api/workspaces/{workspaceId}/search
 ## Key Functions
 
 ### `getAccessibleChannels(workspaceId, userId)`
+
 Determines which channels a user can access based on:
+
 - Workspace membership (required)
 - Public channel visibility
 - Private channel membership
 
 ### `searchChannels(workspaceId, query, accessibleChannelIds, ...)`
+
 Searches channel names, descriptions, and topics with:
+
 - Access control filtering
 - Archived channel exclusion
 - Alphabetical ordering
 - Optional highlighting
 
 ### `searchMessages(workspaceId, query, accessibleChannelIds, ...)`
+
 Searches message content with:
+
 - Access control filtering
 - Deleted message exclusion
 - Reverse chronological ordering
@@ -178,14 +189,18 @@ Searches message content with:
 - Optional highlighting
 
 ### `searchFiles(workspaceId, query, channelId, ...)`
+
 Searches file names with:
+
 - Filename and original name matching
 - Channel association via message attachments
 - Reverse chronological ordering
 - Optional highlighting
 
 ### `highlightText(text, query)`
+
 Wraps matching query terms with `<mark>` tags:
+
 - Splits query into terms
 - Case-insensitive matching
 - Handles multiple occurrences
@@ -194,19 +209,23 @@ Wraps matching query terms with `<mark>` tags:
 ## Error Handling
 
 ### 401 Unauthorized
+
 - No authentication session
 - Invalid or expired token
 
 ### 400 Bad Request
+
 - Missing `q` parameter
 - Invalid `type` value
 - Invalid numeric parameters
 
 ### 404 Not Found
+
 - Workspace doesn't exist
 - User not a workspace member
 
 ### 500 Internal Server Error
+
 - Database errors
 - Unexpected exceptions
 - Logged for debugging
@@ -214,6 +233,7 @@ Wraps matching query terms with `<mark>` tags:
 ## Performance Considerations
 
 ### Database Indexes Used
+
 - `Channel`: workspaceId, type, isArchived, name
 - `Message`: channelId, isDeleted, createdAt, content
 - `File`: workspaceId, filename, originalName
@@ -221,12 +241,14 @@ Wraps matching query terms with `<mark>` tags:
 - `WorkspaceMember`: workspaceId, userId
 
 ### Optimization Strategies
+
 1. Parallel queries for counts and results
 2. Limited result sets (max 100)
 3. Indexed field searches
 4. Efficient permission checks
 
 ### Potential Improvements
+
 1. PostgreSQL full-text search (ts_query/ts_vector)
 2. Elasticsearch integration for large datasets
 3. Result caching with Redis
@@ -235,6 +257,7 @@ Wraps matching query terms with `<mark>` tags:
 ## Testing
 
 ### Test Coverage
+
 - Authentication validation
 - Query parameter validation
 - Workspace membership checks
@@ -245,6 +268,7 @@ Wraps matching query terms with `<mark>` tags:
 - Access control enforcement
 
 ### Test File Location
+
 ```
 /apps/web/app/api/workspaces/[workspaceId]/search/__tests__/route.test.ts
 ```
@@ -252,11 +276,13 @@ Wraps matching query terms with `<mark>` tags:
 ## Documentation
 
 ### API Documentation
+
 ```
 /apps/web/docs/api/search-api.md
 ```
 
 Includes:
+
 - Complete endpoint specification
 - All query parameters
 - Response structure examples
@@ -268,31 +294,37 @@ Includes:
 ## Example Usage
 
 ### Basic Search
+
 ```bash
 GET /api/workspaces/ws_123/search?q=meeting
 ```
 
 ### Type-Specific Search
+
 ```bash
 GET /api/workspaces/ws_123/search?q=report&type=messages
 ```
 
 ### Channel-Scoped Search
+
 ```bash
 GET /api/workspaces/ws_123/search?q=bug&type=messages&channelId=ch_456
 ```
 
 ### Paginated Search
+
 ```bash
 GET /api/workspaces/ws_123/search?q=project&limit=50&offset=0
 ```
 
 ### Search with Facets
+
 ```bash
 GET /api/workspaces/ws_123/search?q=api&facets=true
 ```
 
 ### Search without Highlighting
+
 ```bash
 GET /api/workspaces/ws_123/search?q=update&highlight=false
 ```
@@ -300,6 +332,7 @@ GET /api/workspaces/ws_123/search?q=update&highlight=false
 ## Client Integration
 
 ### React Example
+
 ```typescript
 import { useState, useCallback } from 'react';
 import { debounce } from 'lodash';
@@ -351,6 +384,7 @@ function SearchComponent({ workspaceId }: { workspaceId: string }) {
 ```
 
 ### Displaying Highlighted Results
+
 ```typescript
 function HighlightedText({ html }: { html: string }) {
   return (
@@ -374,6 +408,7 @@ function HighlightedText({ html }: { html: string }) {
 ## Maintenance
 
 ### Monitoring Metrics
+
 - Search query volume
 - Average response time
 - Error rate by endpoint
@@ -382,7 +417,9 @@ function HighlightedText({ html }: { html: string }) {
 - Cache hit rates (if caching added)
 
 ### Logging
+
 All errors logged to console with context:
+
 ```
 [GET /api/workspaces/:workspaceId/search] Error: <error details>
 ```
@@ -390,6 +427,7 @@ All errors logged to console with context:
 ## Future Enhancements
 
 ### Phase 2 Improvements
+
 1. **Advanced Query Syntax**
    - Boolean operators (AND, OR, NOT)
    - Phrase matching with quotes
@@ -448,6 +486,7 @@ All errors logged to console with context:
 ## Support
 
 For questions or issues:
+
 1. Check API documentation: `/docs/api/search-api.md`
 2. Review test cases for usage examples
 3. Check error logs for debugging
@@ -455,6 +494,4 @@ For questions or issues:
 
 ---
 
-**Status**: ✅ Complete and Ready for Testing
-**Date**: 2024-11-26
-**Version**: 1.0.0
+**Status**: ✅ Complete and Ready for Testing **Date**: 2024-11-26 **Version**: 1.0.0

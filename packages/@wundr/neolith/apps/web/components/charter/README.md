@@ -35,38 +35,43 @@ function OrchestratorSettings() {
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `OrchestratorCapability[]` | Current enabled capabilities |
-| `onChange` | `(capabilities: OrchestratorCapability[]) => void` | Callback when capabilities change |
-| `availableCapabilities` | `OrchestratorCapability[]` | List of available capabilities |
-| `disabled` | `boolean` | Disable all controls |
-| `isAdmin` | `boolean` | Show admin permission level |
+| Prop                    | Type                                               | Description                       |
+| ----------------------- | -------------------------------------------------- | --------------------------------- |
+| `value`                 | `OrchestratorCapability[]`                         | Current enabled capabilities      |
+| `onChange`              | `(capabilities: OrchestratorCapability[]) => void` | Callback when capabilities change |
+| `availableCapabilities` | `OrchestratorCapability[]`                         | List of available capabilities    |
+| `disabled`              | `boolean`                                          | Disable all controls              |
+| `isAdmin`               | `boolean`                                          | Show admin permission level       |
 
 ### Pre-defined Capabilities
 
 #### Communication
+
 - `send_messages` - Send messages in channels and direct messages
 - `manage_channels` - Create, update, and archive channels
 - `schedule_meetings` - Schedule and manage meetings and huddles
 
 #### Development
+
 - `code_review` - Review code changes and provide feedback
 - `write_code` - Generate and modify code
 - `run_tests` - Execute test suites and report results
 - `deploy` - Deploy applications and services
 
 #### Analysis
+
 - `data_analysis` - Analyze data sets and generate insights
 - `report_generation` - Create and distribute reports
 - `trend_analysis` - Identify and analyze trends in data
 
 #### Automation
+
 - `task_scheduling` - Schedule and manage automated tasks
 - `workflow_automation` - Create and execute automated workflows
 - `notifications` - Send automated notifications and alerts
 
 #### Management
+
 - `resource_allocation` - Allocate and manage resources
 - `team_coordination` - Coordinate team activities and tasks
 - `project_tracking` - Track project progress and milestones

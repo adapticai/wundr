@@ -18,7 +18,7 @@ const analyticsService = new AnalyticsServiceImpl({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -32,12 +32,16 @@ export async function POST(
     const { eventType, eventData, sessionId } = body;
 
     if (!eventType) {
-      return NextResponse.json({ error: 'Event type required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Event type required' },
+        { status: 400 }
+      );
     }
 
     // Get metadata from request
     const userAgent = request.headers.get('user-agent') || undefined;
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || undefined;
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0] || undefined;
 
     await analyticsService.track({
       workspaceId,
@@ -56,6 +60,9 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Analytics track error:', error);
-    return NextResponse.json({ error: 'Failed to track event' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to track event' },
+      { status: 500 }
+    );
   }
 }

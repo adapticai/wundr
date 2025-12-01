@@ -26,7 +26,6 @@
  * ```
  */
 
-
 import {
   ANALYTICS_REDIS_KEYS,
   ANALYTICS_REDIS_TTL_SECONDS,
@@ -110,7 +109,9 @@ export interface AnalyticsEventDelegate {
   /**
    * Creates multiple analytics events in a batch.
    */
-  createMany(args: { data: AnalyticsEventCreateInput[] }): Promise<{ count: number }>;
+  createMany(args: {
+    data: AnalyticsEventCreateInput[];
+  }): Promise<{ count: number }>;
   /**
    * Finds multiple analytics events matching the criteria.
    */
@@ -229,7 +230,10 @@ export interface AnalyticsDatabaseClient {
 /**
  * Redis pipeline operation result.
  */
-export type RedisPipelineResult = [Error | null, number | string | string[] | null];
+export type RedisPipelineResult = [
+  Error | null,
+  number | string | string[] | null,
+];
 
 /**
  * Redis pipeline interface for batching commands.
@@ -284,7 +288,10 @@ export class AnalyticsError extends Error {
 }
 
 export class AnalyticsFlushError extends AnalyticsError {
-  constructor(message: string, public readonly failedCount: number) {
+  constructor(
+    message: string,
+    public readonly failedCount: number
+  ) {
     super(message);
     this.name = 'AnalyticsFlushError';
   }
@@ -304,7 +311,10 @@ export interface AnalyticsService {
     currentPeriod: { start: Date; end: Date },
     previousPeriod: { start: Date; end: Date }
   ): Promise<TrendData>;
-  generateInsightReport(workspaceId: string, period: AnalyticsPeriod): Promise<InsightReport>;
+  generateInsightReport(
+    workspaceId: string,
+    period: AnalyticsPeriod
+  ): Promise<InsightReport>;
   getRealTimeStats(workspaceId: string): Promise<Record<string, number>>;
 }
 
@@ -324,7 +334,8 @@ export class AnalyticsServiceImpl implements AnalyticsService {
     this.prisma = config.prisma;
     this.redis = config.redis;
     this.batchSize = config.batchSize ?? DEFAULT_ANALYTICS_BATCH_SIZE;
-    this.flushIntervalMs = config.flushIntervalMs ?? DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS;
+    this.flushIntervalMs =
+      config.flushIntervalMs ?? DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS;
   }
 
   /**
@@ -359,8 +370,8 @@ export class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     if (this.eventQueue.length === 0) {
-return;
-}
+      return;
+    }
 
     const events = [...this.eventQueue];
     this.eventQueue = [];
@@ -368,7 +379,7 @@ return;
     try {
       if (this.prisma.analyticsEvent) {
         await this.prisma.analyticsEvent.createMany({
-          data: events.map((e) => ({
+          data: events.map(e => ({
             workspaceId: e.workspaceId,
             userId: e.userId,
             vpId: e.orchestratorId,
@@ -385,7 +396,7 @@ return;
       this.eventQueue.push(...events);
       throw new AnalyticsFlushError(
         `Failed to flush analytics events: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        events.length,
+        events.length
       );
     }
   }
@@ -393,12 +404,18 @@ return;
   /**
    * Update real-time counters in Redis
    */
-  private async updateRealTimeCounters(event: Omit<AnalyticsEvent, 'id'>): Promise<void> {
+  private async updateRealTimeCounters(
+    event: Omit<AnalyticsEvent, 'id'>
+  ): Promise<void> {
     const today = new Date().toISOString().split('T')[0] as string;
     const hour = new Date().getHours();
 
     const dailyKey = ANALYTICS_REDIS_KEYS.dailyEvents(event.workspaceId, today);
-    const hourlyKey = ANALYTICS_REDIS_KEYS.hourlyEvents(event.workspaceId, today, hour);
+    const hourlyKey = ANALYTICS_REDIS_KEYS.hourlyEvents(
+      event.workspaceId,
+      today,
+      hour
+    );
 
     const pipeline = this.redis.pipeline();
 
@@ -412,7 +429,10 @@ return;
 
     // Active users tracking
     if (event.userId) {
-      const activeKey = ANALYTICS_REDIS_KEYS.activeUsers(event.workspaceId, today);
+      const activeKey = ANALYTICS_REDIS_KEYS.activeUsers(
+        event.workspaceId,
+        today
+      );
       pipeline.sadd(activeKey, event.userId);
       pipeline.expire(activeKey, ANALYTICS_REDIS_TTL_SECONDS);
     }
@@ -424,16 +444,21 @@ return;
    * Get usage metrics for a period
    */
   async getMetrics(query: AnalyticsQuery): Promise<UsageMetrics> {
-    const { startDate, endDate } = this.getPeriodDates(query.period, query.startDate, query.endDate);
+    const { startDate, endDate } = this.getPeriodDates(
+      query.period,
+      query.startDate,
+      query.endDate
+    );
 
-    const [messages, users, channels, files, calls, orchestrator] = await Promise.all([
-      this.getMessageMetrics(query.workspaceId, startDate, endDate),
-      this.getUserMetrics(query.workspaceId, startDate, endDate),
-      this.getChannelMetrics(query.workspaceId, startDate, endDate),
-      this.getFileMetrics(query.workspaceId, startDate, endDate),
-      this.getCallMetrics(query.workspaceId, startDate, endDate),
-      this.getOrchestratorMetrics(query.workspaceId, startDate, endDate),
-    ]);
+    const [messages, users, channels, files, calls, orchestrator] =
+      await Promise.all([
+        this.getMessageMetrics(query.workspaceId, startDate, endDate),
+        this.getUserMetrics(query.workspaceId, startDate, endDate),
+        this.getChannelMetrics(query.workspaceId, startDate, endDate),
+        this.getFileMetrics(query.workspaceId, startDate, endDate),
+        this.getCallMetrics(query.workspaceId, startDate, endDate),
+        this.getOrchestratorMetrics(query.workspaceId, startDate, endDate),
+      ]);
 
     return {
       workspaceId: query.workspaceId,
@@ -455,16 +480,17 @@ return;
   private async getMessageMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<MessageMetrics> {
-    const [totalMessages, byDay, byChannel, byUser, threads, reactions] = await Promise.all([
-      this.prisma.message.count({
-        where: {
-          channel: { workspaceId },
-          createdAt: { gte: startDate, lte: endDate },
-        },
-      }),
-      this.prisma.$queryRaw<Array<{ date: string; count: bigint }>>`
+    const [totalMessages, byDay, byChannel, byUser, threads, reactions] =
+      await Promise.all([
+        this.prisma.message.count({
+          where: {
+            channel: { workspaceId },
+            createdAt: { gte: startDate, lte: endDate },
+          },
+        }),
+        this.prisma.$queryRaw<Array<{ date: string; count: bigint }>>`
         SELECT DATE(m."createdAt") as date, COUNT(*) as count
         FROM "Message" m
         JOIN "Channel" c ON m."channelId" = c.id
@@ -474,7 +500,9 @@ return;
         GROUP BY DATE(m."createdAt")
         ORDER BY date
       `,
-      this.prisma.$queryRaw<Array<{ channelId: string; channelName: string; count: bigint }>>`
+        this.prisma.$queryRaw<
+          Array<{ channelId: string; channelName: string; count: bigint }>
+        >`
         SELECT c.id as "channelId", c.name as "channelName", COUNT(*) as count
         FROM "Message" m
         JOIN "Channel" c ON m."channelId" = c.id
@@ -485,7 +513,9 @@ return;
         ORDER BY count DESC
         LIMIT 10
       `,
-      this.prisma.$queryRaw<Array<{ userId: string; userName: string; count: bigint }>>`
+        this.prisma.$queryRaw<
+          Array<{ userId: string; userName: string; count: bigint }>
+        >`
         SELECT u.id as "userId", u.name as "userName", COUNT(*) as count
         FROM "Message" m
         JOIN "User" u ON m."senderId" = u.id
@@ -497,35 +527,41 @@ return;
         ORDER BY count DESC
         LIMIT 10
       `,
-      this.prisma.message.count({
-        where: {
-          channel: { workspaceId },
-          createdAt: { gte: startDate, lte: endDate },
-          threadId: { not: null },
-        },
-      }),
-      this.prisma.reaction.count({
-        where: {
-          message: { channel: { workspaceId } },
-          createdAt: { gte: startDate, lte: endDate },
-        },
-      }),
-    ]);
+        this.prisma.message.count({
+          where: {
+            channel: { workspaceId },
+            createdAt: { gte: startDate, lte: endDate },
+            threadId: { not: null },
+          },
+        }),
+        this.prisma.reaction.count({
+          where: {
+            message: { channel: { workspaceId } },
+            createdAt: { gte: startDate, lte: endDate },
+          },
+        }),
+      ]);
 
     const days = Math.max(
       1,
-      Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+      Math.ceil(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      )
     );
 
     return {
       total: totalMessages,
-      byDay: byDay.map((d) => ({ date: d.date, count: Number(d.count) })),
-      byChannel: byChannel.map((c) => ({
+      byDay: byDay.map(d => ({ date: d.date, count: Number(d.count) })),
+      byChannel: byChannel.map(c => ({
         channelId: c.channelId,
         channelName: c.channelName,
         count: Number(c.count),
       })),
-      byUser: byUser.map((u) => ({ userId: u.userId, userName: u.userName, count: Number(u.count) })),
+      byUser: byUser.map(u => ({
+        userId: u.userId,
+        userName: u.userName,
+        count: Number(u.count),
+      })),
       averagePerDay: Math.round(totalMessages / days),
       threadsCreated: threads,
       reactionsAdded: reactions,
@@ -538,17 +574,18 @@ return;
   private async getUserMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<UserMetrics> {
-    const [totalMembers, newUsers, activeUsers, dailyActive, topContributors] = await Promise.all([
-      this.prisma.workspaceMember.count({ where: { workspaceId } }),
-      this.prisma.workspaceMember.count({
-        where: {
-          workspaceId,
-          createdAt: { gte: startDate, lte: endDate },
-        },
-      }),
-      this.prisma.$queryRaw<[{ count: bigint }]>`
+    const [totalMembers, newUsers, activeUsers, dailyActive, topContributors] =
+      await Promise.all([
+        this.prisma.workspaceMember.count({ where: { workspaceId } }),
+        this.prisma.workspaceMember.count({
+          where: {
+            workspaceId,
+            createdAt: { gte: startDate, lte: endDate },
+          },
+        }),
+        this.prisma.$queryRaw<[{ count: bigint }]>`
         SELECT COUNT(DISTINCT m."senderId") as count
         FROM "Message" m
         JOIN "Channel" c ON m."channelId" = c.id
@@ -556,7 +593,7 @@ return;
           AND m."createdAt" >= ${startDate}
           AND m."createdAt" <= ${endDate}
       `,
-      this.prisma.$queryRaw<Array<{ date: string; count: bigint }>>`
+        this.prisma.$queryRaw<Array<{ date: string; count: bigint }>>`
         SELECT DATE(m."createdAt") as date, COUNT(DISTINCT m."senderId") as count
         FROM "Message" m
         JOIN "Channel" c ON m."channelId" = c.id
@@ -566,7 +603,9 @@ return;
         GROUP BY DATE(m."createdAt")
         ORDER BY date
       `,
-      this.prisma.$queryRaw<Array<{ userId: string; userName: string; messageCount: bigint }>>`
+        this.prisma.$queryRaw<
+          Array<{ userId: string; userName: string; messageCount: bigint }>
+        >`
         SELECT u.id as "userId", u.name as "userName", COUNT(*) as "messageCount"
         FROM "Message" m
         JOIN "User" u ON m."senderId" = u.id
@@ -578,17 +617,20 @@ return;
         ORDER BY "messageCount" DESC
         LIMIT 10
       `,
-    ]);
+      ]);
 
     return {
       totalMembers,
       activeUsers: Number(activeUsers[0]?.count ?? 0),
       newUsers,
-      dailyActiveUsers: dailyActive.map((d) => ({ date: d.date, count: Number(d.count) })),
+      dailyActiveUsers: dailyActive.map(d => ({
+        date: d.date,
+        count: Number(d.count),
+      })),
       weeklyActiveUsers: 0, // Would need weekly calculation
       monthlyActiveUsers: Number(activeUsers[0]?.count ?? 0),
       averageSessionDuration: 0, // Would need session tracking
-      topContributors: topContributors.map((t) => ({
+      topContributors: topContributors.map(t => ({
         userId: t.userId,
         userName: t.userName,
         messageCount: Number(t.messageCount),
@@ -602,7 +644,7 @@ return;
   private async getChannelMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<ChannelMetrics> {
     const [total, publicCount, newChannels, mostActive] = await Promise.all([
       this.prisma.channel.count({ where: { workspaceId } }),
@@ -614,7 +656,12 @@ return;
         },
       }),
       this.prisma.$queryRaw<
-        Array<{ channelId: string; channelName: string; messageCount: bigint; memberCount: bigint }>
+        Array<{
+          channelId: string;
+          channelName: string;
+          messageCount: bigint;
+          memberCount: bigint;
+        }>
       >`
         SELECT
           c.id as "channelId",
@@ -635,7 +682,7 @@ return;
       public: publicCount,
       private: total - publicCount,
       newChannels,
-      mostActive: mostActive.map((m) => ({
+      mostActive: mostActive.map(m => ({
         channelId: m.channelId,
         channelName: m.channelName,
         messageCount: Number(m.messageCount),
@@ -643,7 +690,10 @@ return;
       })),
       averageMessagesPerChannel:
         total > 0
-          ? Math.round(mostActive.reduce((sum, c) => sum + Number(c.messageCount), 0) / total)
+          ? Math.round(
+              mostActive.reduce((sum, c) => sum + Number(c.messageCount), 0) /
+                total
+            )
           : 0,
     };
   }
@@ -654,7 +704,7 @@ return;
   private async getFileMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<FileMetrics> {
     const [stats, byType, topUploaders] = await Promise.all([
       this.prisma.attachment.aggregate({
@@ -666,7 +716,9 @@ return;
         _sum: { fileSize: true },
         _avg: { fileSize: true },
       }),
-      this.prisma.$queryRaw<Array<{ type: string; count: bigint; size: bigint }>>`
+      this.prisma.$queryRaw<
+        Array<{ type: string; count: bigint; size: bigint }>
+      >`
         SELECT a."fileType" as type, COUNT(*) as count, SUM(a."fileSize") as size
         FROM "Attachment" a
         JOIN "Message" m ON a."messageId" = m.id
@@ -677,7 +729,9 @@ return;
         GROUP BY a."fileType"
         ORDER BY count DESC
       `,
-      this.prisma.$queryRaw<Array<{ userId: string; userName: string; count: bigint; size: bigint }>>`
+      this.prisma.$queryRaw<
+        Array<{ userId: string; userName: string; count: bigint; size: bigint }>
+      >`
         SELECT u.id as "userId", u.name as "userName", COUNT(*) as count, SUM(a."fileSize") as size
         FROM "Attachment" a
         JOIN "Message" m ON a."messageId" = m.id
@@ -695,8 +749,12 @@ return;
     return {
       totalUploaded: stats._count ?? 0,
       totalSize: Number(stats._sum.fileSize ?? 0),
-      byType: byType.map((t) => ({ type: t.type, count: Number(t.count), size: Number(t.size) })),
-      topUploaders: topUploaders.map((u) => ({
+      byType: byType.map(t => ({
+        type: t.type,
+        count: Number(t.count),
+        size: Number(t.size),
+      })),
+      topUploaders: topUploaders.map(u => ({
         userId: u.userId,
         userName: u.userName,
         count: Number(u.count),
@@ -712,7 +770,7 @@ return;
   private async getCallMetrics(
     _workspaceId: string,
     _startDate: Date,
-    _endDate: Date,
+    _endDate: Date
   ): Promise<CallMetrics> {
     // Would require Call model - returning placeholder
     return {
@@ -731,14 +789,22 @@ return;
   private async getOrchestratorMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<OrchestratorMetrics> {
-    const [totalOrchestrators, activeOrchestrators, orchestratorMessages] = await Promise.all([
-      this.prisma.orchestrator.count({ where: { workspaceId } }),
-      this.prisma.orchestrator.count({ where: { workspaceId, status: 'active' } }),
-      this.prisma.$queryRaw<
-        Array<{ orchestratorId: string; orchestratorName: string; discipline: string; messagesSent: bigint }>
-      >`
+    const [totalOrchestrators, activeOrchestrators, orchestratorMessages] =
+      await Promise.all([
+        this.prisma.orchestrator.count({ where: { workspaceId } }),
+        this.prisma.orchestrator.count({
+          where: { workspaceId, status: 'active' },
+        }),
+        this.prisma.$queryRaw<
+          Array<{
+            orchestratorId: string;
+            orchestratorName: string;
+            discipline: string;
+            messagesSent: bigint;
+          }>
+        >`
         SELECT
           o.id as "orchestratorId",
           o.name as "orchestratorName",
@@ -750,9 +816,12 @@ return;
         WHERE o."workspaceId" = ${workspaceId}
         GROUP BY o.id, o.name, o.discipline
       `,
-    ]);
+      ]);
 
-    const totalMessagesSent = orchestratorMessages.reduce((sum, v) => sum + Number(v.messagesSent), 0);
+    const totalMessagesSent = orchestratorMessages.reduce(
+      (sum, v) => sum + Number(v.messagesSent),
+      0
+    );
 
     return {
       totalOrchestrators,
@@ -761,7 +830,7 @@ return;
       messagesReceived: 0,
       tasksCompleted: 0,
       averageResponseTime: 0,
-      byOrchestrator: orchestratorMessages.map((v) => ({
+      byOrchestrator: orchestratorMessages.map(v => ({
         orchestratorId: v.orchestratorId,
         orchestratorName: v.orchestratorName,
         discipline: v.discipline,
@@ -778,15 +847,26 @@ return;
     workspaceId: string,
     metric: string,
     currentPeriod: { start: Date; end: Date },
-    previousPeriod: { start: Date; end: Date },
+    previousPeriod: { start: Date; end: Date }
   ): Promise<TrendData> {
     const [current, previous] = await Promise.all([
-      this.getMetricValue(workspaceId, metric, currentPeriod.start, currentPeriod.end),
-      this.getMetricValue(workspaceId, metric, previousPeriod.start, previousPeriod.end),
+      this.getMetricValue(
+        workspaceId,
+        metric,
+        currentPeriod.start,
+        currentPeriod.end
+      ),
+      this.getMetricValue(
+        workspaceId,
+        metric,
+        previousPeriod.start,
+        previousPeriod.end
+      ),
     ]);
 
     const change = current - previous;
-    const changePercent = previous > 0 ? (change / previous) * 100 : current > 0 ? 100 : 0;
+    const changePercent =
+      previous > 0 ? (change / previous) * 100 : current > 0 ? 100 : 0;
 
     return {
       current,
@@ -804,7 +884,7 @@ return;
     workspaceId: string,
     metric: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<number> {
     switch (metric) {
       case 'messages':
@@ -840,9 +920,13 @@ return;
   /**
    * Generate insight report
    */
-  async generateInsightReport(workspaceId: string, period: AnalyticsPeriod): Promise<InsightReport> {
+  async generateInsightReport(
+    workspaceId: string,
+    period: AnalyticsPeriod
+  ): Promise<InsightReport> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { startDate: _startDate, endDate: _endDate } = this.getPeriodDates(period);
+    const { startDate: _startDate, endDate: _endDate } =
+      this.getPeriodDates(period);
     const metrics = await this.getMetrics({ workspaceId, period });
 
     const highlights: InsightHighlight[] = [];
@@ -861,7 +945,9 @@ return;
 
     // Analyze user engagement
     if (metrics.users.activeUsers > 0) {
-      const engagementRate = Math.round((metrics.users.activeUsers / metrics.users.totalMembers) * 100);
+      const engagementRate = Math.round(
+        (metrics.users.activeUsers / metrics.users.totalMembers) * 100
+      );
       highlights.push({
         type: engagementRate >= 50 ? 'positive' : 'neutral',
         title: 'User Engagement',
@@ -881,7 +967,11 @@ return;
     }
 
     // Orchestrator utilization
-    if (metrics.orchestrator.totalOrchestrators > 0 && metrics.orchestrator.activeOrchestrators < metrics.orchestrator.totalOrchestrators) {
+    if (
+      metrics.orchestrator.totalOrchestrators > 0 &&
+      metrics.orchestrator.activeOrchestrators <
+        metrics.orchestrator.totalOrchestrators
+    ) {
       recommendations.push({
         priority: 'low',
         title: 'Activate Orchestrators',
@@ -890,11 +980,15 @@ return;
     }
 
     // Channel recommendations
-    if (metrics.channels.total > 0 && metrics.channels.averageMessagesPerChannel < 10) {
+    if (
+      metrics.channels.total > 0 &&
+      metrics.channels.averageMessagesPerChannel < 10
+    ) {
       recommendations.push({
         priority: 'low',
         title: 'Consolidate Channels',
-        description: 'Some channels have low activity. Consider consolidating or archiving inactive channels.',
+        description:
+          'Some channels have low activity. Consider consolidating or archiving inactive channels.',
       });
     }
 
@@ -914,7 +1008,7 @@ return;
   getPeriodDates(
     period: AnalyticsPeriod,
     customStart?: Date,
-    customEnd?: Date,
+    customEnd?: Date
   ): { startDate: Date; endDate: Date } {
     const now = new Date();
     let startDate: Date;
@@ -942,7 +1036,8 @@ return;
         startDate.setFullYear(now.getFullYear() - 1);
         break;
       case 'custom':
-        startDate = customStart ?? new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        startDate =
+          customStart ?? new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         endDate = customEnd ?? now;
         break;
       default:
@@ -961,7 +1056,9 @@ return;
     const key = ANALYTICS_REDIS_KEYS.dailyEvents(workspaceId, today);
 
     const stats = await this.redis.hgetall(key);
-    return Object.fromEntries(Object.entries(stats).map(([k, v]) => [k, parseInt(v) || 0]));
+    return Object.fromEntries(
+      Object.entries(stats).map(([k, v]) => [k, parseInt(v) || 0])
+    );
   }
 
   /**
@@ -989,7 +1086,9 @@ return;
 /**
  * Create a new AnalyticsService instance
  */
-export function createAnalyticsService(config: AnalyticsServiceConfig): AnalyticsService {
+export function createAnalyticsService(
+  config: AnalyticsServiceConfig
+): AnalyticsService {
   return new AnalyticsServiceImpl(config);
 }
 
@@ -999,12 +1098,16 @@ let analyticsServiceInstance: AnalyticsService | null = null;
 /**
  * Get or create the singleton AnalyticsService instance
  */
-export function getAnalyticsService(config?: AnalyticsServiceConfig): AnalyticsService {
+export function getAnalyticsService(
+  config?: AnalyticsServiceConfig
+): AnalyticsService {
   if (!analyticsServiceInstance && config) {
     analyticsServiceInstance = createAnalyticsService(config);
   }
   if (!analyticsServiceInstance) {
-    throw new AnalyticsError('AnalyticsService not initialized. Provide config on first call.');
+    throw new AnalyticsError(
+      'AnalyticsService not initialized. Provide config on first call.'
+    );
   }
   return analyticsServiceInstance;
 }

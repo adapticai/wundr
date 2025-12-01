@@ -1,10 +1,9 @@
 # Documentation Conventions
 
-**Version**: 1.0.0
-**Last Updated**: 2024-11-21
-**Category**: Documentation
+**Version**: 1.0.0 **Last Updated**: 2024-11-21 **Category**: Documentation
 
-This document defines documentation standards, comment guidelines, and MCP tool integration for documentation quality.
+This document defines documentation standards, comment guidelines, and MCP tool integration for
+documentation quality.
 
 ---
 
@@ -24,7 +23,7 @@ This document defines documentation standards, comment guidelines, and MCP tool 
 
 ### Core Principles
 
-1. **Document the Why, Not the What**: Code shows *what*, docs explain *why*
+1. **Document the Why, Not the What**: Code shows _what_, docs explain _why_
 2. **Keep It Close**: Documentation should live near the code
 3. **Keep It Updated**: Outdated docs are worse than no docs
 4. **Be Concise**: Clear and brief over verbose and detailed
@@ -32,14 +31,14 @@ This document defines documentation standards, comment guidelines, and MCP tool 
 
 ### Documentation Types
 
-| Type | Purpose | Location |
-|------|---------|----------|
-| Code Comments | Explain complex logic | Inline in code |
-| JSDoc/TSDoc | API documentation | Above functions/classes |
-| README | Project overview | Root directory |
-| Architecture Docs | System design | `/docs/architecture/` |
-| API Docs | Endpoint reference | `/docs/api/` |
-| Guides | How-to tutorials | `/docs/guides/` |
+| Type              | Purpose               | Location                |
+| ----------------- | --------------------- | ----------------------- |
+| Code Comments     | Explain complex logic | Inline in code          |
+| JSDoc/TSDoc       | API documentation     | Above functions/classes |
+| README            | Project overview      | Root directory          |
+| Architecture Docs | System design         | `/docs/architecture/`   |
+| API Docs          | Endpoint reference    | `/docs/api/`            |
+| Guides            | How-to tutorials      | `/docs/guides/`         |
 
 ---
 
@@ -48,6 +47,7 @@ This document defines documentation standards, comment guidelines, and MCP tool 
 ### When to Comment
 
 **DO comment:**
+
 - Complex algorithms
 - Business logic reasoning
 - Non-obvious optimizations
@@ -56,6 +56,7 @@ This document defines documentation standards, comment guidelines, and MCP tool 
 - TODO items with tickets
 
 **DON'T comment:**
+
 - Self-explanatory code
 - What the code does (obvious from reading)
 - Redundant information
@@ -64,6 +65,7 @@ This document defines documentation standards, comment guidelines, and MCP tool 
 ### Comment Examples
 
 **Good Comments:**
+
 ```typescript
 // Use binary search because dataset can exceed 100k items
 // and linear search would cause noticeable UI lag
@@ -81,27 +83,29 @@ const legacySpacing = { marginRight: '8px' };
 ```
 
 **Bad Comments:**
+
 ```typescript
 // Loop through users
-for (const user of users) { }
+for (const user of users) {
+}
 
 // Set the name to John
 const name = 'John';
 
 // This function gets the user
-function getUser(id: string): User { }
+function getUser(id: string): User {}
 ```
 
 ### Comment Tags
 
-| Tag | Purpose | Example |
-|-----|---------|---------|
-| `TODO` | Future work needed | `// TODO(#123): Add caching` |
-| `FIXME` | Known bug to fix | `// FIXME: Race condition here` |
-| `HACK` | Temporary workaround | `// HACK: Browser bug workaround` |
-| `NOTE` | Important information | `// NOTE: Order matters here` |
-| `SECURITY` | Security consideration | `// SECURITY: Input validation` |
-| `PERF` | Performance note | `// PERF: O(n) complexity` |
+| Tag        | Purpose                | Example                           |
+| ---------- | ---------------------- | --------------------------------- |
+| `TODO`     | Future work needed     | `// TODO(#123): Add caching`      |
+| `FIXME`    | Known bug to fix       | `// FIXME: Race condition here`   |
+| `HACK`     | Temporary workaround   | `// HACK: Browser bug workaround` |
+| `NOTE`     | Important information  | `// NOTE: Order matters here`     |
+| `SECURITY` | Security consideration | `// SECURITY: Input validation`   |
+| `PERF`     | Performance note       | `// PERF: O(n) complexity`        |
 
 ---
 
@@ -109,7 +113,7 @@ function getUser(id: string): User { }
 
 ### Function Documentation
 
-```typescript
+````typescript
 /**
  * Calculates the total price of items including tax and discounts.
  *
@@ -129,17 +133,14 @@ function getUser(id: string): User { }
  * // Returns: 216 (200 + 8% tax)
  * ```
  */
-export function calculateTotal(
-  items: Item[],
-  options?: CalculationOptions
-): number {
+export function calculateTotal(items: Item[], options?: CalculationOptions): number {
   // Implementation
 }
-```
+````
 
 ### Class Documentation
 
-```typescript
+````typescript
 /**
  * Service for managing user operations.
  *
@@ -176,7 +177,7 @@ export class UserService {
     // Implementation
   }
 }
-```
+````
 
 ### Interface Documentation
 
@@ -230,9 +231,7 @@ export type UserStatus = 'pending' | 'active' | 'suspended' | 'deleted';
  * @typeParam T - The success value type
  * @typeParam E - The error type (defaults to Error)
  */
-export type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+export type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };
 ```
 
 ---
@@ -241,7 +240,7 @@ export type Result<T, E = Error> =
 
 ### README Structure
 
-```markdown
+````markdown
 # Project Name
 
 Brief description of the project (1-2 sentences).
@@ -257,6 +256,7 @@ Brief description of the project (1-2 sentences).
 ```bash
 npm install project-name
 ```
+````
 
 ## Quick Start
 
@@ -274,8 +274,8 @@ const result = Something.doThing();
 
 ## Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option    | Type   | Default   | Description |
+| --------- | ------ | --------- | ----------- |
 | `option1` | string | 'default' | Description |
 
 ## Contributing
@@ -285,7 +285,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 ## License
 
 MIT License - see [LICENSE](./LICENSE)
-```
+
+````
 
 ### README Best Practices
 
@@ -331,26 +332,26 @@ paths:
             type: integer
             default: 1
             minimum: 1
-```
+````
 
 ### Endpoint Documentation Template
 
-```markdown
+````markdown
 ## GET /api/users/:id
 
 Retrieves a user by their unique identifier.
 
 ### Parameters
 
-| Name | Type | In | Required | Description |
-|------|------|----|----------|-------------|
-| id | string | path | Yes | User's unique identifier |
+| Name | Type   | In   | Required | Description              |
+| ---- | ------ | ---- | -------- | ------------------------ |
+| id   | string | path | Yes      | User's unique identifier |
 
 ### Headers
 
-| Name | Required | Description |
-|------|----------|-------------|
-| Authorization | Yes | Bearer token |
+| Name          | Required | Description  |
+| ------------- | -------- | ------------ |
+| Authorization | Yes      | Bearer token |
 
 ### Response
 
@@ -366,6 +367,7 @@ Retrieves a user by their unique identifier.
   }
 }
 ```
+````
 
 #### 404 Not Found
 
@@ -385,7 +387,8 @@ Retrieves a user by their unique identifier.
 curl -X GET https://api.example.com/users/123 \
   -H "Authorization: Bearer your-token"
 ```
-```
+
+````
 
 ---
 
@@ -422,7 +425,7 @@ We will use PostgreSQL as our primary database.
 ## Alternatives Considered
 - MongoDB: Rejected due to ACID requirements
 - MySQL: Rejected due to JSON support limitations
-```
+````
 
 ### System Design Document
 
@@ -430,30 +433,36 @@ We will use PostgreSQL as our primary database.
 # User Authentication System
 
 ## Overview
+
 High-level description of the system.
 
 ## Architecture Diagram
+
 [Include diagram or link]
 
 ## Components
 
 ### Auth Service
+
 - Purpose: Handle authentication requests
 - Technology: Node.js, Express
 - Dependencies: Redis, PostgreSQL
 
 ### Token Service
+
 - Purpose: Manage JWT tokens
 - Technology: Node.js
 - Dependencies: Redis
 
 ## Data Flow
+
 1. User submits credentials
 2. Auth service validates against PostgreSQL
 3. Token service generates JWT
 4. Token stored in Redis for validation
 
 ## Security Considerations
+
 - Tokens expire after 1 hour
 - Refresh tokens valid for 7 days
 - Rate limiting on auth endpoints
@@ -466,6 +475,7 @@ High-level description of the system.
 ### Documentation Quality
 
 **Generate Claude Configuration:**
+
 ```javascript
 // Generate CLAUDE.md with project guidelines
 mcp__wundr__claude_config {
@@ -485,6 +495,7 @@ mcp__wundr__claude_config {
 ```
 
 **Documentation in Quality Reports:**
+
 ```javascript
 // Quality report includes documentation metrics
 mcp__wundr__governance_report {
@@ -501,6 +512,7 @@ mcp__wundr__governance_report {
 ### Documentation Workflows
 
 **Project Setup Documentation:**
+
 ```javascript
 // Generate all Claude Code configuration
 [BatchTool]:
@@ -524,6 +536,7 @@ mcp__wundr__governance_report {
 ```
 
 **Weekly Documentation Review:**
+
 ```javascript
 // Documentation quality check
 [BatchTool]:
@@ -547,6 +560,7 @@ mcp__wundr__governance_report {
 ### Documentation Automation
 
 **Auto-generate Documentation:**
+
 ```javascript
 // After code changes, update documentation
 mcp__wundr__claude_config {
@@ -555,6 +569,7 @@ mcp__wundr__claude_config {
 ```
 
 **Pre-release Documentation Check:**
+
 ```javascript
 // Ensure documentation is complete before release
 [BatchTool]:

@@ -2,11 +2,14 @@
 
 ## Overview
 
-The Wundr platform deployment architecture is designed for high availability, scalability, and security across multiple environments. This document outlines the complete deployment strategy, infrastructure requirements, and operational procedures.
+The Wundr platform deployment architecture is designed for high availability, scalability, and
+security across multiple environments. This document outlines the complete deployment strategy,
+infrastructure requirements, and operational procedures.
 
 ## Architecture Principles
 
 ### Core Principles
+
 - **Cloud-Native**: Containerized applications with Kubernetes orchestration
 - **High Availability**: Multi-region deployment with automatic failover
 - **Scalability**: Horizontal scaling based on demand
@@ -15,6 +18,7 @@ The Wundr platform deployment architecture is designed for high availability, sc
 - **Cost Optimization**: Efficient resource utilization
 
 ### Infrastructure Patterns
+
 - **Microservices Architecture**: Independently deployable services
 - **Infrastructure as Code**: Terraform and Helm for reproducible deployments
 - **GitOps**: Automated deployment pipelines with ArgoCD
@@ -24,6 +28,7 @@ The Wundr platform deployment architecture is designed for high availability, sc
 ## Environment Strategy
 
 ### Development Environment
+
 ```yaml
 # Local development stack
 development:
@@ -36,6 +41,7 @@ development:
 ```
 
 ### Staging Environment
+
 ```yaml
 # Staging environment (GCP)
 staging:
@@ -49,6 +55,7 @@ staging:
 ```
 
 ### Production Environment
+
 ```yaml
 # Production environment (Multi-cloud)
 production:
@@ -66,6 +73,7 @@ production:
 ## Container Architecture
 
 ### Application Containers
+
 ```dockerfile
 # Multi-stage build for optimal image size
 FROM node:18-alpine AS builder
@@ -85,24 +93,25 @@ CMD ["npm", "start"]
 ```
 
 ### Service Images
+
 ```yaml
 # Container registry strategy
 images:
-  api-gateway: 
+  api-gateway:
     registry: gcr.io/wundr-platform/api-gateway
     size: ~200MB
     security: Distroless base image
-    
+
   analysis-engine:
-    registry: gcr.io/wundr-platform/analysis-engine  
+    registry: gcr.io/wundr-platform/analysis-engine
     size: ~300MB
     security: Distroless base image
-    
+
   setup-toolkit:
     registry: gcr.io/wundr-platform/setup-toolkit
     size: ~250MB
     security: Alpine Linux base
-    
+
   web-client:
     registry: gcr.io/wundr-platform/web-client
     size: ~150MB
@@ -112,6 +121,7 @@ images:
 ## Kubernetes Configuration
 
 ### Cluster Architecture
+
 ```yaml
 # GKE cluster configuration
 apiVersion: container.v1
@@ -128,7 +138,7 @@ spec:
         diskType: pd-ssd
         labels:
           workload-type: system
-          
+
     - name: compute-pool
       initialNodeCount: 3
       autoscaling:
@@ -139,7 +149,7 @@ spec:
         machineType: c2-standard-8
         labels:
           workload-type: compute
-          
+
     - name: memory-pool
       initialNodeCount: 2
       autoscaling:
@@ -155,6 +165,7 @@ spec:
 ### Service Deployment Manifests
 
 #### API Gateway
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -173,40 +184,40 @@ spec:
         version: v1
     spec:
       containers:
-      - name: api-gateway
-        image: gcr.io/wundr-platform/api-gateway:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: database-credentials
-              key: url
-        - name: REDIS_URL
-          valueFrom:
-            secretKeyRef:
-              name: redis-credentials
-              key: url
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: api-gateway
+          image: gcr.io/wundr-platform/api-gateway:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: url
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1Gi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -217,12 +228,13 @@ spec:
   selector:
     app: api-gateway
   ports:
-  - port: 80
-    targetPort: 8080
+    - port: 80
+      targetPort: 8080
   type: ClusterIP
 ```
 
 #### Analysis Engine
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -242,32 +254,33 @@ spec:
       nodeSelector:
         workload-type: compute
       containers:
-      - name: analysis-engine
-        image: gcr.io/wundr-platform/analysis-engine:latest
-        ports:
-        - containerPort: 8081
-        env:
-        - name: WORKER_CONCURRENCY
-          value: "4"
-        - name: MAX_MEMORY
-          value: "2Gi"
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: "1"
-          limits:
-            memory: "4Gi"
-            cpu: "2"
-        volumeMounts:
-        - name: analysis-cache
-          mountPath: /tmp/analysis
+        - name: analysis-engine
+          image: gcr.io/wundr-platform/analysis-engine:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: WORKER_CONCURRENCY
+              value: '4'
+            - name: MAX_MEMORY
+              value: '2Gi'
+          resources:
+            requests:
+              memory: '2Gi'
+              cpu: '1'
+            limits:
+              memory: '4Gi'
+              cpu: '2'
+          volumeMounts:
+            - name: analysis-cache
+              mountPath: /tmp/analysis
       volumes:
-      - name: analysis-cache
-        emptyDir:
-          sizeLimit: 5Gi
+        - name: analysis-cache
+          emptyDir:
+            sizeLimit: 5Gi
 ```
 
 ### Horizontal Pod Autoscaling
+
 ```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -282,79 +295,82 @@ spec:
   minReplicas: 3
   maxReplicas: 20
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 10
-        periodSeconds: 60
+        - type: Percent
+          value: 10
+          periodSeconds: 60
 ```
 
 ## Database Deployment
 
 ### PostgreSQL Configuration
+
 ```yaml
 # Cloud SQL (GCP) configuration
 database:
-  instance_type: db-custom-8-32768  # 8 vCPU, 32 GB RAM
+  instance_type: db-custom-8-32768 # 8 vCPU, 32 GB RAM
   storage:
     type: SSD
     size: 1000 GB
     auto_resize: true
   backup:
     enabled: true
-    start_time: "03:00"
+    start_time: '03:00'
     retention_days: 7
     point_in_time_recovery: true
   high_availability:
     enabled: true
     type: REGIONAL
   maintenance:
-    window: "sun:04:00"
+    window: 'sun:04:00'
     update_track: canary
   flags:
-    max_connections: "200"
-    shared_preload_libraries: "pg_stat_statements"
-    log_statement: "all"
+    max_connections: '200'
+    shared_preload_libraries: 'pg_stat_statements'
+    log_statement: 'all'
 ```
 
 ### Redis Configuration
+
 ```yaml
 # Cloud Memorystore configuration
 redis:
-  tier: STANDARD_HA  # High availability
-  memory_size: 16    # 16 GB
+  tier: STANDARD_HA # High availability
+  memory_size: 16 # 16 GB
   version: REDIS_6_X
   connect_mode: DIRECT_PEERING
   auth_enabled: true
   transit_encryption_mode: SERVER_AUTHENTICATION
   persistence:
     rdb_snapshot_period: TWENTY_FOUR_HOURS
-    rdb_snapshot_start_time: "02:00"
+    rdb_snapshot_start_time: '02:00'
 ```
 
 ## Load Balancing and Traffic Management
 
 ### Ingress Configuration
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -365,33 +381,34 @@ metadata:
     kubernetes.io/ingress.global-static-ip-name: wundr-platform-ip
     networking.gke.io/managed-certificates: wundr-ssl-cert
     kubernetes.io/ingress.class: gce
-    nginx.ingress.kubernetes.io/rate-limit: "100"
-    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit: '100'
+    nginx.ingress.kubernetes.io/rate-limit-window: '1m'
 spec:
   rules:
-  - host: api.wundr.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: api-gateway-service
-            port:
-              number: 80
-  - host: app.wundr.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: web-client-service
-            port:
-              number: 80
+    - host: api.wundr.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 80
+    - host: app.wundr.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-client-service
+                port:
+                  number: 80
 ```
 
 ### Service Mesh (Istio)
+
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -399,38 +416,39 @@ metadata:
   name: wundr-platform-vs
 spec:
   hosts:
-  - api.wundr.io
+    - api.wundr.io
   http:
-  - match:
-    - uri:
-        prefix: "/v1/analysis"
-    route:
-    - destination:
-        host: analysis-engine-service
-        port:
-          number: 8081
-    timeout: 30s
-    retries:
-      attempts: 3
-      perTryTimeout: 10s
-  - match:
-    - uri:
-        prefix: "/v1"
-    route:
-    - destination:
-        host: api-gateway-service
-        port:
-          number: 80
-    fault:
-      delay:
-        percentage:
-          value: 0.1
-        fixedDelay: 5s
+    - match:
+        - uri:
+            prefix: '/v1/analysis'
+      route:
+        - destination:
+            host: analysis-engine-service
+            port:
+              number: 8081
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+    - match:
+        - uri:
+            prefix: '/v1'
+      route:
+        - destination:
+            host: api-gateway-service
+            port:
+              number: 80
+      fault:
+        delay:
+          percentage:
+            value: 0.1
+          fixedDelay: 5s
 ```
 
 ## CI/CD Pipeline
 
 ### GitHub Actions Workflow
+
 ```yaml
 name: Deploy to Production
 
@@ -449,65 +467,65 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run tests
-      run: npm run test:ci
-    
-    - name: Run security audit
-      run: npm audit --audit-level high
-    
-    - name: Build application
-      run: npm run build
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Run security audit
+        run: npm audit --audit-level high
+
+      - name: Build application
+        run: npm run build
 
   build-images:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ env.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-    
-    - name: Configure Docker
-      run: gcloud auth configure-docker
-    
-    - name: Build and push images
-      run: |
-        docker build -t gcr.io/$GCP_PROJECT_ID/api-gateway:$GITHUB_SHA ./apps/api-gateway
-        docker build -t gcr.io/$GCP_PROJECT_ID/analysis-engine:$GITHUB_SHA ./apps/analysis-engine
-        docker build -t gcr.io/$GCP_PROJECT_ID/web-client:$GITHUB_SHA ./apps/web-client
-        
-        docker push gcr.io/$GCP_PROJECT_ID/api-gateway:$GITHUB_SHA
-        docker push gcr.io/$GCP_PROJECT_ID/analysis-engine:$GITHUB_SHA
-        docker push gcr.io/$GCP_PROJECT_ID/web-client:$GITHUB_SHA
+      - uses: actions/checkout@v3
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Build and push images
+        run: |
+          docker build -t gcr.io/$GCP_PROJECT_ID/api-gateway:$GITHUB_SHA ./apps/api-gateway
+          docker build -t gcr.io/$GCP_PROJECT_ID/analysis-engine:$GITHUB_SHA ./apps/analysis-engine
+          docker build -t gcr.io/$GCP_PROJECT_ID/web-client:$GITHUB_SHA ./apps/web-client
+
+          docker push gcr.io/$GCP_PROJECT_ID/api-gateway:$GITHUB_SHA
+          docker push gcr.io/$GCP_PROJECT_ID/analysis-engine:$GITHUB_SHA
+          docker push gcr.io/$GCP_PROJECT_ID/web-client:$GITHUB_SHA
 
   deploy-staging:
     needs: build-images
     runs-on: ubuntu-latest
     environment: staging
     steps:
-    - name: Deploy to staging
-      run: |
-        gcloud container clusters get-credentials wundr-staging --zone us-central1
-        kubectl set image deployment/api-gateway api-gateway=gcr.io/$GCP_PROJECT_ID/api-gateway:$GITHUB_SHA
-        kubectl rollout status deployment/api-gateway
-    
-    - name: Run integration tests
-      run: npm run test:integration
+      - name: Deploy to staging
+        run: |
+          gcloud container clusters get-credentials wundr-staging --zone us-central1
+          kubectl set image deployment/api-gateway api-gateway=gcr.io/$GCP_PROJECT_ID/api-gateway:$GITHUB_SHA
+          kubectl rollout status deployment/api-gateway
+
+      - name: Run integration tests
+        run: npm run test:integration
 
   deploy-production:
     needs: deploy-staging
@@ -515,27 +533,28 @@ jobs:
     environment: production
     if: github.ref == 'refs/heads/main'
     steps:
-    - name: Blue-Green Deployment
-      run: |
-        # Deploy to green environment
-        helm upgrade --install wundr-green ./helm/wundr-platform \
-          --namespace wundr-platform-green \
-          --set image.tag=$GITHUB_SHA \
-          --set environment=production-green
-        
-        # Health checks
-        kubectl wait --for=condition=available --timeout=300s deployment/api-gateway -n wundr-platform-green
-        
-        # Switch traffic
-        kubectl patch service wundr-platform-service -p '{"spec":{"selector":{"environment":"production-green"}}}'
-        
-        # Cleanup old environment after successful deployment
-        helm uninstall wundr-blue --namespace wundr-platform-blue || true
+      - name: Blue-Green Deployment
+        run: |
+          # Deploy to green environment
+          helm upgrade --install wundr-green ./helm/wundr-platform \
+            --namespace wundr-platform-green \
+            --set image.tag=$GITHUB_SHA \
+            --set environment=production-green
+
+          # Health checks
+          kubectl wait --for=condition=available --timeout=300s deployment/api-gateway -n wundr-platform-green
+
+          # Switch traffic
+          kubectl patch service wundr-platform-service -p '{"spec":{"selector":{"environment":"production-green"}}}'
+
+          # Cleanup old environment after successful deployment
+          helm uninstall wundr-blue --namespace wundr-platform-blue || true
 ```
 
 ## Infrastructure as Code
 
 ### Terraform Configuration
+
 ```hcl
 # terraform/main.tf
 provider "google" {
@@ -621,7 +640,7 @@ resource "google_sql_database_instance" "postgres" {
 
   settings {
     tier = "db-custom-8-32768"
-    
+
     disk_size       = 100
     disk_type       = "PD_SSD"
     disk_autoresize = true
@@ -630,7 +649,7 @@ resource "google_sql_database_instance" "postgres" {
       enabled                        = true
       start_time                     = "03:00"
       point_in_time_recovery_enabled = true
-      
+
       backup_retention_settings {
         retained_backups = 7
         retention_unit   = "COUNT"
@@ -662,6 +681,7 @@ resource "google_sql_database_instance" "postgres" {
 ## Monitoring and Observability
 
 ### Prometheus Configuration
+
 ```yaml
 # prometheus/values.yaml
 prometheus:
@@ -669,17 +689,17 @@ prometheus:
     retention: 30d
     resources:
       requests:
-        memory: "4Gi"
-        cpu: "2"
+        memory: '4Gi'
+        cpu: '2'
       limits:
-        memory: "8Gi"
-        cpu: "4"
-    
+        memory: '8Gi'
+        cpu: '4'
+
     storageSpec:
       volumeClaimTemplate:
         spec:
           storageClassName: fast-ssd
-          accessModes: ["ReadWriteOnce"]
+          accessModes: ['ReadWriteOnce']
           resources:
             requests:
               storage: 100Gi
@@ -689,18 +709,19 @@ grafana:
   persistence:
     enabled: true
     size: 10Gi
-  
+
   datasources:
     datasources.yaml:
       datasources:
-      - name: Prometheus
-        type: prometheus
-        url: http://prometheus-server:80
-        access: proxy
-        isDefault: true
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus-server:80
+          access: proxy
+          isDefault: true
 ```
 
 ### Application Metrics
+
 ```yaml
 # ServiceMonitor for application metrics
 apiVersion: monitoring.coreos.com/v1
@@ -712,45 +733,47 @@ spec:
     matchLabels:
       app: api-gateway
   endpoints:
-  - port: metrics
-    path: /metrics
-    interval: 30s
+    - port: metrics
+      path: /metrics
+      interval: 30s
 ```
 
 ### Alerting Rules
+
 ```yaml
 # prometheus-rules.yaml
 groups:
-- name: wundr-platform
-  rules:
-  - alert: HighErrorRate
-    expr: |
-      (
-        sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
-        /
-        sum(rate(http_requests_total[5m])) by (service)
-      ) > 0.05
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: "High error rate detected"
-      description: "Service {{ $labels.service }} has error rate above 5%"
+  - name: wundr-platform
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'High error rate detected'
+          description: 'Service {{ $labels.service }} has error rate above 5%'
 
-  - alert: HighLatency
-    expr: |
-      histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, le)) > 1
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "High latency detected"
-      description: "Service {{ $labels.service }} has 95th percentile latency above 1s"
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High latency detected'
+          description: 'Service {{ $labels.service }} has 95th percentile latency above 1s'
 ```
 
 ## Security Configuration
 
 ### Network Policies
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -762,34 +785,35 @@ spec:
     matchLabels:
       app: api-gateway
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: ingress-nginx
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
   egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app: analysis-engine
-    ports:
-    - protocol: TCP
-      port: 8081
-  - to:
-    - podSelector:
-        matchLabels:
-          app: postgres
-    ports:
-    - protocol: TCP
-      port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: analysis-engine
+      ports:
+        - protocol: TCP
+          port: 8081
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
 ```
 
 ### Pod Security Standards
+
 ```yaml
 apiVersion: v1
 kind: Namespace
@@ -804,6 +828,7 @@ metadata:
 ## Disaster Recovery
 
 ### Backup Strategy
+
 ```yaml
 # Velero backup configuration
 apiVersion: velero.io/v1
@@ -811,17 +836,18 @@ kind: Schedule
 metadata:
   name: daily-backup
 spec:
-  schedule: "0 2 * * *"  # Daily at 2 AM
+  schedule: '0 2 * * *' # Daily at 2 AM
   template:
     includedNamespaces:
-    - wundr-platform
+      - wundr-platform
     storageLocation: default
     volumeSnapshotLocations:
-    - default
-    ttl: "168h"  # 7 days retention
+      - default
+    ttl: '168h' # 7 days retention
 ```
 
 ### Recovery Procedures
+
 ```bash
 #!/bin/bash
 # disaster-recovery.sh
@@ -839,4 +865,5 @@ kubectl exec -it deployment/api-gateway -- npm run db:migrate
 kubectl exec -it deployment/api-gateway -- npm run test:smoke
 ```
 
-This deployment architecture provides a robust, scalable, and secure foundation for the Wundr platform with comprehensive operational procedures and monitoring capabilities.
+This deployment architecture provides a robust, scalable, and secure foundation for the Wundr
+platform with comprehensive operational procedures and monitoring capabilities.

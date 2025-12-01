@@ -268,37 +268,44 @@ export interface RequestDataExportInput {
 /**
  * Type guard to check if a value is a valid RetentionResourceType.
  */
-export function isRetentionResourceType(value: unknown): value is RetentionResourceType {
-  return typeof value === 'string' && [
-    'message',
-    'file',
-    'channel',
-    'thread',
-    'reaction',
-    'call_recording',
-    'audit_log',
-    'vp_conversation',
-  ].includes(value);
+export function isRetentionResourceType(
+  value: unknown
+): value is RetentionResourceType {
+  return (
+    typeof value === 'string' &&
+    [
+      'message',
+      'file',
+      'channel',
+      'thread',
+      'reaction',
+      'call_recording',
+      'audit_log',
+      'vp_conversation',
+    ].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a value is a valid RetentionAction.
  */
 export function isRetentionAction(value: unknown): value is RetentionAction {
-  return typeof value === 'string' && ['delete', 'archive', 'anonymize'].includes(value);
+  return (
+    typeof value === 'string' &&
+    ['delete', 'archive', 'anonymize'].includes(value)
+  );
 }
 
 /**
  * Type guard to check if a value is a valid RetentionJobStatus.
  */
-export function isRetentionJobStatus(value: unknown): value is RetentionJobStatus {
-  return typeof value === 'string' && [
-    'pending',
-    'running',
-    'completed',
-    'failed',
-    'cancelled',
-  ].includes(value);
+export function isRetentionJobStatus(
+  value: unknown
+): value is RetentionJobStatus {
+  return (
+    typeof value === 'string' &&
+    ['pending', 'running', 'completed', 'failed', 'cancelled'].includes(value)
+  );
 }
 
 /**
@@ -306,8 +313,8 @@ export function isRetentionJobStatus(value: unknown): value is RetentionJobStatu
  */
 export function isRetentionPolicy(value: unknown): value is RetentionPolicy {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const policy = value as Record<string, unknown>;
   return (
     typeof policy.id === 'string' &&
@@ -324,8 +331,8 @@ return false;
  */
 export function isLegalHold(value: unknown): value is LegalHold {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const hold = value as Record<string, unknown>;
   return (
     typeof hold.id === 'string' &&

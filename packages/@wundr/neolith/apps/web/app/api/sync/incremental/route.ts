@@ -21,7 +21,11 @@ import {
   NOTIFICATION_ERROR_CODES,
 } from '@/lib/validations/notification';
 
-import type { IncrementalSyncInput, SyncEntity, SyncResponse } from '@/lib/validations/notification';
+import type {
+  IncrementalSyncInput,
+  SyncEntity,
+  SyncResponse,
+} from '@/lib/validations/notification';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -50,7 +54,11 @@ function parseSyncToken(token: string): Date | null {
 /**
  * Default entities for incremental sync
  */
-const DEFAULT_ENTITIES: SyncEntity[] = ['messages', 'channels', 'notifications'];
+const DEFAULT_ENTITIES: SyncEntity[] = [
+  'messages',
+  'channels',
+  'notifications',
+];
 
 /**
  * Maximum items per entity for incremental sync
@@ -102,8 +110,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createNotificationErrorResponse('Authentication required', NOTIFICATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createNotificationErrorResponse(
+          'Authentication required',
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -113,8 +124,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createNotificationErrorResponse('Invalid JSON body', NOTIFICATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createNotificationErrorResponse(
+          'Invalid JSON body',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -125,9 +139,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -139,9 +153,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Invalid sync token',
-          NOTIFICATION_ERROR_CODES.SYNC_ERROR,
+          NOTIFICATION_ERROR_CODES.SYNC_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -177,8 +191,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           // Separate by creation time relative to last sync
-          const created = messages.filter((m) => m.createdAt > lastSyncAt);
-          const updated = messages.filter((m) => m.createdAt <= lastSyncAt);
+          const created = messages.filter(m => m.createdAt > lastSyncAt);
+          const updated = messages.filter(m => m.createdAt <= lastSyncAt);
 
           // Get recently deleted messages
           const deletedMessages = await prisma.message.findMany({
@@ -196,7 +210,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             entity: 'messages',
             created,
             updated,
-            deleted: deletedMessages.map((m) => m.id),
+            deleted: deletedMessages.map(m => m.id),
           });
           break;
         }
@@ -215,8 +229,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           });
 
-          const created = channels.filter((c) => c.createdAt > lastSyncAt);
-          const updated = channels.filter((c) => c.createdAt <= lastSyncAt);
+          const created = channels.filter(c => c.createdAt > lastSyncAt);
+          const updated = channels.filter(c => c.createdAt <= lastSyncAt);
 
           // Check for removed memberships (user left or was removed)
           const removedMemberships = await prisma.channelMember.findMany({
@@ -231,7 +245,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             entity: 'channels',
             created,
             updated,
-            deleted: removedMemberships.map((m) => m.channelId),
+            deleted: removedMemberships.map(m => m.channelId),
           });
           break;
         }
@@ -281,8 +295,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             orderBy: { updatedAt: 'desc' },
           });
 
-          const created = notifications.filter((n) => n.createdAt > lastSyncAt);
-          const updated = notifications.filter((n) => n.createdAt <= lastSyncAt);
+          const created = notifications.filter(n => n.createdAt > lastSyncAt);
+          const updated = notifications.filter(n => n.createdAt <= lastSyncAt);
 
           changes.push({
             entity: 'notifications',
@@ -303,8 +317,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             orderBy: { updatedAt: 'desc' },
           });
 
-          const created = workspaces.filter((w) => w.createdAt > lastSyncAt);
-          const updated = workspaces.filter((w) => w.createdAt <= lastSyncAt);
+          const created = workspaces.filter(w => w.createdAt > lastSyncAt);
+          const updated = workspaces.filter(w => w.createdAt <= lastSyncAt);
 
           changes.push({
             entity: 'workspaces',
@@ -319,9 +333,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check if there might be more changes
     const hasMore = changes.some(
-      (c) =>
+      c =>
         c.created.length >= INCREMENTAL_LIMIT ||
-        c.updated.length >= INCREMENTAL_LIMIT,
+        c.updated.length >= INCREMENTAL_LIMIT
     );
 
     // Generate new sync token
@@ -366,9 +380,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

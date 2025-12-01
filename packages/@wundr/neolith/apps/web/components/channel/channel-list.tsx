@@ -33,7 +33,11 @@ import {
 
 import { CreateChannelDialog } from './create-channel-dialog';
 
-import type { Channel, DirectMessageChannel, DirectMessageParticipant } from '@/types/channel';
+import type {
+  Channel,
+  DirectMessageChannel,
+  DirectMessageParticipant,
+} from '@/types/channel';
 import type { User } from '@/types/chat';
 
 /**
@@ -100,7 +104,10 @@ export function ChannelList({
   onDMStarChange,
   className,
 }: ChannelListProps) {
-  console.log('[ChannelList] Rendered with callbacks:', { hasOnChannelStarChange: !!onChannelStarChange, hasOnDMStarChange: !!onDMStarChange });
+  console.log('[ChannelList] Rendered with callbacks:', {
+    hasOnChannelStarChange: !!onChannelStarChange,
+    hasOnDMStarChange: !!onDMStarChange,
+  });
   const pathname = usePathname();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -110,11 +117,17 @@ export function ChannelList({
     directMessages: true,
   });
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [messageSearchResults, setMessageSearchResults] = useState<MessageSearchResult[]>([]);
+  const [messageSearchResults, setMessageSearchResults] = useState<
+    MessageSearchResult[]
+  >([]);
   const [isSearchingMessages, setIsSearchingMessages] = useState(false);
 
   // Get workspace users for people search
-  const { users: workspaceUsers, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
+  const {
+    users: workspaceUsers,
+    searchUsers,
+    isLoading: isSearchingUsers,
+  } = useWorkspaceUsers(workspaceId);
 
   // Note: Individual DM avatars now use ConnectedUserAvatar which fetches presence internally
 
@@ -141,14 +154,17 @@ export function ChannelList({
         if (response.ok) {
           const data = await response.json();
           // Transform API response to our search result format
-          const results: MessageSearchResult[] = (data.data || []).map((msg: any) => ({
-            id: msg.id,
-            content: msg.content,
-            channelId: msg.channelId,
-            channelName: msg.channel?.name || 'Unknown',
-            authorName: msg.author?.displayName || msg.author?.name || 'Unknown',
-            createdAt: new Date(msg.createdAt),
-          }));
+          const results: MessageSearchResult[] = (data.data || []).map(
+            (msg: any) => ({
+              id: msg.id,
+              content: msg.content,
+              channelId: msg.channelId,
+              channelName: msg.channel?.name || 'Unknown',
+              authorName:
+                msg.author?.displayName || msg.author?.name || 'Unknown',
+              createdAt: new Date(msg.createdAt),
+            })
+          );
           setMessageSearchResults(results);
         }
       } catch {
@@ -162,30 +178,36 @@ export function ChannelList({
   }, [searchQuery, workspaceId]);
 
   // Create DM and navigate to it
-  const handleStartDM = useCallback(async (userId: string) => {
-    try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/dm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
+  const handleStartDM = useCallback(
+    async (userId: string) => {
+      try {
+        const response = await fetch(`/api/workspaces/${workspaceId}/dm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        });
 
-      if (response.ok) {
-        const result = await response.json();
-        router.push(`/${workspaceId}/channels/${result.data.id}`);
-        setSearchQuery('');
+        if (response.ok) {
+          const result = await response.json();
+          router.push(`/${workspaceId}/channels/${result.data.id}`);
+          setSearchQuery('');
+        }
+      } catch (error) {
+        console.error('Failed to create DM:', error);
       }
-    } catch (error) {
-      console.error('Failed to create DM:', error);
-    }
-  }, [workspaceId, router]);
+    },
+    [workspaceId, router]
+  );
 
-  const toggleSection = useCallback((section: keyof typeof expandedSections) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  }, []);
+  const toggleSection = useCallback(
+    (section: keyof typeof expandedSections) => {
+      setExpandedSections(prev => ({
+        ...prev,
+        [section]: !prev[section],
+      }));
+    },
+    []
+  );
 
   // Check if we're in search mode (has query or focused with results)
   const isSearchMode = searchQuery.trim().length > 0;
@@ -197,9 +219,9 @@ export function ChannelList({
     }
     const query = searchQuery.toLowerCase();
     return channels.filter(
-      (c) =>
+      c =>
         c.name.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query),
+        c.description?.toLowerCase().includes(query)
     );
   }, [channels, searchQuery]);
 
@@ -209,9 +231,9 @@ export function ChannelList({
     }
     const query = searchQuery.toLowerCase();
     return starredChannels.filter(
-      (c) =>
+      c =>
         c.name.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query),
+        c.description?.toLowerCase().includes(query)
     );
   }, [starredChannels, searchQuery]);
 
@@ -221,18 +243,18 @@ export function ChannelList({
       return starredDMs;
     }
     const query = searchQuery.toLowerCase();
-    return starredDMs.filter((dm) =>
-      dm.participants.some((p) => p.user?.name?.toLowerCase().includes(query)),
+    return starredDMs.filter(dm =>
+      dm.participants.some(p => p.user?.name?.toLowerCase().includes(query))
     );
   }, [starredDMs, searchQuery]);
 
   // Sort and filter DMs - most recently updated first
   const { selfDM, sortedDMs, filteredDMs } = useMemo(() => {
     // Find self-DM (where isSelfDM is true or only participant is current user)
-    const selfDM = directMessages.find((dm) => {
+    const selfDM = directMessages.find(dm => {
       if (dm.isSelfDM) return true;
       // Check if all participants are the current user
-      const otherParticipants = dm.participants.filter((p) => {
+      const otherParticipants = dm.participants.filter(p => {
         const participantId = (p as any).id || (p as any).user?.id;
         return participantId !== currentUserId;
       });
@@ -240,7 +262,7 @@ export function ChannelList({
     });
 
     // Get all other DMs (excluding self-DM)
-    const otherDMs = directMessages.filter((dm) => dm !== selfDM);
+    const otherDMs = directMessages.filter(dm => dm !== selfDM);
 
     // Sort by most recent activity (lastMessage.createdAt or updatedAt)
     const sorted = [...otherDMs].sort((a, b) => {
@@ -256,8 +278,8 @@ export function ChannelList({
     let filtered = sorted;
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = sorted.filter((dm) =>
-        dm.participants.some((p) => p.user?.name?.toLowerCase().includes(query)),
+      filtered = sorted.filter(dm =>
+        dm.participants.some(p => p.user?.name?.toLowerCase().includes(query))
       );
     }
 
@@ -267,9 +289,11 @@ export function ChannelList({
   // Filter users to exclude those with existing DMs
   const usersWithoutDM = useMemo(() => {
     const dmUserIds = new Set(
-      directMessages.flatMap((dm) => dm.participants.filter((p) => p.user).map((p) => p.user.id))
+      directMessages.flatMap(dm =>
+        dm.participants.filter(p => p.user).map(p => p.user.id)
+      )
     );
-    return workspaceUsers.filter((user) => !dmUserIds.has(user.id));
+    return workspaceUsers.filter(user => !dmUserIds.has(user.id));
   }, [workspaceUsers, directMessages]);
 
   const handleCreateChannel = useCallback(
@@ -287,9 +311,8 @@ export function ChannelList({
         // Keep dialog open on error so user can retry
       }
     },
-    [onCreateChannel],
+    [onCreateChannel]
   );
-
 
   if (isLoading) {
     return <ChannelListSkeleton className={className} />;
@@ -298,17 +321,24 @@ export function ChannelList({
   // Show error state with retry option
   if (error && channels.length === 0 && directMessages.length === 0) {
     return (
-      <div className={cn('flex flex-col items-center justify-center p-6', className)}>
-        <AlertCircleIcon className="h-10 w-10 text-muted-foreground mb-3" />
-        <p className="text-sm font-medium text-foreground mb-1">Failed to load channels</p>
-        <p className="text-xs text-muted-foreground mb-4 text-center">
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center p-6',
+          className
+        )}
+      >
+        <AlertCircleIcon className='h-10 w-10 text-muted-foreground mb-3' />
+        <p className='text-sm font-medium text-foreground mb-1'>
+          Failed to load channels
+        </p>
+        <p className='text-xs text-muted-foreground mb-4 text-center'>
           {error.message || 'An error occurred while loading your channels'}
         </p>
         {onRetry && (
           <button
-            type="button"
+            type='button'
             onClick={onRetry}
-            className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+            className='rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90'
           >
             Try Again
           </button>
@@ -319,24 +349,24 @@ export function ChannelList({
 
   return (
     <div className={cn('flex flex-col', className)}>
-      <div className="flex-1 overflow-y-auto">
+      <div className='flex-1 overflow-y-auto'>
         {/* Search Results Mode */}
         {isSearchMode ? (
-          <div className="px-2">
+          <div className='px-2'>
             {/* Loading indicator */}
             {(isSearchingUsers || isSearchingMessages) && (
-              <div className="flex items-center justify-center py-4">
-                <LoadingSpinner className="h-5 w-5" />
+              <div className='flex items-center justify-center py-4'>
+                <LoadingSpinner className='h-5 w-5' />
               </div>
             )}
 
             {/* Channels Results */}
             {filteredChannels.length > 0 && (
-              <div className="mb-3">
-                <p className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className='mb-3'>
+                <p className='px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                   Channels
                 </p>
-                {filteredChannels.slice(0, 5).map((channel) => (
+                {filteredChannels.slice(0, 5).map(channel => (
                   <ChannelItem
                     key={channel.id}
                     channel={channel}
@@ -349,19 +379,21 @@ export function ChannelList({
 
             {/* Message Results */}
             {messageSearchResults.length > 0 && (
-              <div className="mb-3">
-                <p className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className='mb-3'>
+                <p className='px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                   Messages
                 </p>
-                {messageSearchResults.slice(0, 5).map((result) => (
+                {messageSearchResults.slice(0, 5).map(result => (
                   <Link
                     key={result.id}
                     href={`/${workspaceId}/channels/${result.channelId}?message=${result.id}`}
-                    className="mx-1 flex flex-col gap-0.5 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent"
+                    className='mx-1 flex flex-col gap-0.5 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent'
                     onClick={() => setSearchQuery('')}
                   >
-                    <span className="truncate text-foreground">{result.content}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className='truncate text-foreground'>
+                      {result.content}
+                    </span>
+                    <span className='text-xs text-muted-foreground'>
                       {result.authorName} in #{result.channelName}
                     </span>
                   </Link>
@@ -371,11 +403,11 @@ export function ChannelList({
 
             {/* People Results (existing DMs) */}
             {filteredDMs.length > 0 && (
-              <div className="mb-3">
-                <p className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className='mb-3'>
+                <p className='px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                   Recent Conversations
                 </p>
-                {filteredDMs.slice(0, 5).map((dm) => (
+                {filteredDMs.slice(0, 5).map(dm => (
                   <DirectMessageItem
                     key={dm.id}
                     dm={dm}
@@ -389,11 +421,11 @@ export function ChannelList({
 
             {/* People Results (without existing DMs - can start new) */}
             {usersWithoutDM.length > 0 && (
-              <div className="mb-3">
-                <p className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className='mb-3'>
+                <p className='px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                   People
                 </p>
-                {usersWithoutDM.slice(0, 5).map((user) => (
+                {usersWithoutDM.slice(0, 5).map(user => (
                   <UserSearchItem
                     key={user.id}
                     user={user}
@@ -410,9 +442,11 @@ export function ChannelList({
               filteredDMs.length === 0 &&
               usersWithoutDM.length === 0 &&
               messageSearchResults.length === 0 && (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-muted-foreground">No results found</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                <div className='py-8 text-center'>
+                  <p className='text-sm text-muted-foreground'>
+                    No results found
+                  </p>
+                  <p className='mt-1 text-xs text-muted-foreground'>
                     Try searching for channels, messages, or people
                   </p>
                 </div>
@@ -423,12 +457,12 @@ export function ChannelList({
             {/* Starred Channels and DMs */}
             {(filteredStarred.length > 0 || filteredStarredDMs.length > 0) && (
               <ChannelSection
-                title="Starred"
-                icon={<StarFilledIcon className="h-4 w-4 text-yellow-500" />}
+                title='Starred'
+                icon={<StarFilledIcon className='h-4 w-4 text-yellow-500' />}
                 isExpanded={expandedSections.starred}
                 onToggle={() => toggleSection('starred')}
               >
-                {filteredStarred.map((channel) => (
+                {filteredStarred.map(channel => (
                   <ChannelItem
                     key={channel.id}
                     channel={channel}
@@ -438,13 +472,16 @@ export function ChannelList({
                     onToggleStar={onChannelStarChange}
                   />
                 ))}
-                {filteredStarredDMs.map((dm) => (
+                {filteredStarredDMs.map(dm => (
                   <DirectMessageItem
                     key={dm.id}
                     dm={dm}
                     workspaceId={workspaceId}
                     currentUserId={currentUserId}
-                    isActive={pathname?.includes(`/dm/${dm.id}`) || pathname?.includes(`/channels/${dm.id}`)}
+                    isActive={
+                      pathname?.includes(`/dm/${dm.id}`) ||
+                      pathname?.includes(`/channels/${dm.id}`)
+                    }
                     isStarred={true}
                     onToggleStar={onDMStarChange}
                   />
@@ -454,33 +491,35 @@ export function ChannelList({
 
             {/* Channels */}
             <ChannelSection
-              title="Channels"
+              title='Channels'
               isExpanded={expandedSections.channels}
               onToggle={() => toggleSection('channels')}
               action={
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => setIsCreateDialogOpen(true)}
-                  className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                  title="Create channel"
+                  className='rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
+                  title='Create channel'
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <PlusIcon className='h-4 w-4' />
                 </button>
               }
             >
               {filteredChannels.length === 0 ? (
-                <div className="px-4 py-3">
-                  <p className="text-xs text-muted-foreground">No channels yet</p>
+                <div className='px-4 py-3'>
+                  <p className='text-xs text-muted-foreground'>
+                    No channels yet
+                  </p>
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setIsCreateDialogOpen(true)}
-                    className="mt-2 text-xs text-primary hover:underline"
+                    className='mt-2 text-xs text-primary hover:underline'
                   >
                     Create your first channel
                   </button>
                 </div>
               ) : (
-                filteredChannels.map((channel) => (
+                filteredChannels.map(channel => (
                   <ChannelItem
                     key={channel.id}
                     channel={channel}
@@ -494,25 +533,25 @@ export function ChannelList({
 
             {/* Direct Messages */}
             <ChannelSection
-              title="Direct Messages"
+              title='Direct Messages'
               isExpanded={expandedSections.directMessages}
               onToggle={() => toggleSection('directMessages')}
               action={
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => router.push(`/${workspaceId}/messages/new`)}
-                  className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                  title="New direct message"
+                  className='rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
+                  title='New direct message'
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <PlusIcon className='h-4 w-4' />
                 </button>
               }
             >
               {isLoading ? (
-                <div className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <LoadingSpinner className="h-4 w-4" />
-                    <p className="text-xs text-muted-foreground">Loading...</p>
+                <div className='px-4 py-3'>
+                  <div className='flex items-center gap-2'>
+                    <LoadingSpinner className='h-4 w-4' />
+                    <p className='text-xs text-muted-foreground'>Loading...</p>
                   </div>
                 </div>
               ) : (
@@ -524,32 +563,42 @@ export function ChannelList({
                       dm={selfDM}
                       workspaceId={workspaceId}
                       currentUserId={currentUserId}
-                      isActive={pathname?.includes(`/dm/${selfDM.id}`) || pathname?.includes(`/channels/${selfDM.id}`)}
+                      isActive={
+                        pathname?.includes(`/dm/${selfDM.id}`) ||
+                        pathname?.includes(`/channels/${selfDM.id}`)
+                      }
                       isSelf={true}
                       onToggleStar={onDMStarChange}
-                      />
+                    />
                   )}
 
                   {/* Other DM conversations sorted by most recent */}
-                  {sortedDMs.map((dm) => (
+                  {sortedDMs.map(dm => (
                     <DirectMessageItem
                       key={dm.id}
                       dm={dm}
                       workspaceId={workspaceId}
                       currentUserId={currentUserId}
-                      isActive={pathname?.includes(`/dm/${dm.id}`) || pathname?.includes(`/channels/${dm.id}`)}
+                      isActive={
+                        pathname?.includes(`/dm/${dm.id}`) ||
+                        pathname?.includes(`/channels/${dm.id}`)
+                      }
                       onToggleStar={onDMStarChange}
-                      />
+                    />
                   ))}
 
                   {/* Empty state when no DMs exist */}
                   {!selfDM && sortedDMs.length === 0 && (
-                    <div className="px-4 py-3">
-                      <p className="text-xs text-muted-foreground">No conversations yet</p>
+                    <div className='px-4 py-3'>
+                      <p className='text-xs text-muted-foreground'>
+                        No conversations yet
+                      </p>
                       <button
-                        type="button"
-                        onClick={() => router.push(`/${workspaceId}/messages/new`)}
-                        className="mt-2 text-xs text-primary hover:underline"
+                        type='button'
+                        onClick={() =>
+                          router.push(`/${workspaceId}/messages/new`)
+                        }
+                        className='mt-2 text-xs text-primary hover:underline'
                       >
                         Start a conversation
                       </button>
@@ -569,7 +618,6 @@ export function ChannelList({
         onCreate={handleCreateChannel}
         workspaceId={workspaceId}
       />
-
     </div>
   );
 }
@@ -592,17 +640,17 @@ function ChannelSection({
   children,
 }: ChannelSectionProps) {
   return (
-    <div className="py-1">
-      <div className="flex items-center justify-between py-1">
+    <div className='py-1'>
+      <div className='flex items-center justify-between py-1'>
         <button
-          type="button"
+          type='button'
           onClick={onToggle}
-          className="flex flex-1 items-center gap-1 text-xs font-heading font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          className='flex flex-1 items-center gap-1 text-xs font-heading font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground'
         >
           <ChevronIcon
             className={cn(
               'h-3 w-3 transition-transform',
-              isExpanded ? 'rotate-90' : '',
+              isExpanded ? 'rotate-90' : ''
             )}
           />
           {icon}
@@ -610,7 +658,7 @@ function ChannelSection({
         </button>
         {action}
       </div>
-      {isExpanded && <div className="mt-1">{children}</div>}
+      {isExpanded && <div className='mt-1'>{children}</div>}
     </div>
   );
 }
@@ -627,7 +675,14 @@ interface ChannelItemProps {
   onLeaveChannel?: (channelId: string) => void;
 }
 
-function ChannelItem({ channel, workspaceId, isActive, isStarred, onToggleStar, onLeaveChannel }: ChannelItemProps) {
+function ChannelItem({
+  channel,
+  workspaceId,
+  isActive,
+  isStarred,
+  onToggleStar,
+  onLeaveChannel,
+}: ChannelItemProps) {
   const hasUnread = channel.unreadCount != null && channel.unreadCount > 0;
   const unreadDisplay = channel.unreadCount > 99 ? '99+' : channel.unreadCount;
   const router = useRouter();
@@ -654,7 +709,13 @@ function ChannelItem({ channel, workspaceId, isActive, isStarred, onToggleStar, 
     const currentlyStarred = isStarred ?? channel.isStarred ?? false;
     const newStarredState = !currentlyStarred;
 
-    console.log('[ChannelItem] handleToggleStar called:', { channelId: channel.id, channelName: channel.name, currentlyStarred, newStarredState, hasCallback: !!onToggleStar });
+    console.log('[ChannelItem] handleToggleStar called:', {
+      channelId: channel.id,
+      channelName: channel.name,
+      currentlyStarred,
+      newStarredState,
+      hasCallback: !!onToggleStar,
+    });
 
     // Optimistically update UI immediately
     onToggleStar?.(channel.id, newStarredState);
@@ -698,36 +759,36 @@ function ChannelItem({ channel, workspaceId, isActive, isStarred, onToggleStar, 
             isActive
               ? 'bg-accent text-foreground'
               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-            hasUnread && !isActive && 'font-semibold text-foreground',
+            hasUnread && !isActive && 'font-semibold text-foreground'
           )}
           title={`${channel.name}${channel.description ? ` - ${channel.description}` : ''}`}
         >
-          <ChannelTypeIcon type={channel.type} className="h-4 w-4 shrink-0" />
-          <span className="flex-1 truncate font-sans">{channel.name}</span>
+          <ChannelTypeIcon type={channel.type} className='h-4 w-4 shrink-0' />
+          <span className='flex-1 truncate font-sans'>{channel.name}</span>
           {hasUnread && !isActive && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
+            <span className='flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground'>
               {unreadDisplay}
             </span>
           )}
         </Link>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-56">
+      <ContextMenuContent className='w-56'>
         <ContextMenuItem onClick={handleViewDetails}>
-          <Eye className="mr-2 h-4 w-4" />
+          <Eye className='mr-2 h-4 w-4' />
           View channel details
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger>
-            <Copy className="mr-2 h-4 w-4" />
+            <Copy className='mr-2 h-4 w-4' />
             Copy
           </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
+          <ContextMenuSubContent className='w-48'>
             <ContextMenuItem onClick={handleCopyName}>
-              <Copy className="mr-2 h-4 w-4" />
+              <Copy className='mr-2 h-4 w-4' />
               Copy name
             </ContextMenuItem>
             <ContextMenuItem onClick={handleCopyLink}>
-              <LinkIcon className="mr-2 h-4 w-4" />
+              <LinkIcon className='mr-2 h-4 w-4' />
               Copy link
             </ContextMenuItem>
           </ContextMenuSubContent>
@@ -735,33 +796,36 @@ function ChannelItem({ channel, workspaceId, isActive, isStarred, onToggleStar, 
         <ContextMenuSeparator />
         <ContextMenuSub>
           <ContextMenuSubTrigger>
-            <Bell className="mr-2 h-4 w-4" />
+            <Bell className='mr-2 h-4 w-4' />
             Edit notifications
           </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            <ContextMenuItem>
-              All new posts
-            </ContextMenuItem>
-            <ContextMenuItem>
-              Mentions only
-            </ContextMenuItem>
-            <ContextMenuItem>
-              Nothing
-            </ContextMenuItem>
+          <ContextMenuSubContent className='w-48'>
+            <ContextMenuItem>All new posts</ContextMenuItem>
+            <ContextMenuItem>Mentions only</ContextMenuItem>
+            <ContextMenuItem>Nothing</ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuItem onClick={handleToggleStar}>
-          <Star className={cn('mr-2 h-4 w-4', (isStarred || channel.isStarred) && 'fill-yellow-500 text-yellow-500')} />
+          <Star
+            className={cn(
+              'mr-2 h-4 w-4',
+              (isStarred || channel.isStarred) &&
+                'fill-yellow-500 text-yellow-500'
+            )}
+          />
           {isStarred || channel.isStarred ? 'Unstar channel' : 'Star channel'}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onClick={handleOpenInNewWindow}>
-          <ExternalLink className="mr-2 h-4 w-4" />
+          <ExternalLink className='mr-2 h-4 w-4' />
           Open in new window
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem onClick={handleLeaveChannel} className="text-destructive focus:text-destructive">
-          <LogOut className="mr-2 h-4 w-4" />
+        <ContextMenuItem
+          onClick={handleLeaveChannel}
+          className='text-destructive focus:text-destructive'
+        >
+          <LogOut className='mr-2 h-4 w-4' />
           Leave channel
         </ContextMenuItem>
       </ContextMenuContent>
@@ -799,13 +863,22 @@ interface DirectMessageItemProps {
  *   - Comma-separated names truncated with "..." (e.g., "Candace Wong, Marc Dubois, Mehran...")
  *   - Participant count badge
  */
-function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, isStarred, onToggleStar, onCloseConversation }: DirectMessageItemProps) {
+function DirectMessageItem({
+  dm,
+  workspaceId,
+  currentUserId,
+  isActive,
+  isSelf,
+  isStarred,
+  onToggleStar,
+  onCloseConversation,
+}: DirectMessageItemProps) {
   const hasUnread = dm.unreadCount != null && dm.unreadCount > 0;
   const unreadDisplay = dm.unreadCount > 99 ? '99+' : dm.unreadCount;
   const router = useRouter();
 
   // Filter out current user from participants to get "other" participants
-  const otherParticipants = dm.participants.filter((p) => {
+  const otherParticipants = dm.participants.filter(p => {
     const participantId = p.id || (p as any).user?.id;
     return participantId !== currentUserId;
   });
@@ -835,12 +908,14 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
   let displayName: string;
   if (isSelf || dm.isSelfDM || otherParticipants.length === 0) {
     // Self DM (notes to self) - show "Name (you)" like Slack
-    const selfInfo = dm.participant || (dm.participants[0] ? getParticipantInfo(dm.participants[0]) : null);
+    const selfInfo =
+      dm.participant ||
+      (dm.participants[0] ? getParticipantInfo(dm.participants[0]) : null);
     const selfName = selfInfo?.name || 'You';
     displayName = `${selfName} (you)`;
   } else if (isGroupDM) {
     // Group DM: "Alice, Bob, Carol..." (first names only, truncate if too many)
-    const names = otherParticipants.slice(0, 3).map((p) => {
+    const names = otherParticipants.slice(0, 3).map(p => {
       const info = getParticipantInfo(p);
       // Use first name only for group DMs
       return info.name.split(' ')[0];
@@ -857,11 +932,17 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
   }
 
   // Get first two participants for avatar display
-  const firstParticipant = otherParticipants[0] ? getParticipantInfo(otherParticipants[0]) : null;
-  const secondParticipant = otherParticipants[1] ? getParticipantInfo(otherParticipants[1]) : null;
+  const firstParticipant = otherParticipants[0]
+    ? getParticipantInfo(otherParticipants[0])
+    : null;
+  const secondParticipant = otherParticipants[1]
+    ? getParticipantInfo(otherParticipants[1])
+    : null;
 
   // For self-DM, use the dm.participant or first participant
-  const selfParticipant = dm.participant || (dm.participants[0] ? getParticipantInfo(dm.participants[0]) : null);
+  const selfParticipant =
+    dm.participant ||
+    (dm.participants[0] ? getParticipantInfo(dm.participants[0]) : null);
 
   // Context menu handlers
   const handleCopyLink = useCallback(() => {
@@ -939,34 +1020,45 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
             isActive
               ? 'bg-accent text-foreground'
               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-            hasUnread && !isActive && 'font-semibold text-foreground',
+            hasUnread && !isActive && 'font-semibold text-foreground'
           )}
-          title={otherParticipants.map((p) => getParticipantInfo(p).name).join(', ') || displayName}
+          title={
+            otherParticipants.map(p => getParticipantInfo(p).name).join(', ') ||
+            displayName
+          }
         >
           {/* Avatar section */}
-          <div className={cn('relative shrink-0', isGroupDM ? 'w-8 h-7' : 'w-6')}>
+          <div
+            className={cn('relative shrink-0', isGroupDM ? 'w-8 h-7' : 'w-6')}
+          >
             {isGroupDM && firstParticipant && secondParticipant ? (
               // Group DM: Stacked avatars (Slack-style)
               <>
                 {/* First avatar (back, slightly offset) */}
-                <div className="absolute left-0 top-0 z-10">
+                <div className='absolute left-0 top-0 z-10'>
                   <UserAvatar
-                    user={{ name: firstParticipant.name, avatarUrl: firstParticipant.avatarUrl }}
-                    size="xs"
-                    className="border-2 border-background"
+                    user={{
+                      name: firstParticipant.name,
+                      avatarUrl: firstParticipant.avatarUrl,
+                    }}
+                    size='xs'
+                    className='border-2 border-background'
                   />
                 </div>
                 {/* Second avatar (front, overlapping) */}
-                <div className="absolute left-2.5 top-2 z-20">
+                <div className='absolute left-2.5 top-2 z-20'>
                   <UserAvatar
-                    user={{ name: secondParticipant.name, avatarUrl: secondParticipant.avatarUrl }}
-                    size="xs"
-                    className="border-2 border-background"
+                    user={{
+                      name: secondParticipant.name,
+                      avatarUrl: secondParticipant.avatarUrl,
+                    }}
+                    size='xs'
+                    className='border-2 border-background'
                   />
                 </div>
                 {/* Participant count badge - only show if more than 2 others */}
                 {participantCount > 2 && (
-                  <span className="absolute -right-0.5 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-700 px-1 text-[10px] font-medium text-stone-300 z-30">
+                  <span className='absolute -right-0.5 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-700 px-1 text-[10px] font-medium text-stone-300 z-30'>
                     {participantCount}
                   </span>
                 )}
@@ -975,13 +1067,17 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
               // 1:1 DM: Single avatar with status using ConnectedUserAvatar for real-time presence
               <>
                 <ConnectedUserAvatar
-                  user={{ id: firstParticipant.id, name: firstParticipant.name, image: firstParticipant.avatarUrl }}
-                  size="sm"
+                  user={{
+                    id: firstParticipant.id,
+                    name: firstParticipant.name,
+                    image: firstParticipant.avatarUrl,
+                  }}
+                  size='sm'
                   showPresence
                 />
                 {/* AI/Orchestrator badge */}
                 {firstParticipant.isOrchestrator && (
-                  <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
+                  <span className='absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground'>
                     AI
                   </span>
                 )}
@@ -989,77 +1085,85 @@ function DirectMessageItem({ dm, workspaceId, currentUserId, isActive, isSelf, i
             ) : selfParticipant ? (
               // Self-DM fallback
               <UserAvatar
-                user={{ name: selfParticipant.name, avatarUrl: selfParticipant.avatarUrl }}
-                size="sm"
+                user={{
+                  name: selfParticipant.name,
+                  avatarUrl: selfParticipant.avatarUrl,
+                }}
+                size='sm'
               />
             ) : (
               // Fallback avatar
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
+              <div className='flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium'>
                 ?
               </div>
             )}
           </div>
-          <span className="flex-1 truncate">{displayName}</span>
+          <span className='flex-1 truncate'>{displayName}</span>
           {hasUnread && !isActive && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
+            <span className='flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground'>
               {unreadDisplay}
             </span>
           )}
         </Link>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-56">
+      <ContextMenuContent className='w-56'>
         <ContextMenuItem onClick={handleViewDetails}>
-          <Eye className="mr-2 h-4 w-4" />
+          <Eye className='mr-2 h-4 w-4' />
           View conversation details
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger>
-            <Copy className="mr-2 h-4 w-4" />
+            <Copy className='mr-2 h-4 w-4' />
             Copy
           </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
+          <ContextMenuSubContent className='w-48'>
             <ContextMenuItem onClick={handleCopyLink}>
-              <LinkIcon className="mr-2 h-4 w-4" />
+              <LinkIcon className='mr-2 h-4 w-4' />
               Copy link
             </ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSeparator />
         {!isSelf && !dm.isSelfDM && (
-          <ContextMenuItem onClick={handleHideConversation} className="text-destructive focus:text-destructive">
-            <EyeOff className="mr-2 h-4 w-4" />
+          <ContextMenuItem
+            onClick={handleHideConversation}
+            className='text-destructive focus:text-destructive'
+          >
+            <EyeOff className='mr-2 h-4 w-4' />
             Hide {primaryParticipantName.split(' ')[0]}
           </ContextMenuItem>
         )}
         <ContextMenuSub>
           <ContextMenuSubTrigger>
-            <Bell className="mr-2 h-4 w-4" />
+            <Bell className='mr-2 h-4 w-4' />
             Edit notifications
           </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            <ContextMenuItem>
-              All new posts
-            </ContextMenuItem>
-            <ContextMenuItem>
-              Mentions only
-            </ContextMenuItem>
-            <ContextMenuItem>
-              Nothing
-            </ContextMenuItem>
+          <ContextMenuSubContent className='w-48'>
+            <ContextMenuItem>All new posts</ContextMenuItem>
+            <ContextMenuItem>Mentions only</ContextMenuItem>
+            <ContextMenuItem>Nothing</ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuItem onClick={handleToggleStar}>
-          <Star className={cn('mr-2 h-4 w-4', isStarred && 'fill-yellow-500 text-yellow-500')} />
+          <Star
+            className={cn(
+              'mr-2 h-4 w-4',
+              isStarred && 'fill-yellow-500 text-yellow-500'
+            )}
+          />
           {isStarred ? 'Unstar conversation' : 'Star conversation'}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onClick={handleOpenInNewWindow}>
-          <ExternalLink className="mr-2 h-4 w-4" />
+          <ExternalLink className='mr-2 h-4 w-4' />
           Open in new window
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem onClick={handleCloseConversation} className="text-destructive focus:text-destructive">
-          <X className="mr-2 h-4 w-4" />
+        <ContextMenuItem
+          onClick={handleCloseConversation}
+          className='text-destructive focus:text-destructive'
+        >
+          <X className='mr-2 h-4 w-4' />
           Close conversation
         </ContextMenuItem>
       </ContextMenuContent>
@@ -1077,15 +1181,15 @@ function ChannelTypeIcon({ type, className }: ChannelTypeIconProps) {
     return (
       <svg
         className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='round'
+        strokeLinejoin='round'
       >
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        <rect x='3' y='11' width='18' height='11' rx='2' ry='2' />
+        <path d='M7 11V7a5 5 0 0 1 10 0v4' />
       </svg>
     );
   }
@@ -1093,17 +1197,17 @@ function ChannelTypeIcon({ type, className }: ChannelTypeIconProps) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M4 9h16" />
-      <path d="M4 15h16" />
-      <path d="M10 3 8 21" />
-      <path d="M16 3 14 21" />
+      <path d='M4 9h16' />
+      <path d='M4 15h16' />
+      <path d='M10 3 8 21' />
+      <path d='M16 3 14 21' />
     </svg>
   );
 }
@@ -1112,14 +1216,14 @@ function ChevronIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="m9 18 6-6-6-6" />
+      <path d='m9 18 6-6-6-6' />
     </svg>
   );
 }
@@ -1128,15 +1232,15 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
+      <path d='M5 12h14' />
+      <path d='M12 5v14' />
     </svg>
   );
 }
@@ -1145,14 +1249,14 @@ function StarFilledIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='currentColor'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      <polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' />
     </svg>
   );
 }
@@ -1161,16 +1265,16 @@ function AlertCircleIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
+      <circle cx='12' cy='12' r='10' />
+      <line x1='12' y1='8' x2='12' y2='12' />
+      <line x1='12' y1='16' x2='12.01' y2='16' />
     </svg>
   );
 }
@@ -1179,22 +1283,22 @@ function LoadingSpinner({ className }: { className?: string }) {
   return (
     <svg
       className={cn('animate-spin', className)}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
     >
       <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
+        className='opacity-25'
+        cx='12'
+        cy='12'
+        r='10'
+        stroke='currentColor'
+        strokeWidth='4'
       />
       <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        className='opacity-75'
+        fill='currentColor'
+        d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
       />
     </svg>
   );
@@ -1208,23 +1312,25 @@ interface UserSearchItemProps {
 function UserSearchItem({ user, onStartDM }: UserSearchItemProps) {
   return (
     <button
-      type="button"
+      type='button'
       onClick={onStartDM}
-      className="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent"
+      className='mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent'
     >
-      <div className="relative shrink-0">
-        <UserAvatar user={user} size="sm" />
+      <div className='relative shrink-0'>
+        <UserAvatar user={user} size='sm' />
         {user.status === 'online' && (
-          <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500" />
+          <span className='absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500' />
         )}
       </div>
-      <div className="flex-1 truncate">
-        <span className="text-foreground">{user.name}</span>
+      <div className='flex-1 truncate'>
+        <span className='text-foreground'>{user.name}</span>
         {user.email && (
-          <span className="ml-1 text-xs text-muted-foreground">{user.email}</span>
+          <span className='ml-1 text-xs text-muted-foreground'>
+            {user.email}
+          </span>
         )}
       </div>
-      <MessageIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <MessageIcon className='h-4 w-4 shrink-0 text-muted-foreground' />
     </button>
   );
 }
@@ -1233,15 +1339,14 @@ function MessageIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
     </svg>
   );
 }
-

@@ -9,37 +9,39 @@ import { Suspense, useEffect, useState } from 'react';
  * Password strength indicator component
  */
 function PasswordStrength({ password }: { password: string }) {
-  const getStrength = (pwd: string): { score: number; label: string; color: string } => {
+  const getStrength = (
+    pwd: string
+  ): { score: number; label: string; color: string } => {
     if (!pwd) {
       return { score: 0, label: '', color: '' };
-}
+    }
 
     let score = 0;
     if (pwd.length >= 8) {
-score += 1;
-}
+      score += 1;
+    }
     if (pwd.length >= 12) {
-score += 1;
-}
+      score += 1;
+    }
     if (/[a-z]/.test(pwd)) {
-score += 1;
-}
+      score += 1;
+    }
     if (/[A-Z]/.test(pwd)) {
-score += 1;
-}
+      score += 1;
+    }
     if (/\d/.test(pwd)) {
-score += 1;
-}
+      score += 1;
+    }
     if (/[^a-zA-Z\d]/.test(pwd)) {
-score += 1;
-}
+      score += 1;
+    }
 
     if (score <= 2) {
       return { score: 1, label: 'Weak', color: 'bg-red-500' };
-}
+    }
     if (score <= 4) {
       return { score: 2, label: 'Medium', color: 'bg-yellow-500' };
-}
+    }
     return { score: 3, label: 'Strong', color: 'bg-green-500' };
   };
 
@@ -47,12 +49,12 @@ score += 1;
 
   if (!password) {
     return null;
-}
+  }
 
   return (
     <div className='space-y-2'>
       <div className='flex gap-2'>
-        {[1, 2, 3].map((level) => (
+        {[1, 2, 3].map(level => (
           <div
             key={level}
             className={`h-1 flex-1 rounded ${level <= strength.score ? strength.color : 'bg-muted'}`}
@@ -73,10 +75,10 @@ function ResetPasswordLoading() {
   return (
     <div className='space-y-6'>
       <div className='space-y-2 text-center'>
-        <h2 className='text-2xl font-semibold tracking-tight'>Set new password</h2>
-        <p className='text-sm text-muted-foreground'>
-          Loading...
-        </p>
+        <h2 className='text-2xl font-semibold tracking-tight'>
+          Set new password
+        </h2>
+        <p className='text-sm text-muted-foreground'>Loading...</p>
       </div>
       <div className='space-y-4'>
         <div className='h-10 w-full animate-pulse rounded bg-muted' />
@@ -152,7 +154,9 @@ function ResetPasswordContent() {
     }
 
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      setError(
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+      );
       return;
     }
 
@@ -190,7 +194,9 @@ function ResetPasswordContent() {
     <div className='space-y-6'>
       {/* Page Header */}
       <div className='space-y-2 text-center'>
-        <h2 className='text-2xl font-semibold tracking-tight'>Set new password</h2>
+        <h2 className='text-2xl font-semibold tracking-tight'>
+          Set new password
+        </h2>
         <p className='text-sm text-muted-foreground'>
           Enter your new password below
         </p>
@@ -200,9 +206,7 @@ function ResetPasswordContent() {
       {success && (
         <div className='rounded-md bg-green-500/10 p-4 text-sm text-green-600 dark:text-green-400'>
           <p className='font-medium'>Password reset successful!</p>
-          <p className='mt-1 text-xs'>
-            Redirecting to login page...
-          </p>
+          <p className='mt-1 text-xs'>Redirecting to login page...</p>
         </div>
       )}
 
@@ -221,7 +225,9 @@ function ResetPasswordContent() {
               type='password'
               placeholder='New password'
               value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
               disabled={isLoading}
               autoComplete='new-password'
               autoFocus
@@ -235,7 +241,9 @@ function ResetPasswordContent() {
               type='password'
               placeholder='Confirm new password'
               value={confirmPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setConfirmPassword(e.target.value)
+              }
               disabled={isLoading}
               autoComplete='new-password'
               required
@@ -248,7 +256,9 @@ function ResetPasswordContent() {
           <Button
             type='submit'
             className='w-full'
-            disabled={isLoading || !passwordsMatch || !password || !confirmPassword}
+            disabled={
+              isLoading || !passwordsMatch || !password || !confirmPassword
+            }
           >
             {isLoading ? 'Resetting password...' : 'Reset password'}
           </Button>

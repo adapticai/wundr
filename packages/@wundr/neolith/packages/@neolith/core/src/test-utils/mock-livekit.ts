@@ -23,7 +23,11 @@ export type RoomStatus = 'active' | 'closed' | 'pending';
 
 export type ParticipantState = 'connected' | 'disconnected' | 'reconnecting';
 
-export type TrackSource = 'camera' | 'microphone' | 'screen_share' | 'screen_share_audio';
+export type TrackSource =
+  | 'camera'
+  | 'microphone'
+  | 'screen_share'
+  | 'screen_share_audio';
 
 export interface Room {
   sid: string;
@@ -186,7 +190,10 @@ export interface IngressInfo {
 export interface MockLiveKitStore {
   rooms: Map<string, Room>;
   participants: Map<string, Map<string, Participant>>;
-  tokens: Map<string, { identity: string; grants: VideoGrant; expiresAt: number }>;
+  tokens: Map<
+    string,
+    { identity: string; grants: VideoGrant; expiresAt: number }
+  >;
   webhookEvents: WebhookEvent[];
 }
 
@@ -263,7 +270,7 @@ let eventIdCounter = 0;
  */
 export function createMockLiveKitService(
   apiKey = 'test-api-key',
-  apiSecret = 'test-api-secret',
+  apiSecret = 'test-api-secret'
 ): MockLiveKitService {
   const store: MockLiveKitStore = {
     rooms: new Map(),
@@ -334,7 +341,7 @@ export function createMockLiveKitService(
     listRooms: vi.fn(async (names?: string[]): Promise<Room[]> => {
       if (names && names.length > 0) {
         return names
-          .map((name) => store.rooms.get(name))
+          .map(name => store.rooms.get(name))
           .filter((room): room is Room => room !== undefined);
       }
       return Array.from(store.rooms.values());
@@ -348,42 +355,47 @@ export function createMockLiveKitService(
       async (roomName: string, metadata: string): Promise<Room | null> => {
         const room = store.rooms.get(roomName);
         if (!room) {
-return null;
-}
+          return null;
+        }
 
         room.metadata = metadata;
         return room;
-      },
+      }
     ),
 
     // =========================================================================
     // PARTICIPANT SERVICE
     // =========================================================================
 
-    listParticipants: vi.fn(async (roomName: string): Promise<Participant[]> => {
-      const roomParticipants = store.participants.get(roomName);
-      if (!roomParticipants) {
-return [];
-}
-      return Array.from(roomParticipants.values());
-    }),
-
-    getParticipant: vi.fn(
-      async (roomName: string, identity: string): Promise<Participant | null> => {
+    listParticipants: vi.fn(
+      async (roomName: string): Promise<Participant[]> => {
         const roomParticipants = store.participants.get(roomName);
         if (!roomParticipants) {
-return null;
-}
+          return [];
+        }
+        return Array.from(roomParticipants.values());
+      }
+    ),
+
+    getParticipant: vi.fn(
+      async (
+        roomName: string,
+        identity: string
+      ): Promise<Participant | null> => {
+        const roomParticipants = store.participants.get(roomName);
+        if (!roomParticipants) {
+          return null;
+        }
         return roomParticipants.get(identity) ?? null;
-      },
+      }
     ),
 
     removeParticipant: vi.fn(
       async (roomName: string, identity: string): Promise<void> => {
         const roomParticipants = store.participants.get(roomName);
         if (!roomParticipants) {
-return;
-}
+          return;
+        }
 
         const participant = roomParticipants.get(identity);
         if (participant) {
@@ -394,11 +406,11 @@ return;
           if (room) {
             room.numParticipants = roomParticipants.size;
             room.numPublishers = Array.from(roomParticipants.values()).filter(
-              (p) => p.isPublisher,
+              p => p.isPublisher
             ).length;
           }
         }
-      },
+      }
     ),
 
     mutePublishedTrack: vi.fn(
@@ -406,26 +418,26 @@ return;
         roomName: string,
         identity: string,
         trackSid: string,
-        muted: boolean,
+        muted: boolean
       ): Promise<ParticipantTrack | null> => {
         const roomParticipants = store.participants.get(roomName);
         if (!roomParticipants) {
-return null;
-}
+          return null;
+        }
 
         const participant = roomParticipants.get(identity);
         if (!participant) {
-return null;
-}
+          return null;
+        }
 
-        const track = participant.tracks.find((t) => t.sid === trackSid);
+        const track = participant.tracks.find(t => t.sid === trackSid);
         if (!track) {
-return null;
-}
+          return null;
+        }
 
         track.muted = muted;
         return track;
-      },
+      }
     ),
 
     updateParticipant: vi.fn(
@@ -434,77 +446,77 @@ return null;
         identity: string,
         metadata?: string,
         permission?: Partial<ParticipantPermission>,
-        name?: string,
+        name?: string
       ): Promise<Participant | null> => {
         const roomParticipants = store.participants.get(roomName);
         if (!roomParticipants) {
-return null;
-}
+          return null;
+        }
 
         const participant = roomParticipants.get(identity);
         if (!participant) {
-return null;
-}
+          return null;
+        }
 
         if (metadata !== undefined) {
-participant.metadata = metadata;
-}
+          participant.metadata = metadata;
+        }
         if (name !== undefined) {
-participant.name = name;
-}
+          participant.name = name;
+        }
         if (permission) {
           participant.permission = { ...participant.permission, ...permission };
         }
 
         return participant;
-      },
+      }
     ),
 
     // =========================================================================
     // TOKEN SERVICE
     // =========================================================================
 
-    createToken: vi.fn(
-      async (options: TokenOptions): Promise<string> => {
-        const ttl = options.ttl ?? 3600; // Default 1 hour
-        const expiresAt = Date.now() + ttl * 1000;
+    createToken: vi.fn(async (options: TokenOptions): Promise<string> => {
+      const ttl = options.ttl ?? 3600; // Default 1 hour
+      const expiresAt = Date.now() + ttl * 1000;
 
-        const grants: VideoGrant = {
-          roomJoin: true,
-          room: options.grants?.room,
-          canPublish: options.grants?.canPublish ?? true,
-          canSubscribe: options.grants?.canSubscribe ?? true,
-          canPublishData: options.grants?.canPublishData ?? true,
-          ...options.grants,
-        };
+      const grants: VideoGrant = {
+        roomJoin: true,
+        room: options.grants?.room,
+        canPublish: options.grants?.canPublish ?? true,
+        canSubscribe: options.grants?.canSubscribe ?? true,
+        canPublishData: options.grants?.canPublishData ?? true,
+        ...options.grants,
+      };
 
-        const tokenId = `token_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        store.tokens.set(tokenId, {
-          identity: options.identity,
-          grants,
-          expiresAt,
-        });
+      const tokenId = `token_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      store.tokens.set(tokenId, {
+        identity: options.identity,
+        grants,
+        expiresAt,
+      });
 
-        // Return a mock JWT-like string
-        const payload = {
-          sub: options.identity,
-          name: options.name,
-          metadata: options.metadata,
-          video: grants,
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(expiresAt / 1000),
-          iss: apiKey,
-          jti: tokenId,
-        };
+      // Return a mock JWT-like string
+      const payload = {
+        sub: options.identity,
+        name: options.name,
+        metadata: options.metadata,
+        video: grants,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(expiresAt / 1000),
+        iss: apiKey,
+        jti: tokenId,
+      };
 
-        const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64');
-        return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.mock-signature`;
-      },
-    ),
+      const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+        'base64'
+      );
+      return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.mock-signature`;
+    }),
 
     verifyToken: vi.fn(
       async (
-        token: string,
+        token: string
       ): Promise<{ identity: string; grants: VideoGrant; valid: boolean }> => {
         try {
           const parts = token.split('.');
@@ -517,18 +529,24 @@ participant.name = name;
             return { identity: '', grants: {}, valid: false };
           }
 
-          const payload = JSON.parse(Buffer.from(payloadStr, 'base64').toString());
+          const payload = JSON.parse(
+            Buffer.from(payloadStr, 'base64').toString()
+          );
           const now = Math.floor(Date.now() / 1000);
 
           if (payload.exp && payload.exp < now) {
-            return { identity: payload.sub, grants: payload.video, valid: false };
+            return {
+              identity: payload.sub,
+              grants: payload.video,
+              valid: false,
+            };
           }
 
           return { identity: payload.sub, grants: payload.video, valid: true };
         } catch {
           return { identity: '', grants: {}, valid: false };
         }
-      },
+      }
     ),
 
     // =========================================================================
@@ -544,14 +562,12 @@ participant.name = name;
         const isSecretMatch = signature === `sha256=${apiSecret}`;
         const hasBody = body.length > 0;
         return (isValidPrefix || isSecretMatch) && hasBody;
-      },
+      }
     ),
 
-    parseWebhook: vi.fn(
-      async (body: string): Promise<WebhookEvent> => {
-        return JSON.parse(body) as WebhookEvent;
-      },
-    ),
+    parseWebhook: vi.fn(async (body: string): Promise<WebhookEvent> => {
+      return JSON.parse(body) as WebhookEvent;
+    }),
 
     // =========================================================================
     // EGRESS SERVICE (Recording)
@@ -560,7 +576,10 @@ participant.name = name;
     startRoomCompositeEgress: vi.fn(
       async (
         roomName: string,
-        _output: { file?: { filepath: string }; stream?: { protocol: string; urls: string[] } },
+        _output: {
+          file?: { filepath: string };
+          stream?: { protocol: string; urls: string[] };
+        }
       ): Promise<EgressInfo> => {
         const room = store.rooms.get(roomName);
         if (room) {
@@ -572,7 +591,7 @@ participant.name = name;
           roomName,
           status: 'active',
         };
-      },
+      }
     ),
 
     stopEgress: vi.fn(async (egressId: string): Promise<EgressInfo> => {
@@ -631,7 +650,7 @@ participant.name = name;
       if (room) {
         room.numParticipants = roomParticipants.size;
         room.numPublishers = Array.from(roomParticipants.values()).filter(
-          (p) => p.isPublisher,
+          p => p.isPublisher
         ).length;
       }
     },
@@ -645,7 +664,7 @@ participant.name = name;
         if (room) {
           room.numParticipants = roomParticipants.size;
           room.numPublishers = Array.from(roomParticipants.values()).filter(
-            (p) => p.isPublisher,
+            p => p.isPublisher
           ).length;
         }
       }
@@ -699,7 +718,9 @@ export function createMockRoom(overrides?: Partial<Room>): Room {
 /**
  * Create a mock Participant object
  */
-export function createMockParticipant(overrides?: Partial<Participant>): Participant {
+export function createMockParticipant(
+  overrides?: Partial<Participant>
+): Participant {
   participantSidCounter++;
   const identity = overrides?.identity ?? `user-${participantSidCounter}`;
 
@@ -731,7 +752,7 @@ export function createMockParticipant(overrides?: Partial<Participant>): Partici
  * Create a mock ParticipantTrack object
  */
 export function createMockParticipantTrack(
-  overrides?: Partial<ParticipantTrack>,
+  overrides?: Partial<ParticipantTrack>
 ): ParticipantTrack {
   return {
     sid: `TR_${Date.now()}_${Math.random().toString(36).substring(7)}`,
@@ -752,7 +773,7 @@ export function createMockParticipantTrack(
 export function createMockToken(
   identity: string,
   room?: string,
-  grants?: Partial<VideoGrant>,
+  grants?: Partial<VideoGrant>
 ): string {
   const payload = {
     sub: identity,
@@ -770,7 +791,9 @@ export function createMockToken(
     jti: `token_mock_${Date.now()}`,
   };
 
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64');
+  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+    'base64'
+  );
   return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.mock-signature`;
 }
 
@@ -780,7 +803,7 @@ export function createMockToken(
 export function createMockWebhookEvent(
   eventType: WebhookEventType,
   room?: Partial<Room>,
-  participant?: Partial<Participant>,
+  participant?: Partial<Participant>
 ): WebhookEvent {
   eventIdCounter++;
   return {

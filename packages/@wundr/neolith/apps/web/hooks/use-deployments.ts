@@ -51,7 +51,9 @@ export interface UseDeploymentsReturn {
   /** Total count of deployments */
   totalCount: number;
   /** Create a new deployment */
-  createDeployment: (input: CreateDeploymentInput) => Promise<Deployment | null>;
+  createDeployment: (
+    input: CreateDeploymentInput
+  ) => Promise<Deployment | null>;
   /** Refetch deployments */
   mutate: () => void;
 }
@@ -65,7 +67,7 @@ export interface UseDeploymentsReturn {
  */
 export function useDeployments(
   workspaceId: string,
-  filters?: DeploymentFilters,
+  filters?: DeploymentFilters
 ): UseDeploymentsReturn {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -129,7 +131,13 @@ export function useDeployments(
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, filters?.status, filters?.environment, filters?.type, filters?.search]);
+  }, [
+    workspaceId,
+    filters?.status,
+    filters?.environment,
+    filters?.type,
+    filters?.search,
+  ]);
 
   useEffect(() => {
     fetchDeployments();
@@ -145,11 +153,14 @@ export function useDeployments(
   const createDeployment = useCallback(
     async (input: CreateDeploymentInput): Promise<Deployment | null> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/deployments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(input),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/deployments`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input),
+          }
+        );
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
@@ -161,10 +172,12 @@ export function useDeployments(
         const data = await response.json();
 
         if (!data || !data.deployment) {
-          throw new Error('Invalid response format: expected deployment object');
+          throw new Error(
+            'Invalid response format: expected deployment object'
+          );
         }
 
-        setDeployments((prev) => [data.deployment, ...prev]);
+        setDeployments(prev => [data.deployment, ...prev]);
         return data.deployment;
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
@@ -172,7 +185,7 @@ export function useDeployments(
         return null;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -200,7 +213,9 @@ export interface UseDeploymentReturn {
   /** Error that occurred during fetch */
   error: Error | null;
   /** Update the deployment */
-  updateDeployment: (input: UpdateDeploymentInput) => Promise<Deployment | null>;
+  updateDeployment: (
+    input: UpdateDeploymentInput
+  ) => Promise<Deployment | null>;
   /** Delete the deployment */
   deleteDeployment: () => Promise<boolean>;
   /** Restart the deployment */
@@ -220,7 +235,7 @@ export interface UseDeploymentReturn {
  */
 export function useDeployment(
   workspaceId: string,
-  deploymentId: string,
+  deploymentId: string
 ): UseDeploymentReturn {
   const [deployment, setDeployment] = useState<Deployment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -297,7 +312,7 @@ export function useDeployment(
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -310,7 +325,9 @@ export function useDeployment(
         const data = await response.json();
 
         if (!data || !data.deployment) {
-          throw new Error('Invalid response format: expected deployment object');
+          throw new Error(
+            'Invalid response format: expected deployment object'
+          );
         }
 
         setDeployment(data.deployment);
@@ -321,7 +338,7 @@ export function useDeployment(
         return null;
       }
     },
-    [workspaceId, deploymentId],
+    [workspaceId, deploymentId]
   );
 
   const deleteDeployment = useCallback(async (): Promise<boolean> => {
@@ -330,7 +347,7 @@ export function useDeployment(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -355,7 +372,7 @@ export function useDeployment(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}/restart`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -381,7 +398,7 @@ export function useDeployment(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}/stop`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -456,7 +473,7 @@ export interface UseDeploymentLogsReturn {
 export function useDeploymentLogs(
   workspaceId: string,
   deploymentId: string,
-  options?: UseDeploymentLogsOptions,
+  options?: UseDeploymentLogsOptions
 ): UseDeploymentLogsReturn {
   const [logs, setLogs] = useState<DeploymentLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -511,7 +528,7 @@ export function useDeploymentLogs(
           throw new Error('Invalid response format: expected logs array');
         }
 
-        setLogs((prev) => (append ? [...prev, ...data.logs] : data.logs));
+        setLogs(prev => (append ? [...prev, ...data.logs] : data.logs));
         setHasMore(data.hasMore ?? false);
         setCursor(data.nextCursor ?? null);
       } catch (err) {

@@ -2,10 +2,7 @@
   "analysisMetadata": {
     "timestamp": "2025-11-30T00:00:00Z",
     "analyzer": "Claude Code - Software Engineer Agent",
-    "packagesAnalyzed": [
-      "@wundr.io/core",
-      "@wundr.io/core-simple"
-    ],
+    "packagesAnalyzed": ["@wundr.io/core", "@wundr.io/core-simple"],
     "totalSourceLines": {
       "@wundr/core": 6005,
       "core": 22
@@ -19,14 +16,8 @@
       "main": "dist/index.js",
       "types": "dist/index.d.ts",
       "structure": {
-        "types": [
-          "index.ts",
-          "utility-types.ts",
-          "web-client-types.ts"
-        ],
-        "logger": [
-          "index.ts"
-        ],
+        "types": ["index.ts", "utility-types.ts", "web-client-types.ts"],
+        "logger": ["index.ts"],
         "utils": [
           "index.ts",
           "string.ts",
@@ -36,12 +27,8 @@
           "performance.ts",
           "type-guards.ts"
         ],
-        "errors": [
-          "index.ts"
-        ],
-        "events": [
-          "index.ts"
-        ],
+        "errors": ["index.ts"],
+        "events": ["index.ts"],
         "rag": [
           "index.ts",
           "project-rag-init.ts",
@@ -76,12 +63,8 @@
       "main": "dist/index.js",
       "types": "dist/index.d.ts",
       "structure": {
-        "types": [
-          "index.ts"
-        ],
-        "services": [
-          "index.ts"
-        ]
+        "types": ["index.ts"],
+        "services": ["index.ts"]
       },
       "dependencies": {
         "eventemitter3": "^5.0.1",

@@ -51,17 +51,21 @@ export const ChannelInvitationEmail = ({
     <Html>
       <Head />
       <Preview>
-        {inviterName} invited you to join {channelIcon}{channelName} in {workspaceName}
+        {inviterName} invited you to join {channelIcon}
+        {channelName} in {workspaceName}
       </Preview>
       <Body style={main}>
         <Container style={container}>
           <EmailHeader />
 
           <Section style={contentSection}>
-            <EmailText variant="h1">You&apos;re invited to a channel!</EmailText>
+            <EmailText variant='h1'>
+              You&apos;re invited to a channel!
+            </EmailText>
 
             <EmailText>
-              <strong>{inviterName}</strong> ({inviterEmail}) has invited you to join the{' '}
+              <strong>{inviterName}</strong> ({inviterEmail}) has invited you to
+              join the{' '}
               <strong>
                 {channelIcon} {channelName}
               </strong>{' '}
@@ -76,7 +80,9 @@ export const ChannelInvitationEmail = ({
               {channelDescription && (
                 <>
                   <EmailText style={channelInfoLabel}>Description</EmailText>
-                  <EmailText style={channelInfoValue}>{channelDescription}</EmailText>
+                  <EmailText style={channelInfoValue}>
+                    {channelDescription}
+                  </EmailText>
                 </>
               )}
             </Section>
@@ -88,12 +94,10 @@ export const ChannelInvitationEmail = ({
             </EmailText>
 
             <Section style={buttonContainer}>
-              <EmailButton href={inviteUrl}>
-                Accept Invitation
-              </EmailButton>
+              <EmailButton href={inviteUrl}>Accept Invitation</EmailButton>
             </Section>
 
-            <EmailText variant="small">
+            <EmailText variant='small'>
               Or copy and paste this link into your browser:
             </EmailText>
             <EmailText style={urlText}>
@@ -104,13 +108,14 @@ export const ChannelInvitationEmail = ({
 
             <Section style={warningSection}>
               <EmailText style={warningText}>
-                This invitation expires in {expiresAt}. Accept it soon to join the channel.
+                This invitation expires in {expiresAt}. Accept it soon to join
+                the channel.
               </EmailText>
             </Section>
 
-            <EmailText variant="small">
-              If you weren&apos;t expecting this invitation, you can safely ignore this email.
-              The invitation will expire automatically.
+            <EmailText variant='small'>
+              If you weren&apos;t expecting this invitation, you can safely
+              ignore this email. The invitation will expire automatically.
             </EmailText>
           </Section>
 

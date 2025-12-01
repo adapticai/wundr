@@ -1,6 +1,7 @@
 # CI/CD Configuration Documentation
 
-This directory contains configuration files and documentation for the Continuous Integration and Continuous Deployment (CI/CD) workflows used in the Monorepo Refactoring Toolkit.
+This directory contains configuration files and documentation for the Continuous Integration and
+Continuous Deployment (CI/CD) workflows used in the Monorepo Refactoring Toolkit.
 
 ## Overview
 
@@ -16,39 +17,43 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 
 ### GitHub Actions Workflows (`.github/workflows/`)
 
-| Workflow | Purpose | Triggers | Description |
-|----------|---------|----------|-------------|
-| `drift-detection.yml` | Code drift monitoring | PR, Schedule, Manual | Detects code quality drift and creates actionable reports |
-| `refactor-check.yml` | Refactor PR validation | PR (refactor), Manual | Validates refactoring changes and ensures quality improvements |
-| `weekly-report.yml` | Progress reporting | Schedule (weekly), Manual | Generates comprehensive weekly progress reports |
-| `build.yml` | Build validation | Push, PR | Validates project structure, linting, and TypeScript compilation |
-| `test.yml` | Test execution | Push, PR, Manual | Runs unit tests, integration tests, and functionality validation |
-| `release.yml` | Release automation | Tags, Manual | Automates release creation, artifact building, and distribution |
+| Workflow              | Purpose                | Triggers                  | Description                                                      |
+| --------------------- | ---------------------- | ------------------------- | ---------------------------------------------------------------- |
+| `drift-detection.yml` | Code drift monitoring  | PR, Schedule, Manual      | Detects code quality drift and creates actionable reports        |
+| `refactor-check.yml`  | Refactor PR validation | PR (refactor), Manual     | Validates refactoring changes and ensures quality improvements   |
+| `weekly-report.yml`   | Progress reporting     | Schedule (weekly), Manual | Generates comprehensive weekly progress reports                  |
+| `build.yml`           | Build validation       | Push, PR                  | Validates project structure, linting, and TypeScript compilation |
+| `test.yml`            | Test execution         | Push, PR, Manual          | Runs unit tests, integration tests, and functionality validation |
+| `release.yml`         | Release automation     | Tags, Manual              | Automates release creation, artifact building, and distribution  |
 
 ### Configuration Files (This Directory)
 
-| File | Purpose | Used By |
-|------|---------|---------|
-| `drift-detection.yml` | Drift detection settings | `drift-detection.yml` workflow |
-| `refactor-check.yml` | Refactor validation settings | `refactor-check.yml` workflow |
-| `weekly-report.yml` | Weekly report settings | `weekly-report.yml` workflow |
+| File                  | Purpose                      | Used By                        |
+| --------------------- | ---------------------------- | ------------------------------ |
+| `drift-detection.yml` | Drift detection settings     | `drift-detection.yml` workflow |
+| `refactor-check.yml`  | Refactor validation settings | `refactor-check.yml` workflow  |
+| `weekly-report.yml`   | Weekly report settings       | `weekly-report.yml` workflow   |
 
 ## Workflow Details
 
 ### 1. Drift Detection (`drift-detection.yml`)
 
-**Purpose**: Continuously monitor code quality and detect when the codebase drifts from established standards.
+**Purpose**: Continuously monitor code quality and detect when the codebase drifts from established
+standards.
 
 **Key Features**:
+
 - Runs comprehensive code analysis on PRs and scheduled intervals
 - Compares current state against quality thresholds
 - Creates GitHub issues for critical drift
 - Generates consolidation batches for remediation
 - Comments on PRs with analysis results
 
-**Configuration**: See `drift-detection.yml` for threshold settings, analysis depth, and notification preferences.
+**Configuration**: See `drift-detection.yml` for threshold settings, analysis depth, and
+notification preferences.
 
 **Triggers**:
+
 - Pull requests to master/main
 - Daily at 2 AM UTC (scheduled)
 - Manual dispatch with configurable analysis depth
@@ -58,15 +63,18 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 **Purpose**: Ensure refactoring pull requests actually improve code quality.
 
 **Key Features**:
+
 - Automatically detects refactoring PRs based on keywords and labels
 - Runs before/after analysis to measure improvements
 - Validates that refactoring doesn't break imports or create circular dependencies
 - Assigns quality grades (A-F) based on improvements
 - Blocks merge if quality regressions are detected
 
-**Configuration**: See `refactor-check.yml` for keyword detection, scoring weights, and quality thresholds.
+**Configuration**: See `refactor-check.yml` for keyword detection, scoring weights, and quality
+thresholds.
 
 **Triggers**:
+
 - Pull requests with refactoring keywords or labels
 - Manual dispatch with PR number
 
@@ -75,6 +83,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 **Purpose**: Generate comprehensive weekly reports on refactoring progress.
 
 **Key Features**:
+
 - Analyzes Git activity (commits, contributors, file changes)
 - Tracks pull request activity and categorizes refactoring PRs
 - Runs comprehensive code analysis for current state
@@ -82,9 +91,11 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 - Creates GitHub issues with detailed reports
 - Calculates activity and progress scores
 
-**Configuration**: See `weekly-report.yml` for scoring weights, report content, and notification settings.
+**Configuration**: See `weekly-report.yml` for scoring weights, report content, and notification
+settings.
 
 **Triggers**:
+
 - Weekly on Sundays at 9 AM UTC
 - Manual dispatch with configurable report period
 
@@ -93,6 +104,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 **Purpose**: Validate project structure, code quality, and compilation.
 
 **Key Features**:
+
 - Validates required directory and file structure
 - Runs ESLint and Prettier checks
 - Performs TypeScript compilation validation
@@ -101,6 +113,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 - Sets commit status for PR validation
 
 **Triggers**:
+
 - Push to master/main/develop branches
 - Pull requests
 - Manual dispatch
@@ -110,6 +123,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 **Purpose**: Execute comprehensive test suite including unit, integration, and functionality tests.
 
 **Key Features**:
+
 - Runs existing unit tests with coverage reporting
 - Tests script functionality with real data
 - Validates analysis workflow end-to-end
@@ -117,6 +131,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 - Provides configurable test scope (unit, integration, full)
 
 **Triggers**:
+
 - Push to master/main/develop branches
 - Pull requests
 - Manual dispatch with test scope selection
@@ -126,6 +141,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 **Purpose**: Automate the release process with proper versioning and artifact creation.
 
 **Key Features**:
+
 - Validates version format and availability
 - Generates release notes from commit history
 - Creates comprehensive release artifacts
@@ -135,6 +151,7 @@ The CI/CD system is built on GitHub Actions and provides comprehensive automatio
 - Cleans up old pre-releases
 
 **Triggers**:
+
 - Git tags matching `v*` pattern
 - Manual dispatch with version specification
 
@@ -146,9 +163,9 @@ Common environment variables used across workflows:
 
 ```yaml
 env:
-  NODE_VERSION: '18'              # Node.js version for consistency
+  NODE_VERSION: '18' # Node.js version for consistency
   ANALYSIS_OUTPUT_DIR: 'analysis' # Output directory for analysis results
-  CACHE_VERSION: 'v1'             # Cache versioning for invalidation
+  CACHE_VERSION: 'v1' # Cache versioning for invalidation
 ```
 
 ### Secrets and Permissions
@@ -156,12 +173,14 @@ env:
 Required GitHub repository settings:
 
 **Permissions** (GitHub Actions):
+
 - `contents: read/write` - For checking out code and creating releases
 - `issues: write` - For creating issues and comments
 - `pull-requests: write` - For commenting on PRs
 - `actions: read` - For reading workflow information
 
 **Branch Protection** (Recommended):
+
 - Require status checks to pass before merging
 - Require branches to be up to date before merging
 - Include these status checks:
@@ -172,12 +191,14 @@ Required GitHub repository settings:
 ### Artifact Management
 
 **Retention Policies**:
+
 - Analysis artifacts: 30 days
 - Test results: 7 days
 - Release artifacts: 90 days
 - Weekly reports: 90 days
 
 **Storage Locations**:
+
 - Workflow artifacts: GitHub Actions artifacts
 - Historical data: `.github/data/` directory
 - Release assets: GitHub Releases
@@ -214,24 +235,29 @@ Required GitHub repository settings:
 ### Common Issues
 
 **1. Analysis Timeouts**
+
 - **Cause**: Large codebase or complex analysis
 - **Solution**: Reduce analysis scope or increase timeout values in configuration
 
 **2. Test Failures in CI**
+
 - **Cause**: Environment differences or missing dependencies
 - **Solution**: Check dependency installation and environment setup
 
 **3. Release Workflow Failures**
+
 - **Cause**: Version conflicts or missing permissions
 - **Solution**: Verify version format and repository permissions
 
 **4. Drift Detection False Positives**
+
 - **Cause**: Threshold settings too strict
 - **Solution**: Adjust thresholds in `drift-detection.yml` configuration
 
 ### Debugging Workflows
 
 **Enable Debug Logging**:
+
 ```yaml
 env:
   ACTIONS_STEP_DEBUG: true
@@ -239,12 +265,14 @@ env:
 ```
 
 **Check Workflow Logs**:
+
 1. Go to Actions tab in GitHub repository
 2. Select the failed workflow run
 3. Expand failed steps to see detailed logs
 4. Look for error messages and stack traces
 
 **Test Locally**:
+
 ```bash
 # Test scripts locally before pushing
 ./scripts/analysis/analyze-all.sh .
@@ -281,8 +309,9 @@ The workflows are designed to be extensible. You can integrate with:
 For questions or issues with the CI/CD system:
 
 1. Check the troubleshooting section above
-2. Review workflow logs for specific error messages  
+2. Review workflow logs for specific error messages
 3. Consult the configuration files for available options
 4. Create an issue in the repository with detailed information
 
-The CI/CD system is designed to be self-maintaining with automatic cleanup and error recovery, but periodic review and updates are recommended to ensure optimal performance.
+The CI/CD system is designed to be self-maintaining with automatic cleanup and error recovery, but
+periodic review and updates are recommended to ensure optimal performance.

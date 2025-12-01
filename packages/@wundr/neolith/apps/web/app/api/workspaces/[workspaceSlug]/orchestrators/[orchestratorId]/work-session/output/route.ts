@@ -44,15 +44,18 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (or Orchestrator daemon)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORK_SESSION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORK_SESSION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -65,14 +68,19 @@ export async function POST(
 
     if (!validationResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation error', WORK_SESSION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: validationResult.error.errors,
-        }),
-        { status: 400 },
+        createErrorResponse(
+          'Validation error',
+          WORK_SESSION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: validationResult.error.errors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
-    const { taskId, output, artifacts, progress, metadata } = validationResult.data;
+    const { taskId, output, artifacts, progress, metadata } =
+      validationResult.data;
 
     // Verify workspace exists
     const workspace = await prisma.workspace.findUnique({
@@ -83,9 +91,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORK_SESSION_ERROR_CODES.FORBIDDEN,
+          WORK_SESSION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -99,8 +107,11 @@ export async function POST(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -120,8 +131,11 @@ export async function POST(
 
     if (!task) {
       return NextResponse.json(
-        createErrorResponse('Task not found', WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Task not found',
+          WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -129,7 +143,8 @@ export async function POST(
     const currentMetadata = (task.metadata as Prisma.JsonObject) || {};
 
     // Append output to execution log
-    const existingOutputs = (currentMetadata.executionOutputs as string[]) || [];
+    const existingOutputs =
+      (currentMetadata.executionOutputs as string[]) || [];
     const newOutputEntry = {
       timestamp: new Date().toISOString(),
       output,
@@ -141,7 +156,10 @@ export async function POST(
       ...currentMetadata,
       progress,
       lastProgressUpdate: new Date().toISOString(),
-      executionOutputs: [...existingOutputs, newOutputEntry] as Prisma.JsonArray,
+      executionOutputs: [
+        ...existingOutputs,
+        newOutputEntry,
+      ] as Prisma.JsonArray,
       ...(artifacts.length > 0 && {
         artifacts: [
           ...((currentMetadata.artifacts as string[]) || []),
@@ -179,9 +197,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR,
+        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

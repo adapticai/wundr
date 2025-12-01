@@ -1,11 +1,14 @@
 # TypeScript Configuration
 
-This directory contains comprehensive TypeScript configurations for the monorepo refactoring toolkit, designed to provide maximum type safety and excellent developer experience.
+This directory contains comprehensive TypeScript configurations for the monorepo refactoring
+toolkit, designed to provide maximum type safety and excellent developer experience.
 
 ## Configuration Files
 
 ### `tsconfig.base.json`
+
 The base configuration that all other TypeScript configs extend from. Features:
+
 - **Strict Type Checking**: All strict flags enabled for maximum safety
 - **Modern Target**: ES2022 with full feature support
 - **Monorepo Support**: Path mapping and project references setup
@@ -13,14 +16,18 @@ The base configuration that all other TypeScript configs extend from. Features:
 - **Development Experience**: Source maps, declaration maps, and proper module resolution
 
 ### `tsconfig.monorepo.json`
+
 Monorepo-specific configuration that extends the base config. Features:
+
 - **Project References**: Configured for typical monorepo package structure
 - **Path Mapping**: Aliases for `@monorepo/*`, `@packages/*`, `@apps/*`, etc.
 - **Workspace Integration**: Optimized for package manager workspaces
 - **Build Coordination**: Composite builds with proper dependency ordering
 
 ### `tsconfig.scripts.json`
+
 Configuration optimized for Node.js scripts and tooling. Features:
+
 - **Node.js Compatibility**: CommonJS modules and Node.js types
 - **Script Flexibility**: Slightly relaxed rules for CLI and build scripts
 - **Fast Compilation**: No project references for quicker iteration
@@ -29,7 +36,9 @@ Configuration optimized for Node.js scripts and tooling. Features:
 ## Type Definitions
 
 ### `types/global.d.ts`
+
 Global type definitions available throughout the project:
+
 - **Environment Variables**: Typed `process.env` for all expected variables
 - **Console Extensions**: Additional logging methods
 - **Utility Types**: Common patterns like `NonEmptyArray`, `DeepPartial`, etc.
@@ -37,14 +46,18 @@ Global type definitions available throughout the project:
 - **JSON Types**: Strict JSON value typing
 
 ### `types/modules.d.ts`
+
 Module declarations for untyped packages:
+
 - **Build Tools**: shelljs, glob, ts-morph
 - **CLI Tools**: commander, chalk, ora, inquirer
 - **Utilities**: semver and other common packages
 - **Custom Modules**: Internal module path declarations
 
 ### `types/node.d.ts`
+
 Enhanced Node.js type definitions:
+
 - **Child Process**: Extended exec and spawn options
 - **File System**: Complete fs/promises API coverage
 - **Path Utilities**: Enhanced path manipulation types
@@ -52,7 +65,9 @@ Enhanced Node.js type definitions:
 - **Util Functions**: Type guards and inspection utilities
 
 ### `types/utils.d.ts`
+
 Toolkit-specific type definitions:
+
 - **AST Analysis**: TypeScript AST node types and analysis results
 - **Dependency Management**: Dependency graphs and circular detection
 - **Code Quality**: Metrics, issues, and quality gates
@@ -61,7 +76,9 @@ Toolkit-specific type definitions:
 - **Reporting**: Report generation and recommendation types
 
 ### `types/index.d.ts`
+
 Central export file that:
+
 - References all type definition files
 - Exports commonly used types
 - Provides type guards and assertion helpers
@@ -70,6 +87,7 @@ Central export file that:
 ## Usage
 
 ### In Package Projects
+
 ```json
 {
   "extends": "../../config/typescript/tsconfig.monorepo.json",
@@ -78,14 +96,12 @@ Central export file that:
     "rootDir": "./src"
   },
   "include": ["src/**/*"],
-  "references": [
-    { "path": "../core-types" },
-    { "path": "../utils" }
-  ]
+  "references": [{ "path": "../core-types" }, { "path": "../utils" }]
 }
 ```
 
 ### In Scripts
+
 ```json
 {
   "extends": "../../config/typescript/tsconfig.scripts.json",
@@ -97,6 +113,7 @@ Central export file that:
 ```
 
 ### In Applications
+
 ```json
 {
   "extends": "../../config/typescript/tsconfig.base.json",
@@ -106,10 +123,7 @@ Central export file that:
     "module": "CommonJS"
   },
   "include": ["src/**/*"],
-  "references": [
-    { "path": "../../packages/core-types" },
-    { "path": "../../packages/services" }
-  ]
+  "references": [{ "path": "../../packages/core-types" }, { "path": "../../packages/services" }]
 }
 ```
 
@@ -133,6 +147,7 @@ import { ConfigHelper } from '@config/helpers';
 ## Type Safety Features
 
 ### Strict Configuration
+
 - `strict: true` - All strict checks enabled
 - `noImplicitAny: true` - No implicit any types
 - `strictNullChecks: true` - Null safety
@@ -141,12 +156,14 @@ import { ConfigHelper } from '@config/helpers';
 - `noUncheckedIndexedAccess: true` - Safe array/object access
 
 ### Additional Safety
+
 - `noUnusedLocals: true` - Catch unused variables
 - `noUnusedParameters: true` - Catch unused parameters
 - `noImplicitOverride: true` - Explicit override keyword
 - `forceConsistentCasingInFileNames: true` - Consistent naming
 
 ### Modern Features
+
 - `target: "ES2022"` - Latest JavaScript features
 - `lib: ["ES2022", "DOM"]` - Full API coverage
 - `moduleResolution: "node"` - Node.js module resolution
@@ -155,7 +172,9 @@ import { ConfigHelper } from '@config/helpers';
 ## Integration with Tools
 
 ### ESLint
+
 The TypeScript configurations work seamlessly with ESLint:
+
 ```json
 {
   "parser": "@typescript-eslint/parser",
@@ -166,7 +185,9 @@ The TypeScript configurations work seamlessly with ESLint:
 ```
 
 ### Jest
+
 For testing with proper type checking:
+
 ```json
 {
   "preset": "ts-jest",
@@ -178,7 +199,9 @@ For testing with proper type checking:
 ```
 
 ### Build Tools
+
 Compatible with:
+
 - **Turbo**: Project references for incremental builds
 - **tsc**: Direct TypeScript compiler usage
 - **ts-node**: Script execution with type checking
@@ -187,6 +210,7 @@ Compatible with:
 ## Best Practices
 
 ### Project Structure
+
 ```
 ├── packages/
 │   ├── core-types/
@@ -209,6 +233,7 @@ Compatible with:
 ```
 
 ### Import Organization
+
 ```typescript
 // 1. Node.js built-ins
 import * as fs from 'fs';
@@ -228,6 +253,7 @@ import config from '../config';
 ```
 
 ### Type Definitions
+
 ```typescript
 // Use toolkit types
 import type { RefactoringToolkit } from '@config/typescript/types';
@@ -260,6 +286,7 @@ type OptionalConfig = Optional<RefactoringToolkit.Config.ToolkitConfig, 'reporti
 ### IDE Integration
 
 For VS Code, add to workspace settings:
+
 ```json
 {
   "typescript.preferences.includePackageJsonAutoImports": "on",
@@ -271,15 +298,18 @@ For VS Code, add to workspace settings:
 ## Maintenance
 
 ### Updating Configurations
+
 1. Update base configuration for project-wide changes
 2. Test with `tsc --noEmit` before committing
 3. Validate project references with `tsc --build`
 4. Check IDE integration after updates
 
 ### Adding New Packages
+
 1. Create package-specific tsconfig.json
 2. Add to monorepo project references
 3. Update path mappings if needed
 4. Test compilation and imports
 
-This configuration provides a solid foundation for TypeScript development in a monorepo environment with maximum type safety and excellent developer experience.
+This configuration provides a solid foundation for TypeScript development in a monorepo environment
+with maximum type safety and excellent developer experience.

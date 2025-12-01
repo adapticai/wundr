@@ -103,7 +103,7 @@ export class IntentParser extends EventEmitter {
 
   constructor(
     claudeClient: ClaudeClient,
-    config: Partial<IntentParserConfig> = {},
+    config: Partial<IntentParserConfig> = {}
   ) {
     super();
 
@@ -131,13 +131,13 @@ export class IntentParser extends EventEmitter {
   async parseIntent(
     input: string,
     availableCommands: string[],
-    context: IntentContext = {},
+    context: IntentContext = {}
   ): Promise<IntentResult> {
     const normalizedInput = this.normalizeInput(input);
     const cacheKey = this.getCacheKey(
       normalizedInput,
       availableCommands,
-      context,
+      context
     );
 
     // Check cache first
@@ -151,7 +151,7 @@ export class IntentParser extends EventEmitter {
       // Step 1: Quick pattern matching for common commands
       const patternResult = await this.patternMatching(
         normalizedInput,
-        availableCommands,
+        availableCommands
       );
       if (patternResult.confidence >= 0.9) {
         this.cacheResult(cacheKey, patternResult);
@@ -168,21 +168,21 @@ export class IntentParser extends EventEmitter {
         normalizedInput,
         availableCommands,
         context,
-        entities,
+        entities
       );
 
       // Step 4: Combine results and validate
       const finalResult = this.combineResults(
         patternResult,
         aiResult,
-        entities,
+        entities
       );
 
       // Step 5: Post-processing and validation
       const validatedResult = await this.validateAndEnrich(
         finalResult,
         availableCommands,
-        context,
+        context
       );
 
       this.cacheResult(cacheKey, validatedResult);
@@ -197,7 +197,7 @@ export class IntentParser extends EventEmitter {
       return this.fallbackIntentParsing(
         normalizedInput,
         availableCommands,
-        context,
+        context
       );
     }
   }
@@ -208,7 +208,7 @@ export class IntentParser extends EventEmitter {
   async extractParameters(
     input: string,
     command: string,
-    commandPattern?: CommandPattern,
+    commandPattern?: CommandPattern
   ): Promise<Record<string, any>> {
     const parameters: Record<string, any> = {};
 
@@ -242,7 +242,7 @@ Extract parameters from the user input and respond with JSON only:
         {
           temperature: 0.1,
           maxTokens: 1024,
-        },
+        }
       );
 
       const result = JSON.parse(response.trim());
@@ -256,7 +256,7 @@ Extract parameters from the user input and respond with JSON only:
         if (result.parameters[param.name] && param.validation) {
           if (!param.validation.test(result.parameters[param.name])) {
             logger.warn(
-              `Parameter validation failed for ${param.name}: ${result.parameters[param.name]}`,
+              `Parameter validation failed for ${param.name}: ${result.parameters[param.name]}`
             );
             delete result.parameters[param.name];
           }
@@ -285,7 +285,7 @@ Extract parameters from the user input and respond with JSON only:
     partialInput: string,
     availableCommands: string[],
     context: IntentContext = {},
-    limit: number = 5,
+    limit: number = 5
   ): Promise<
     Array<{
       command: string;
@@ -304,7 +304,7 @@ Extract parameters from the user input and respond with JSON only:
     // Pattern-based suggestions
     const patternSuggestions = this.getPatternSuggestions(
       partialInput,
-      availableCommands,
+      availableCommands
     );
     suggestions.push(...patternSuggestions);
 
@@ -315,7 +315,7 @@ Extract parameters from the user input and respond with JSON only:
           partialInput,
           availableCommands,
           context,
-          limit - suggestions.length,
+          limit - suggestions.length
         );
         suggestions.push(...aiSuggestions);
       } catch (error) {
@@ -368,7 +368,7 @@ Extract parameters from the user input and respond with JSON only:
   } {
     const now = Date.now();
     const validEntries = Array.from(this.intentCache.values()).filter(
-      entry => now - entry.timestamp < this.config.cacheDuration,
+      entry => now - entry.timestamp < this.config.cacheDuration
     );
 
     const oldestEntry =
@@ -515,16 +515,16 @@ Extract parameters from the user input and respond with JSON only:
     this.entityPatterns.set('file_path', /(?:\.\/|\/|~\/)[^\s]+/g);
     this.entityPatterns.set(
       'package_name',
-      /(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*/g,
+      /(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*/g
     );
     this.entityPatterns.set(
       'command',
-      /(?:wundr\s+)?(?:analyze|create|init|help|dashboard|batch|watch)\b/g,
+      /(?:wundr\s+)?(?:analyze|create|init|help|dashboard|batch|watch)\b/g
     );
     this.entityPatterns.set('option', /--?[a-zA-Z][a-zA-Z0-9-]*/g);
     this.entityPatterns.set(
       'technology',
-      /\b(?:react|angular|vue|nodejs|typescript|javascript|python|java|docker|kubernetes)\b/gi,
+      /\b(?:react|angular|vue|nodejs|typescript|javascript|python|java|docker|kubernetes)\b/gi
     );
   }
 
@@ -539,7 +539,7 @@ Extract parameters from the user input and respond with JSON only:
   private getCacheKey(
     input: string,
     commands: string[],
-    context: IntentContext,
+    context: IntentContext
   ): string {
     const contextKey = JSON.stringify({
       projectType: context.projectType,
@@ -552,7 +552,7 @@ Extract parameters from the user input and respond with JSON only:
 
   private async patternMatching(
     input: string,
-    availableCommands: string[],
+    availableCommands: string[]
   ): Promise<IntentResult> {
     let bestMatch: IntentResult = {
       intent: 'unknown',
@@ -562,8 +562,8 @@ Extract parameters from the user input and respond with JSON only:
 
     for (const [intent, pattern] of this.commandPatterns) {
       if (!availableCommands.includes(intent)) {
-continue;
-}
+        continue;
+      }
 
       const confidence = this.calculatePatternScore(input, pattern);
 
@@ -584,7 +584,7 @@ continue;
 
   private calculatePatternScore(
     input: string,
-    pattern: CommandPattern,
+    pattern: CommandPattern
   ): number {
     let score = 0;
     let totalWeight = 0;
@@ -597,8 +597,8 @@ continue;
       let matchCount = 0;
       for (const word of patternWords) {
         if (word.startsWith('{') && word.endsWith('}')) {
-continue;
-} // Skip parameters
+          continue;
+        } // Skip parameters
         if (inputWords.includes(word)) {
           matchCount++;
         }
@@ -616,7 +616,7 @@ continue;
     for (const example of pattern.examples) {
       const similarity = this.calculateStringSimilarity(
         input,
-        example.toLowerCase(),
+        example.toLowerCase()
       );
       exampleScore = Math.max(exampleScore, similarity);
     }
@@ -667,7 +667,7 @@ continue;
     input: string,
     availableCommands: string[],
     context: IntentContext,
-    entities: Entity[],
+    entities: Entity[]
   ): Promise<IntentResult> {
     const contextInfo = this.buildContextInfo(context);
     const entityInfo =
@@ -702,7 +702,7 @@ Analyze and respond with JSON only:
         {
           temperature: 0.1,
           maxTokens: 1536,
-        },
+        }
       );
 
       const cleanResponse = response.trim();
@@ -737,7 +737,7 @@ Analyze and respond with JSON only:
 
     if (context.recentCommands?.length) {
       parts.push(
-        `Recent commands: ${context.recentCommands.slice(0, 3).join(', ')}`,
+        `Recent commands: ${context.recentCommands.slice(0, 3).join(', ')}`
       );
     }
 
@@ -751,7 +751,7 @@ Analyze and respond with JSON only:
   private combineResults(
     patternResult: IntentResult,
     aiResult: IntentResult,
-    entities: Entity[],
+    entities: Entity[]
   ): IntentResult {
     // Use AI result as base, but boost confidence if pattern matching agrees
     let finalResult = { ...aiResult };
@@ -763,7 +763,8 @@ Analyze and respond with JSON only:
       // High-confidence pattern match might override AI
       if (patternResult.confidence > aiResult.confidence) {
         finalResult = patternResult;
-        finalResult.reasoning += ' (overridden by high-confidence pattern match)';
+        finalResult.reasoning +=
+          ' (overridden by high-confidence pattern match)';
       }
     }
 
@@ -778,7 +779,7 @@ Analyze and respond with JSON only:
   private async validateAndEnrich(
     result: IntentResult,
     availableCommands: string[],
-    context: IntentContext,
+    context: IntentContext
   ): Promise<IntentResult> {
     // Validate that the intent command is available
     if (!availableCommands.includes(result.intent)) {
@@ -790,7 +791,8 @@ Analyze and respond with JSON only:
     // Add safety warnings for destructive commands
     const commandPattern = this.commandPatterns.get(result.intent);
     if (commandPattern?.destructive) {
-      result.clarification = 'This is a destructive operation. Are you sure you want to proceed?';
+      result.clarification =
+        'This is a destructive operation. Are you sure you want to proceed?';
     }
 
     // Enrich with context-aware suggestions
@@ -798,7 +800,7 @@ Analyze and respond with JSON only:
       result.alternatives = await this.getContextualAlternatives(
         result,
         availableCommands,
-        context,
+        context
       );
     }
 
@@ -808,7 +810,7 @@ Analyze and respond with JSON only:
   private async getContextualAlternatives(
     result: IntentResult,
     availableCommands: string[],
-    context: IntentContext,
+    context: IntentContext
   ): Promise<IntentResult['alternatives']> {
     const alternatives: NonNullable<IntentResult['alternatives']> = [];
 
@@ -819,7 +821,7 @@ Analyze and respond with JSON only:
         if (pattern) {
           const confidence = this.calculatePatternScore(
             result.command || '',
-            pattern,
+            pattern
           );
           if (confidence > 0.3) {
             alternatives.push({
@@ -840,7 +842,7 @@ Analyze and respond with JSON only:
   private fallbackIntentParsing(
     input: string,
     availableCommands: string[],
-    context: IntentContext,
+    context: IntentContext
   ): IntentResult {
     // Simple keyword matching as last resort
     const keywords = input.split(/\s+/);
@@ -873,7 +875,7 @@ Analyze and respond with JSON only:
 
   private fallbackParameterExtraction(
     input: string,
-    pattern: CommandPattern,
+    pattern: CommandPattern
   ): Record<string, any> {
     const parameters: Record<string, any> = {};
     const words = input.split(/\s+/);
@@ -888,13 +890,13 @@ Analyze and respond with JSON only:
       } else if (param.type === 'boolean') {
         if (
           words.some(word =>
-            ['yes', 'true', 'on', 'enable'].includes(word.toLowerCase()),
+            ['yes', 'true', 'on', 'enable'].includes(word.toLowerCase())
           )
         ) {
           parameters[param.name] = true;
         } else if (
           words.some(word =>
-            ['no', 'false', 'off', 'disable'].includes(word.toLowerCase()),
+            ['no', 'false', 'off', 'disable'].includes(word.toLowerCase())
           )
         ) {
           parameters[param.name] = false;
@@ -912,7 +914,7 @@ Analyze and respond with JSON only:
 
   private getPatternSuggestions(
     partialInput: string,
-    availableCommands: string[],
+    availableCommands: string[]
   ): Array<{
     command: string;
     description: string;
@@ -929,15 +931,15 @@ Analyze and respond with JSON only:
     for (const command of availableCommands) {
       const pattern = this.commandPatterns.get(command);
       if (!pattern) {
-continue;
-}
+        continue;
+      }
 
       // Check if partial input matches command or examples
       const confidence = Math.max(
         this.calculateStringSimilarity(partialInput, command),
         ...pattern.examples.map(ex =>
-          this.calculateStringSimilarity(partialInput, ex),
-        ),
+          this.calculateStringSimilarity(partialInput, ex)
+        )
       );
 
       if (confidence > 0.3) {
@@ -957,7 +959,7 @@ continue;
     partialInput: string,
     availableCommands: string[],
     context: IntentContext,
-    limit: number,
+    limit: number
   ): Promise<
     Array<{
       command: string;
@@ -1065,18 +1067,18 @@ Provide ${limit} suggestions in JSON format:
 
     const words = input.toLowerCase().split(/\s+/);
     const positiveCount = words.filter(word =>
-      positiveWords.includes(word),
+      positiveWords.includes(word)
     ).length;
     const negativeCount = words.filter(word =>
-      negativeWords.includes(word),
+      negativeWords.includes(word)
     ).length;
 
     if (positiveCount > negativeCount) {
-return 'positive';
-}
+      return 'positive';
+    }
     if (negativeCount > positiveCount) {
-return 'negative';
-}
+      return 'negative';
+    }
     return 'neutral';
   }
 

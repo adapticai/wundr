@@ -2,7 +2,8 @@
 
 ## Overview
 
-Successfully created a dynamic page header component system that allows pages to update the header title, subtitle, and breadcrumbs dynamically through React Context.
+Successfully created a dynamic page header component system that allows pages to update the header
+title, subtitle, and breadcrumbs dynamically through React Context.
 
 ## Files Created/Modified
 
@@ -149,16 +150,16 @@ export default function WorkflowDetailPage({ workflowId }) {
 
 ```typescript
 interface PageHeaderContextValue {
-  title: string;                                    // Current title
-  subtitle?: string;                                // Optional subtitle
-  breadcrumbs?: Breadcrumb[];                       // Breadcrumb trail
+  title: string; // Current title
+  subtitle?: string; // Optional subtitle
+  breadcrumbs?: Breadcrumb[]; // Breadcrumb trail
   setPageHeader: (title: string, subtitle?: string) => void;
   setBreadcrumbs: (breadcrumbs: Breadcrumb[]) => void;
 }
 
 interface Breadcrumb {
-  label: string;                                    // Display text
-  href?: string;                                    // Optional link
+  label: string; // Display text
+  href?: string; // Optional link
 }
 ```
 
@@ -170,22 +171,27 @@ interface Breadcrumb {
 ## File Paths (Absolute)
 
 All files are located in:
+
 ```
 /Users/iroselli/wundr/packages/@wundr/neolith/apps/web/
 ```
 
 ### Component Files
+
 - `components/layout/dynamic-page-header.tsx`
 - `components/layout/workspace-layout-client.tsx`
 - `components/layout/dynamic-page-header-example.tsx`
 
 ### Context Files
+
 - `contexts/page-header-context.tsx`
 
 ### Layout Files
+
 - `app/(workspace)/layout.tsx`
 
 ### Documentation Files
+
 - `docs/components/DYNAMIC_PAGE_HEADER.md`
 - `docs/components/DYNAMIC_PAGE_HEADER_IMPLEMENTATION.md` (this file)
 
@@ -194,6 +200,7 @@ All files are located in:
 ### Layout Integration
 
 The workspace layout now:
+
 1. Imports PageHeaderProvider and DynamicPageHeader
 2. Wraps SidebarInset content with PageHeaderProvider
 3. Replaces static breadcrumb with DynamicPageHeader
@@ -202,6 +209,7 @@ The workspace layout now:
 ### Page Integration
 
 Pages can now:
+
 1. Import usePageHeader hook
 2. Call setPageHeader in useEffect
 3. Optionally set breadcrumbs
@@ -309,6 +317,7 @@ useEffect(() => {
 ## Summary
 
 Successfully implemented a dynamic page header system that:
+
 - Replaces static "Dashboard" text with dynamic titles
 - Supports subtitles and breadcrumb navigation
 - Uses React Context for state management

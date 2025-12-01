@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Task Management API provides comprehensive CRUD operations for managing tasks in Orchestrator (Orchestrator) autonomous systems. It supports task creation, assignment, dependency validation, status tracking, and efficient polling for Orchestrator daemons.
+The Task Management API provides comprehensive CRUD operations for managing tasks in Orchestrator
+(Orchestrator) autonomous systems. It supports task creation, assignment, dependency validation,
+status tracking, and efficient polling for Orchestrator daemons.
 
 **Base URL:** `/api/tasks`
 
@@ -36,20 +38,20 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| vpId | string | No | - | Filter by Orchestrator ID |
-| workspaceId | string | No | - | Filter by workspace ID |
-| status | string\|string[] | No | - | Filter by status(es) |
-| priority | string\|string[] | No | - | Filter by priority(ies) |
-| search | string | No | - | Search by title or description |
-| tags | string[] | No | - | Filter by tags (AND operation) |
-| assignedToId | string | No | - | Filter by assignee |
-| includeCompleted | boolean | No | false | Include DONE and CANCELLED tasks |
-| page | number | No | 1 | Pagination page (1-indexed) |
-| limit | number | No | 20 | Items per page (max 100) |
-| sortBy | string | No | createdAt | Sort field (createdAt, updatedAt, priority, dueDate, title, status) |
-| sortOrder | string | No | desc | Sort direction (asc, desc) |
+| Parameter        | Type             | Required | Default   | Description                                                         |
+| ---------------- | ---------------- | -------- | --------- | ------------------------------------------------------------------- |
+| vpId             | string           | No       | -         | Filter by Orchestrator ID                                           |
+| workspaceId      | string           | No       | -         | Filter by workspace ID                                              |
+| status           | string\|string[] | No       | -         | Filter by status(es)                                                |
+| priority         | string\|string[] | No       | -         | Filter by priority(ies)                                             |
+| search           | string           | No       | -         | Search by title or description                                      |
+| tags             | string[]         | No       | -         | Filter by tags (AND operation)                                      |
+| assignedToId     | string           | No       | -         | Filter by assignee                                                  |
+| includeCompleted | boolean          | No       | false     | Include DONE and CANCELLED tasks                                    |
+| page             | number           | No       | 1         | Pagination page (1-indexed)                                         |
+| limit            | number           | No       | 20        | Items per page (max 100)                                            |
+| sortBy           | string           | No       | createdAt | Sort field (createdAt, updatedAt, priority, dueDate, title, status) |
+| sortOrder        | string           | No       | desc      | Sort direction (asc, desc)                                          |
 
 **Response:** 200 OK
 
@@ -176,9 +178,9 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Path Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| id | string | Yes | Task ID |
+| Parameter | Type   | Required | Description |
+| --------- | ------ | -------- | ----------- |
+| id        | string | Yes      | Task ID     |
 
 **Response:** 200 OK
 
@@ -220,9 +222,9 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Path Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| id | string | Yes | Task ID |
+| Parameter | Type   | Required | Description |
+| --------- | ------ | -------- | ----------- |
+| id        | string | Yes      | Task ID     |
 
 **Request Body:** (all fields optional)
 
@@ -275,9 +277,9 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Path Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| id | string | Yes | Task ID |
+| Parameter | Type   | Required | Description |
+| --------- | ------ | -------- | ----------- |
+| id        | string | Yes      | Task ID     |
 
 **Response:** 200 OK
 
@@ -401,12 +403,12 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Query Parameters:**
 
-| Parameter | Description |
-|-----------|-------------|
-| status | Filter by status array (filters multiple statuses) |
-| minPriority | Minimum priority (CRITICAL > HIGH > MEDIUM > LOW) |
-| since | Only return tasks updated after this timestamp (delta updates) |
-| limit | Max tasks to return (default 100, max 1000) |
+| Parameter   | Description                                                    |
+| ----------- | -------------------------------------------------------------- |
+| status      | Filter by status array (filters multiple statuses)             |
+| minPriority | Minimum priority (CRITICAL > HIGH > MEDIUM > LOW)              |
+| since       | Only return tasks updated after this timestamp (delta updates) |
+| limit       | Max tasks to return (default 100, max 1000)                    |
 
 ---
 
@@ -420,21 +422,21 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Path Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| id | string | Yes | Orchestrator ID |
+| Parameter | Type   | Required | Description     |
+| --------- | ------ | -------- | --------------- |
+| id        | string | Yes      | Orchestrator ID |
 
 **Query Parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| status | string\|string[] | - | Filter by status |
-| priority | string\|string[] | - | Filter by priority |
-| includeCompleted | boolean | false | Include completed tasks |
-| sortBy | string | priority | Sort field (priority, dueDate, createdAt, status) |
-| sortOrder | string | asc | Sort direction (asc, desc) |
-| page | number | 1 | Page number |
-| limit | number | 50 | Items per page |
+| Parameter        | Type             | Default  | Description                                       |
+| ---------------- | ---------------- | -------- | ------------------------------------------------- |
+| status           | string\|string[] | -        | Filter by status                                  |
+| priority         | string\|string[] | -        | Filter by priority                                |
+| includeCompleted | boolean          | false    | Include completed tasks                           |
+| sortBy           | string           | priority | Sort field (priority, dueDate, createdAt, status) |
+| sortOrder        | string           | asc      | Sort direction (asc, desc)                        |
+| page             | number           | 1        | Page number                                       |
+| limit            | number           | 50       | Items per page                                    |
 
 **Response:** 200 OK
 
@@ -483,24 +485,24 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 ```typescript
 interface Task {
-  id: string;                    // CUID
-  title: string;                 // Task title (1-500 chars)
-  description: string | null;    // Detailed description
-  priority: TaskPriority;        // CRITICAL | HIGH | MEDIUM | LOW
-  status: TaskStatus;            // TODO | IN_PROGRESS | BLOCKED | DONE | CANCELLED
-  vpId: string;                  // Assigned Orchestrator ID
-  workspaceId: string;           // Workspace ID
-  channelId: string | null;      // Optional channel context
-  createdById: string;           // Creator user ID
-  assignedToId: string | null;   // Assigned to user/VP
+  id: string; // CUID
+  title: string; // Task title (1-500 chars)
+  description: string | null; // Detailed description
+  priority: TaskPriority; // CRITICAL | HIGH | MEDIUM | LOW
+  status: TaskStatus; // TODO | IN_PROGRESS | BLOCKED | DONE | CANCELLED
+  vpId: string; // Assigned Orchestrator ID
+  workspaceId: string; // Workspace ID
+  channelId: string | null; // Optional channel context
+  createdById: string; // Creator user ID
+  assignedToId: string | null; // Assigned to user/VP
   estimatedHours: number | null; // Estimated hours
-  dueDate: Date | null;          // Due date
-  tags: string[];                // Category tags
-  dependsOn: string[];           // Dependency task IDs
+  dueDate: Date | null; // Due date
+  tags: string[]; // Category tags
+  dependsOn: string[]; // Dependency task IDs
   metadata: Record<string, unknown>; // Custom data
-  createdAt: Date;               // Creation timestamp
-  updatedAt: Date;               // Last update timestamp
-  completedAt: Date | null;      // Completion timestamp
+  createdAt: Date; // Creation timestamp
+  updatedAt: Date; // Last update timestamp
+  completedAt: Date | null; // Completion timestamp
 }
 ```
 
@@ -516,18 +518,19 @@ LOW       → 3 (Lowest)
 ```
 
 **Usage in Sorting:**
+
 - Default sort is always by priority ascending (CRITICAL first)
 - Can be overridden with `sortBy` parameter
 
 ### Status Values
 
-| Status | Description |
-|--------|-------------|
-| TODO | Task not started |
-| IN_PROGRESS | Task is being worked on |
-| BLOCKED | Task is blocked by dependencies or other issues |
-| DONE | Task completed successfully |
-| CANCELLED | Task cancelled and will not be completed |
+| Status      | Description                                     |
+| ----------- | ----------------------------------------------- |
+| TODO        | Task not started                                |
+| IN_PROGRESS | Task is being worked on                         |
+| BLOCKED     | Task is blocked by dependencies or other issues |
+| DONE        | Task completed successfully                     |
+| CANCELLED   | Task cancelled and will not be completed        |
 
 ---
 
@@ -573,20 +576,20 @@ POST /api/tasks
 
 ## Error Codes
 
-| Code | Status | Description |
-|------|--------|-------------|
-| UNAUTHORIZED | 401 | User not authenticated |
-| FORBIDDEN | 403 | User lacks permission |
-| VALIDATION_ERROR | 400 | Input validation failed |
-| NOT_FOUND | 404 | Task not found |
-| VP_NOT_FOUND | 404 | Orchestrator not found in workspace |
-| WORKSPACE_NOT_FOUND | 404 | Workspace not found |
-| ASSIGNEE_NOT_FOUND | 404 | Assignee user not found |
-| DEPENDENCY_VIOLATION | 400 | Invalid task dependencies |
-| CIRCULAR_DEPENDENCY | 400 | Circular dependency detected |
-| INVALID_STATE_TRANSITION | 400 | Invalid status transition |
-| INTERNAL_ERROR | 500 | Server error |
-| BULK_OPERATION_PARTIAL | 207 | Partial bulk operation success |
+| Code                     | Status | Description                         |
+| ------------------------ | ------ | ----------------------------------- |
+| UNAUTHORIZED             | 401    | User not authenticated              |
+| FORBIDDEN                | 403    | User lacks permission               |
+| VALIDATION_ERROR         | 400    | Input validation failed             |
+| NOT_FOUND                | 404    | Task not found                      |
+| VP_NOT_FOUND             | 404    | Orchestrator not found in workspace |
+| WORKSPACE_NOT_FOUND      | 404    | Workspace not found                 |
+| ASSIGNEE_NOT_FOUND       | 404    | Assignee user not found             |
+| DEPENDENCY_VIOLATION     | 400    | Invalid task dependencies           |
+| CIRCULAR_DEPENDENCY      | 400    | Circular dependency detected        |
+| INVALID_STATE_TRANSITION | 400    | Invalid status transition           |
+| INTERNAL_ERROR           | 500    | Server error                        |
+| BULK_OPERATION_PARTIAL   | 207    | Partial bulk operation success      |
 
 ### Error Response Format
 
@@ -844,6 +847,7 @@ Version management via `X-API-Version` header (default: latest)
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: https://github.com/neolith/issues
 - Email: api-support@neolith.ai
 - Slack: #api-support

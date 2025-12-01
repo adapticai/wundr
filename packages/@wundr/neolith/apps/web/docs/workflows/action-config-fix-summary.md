@@ -2,11 +2,13 @@
 
 ## Problem Identified
 
-The 20-agent audit found that workflow action configurations were returning **empty config objects** (`{}`), causing action configuration selectors to have no initial values or defaults.
+The 20-agent audit found that workflow action configurations were returning **empty config objects**
+(`{}`), causing action configuration selectors to have no initial values or defaults.
 
 ### Root Causes
 
-1. **No default configurations**: When creating new actions or changing action types, the config was set to an empty object `{}`
+1. **No default configurations**: When creating new actions or changing action types, the config was
+   set to an empty object `{}`
 2. **Missing initialization**: Three locations were creating actions with empty configs:
    - `workflow-builder.tsx` - When adding a new action
    - `action-config.tsx` - When changing the action type
@@ -74,6 +76,7 @@ export const DEFAULT_ACTION_CONFIGS: Record<ActionType, Partial<ActionConfig['co
 ### 2. Updated Components to Use Defaults
 
 #### `action-config.tsx`
+
 - **Change**: Import and use `DEFAULT_ACTION_CONFIGS`
 - **Impact**: When user changes action type, the config is populated with appropriate defaults
 - **Code**:
@@ -85,6 +88,7 @@ export const DEFAULT_ACTION_CONFIGS: Record<ActionType, Partial<ActionConfig['co
   ```
 
 #### `workflow-builder.tsx`
+
 - **Change**: Import and use `DEFAULT_ACTION_CONFIGS` when adding new actions
 - **Impact**: New actions start with proper default values
 - **Code**:
@@ -99,6 +103,7 @@ export const DEFAULT_ACTION_CONFIGS: Record<ActionType, Partial<ActionConfig['co
   ```
 
 #### `workflows/page.tsx`
+
 - **Change**: Import and use `DEFAULT_ACTION_CONFIGS` in action type selector
 - **Impact**: Quick workflow builder properly initializes configs
 - **Code**:
@@ -119,10 +124,13 @@ export const DEFAULT_ACTION_CONFIGS: Record<ActionType, Partial<ActionConfig['co
 Created comprehensive utility module with:
 
 #### `getDefaultActionConfig(actionType)`
+
 Returns default configuration for any action type
 
 #### `ACTION_CONFIG_SCHEMA`
+
 Complete schema documentation for all action types including:
+
 - Field descriptions
 - Required fields
 - Field types
@@ -130,56 +138,76 @@ Complete schema documentation for all action types including:
 - Default values
 
 #### `validateActionConfig(actionType, config)`
+
 Validates that an action config has all required fields
 
 #### `getActionDescription(action)`
+
 Generates human-readable descriptions of actions
 
 ## Action Configuration Schema
 
 ### send_message
+
 **Required**: `channelId`, `message`
+
 - `channelId` (string): Channel ID to send to
 - `message` (string): Message content with Markdown and variable support
 
 ### send_dm
+
 **Required**: `userId`, `message`
+
 - `userId` (string): User ID to send DM to
 - `message` (string): DM content with Markdown and variable support
 
 ### create_channel
+
 **Required**: `channelName`
+
 - `channelName` (string): Name of the new channel
 - `channelType` (enum): 'public' or 'private' (default: 'public')
 
 ### invite_to_channel
+
 **Required**: `channelId`, `userId`
+
 - `channelId` (string): Target channel ID
 - `userId` (string): User ID to invite
 
 ### assign_role
+
 **Required**: `roleId`, `userId`
+
 - `roleId` (string): Role ID to assign
 - `userId` (string): User ID to receive role
 
 ### add_reaction
+
 **Required**: `emoji`
+
 - `emoji` (string): Emoji (Unicode or :shortcode:)
 
 ### http_request
+
 **Required**: `url`, `method`
+
 - `url` (string): Request URL
 - `method` (enum): 'GET', 'POST', 'PUT', or 'DELETE'
 - `headers` (object): HTTP headers
 - `body` (string): Request body with variable support
 
 ### wait
+
 **Required**: `duration`, `unit`
+
 - `duration` (number): How long to wait
 - `unit` (enum): 'seconds', 'minutes', 'hours', or 'days'
 
 ### condition
+
 **Required**: `condition`
+
 - `condition.field` (string): Field to evaluate
 - `condition.operator` (enum): 'equals', 'contains', 'greater_than', 'less_than', 'exists'
 - `condition.value` (string): Comparison value
@@ -187,7 +215,9 @@ Generates human-readable descriptions of actions
 - `elseActions` (array): Action IDs if false
 
 ### notify_vp
+
 **Required**: `vpId`
+
 - `vpId` (string): Orchestrator agent ID
 - `message` (string): Context message with variable support
 
@@ -240,19 +270,23 @@ Expected: Clean build with no TypeScript errors
 ### Type Safety
 
 All changes maintain full TypeScript type safety:
-- `DEFAULT_ACTION_CONFIGS` is properly typed as `Record<ActionType, Partial<ActionConfig['config']>>`
+
+- `DEFAULT_ACTION_CONFIGS` is properly typed as
+  `Record<ActionType, Partial<ActionConfig['config']>>`
 - Helper functions have explicit type signatures
 - No `any` types used
 
 ## Impact
 
 ### Before Fix
+
 - New actions created with `config: {}`
 - Action type changes reset to `config: {}`
 - No guidance for users on expected fields
 - Empty forms in configuration panel
 
 ### After Fix
+
 - New actions have sensible defaults
 - Type changes populate appropriate defaults
 - Clear schema documentation
@@ -269,6 +303,7 @@ All changes maintain full TypeScript type safety:
 
 ## Related Issues
 
-- Template action types use different naming (`message.send` vs `send_message`) - separate fix needed
+- Template action types use different naming (`message.send` vs `send_message`) - separate fix
+  needed
 - Error handling configs could also benefit from defaults
 - Trigger configs may need similar default system

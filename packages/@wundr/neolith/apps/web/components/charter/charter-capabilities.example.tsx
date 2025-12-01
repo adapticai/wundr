@@ -42,11 +42,14 @@ export function CharterCapabilitiesExample() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h2 className="text-2xl font-bold">Configure Orchestrator Capabilities</h2>
-        <p className="text-muted-foreground">
-          Select which actions your orchestrator can perform and configure their permissions.
+        <h2 className='text-2xl font-bold'>
+          Configure Orchestrator Capabilities
+        </h2>
+        <p className='text-muted-foreground'>
+          Select which actions your orchestrator can perform and configure their
+          permissions.
         </p>
       </div>
 
@@ -58,17 +61,19 @@ export function CharterCapabilitiesExample() {
         isAdmin={true}
       />
 
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={() => setCapabilities([])}>
+      <div className='flex justify-end gap-3'>
+        <Button variant='outline' onClick={() => setCapabilities([])}>
           Reset
         </Button>
         <Button onClick={handleSave}>Save Capabilities</Button>
       </div>
 
       {/* Debug output */}
-      <details className="mt-8 p-4 border rounded-lg">
-        <summary className="cursor-pointer font-medium">Current Configuration (Debug)</summary>
-        <pre className="mt-4 text-xs overflow-auto">
+      <details className='mt-8 p-4 border rounded-lg'>
+        <summary className='cursor-pointer font-medium'>
+          Current Configuration (Debug)
+        </summary>
+        <pre className='mt-4 text-xs overflow-auto'>
           {JSON.stringify(capabilities, null, 2)}
         </pre>
       </details>

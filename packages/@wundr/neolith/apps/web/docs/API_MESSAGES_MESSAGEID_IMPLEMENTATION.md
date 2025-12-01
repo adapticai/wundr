@@ -2,9 +2,11 @@
 
 ## Overview
 
-Complete API implementation for individual message operations with full CRUD support, edit history tracking, and thread management.
+Complete API implementation for individual message operations with full CRUD support, edit history
+tracking, and thread management.
 
-**File Location:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/[id]/route.ts`
+**File Location:**
+`/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/[id]/route.ts`
 
 ## API Endpoints
 
@@ -17,12 +19,14 @@ Complete API implementation for individual message operations with full CRUD sup
 **Authorization:** Must be a channel member
 
 **Request:**
+
 ```http
 GET /api/messages/msg_abc123
 Authorization: Bearer <token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "data": {
@@ -73,6 +77,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized` - Not authenticated
 - `404 Not Found` - Message doesn't exist or no channel access
 - `410 Gone` - Message has been deleted
@@ -88,6 +93,7 @@ Authorization: Bearer <token>
 **Authorization:** Must be the message author
 
 **Request:**
+
 ```http
 PATCH /api/messages/msg_abc123
 Content-Type: application/json
@@ -102,11 +108,13 @@ Authorization: Bearer <token>
 ```
 
 **Features:**
+
 - Automatically tracks edit history in `metadata.editHistory`
 - Sets `isEdited: true` and `editedAt` timestamp
 - Previous content is preserved in edit history array
 
 **Edit History Structure:**
+
 ```json
 {
   "metadata": {
@@ -127,6 +135,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "data": {
@@ -145,6 +154,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized` - Not authenticated
 - `403 Forbidden` - Not the message author
 - `404 Not Found` - Message doesn't exist or no channel access
@@ -152,6 +162,7 @@ Authorization: Bearer <token>
 - `400 Bad Request` - Invalid input (empty content, content too long)
 
 **Validation:**
+
 - Content: 1-10,000 characters (required)
 - Metadata: Optional JSON object
 
@@ -166,18 +177,21 @@ Authorization: Bearer <token>
 **Authorization:** Message author OR channel admin/owner
 
 **Request:**
+
 ```http
 DELETE /api/messages/msg_abc123
 Authorization: Bearer <token>
 ```
 
 **Behavior:**
+
 - Soft delete: Sets `isDeleted: true`
 - Content replaced with `[Message deleted]`
 - Message remains in database
 - Edit history preserved in metadata
 
 **Response (200):**
+
 ```json
 {
   "message": "Message deleted successfully",
@@ -186,6 +200,7 @@ Authorization: Bearer <token>
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized` - Not authenticated
 - `403 Forbidden` - Not author and not admin/owner
 - `404 Not Found` - Message doesn't exist or no channel access
@@ -196,32 +211,38 @@ Authorization: Bearer <token>
 ## Features Implemented
 
 ### 1. Edit History Tracking
+
 - All previous versions stored in `metadata.editHistory`
 - Includes: content, timestamp, user ID
 - Automatically appended on each edit
 - Preserves full audit trail
 
 ### 2. Channel Membership Access Control
+
 ```typescript
-async function getMessageWithAccessCheck(messageId: string, userId: string)
+async function getMessageWithAccessCheck(messageId: string, userId: string);
 ```
+
 - Verifies user is a channel member
 - Returns message with access context
 - Includes user's role (OWNER, ADMIN, MEMBER)
 - Used by all endpoints for authorization
 
 ### 3. Thread Support
+
 - Returns `_count.replies` for thread indication
 - `parentId` field for thread replies
 - Full thread endpoint: `/api/messages/[id]/thread`
 
 ### 4. Soft Delete
+
 - Messages never hard-deleted
 - Content replaced for privacy
 - History preserved for audit
 - Status tracked with `isDeleted` and `deletedAt`
 
 ### 5. Rich Message Details
+
 - Author information
 - Channel context
 - Reactions list
@@ -271,29 +292,32 @@ model Message {
 ### Input Validation (Zod Schemas)
 
 **Message ID Parameter:**
+
 ```typescript
 messageIdParamSchema = z.object({
-  id: z.string().cuid('Invalid message ID format')
-})
+  id: z.string().cuid('Invalid message ID format'),
+});
 ```
 
 **Update Message Schema:**
+
 ```typescript
 updateMessageSchema = z.object({
-  content: z.string()
+  content: z
+    .string()
     .min(1, 'Message content cannot be empty')
     .max(10000, 'Message content must be less than 10000 characters'),
-  metadata: z.record(z.unknown()).optional()
-})
+  metadata: z.record(z.unknown()).optional(),
+});
 ```
 
 ### Authorization Matrix
 
-| Endpoint | Authentication | Channel Member | Author | Admin/Owner |
-|----------|---------------|----------------|--------|-------------|
-| GET      | Required      | Required       | -      | -           |
-| PATCH    | Required      | Required       | Required | -         |
-| DELETE   | Required      | Required       | Required | OR Required |
+| Endpoint | Authentication | Channel Member | Author   | Admin/Owner |
+| -------- | -------------- | -------------- | -------- | ----------- |
+| GET      | Required       | Required       | -        | -           |
+| PATCH    | Required       | Required       | Required | -           |
+| DELETE   | Required       | Required       | Required | OR Required |
 
 ### Access Control Flow
 
@@ -321,7 +345,7 @@ MESSAGE_ERROR_CODES = {
   CANNOT_DELETE: 'CANNOT_DELETE',
   MESSAGE_DELETED: 'MESSAGE_DELETED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
-}
+};
 ```
 
 ---
@@ -334,7 +358,7 @@ MESSAGE_ERROR_CODES = {
 // Get message details
 const getMessageDetails = async (messageId: string) => {
   const response = await fetch(`/api/messages/${messageId}`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return response.json();
 };
@@ -345,9 +369,9 @@ const editMessage = async (messageId: string, content: string) => {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ content })
+    body: JSON.stringify({ content }),
   });
   return response.json();
 };
@@ -356,7 +380,7 @@ const editMessage = async (messageId: string, content: string) => {
 const deleteMessage = async (messageId: string) => {
   const response = await fetch(`/api/messages/${messageId}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return response.json();
 };
@@ -367,7 +391,7 @@ const showEditHistory = (message: Message) => {
   return history.map(edit => ({
     content: edit.content,
     editedAt: new Date(edit.editedAt),
-    editedBy: edit.editedBy
+    editedBy: edit.editedBy,
   }));
 };
 ```
@@ -376,7 +400,8 @@ const showEditHistory = (message: Message) => {
 
 ## Testing
 
-Test file location: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/__tests__/messages.test.ts`
+Test file location:
+`/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/__tests__/messages.test.ts`
 
 ### Test Coverage
 
@@ -439,6 +464,7 @@ Test file location: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/
 5. ✅ Edit history tracking in metadata
 
 **Additional Features:**
+
 - Channel membership access control
 - Soft delete with content masking
 - Comprehensive error handling
@@ -450,13 +476,15 @@ Test file location: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/
 
 ## File Paths
 
-- **Route Handler:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/[id]/route.ts`
-- **Validation Schemas:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/message.ts`
-- **Test Suite:** `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/__tests__/messages.test.ts`
-- **Database Schema:** `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
+- **Route Handler:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/[id]/route.ts`
+- **Validation Schemas:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/validations/message.ts`
+- **Test Suite:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/messages/__tests__/messages.test.ts`
+- **Database Schema:**
+  `/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma`
 
 ---
 
-**Implementation Date:** November 26, 2025
-**API Version:** 1.0
-**Status:** Production Ready
+**Implementation Date:** November 26, 2025 **API Version:** 1.0 **Status:** Production Ready

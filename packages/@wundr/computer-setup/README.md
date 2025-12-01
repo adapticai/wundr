@@ -53,7 +53,8 @@ transforms a fresh machine into a fully-configured development powerhouse in min
 - **Databases**: PostgreSQL, MySQL, MongoDB, Redis clients
 - **Cloud CLIs**: AWS, GCloud, Azure
 - **AI Tools**: Claude Code, Claude Flow, 80+ MCP agents
-- **Orchestrator Daemon**: Machine-level agent supervisor with tiered memory and external integrations
+- **Orchestrator Daemon**: Machine-level agent supervisor with tiered memory and external
+  integrations
 
 ### Hardware-Adaptive Claude Optimization
 
@@ -909,13 +910,14 @@ If installation fails, run `--resume` to continue from where it left off.
 
 ## 🤖 Orchestrator Daemon Architecture
 
-The **Orchestrator Daemon** (Virtual Persona Daemon) is a machine-level supervisor that provides persistent
-agent orchestration, external integrations, and intelligent memory management across all Claude
-Code/Claude Flow sessions.
+The **Orchestrator Daemon** (Virtual Persona Daemon) is a machine-level supervisor that provides
+persistent agent orchestration, external integrations, and intelligent memory management across all
+Claude Code/Claude Flow sessions.
 
 ### Overview
 
-Orchestrator Daemon runs as a background service on your machine, acting as a central coordinator for:
+Orchestrator Daemon runs as a background service on your machine, acting as a central coordinator
+for:
 
 - **Session Management**: Spawning and managing Claude Code/Claude Flow sessions
 - **External Integrations**: Interfacing with Slack, Gmail, Google Drive, Twilio, and more
@@ -954,15 +956,16 @@ npx @wundr.io/computer-setup orchestrator-status
 
 ### Session Archetypes
 
-Orchestrator Daemon supports pre-configured session archetypes optimized for different work contexts:
+Orchestrator Daemon supports pre-configured session archetypes optimized for different work
+contexts:
 
-| Archetype       | Description                                        | Pre-loaded Agents                        |
-| --------------- | -------------------------------------------------- | ---------------------------------------- |
-| `engineering`   | Software development tasks                         | coder, reviewer, tester, architect       |
-| `legal`         | Legal document review and drafting                 | legal-analyst, compliance-checker        |
-| `hr`            | Human resources and recruitment                    | hr-assistant, policy-reviewer            |
-| `marketing`     | Marketing content and campaign management          | content-creator, analytics-agent         |
-| `custom`        | User-defined archetype with custom agent selection | User-specified                           |
+| Archetype     | Description                                        | Pre-loaded Agents                  |
+| ------------- | -------------------------------------------------- | ---------------------------------- |
+| `engineering` | Software development tasks                         | coder, reviewer, tester, architect |
+| `legal`       | Legal document review and drafting                 | legal-analyst, compliance-checker  |
+| `hr`          | Human resources and recruitment                    | hr-assistant, policy-reviewer      |
+| `marketing`   | Marketing content and campaign management          | content-creator, analytics-agent   |
+| `custom`      | User-defined archetype with custom agent selection | User-specified                     |
 
 ```bash
 # Start a session with a specific archetype
@@ -974,8 +977,8 @@ orchestrator-daemon archetype create my-archetype --agents "coder,researcher,pla
 
 ### Tiered Memory System
 
-Orchestrator Daemon implements a **MemGPT-inspired tiered memory architecture** for intelligent context
-management across sessions:
+Orchestrator Daemon implements a **MemGPT-inspired tiered memory architecture** for intelligent
+context management across sessions:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -1086,21 +1089,21 @@ orchestrator-daemon integrations add twilio --account-sid $TWILIO_SID --auth-tok
 
 ### Orchestrator Daemon Commands
 
-| Command                       | Description                                          |
-| ----------------------------- | ---------------------------------------------------- |
-| `orchestrator-daemon start`             | Start the Orchestrator Daemon service                          |
-| `orchestrator-daemon stop`              | Stop the Orchestrator Daemon service                           |
-| `orchestrator-daemon restart`           | Restart the Orchestrator Daemon service                        |
-| `orchestrator-daemon status`            | Show daemon status and statistics                    |
-| `orchestrator-daemon session list`      | List active Claude Code/Flow sessions                |
-| `orchestrator-daemon session start`     | Start a new session with optional archetype          |
-| `orchestrator-daemon session stop`      | Stop a specific session                              |
-| `orchestrator-daemon memory status`     | Show memory tier statistics                          |
-| `orchestrator-daemon memory search`     | Search across memory tiers                           |
-| `orchestrator-daemon integrations list` | List configured integrations                         |
-| `orchestrator-daemon integrations add`  | Add a new integration                                |
-| `orchestrator-daemon logs`              | View daemon logs                                     |
-| `orchestrator-daemon config`            | View or modify daemon configuration                  |
+| Command                                 | Description                                 |
+| --------------------------------------- | ------------------------------------------- |
+| `orchestrator-daemon start`             | Start the Orchestrator Daemon service       |
+| `orchestrator-daemon stop`              | Stop the Orchestrator Daemon service        |
+| `orchestrator-daemon restart`           | Restart the Orchestrator Daemon service     |
+| `orchestrator-daemon status`            | Show daemon status and statistics           |
+| `orchestrator-daemon session list`      | List active Claude Code/Flow sessions       |
+| `orchestrator-daemon session start`     | Start a new session with optional archetype |
+| `orchestrator-daemon session stop`      | Stop a specific session                     |
+| `orchestrator-daemon memory status`     | Show memory tier statistics                 |
+| `orchestrator-daemon memory search`     | Search across memory tiers                  |
+| `orchestrator-daemon integrations list` | List configured integrations                |
+| `orchestrator-daemon integrations add`  | Add a new integration                       |
+| `orchestrator-daemon logs`              | View daemon logs                            |
+| `orchestrator-daemon config`            | View or modify daemon configuration         |
 
 ### Configuration
 

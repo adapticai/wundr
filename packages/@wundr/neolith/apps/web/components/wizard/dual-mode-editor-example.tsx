@@ -6,7 +6,12 @@
 'use client';
 
 import * as React from 'react';
-import { DualModeEditor, type EntityData, type Message, type FieldConfig } from './';
+import {
+  DualModeEditor,
+  type EntityData,
+  type Message,
+  type FieldConfig,
+} from './';
 
 /**
  * Example usage of DualModeEditor for creating a workspace
@@ -24,7 +29,7 @@ export function WorkspaceCreatorExample() {
     context: EntityData
   ): Promise<string> => {
     // Mock AI response - replace with actual LLM API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     if (field.startsWith('explain-')) {
       const fieldName = field.replace('explain-', '');
@@ -51,9 +56,9 @@ export function WorkspaceCreatorExample() {
     history: Message[]
   ): Promise<{ response: string; extractedData?: EntityData }> => {
     // Mock LLM conversation - replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const messageCount = history.filter((m) => m.role === 'user').length;
+    const messageCount = history.filter(m => m.role === 'user').length;
 
     if (messageCount === 1) {
       return {
@@ -67,18 +72,21 @@ export function WorkspaceCreatorExample() {
           "Perfect! I've gathered enough information to create your workspace. You can review the details in the 'Edit' tab, or switch to edit mode to make any adjustments.",
         extractedData: {
           name: history[0].content.slice(0, 50),
-          description: history.map((m) => (m.role === 'user' ? m.content : '')).join(' '),
+          description: history
+            .map(m => (m.role === 'user' ? m.content : ''))
+            .join(' '),
         },
       };
     }
 
     return {
-      response: 'Thanks for the additional information. The workspace details have been updated.',
+      response:
+        'Thanks for the additional information. The workspace details have been updated.',
       extractedData: {
         name: history[0].content.slice(0, 50),
         description: history
-          .filter((m) => m.role === 'user')
-          .map((m) => m.content)
+          .filter(m => m.role === 'user')
+          .map(m => m.content)
           .join(' '),
       },
     };
@@ -112,16 +120,16 @@ export function WorkspaceCreatorExample() {
   ];
 
   return (
-    <div className="container mx-auto p-6">
+    <div className='container mx-auto p-6'>
       <DualModeEditor
-        entityType="Workspace"
+        entityType='Workspace'
         onSave={handleSave}
-        mode="chat"
+        mode='chat'
         fieldConfigs={fieldConfigs}
         onSendMessage={handleSendMessage}
         onAskAI={handleAskAI}
         autoSave={true}
-        storageKey="workspace-creator"
+        storageKey='workspace-creator'
       />
     </div>
   );
@@ -173,14 +181,14 @@ export function AgentCreatorExample() {
   ];
 
   return (
-    <div className="container mx-auto p-6">
+    <div className='container mx-auto p-6'>
       <DualModeEditor
-        entityType="Agent"
+        entityType='Agent'
         onSave={handleSave}
-        mode="edit"
+        mode='edit'
         fieldConfigs={fieldConfigs}
         autoSave={true}
-        storageKey="agent-creator"
+        storageKey='agent-creator'
         initialData={{
           name: 'My Agent',
           description: '',
@@ -213,8 +221,8 @@ export function CustomAIExample() {
 
   return (
     <DualModeEditor
-      entityType="Custom Entity"
-      onSave={(data) => console.log('Saved:', data)}
+      entityType='Custom Entity'
+      onSave={data => console.log('Saved:', data)}
       onAskAI={handleAskAI}
       autoSave={true}
     />

@@ -320,7 +320,9 @@ export function validateModel(modelId: string): void {
  * @param provider - Provider type
  * @returns Default provider configuration
  */
-export function getDefaultProviderConfig(provider: LLMProvider): Partial<LLMProviderConfig> {
+export function getDefaultProviderConfig(
+  provider: LLMProvider
+): Partial<LLMProviderConfig> {
   const config: Partial<LLMProviderConfig> = {
     provider,
     timeout: 60000, // 60 seconds

@@ -8,7 +8,6 @@ import { Lightbox } from './lightbox';
 
 import type { FileRecord } from '@/types/upload';
 
-
 /**
  * Props for the ImageGallery component
  */
@@ -72,20 +71,20 @@ export function ImageGallery({
 
   if (images.length === 0) {
     return (
-      <div className="py-8 text-center text-muted-foreground">
+      <div className='py-8 text-center text-muted-foreground'>
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mx-auto mb-2 h-12 w-12 opacity-50"
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          className='mx-auto mb-2 h-12 w-12 opacity-50'
         >
-          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-          <circle cx="9" cy="9" r="2" />
-          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          <rect width='18' height='18' x='3' y='3' rx='2' ry='2' />
+          <circle cx='9' cy='9' r='2' />
+          <path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' />
         </svg>
         <p>No images to display</p>
       </div>
@@ -98,13 +97,13 @@ export function ImageGallery({
         {images.map((image, index) => (
           <button
             key={image.id}
-            type="button"
+            type='button'
             onClick={() => handleImageClick(index)}
             className={cn(
               'group relative overflow-hidden rounded-lg',
               'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
               'transition-all duration-200',
-              aspect[aspectRatio],
+              aspect[aspectRatio]
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -113,9 +112,9 @@ export function ImageGallery({
               alt={image.name}
               className={cn(
                 'h-full w-full object-cover',
-                'transition-transform duration-300 group-hover:scale-105',
+                'transition-transform duration-300 group-hover:scale-105'
               )}
-              loading="lazy"
+              loading='lazy'
             />
 
             {/* Hover Overlay */}
@@ -123,23 +122,23 @@ export function ImageGallery({
               className={cn(
                 'absolute inset-0 flex items-center justify-center',
                 'bg-black/40 opacity-0 transition-opacity duration-200',
-                'group-hover:opacity-100',
+                'group-hover:opacity-100'
               )}
             >
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-8 w-8"
+                xmlns='http://www.w3.org/2000/svg'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='white'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='h-8 w-8'
               >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-                <path d="M11 8v6" />
-                <path d="M8 11h6" />
+                <circle cx='11' cy='11' r='8' />
+                <path d='m21 21-4.3-4.3' />
+                <path d='M11 8v6' />
+                <path d='M8 11h6' />
               </svg>
             </div>
           </button>
@@ -210,11 +209,17 @@ export function ImageGalleryPreview({
 
   return (
     <>
-      <div className={cn('grid gap-1 overflow-hidden rounded-lg', getLayoutClass(), className)}>
+      <div
+        className={cn(
+          'grid gap-1 overflow-hidden rounded-lg',
+          getLayoutClass(),
+          className
+        )}
+      >
         {visibleImages.map((image, index) => (
           <button
             key={image.id}
-            type="button"
+            type='button'
             onClick={() => handleImageClick(index)}
             className={cn(
               'group relative overflow-hidden',
@@ -223,15 +228,15 @@ export function ImageGalleryPreview({
                 'row-span-2': visibleImages.length === 3 && index === 0,
                 'aspect-square': visibleImages.length > 1,
                 'aspect-video': visibleImages.length === 1,
-              },
+              }
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={image.thumbnailUrl || image.url}
               alt={image.name}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
+              className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+              loading='lazy'
             />
 
             {/* Show remaining count on last visible image */}
@@ -239,10 +244,10 @@ export function ImageGalleryPreview({
               <div
                 className={cn(
                   'absolute inset-0 flex items-center justify-center',
-                  'bg-black/60 text-white',
+                  'bg-black/60 text-white'
                 )}
               >
-                <span className="text-2xl font-bold">+{remainingCount}</span>
+                <span className='text-2xl font-bold'>+{remainingCount}</span>
               </div>
             )}
           </button>
@@ -252,11 +257,11 @@ export function ImageGalleryPreview({
       {/* View All Button */}
       {remainingCount > 0 && onViewAll && (
         <button
-          type="button"
+          type='button'
           onClick={onViewAll}
           className={cn(
             'mt-2 text-sm text-primary hover:underline',
-            'focus:outline-none focus:underline',
+            'focus:outline-none focus:underline'
           )}
         >
           View all {images.length} images

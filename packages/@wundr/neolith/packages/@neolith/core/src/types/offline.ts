@@ -31,7 +31,11 @@ export type ActionType =
 /**
  * Status of a queued action.
  */
-export type QueuedActionStatus = 'pending' | 'processing' | 'failed' | 'completed';
+export type QueuedActionStatus =
+  | 'pending'
+  | 'processing'
+  | 'failed'
+  | 'completed';
 
 /**
  * Priority levels for queued actions.
@@ -510,7 +514,13 @@ export interface SyncMessageMetadata {
   /** Bot/VP that sent the message */
   vpId?: string;
   /** Additional string metadata */
-  [key: string]: string | string[] | boolean | number | { url: string; title?: string; description?: string; imageUrl?: string } | undefined;
+  [key: string]:
+    | string
+    | string[]
+    | boolean
+    | number
+    | { url: string; title?: string; description?: string; imageUrl?: string }
+    | undefined;
 }
 
 /**
@@ -621,7 +631,15 @@ export interface SyncChange {
   /** Type of change */
   changeType: 'create' | 'update';
   /** Changed data - type depends on entityType, use type guards for type-safe access */
-  data: SyncWorkspace | SyncChannel | SyncUser | SyncMessage | SyncReaction | SyncMember | SyncFile | SyncPreferences;
+  data:
+    | SyncWorkspace
+    | SyncChannel
+    | SyncUser
+    | SyncMessage
+    | SyncReaction
+    | SyncMember
+    | SyncFile
+    | SyncPreferences;
   /** Timestamp of the change */
   timestamp: Date;
   /** Version number for conflict detection */
@@ -660,7 +678,15 @@ export type SyncEntityType =
 /**
  * Type alias for sync entity data types.
  */
-export type SyncEntityDataType = SyncWorkspace | SyncChannel | SyncUser | SyncMessage | SyncReaction | SyncMember | SyncFile | SyncPreferences;
+export type SyncEntityDataType =
+  | SyncWorkspace
+  | SyncChannel
+  | SyncUser
+  | SyncMessage
+  | SyncReaction
+  | SyncMember
+  | SyncFile
+  | SyncPreferences;
 
 /**
  * A conflict detected during sync.
@@ -1008,12 +1034,19 @@ export type OnActionQueuedCallback = (action: QueuedAction) => void;
 /**
  * Callback for action completed events.
  */
-export type OnActionCompletedCallback = (actionId: string, result?: ActionResult) => void;
+export type OnActionCompletedCallback = (
+  actionId: string,
+  result?: ActionResult
+) => void;
 
 /**
  * Callback for action failed events.
  */
-export type OnActionFailedCallback = (actionId: string, error: string, canRetry: boolean) => void;
+export type OnActionFailedCallback = (
+  actionId: string,
+  error: string,
+  canRetry: boolean
+) => void;
 
 /**
  * Callback for sync completed events.
@@ -1227,13 +1260,17 @@ export function isSyncStatus(value: unknown): value is SyncStatus {
     'offline',
   ];
 
-  return typeof value === 'string' && validStatuses.includes(value as SyncStatus);
+  return (
+    typeof value === 'string' && validStatuses.includes(value as SyncStatus)
+  );
 }
 
 /**
  * Type guard for SendMessagePayload.
  */
-export function isSendMessagePayload(value: unknown): value is SendMessagePayload {
+export function isSendMessagePayload(
+  value: unknown
+): value is SendMessagePayload {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -1241,8 +1278,7 @@ export function isSendMessagePayload(value: unknown): value is SendMessagePayloa
   const payload = value as Record<string, unknown>;
 
   return (
-    typeof payload.channelId === 'string' &&
-    typeof payload.content === 'string'
+    typeof payload.channelId === 'string' && typeof payload.content === 'string'
   );
 }
 
@@ -1259,7 +1295,10 @@ export function isSendMessagePayload(value: unknown): value is SendMessagePayloa
  */
 export function calculateRetryDelay(
   retryCount: number,
-  config: Pick<OfflineQueueConfig, 'baseRetryDelayMs' | 'maxRetryDelayMs'> = DEFAULT_OFFLINE_QUEUE_CONFIG,
+  config: Pick<
+    OfflineQueueConfig,
+    'baseRetryDelayMs' | 'maxRetryDelayMs'
+  > = DEFAULT_OFFLINE_QUEUE_CONFIG
 ): number {
   const exponentialDelay = config.baseRetryDelayMs * Math.pow(2, retryCount);
   const jitter = Math.random() * 0.3 * exponentialDelay; // Add 0-30% jitter

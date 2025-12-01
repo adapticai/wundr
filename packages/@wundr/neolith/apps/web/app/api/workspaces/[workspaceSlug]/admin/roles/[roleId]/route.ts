@@ -44,7 +44,10 @@ const SYSTEM_ROLE_IDS = [
  */
 type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 
-async function findRole(workspaceId: string, roleId: string): Promise<Role | null> {
+async function findRole(
+  workspaceId: string,
+  roleId: string
+): Promise<Role | null> {
   // Check if it's a system role
   if (roleId.startsWith('system-role-')) {
     const index = parseInt(roleId.split('-')[2], 10);
@@ -55,10 +58,39 @@ async function findRole(workspaceId: string, roleId: string): Promise<Role | nul
       isSystem: boolean;
       color: string;
     }> = [
-      { name: 'Owner', description: 'Full access', permissions: [{ resource: '*', actions: ['create', 'read', 'update', 'delete', 'manage'] }], isSystem: true, color: '#DC2626' },
-      { name: 'Admin', description: 'Admin access', permissions: [{ resource: 'settings', actions: ['read', 'update'] }], isSystem: true, color: '#7C3AED' },
-      { name: 'Member', description: 'Standard access', permissions: [{ resource: 'messages', actions: ['create', 'read'] }], isSystem: true, color: '#2563EB' },
-      { name: 'Guest', description: 'Limited access', permissions: [{ resource: 'messages', actions: ['read'] }], isSystem: true, color: '#6B7280' },
+      {
+        name: 'Owner',
+        description: 'Full access',
+        permissions: [
+          {
+            resource: '*',
+            actions: ['create', 'read', 'update', 'delete', 'manage'],
+          },
+        ],
+        isSystem: true,
+        color: '#DC2626',
+      },
+      {
+        name: 'Admin',
+        description: 'Admin access',
+        permissions: [{ resource: 'settings', actions: ['read', 'update'] }],
+        isSystem: true,
+        color: '#7C3AED',
+      },
+      {
+        name: 'Member',
+        description: 'Standard access',
+        permissions: [{ resource: 'messages', actions: ['create', 'read'] }],
+        isSystem: true,
+        color: '#2563EB',
+      },
+      {
+        name: 'Guest',
+        description: 'Limited access',
+        permissions: [{ resource: 'messages', actions: ['read'] }],
+        isSystem: true,
+        color: '#6B7280',
+      },
     ];
 
     if (index >= 0 && index < systemRoles.length) {
@@ -96,14 +128,17 @@ async function findRole(workspaceId: string, roleId: string): Promise<Role | nul
  */
 export async function GET(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -114,27 +149,42 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     const role = await findRole(workspaceId, roleId);
     if (!role) {
       return NextResponse.json(
-        createAdminErrorResponse('Role not found', ADMIN_ERROR_CODES.ROLE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Role not found',
+          ADMIN_ERROR_CODES.ROLE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     return NextResponse.json({ role });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/admin/roles/:roleId] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/admin/roles/:roleId] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch role', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch role',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -150,14 +200,17 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -168,26 +221,38 @@ export async function PATCH(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Check if system role
     if (SYSTEM_ROLE_IDS.includes(roleId)) {
       return NextResponse.json(
-        createAdminErrorResponse('Cannot modify system roles', ADMIN_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Cannot modify system roles',
+          ADMIN_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE
+        ),
+        { status: 403 }
       );
     }
 
     const role = await findRole(workspaceId, roleId);
     if (!role) {
       return NextResponse.json(
-        createAdminErrorResponse('Role not found', ADMIN_ERROR_CODES.ROLE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Role not found',
+          ADMIN_ERROR_CODES.ROLE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -197,8 +262,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Invalid JSON body',
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -209,9 +277,9 @@ export async function PATCH(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -258,10 +326,16 @@ export async function PATCH(
 
     return NextResponse.json({ role: updatedRole });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/admin/roles/:roleId] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/admin/roles/:roleId] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to update role', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to update role',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -277,14 +351,17 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -295,26 +372,38 @@ export async function DELETE(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Check if system role
     if (SYSTEM_ROLE_IDS.includes(roleId)) {
       return NextResponse.json(
-        createAdminErrorResponse('Cannot delete system roles', ADMIN_ERROR_CODES.CANNOT_DELETE_SYSTEM_ROLE),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Cannot delete system roles',
+          ADMIN_ERROR_CODES.CANNOT_DELETE_SYSTEM_ROLE
+        ),
+        { status: 403 }
       );
     }
 
     const role = await findRole(workspaceId, roleId);
     if (!role) {
       return NextResponse.json(
-        createAdminErrorResponse('Role not found', ADMIN_ERROR_CODES.ROLE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Role not found',
+          ADMIN_ERROR_CODES.ROLE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -348,10 +437,16 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Role deleted successfully' });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/admin/roles/:roleId] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/admin/roles/:roleId] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to delete role', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to delete role',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

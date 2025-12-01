@@ -12,12 +12,8 @@
 import { prisma } from '@neolith/database';
 import { createId } from '@paralleldrive/cuid2';
 
-
 import { GenesisError } from '../errors';
-import {
-  StorageServiceImpl,
-  type StorageService,
-} from './storage-service';
+import { StorageServiceImpl, type StorageService } from './storage-service';
 
 import type { User } from '@neolith/database';
 
@@ -44,7 +40,7 @@ async function getSharp(): Promise<SharpFunction> {
   } catch (error) {
     throw new Error(
       'Failed to load sharp module. Ensure sharp is installed with correct platform binaries.\n' +
-        `Original error: ${error instanceof Error ? error.message : String(error)}`,
+        `Original error: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 }
@@ -124,7 +120,7 @@ export class AvatarServiceError extends GenesisError {
     message: string,
     code: string,
     statusCode: number = 500,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ) {
     super(message, code, statusCode, metadata);
     this.name = 'AvatarServiceError';
@@ -147,10 +143,15 @@ export class AvatarProcessingError extends AvatarServiceError {
 
 export class AvatarDownloadError extends AvatarServiceError {
   constructor(url: string, cause?: unknown) {
-    super(`Failed to download avatar from ${url}`, 'AVATAR_DOWNLOAD_ERROR', 502, {
-      url,
-      cause,
-    });
+    super(
+      `Failed to download avatar from ${url}`,
+      'AVATAR_DOWNLOAD_ERROR',
+      502,
+      {
+        url,
+        cause,
+      }
+    );
     this.name = 'AvatarDownloadError';
   }
 }
@@ -168,12 +169,16 @@ export interface AvatarService {
   /**
    * Downloads and uploads an avatar from OAuth provider
    */
-  uploadOAuthAvatar(options: OAuthAvatarDownloadOptions): Promise<AvatarUploadResult>;
+  uploadOAuthAvatar(
+    options: OAuthAvatarDownloadOptions
+  ): Promise<AvatarUploadResult>;
 
   /**
    * Generates a fallback avatar with initials
    */
-  generateFallbackAvatar(options: GenerateFallbackAvatarOptions): Promise<AvatarUploadResult>;
+  generateFallbackAvatar(
+    options: GenerateFallbackAvatarOptions
+  ): Promise<AvatarUploadResult>;
 
   /**
    * Deletes all avatar variants for a user
@@ -201,7 +206,9 @@ export class AvatarServiceImpl implements AvatarService {
   /**
    * Uploads an avatar and generates all size variants
    */
-  async uploadAvatar(options: AvatarUploadOptions): Promise<AvatarUploadResult> {
+  async uploadAvatar(
+    options: AvatarUploadOptions
+  ): Promise<AvatarUploadResult> {
     try {
       // Download or decode source
       const buffer = await this.sourceToBuffer(options.source);
@@ -210,7 +217,10 @@ export class AvatarServiceImpl implements AvatarService {
       await this.validateImage(buffer);
 
       // Process and upload all variants
-      const result = await this.processAndUploadVariants(options.userId, buffer);
+      const result = await this.processAndUploadVariants(
+        options.userId,
+        buffer
+      );
 
       // Update user record
       await this.updateUserAvatar(options.userId, result.url);
@@ -222,7 +232,7 @@ export class AvatarServiceImpl implements AvatarService {
       }
       throw new AvatarProcessingError(
         `Failed to upload avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error,
+        error
       );
     }
   }
@@ -230,10 +240,14 @@ export class AvatarServiceImpl implements AvatarService {
   /**
    * Downloads and uploads an avatar from OAuth provider
    */
-  async uploadOAuthAvatar(options: OAuthAvatarDownloadOptions): Promise<AvatarUploadResult> {
+  async uploadOAuthAvatar(
+    options: OAuthAvatarDownloadOptions
+  ): Promise<AvatarUploadResult> {
     try {
       // Download from provider
-      const buffer = await this.downloadProviderAvatar(options.providerAvatarUrl);
+      const buffer = await this.downloadProviderAvatar(
+        options.providerAvatarUrl
+      );
 
       // Upload as regular avatar
       return await this.uploadAvatar({
@@ -253,19 +267,29 @@ export class AvatarServiceImpl implements AvatarService {
    * Generates a fallback avatar with initials
    */
   async generateFallbackAvatar(
-    options: GenerateFallbackAvatarOptions,
+    options: GenerateFallbackAvatarOptions
   ): Promise<AvatarUploadResult> {
     try {
       // Generate initials-based avatar for each size
-      const variants: Record<AvatarSize, string> = {} as Record<AvatarSize, string>;
-      const variantKeys: Record<AvatarSize, string> = {} as Record<AvatarSize, string>;
+      const variants: Record<AvatarSize, string> = {} as Record<
+        AvatarSize,
+        string
+      >;
+      const variantKeys: Record<AvatarSize, string> = {} as Record<
+        AvatarSize,
+        string
+      >;
 
       for (const [sizeName, sizeValue] of Object.entries(AVATAR_SIZES)) {
-        const buffer = await this.generateInitialsAvatar(options.name, options.userId, sizeValue);
+        const buffer = await this.generateInitialsAvatar(
+          options.name,
+          options.userId,
+          sizeValue
+        );
         const key = this.generateAvatarKey(
           options.userId,
           sizeName.toLowerCase() as Lowercase<AvatarSize>,
-          'fallback',
+          'fallback'
         );
 
         // Upload to S3
@@ -294,7 +318,7 @@ export class AvatarServiceImpl implements AvatarService {
     } catch (error) {
       throw new AvatarProcessingError(
         `Failed to generate fallback avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error,
+        error
       );
     }
   }
@@ -310,7 +334,7 @@ export class AvatarServiceImpl implements AvatarService {
 
       // Delete all found files
       if (files.files.length > 0) {
-        const keys = files.files.map((f) => f.key);
+        const keys = files.files.map(f => f.key);
         await this.storage.deleteFiles(keys);
       }
 
@@ -324,7 +348,7 @@ export class AvatarServiceImpl implements AvatarService {
         `Failed to delete avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'AVATAR_DELETE_ERROR',
         500,
-        { userId },
+        { userId }
       );
     }
   }
@@ -332,7 +356,10 @@ export class AvatarServiceImpl implements AvatarService {
   /**
    * Gets avatar URL with optional size
    */
-  async getAvatarUrl(userId: string, size: AvatarSize = 'LARGE'): Promise<string | null> {
+  async getAvatarUrl(
+    userId: string,
+    size: AvatarSize = 'LARGE'
+  ): Promise<string | null> {
     try {
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -345,7 +372,10 @@ export class AvatarServiceImpl implements AvatarService {
 
       // If requesting a specific size, try to get that variant
       if (size !== 'XLARGE') {
-        const sizeKey = this.generateAvatarKey(userId, size.toLowerCase() as Lowercase<AvatarSize>);
+        const sizeKey = this.generateAvatarKey(
+          userId,
+          size.toLowerCase() as Lowercase<AvatarSize>
+        );
         const exists = await this.storage.fileExists(sizeKey);
         if (exists) {
           return await this.storage.getFileUrl(sizeKey);
@@ -422,7 +452,7 @@ export class AvatarServiceImpl implements AvatarService {
       const allowedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
       if (!allowedFormats.includes(metadata.format)) {
         throw new InvalidAvatarError(
-          `Unsupported image format: ${metadata.format}. Allowed: ${allowedFormats.join(', ')}`,
+          `Unsupported image format: ${metadata.format}. Allowed: ${allowedFormats.join(', ')}`
         );
       }
 
@@ -443,11 +473,17 @@ export class AvatarServiceImpl implements AvatarService {
    */
   private async processAndUploadVariants(
     userId: string,
-    buffer: Buffer,
+    buffer: Buffer
   ): Promise<AvatarUploadResult> {
     const sharp = await getSharp();
-    const variants: Record<AvatarSize, string> = {} as Record<AvatarSize, string>;
-    const variantKeys: Record<AvatarSize, string> = {} as Record<AvatarSize, string>;
+    const variants: Record<AvatarSize, string> = {} as Record<
+      AvatarSize,
+      string
+    >;
+    const variantKeys: Record<AvatarSize, string> = {} as Record<
+      AvatarSize,
+      string
+    >;
 
     for (const [sizeName, sizeValue] of Object.entries(AVATAR_SIZES)) {
       // Resize and optimize
@@ -463,7 +499,10 @@ export class AvatarServiceImpl implements AvatarService {
         .toBuffer();
 
       // Generate key
-      const key = this.generateAvatarKey(userId, sizeName.toLowerCase() as Lowercase<AvatarSize>);
+      const key = this.generateAvatarKey(
+        userId,
+        sizeName.toLowerCase() as Lowercase<AvatarSize>
+      );
 
       // Upload to S3
       const uploadResult = await this.storage.uploadBuffer(processedBuffer, {
@@ -495,7 +534,7 @@ export class AvatarServiceImpl implements AvatarService {
   private async generateInitialsAvatar(
     name: string,
     userId: string,
-    size: number,
+    size: number
   ): Promise<Buffer> {
     // Extract initials
     const initials = this.extractInitials(name);
@@ -533,7 +572,10 @@ export class AvatarServiceImpl implements AvatarService {
    * Extracts initials from name (max 2 characters)
    */
   private extractInitials(name: string): string {
-    const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
+    const parts = name
+      .trim()
+      .split(/\s+/)
+      .filter(p => p.length > 0);
     if (parts.length >= 2) {
       const first = parts[0];
       const last = parts[parts.length - 1];
@@ -585,7 +627,7 @@ export class AvatarServiceImpl implements AvatarService {
   private generateAvatarKey(
     userId: string,
     size: Lowercase<AvatarSize> | 'fallback' = 'xlarge',
-    type: 'avatar' | 'fallback' = 'avatar',
+    type: 'avatar' | 'fallback' = 'avatar'
   ): string {
     const timestamp = Date.now();
     const id = createId();
@@ -611,8 +653,12 @@ export class AvatarServiceImpl implements AvatarService {
  * Creates a dedicated storage service for avatars
  */
 function createAvatarStorageService(): StorageServiceImpl {
-  const bucket = process.env.AVATAR_STORAGE_BUCKET || process.env.STORAGE_BUCKET;
-  const region = process.env.AVATAR_STORAGE_REGION || process.env.STORAGE_REGION || 'us-east-1';
+  const bucket =
+    process.env.AVATAR_STORAGE_BUCKET || process.env.STORAGE_BUCKET;
+  const region =
+    process.env.AVATAR_STORAGE_REGION ||
+    process.env.STORAGE_REGION ||
+    'us-east-1';
   const accessKeyId =
     process.env.AVATAR_STORAGE_ACCESS_KEY_ID ||
     process.env.STORAGE_ACCESS_KEY_ID ||
@@ -621,7 +667,8 @@ function createAvatarStorageService(): StorageServiceImpl {
     process.env.AVATAR_STORAGE_SECRET_ACCESS_KEY ||
     process.env.STORAGE_SECRET_ACCESS_KEY ||
     process.env.AWS_SECRET_ACCESS_KEY;
-  const endpoint = process.env.AVATAR_STORAGE_ENDPOINT || process.env.STORAGE_ENDPOINT;
+  const endpoint =
+    process.env.AVATAR_STORAGE_ENDPOINT || process.env.STORAGE_ENDPOINT;
   const publicUrlBase =
     process.env.AVATAR_STORAGE_PUBLIC_URL || process.env.STORAGE_PUBLIC_URL;
   const provider = (process.env.AVATAR_STORAGE_PROVIDER ||
@@ -632,7 +679,7 @@ function createAvatarStorageService(): StorageServiceImpl {
     throw new AvatarServiceError(
       'Missing required avatar storage environment variables',
       'AVATAR_STORAGE_CONFIG_ERROR',
-      500,
+      500
     );
   }
 
@@ -656,7 +703,9 @@ function createAvatarStorageService(): StorageServiceImpl {
 /**
  * Creates avatar service instance
  */
-export function createAvatarService(storage?: StorageService): AvatarServiceImpl {
+export function createAvatarService(
+  storage?: StorageService
+): AvatarServiceImpl {
   return new AvatarServiceImpl(storage);
 }
 

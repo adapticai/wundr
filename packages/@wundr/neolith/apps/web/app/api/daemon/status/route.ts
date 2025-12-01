@@ -12,14 +12,15 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
  * Schema for status update request body
@@ -57,7 +58,9 @@ interface AccessTokenPayload {
 /**
  * Verify daemon token from Authorization header
  */
-async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+async function verifyDaemonToken(
+  request: NextRequest
+): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid authorization header');
@@ -103,7 +106,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -113,8 +116,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JSON body', code: STATUS_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Invalid JSON body',
+          code: STATUS_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -126,7 +132,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid status. Must be one of: active, paused, error',
           code: STATUS_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -145,15 +151,17 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     // Map operational status to Orchestrator status enum (ERROR maps to OFFLINE as ERROR is not in enum)
-    const orchestratorDbStatus = status === 'error' ? 'OFFLINE' : status === 'paused' ? 'BUSY' : 'ONLINE';
+    const orchestratorDbStatus =
+      status === 'error' ? 'OFFLINE' : status === 'paused' ? 'BUSY' : 'ONLINE';
 
     // Update Orchestrator with operational status
-    const currentCapabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
+    const currentCapabilities =
+      (orchestrator.capabilities as Record<string, unknown>) || {};
     await prisma.orchestrator.update({
       where: { id: token.orchestratorId },
       data: {
@@ -180,7 +188,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         statusKey,
         10 * 60, // 10 minutes TTL
-        JSON.stringify(statusData),
+        JSON.stringify(statusData)
       );
 
       // Publish status update for monitoring dashboards
@@ -190,7 +198,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           type: 'orchestrator_status_update',
           orchestratorId: token.orchestratorId,
           ...statusData,
-        }),
+        })
       );
     } catch (redisError) {
       console.error('Redis status update error:', redisError);
@@ -201,8 +209,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[PUT /api/daemon/status] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to update status', code: STATUS_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Failed to update status',
+        code: STATUS_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }

@@ -12,7 +12,7 @@
 
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -23,18 +23,23 @@ const sendMessageSchema = z.object({
   channelId: z.string().min(1, 'Channel ID is required'),
   content: z.string().min(1, 'Message content is required'),
   threadId: z.string().optional(),
-  attachments: z.array(z.object({
-    type: z.string(),
-    url: z.string(),
-    name: z.string().optional(),
-  })).optional(),
+  attachments: z
+    .array(
+      z.object({
+        type: z.string(),
+        url: z.string(),
+        name: z.string().optional(),
+      })
+    )
+    .optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
 /**
  * JWT configuration
  */
-const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
+const JWT_SECRET =
+  process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
  * Error codes for message operations
@@ -63,7 +68,9 @@ interface AccessTokenPayload {
 /**
  * Verify daemon token from Authorization header
  */
-async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+async function verifyDaemonToken(
+  request: NextRequest
+): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid authorization header');
@@ -82,7 +89,10 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 /**
  * Check if Orchestrator has access to a channel
  */
-async function checkChannelAccess(orchestratorId: string, channelId: string): Promise<boolean> {
+async function checkChannelAccess(
+  orchestratorId: string,
+  channelId: string
+): Promise<boolean> {
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
     select: { userId: true },
@@ -125,7 +135,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -139,8 +149,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Validate required parameters
     if (!channelId) {
       return NextResponse.json(
-        { error: 'Channel ID required', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Channel ID required',
+          code: MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -148,8 +161,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const hasAccess = await checkChannelAccess(token.orchestratorId, channelId);
     if (!hasAccess) {
       return NextResponse.json(
-        { error: 'Channel access denied', code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED },
-        { status: 403 },
+        {
+          error: 'Channel access denied',
+          code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED,
+        },
+        { status: 403 }
       );
     }
 
@@ -170,7 +186,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         select: { createdAt: true },
       });
       if (afterMsg) {
-        cursorConditions.createdAt = { ...cursorConditions.createdAt, gt: afterMsg.createdAt };
+        cursorConditions.createdAt = {
+          ...cursorConditions.createdAt,
+          gt: afterMsg.createdAt,
+        };
       }
     }
 
@@ -185,9 +204,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Fetch author information separately (workaround for Prisma type mapping)
-    type MessageWithAuthorId = typeof rawMessages[0] & { authorId: string };
+    type MessageWithAuthorId = (typeof rawMessages)[0] & { authorId: string };
     const messagesTyped = rawMessages as unknown as MessageWithAuthorId[];
-    const authorIds = Array.from(new Set(messagesTyped.map((m) => m.authorId)));
+    const authorIds = Array.from(new Set(messagesTyped.map(m => m.authorId)));
     const authors = await prisma.user.findMany({
       where: { id: { in: authorIds } },
       select: {
@@ -198,10 +217,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         isOrchestrator: true,
       },
     });
-    const authorMap = new Map(authors.map((a) => [a.id, a]));
+    const authorMap = new Map(authors.map(a => [a.id, a]));
 
     // Format messages with author info
-    const messages = messagesTyped.map((msg) => ({
+    const messages = messagesTyped.map(msg => ({
       id: msg.id,
       content: msg.content,
       type: msg.type,
@@ -211,15 +230,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       isEdited: msg.isEdited,
       channelId: msg.channelId,
       parentId: msg.parentId,
-      author: authorMap.get(msg.authorId) || { id: msg.authorId, name: 'Unknown' },
+      author: authorMap.get(msg.authorId) || {
+        id: msg.authorId,
+        name: 'Unknown',
+      },
     }));
 
     return NextResponse.json({ messages: messages.reverse() });
   } catch (error) {
     console.error('[GET /api/daemon/messages] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to get messages', code: MESSAGE_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Failed to get messages',
+        code: MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }
@@ -255,16 +280,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     // Check scope permissions
-    const hasWriteScope = token.scopes.includes('messages:write') || token.scopes.includes('*');
+    const hasWriteScope =
+      token.scopes.includes('messages:write') || token.scopes.includes('*');
     if (!hasWriteScope) {
       return NextResponse.json(
-        { error: 'Insufficient permissions', code: MESSAGE_ERROR_CODES.INSUFFICIENT_SCOPE },
-        { status: 403 },
+        {
+          error: 'Insufficient permissions',
+          code: MESSAGE_ERROR_CODES.INSUFFICIENT_SCOPE,
+        },
+        { status: 403 }
       );
     }
 
@@ -274,8 +303,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JSON body', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Invalid JSON body',
+          code: MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
@@ -283,19 +315,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = sendMessageSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Channel ID and content required', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 },
+        {
+          error: 'Channel ID and content required',
+          code: MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+        },
+        { status: 400 }
       );
     }
 
-    const { channelId, content, threadId, attachments, metadata } = parseResult.data;
+    const { channelId, content, threadId, attachments, metadata } =
+      parseResult.data;
 
     // Check channel access
     const hasAccess = await checkChannelAccess(token.orchestratorId, channelId);
     if (!hasAccess) {
       return NextResponse.json(
-        { error: 'Channel access denied', code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED },
-        { status: 403 },
+        {
+          error: 'Channel access denied',
+          code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED,
+        },
+        { status: 403 }
       );
     }
 
@@ -307,8 +346,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!orchestrator) {
       return NextResponse.json(
-        { error: 'Orchestrator not found', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        {
+          error: 'Orchestrator not found',
+          code: MESSAGE_ERROR_CODES.UNAUTHORIZED,
+        },
+        { status: 401 }
       );
     }
 
@@ -355,7 +397,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Create message using Prisma
     const message = await prisma.message.create({
-      data: messageData as unknown as Parameters<typeof prisma.message.create>[0]['data'],
+      data: messageData as unknown as Parameters<
+        typeof prisma.message.create
+      >[0]['data'],
     });
 
     // Update channel last activity
@@ -368,8 +412,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/daemon/messages] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to send message', code: MESSAGE_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 },
+      {
+        error: 'Failed to send message',
+        code: MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+      },
+      { status: 500 }
     );
   }
 }

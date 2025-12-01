@@ -10,7 +10,10 @@ export function formatFileSize(bytes: number): string {
 
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
+  const i = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(k)),
+    sizes.length - 1
+  );
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
@@ -27,7 +30,14 @@ export function getFileExtension(filename: string): string {
 /**
  * Detect file type from filename or MIME type
  */
-export type FileType = 'image' | 'video' | 'audio' | 'document' | 'code' | 'archive' | 'generic';
+export type FileType =
+  | 'image'
+  | 'video'
+  | 'audio'
+  | 'document'
+  | 'code'
+  | 'archive'
+  | 'generic';
 
 export function detectFileType(filename: string, mimeType?: string): FileType {
   const ext = getFileExtension(filename);
@@ -53,7 +63,18 @@ export function detectFileType(filename: string, mimeType?: string): FileType {
   if (audioExts.includes(ext)) return 'audio';
 
   // Document extensions
-  const docExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'odt'];
+  const docExts = [
+    'pdf',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx',
+    'ppt',
+    'pptx',
+    'txt',
+    'rtf',
+    'odt',
+  ];
   if (docExts.includes(ext)) return 'document';
 
   // Code extensions
@@ -97,21 +118,30 @@ export function detectFileType(filename: string, mimeType?: string): FileType {
 /**
  * Check if file is an image that can be previewed
  */
-export function isPreviewableImage(filename: string, mimeType?: string): boolean {
+export function isPreviewableImage(
+  filename: string,
+  mimeType?: string
+): boolean {
   return detectFileType(filename, mimeType) === 'image';
 }
 
 /**
  * Check if file is a video that can be previewed
  */
-export function isPreviewableVideo(filename: string, mimeType?: string): boolean {
+export function isPreviewableVideo(
+  filename: string,
+  mimeType?: string
+): boolean {
   return detectFileType(filename, mimeType) === 'video';
 }
 
 /**
  * Truncate filename if too long
  */
-export function truncateFilename(filename: string, maxLength: number = 40): string {
+export function truncateFilename(
+  filename: string,
+  maxLength: number = 40
+): string {
   if (filename.length <= maxLength) return filename;
 
   const ext = getFileExtension(filename);

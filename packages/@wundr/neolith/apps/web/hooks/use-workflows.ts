@@ -110,7 +110,7 @@ export interface UseWorkflowsReturn {
  */
 export function useWorkflows(
   workspaceId: string,
-  options?: UseWorkflowsOptions,
+  options?: UseWorkflowsOptions
 ): UseWorkflowsReturn {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -118,8 +118,8 @@ export function useWorkflows(
 
   const fetchWorkflows = useCallback(async () => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     const abortController = new AbortController();
     setIsLoading(true);
@@ -161,14 +161,14 @@ return;
   useEffect(() => {
     const cleanup = fetchWorkflows();
     return () => {
-      cleanup?.then((abort) => abort?.());
+      cleanup?.then(abort => abort?.());
     };
   }, [fetchWorkflows]);
 
   const filteredWorkflows = useMemo(() => {
     let result = [...workflows];
     if (options?.status && options.status !== 'all') {
-      result = result.filter((w) => w.status === options.status);
+      result = result.filter(w => w.status === options.status);
     }
     return result;
   }, [workflows, options?.status]);
@@ -176,11 +176,14 @@ return;
   const createWorkflow = useCallback(
     async (input: CreateWorkflowInput): Promise<Workflow | null> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/workflows`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(input),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/workflows`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -192,14 +195,14 @@ return;
           throw new Error('Invalid response format');
         }
         // API returns { workflow, message }
-        setWorkflows((prev) => [data.workflow, ...prev]);
+        setWorkflows(prev => [data.workflow, ...prev]);
         return data.workflow;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -273,24 +276,30 @@ export interface UseWorkflowReturn {
  * const execution = await testWorkflow();
  * ```
  */
-export function useWorkflow(workspaceId: string, workflowId: string): UseWorkflowReturn {
+export function useWorkflow(
+  workspaceId: string,
+  workflowId: string
+): UseWorkflowReturn {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWorkflow = useCallback(async () => {
     if (!workspaceId || !workflowId) {
-return;
-}
+      return;
+    }
 
     const abortController = new AbortController();
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`, {
-        signal: abortController.signal,
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/workflows/${workflowId}`,
+        {
+          signal: abortController.signal,
+        }
+      );
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Workflow not found');
@@ -320,18 +329,21 @@ return;
   useEffect(() => {
     const cleanup = fetchWorkflow();
     return () => {
-      cleanup?.then((abort) => abort?.());
+      cleanup?.then(abort => abort?.());
     };
   }, [fetchWorkflow]);
 
   const updateWorkflow = useCallback(
     async (input: UpdateWorkflowInput): Promise<Workflow | null> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(input),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/workflows/${workflowId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -350,14 +362,17 @@ return;
         return null;
       }
     },
-    [workspaceId, workflowId],
+    [workspaceId, workflowId]
   );
 
   const deleteWorkflow = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/workflows/${workflowId}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -375,9 +390,12 @@ return;
 
   const activateWorkflow = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}/activate`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/workflows/${workflowId}/activate`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -399,9 +417,12 @@ return;
 
   const deactivateWorkflow = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}/deactivate`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/workflows/${workflowId}/deactivate`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -424,11 +445,14 @@ return;
   const executeWorkflow = useCallback(
     async (testMode = false): Promise<WorkflowExecution | null> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}/execute`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ testMode }),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/workflows/${workflowId}/execute`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ testMode }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -446,12 +470,13 @@ return;
         return null;
       }
     },
-    [workspaceId, workflowId],
+    [workspaceId, workflowId]
   );
 
-  const testWorkflow = useCallback(async (): Promise<WorkflowExecution | null> => {
-    return executeWorkflow(true);
-  }, [executeWorkflow]);
+  const testWorkflow =
+    useCallback(async (): Promise<WorkflowExecution | null> => {
+      return executeWorkflow(true);
+    }, [executeWorkflow]);
 
   return {
     workflow,
@@ -533,7 +558,7 @@ export interface UseWorkflowExecutionsReturn {
 export function useWorkflowExecutions(
   workspaceId: string,
   workflowId: string,
-  options?: UseWorkflowExecutionsOptions,
+  options?: UseWorkflowExecutionsOptions
 ): UseWorkflowExecutionsReturn {
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -544,8 +569,8 @@ export function useWorkflowExecutions(
   const fetchExecutions = useCallback(
     async (loadMore = false) => {
       if (!workspaceId || !workflowId) {
-return;
-}
+        return;
+      }
 
       const abortController = new AbortController();
       setIsLoading(true);
@@ -554,8 +579,8 @@ return;
       try {
         const params = new URLSearchParams();
         if (options?.status) {
-params.set('status', options.status);
-}
+          params.set('status', options.status);
+        }
         const limit = options?.limit ?? 20;
         params.set('limit', String(limit));
 
@@ -577,14 +602,17 @@ params.set('status', options.status);
         const newExecutions = data.executions;
 
         if (loadMore) {
-          setExecutions((prev) => [...prev, ...newExecutions]);
+          setExecutions(prev => [...prev, ...newExecutions]);
           setOffset(currentOffset + newExecutions.length);
         } else {
           setExecutions(newExecutions);
           setOffset(newExecutions.length);
         }
 
-        setHasMore((loadMore ? offset + newExecutions.length : newExecutions.length) < data.total);
+        setHasMore(
+          (loadMore ? offset + newExecutions.length : newExecutions.length) <
+            data.total
+        );
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
           return;
@@ -596,7 +624,7 @@ params.set('status', options.status);
 
       return () => abortController.abort();
     },
-    [workspaceId, workflowId, options?.status, options?.limit, offset],
+    [workspaceId, workflowId, options?.status, options?.limit, offset]
   );
 
   useEffect(() => {
@@ -616,7 +644,7 @@ params.set('status', options.status);
       try {
         const response = await fetch(
           `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/cancel`,
-          { method: 'POST' },
+          { method: 'POST' }
         );
 
         if (!response.ok) {
@@ -624,10 +652,12 @@ params.set('status', options.status);
           throw new Error(errorData.message || 'Failed to cancel execution');
         }
 
-        setExecutions((prev) =>
-          prev.map((e) =>
-            e.id === executionId ? { ...e, status: 'cancelled' as ExecutionStatus } : e,
-          ),
+        setExecutions(prev =>
+          prev.map(e =>
+            e.id === executionId
+              ? { ...e, status: 'cancelled' as ExecutionStatus }
+              : e
+          )
         );
         return true;
       } catch (err) {
@@ -635,7 +665,7 @@ params.set('status', options.status);
         return false;
       }
     },
-    [workspaceId, workflowId],
+    [workspaceId, workflowId]
   );
 
   return {
@@ -699,7 +729,7 @@ export interface UseWorkflowTemplatesReturn {
  */
 export function useWorkflowTemplates(
   workspaceId?: string,
-  category?: WorkflowTemplateCategory,
+  category?: WorkflowTemplateCategory
 ): UseWorkflowTemplatesReturn {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -749,7 +779,7 @@ export function useWorkflowTemplates(
   useEffect(() => {
     const cleanup = fetchTemplates();
     return () => {
-      cleanup?.then((abort) => abort?.());
+      cleanup?.then(abort => abort?.());
     };
   }, [fetchTemplates]);
 
@@ -757,7 +787,7 @@ export function useWorkflowTemplates(
     async (
       templateId: string,
       workspaceId: string,
-      overrides?: Partial<CreateWorkflowInput>,
+      overrides?: Partial<CreateWorkflowInput>
     ): Promise<Workflow | null> => {
       try {
         const response = await fetch(
@@ -766,12 +796,14 @@ export function useWorkflowTemplates(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ templateId, ...overrides }),
-          },
+          }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to create workflow from template');
+          throw new Error(
+            errorData.message || 'Failed to create workflow from template'
+          );
         }
 
         const data = await response.json();
@@ -784,7 +816,7 @@ export function useWorkflowTemplates(
         return null;
       }
     },
-    [],
+    []
   );
 
   return {
@@ -821,7 +853,10 @@ interface BuilderState {
 type BuilderAction =
   | { type: 'SET_TRIGGER'; payload: TriggerConfig }
   | { type: 'ADD_ACTION'; payload: Omit<ActionConfig, 'id' | 'order'> }
-  | { type: 'UPDATE_ACTION'; payload: { id: string; config: Partial<ActionConfig> } }
+  | {
+      type: 'UPDATE_ACTION';
+      payload: { id: string; config: Partial<ActionConfig> };
+    }
   | { type: 'REMOVE_ACTION'; payload: string }
   | { type: 'REORDER_ACTIONS'; payload: ActionConfig[] }
   | { type: 'ADD_VARIABLE'; payload: WorkflowVariable }
@@ -833,7 +868,10 @@ type BuilderAction =
  * Reducer function for the workflow builder state.
  * @internal
  */
-function builderReducer(state: BuilderState, action: BuilderAction): BuilderState {
+function builderReducer(
+  state: BuilderState,
+  action: BuilderAction
+): BuilderState {
   switch (action.type) {
     case 'SET_TRIGGER':
       return { ...state, trigger: action.payload };
@@ -848,15 +886,17 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     case 'UPDATE_ACTION':
       return {
         ...state,
-        actions: state.actions.map((a) =>
-          a.id === action.payload.id ? ({ ...a, ...action.payload.config } as ActionConfig) : a,
+        actions: state.actions.map(a =>
+          a.id === action.payload.id
+            ? ({ ...a, ...action.payload.config } as ActionConfig)
+            : a
         ),
       };
     case 'REMOVE_ACTION':
       return {
         ...state,
         actions: state.actions
-          .filter((a) => a.id !== action.payload)
+          .filter(a => a.id !== action.payload)
           .map((a, index) => ({ ...a, order: index })),
       };
     case 'REORDER_ACTIONS':
@@ -866,7 +906,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     case 'REMOVE_VARIABLE':
       return {
         ...state,
-        variables: state.variables.filter((v) => v.name !== action.payload),
+        variables: state.variables.filter(v => v.name !== action.payload),
       };
     case 'SET_ERRORS':
       return { ...state, errors: action.payload };
@@ -874,7 +914,9 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       return {
         trigger: action.payload?.trigger ?? null,
         actions: action.payload?.actions ? [...action.payload.actions] : [],
-        variables: action.payload?.variables ? [...action.payload.variables] : [],
+        variables: action.payload?.variables
+          ? [...action.payload.variables]
+          : [],
         errors: {},
       };
     default:
@@ -958,7 +1000,7 @@ export interface UseWorkflowBuilderReturn {
  * ```
  */
 export function useWorkflowBuilder(
-  initialWorkflow?: Partial<Workflow>,
+  initialWorkflow?: Partial<Workflow>
 ): UseWorkflowBuilderReturn {
   const [state, dispatch] = useReducer(builderReducer, {
     trigger: initialWorkflow?.trigger ?? null,
@@ -971,13 +1013,19 @@ export function useWorkflowBuilder(
     dispatch({ type: 'SET_TRIGGER', payload: trigger });
   }, []);
 
-  const addAction = useCallback((action: Omit<ActionConfig, 'id' | 'order'>) => {
-    dispatch({ type: 'ADD_ACTION', payload: action });
-  }, []);
+  const addAction = useCallback(
+    (action: Omit<ActionConfig, 'id' | 'order'>) => {
+      dispatch({ type: 'ADD_ACTION', payload: action });
+    },
+    []
+  );
 
-  const updateAction = useCallback((id: string, config: Partial<ActionConfig>) => {
-    dispatch({ type: 'UPDATE_ACTION', payload: { id, config } });
-  }, []);
+  const updateAction = useCallback(
+    (id: string, config: Partial<ActionConfig>) => {
+      dispatch({ type: 'UPDATE_ACTION', payload: { id, config } });
+    },
+    []
+  );
 
   const removeAction = useCallback((id: string) => {
     dispatch({ type: 'REMOVE_ACTION', payload: id });
@@ -1012,11 +1060,11 @@ export function useWorkflowBuilder(
 
   const getWorkflowData = useCallback((): CreateWorkflowInput | null => {
     if (!validate()) {
-return null;
-}
+      return null;
+    }
     if (!state.trigger) {
-return null;
-}
+      return null;
+    }
 
     return {
       name: '',

@@ -5,13 +5,13 @@ on:
     branches: [master]
   schedule:
     # Run monitoring checks every 30 minutes
-    - cron: '*/30 * * * *'
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to monitor'
+        description: "Environment to monitor"
         required: true
-        default: 'production'
+        default: "production"
         type: choice
         options:
           - staging
@@ -41,7 +41,7 @@ jobs:
       - name: Check application health
         run: |
           echo "🔍 Checking ${{ matrix.environment }} health..."
-          
+
           # Basic health check
           if curl -f -s --max-time 30 "${{ matrix.url }}/health"; then
             echo "✅ Application health check passed"
@@ -49,7 +49,7 @@ jobs:
             echo "❌ Application health check failed"
             exit 1
           fi
-          
+
           # API health check
           if curl -f -s --max-time 30 "${{ matrix.url }}/api/health"; then
             echo "✅ API health check passed"
@@ -61,12 +61,12 @@ jobs:
       - name: Check response time
         run: |
           echo "⏱️ Measuring response time..."
-          
+
           RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "${{ matrix.url }}/health")
           RESPONSE_TIME_MS=$(echo "$RESPONSE_TIME * 1000" | bc)
-          
+
           echo "Response time: ${RESPONSE_TIME_MS}ms"
-          
+
           # Alert if response time > 5 seconds
           if (( $(echo "$RESPONSE_TIME > 5.0" | bc -l) )); then
             echo "⚠️ Slow response time detected: ${RESPONSE_TIME_MS}ms"
@@ -77,15 +77,15 @@ jobs:
         if: matrix.environment == 'production'
         run: |
           echo "🔒 Checking SSL certificate..."
-          
+
           # Check certificate expiry
           CERT_EXPIRY=$(echo | openssl s_client -servername wundr.io -connect wundr.io:443 2>/dev/null | openssl x509 -noout -dates | grep 'notAfter' | cut -d= -f2)
           EXPIRY_DATE=$(date -d "$CERT_EXPIRY" +%s)
           CURRENT_DATE=$(date +%s)
           DAYS_TO_EXPIRY=$(( (EXPIRY_DATE - CURRENT_DATE) / 86400 ))
-          
+
           echo "Certificate expires in $DAYS_TO_EXPIRY days"
-          
+
           # Alert if certificate expires in less than 30 days
           if [ "$DAYS_TO_EXPIRY" -lt 30 ]; then
             echo "⚠️ SSL certificate expires soon: $DAYS_TO_EXPIRY days"
@@ -115,7 +115,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli@0.12.x
@@ -144,14 +144,14 @@ jobs:
             },
           };
           EOF
-          
+
           # Run Lighthouse CI
           lhci autorun
 
       - name: Performance benchmark
         run: |
           echo "📊 Running performance benchmarks..."
-          
+
           # Load test with basic curl
           for i in {1..10}; do
             RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' https://wundr.io/health)
@@ -174,7 +174,7 @@ jobs:
       - name: Configure kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.28.0'
+          version: "v1.28.0"
 
       - name: Update kubeconfig
         run: |
@@ -183,7 +183,7 @@ jobs:
       - name: Check Kubernetes cluster health
         run: |
           echo "🔍 Checking Kubernetes cluster health..."
-          
+
           # Check cluster nodes
           kubectl get nodes --no-headers | while read node status roles age version; do
             if [ "$status" != "Ready" ]; then
@@ -193,7 +193,7 @@ jobs:
               echo "✅ Node $node is ready"
             fi
           done
-          
+
           # Check system pods
           kubectl get pods -n kube-system --field-selector=status.phase!=Running --no-headers
           if [ $? -eq 0 ]; then
@@ -205,11 +205,11 @@ jobs:
       - name: Check application deployment status
         run: |
           echo "🔍 Checking application deployments..."
-          
+
           # Check production deployment
           REPLICAS=$(kubectl get deployment wundr-production -n wundr-production -o jsonpath='{.status.readyReplicas}')
           DESIRED=$(kubectl get deployment wundr-production -n wundr-production -o jsonpath='{.spec.replicas}')
-          
+
           if [ "$REPLICAS" != "$DESIRED" ]; then
             echo "❌ Production deployment not healthy: $REPLICAS/$DESIRED replicas ready"
             exit 1
@@ -220,7 +220,7 @@ jobs:
       - name: Check resource usage
         run: |
           echo "📊 Checking resource usage..."
-          
+
           # Check CPU and memory usage
           kubectl top nodes
           kubectl top pods -n wundr-production
@@ -234,7 +234,7 @@ jobs:
       - name: Check database connectivity
         run: |
           echo "🔍 Checking database connectivity..."
-          
+
           # Basic connection test (replace with actual database health endpoint)
           if curl -f -s --max-time 10 "https://wundr.io/api/health/database"; then
             echo "✅ Database connectivity check passed"
@@ -246,13 +246,13 @@ jobs:
       - name: Check database metrics
         run: |
           echo "📊 Checking database metrics..."
-          
+
           # Query database metrics endpoint
           METRICS=$(curl -s "https://wundr.io/api/metrics/database")
-          
+
           # Parse connection count (example)
           CONNECTION_COUNT=$(echo "$METRICS" | jq -r '.connections // 0')
-          
+
           if [ "$CONNECTION_COUNT" -gt 100 ]; then
             echo "⚠️ High database connection count: $CONNECTION_COUNT"
           else
@@ -268,7 +268,7 @@ jobs:
       - name: Check for suspicious activity
         run: |
           echo "🔍 Checking for suspicious activity..."
-          
+
           # Check for unusual response codes from logs
           # This would typically connect to your logging service
           echo "✅ No suspicious activity detected"
@@ -276,9 +276,9 @@ jobs:
       - name: Verify security headers
         run: |
           echo "🔒 Checking security headers..."
-          
+
           HEADERS=$(curl -I -s https://wundr.io)
-          
+
           # Check for security headers
           if echo "$HEADERS" | grep -q "Strict-Transport-Security"; then
             echo "✅ HSTS header present"
@@ -286,7 +286,7 @@ jobs:
             echo "❌ HSTS header missing"
             exit 1
           fi
-          
+
           if echo "$HEADERS" | grep -q "X-Frame-Options"; then
             echo "✅ X-Frame-Options header present"
           else
@@ -298,26 +298,33 @@ jobs:
   alert-manager:
     name: Alert Manager
     runs-on: ubuntu-latest
-    needs: [health-check, performance-check, infrastructure-check, database-check, security-check]
+    needs:
+      [
+        health-check,
+        performance-check,
+        infrastructure-check,
+        database-check,
+        security-check,
+      ]
     if: always() && (github.event_name == 'schedule' || failure())
     steps:
       - name: Aggregate monitoring results
         run: |
           echo "📋 Aggregating monitoring results..."
-          
+
           # Check job results
           HEALTH_STATUS="${{ needs.health-check.result }}"
           PERFORMANCE_STATUS="${{ needs.performance-check.result }}"
           INFRASTRUCTURE_STATUS="${{ needs.infrastructure-check.result }}"
           DATABASE_STATUS="${{ needs.database-check.result }}"
           SECURITY_STATUS="${{ needs.security-check.result }}"
-          
+
           echo "Health Check: $HEALTH_STATUS"
           echo "Performance Check: $PERFORMANCE_STATUS"
           echo "Infrastructure Check: $INFRASTRUCTURE_STATUS"
           echo "Database Check: $DATABASE_STATUS"
           echo "Security Check: $SECURITY_STATUS"
-          
+
           # Determine overall status
           if [[ "$HEALTH_STATUS" == "failure" || 
                 "$PERFORMANCE_STATUS" == "failure" || 
@@ -336,14 +343,14 @@ jobs:
           status: failure
           text: |
             🚨 CRITICAL: System monitoring detected issues
-            
+
             Status Summary:
             - Health Check: ${{ needs.health-check.result }}
             - Performance: ${{ needs.performance-check.result }}
             - Infrastructure: ${{ needs.infrastructure-check.result }}
             - Database: ${{ needs.database-check.result }}
             - Security: ${{ needs.security-check.result }}
-            
+
             Immediate attention required!
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_CRITICAL }}
@@ -356,26 +363,26 @@ jobs:
             const title = `🚨 System Alert - ${new Date().toISOString()}`;
             const body = `
             ## System Monitoring Alert
-            
+
             **Alert Time:** ${new Date().toISOString()}
             **Severity:** Critical
-            
+
             ### Status Summary
             - Health Check: ${{ needs.health-check.result }}
             - Performance: ${{ needs.performance-check.result }}
             - Infrastructure: ${{ needs.infrastructure-check.result }}
             - Database: ${{ needs.database-check.result }}
             - Security: ${{ needs.security-check.result }}
-            
+
             ### Next Steps
             - [ ] Investigate failing checks
             - [ ] Verify system stability
             - [ ] Implement fixes
             - [ ] Monitor recovery
-            
+
             **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             `;
-            
+
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,

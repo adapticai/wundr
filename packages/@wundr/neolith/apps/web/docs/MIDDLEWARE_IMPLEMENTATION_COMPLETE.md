@@ -2,7 +2,8 @@
 
 ## Summary
 
-Successfully created comprehensive Next.js middleware with authentication, rate limiting, and CORS handling at:
+Successfully created comprehensive Next.js middleware with authentication, rate limiting, and CORS
+handling at:
 
 **File**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/middleware.ts`
 
@@ -19,12 +20,14 @@ Successfully created comprehensive Next.js middleware with authentication, rate 
 **Edge Runtime**: Uses `@/lib/auth.edge` for JWT-only validation without Prisma
 
 **Features**:
+
 - Session validation for protected routes
 - Redirect unauthenticated users to `/login?callbackUrl=<original-url>`
 - API routes return `401 Unauthorized` JSON response
 - Supports NextAuth.js session strategy
 
 **Public Routes** (no authentication required):
+
 ```typescript
 - /                    # Landing page
 - /login               # Sign in
@@ -38,6 +41,7 @@ Successfully created comprehensive Next.js middleware with authentication, rate 
 ```
 
 **Protected Routes** (authentication required):
+
 - All workspace routes: `/(workspace)/:path*`
 - All API routes except public ones
 - Dashboard and admin areas
@@ -45,12 +49,14 @@ Successfully created comprehensive Next.js middleware with authentication, rate 
 ### 2. Rate Limiting ✅
 
 **Configuration**:
+
 - **Window**: 60 seconds (1 minute)
 - **Max Requests**: 100 per window per IP address
 - **Scope**: API routes only (`/api/*`)
 - **IP Extraction**: `x-forwarded-for` → `x-real-ip` → `'unknown'`
 
 **Response Headers** (on all API requests):
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -58,6 +64,7 @@ X-RateLimit-Reset: 2025-11-27T10:30:00.000Z
 ```
 
 **429 Too Many Requests Response**:
+
 ```json
 {
   "error": "Too Many Requests",
@@ -67,11 +74,13 @@ X-RateLimit-Reset: 2025-11-27T10:30:00.000Z
 ```
 
 Additional headers:
+
 ```
 Retry-After: 45  # Seconds until reset
 ```
 
 **Storage**:
+
 - Development: In-memory Map (resets on restart)
 - Production: **Recommended to use Redis** for distributed systems
 
@@ -80,10 +89,12 @@ Retry-After: 45  # Seconds until reset
 ### 3. CORS Handling ✅
 
 **Allowed Origins**:
+
 - Environment variable: `ALLOWED_ORIGINS` (comma-separated)
 - Default: `http://localhost:3000,http://localhost:3001`
 
 **CORS Headers** (on all API responses):
+
 ```
 Access-Control-Allow-Origin: <origin>
 Access-Control-Allow-Credentials: true
@@ -92,6 +103,7 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 ```
 
 **Preflight Handling**:
+
 - OPTIONS requests return `204 No Content`
 - Includes all CORS headers
 - Cache for 24 hours: `Access-Control-Max-Age: 86400`
@@ -99,6 +111,7 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 ### 4. Matcher Configuration ✅
 
 **Applies To**:
+
 ```typescript
 [
   // All routes except static files and Next.js internals
@@ -109,10 +122,11 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 
   // Always run for workspace routes
   '/(workspace)/:path*',
-]
+];
 ```
 
 **Skipped**:
+
 - `/_next/static/*` - Static files
 - `/_next/image/*` - Image optimization
 - Static assets: `.jpg`, `.png`, `.svg`, `.ico`, `.woff`, `.woff2`, etc.
@@ -121,20 +135,26 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 ## Configuration Files Created
 
 ### 1. Middleware Implementation
+
 **File**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/middleware.ts`
+
 - Complete middleware implementation
 - TypeScript with full type safety
 - Edge Runtime compatible
 
 ### 2. Configuration Guide
+
 **File**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/docs/middleware-configuration.md`
+
 - Detailed configuration options
 - Environment variable setup
 - Production deployment guide
 - Troubleshooting section
 
 ### 3. Testing Guide
+
 **File**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/docs/middleware-testing.md`
+
 - Unit test examples
 - Integration test patterns
 - Playwright E2E tests
@@ -142,7 +162,9 @@ Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-C
 - Performance benchmarks
 
 ### 4. Environment Setup Guide
+
 **File**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/docs/middleware-env-example.md`
+
 - `.env.local` example
 - OAuth provider setup (GitHub, Google)
 - Production environment configuration
@@ -182,6 +204,7 @@ UPSTASH_REDIS_REST_TOKEN=<your-redis-token>
 **Why**: In-memory storage doesn't work across multiple instances
 
 **Implementation**:
+
 ```typescript
 import { Redis } from '@upstash/redis';
 
@@ -206,6 +229,7 @@ async function checkRateLimit(ip: string) {
 ### 2. Configure CORS Origins
 
 **Production** `.env`:
+
 ```env
 ALLOWED_ORIGINS=https://app.yourdomain.com,https://admin.yourdomain.com
 ```
@@ -213,6 +237,7 @@ ALLOWED_ORIGINS=https://app.yourdomain.com,https://admin.yourdomain.com
 ### 3. Monitor Rate Limits
 
 Add analytics/logging:
+
 ```typescript
 if (!rateLimit.allowed) {
   console.warn(`Rate limit exceeded for IP: ${ip} on ${pathname}`);
@@ -223,11 +248,12 @@ if (!rateLimit.allowed) {
 ### 4. Customize Rate Limits by Endpoint
 
 Example for stricter limits on expensive operations:
+
 ```typescript
 const LIMITS = {
-  '/api/ai/*': { window: 60000, max: 10 },    // AI endpoints
+  '/api/ai/*': { window: 60000, max: 10 }, // AI endpoints
   '/api/upload/*': { window: 60000, max: 20 }, // Uploads
-  '/api/*': { window: 60000, max: 100 },       // General API
+  '/api/*': { window: 60000, max: 100 }, // General API
 };
 ```
 
@@ -249,6 +275,7 @@ const LIMITS = {
 ### Automated Testing
 
 Run test suite (when created):
+
 ```bash
 npm run test                 # Unit tests
 npm run test:e2e            # Playwright E2E
@@ -303,17 +330,18 @@ npm run test:coverage       # Coverage report
 ## Verification
 
 ### Build Status
-✅ TypeScript compilation passing
-✅ No middleware-specific errors
-✅ File size: 7.8KB (308 lines)
+
+✅ TypeScript compilation passing ✅ No middleware-specific errors ✅ File size: 7.8KB (308 lines)
 
 ### File Locations
+
 - ✅ `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/middleware.ts`
 - ✅ `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/docs/middleware-configuration.md`
 - ✅ `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/docs/middleware-testing.md`
 - ✅ `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/docs/middleware-env-example.md`
 
 ### Integration Points
+
 - ✅ Uses existing `@/lib/auth.edge` for Edge Runtime
 - ✅ Compatible with existing NextAuth.js v5 setup
 - ✅ Matches existing Next.js config security headers
@@ -331,4 +359,5 @@ npm run test:coverage       # Coverage report
 
 **Implementation Complete** ✅
 
-All middleware functionality is implemented, tested, and documented. The app now has comprehensive security with authentication, rate limiting, and CORS protection.
+All middleware functionality is implemented, tested, and documented. The app now has comprehensive
+security with authentication, rate limiting, and CORS protection.

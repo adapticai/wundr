@@ -19,28 +19,32 @@
  * These control what operations a daemon can perform on behalf of a VP.
  */
 export type DaemonScope =
-  | 'messages:read'     // Read messages in channels
-  | 'messages:write'    // Send messages to channels
-  | 'channels:read'     // List and view channel information
-  | 'channels:join'     // Join/leave channels
-  | 'users:read'        // View user information
-  | 'presence:read'     // Read presence status
-  | 'presence:write'    // Update presence status
-  | 'files:read'        // Read file metadata
-  | 'files:write'       // Upload files
-  | 'calls:join'        // Join voice/video calls
-  | 'calls:manage'      // Create/manage calls
-  | 'vp:status'         // Update Orchestrator status
-  | 'vp:config'         // Read Orchestrator configuration
-  | 'admin:read'        // Admin read operations
-  | 'admin:write';      // Admin write operations
+  | 'messages:read' // Read messages in channels
+  | 'messages:write' // Send messages to channels
+  | 'channels:read' // List and view channel information
+  | 'channels:join' // Join/leave channels
+  | 'users:read' // View user information
+  | 'presence:read' // Read presence status
+  | 'presence:write' // Update presence status
+  | 'files:read' // Read file metadata
+  | 'files:write' // Upload files
+  | 'calls:join' // Join voice/video calls
+  | 'calls:manage' // Create/manage calls
+  | 'vp:status' // Update Orchestrator status
+  | 'vp:config' // Read Orchestrator configuration
+  | 'admin:read' // Admin read operations
+  | 'admin:write'; // Admin write operations
 
 /**
  * Predefined scope sets for common use cases.
  */
 export const DAEMON_SCOPE_SETS = {
   /** Basic messaging capabilities */
-  messaging: ['messages:read', 'messages:write', 'channels:read'] as DaemonScope[],
+  messaging: [
+    'messages:read',
+    'messages:write',
+    'channels:read',
+  ] as DaemonScope[],
   /** Full communication capabilities */
   communication: [
     'messages:read',
@@ -267,10 +271,10 @@ export interface DaemonAuthResult {
  * Daemon session status.
  */
 export type DaemonSessionStatus =
-  | 'active'      // Session is active and in use
-  | 'idle'        // Session is valid but not recently active
-  | 'expired'     // Session has expired
-  | 'revoked'     // Session was explicitly revoked
+  | 'active' // Session is active and in use
+  | 'idle' // Session is valid but not recently active
+  | 'expired' // Session has expired
+  | 'revoked' // Session was explicitly revoked
   | 'terminated'; // Session was terminated due to error or policy
 
 /**
@@ -538,8 +542,8 @@ export function isDaemonScope(value: string): value is DaemonScope {
  */
 export function isDaemonToken(value: unknown): value is DaemonToken {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const token = value as Record<string, unknown>;
   return (
     typeof token.token === 'string' &&
@@ -557,8 +561,8 @@ return false;
  */
 export function isDaemonSession(value: unknown): value is DaemonSession {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const session = value as Record<string, unknown>;
   return (
     typeof session.id === 'string' &&
@@ -574,8 +578,8 @@ return false;
  */
 export function isDaemonEvent(value: unknown): value is DaemonEvent {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const event = value as Record<string, unknown>;
   return (
     typeof event.id === 'string' &&
@@ -612,7 +616,8 @@ export const DAEMON_REDIS_KEYS = {
   session: (sessionId: string) => `daemon:session:${sessionId}`,
 
   /** Sessions by Orchestrator */
-  orchestratorSessions: (orchestratorId: string) => `daemon:orchestrator:${orchestratorId}:sessions`,
+  orchestratorSessions: (orchestratorId: string) =>
+    `daemon:orchestrator:${orchestratorId}:sessions`,
 
   /** Sessions by daemon */
   daemonSessions: (daemonId: string) => `daemon:instance:${daemonId}:sessions`,
@@ -621,7 +626,8 @@ export const DAEMON_REDIS_KEYS = {
   revokedTokens: 'daemon:tokens:revoked',
 
   /** Rate limit key */
-  rateLimit: (daemonId: string, action: string) => `daemon:rate:${daemonId}:${action}`,
+  rateLimit: (daemonId: string, action: string) =>
+    `daemon:rate:${daemonId}:${action}`,
 
   /** Event queue */
   eventQueue: (daemonId: string) => `daemon:events:${daemonId}`,
@@ -812,6 +818,9 @@ export type DaemonAuthErrorCode =
 /**
  * Credentials without the secret (for API responses).
  */
-export type DaemonCredentialsWithoutSecret = Omit<DaemonRegistrationCredentials, 'apiSecret'> & {
+export type DaemonCredentialsWithoutSecret = Omit<
+  DaemonRegistrationCredentials,
+  'apiSecret'
+> & {
   apiSecret: '[REDACTED]';
 };

@@ -37,7 +37,6 @@ import {
 
 import type { _PrismaClient } from '@prisma/client';
 
-
 // =============================================================================
 // MOCK SETUP
 // =============================================================================
@@ -58,7 +57,7 @@ function createMockPrismaClient() {
     user: {
       findUnique: vi.fn(),
     },
-    $transaction: vi.fn().mockImplementation(async (callback) => {
+    $transaction: vi.fn().mockImplementation(async callback => {
       const tx = {
         message: createMockPrismaMessageModel(),
         reaction: createMockPrismaReactionModel(),
@@ -97,12 +96,16 @@ describe('MessageService', () => {
       const authorId = generateUserId();
       const content = 'Hello, world!';
 
-      const mockChannel = { id: channelId, name: 'test-channel', type: 'PUBLIC' };
+      const mockChannel = {
+        id: channelId,
+        name: 'test-channel',
+        type: 'PUBLIC',
+      };
       const mockMember = { userId: authorId, channelId, role: 'MEMBER' };
       const mockAuthor = createMockMessageAuthor({ id: authorId });
       const createdMessage = createMockMessageWithAuthor(
         { channelId, authorId, content },
-        mockAuthor,
+        mockAuthor
       );
 
       mockPrisma.channel.findUnique.mockResolvedValue(mockChannel);
@@ -132,7 +135,7 @@ describe('MessageService', () => {
             content,
             type: 'TEXT',
           }),
-        }),
+        })
       );
     });
 
@@ -148,7 +151,9 @@ describe('MessageService', () => {
       });
 
       mockPrisma.channel.findUnique.mockResolvedValue({ id: channelId });
-      mockPrisma.channelMember.findFirst.mockResolvedValue({ userId: authorId });
+      mockPrisma.channelMember.findFirst.mockResolvedValue({
+        userId: authorId,
+      });
       mockPrisma.message.create.mockResolvedValue(createdMessage);
 
       // Simulate event emission after message creation
@@ -165,7 +170,7 @@ describe('MessageService', () => {
           type: 'MESSAGE_CREATED',
           channelId,
           messageId: createdMessage.id,
-        }),
+        })
       );
     });
 
@@ -209,7 +214,7 @@ describe('MessageService', () => {
           data: expect.objectContaining({
             parentId,
           }),
-        }),
+        })
       );
     });
 
@@ -311,7 +316,7 @@ describe('MessageService', () => {
           data: expect.objectContaining({
             content: updatedContent,
           }),
-        }),
+        })
       );
     });
 
@@ -340,7 +345,9 @@ describe('MessageService', () => {
       });
 
       expect(result.editedAt).toBeDefined();
-      expect(result.editedAt!.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+      expect(result.editedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeUpdate.getTime()
+      );
     });
 
     it('only allows author to edit', async () => {
@@ -403,7 +410,7 @@ describe('MessageService', () => {
           payload: expect.objectContaining({
             previousContent,
           }),
-        }),
+        })
       );
     });
 
@@ -458,7 +465,7 @@ describe('MessageService', () => {
           data: expect.objectContaining({
             deletedAt: expect.any(Date),
           }),
-        }),
+        })
       );
     });
 
@@ -519,7 +526,7 @@ describe('MessageService', () => {
         expect.objectContaining({
           type: 'MESSAGE_DELETED',
           messageId,
-        }),
+        })
       );
     });
 
@@ -617,7 +624,7 @@ describe('MessageService', () => {
       expect(mockPrisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           cursor: { id: cursorMessageId },
-        }),
+        })
       );
     });
 
@@ -634,7 +641,7 @@ describe('MessageService', () => {
           where: expect.objectContaining({
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
@@ -651,7 +658,7 @@ describe('MessageService', () => {
           where: expect.not.objectContaining({
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
   });
@@ -756,14 +763,19 @@ describe('ReactionService', () => {
               emoji,
             }),
           }),
-        }),
+        })
       );
     });
 
     it('validates emoji format', () => {
       // Valid emojis
-      const validEmojis = ['\u{1F44D}', '\u{2764}\u{FE0F}', '\u{1F389}', '\u{1F600}'];
-      validEmojis.forEach((emoji) => {
+      const validEmojis = [
+        '\u{1F44D}',
+        '\u{2764}\u{FE0F}',
+        '\u{1F389}',
+        '\u{1F600}',
+      ];
+      validEmojis.forEach(emoji => {
         expect(emoji.length).toBeGreaterThan(0);
       });
 
@@ -828,7 +840,7 @@ describe('ReactionService', () => {
         expect.objectContaining({
           type: 'MESSAGE_REACTION_REMOVED',
           messageId,
-        }),
+        })
       );
     });
 
@@ -880,7 +892,11 @@ describe('ReactionService', () => {
 
       // User's reactions
       const userReactions = [
-        createMockReaction({ messageId, userId: currentUserId, emoji: '\u{1F44D}' }),
+        createMockReaction({
+          messageId,
+          userId: currentUserId,
+          emoji: '\u{1F44D}',
+        }),
       ];
 
       mockPrisma.reaction.findMany.mockResolvedValue(userReactions);
@@ -1007,7 +1023,7 @@ describe('ThreadService', () => {
         expect.objectContaining({
           type: 'MESSAGE_THREAD_REPLY_ADDED',
           messageId: parentId,
-        }),
+        })
       );
     });
 
@@ -1095,7 +1111,7 @@ describe('ThreadService', () => {
       expect(count).toBe(10);
 
       // Get unique participants
-      const participantIds = new Set(thread.replies.map((r) => r.authorId));
+      const participantIds = new Set(thread.replies.map(r => r.authorId));
       expect(participantIds.size).toBeGreaterThan(0);
     });
 
@@ -1213,7 +1229,7 @@ describe('Optimistic Updates', () => {
       mockPrisma.message.update({
         where: { id: messageId },
         data: { content: newContent },
-      }),
+      })
     ).rejects.toThrow('Update failed');
 
     // Client should rollback to original content
@@ -1248,7 +1264,7 @@ describe('Event Broadcasting', () => {
       expect.objectContaining({
         type: 'MESSAGE_CREATED',
         channelId,
-      }),
+      })
     );
   });
 

@@ -14,10 +14,7 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import {
-  callIdParamSchema,
-  CALL_ERROR_CODES,
-} from '@/lib/validations/call';
+import { callIdParamSchema, CALL_ERROR_CODES } from '@/lib/validations/call';
 import { createErrorResponse } from '@/lib/validations/organization';
 
 import type { NextRequest } from 'next/server';
@@ -41,15 +38,18 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CALL_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CALL_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,21 +58,26 @@ export async function POST(
     const parseResult = callIdParamSchema.safeParse(params);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid call ID', CALL_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid call ID',
+          CALL_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     const { callId } = parseResult.data;
 
     // Get call details
-    const calls = await prisma.$queryRaw<Array<{
-      id: string;
-      channel_id: string;
-      status: string;
-      room_name: string;
-      started_at: Date | null;
-    }>>`
+    const calls = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        channel_id: string;
+        status: string;
+        room_name: string;
+        started_at: Date | null;
+      }>
+    >`
       SELECT id, channel_id, status, room_name, started_at
       FROM calls
       WHERE id = ${callId}
@@ -82,7 +87,7 @@ export async function POST(
     if (calls.length === 0) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -100,8 +105,11 @@ export async function POST(
 
     if (!channelMember) {
       return NextResponse.json(
-        createErrorResponse('Not authorized to end this call', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Not authorized to end this call',
+          CALL_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -117,7 +125,9 @@ export async function POST(
     let durationSeconds = 0;
     if (call.started_at) {
       const endTime = new Date();
-      durationSeconds = Math.floor((endTime.getTime() - call.started_at.getTime()) / 1000);
+      durationSeconds = Math.floor(
+        (endTime.getTime() - call.started_at.getTime()) / 1000
+      );
     }
 
     // Update call status to ended
@@ -147,7 +157,10 @@ export async function POST(
         await liveKitService.deleteRoom(call.room_name);
       }
     } catch (liveKitError) {
-      console.error('[POST /api/calls/:callId/end] Failed to close LiveKit room:', liveKitError);
+      console.error(
+        '[POST /api/calls/:callId/end] Failed to close LiveKit room:',
+        liveKitError
+      );
       // Don't fail the request if LiveKit cleanup fails
     }
 
@@ -161,8 +174,11 @@ export async function POST(
   } catch (error) {
     console.error('[POST /api/calls/:callId/end] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CALL_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CALL_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

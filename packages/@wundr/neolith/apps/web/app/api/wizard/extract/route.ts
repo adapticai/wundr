@@ -81,7 +81,11 @@ interface WorkflowData {
   }>;
 }
 
-type ExtractedData = WorkspaceData | OrchestratorData | SessionManagerData | WorkflowData;
+type ExtractedData =
+  | WorkspaceData
+  | OrchestratorData
+  | SessionManagerData
+  | WorkflowData;
 
 /**
  * Validation schemas for each entity type
@@ -124,7 +128,7 @@ const workflowSchema = z.object({
     z.object({
       action: z.string(),
       description: z.string(),
-    }),
+    })
   ),
 });
 
@@ -231,7 +235,7 @@ Return JSON matching this schema:
  */
 async function extractWithClaude(
   conversationHistory: ChatMessage[],
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<ExtractedData> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -242,7 +246,7 @@ async function extractWithClaude(
 
   // Build extraction request message
   const conversationText = conversationHistory
-    .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
+    .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
     .join('\n\n');
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -287,7 +291,9 @@ async function extractWithClaude(
     const cleanedJson = jsonText.replace(/```json\n?|\n?```/g, '').trim();
     return JSON.parse(cleanedJson) as ExtractedData;
   } catch (error) {
-    throw new Error(`Failed to parse extracted JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse extracted JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -296,7 +302,7 @@ async function extractWithClaude(
  */
 async function extractWithOpenAI(
   conversationHistory: ChatMessage[],
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<ExtractedData> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -305,7 +311,7 @@ async function extractWithOpenAI(
 
   const systemPrompt = buildExtractionPrompt(entityType);
   const conversationText = conversationHistory
-    .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
+    .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
     .join('\n\n');
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -344,7 +350,9 @@ async function extractWithOpenAI(
   try {
     return JSON.parse(content) as ExtractedData;
   } catch (error) {
-    throw new Error(`Failed to parse extracted JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse extracted JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -353,7 +361,7 @@ async function extractWithOpenAI(
  */
 function validateExtractedData(
   entityType: EntityType,
-  data: unknown,
+  data: unknown
 ): { valid: boolean; data?: ExtractedData; errors?: unknown } {
   const schemas: Record<EntityType, z.ZodSchema> = {
     workspace: workspaceSchema,
@@ -417,7 +425,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: { message: 'Authentication required' } }, { status: 401 });
+      return NextResponse.json(
+        { error: { message: 'Authentication required' } },
+        { status: 401 }
+      );
     }
 
     // Parse request body
@@ -425,12 +436,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: { message: 'Invalid JSON body' } }, { status: 400 });
+      return NextResponse.json(
+        { error: { message: 'Invalid JSON body' } },
+        { status: 400 }
+      );
     }
 
     // Validate request structure
     if (!body || typeof body !== 'object') {
-      return NextResponse.json({ error: { message: 'Invalid request body' } }, { status: 400 });
+      return NextResponse.json(
+        { error: { message: 'Invalid request body' } },
+        { status: 400 }
+      );
     }
 
     const extractReq = body as ExtractRequest;
@@ -442,22 +459,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       'session-manager',
       'workflow',
     ];
-    if (!extractReq.entityType || !validEntityTypes.includes(extractReq.entityType)) {
+    if (
+      !extractReq.entityType ||
+      !validEntityTypes.includes(extractReq.entityType)
+    ) {
       return NextResponse.json(
         {
           error: {
             message: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate conversation history
-    if (!Array.isArray(extractReq.conversationHistory) || extractReq.conversationHistory.length === 0) {
+    if (
+      !Array.isArray(extractReq.conversationHistory) ||
+      extractReq.conversationHistory.length === 0
+    ) {
       return NextResponse.json(
-        { error: { message: 'conversationHistory array is required and must not be empty' } },
-        { status: 400 },
+        {
+          error: {
+            message:
+              'conversationHistory array is required and must not be empty',
+          },
+        },
+        { status: 400 }
       );
     }
 
@@ -466,13 +494,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!msg.role || !msg.content || typeof msg.content !== 'string') {
         return NextResponse.json(
           { error: { message: 'Each message must have role and content' } },
-          { status: 400 },
+          { status: 400 }
         );
       }
       if (msg.role !== 'user' && msg.role !== 'assistant') {
         return NextResponse.json(
           { error: { message: 'Message role must be "user" or "assistant"' } },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -483,29 +511,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Extract data using appropriate LLM
     let extractedData: ExtractedData;
     if (provider === 'anthropic' && process.env.ANTHROPIC_API_KEY) {
-      extractedData = await extractWithClaude(extractReq.conversationHistory, extractReq.entityType);
+      extractedData = await extractWithClaude(
+        extractReq.conversationHistory,
+        extractReq.entityType
+      );
     } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
-      extractedData = await extractWithOpenAI(extractReq.conversationHistory, extractReq.entityType);
+      extractedData = await extractWithOpenAI(
+        extractReq.conversationHistory,
+        extractReq.entityType
+      );
     } else {
       // Fallback: try both
       if (process.env.ANTHROPIC_API_KEY) {
-        extractedData = await extractWithClaude(extractReq.conversationHistory, extractReq.entityType);
+        extractedData = await extractWithClaude(
+          extractReq.conversationHistory,
+          extractReq.entityType
+        );
       } else if (process.env.OPENAI_API_KEY) {
-        extractedData = await extractWithOpenAI(extractReq.conversationHistory, extractReq.entityType);
+        extractedData = await extractWithOpenAI(
+          extractReq.conversationHistory,
+          extractReq.entityType
+        );
       } else {
         return NextResponse.json(
           {
             error: {
-              message: 'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
+              message:
+                'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
             },
           },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
 
     // Validate extracted data
-    const validation = validateExtractedData(extractReq.entityType, extractedData);
+    const validation = validateExtractedData(
+      extractReq.entityType,
+      extractedData
+    );
 
     if (!validation.valid) {
       return NextResponse.json(
@@ -515,7 +559,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             details: validation.errors,
           },
         },
-        { status: 422 },
+        { status: 422 }
       );
     }
 
@@ -528,8 +572,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/wizard/extract] Error:', error);
     return NextResponse.json(
-      { error: { message: error instanceof Error ? error.message : 'An internal error occurred' } },
-      { status: 500 },
+      {
+        error: {
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An internal error occurred',
+        },
+      },
+      { status: 500 }
     );
   }
 }

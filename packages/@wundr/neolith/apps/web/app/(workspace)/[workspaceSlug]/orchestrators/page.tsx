@@ -17,12 +17,26 @@ import { usePageHeader } from '@/contexts/page-header-context';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CreateOrchestratorDialog } from '@/components/orchestrator/create-orchestrator-dialog';
-import { OrchestratorCard, OrchestratorCardSkeleton } from '@/components/orchestrator/orchestrator-card';
-import { useOrchestrators, useOrchestratorMutations } from '@/hooks/use-orchestrator';
+import {
+  OrchestratorCard,
+  OrchestratorCardSkeleton,
+} from '@/components/orchestrator/orchestrator-card';
+import {
+  useOrchestrators,
+  useOrchestratorMutations,
+} from '@/hooks/use-orchestrator';
 import { cn } from '@/lib/utils';
-import { ORCHESTRATOR_DISCIPLINES, ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
+import {
+  ORCHESTRATOR_DISCIPLINES,
+  ORCHESTRATOR_STATUS_CONFIG,
+} from '@/types/orchestrator';
 
-import type { Orchestrator, OrchestratorFilters, OrchestratorStatus, CreateOrchestratorInput } from '@/types/orchestrator';
+import type {
+  Orchestrator,
+  OrchestratorFilters,
+  OrchestratorStatus,
+  CreateOrchestratorInput,
+} from '@/types/orchestrator';
 
 export default function OrchestratorsPage() {
   const params = useParams();
@@ -32,7 +46,10 @@ export default function OrchestratorsPage() {
 
   // Set page header
   useEffect(() => {
-    setPageHeader('Orchestrators', 'AI-powered orchestrators managing your workspace operations');
+    setPageHeader(
+      'Orchestrators',
+      'AI-powered orchestrators managing your workspace operations'
+    );
   }, [setPageHeader]);
 
   // State
@@ -40,23 +57,34 @@ export default function OrchestratorsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Hooks
-  const { orchestrators, isLoading, error, refetch, totalCount, filteredCount } = useOrchestrators(
-    workspaceSlug,
-    filters,
-  );
-  const { createOrchestrator, toggleOrchestratorStatus, isLoading: isMutating } = useOrchestratorMutations();
+  const {
+    orchestrators,
+    isLoading,
+    error,
+    refetch,
+    totalCount,
+    filteredCount,
+  } = useOrchestrators(workspaceSlug, filters);
+  const {
+    createOrchestrator,
+    toggleOrchestratorStatus,
+    isLoading: isMutating,
+  } = useOrchestratorMutations();
 
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
-    setFilters((prev) => ({ ...prev, search: value || undefined }));
+    setFilters(prev => ({ ...prev, search: value || undefined }));
   }, []);
 
   const handleDisciplineChange = useCallback((value: string) => {
-    setFilters((prev) => ({ ...prev, discipline: value || undefined }));
+    setFilters(prev => ({ ...prev, discipline: value || undefined }));
   }, []);
 
   const handleStatusChange = useCallback((value: string) => {
-    setFilters((prev) => ({ ...prev, status: (value as OrchestratorStatus) || undefined }));
+    setFilters(prev => ({
+      ...prev,
+      status: (value as OrchestratorStatus) || undefined,
+    }));
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -68,7 +96,7 @@ export default function OrchestratorsPage() {
       await createOrchestrator(input);
       refetch();
     },
-    [createOrchestrator, refetch],
+    [createOrchestrator, refetch]
   );
 
   const handleToggleStatus = useCallback(
@@ -76,14 +104,14 @@ export default function OrchestratorsPage() {
       await toggleOrchestratorStatus(orchestrator.id, orchestrator.status);
       refetch();
     },
-    [toggleOrchestratorStatus, refetch],
+    [toggleOrchestratorStatus, refetch]
   );
 
   const handleEditWithAI = useCallback(
     (orchestrator: Orchestrator) => {
       router.push(`/${workspaceSlug}/orchestrators/${orchestrator.id}/edit`);
     },
-    [router, workspaceSlug],
+    [router, workspaceSlug]
   );
 
   const handleNewOrchestrator = useCallback(() => {
@@ -108,7 +136,7 @@ export default function OrchestratorsPage() {
   // Group Orchestrators by status for stats
   const orchestratorStats = useMemo(() => {
     const stats = { online: 0, offline: 0, busy: 0, away: 0 };
-    orchestrators.forEach((orchestrator) => {
+    orchestrators.forEach(orchestrator => {
       if (orchestrator.status === 'ONLINE') {
         stats.online++;
       } else if (orchestrator.status === 'OFFLINE') {
@@ -123,69 +151,79 @@ export default function OrchestratorsPage() {
   }, [orchestrators]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className='p-6 space-y-6'>
       {/* Action Buttons */}
-      <div className="flex justify-end gap-2">
+      <div className='flex justify-end gap-2'>
         <Button
-          type="button"
+          type='button'
           onClick={handleNewOrchestrator}
-          className="inline-flex items-center gap-2"
+          className='inline-flex items-center gap-2'
         >
-          <Plus className="h-4 w-4" />
+          <Plus className='h-4 w-4' />
           New Orchestrator
         </Button>
         <Button
-          type="button"
-          variant="outline"
+          type='button'
+          variant='outline'
           onClick={() => setIsCreateDialogOpen(true)}
-          className="inline-flex items-center gap-2"
+          className='inline-flex items-center gap-2'
         >
-          <Plus className="h-4 w-4" />
+          <Plus className='h-4 w-4' />
           Quick Create
         </Button>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className='grid grid-cols-2 gap-4 sm:grid-cols-4'>
         <StatCard
-          label="Online"
+          label='Online'
           value={orchestratorStats.online}
-          color="text-green-600"
-          bgColor="bg-green-50"
+          color='text-green-600'
+          bgColor='bg-green-50'
         />
         <StatCard
-          label="Offline"
+          label='Offline'
           value={orchestratorStats.offline}
-          color="text-gray-600"
-          bgColor="bg-gray-50"
+          color='text-gray-600'
+          bgColor='bg-gray-50'
         />
-        <StatCard label="Busy" value={orchestratorStats.busy} color="text-yellow-600" bgColor="bg-yellow-50" />
-        <StatCard label="Away" value={orchestratorStats.away} color="text-orange-600" bgColor="bg-orange-50" />
+        <StatCard
+          label='Busy'
+          value={orchestratorStats.busy}
+          color='text-yellow-600'
+          bgColor='bg-yellow-50'
+        />
+        <StatCard
+          label='Away'
+          value={orchestratorStats.away}
+          color='text-orange-600'
+          bgColor='bg-orange-50'
+        />
       </div>
 
       {/* Filters */}
-      <div className="rounded-lg border bg-card p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className='rounded-lg border bg-card p-4'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
           {/* Search */}
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className='relative flex-1'>
+            <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
             <input
-              type="text"
-              placeholder="Search orchestrators by name, discipline..."
+              type='text'
+              placeholder='Search orchestrators by name, discipline...'
               value={filters.search || ''}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              onChange={e => handleSearchChange(e.target.value)}
+              className='w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             />
           </div>
 
           {/* Discipline Filter */}
           <select
             value={filters.discipline || ''}
-            onChange={(e) => handleDisciplineChange(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            onChange={e => handleDisciplineChange(e.target.value)}
+            className='rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
           >
-            <option value="">All Disciplines</option>
-            {ORCHESTRATOR_DISCIPLINES.map((d) => (
+            <option value=''>All Disciplines</option>
+            {ORCHESTRATOR_DISCIPLINES.map(d => (
               <option key={d} value={d}>
                 {d}
               </option>
@@ -195,32 +233,34 @@ export default function OrchestratorsPage() {
           {/* Status Filter */}
           <select
             value={filters.status || ''}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            onChange={e => handleStatusChange(e.target.value)}
+            className='rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
           >
-            <option value="">All Status</option>
-            {Object.entries(ORCHESTRATOR_STATUS_CONFIG).map(([status, config]) => (
-              <option key={status} value={status}>
-                {config.label}
-              </option>
-            ))}
+            <option value=''>All Status</option>
+            {Object.entries(ORCHESTRATOR_STATUS_CONFIG).map(
+              ([status, config]) => (
+                <option key={status} value={status}>
+                  {config.label}
+                </option>
+              )
+            )}
           </select>
 
           {/* Clear Filters */}
           {activeFiltersCount > 0 && (
             <button
-              type="button"
+              type='button'
               onClick={handleClearFilters}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              className='inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground'
             >
-              <XIcon className="h-4 w-4" />
+              <XIcon className='h-4 w-4' />
               Clear ({activeFiltersCount})
             </button>
           )}
         </div>
 
         {/* Results Count */}
-        <div className="mt-3 text-sm text-muted-foreground">
+        <div className='mt-3 text-sm text-muted-foreground'>
           {activeFiltersCount > 0 ? (
             <>
               Showing {filteredCount} of {totalCount} orchestrators
@@ -233,16 +273,16 @@ export default function OrchestratorsPage() {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="flex items-center gap-2 text-red-800">
-            <AlertIcon className="h-5 w-5" />
-            <p className="text-sm font-medium">Failed to load orchestrators</p>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-4'>
+          <div className='flex items-center gap-2 text-red-800'>
+            <AlertIcon className='h-5 w-5' />
+            <p className='text-sm font-medium'>Failed to load orchestrators</p>
           </div>
-          <p className="mt-1 text-sm text-red-600">{error.message}</p>
+          <p className='mt-1 text-sm text-red-600'>{error.message}</p>
           <button
-            type="button"
+            type='button'
             onClick={refetch}
-            className="mt-2 text-sm font-medium text-red-800 hover:text-red-900"
+            className='mt-2 text-sm font-medium text-red-800 hover:text-red-900'
           >
             Try again
           </button>
@@ -251,7 +291,7 @@ export default function OrchestratorsPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {Array.from({ length: 6 }).map((_, i) => (
             <OrchestratorCardSkeleton key={i} />
           ))}
@@ -262,7 +302,11 @@ export default function OrchestratorsPage() {
       {!isLoading && !error && orchestrators.length === 0 && (
         <EmptyState
           icon={Users}
-          title={activeFiltersCount > 0 ? 'No Orchestrators Found' : 'No Orchestrators Yet'}
+          title={
+            activeFiltersCount > 0
+              ? 'No Orchestrators Found'
+              : 'No Orchestrators Yet'
+          }
           description={
             activeFiltersCount > 0
               ? "Try adjusting your filters to find what you're looking for. No orchestrators match your current criteria."
@@ -285,8 +329,8 @@ export default function OrchestratorsPage() {
 
       {/* Orchestrators Grid */}
       {!isLoading && !error && orchestrators.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {orchestrators.map((orchestrator) => (
+        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {orchestrators.map(orchestrator => (
             <OrchestratorCard
               key={orchestrator.id}
               orchestrator={orchestrator}
@@ -323,7 +367,7 @@ function StatCard({
 }) {
   return (
     <div className={cn('rounded-lg border p-4', bgColor)}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      <p className='text-sm font-medium text-muted-foreground'>{label}</p>
       <p className={cn('text-2xl font-bold', color)}>{value}</p>
     </div>
   );
@@ -333,17 +377,17 @@ function StatCard({
 function SearchIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
+      <circle cx='11' cy='11' r='8' />
+      <path d='m21 21-4.3-4.3' />
     </svg>
   );
 }
@@ -351,17 +395,17 @@ function SearchIcon({ className }: { className?: string }) {
 function XIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }
@@ -369,18 +413,18 @@ function XIcon({ className }: { className?: string }) {
 function AlertIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" x2="12" y1="8" y2="12" />
-      <line x1="12" x2="12.01" y1="16" y2="16" />
+      <circle cx='12' cy='12' r='10' />
+      <line x1='12' x2='12' y1='8' y2='12' />
+      <line x1='12' x2='12.01' y1='16' y2='16' />
     </svg>
   );
 }

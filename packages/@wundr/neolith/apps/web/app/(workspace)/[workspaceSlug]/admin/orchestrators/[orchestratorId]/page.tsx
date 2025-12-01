@@ -8,7 +8,13 @@ import { usePageHeader } from '@/contexts/page-header-context';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
   AlertDialog,
@@ -26,7 +32,10 @@ import { OrchestratorMetrics } from '@/components/admin/orchestrators/orchestrat
 import { OrchestratorActivity } from '@/components/admin/orchestrators/orchestrator-activity';
 import { OrchestratorConfig } from '@/components/admin/orchestrators/orchestrator-config';
 
-import { useOrchestrator, useOrchestratorMutations } from '@/hooks/use-orchestrator';
+import {
+  useOrchestrator,
+  useOrchestratorMutations,
+} from '@/hooks/use-orchestrator';
 import type { Orchestrator } from '@/types/orchestrator';
 
 export default function AdminOrchestratorDetailPage() {
@@ -39,13 +48,21 @@ export default function AdminOrchestratorDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const { orchestrator, isLoading, error, refetch } = useOrchestrator(orchestratorId);
-  const { updateOrchestrator, deleteOrchestrator, toggleOrchestratorStatus, isLoading: isMutating } =
-    useOrchestratorMutations();
+  const { orchestrator, isLoading, error, refetch } =
+    useOrchestrator(orchestratorId);
+  const {
+    updateOrchestrator,
+    deleteOrchestrator,
+    toggleOrchestratorStatus,
+    isLoading: isMutating,
+  } = useOrchestratorMutations();
 
   useEffect(() => {
     if (orchestrator) {
-      setPageHeader(orchestrator.title, 'Manage orchestrator configuration and monitor activity');
+      setPageHeader(
+        orchestrator.title,
+        'Manage orchestrator configuration and monitor activity'
+      );
     }
   }, [orchestrator, setPageHeader]);
 
@@ -85,26 +102,28 @@ export default function AdminOrchestratorDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="h-8 w-8 animate-pulse rounded bg-muted" />
-          <div className="h-8 w-64 animate-pulse rounded bg-muted" />
+      <div className='space-y-6'>
+        <div className='flex items-center gap-4'>
+          <div className='h-8 w-8 animate-pulse rounded bg-muted' />
+          <div className='h-8 w-64 animate-pulse rounded bg-muted' />
         </div>
-        <div className="h-96 animate-pulse rounded-lg bg-muted" />
+        <div className='h-96 animate-pulse rounded-lg bg-muted' />
       </div>
     );
   }
 
   if (error || !orchestrator) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 max-w-md">
-          <h3 className="text-lg font-semibold text-red-800">Failed to load orchestrator</h3>
-          <p className="mt-2 text-sm text-red-600">
+      <div className='flex flex-col items-center justify-center py-12'>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-6 max-w-md'>
+          <h3 className='text-lg font-semibold text-red-800'>
+            Failed to load orchestrator
+          </h3>
+          <p className='mt-2 text-sm text-red-600'>
             {error?.message || 'Orchestrator not found'}
           </p>
-          <div className="mt-4 flex gap-2">
-            <Button variant="outline" onClick={handleBack}>
+          <div className='mt-4 flex gap-2'>
+            <Button variant='outline' onClick={handleBack}>
               Go Back
             </Button>
             <Button onClick={refetch}>Try Again</Button>
@@ -136,41 +155,45 @@ export default function AdminOrchestratorDetailPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="h-5 w-5" />
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-4'>
+          <Button variant='ghost' size='icon' onClick={handleBack}>
+            <ArrowLeft className='h-5 w-5' />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{orchestrator.title}</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className='text-2xl font-bold'>{orchestrator.title}</h1>
+            <p className='text-sm text-muted-foreground'>
               {orchestrator.discipline || 'No discipline set'}
             </p>
           </div>
           <OrchestratorStatusBadge status={orchestrator.status} />
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleToggleStatus} disabled={isMutating}>
+        <div className='flex gap-2'>
+          <Button
+            variant='outline'
+            onClick={handleToggleStatus}
+            disabled={isMutating}
+          >
             {orchestrator.status === 'ONLINE' ? (
               <>
-                <Pause className="h-4 w-4 mr-2" />
+                <Pause className='h-4 w-4 mr-2' />
                 Set Offline
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 mr-2" />
+                <Play className='h-4 w-4 mr-2' />
                 Set Online
               </>
             )}
           </Button>
           <Button
-            variant="destructive"
+            variant='destructive'
             onClick={() => setShowDeleteDialog(true)}
             disabled={isMutating}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className='h-4 w-4 mr-2' />
             Delete
           </Button>
         </div>
@@ -179,26 +202,26 @@ export default function AdminOrchestratorDetailPage() {
       {/* Profile Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary text-2xl font-bold">
+          <div className='flex items-start gap-4'>
+            <div className='flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary text-2xl font-bold'>
               {orchestrator.avatarUrl ? (
                 <img
                   src={orchestrator.avatarUrl}
                   alt={orchestrator.title}
-                  className="h-full w-full rounded-lg object-cover"
+                  className='h-full w-full rounded-lg object-cover'
                 />
               ) : (
                 orchestrator.title.substring(0, 2).toUpperCase()
               )}
             </div>
-            <div className="flex-1">
+            <div className='flex-1'>
               <CardTitle>{orchestrator.title}</CardTitle>
-              <CardDescription className="mt-2">
+              <CardDescription className='mt-2'>
                 {orchestrator.description || 'No description provided'}
               </CardDescription>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className='mt-4 flex flex-wrap gap-2'>
                 {orchestrator.capabilities?.map((capability, index) => (
-                  <Badge key={index} variant="secondary">
+                  <Badge key={index} variant='secondary'>
                     {capability}
                   </Badge>
                 ))}
@@ -210,37 +233,47 @@ export default function AdminOrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="configuration">Configuration</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+        <TabsList className='grid w-full grid-cols-4'>
+          <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='activity'>Activity</TabsTrigger>
+          <TabsTrigger value='configuration'>Configuration</TabsTrigger>
+          <TabsTrigger value='performance'>Performance</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+        <TabsContent value='overview' className='space-y-6 mt-6'>
+          <div className='grid gap-6 lg:grid-cols-2'>
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Discipline</p>
-                  <p className="text-sm">{orchestrator.discipline || 'Not set'}</p>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Discipline
+                  </p>
+                  <p className='text-sm'>
+                    {orchestrator.discipline || 'Not set'}
+                  </p>
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Created</p>
-                  <p className="text-sm">
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Created
+                  </p>
+                  <p className='text-sm'>
                     {new Date(orchestrator.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Last Active</p>
-                  <p className="text-sm">
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Last Active
+                  </p>
+                  <p className='text-sm'>
                     {orchestrator.lastActivityAt
-                      ? new Date(orchestrator.lastActivityAt).toLocaleDateString()
+                      ? new Date(
+                          orchestrator.lastActivityAt
+                        ).toLocaleDateString()
                       : 'Never'}
                   </p>
                 </div>
@@ -251,15 +284,23 @@ export default function AdminOrchestratorDetailPage() {
               <CardHeader>
                 <CardTitle>Statistics</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className='space-y-4'>
+                <div className='grid grid-cols-2 gap-4'>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Messages</p>
-                    <p className="text-2xl font-bold">{orchestrator.messageCount}</p>
+                    <p className='text-sm font-medium text-muted-foreground'>
+                      Messages
+                    </p>
+                    <p className='text-2xl font-bold'>
+                      {orchestrator.messageCount}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Agents</p>
-                    <p className="text-2xl font-bold">{orchestrator.agentCount}</p>
+                    <p className='text-sm font-medium text-muted-foreground'>
+                      Agents
+                    </p>
+                    <p className='text-2xl font-bold'>
+                      {orchestrator.agentCount}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -271,17 +312,17 @@ export default function AdminOrchestratorDetailPage() {
               <CardHeader>
                 <CardTitle>Charter</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <div>
-                  <p className="text-sm font-semibold">Mission</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className='text-sm font-semibold'>Mission</p>
+                  <p className='text-sm text-muted-foreground mt-1'>
                     {orchestrator.charter.mission}
                   </p>
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm font-semibold">Vision</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className='text-sm font-semibold'>Vision</p>
+                  <p className='text-sm text-muted-foreground mt-1'>
                     {orchestrator.charter.vision}
                   </p>
                 </div>
@@ -290,11 +331,14 @@ export default function AdminOrchestratorDetailPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="activity" className="mt-6">
-          <OrchestratorActivity orchestratorId={orchestrator.id} activities={mockActivities} />
+        <TabsContent value='activity' className='mt-6'>
+          <OrchestratorActivity
+            orchestratorId={orchestrator.id}
+            activities={mockActivities}
+          />
         </TabsContent>
 
-        <TabsContent value="configuration" className="mt-6">
+        <TabsContent value='configuration' className='mt-6'>
           <OrchestratorConfig
             orchestrator={orchestrator}
             onSave={handleSaveConfig}
@@ -302,13 +346,13 @@ export default function AdminOrchestratorDetailPage() {
           />
         </TabsContent>
 
-        <TabsContent value="performance" className="mt-6">
+        <TabsContent value='performance' className='mt-6'>
           <OrchestratorMetrics
             orchestratorId={orchestrator.id}
             totalMessages={orchestrator.messageCount}
             activeConversations={orchestrator.agentCount}
-            avgResponseTime="2.3s"
-            successRate="98.5%"
+            avgResponseTime='2.3s'
+            successRate='98.5%'
           />
         </TabsContent>
       </Tabs>
@@ -319,13 +363,16 @@ export default function AdminOrchestratorDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Orchestrator</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {orchestrator.title}? This action cannot be undone.
-              All associated data will be permanently removed.
+              Are you sure you want to delete {orchestrator.title}? This action
+              cannot be undone. All associated data will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

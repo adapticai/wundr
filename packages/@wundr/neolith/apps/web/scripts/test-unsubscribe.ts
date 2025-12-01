@@ -5,7 +5,11 @@
  * Run with: npx tsx scripts/test-unsubscribe.ts
  */
 
-import { generateUnsubscribeUrl, generateUnsubscribeToken, verifyUnsubscribeToken } from '../lib/email';
+import {
+  generateUnsubscribeUrl,
+  generateUnsubscribeToken,
+  verifyUnsubscribeToken,
+} from '../lib/email';
 import type { EmailType } from '../lib/email';
 
 console.log('🧪 Testing Email Unsubscribe Functionality\n');
@@ -18,7 +22,7 @@ console.log('='.repeat(80));
 console.log('1. Generating Unsubscribe URLs');
 console.log('='.repeat(80));
 
-emailTypes.forEach((emailType) => {
+emailTypes.forEach(emailType => {
   const url = generateUnsubscribeUrl(testUserId, emailType);
   console.log(`\n${emailType.toUpperCase()} emails:`);
   console.log(`  URL: ${url}`);
@@ -28,7 +32,7 @@ console.log('\n' + '='.repeat(80));
 console.log('2. Generating and Verifying Tokens');
 console.log('='.repeat(80));
 
-emailTypes.forEach((emailType) => {
+emailTypes.forEach(emailType => {
   const token = generateUnsubscribeToken(testUserId, emailType);
   const payload = verifyUnsubscribeToken(token);
 
@@ -56,7 +60,9 @@ const invalidTokens = [
 invalidTokens.forEach(({ name, token }) => {
   const payload = verifyUnsubscribeToken(token);
   console.log(`\n${name}:`);
-  console.log(`  Result: ${payload ? '✅ Valid (UNEXPECTED!)' : '❌ Invalid (expected)'}`);
+  console.log(
+    `  Result: ${payload ? '✅ Valid (UNEXPECTED!)' : '❌ Invalid (expected)'}`
+  );
 });
 
 console.log('\n' + '='.repeat(80));

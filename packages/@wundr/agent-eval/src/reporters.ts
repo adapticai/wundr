@@ -86,7 +86,7 @@ export class ResultsReporter {
   generate(
     results: EvalResults,
     options: Partial<ReportOptions> = {},
-    failureAnalysis?: FailureAnalysis,
+    failureAnalysis?: FailureAnalysis
   ): ReportOutput {
     const opts = { ...this.defaultOptions, ...options };
 
@@ -127,7 +127,7 @@ export class ResultsReporter {
   private generateConsole(
     results: EvalResults,
     options: ReportOptions,
-    failureAnalysis?: FailureAnalysis,
+    failureAnalysis?: FailureAnalysis
   ): string {
     const lines: string[] = [];
     const { summary } = results;
@@ -142,14 +142,14 @@ export class ResultsReporter {
     lines.push(`Run ID: ${results.runId}`);
     if (results.agentId) {
       lines.push(
-        `Agent: ${results.agentId}${results.agentVersion ? ` (v${results.agentVersion})` : ''}`,
+        `Agent: ${results.agentId}${results.agentVersion ? ` (v${results.agentVersion})` : ''}`
       );
     }
     lines.push(
-      `Started: ${this.formatTimestamp(results.startedAt, options.timestampFormat)}`,
+      `Started: ${this.formatTimestamp(results.startedAt, options.timestampFormat)}`
     );
     lines.push(
-      `Duration: ${this.formatDuration(summary.totalExecutionTimeMs)}`,
+      `Duration: ${this.formatDuration(summary.totalExecutionTimeMs)}`
     );
     lines.push('');
 
@@ -165,11 +165,11 @@ export class ResultsReporter {
           ? '[WARN]'
           : '[FAIL]';
     lines.push(
-      `${passIcon} Pass Rate: ${(summary.passRate * 100).toFixed(1)}% (${summary.passedTests}/${summary.totalTests})`,
+      `${passIcon} Pass Rate: ${(summary.passRate * 100).toFixed(1)}% (${summary.passedTests}/${summary.totalTests})`
     );
     lines.push(`Average Score: ${summary.averageScore.toFixed(2)}/10`);
     lines.push(
-      `Passed: ${summary.passedTests} | Failed: ${summary.failedTests} | Errored: ${summary.erroredTests}`,
+      `Passed: ${summary.passedTests} | Failed: ${summary.failedTests} | Errored: ${summary.erroredTests}`
     );
     lines.push('');
 
@@ -177,7 +177,7 @@ export class ResultsReporter {
     if (Object.keys(summary.criterionAverages).length > 0) {
       lines.push('Criterion Averages:');
       for (const [criterion, avg] of Object.entries(
-        summary.criterionAverages,
+        summary.criterionAverages
       )) {
         const bar = this.createProgressBar(avg / 10, 20);
         lines.push(`  ${criterion.padEnd(15)} ${bar} ${avg.toFixed(1)}/10`);
@@ -195,7 +195,7 @@ export class ResultsReporter {
         const icon = test.error ? '[ERR]' : test.passed ? '[OK]' : '[FAIL]';
         lines.push(`${icon} ${test.testCaseName} (iter ${test.iteration})`);
         lines.push(
-          `    Score: ${test.score.toFixed(1)}/10 | Time: ${test.executionTimeMs}ms`,
+          `    Score: ${test.score.toFixed(1)}/10 | Time: ${test.executionTimeMs}ms`
         );
 
         if (
@@ -205,7 +205,7 @@ export class ResultsReporter {
           for (const cr of test.criterionResults) {
             const crIcon = cr.passed ? '+' : '-';
             lines.push(
-              `    ${crIcon} ${cr.criterionName}: ${cr.score.toFixed(1)}/10`,
+              `    ${crIcon} ${cr.criterionName}: ${cr.score.toFixed(1)}/10`
             );
           }
         }
@@ -227,7 +227,7 @@ export class ResultsReporter {
         lines.push('Patterns:');
         for (const pattern of failureAnalysis.patterns) {
           lines.push(
-            `  - ${pattern.name} (${(pattern.frequency * 100).toFixed(0)}%)`,
+            `  - ${pattern.name} (${(pattern.frequency * 100).toFixed(0)}%)`
           );
         }
         lines.push('');
@@ -251,7 +251,7 @@ export class ResultsReporter {
   private generateJSON(
     results: EvalResults,
     options: ReportOptions,
-    failureAnalysis?: FailureAnalysis,
+    failureAnalysis?: FailureAnalysis
   ): string {
     const output: Record<string, unknown> = {
       title: options.title || 'Evaluation Results',
@@ -312,7 +312,7 @@ export class ResultsReporter {
   private generateMarkdown(
     results: EvalResults,
     options: ReportOptions,
-    failureAnalysis?: FailureAnalysis,
+    failureAnalysis?: FailureAnalysis
   ): string {
     const lines: string[] = [];
     const { summary } = results;
@@ -330,14 +330,14 @@ export class ResultsReporter {
     lines.push(`| Run ID | \`${results.runId}\` |`);
     if (results.agentId) {
       lines.push(
-        `| Agent | ${results.agentId}${results.agentVersion ? ` (v${results.agentVersion})` : ''} |`,
+        `| Agent | ${results.agentId}${results.agentVersion ? ` (v${results.agentVersion})` : ''} |`
       );
     }
     lines.push(
-      `| Started | ${this.formatTimestamp(results.startedAt, options.timestampFormat)} |`,
+      `| Started | ${this.formatTimestamp(results.startedAt, options.timestampFormat)} |`
     );
     lines.push(
-      `| Duration | ${this.formatDuration(summary.totalExecutionTimeMs)} |`,
+      `| Duration | ${this.formatDuration(summary.totalExecutionTimeMs)} |`
     );
     lines.push('');
 
@@ -347,7 +347,7 @@ export class ResultsReporter {
     const passEmoji =
       summary.passRate >= 0.8 ? '✅' : summary.passRate >= 0.5 ? '⚠️' : '❌';
     lines.push(
-      `${passEmoji} **Pass Rate: ${(summary.passRate * 100).toFixed(1)}%** (${summary.passedTests}/${summary.totalTests})`,
+      `${passEmoji} **Pass Rate: ${(summary.passRate * 100).toFixed(1)}%** (${summary.passedTests}/${summary.totalTests})`
     );
     lines.push('');
     lines.push(`- **Average Score:** ${summary.averageScore.toFixed(2)}/10`);
@@ -363,7 +363,7 @@ export class ResultsReporter {
       lines.push('| Criterion | Score |');
       lines.push('|-----------|-------|');
       for (const [criterion, avg] of Object.entries(
-        summary.criterionAverages,
+        summary.criterionAverages
       )) {
         lines.push(`| ${criterion} | ${avg.toFixed(2)}/10 |`);
       }
@@ -382,7 +382,7 @@ export class ResultsReporter {
         lines.push(`- **Iteration:** ${test.iteration}`);
         lines.push(`- **Score:** ${test.score.toFixed(1)}/10`);
         lines.push(
-          `- **Status:** ${test.error ? 'Error' : test.passed ? 'Passed' : 'Failed'}`,
+          `- **Status:** ${test.error ? 'Error' : test.passed ? 'Passed' : 'Failed'}`
         );
         lines.push(`- **Time:** ${test.executionTimeMs}ms`);
         lines.push('');
@@ -403,7 +403,7 @@ export class ResultsReporter {
           for (const cr of test.criterionResults) {
             const status = cr.passed ? '✅' : '❌';
             lines.push(
-              `| ${cr.criterionName} | ${cr.score.toFixed(1)}/10 | ${status} |`,
+              `| ${cr.criterionName} | ${cr.score.toFixed(1)}/10 | ${status} |`
             );
           }
           lines.push('');
@@ -434,10 +434,10 @@ export class ResultsReporter {
           lines.push(pattern.description);
           lines.push('');
           lines.push(
-            `- **Frequency:** ${(pattern.frequency * 100).toFixed(1)}%`,
+            `- **Frequency:** ${(pattern.frequency * 100).toFixed(1)}%`
           );
           lines.push(
-            `- **Affected Tests:** ${pattern.matchingTestCases.length}`,
+            `- **Affected Tests:** ${pattern.matchingTestCases.length}`
           );
           if (pattern.suggestedRemediation) {
             lines.push(`- **Suggested Fix:** ${pattern.suggestedRemediation}`);
@@ -465,7 +465,7 @@ export class ResultsReporter {
   private generateHTML(
     results: EvalResults,
     options: ReportOptions,
-    failureAnalysis?: FailureAnalysis,
+    failureAnalysis?: FailureAnalysis
   ): string {
     const { summary } = results;
     const passColor =
@@ -561,7 +561,7 @@ export class ResultsReporter {
             <td class="${test.error ? 'errored' : test.passed ? 'passed' : 'failed'}">${test.error ? 'Error' : test.passed ? 'Passed' : 'Failed'}</td>
             <td>${test.executionTimeMs}ms</td>
           </tr>
-          `,
+          `
             )
             .join('')}
         </tbody>
@@ -610,7 +610,7 @@ export class ResultsReporter {
     if (options.includeCriterionDetails) {
       // Get all criterion IDs from first result with criteria
       const firstWithCriteria = results.testResults.find(
-        r => r.criterionResults.length > 0,
+        r => r.criterionResults.length > 0
       );
       if (firstWithCriteria) {
         for (const cr of firstWithCriteria.criterionResults) {
@@ -667,7 +667,7 @@ export class ResultsReporter {
    */
   private formatTimestamp(
     date: Date,
-    format?: 'iso' | 'locale' | 'unix',
+    format?: 'iso' | 'locale' | 'unix'
   ): string {
     switch (format) {
       case 'unix':
@@ -726,7 +726,7 @@ export function createReporter(): ResultsReporter {
  */
 export function generateReport(
   results: EvalResults,
-  format: ReportFormat = 'console',
+  format: ReportFormat = 'console'
 ): string {
   const reporter = new ResultsReporter();
   return reporter.generate(results, { format }).content;
@@ -742,7 +742,7 @@ export function generateReport(
 export function generateComparisonReport(
   baseline: EvalResults,
   current: EvalResults,
-  format: ReportFormat = 'markdown',
+  format: ReportFormat = 'markdown'
 ): string {
   const lines: string[] = [];
 
@@ -759,13 +759,13 @@ export function generateComparisonReport(
       current.summary.averageScore - baseline.summary.averageScore;
 
     lines.push(
-      `| Pass Rate | ${(baseline.summary.passRate * 100).toFixed(1)}% | ${(current.summary.passRate * 100).toFixed(1)}% | ${passRateChange >= 0 ? '+' : ''}${(passRateChange * 100).toFixed(1)}% |`,
+      `| Pass Rate | ${(baseline.summary.passRate * 100).toFixed(1)}% | ${(current.summary.passRate * 100).toFixed(1)}% | ${passRateChange >= 0 ? '+' : ''}${(passRateChange * 100).toFixed(1)}% |`
     );
     lines.push(
-      `| Average Score | ${baseline.summary.averageScore.toFixed(2)} | ${current.summary.averageScore.toFixed(2)} | ${scoreChange >= 0 ? '+' : ''}${scoreChange.toFixed(2)} |`,
+      `| Average Score | ${baseline.summary.averageScore.toFixed(2)} | ${current.summary.averageScore.toFixed(2)} | ${scoreChange >= 0 ? '+' : ''}${scoreChange.toFixed(2)} |`
     );
     lines.push(
-      `| Total Tests | ${baseline.summary.totalTests} | ${current.summary.totalTests} | ${current.summary.totalTests - baseline.summary.totalTests} |`,
+      `| Total Tests | ${baseline.summary.totalTests} | ${current.summary.totalTests} | ${current.summary.totalTests - baseline.summary.totalTests} |`
     );
     lines.push('');
 
@@ -776,14 +776,14 @@ export function generateComparisonReport(
     lines.push('|-----------|----------|---------|--------|');
 
     for (const [criterion, currentAvg] of Object.entries(
-      current.summary.criterionAverages,
+      current.summary.criterionAverages
     )) {
       const baselineAvg = baseline.summary.criterionAverages[criterion] || 0;
       const change = currentAvg - baselineAvg;
       const changeStr =
         change >= 0 ? `+${change.toFixed(2)}` : change.toFixed(2);
       lines.push(
-        `| ${criterion} | ${baselineAvg.toFixed(2)} | ${currentAvg.toFixed(2)} | ${changeStr} |`,
+        `| ${criterion} | ${baselineAvg.toFixed(2)} | ${currentAvg.toFixed(2)} | ${changeStr} |`
       );
     }
   } else {
@@ -799,8 +799,8 @@ export function generateComparisonReport(
           },
         },
         null,
-        2,
-      ),
+        2
+      )
     );
   }
 

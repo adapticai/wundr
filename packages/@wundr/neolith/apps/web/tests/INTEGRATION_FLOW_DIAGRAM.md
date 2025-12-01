@@ -471,7 +471,5 @@ Flow 6: Theme Toggle
 
 ---
 
-**Diagrams Version:** 1.0
-**Last Updated:** November 27, 2025
-**Status:** All flows blocked at authentication gate
-**Next Update:** After auth mocking implementation
+**Diagrams Version:** 1.0 **Last Updated:** November 27, 2025 **Status:** All flows blocked at
+authentication gate **Next Update:** After auth mocking implementation

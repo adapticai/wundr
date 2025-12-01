@@ -24,7 +24,6 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-
 /**
  * Route context with workspace ID parameter
  */
@@ -49,7 +48,7 @@ interface RouteContext {
  */
 export async function GET(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -64,7 +63,10 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -79,31 +81,49 @@ export async function GET(
     const result = await auditService.query(
       {
         workspaceId,
-        severities: searchParams.get('severity')?.split(',') as AuditSeverity[] | undefined,
-        categories: searchParams.get('category')?.split(',') as AuditCategory[] | undefined,
-        actions: searchParams.get('action')?.split(',') as AuditAction[] | undefined,
+        severities: searchParams.get('severity')?.split(',') as
+          | AuditSeverity[]
+          | undefined,
+        categories: searchParams.get('category')?.split(',') as
+          | AuditCategory[]
+          | undefined,
+        actions: searchParams.get('action')?.split(',') as
+          | AuditAction[]
+          | undefined,
         search: searchParams.get('search') || undefined,
-        dateRange: searchParams.get('from') && searchParams.get('to') ? {
-          start: new Date(searchParams.get('from')!),
-          end: new Date(searchParams.get('to')!),
-        } : undefined,
+        dateRange:
+          searchParams.get('from') && searchParams.get('to')
+            ? {
+                start: new Date(searchParams.get('from')!),
+                end: new Date(searchParams.get('to')!),
+              }
+            : undefined,
       },
       {
         limit: parseInt(searchParams.get('limit') || '50'),
         offset: parseInt(searchParams.get('offset') || '0'),
       },
-      searchParams.get('sort') ? {
-        field: searchParams.get('sort') as 'timestamp' | 'severity' | 'actor' | 'action',
-        direction: (searchParams.get('order') || 'desc') as 'asc' | 'desc',
-      } : undefined,
+      searchParams.get('sort')
+        ? {
+            field: searchParams.get('sort') as
+              | 'timestamp'
+              | 'severity'
+              | 'actor'
+              | 'action',
+            direction: (searchParams.get('order') || 'desc') as 'asc' | 'desc',
+          }
+        : undefined
     );
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/admin/audit-logs] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/admin/audit-logs] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to fetch audit logs' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

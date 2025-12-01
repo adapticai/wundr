@@ -9,7 +9,12 @@ export interface OrchestratorCapability {
   id: string;
   name: string;
   description: string;
-  category: 'communication' | 'development' | 'analysis' | 'automation' | 'management';
+  category:
+    | 'communication'
+    | 'development'
+    | 'analysis'
+    | 'automation'
+    | 'management';
   isEnabled: boolean;
   parameters?: Record<string, unknown>;
 }
@@ -31,9 +36,9 @@ export interface CharterResourceLimits {
 }
 
 export interface CharterObjectives {
-  responseTimeTarget: number;  // milliseconds
-  taskCompletionRate: number;  // percentage 0-100
-  qualityScore: number;        // 0-100
+  responseTimeTarget: number; // milliseconds
+  taskCompletionRate: number; // percentage 0-100
+  qualityScore: number; // 0-100
   customMetrics?: Record<string, number>;
 }
 
@@ -46,7 +51,7 @@ export interface CharterConstraints {
 
 export interface GovernanceCharter {
   id: string;
-  tier: 1;  // Orchestrator tier is always 1
+  tier: 1; // Orchestrator tier is always 1
   identity: CharterIdentity;
   coreDirective: string;
   capabilities: OrchestratorCapability[];
@@ -75,7 +80,10 @@ export interface CharterVersion {
 export interface CreateCharterVersionInput {
   orchestratorId: string;
   charterId: string;
-  charterData: Omit<GovernanceCharter, 'id' | 'version' | 'createdAt' | 'updatedAt'>;
+  charterData: Omit<
+    GovernanceCharter,
+    'id' | 'version' | 'createdAt' | 'updatedAt'
+  >;
   changeLog?: string;
 }
 
@@ -95,7 +103,7 @@ export const DEFAULT_RESOURCE_LIMITS: CharterResourceLimits = {
 };
 
 export const DEFAULT_OBJECTIVES: CharterObjectives = {
-  responseTimeTarget: 30000,  // 30 seconds
+  responseTimeTarget: 30000, // 30 seconds
   taskCompletionRate: 95,
   qualityScore: 85,
 };
@@ -104,5 +112,9 @@ export const DEFAULT_CONSTRAINTS: CharterConstraints = {
   forbiddenCommands: ['rm -rf /', 'sudo rm', 'format', 'fdisk'],
   forbiddenPaths: ['/etc/passwd', '/etc/shadow', '~/.ssh'],
   forbiddenActions: ['delete_production_data', 'expose_secrets'],
-  requireApprovalFor: ['deploy_production', 'delete_workspace', 'modify_billing'],
+  requireApprovalFor: [
+    'deploy_production',
+    'delete_workspace',
+    'modify_billing',
+  ],
 };

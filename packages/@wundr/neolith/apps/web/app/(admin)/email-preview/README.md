@@ -12,7 +12,8 @@ This module provides three main components for testing email templates:
 
 ## Features
 
-- Preview all email templates (welcome, password-reset, verification, invitation, notification, password-changed)
+- Preview all email templates (welcome, password-reset, verification, invitation, notification,
+  password-changed)
 - Live preview with customizable props
 - Send test emails to verify delivery
 - Only accessible in development or by admin users
@@ -42,11 +43,13 @@ http://localhost:3000/email-preview
 **GET** `/api/admin/email-preview`
 
 Query parameters:
+
 - `template` (required) - Template name
 - `email` - Recipient email for context
 - Additional template-specific parameters
 
 Example:
+
 ```bash
 curl "http://localhost:3000/api/admin/email-preview?template=welcome&email=user@example.com&username=John"
 ```
@@ -58,6 +61,7 @@ Returns rendered HTML of the email template.
 **POST** `/api/admin/send-test-email`
 
 Request body:
+
 ```json
 {
   "template": "welcome",
@@ -69,6 +73,7 @@ Request body:
 ```
 
 Example:
+
 ```bash
 curl -X POST http://localhost:3000/api/admin/send-test-email \
   -H "Content-Type: application/json" \
@@ -84,39 +89,49 @@ curl -X POST http://localhost:3000/api/admin/send-test-email \
 ## Available Templates
 
 ### 1. Welcome Email
+
 Sent when a new user signs up.
 
 Props:
+
 - `username` - User's display name
 - `loginUrl` - URL to login page
 
 ### 2. Password Reset
+
 Sent when user requests password reset.
 
 Props:
+
 - `username` - User's display name
 - `resetUrl` - Password reset link with token
 
 ### 3. Email Verification
+
 Sent to verify email address.
 
 Props:
+
 - `username` - User's display name
 - `verificationUrl` - Verification link with token
 
 ### 4. Workspace Invitation
+
 Sent when user is invited to workspace.
 
 Props:
+
 - `inviterName` - Name of person sending invite
 - `inviterEmail` - Email of person sending invite
 - `workspaceName` - Name of workspace
 - `inviteUrl` - Invitation acceptance link
 
 ### 5. Notification
+
 Generic notification email.
 
 Props:
+
 - `type` - Notification type (mention, message, channel, task, system)
 - `title` - Notification title
 - `message` - Notification message
@@ -124,9 +139,11 @@ Props:
 - `actionText` - Text for action button
 
 ### 6. Password Changed
+
 Confirmation that password was changed.
 
 Props:
+
 - `username` - User's display name
 - `email` - User's email
 - `timestamp` - When password was changed

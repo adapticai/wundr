@@ -8,8 +8,12 @@
  * @module @genesis/api-types/resolvers/orchestrator-resolvers
  */
 
-
-import type { Prisma, PrismaClient, orchestrator as PrismaOrchestrator, OrchestratorStatus as PrismaOrchestratorStatus } from '@prisma/client';
+import type {
+  Prisma,
+  PrismaClient,
+  orchestrator as PrismaOrchestrator,
+  OrchestratorStatus as PrismaOrchestratorStatus,
+} from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
@@ -26,7 +30,8 @@ export const OrchestratorStatus = {
   Away: 'AWAY',
 } as const;
 
-export type OrchestratorStatusType = (typeof OrchestratorStatus)[keyof typeof OrchestratorStatus];
+export type OrchestratorStatusType =
+  (typeof OrchestratorStatus)[keyof typeof OrchestratorStatus];
 
 /**
  * User role for authorization checks
@@ -279,7 +284,10 @@ function isAdmin(context: GraphQLContext): boolean {
  * @param orchestrator - The Orchestrator to check access for
  * @returns True if user can access the Orchestrator
  */
-function canAccessOrchestrator(context: GraphQLContext, orchestrator: Orchestrator): boolean {
+function canAccessOrchestrator(
+  context: GraphQLContext,
+  orchestrator: Orchestrator
+): boolean {
   if (!isAuthenticated(context)) {
     return false;
   }
@@ -298,7 +306,10 @@ function canAccessOrchestrator(context: GraphQLContext, orchestrator: Orchestrat
  * @param orchestrator - The Orchestrator to check modification rights for
  * @returns True if user can modify the Orchestrator
  */
-function canModifyOrchestrator(context: GraphQLContext, orchestrator: Orchestrator): boolean {
+function canModifyOrchestrator(
+  context: GraphQLContext,
+  orchestrator: Orchestrator
+): boolean {
   if (!isAuthenticated(context)) {
     return false;
   }
@@ -355,9 +366,9 @@ function validateRole(role: string): void {
  * @returns Base64 encoded cursor
  */
 function generateCursor(orchestrator: Orchestrator): string {
-  return Buffer.from(`${orchestrator.createdAt.toISOString()}:${orchestrator.id}`).toString(
-    'base64'
-  );
+  return Buffer.from(
+    `${orchestrator.createdAt.toISOString()}:${orchestrator.id}`
+  ).toString('base64');
 }
 
 /**
@@ -465,7 +476,7 @@ export const orchestratorQueries = {
     _parent: unknown,
     args: OrchestratorQueryArgs,
     context: GraphQLContext
-  ): Promise<Orchestrator  | null> => {
+  ): Promise<Orchestrator | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -513,7 +524,7 @@ export const orchestratorQueries = {
     _parent: unknown,
     args: OrchestratorBySlugArgs,
     context: GraphQLContext
-  ): Promise<Orchestrator  | null> => {
+  ): Promise<Orchestrator | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -848,7 +859,8 @@ export const orchestratorMutations = {
     }
 
     // Create associated user for the Orchestrator
-    const orchestratorEmail = input.email ?? `vp_${Date.now()}@genesis.orchestrator`;
+    const orchestratorEmail =
+      input.email ?? `vp_${Date.now()}@genesis.orchestrator`;
     const orchestratorUser = await context.prisma.user.create({
       data: {
         email: orchestratorEmail,
@@ -874,9 +886,12 @@ export const orchestratorMutations = {
 
     // Start provisioning if orchestratorService is available
     if (context.orchestratorService) {
-      context.orchestratorService.provision(orchestrator.id).catch((err) => {
+      context.orchestratorService.provision(orchestrator.id).catch(err => {
         // eslint-disable-next-line no-console
-        console.error(`Failed to provision Orchestrator ${orchestrator.id}:`, err);
+        console.error(
+          `Failed to provision Orchestrator ${orchestrator.id}:`,
+          err
+        );
       });
     }
 
@@ -1316,12 +1331,11 @@ export const orchestratorMutations = {
 
     // Validate configuration if orchestratorService is available
     if (context.orchestratorService) {
-      const isValid = await context.orchestratorService.validateConfig(args.config);
+      const isValid = await context.orchestratorService.validateConfig(
+        args.config
+      );
       if (!isValid) {
-        return createErrorPayload(
-          'INVALID_CONFIG',
-          'Configuration is invalid'
-        );
+        return createErrorPayload('INVALID_CONFIG', 'Configuration is invalid');
       }
     }
 
@@ -1331,7 +1345,10 @@ export const orchestratorMutations = {
     if ('daemonEndpoint' in args.config) {
       updateData.daemonEndpoint = args.config.daemonEndpoint;
     }
-    if ('capabilities' in args.config && Array.isArray(args.config.capabilities)) {
+    if (
+      'capabilities' in args.config &&
+      Array.isArray(args.config.capabilities)
+    ) {
       updateData.capabilities = args.config.capabilities;
     }
 
@@ -1385,7 +1402,9 @@ export const orchestratorSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${ORCHESTRATOR_STATUS_CHANGED}_${args.orchestratorId}`);
+      return context.pubsub.asyncIterator(
+        `${ORCHESTRATOR_STATUS_CHANGED}_${args.orchestratorId}`
+      );
     },
   },
 };

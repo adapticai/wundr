@@ -1,11 +1,20 @@
 'use client';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 import type { OrchestratorStatus } from '@/types/orchestrator';
 
-export type OrchestratorPresenceStatus = 'online' | 'offline' | 'working' | 'idle';
+export type OrchestratorPresenceStatus =
+  | 'online'
+  | 'offline'
+  | 'working'
+  | 'idle';
 /** @deprecated Use OrchestratorPresenceStatus instead */
 export type VPPresenceStatus = OrchestratorPresenceStatus;
 
@@ -18,12 +27,15 @@ interface OrchestratorPresenceIndicatorProps {
   className?: string;
 }
 
-const presenceConfig: Record<OrchestratorPresenceStatus, {
-  label: string;
-  color: string;
-  bgColor: string;
-  animated: boolean;
-}> = {
+const presenceConfig: Record<
+  OrchestratorPresenceStatus,
+  {
+    label: string;
+    color: string;
+    bgColor: string;
+    animated: boolean;
+  }
+> = {
   online: {
     label: 'Online',
     color: 'text-green-700',
@@ -67,18 +79,13 @@ export function OrchestratorPresenceIndicator({
   const config = presenceConfig[status];
 
   const indicator = (
-    <div
-      className={cn(
-        'inline-flex items-center gap-2',
-        className,
-      )}
-    >
+    <div className={cn('inline-flex items-center gap-2', className)}>
       <span className={cn('relative inline-flex', sizeClasses[size])}>
         {config.animated && (
           <span
             className={cn(
               'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
-              config.bgColor,
+              config.bgColor
             )}
           />
         )}
@@ -86,9 +93,9 @@ export function OrchestratorPresenceIndicator({
           className={cn(
             'relative inline-flex rounded-full',
             sizeClasses[size],
-            config.bgColor,
+            config.bgColor
           )}
-          role="status"
+          role='status'
           aria-label={config.label}
         />
       </span>
@@ -107,15 +114,15 @@ export function OrchestratorPresenceIndicator({
         <Tooltip>
           <TooltipTrigger asChild>{indicator}</TooltipTrigger>
           <TooltipContent>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">{config.label}</p>
+            <div className='space-y-1'>
+              <p className='text-sm font-medium'>{config.label}</p>
               {orchestratorStatus && (
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   Status: {orchestratorStatus}
                 </p>
               )}
               {currentActivity && (
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   {currentActivity}
                 </p>
               )}
@@ -170,24 +177,22 @@ export function OrchestratorPresenceCard({
     <div
       className={cn(
         'flex items-start gap-3 rounded-lg border bg-card p-4',
-        className,
+        className
       )}
     >
-      <OrchestratorPresenceIndicator status={status} size="md" />
-      <div className="flex-1 space-y-1">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">{orchestratorName}</h4>
+      <OrchestratorPresenceIndicator status={status} size='md' />
+      <div className='flex-1 space-y-1'>
+        <div className='flex items-center justify-between'>
+          <h4 className='text-sm font-semibold'>{orchestratorName}</h4>
           <span className={cn('text-xs font-medium', config.color)}>
             {config.label}
           </span>
         </div>
         {currentActivity && (
-          <p className="text-sm text-muted-foreground">
-            {currentActivity}
-          </p>
+          <p className='text-sm text-muted-foreground'>{currentActivity}</p>
         )}
         {lastActiveAt && status !== 'working' && (
-          <p className="text-xs text-muted-foreground">
+          <p className='text-xs text-muted-foreground'>
             Last active: {formatLastActive(lastActiveAt)}
           </p>
         )}
@@ -197,13 +202,17 @@ export function OrchestratorPresenceCard({
 }
 
 // Animated typing indicator for when Orchestrator is actively working
-export function OrchestratorTypingIndicator({ orchestratorName }: { orchestratorName: string }) {
+export function OrchestratorTypingIndicator({
+  orchestratorName,
+}: {
+  orchestratorName: string;
+}) {
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <div className="flex gap-1">
-        <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+    <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+      <div className='flex gap-1'>
+        <span className='h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]' />
+        <span className='h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]' />
+        <span className='h-2 w-2 animate-bounce rounded-full bg-primary' />
       </div>
       <span>{orchestratorName} is typing...</span>
     </div>

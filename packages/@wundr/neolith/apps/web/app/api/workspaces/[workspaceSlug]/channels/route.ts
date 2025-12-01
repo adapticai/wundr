@@ -113,15 +113,18 @@ function generateChannelSlug(name: string): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -130,8 +133,11 @@ export async function GET(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -141,9 +147,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -154,7 +160,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
       Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
-      100,
+      100
     );
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
     const includeArchived = searchParams.get('includeArchived') === 'true';
@@ -168,9 +174,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Invalid channel type. Must be PUBLIC, PRIVATE, DM, or HUDDLE',
-            ORG_ERROR_CODES.VALIDATION_ERROR,
+            ORG_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
       typeFilter = typeResult.data;
@@ -180,12 +186,15 @@ export async function GET(
     const where: Prisma.channelWhereInput = {
       workspaceId: actualWorkspaceId,
       ...(!includeArchived && { isArchived: false }),
-      ...(typeFilter && { type: typeFilter as 'PUBLIC' | 'PRIVATE' | 'DM' | 'HUDDLE' }),
+      ...(typeFilter && {
+        type: typeFilter as 'PUBLIC' | 'PRIVATE' | 'DM' | 'HUDDLE',
+      }),
     };
 
     // For PRIVATE, DM, and HUDDLE channels, only show channels the user is a member of
     // For PUBLIC channels, show all (unless user preference requires membership)
-    const isRestrictedView = typeFilter && ['PRIVATE', 'DM', 'HUDDLE'].includes(typeFilter);
+    const isRestrictedView =
+      typeFilter && ['PRIVATE', 'DM', 'HUDDLE'].includes(typeFilter);
 
     let channelIds: string[] | undefined;
     if (isRestrictedView || typeFilter === undefined) {
@@ -308,7 +317,7 @@ export async function GET(
     if (channelIdsForUnread.length > 0) {
       // Fetch message counts after lastReadAt for each channel
       const unreadCounts = await Promise.all(
-        channels.map(async (channel) => {
+        channels.map(async channel => {
           const membership = channel.channelMembers[0];
           if (!membership) return { channelId: channel.id, count: 0 };
 
@@ -335,16 +344,17 @@ export async function GET(
       .filter(c => c.channelMembers[0])
       .map(c => c.id);
 
-    const starredMemberships = memberChannelIds.length > 0
-      ? await prisma.channelMember.findMany({
-          where: {
-            channelId: { in: memberChannelIds },
-            userId: session.user.id,
-            isStarred: true,
-          },
-          select: { channelId: true },
-        })
-      : [];
+    const starredMemberships =
+      memberChannelIds.length > 0
+        ? await prisma.channelMember.findMany({
+            where: {
+              channelId: { in: memberChannelIds },
+              userId: session.user.id,
+              isStarred: true,
+            },
+            select: { channelId: true },
+          })
+        : [];
 
     const starredChannelIds = new Set(starredMemberships.map(m => m.channelId));
 
@@ -364,19 +374,23 @@ export async function GET(
       messageCount: channel._count.messages,
       unreadCount: unreadCountsMap.get(channel.id) || 0,
       isStarred: starredChannelIds.has(channel.id),
-      lastMessage: channel.messages[0] ? {
-        id: channel.messages[0].id,
-        content: channel.messages[0].content,
-        type: channel.messages[0].type,
-        createdAt: channel.messages[0].createdAt,
-        author: channel.messages[0].author,
-      } : null,
-      userMembership: channel.channelMembers[0] ? {
-        role: channel.channelMembers[0].role,
-        joinedAt: channel.channelMembers[0].joinedAt,
-        lastReadAt: channel.channelMembers[0].lastReadAt,
-        hasUnread: (unreadCountsMap.get(channel.id) || 0) > 0,
-      } : null,
+      lastMessage: channel.messages[0]
+        ? {
+            id: channel.messages[0].id,
+            content: channel.messages[0].content,
+            type: channel.messages[0].type,
+            createdAt: channel.messages[0].createdAt,
+            author: channel.messages[0].author,
+          }
+        : null,
+      userMembership: channel.channelMembers[0]
+        ? {
+            role: channel.channelMembers[0].role,
+            joinedAt: channel.channelMembers[0].joinedAt,
+            lastReadAt: channel.channelMembers[0].lastReadAt,
+            hasUnread: (unreadCountsMap.get(channel.id) || 0) > 0,
+          }
+        : null,
     }));
 
     return NextResponse.json({
@@ -393,9 +407,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -424,15 +438,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -441,8 +458,11 @@ export async function POST(
     const paramResult = workspaceIdParamSchema.safeParse({ id: workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid workspace ID format',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -452,9 +472,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -463,9 +483,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to create channels',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -478,8 +498,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -494,9 +517,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -508,9 +531,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'DM channels must have exactly one other member',
-            ORG_ERROR_CODES.VALIDATION_ERROR,
+            ORG_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -519,9 +542,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Cannot create DM channel with yourself',
-            ORG_ERROR_CODES.DM_SELF_NOT_ALLOWED,
+            ORG_ERROR_CODES.DM_SELF_NOT_ALLOWED
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -548,21 +571,24 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'DM channel already exists',
-            ORG_ERROR_CODES.ALREADY_MEMBER,
+            ORG_ERROR_CODES.ALREADY_MEMBER
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
 
     // Validate that PRIVATE channels have at least one member
-    if (input.type === 'PRIVATE' && (!input.memberIds || input.memberIds.length === 0)) {
+    if (
+      input.type === 'PRIVATE' &&
+      (!input.memberIds || input.memberIds.length === 0)
+    ) {
       return NextResponse.json(
         createErrorResponse(
           'Private channels must have at least one member',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -583,9 +609,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'All members must be workspace members',
-            ORG_ERROR_CODES.USER_NOT_FOUND,
+            ORG_ERROR_CODES.USER_NOT_FOUND
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -607,14 +633,14 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           `A channel with similar name already exists: ${existingChannel.name}`,
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     // Create channel with members in a transaction
-    const channel = await prisma.$transaction(async (tx) => {
+    const channel = await prisma.$transaction(async tx => {
       // Create the channel
       const newChannel = await tx.channel.create({
         data: {
@@ -652,7 +678,7 @@ export async function POST(
       // Add additional members
       if (input.memberIds && input.memberIds.length > 0) {
         const uniqueMemberIds = Array.from(new Set(input.memberIds)).filter(
-          id => id !== session.user.id, // Don't duplicate creator
+          id => id !== session.user.id // Don't duplicate creator
         );
 
         if (uniqueMemberIds.length > 0) {
@@ -700,16 +726,16 @@ export async function POST(
         data: completeChannel,
         message: 'Channel created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/channels] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -49,7 +49,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -64,7 +64,10 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -79,7 +82,7 @@ export async function GET(
   } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch policies' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -105,7 +108,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -120,7 +123,10 @@ export async function POST(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -130,7 +136,7 @@ export async function POST(
     if (!body.name || !body.rules || !Array.isArray(body.rules)) {
       return NextResponse.json(
         { error: 'Name and rules are required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -149,7 +155,7 @@ export async function POST(
       body.name,
       body.rules,
       session.user.id,
-      body.description,
+      body.description
     );
 
     // Log audit event
@@ -169,7 +175,7 @@ export async function POST(
   } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create policy' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

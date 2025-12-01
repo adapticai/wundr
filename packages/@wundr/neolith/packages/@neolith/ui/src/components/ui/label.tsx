@@ -30,7 +30,7 @@ const labelVariants = cva(
     defaultVariants: {
       variant: 'default',
     },
-  },
+  }
 );
 
 /**
@@ -73,11 +73,13 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
     return (
       <label
         ref={ref}
-        className={cn(labelVariants({ variant: error ? 'error' : variant, className }))}
+        className={cn(
+          labelVariants({ variant: error ? 'error' : variant, className })
+        )}
         {...props}
       />
     );
-  },
+  }
 );
 
 Label.displayName = 'Label';

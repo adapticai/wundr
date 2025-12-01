@@ -37,7 +37,8 @@ Genesis-App is a dual-purpose platform designed to:
 
 - **Seamless Org Provisioning**: Transform the conversational org-genesis experience into workspace
   creation
-- **Agent-First Architecture**: Orchestrator agents operate as indistinguishable users within the platform
+- **Agent-First Architecture**: Orchestrator agents operate as indistinguishable users within the
+  platform
 - **Dual-Channel Support**: VP-Daemons can connect to both real Slack AND genesis-app simultaneously
 - **Package Reusability**: Extract common interfaces for cross-platform communication clients
 

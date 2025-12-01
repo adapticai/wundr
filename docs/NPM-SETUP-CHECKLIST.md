@@ -1,13 +1,13 @@
 # NPM Publishing Setup - Quick Checklist
 
-**Organization:** @wundr.io
-**Time Required:** ~30 minutes
+**Organization:** @wundr.io **Time Required:** ~30 minutes
 
 ---
 
 ## ⚡ Quick Setup (5 Steps)
 
 ### Step 1: Create NPM Account (5 min)
+
 ```bash
 # 1. Visit https://www.npmjs.com/signup
 # 2. Create account and verify email
@@ -21,6 +21,7 @@
 ---
 
 ### Step 2: Create Organization (2 min)
+
 ```bash
 # 1. Visit https://www.npmjs.com/org/create
 # 2. Enter name: wundr.io
@@ -34,6 +35,7 @@
 ---
 
 ### Step 3: Generate NPM Token (3 min)
+
 ```bash
 # 1. Visit https://www.npmjs.com/settings/[your-username]/tokens
 # 2. Click "Generate New Token"
@@ -52,6 +54,7 @@ Token format: `npm_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 ---
 
 ### Step 4: Add GitHub Secret (2 min)
+
 ```bash
 # 1. Go to https://github.com/adapticai/wundr/settings/secrets/actions
 # 2. Click "New repository secret"
@@ -66,6 +69,7 @@ Token format: `npm_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 ---
 
 ### Step 5: Test Publishing (5 min)
+
 ```bash
 # From your local machine (after setup):
 
@@ -100,6 +104,7 @@ Once the above steps are complete, publishing happens automatically:
 ### Auto-Publish (Development)
 
 **Trigger:** Push to `master` branch
+
 ```bash
 git add .
 git commit -m "feat: new feature"
@@ -109,6 +114,7 @@ git push origin master
 ```
 
 **Installation:**
+
 ```bash
 npm install @wundr.io/cli@dev
 ```
@@ -116,6 +122,7 @@ npm install @wundr.io/cli@dev
 ### Release Publishing (Stable)
 
 **Trigger:** Create git tag
+
 ```bash
 npm version patch  # or minor, major
 git push && git push --tags
@@ -124,6 +131,7 @@ git push && git push --tags
 ```
 
 **Installation:**
+
 ```bash
 npm install -g @wundr.io/cli
 ```
@@ -135,18 +143,21 @@ npm install -g @wundr.io/cli
 After completing setup:
 
 ### NPM Verification
+
 - [ ] Organization exists: https://www.npmjs.com/org/wundr.io
 - [ ] Can view organization packages
 - [ ] Test package published and visible
 - [ ] Package can be installed: `npm install -g @wundr.io/cli`
 
 ### GitHub Verification
+
 - [ ] `NPM_TOKEN` secret exists in repository
 - [ ] Workflows are enabled
 - [ ] Auto-publish workflow exists: `.github/workflows/npm-publish-auto.yml`
 - [ ] Release workflow exists: `.github/workflows/npm-publish.yml`
 
 ### Functionality Tests
+
 - [ ] Push to master triggers auto-publish
 - [ ] Creating tag triggers release publish
 - [ ] Published packages install successfully
@@ -157,6 +168,7 @@ After completing setup:
 ## 🔄 Daily Workflow
 
 ### For Development (Continuous)
+
 ```bash
 # Work on features
 git checkout -b feature/new-thing
@@ -169,6 +181,7 @@ git push origin feature/new-thing
 ```
 
 ### For Releases (As Needed)
+
 ```bash
 # When ready to release stable version
 git checkout master
@@ -192,15 +205,18 @@ git push && git push --tags
 ## 📊 Monitoring
 
 ### View Published Packages
+
 - Organization: https://www.npmjs.com/org/wundr.io
 - Specific package: https://www.npmjs.com/package/@wundr.io/cli
 
 ### Monitor Workflows
+
 - All Actions: https://github.com/adapticai/wundr/actions
 - Auto-publish: Filter by "Auto Publish to NPM"
 - Releases: Filter by "NPM Publish @wundr.io"
 
 ### Check Downloads
+
 ```bash
 npm info @wundr.io/cli
 ```
@@ -210,22 +226,26 @@ npm info @wundr.io/cli
 ## 🆘 Quick Troubleshooting
 
 ### "You must sign in to publish"
+
 ```bash
 # Regenerate npm token, update GitHub secret
 ```
 
 ### "You do not have permission"
+
 ```bash
 # Add yourself to organization:
 npm org set wundr.io developer [your-username]
 ```
 
 ### "Package already exists"
+
 ```bash
 # Package name conflict - choose different name or contact npm
 ```
 
 ### Workflow fails
+
 ```bash
 # 1. Check GitHub Actions logs
 # 2. Verify NPM_TOKEN is valid
@@ -237,6 +257,7 @@ npm org set wundr.io developer [your-username]
 ## 📚 Full Documentation
 
 For detailed information, see:
+
 - [NPM Organization Setup Guide](./NPM-ORGANIZATION-SETUP.md) - Complete setup guide
 - [GitHub Actions](../.github/workflows/) - Workflow configurations
 - [CLI Installation](./CLI-INSTALLATION.md) - User installation guide
@@ -246,6 +267,7 @@ For detailed information, see:
 ## 🎯 Success Criteria
 
 You're done when:
+
 - ✅ `npm install -g @wundr.io/cli` works
 - ✅ `wundr --version` shows version
 - ✅ Push to master auto-publishes

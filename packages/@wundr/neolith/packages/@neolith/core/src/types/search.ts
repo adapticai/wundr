@@ -349,7 +349,7 @@ export interface SearchSuggestion {
  * Type guard to check if data is a MessageSearchResult
  */
 export function isMessageSearchResult(
-  data: SearchResultData,
+  data: SearchResultData
 ): data is MessageSearchResult {
   return data.type === 'message';
 }
@@ -358,7 +358,7 @@ export function isMessageSearchResult(
  * Type guard to check if data is a FileSearchResult
  */
 export function isFileSearchResult(
-  data: SearchResultData,
+  data: SearchResultData
 ): data is FileSearchResult {
   return data.type === 'file';
 }
@@ -367,7 +367,7 @@ export function isFileSearchResult(
  * Type guard to check if data is a ChannelSearchResult
  */
 export function isChannelSearchResult(
-  data: SearchResultData,
+  data: SearchResultData
 ): data is ChannelSearchResult {
   return data.type === 'channel';
 }
@@ -376,7 +376,7 @@ export function isChannelSearchResult(
  * Type guard to check if data is a UserSearchResult
  */
 export function isUserSearchResult(
-  data: SearchResultData,
+  data: SearchResultData
 ): data is UserSearchResult {
   return data.type === 'user';
 }
@@ -385,7 +385,7 @@ export function isUserSearchResult(
  * Type guard to check if data is a OrchestratorSearchResult
  */
 export function isVPSearchResult(
-  data: SearchResultData,
+  data: SearchResultData
 ): data is OrchestratorSearchResult {
   return data.type === 'vp';
 }
@@ -405,8 +405,8 @@ export function isSearchResultType(value: unknown): value is SearchResultType {
  */
 export function isValidSearchQuery(query: unknown): query is SearchQuery {
   if (!query || typeof query !== 'object') {
-return false;
-}
+    return false;
+  }
   const q = query as SearchQuery;
   return typeof q.query === 'string' && q.query.length > 0;
 }

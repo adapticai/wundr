@@ -1,15 +1,15 @@
 # Phase 0 Code Review Report
 
-**Date:** November 26, 2025
-**Reviewer:** Code Review Agent
-**Scope:** Neolith monorepo - All Phase 0 agent changes
-**Status:** APPROVED WITH FINDINGS
+**Date:** November 26, 2025 **Reviewer:** Code Review Agent **Scope:** Neolith monorepo - All Phase
+0 agent changes **Status:** APPROVED WITH FINDINGS
 
 ---
 
 ## Executive Summary
 
-The Phase 0 codebase demonstrates **solid foundational quality** with good architectural patterns and comprehensive error handling. However, there are several areas requiring attention before production deployment, particularly around security hardening and test coverage.
+The Phase 0 codebase demonstrates **solid foundational quality** with good architectural patterns
+and comprehensive error handling. However, there are several areas requiring attention before
+production deployment, particularly around security hardening and test coverage.
 
 **Overall Assessment:** 7.2/10
 
@@ -56,6 +56,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 ### Minor Issues
 
 **Issue 1.1: Indirect 'any' Type Usage**
+
 - **Severity:** Low
 - **File:** `/packages/@wundr/neolith/apps/web/hooks/use-notifications.ts:155`
 - **Code:**
@@ -70,6 +71,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 - **Fix Effort:** Low (5 minutes)
 
 **Issue 1.2: Unsafe Map Callback**
+
 - **Severity:** Low
 - **File:** `/packages/@wundr/neolith/apps/web/hooks/use-notifications.ts:519`
 - **Code:**
@@ -115,6 +117,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 ### Issues Found
 
 **Issue 2.1: Silent Failures in Storage Operations**
+
 - **Severity:** Medium
 - **File:** `/packages/@wundr/neolith/apps/web/hooks/use-notifications.ts:514-527`
 - **Code:**
@@ -135,6 +138,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 - **Fix Effort:** Low (10 minutes)
 
 **Issue 2.2: Missing Error Context in Sync Operations**
+
 - **Severity:** Medium
 - **File:** `/packages/@wundr/neolith/apps/web/hooks/use-notifications.ts:625-633`
 - **Code:**
@@ -148,6 +152,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 - **Fix Effort:** Low (5 minutes)
 
 **Issue 2.3: No Timeout Handling for Fetch Calls**
+
 - **Severity:** Medium
 - **Files:** Multiple fetch calls in hooks and routes
 - **Issue:** Fetch operations could hang indefinitely
@@ -161,6 +166,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 ### Critical Findings
 
 **CRITICAL 3.1: Hardcoded JWT Secret with Development Default**
+
 - **Severity:** CRITICAL
 - **Files:**
   - `/packages/@wundr/neolith/apps/web/app/api/daemon/messages/route.ts`
@@ -183,6 +189,7 @@ The Phase 0 codebase demonstrates **solid foundational quality** with good archi
 - **Fix Effort:** Critical (1 hour immediate fix + audit)
 
 **Code to Replace:**
+
 ```typescript
 // CURRENT (UNSAFE)
 const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
@@ -200,6 +207,7 @@ if (!JWT_SECRET) {
 ### High Severity Findings
 
 **HIGH 3.2: Missing Input Validation in Database Operations**
+
 - **Severity:** High
 - **File:** `/packages/@wundr/neolith/packages/@neolith/database/src/migration.ts:45`
 - **Code:**
@@ -212,6 +220,7 @@ if (!JWT_SECRET) {
 - **Fix Effort:** Medium (20 minutes)
 
 **HIGH 3.3: Missing CSRF Protection**
+
 - **Severity:** High
 - **Files:** All POST/PUT/DELETE API routes without explicit CSRF checking
 - **Issue:** NextAuth provides CSRF protection but not explicitly verified in code
@@ -219,6 +228,7 @@ if (!JWT_SECRET) {
 - **Fix Effort:** Medium (1 hour code review + testing)
 
 **HIGH 3.4: Insufficient Rate Limiting**
+
 - **Severity:** High
 - **All API Routes:** No visible rate limiting implementation
 - **Impact:** DDoS vulnerability, brute force attacks, API abuse
@@ -228,6 +238,7 @@ if (!JWT_SECRET) {
 ### Medium Severity Findings
 
 **MEDIUM 3.5: Missing Environment Variable Validation**
+
 - **Severity:** Medium
 - **Files:** API routes accessing environment variables
 - **Examples:**
@@ -239,6 +250,7 @@ if (!JWT_SECRET) {
 - **Fix Effort:** Low (30 minutes)
 
 **MEDIUM 3.6: LiveKit Credentials Not Validated**
+
 - **Severity:** Medium
 - **File:** `/packages/@wundr/neolith/apps/web/app/api/calls/[callId]/join/route.ts`
 - **Code:**
@@ -254,6 +266,7 @@ if (!JWT_SECRET) {
 ### Low Severity Findings
 
 **LOW 3.7: Console Error Logging in Production**
+
 - **Severity:** Low
 - **Files:** Multiple files with `console.error()` in production code
 - **Examples:**
@@ -268,6 +281,7 @@ if (!JWT_SECRET) {
 - **Fix Effort:** Low (initially) to High (with full implementation)
 
 **LOW 3.8: Missing HTTP Security Headers**
+
 - **Severity:** Low
 - **All Routes:** No explicit CSP, X-Frame-Options, etc.
 - **Note:** NextAuth may provide defaults, but should verify
@@ -329,9 +343,9 @@ if (!JWT_SECRET) {
    - **Estimated Effort:** 6-8 hours
 
 3. **API Route Tests** (High Priority)
-   - /api/vps/* endpoints
-   - /api/auth/* endpoints
-   - /api/tasks/* endpoints
+   - /api/vps/\* endpoints
+   - /api/auth/\* endpoints
+   - /api/tasks/\* endpoints
    - **Estimated Effort:** 12-15 hours
 
 4. **E2E Tests** (Medium Priority)
@@ -374,6 +388,7 @@ if (!JWT_SECRET) {
 ### Recommendation
 
 Create `/docs/API_REFERENCE.md` with:
+
 - All environment variables required
 - API endpoint documentation
 - Security headers information
@@ -463,10 +478,11 @@ Create `/docs/API_REFERENCE.md` with:
 
 1. **RESTful Patterns**
    - Proper HTTP verbs (POST for create, DELETE for remove)
-   - Consistent path structure (/api/vps/[id]/*)
+   - Consistent path structure (/api/vps/[id]/\*)
    - Clear resource hierarchy
 
 2. **Error Response Format**
+
    ```typescript
    {
      error: {
@@ -476,6 +492,7 @@ Create `/docs/API_REFERENCE.md` with:
      }
    }
    ```
+
    - Consistent across all endpoints
    - Includes error codes for client handling
 
@@ -502,45 +519,45 @@ Create `/docs/API_REFERENCE.md` with:
 
 ### CRITICAL (Must Fix Before Production)
 
-| ID | Issue | File | Effort | Impact |
-|---|---|---|---|---|
-| 3.1 | Hardcoded JWT secret | daemon/*/route.ts (3 files) | 1 hour | Authentication bypass |
-| 3.2 | Missing rate limiting | All API routes | 3-4 hours | DDoS vulnerability |
+| ID  | Issue                 | File                         | Effort    | Impact                |
+| --- | --------------------- | ---------------------------- | --------- | --------------------- |
+| 3.1 | Hardcoded JWT secret  | daemon/\*/route.ts (3 files) | 1 hour    | Authentication bypass |
+| 3.2 | Missing rate limiting | All API routes               | 3-4 hours | DDoS vulnerability    |
 
 ### HIGH (Should Fix Before Production)
 
-| ID | Issue | File | Effort | Impact |
-|---|---|---|---|---|
-| 3.3 | Missing CSRF validation | All POST/PUT/DELETE | 1 hour | CSRF attacks |
-| 3.4 | Command injection risk | migration.ts | 20 min | Code injection |
-| 3.5 | Insufficient env validation | API routes | 30 min | Runtime failures |
+| ID  | Issue                       | File                | Effort | Impact           |
+| --- | --------------------------- | ------------------- | ------ | ---------------- |
+| 3.3 | Missing CSRF validation     | All POST/PUT/DELETE | 1 hour | CSRF attacks     |
+| 3.4 | Command injection risk      | migration.ts        | 20 min | Code injection   |
+| 3.5 | Insufficient env validation | API routes          | 30 min | Runtime failures |
 
 ### MEDIUM (Fix Before Phase 1)
 
-| ID | Issue | File | Effort | Impact |
-|---|---|---|---|---|
-| 2.1 | Silent storage failures | use-notifications.ts | 10 min | Data loss risk |
-| 2.2 | Missing error context | use-notifications.ts | 5 min | Debugging difficulty |
-| 2.3 | No fetch timeout | Multiple files | 2-3 hours | Hanging requests |
-| 3.6 | Unvalidated credentials | LiveKit routes | 15 min | Runtime errors |
-| 3.7 | Console logging | 6+ files | 30 min | Security exposure |
+| ID  | Issue                   | File                 | Effort    | Impact               |
+| --- | ----------------------- | -------------------- | --------- | -------------------- |
+| 2.1 | Silent storage failures | use-notifications.ts | 10 min    | Data loss risk       |
+| 2.2 | Missing error context   | use-notifications.ts | 5 min     | Debugging difficulty |
+| 2.3 | No fetch timeout        | Multiple files       | 2-3 hours | Hanging requests     |
+| 3.6 | Unvalidated credentials | LiveKit routes       | 15 min    | Runtime errors       |
+| 3.7 | Console logging         | 6+ files             | 30 min    | Security exposure    |
 
 ### LOW (Nice to Have)
 
-| ID | Issue | File | Effort | Impact |
-|---|---|---|---|---|
-| 1.1 | Unsafe map usage | use-notifications.ts | 5 min | Type safety |
-| 1.2 | Type annotations | use-notifications.ts | 2 min | Code clarity |
-| 3.8 | Missing headers | All routes | 30 min | Defense-in-depth |
+| ID  | Issue            | File                 | Effort | Impact           |
+| --- | ---------------- | -------------------- | ------ | ---------------- |
+| 1.1 | Unsafe map usage | use-notifications.ts | 5 min  | Type safety      |
+| 1.2 | Type annotations | use-notifications.ts | 2 min  | Code clarity     |
+| 3.8 | Missing headers  | All routes           | 30 min | Defense-in-depth |
 
 ### Test Coverage (CRITICAL)
 
-| Component | Coverage | Effort | Priority |
-|---|---|---|---|
-| Database package | 0% | 8-10h | HIGH |
-| React hooks | 0% | 6-8h | HIGH |
-| API routes | ~5% | 12-15h | HIGH |
-| E2E flows | 0% | 10-12h | MEDIUM |
+| Component        | Coverage | Effort | Priority |
+| ---------------- | -------- | ------ | -------- |
+| Database package | 0%       | 8-10h  | HIGH     |
+| React hooks      | 0%       | 6-8h   | HIGH     |
+| API routes       | ~5%      | 12-15h | HIGH     |
+| E2E flows        | 0%       | 10-12h | MEDIUM   |
 
 ---
 
@@ -621,9 +638,12 @@ Create `/docs/API_REFERENCE.md` with:
 
 ### Overall Quality: 7.2/10
 
-**Code is production-ready with security fixes.** The codebase demonstrates good architectural decisions, comprehensive error handling, and excellent documentation. However, critical security issues must be addressed before any production deployment.
+**Code is production-ready with security fixes.** The codebase demonstrates good architectural
+decisions, comprehensive error handling, and excellent documentation. However, critical security
+issues must be addressed before any production deployment.
 
 ### Strengths
+
 - Well-structured monorepo with clear package organization
 - Comprehensive error handling and validation
 - Excellent TypeScript type safety
@@ -631,6 +651,7 @@ Create `/docs/API_REFERENCE.md` with:
 - Extensive documentation
 
 ### Weaknesses
+
 - Critical hardcoded JWT secret
 - Missing rate limiting
 - Insufficient test coverage (15-20%)
@@ -638,6 +659,7 @@ Create `/docs/API_REFERENCE.md` with:
 - Missing input sanitization in some areas
 
 ### Before Production Checklist
+
 ```
 Security:
 - [ ] Remove hardcoded JWT secret
@@ -669,33 +691,35 @@ Documentation:
 
 ## Sign-Off
 
-**Reviewer:** Code Review Agent
-**Date:** November 26, 2025
-**Status:** ✓ APPROVED FOR DEVELOPMENT (with required fixes before production)
+**Reviewer:** Code Review Agent **Date:** November 26, 2025 **Status:** ✓ APPROVED FOR DEVELOPMENT
+(with required fixes before production)
 
-**Recommendation:** Proceed with Phase 1 implementation with immediate security fixes applied and comprehensive test coverage added.
+**Recommendation:** Proceed with Phase 1 implementation with immediate security fixes applied and
+comprehensive test coverage added.
 
 ---
 
 ## Appendix: Detailed File Metrics
 
 ### Type Safety by File
-| File | Lines | Issues | Grade |
-|---|---|---|---|
-| database/src/index.ts | 297 | 0 | A |
-| database/src/client.ts | 100 | 0 | A |
-| database/src/migration.ts | 180 | 1 (HIGH) | B |
-| app/layout.tsx | 80 | 0 | A |
-| app-header.tsx | 265 | 0 | A |
-| use-notifications.ts | 887 | 3 (LOW) | B+ |
+
+| File                      | Lines | Issues   | Grade |
+| ------------------------- | ----- | -------- | ----- |
+| database/src/index.ts     | 297   | 0        | A     |
+| database/src/client.ts    | 100   | 0        | A     |
+| database/src/migration.ts | 180   | 1 (HIGH) | B     |
+| app/layout.tsx            | 80    | 0        | A     |
+| app-header.tsx            | 265   | 0        | A     |
+| use-notifications.ts      | 887   | 3 (LOW)  | B+    |
 
 ### API Routes Overview
-| Route | Type | Auth | Issues | Status |
-|---|---|---|---|---|
-| /api/vps/bulk | POST | Required | 0 | ✓ |
-| /api/daemon/auth/* | POST | None | 3 (CRITICAL) | ⚠️ |
-| /api/calls/* | Multi | Required | 1 (MEDIUM) | ~ |
-| /api/notifications/* | Multi | Required | 2 (LOW) | ✓ |
+
+| Route                 | Type  | Auth     | Issues       | Status |
+| --------------------- | ----- | -------- | ------------ | ------ |
+| /api/vps/bulk         | POST  | Required | 0            | ✓      |
+| /api/daemon/auth/\*   | POST  | None     | 3 (CRITICAL) | ⚠️     |
+| /api/calls/\*         | Multi | Required | 1 (MEDIUM)   | ~      |
+| /api/notifications/\* | Multi | Required | 2 (LOW)      | ✓      |
 
 ---
 

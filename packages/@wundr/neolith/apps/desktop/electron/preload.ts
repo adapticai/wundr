@@ -73,7 +73,7 @@ const neolithAPI = {
     },
     set: <K extends keyof NeolithConfig>(
       key: K,
-      value: NeolithConfig[K],
+      value: NeolithConfig[K]
     ): Promise<boolean> => {
       return ipcRenderer.invoke('config:set', key, value);
     },
@@ -94,7 +94,7 @@ const neolithAPI = {
     },
     saveFile: (
       defaultPath?: string,
-      filters?: FileFilter[],
+      filters?: FileFilter[]
     ): Promise<string | null> => {
       return ipcRenderer.invoke('dialog:saveFile', defaultPath, filters);
     },
@@ -126,7 +126,7 @@ const neolithAPI = {
       return ipcRenderer.invoke('app:getVersion');
     },
     getPath: (
-      name: 'home' | 'appData' | 'userData' | 'temp' | 'desktop' | 'documents',
+      name: 'home' | 'appData' | 'userData' | 'temp' | 'desktop' | 'documents'
     ): Promise<string> => {
       return ipcRenderer.invoke('app:getPath', name);
     },

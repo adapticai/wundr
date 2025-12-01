@@ -125,17 +125,21 @@ export function TabletDashboard({
   }
 
   return (
-    <div className={cn('space-y-6 p-4 md:p-6', className)} role="main" aria-label="Dashboard">
+    <div
+      className={cn('space-y-6 p-4 md:p-6', className)}
+      role='main'
+      aria-label='Dashboard'
+    >
       {/* Header Section */}
       {(header || actions) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          {header && (
-            <div className="flex-1">
-              {header}
-            </div>
-          )}
+        <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+          {header && <div className='flex-1'>{header}</div>}
           {actions && (
-            <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Dashboard actions">
+            <div
+              className='flex flex-wrap gap-2'
+              role='toolbar'
+              aria-label='Dashboard actions'
+            >
               {actions}
             </div>
           )}
@@ -146,10 +150,10 @@ export function TabletDashboard({
       {metrics.length > 0 && (
         <div
           className={cn('grid gap-4', getMetricsColumns())}
-          role="region"
-          aria-label="Key metrics"
+          role='region'
+          aria-label='Key metrics'
         >
-          {metrics.map((metric) => (
+          {metrics.map(metric => (
             <MetricCard key={metric.id} metric={metric} />
           ))}
         </div>
@@ -159,10 +163,10 @@ export function TabletDashboard({
       {cards.length > 0 && (
         <div
           className={cn('grid gap-4 md:gap-6', getCardsColumns())}
-          role="region"
-          aria-label="Dashboard cards"
+          role='region'
+          aria-label='Dashboard cards'
         >
-          {cards.map((card) => (
+          {cards.map(card => (
             <DashboardCardComponent key={card.id} card={card} />
           ))}
         </div>
@@ -181,30 +185,38 @@ function MetricCard({ metric }: { metric: DashboardMetric }) {
 
   const getTrendAriaLabel = () => {
     if (!metric.trend || !metric.trendValue) return '';
-    const direction = metric.trend === 'up' ? 'increased' : metric.trend === 'down' ? 'decreased' : 'stable';
+    const direction =
+      metric.trend === 'up'
+        ? 'increased'
+        : metric.trend === 'down'
+          ? 'decreased'
+          : 'stable';
     return `${direction} by ${metric.trendValue}`;
   };
 
   return (
     <article
-      className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
-      role="article"
+      className='bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-colors'
+      role='article'
       aria-label={`${metric.label} metric`}
     >
-      <div className="flex items-start justify-between mb-2">
-        <p className="text-sm font-medium text-muted-foreground" id={`metric-label-${metric.id}`}>
+      <div className='flex items-start justify-between mb-2'>
+        <p
+          className='text-sm font-medium text-muted-foreground'
+          id={`metric-label-${metric.id}`}
+        >
           {metric.label}
         </p>
         {metric.icon && (
-          <div className="text-muted-foreground" aria-hidden="true">
+          <div className='text-muted-foreground' aria-hidden='true'>
             {metric.icon}
           </div>
         )}
       </div>
 
-      <div className="flex items-end justify-between">
+      <div className='flex items-end justify-between'>
         <p
-          className="text-2xl md:text-3xl font-semibold text-foreground"
+          className='text-2xl md:text-3xl font-semibold text-foreground'
           aria-labelledby={`metric-label-${metric.id}`}
         >
           {metric.value}
@@ -216,15 +228,15 @@ function MetricCard({ metric }: { metric: DashboardMetric }) {
               'flex items-center gap-1 text-sm font-medium',
               metric.trend === 'up' && 'text-green-600 dark:text-green-400',
               metric.trend === 'down' && 'text-red-600 dark:text-red-400',
-              metric.trend === 'stable' && 'text-muted-foreground',
+              metric.trend === 'stable' && 'text-muted-foreground'
             )}
-            role="status"
+            role='status'
             aria-label={getTrendAriaLabel()}
           >
-            {metric.trend === 'up' && <TrendUpIcon aria-hidden="true" />}
-            {metric.trend === 'down' && <TrendDownIcon aria-hidden="true" />}
-            {metric.trend === 'stable' && <TrendFlatIcon aria-hidden="true" />}
-            <span aria-hidden="true">{metric.trendValue}</span>
+            {metric.trend === 'up' && <TrendUpIcon aria-hidden='true' />}
+            {metric.trend === 'down' && <TrendDownIcon aria-hidden='true' />}
+            {metric.trend === 'stable' && <TrendFlatIcon aria-hidden='true' />}
+            <span aria-hidden='true'>{metric.trendValue}</span>
           </div>
         )}
       </div>
@@ -260,19 +272,17 @@ function DashboardCardComponent({ card }: { card: DashboardCard }) {
       className={cn(
         'bg-card border border-border rounded-lg p-4 md:p-6',
         'hover:border-primary/50 transition-colors',
-        getCardClass(),
+        getCardClass()
       )}
       aria-labelledby={`card-title-${card.id}`}
     >
       <h3
         id={`card-title-${card.id}`}
-        className="text-lg font-semibold text-foreground mb-4"
+        className='text-lg font-semibold text-foreground mb-4'
       >
         {card.title}
       </h3>
-      <div className="tablet:chart-sm md:tablet:chart-md">
-        {card.content}
-      </div>
+      <div className='tablet:chart-sm md:tablet:chart-md'>{card.content}</div>
     </section>
   );
 }
@@ -291,13 +301,11 @@ export function TabletDashboardHeader({
 }) {
   return (
     <div className={className}>
-      <h1 className="text-xl md:text-2xl font-semibold text-foreground">
+      <h1 className='text-xl md:text-2xl font-semibold text-foreground'>
         {title}
       </h1>
       {subtitle && (
-        <p className="text-sm text-muted-foreground mt-1">
-          {subtitle}
-        </p>
+        <p className='text-sm text-muted-foreground mt-1'>{subtitle}</p>
       )}
     </div>
   );
@@ -350,7 +358,7 @@ export function TabletDashboardAction({
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         'disabled:cursor-not-allowed disabled:opacity-50',
         getVariantClass(),
-        className,
+        className
       )}
     >
       {children}
@@ -362,16 +370,16 @@ export function TabletDashboardAction({
 function TrendUpIcon() {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-4 h-4"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className='w-4 h-4'
     >
-      <path d="m18 15-6-6-6 6" />
+      <path d='m18 15-6-6-6 6' />
     </svg>
   );
 }
@@ -379,16 +387,16 @@ function TrendUpIcon() {
 function TrendDownIcon() {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-4 h-4"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className='w-4 h-4'
     >
-      <path d="m6 9 6 6 6-6" />
+      <path d='m6 9 6 6 6-6' />
     </svg>
   );
 }
@@ -396,16 +404,16 @@ function TrendDownIcon() {
 function TrendFlatIcon() {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-4 h-4"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className='w-4 h-4'
     >
-      <path d="M5 12h14" />
+      <path d='M5 12h14' />
     </svg>
   );
 }
@@ -413,26 +421,42 @@ function TrendFlatIcon() {
 /**
  * LoadingState - Skeleton loading UI
  */
-function LoadingState({ metricsCount = 4, cardsCount = 2 }: { metricsCount?: number; cardsCount?: number }) {
+function LoadingState({
+  metricsCount = 4,
+  cardsCount = 2,
+}: {
+  metricsCount?: number;
+  cardsCount?: number;
+}) {
   return (
-    <div className="space-y-6" role="status" aria-label="Loading dashboard data">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div
+      className='space-y-6'
+      role='status'
+      aria-label='Loading dashboard data'
+    >
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
         {Array.from({ length: metricsCount }).map((_, i) => (
-          <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
-            <div className="h-4 bg-muted rounded w-2/3 mb-4" />
-            <div className="h-8 bg-muted rounded w-1/2" />
+          <div
+            key={i}
+            className='bg-card border border-border rounded-lg p-4 animate-pulse'
+          >
+            <div className='h-4 bg-muted rounded w-2/3 mb-4' />
+            <div className='h-8 bg-muted rounded w-1/2' />
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
         {Array.from({ length: cardsCount }).map((_, i) => (
-          <div key={i} className="bg-card border border-border rounded-lg p-4 md:p-6 animate-pulse">
-            <div className="h-6 bg-muted rounded w-1/3 mb-4" />
-            <div className="h-64 bg-muted rounded" />
+          <div
+            key={i}
+            className='bg-card border border-border rounded-lg p-4 md:p-6 animate-pulse'
+          >
+            <div className='h-6 bg-muted rounded w-1/3 mb-4' />
+            <div className='h-64 bg-muted rounded' />
           </div>
         ))}
       </div>
-      <span className="sr-only">Loading dashboard content...</span>
+      <span className='sr-only'>Loading dashboard content...</span>
     </div>
   );
 }
@@ -440,43 +464,49 @@ function LoadingState({ metricsCount = 4, cardsCount = 2 }: { metricsCount?: num
 /**
  * ErrorState - Error message with retry option
  */
-function ErrorState({ error, onRetry }: { error: Error | string; onRetry?: () => void }) {
+function ErrorState({
+  error,
+  onRetry,
+}: {
+  error: Error | string;
+  onRetry?: () => void;
+}) {
   const errorMessage = typeof error === 'string' ? error : error.message;
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-[400px] text-center p-6"
-      role="alert"
-      aria-live="assertive"
+      className='flex flex-col items-center justify-center min-h-[400px] text-center p-6'
+      role='alert'
+      aria-live='assertive'
     >
-      <div className="rounded-full bg-destructive/10 p-3 mb-4">
+      <div className='rounded-full bg-destructive/10 p-3 mb-4'>
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-6 h-6 text-destructive"
-          aria-hidden="true"
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          className='w-6 h-6 text-destructive'
+          aria-hidden='true'
         >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
+          <circle cx='12' cy='12' r='10' />
+          <line x1='12' y1='8' x2='12' y2='12' />
+          <line x1='12' y1='16' x2='12.01' y2='16' />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">
+      <h3 className='text-lg font-semibold text-foreground mb-2'>
         Unable to load dashboard
       </h3>
-      <p className="text-sm text-muted-foreground mb-6 max-w-md">
+      <p className='text-sm text-muted-foreground mb-6 max-w-md'>
         {errorMessage}
       </p>
       {onRetry && (
         <TabletDashboardAction
           onClick={onRetry}
-          variant="primary"
-          ariaLabel="Retry loading dashboard"
+          variant='primary'
+          ariaLabel='Retry loading dashboard'
         >
           Try Again
         </TabletDashboardAction>
@@ -491,33 +521,31 @@ function ErrorState({ error, onRetry }: { error: Error | string; onRetry?: () =>
 function EmptyState({ message }: { message: string }) {
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-[400px] text-center p-6"
-      role="status"
-      aria-label="No dashboard data"
+      className='flex flex-col items-center justify-center min-h-[400px] text-center p-6'
+      role='status'
+      aria-label='No dashboard data'
     >
-      <div className="rounded-full bg-muted p-3 mb-4">
+      <div className='rounded-full bg-muted p-3 mb-4'>
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-6 h-6 text-muted-foreground"
-          aria-hidden="true"
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          className='w-6 h-6 text-muted-foreground'
+          aria-hidden='true'
         >
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-          <line x1="9" y1="9" x2="15" y2="15" />
-          <line x1="15" y1="9" x2="9" y2="15" />
+          <rect x='3' y='3' width='18' height='18' rx='2' ry='2' />
+          <line x1='9' y1='9' x2='15' y2='15' />
+          <line x1='15' y1='9' x2='9' y2='15' />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">
+      <h3 className='text-lg font-semibold text-foreground mb-2'>
         No Data Available
       </h3>
-      <p className="text-sm text-muted-foreground max-w-md">
-        {message}
-      </p>
+      <p className='text-sm text-muted-foreground max-w-md'>{message}</p>
     </div>
   );
 }

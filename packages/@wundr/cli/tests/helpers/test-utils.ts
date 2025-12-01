@@ -9,14 +9,17 @@ export class TestHelper {
   private originalCwd: string;
 
   constructor() {
-    this.testDir = path.join(process.env.WUNDR_TEST_DIR || '/tmp', `test-${Date.now()}`);
+    this.testDir = path.join(
+      process.env.WUNDR_TEST_DIR || '/tmp',
+      `test-${Date.now()}`
+    );
     this.originalCwd = process.cwd();
   }
 
   async setup(): Promise<void> {
     await fs.ensureDir(this.testDir);
     process.chdir(this.testDir);
-    
+
     // Create mock project structure
     await this.createMockProject();
   }
@@ -35,25 +38,25 @@ export class TestHelper {
       scripts: {
         test: 'jest',
         build: 'tsc',
-        lint: 'eslint .'
+        lint: 'eslint .',
       },
       devDependencies: {
-        'jest': '^29.0.0',
-        'typescript': '^5.0.0',
-        'eslint': '^8.0.0'
-      }
+        jest: '^29.0.0',
+        typescript: '^5.0.0',
+        eslint: '^8.0.0',
+      },
     };
 
     await fs.writeJson(path.join(this.testDir, 'package.json'), packageJson);
     await fs.ensureDir(path.join(this.testDir, 'src'));
     await fs.ensureDir(path.join(this.testDir, 'tests'));
-    
+
     // Create sample source files
     await fs.writeFile(
       path.join(this.testDir, 'src/index.ts'),
       'export const hello = () => "Hello, World!";'
     );
-    
+
     await fs.writeFile(
       path.join(this.testDir, 'src/utils.ts'),
       'export const add = (a: number, b: number) => a + b;'
@@ -68,63 +71,67 @@ export class TestHelper {
       integrations: {},
       ai: {
         provider: 'mock',
-        model: 'test-model'
+        model: 'test-model',
       },
       analysis: {
         patterns: ['src/**/*'],
         excludes: ['node_modules/**'],
-        maxDepth: 10
+        maxDepth: 10,
       },
       governance: {
         rules: [],
-        severity: 'warning'
-      }
+        severity: 'warning',
+      },
     };
 
     const finalConfig = { ...defaultConfig, ...config };
     const configPath = path.join(this.testDir, '.wundr', 'config.json');
-    
+
     await fs.ensureDir(path.dirname(configPath));
     await fs.writeJson(configPath, finalConfig);
-    
+
     return configPath;
   }
 
-  async runCommand(command: string, args: string[] = [], options: any = {}): Promise<CommandResult> {
-    return new Promise((resolve) => {
+  async runCommand(
+    command: string,
+    args: string[] = [],
+    options: any = {}
+  ): Promise<CommandResult> {
+    return new Promise(resolve => {
       const child = spawn(command, args, {
         cwd: this.testDir,
         stdio: 'pipe',
-        ...options
+        ...options,
       });
 
       let stdout = '';
       let stderr = '';
 
-      child.stdout?.on('data', (data) => {
+      child.stdout?.on('data', data => {
         stdout += data.toString();
       });
 
-      child.stderr?.on('data', (data) => {
+      child.stderr?.on('data', data => {
         stderr += data.toString();
       });
 
-      child.on('close', (code) => {
+      child.on('close', code => {
         resolve({
           code: code || 0,
           stdout,
           stderr,
-          success: code === 0
+          success: code === 0,
         });
       });
 
-      child.on('error', (error) => {
+      child.on('error', error => {
         resolve({
           code: 1,
           stdout,
           stderr: error.message,
           success: false,
-          error
+          error,
         });
       });
     });
@@ -136,34 +143,48 @@ export class TestHelper {
       description: `Test batch job: ${name}`,
       commands: commands.map(cmd => ({ command: cmd })),
       parallel: false,
-      continueOnError: false
+      continueOnError: false,
     };
 
-    const batchPath = path.join(this.testDir, '.wundr', 'batch', `${name}.yaml`);
+    const batchPath = path.join(
+      this.testDir,
+      '.wundr',
+      'batch',
+      `${name}.yaml`
+    );
     await fs.ensureDir(path.dirname(batchPath));
-    
+
     const YAML = await import('yaml');
     await fs.writeFile(batchPath, YAML.stringify(batchJob));
-    
+
     return batchPath;
   }
 
-  async createWatchConfig(name: string, patterns: string[], commands: string[]): Promise<string> {
+  async createWatchConfig(
+    name: string,
+    patterns: string[],
+    commands: string[]
+  ): Promise<string> {
     const watchConfig = {
       patterns,
       commands: commands.map(cmd => ({
         trigger: 'change' as const,
-        command: cmd
+        command: cmd,
       })),
-      debounce: 100
+      debounce: 100,
     };
 
-    const watchPath = path.join(this.testDir, '.wundr', 'watch', `${name}.yaml`);
+    const watchPath = path.join(
+      this.testDir,
+      '.wundr',
+      'watch',
+      `${name}.yaml`
+    );
     await fs.ensureDir(path.dirname(watchPath));
-    
+
     const YAML = await import('yaml');
     await fs.writeFile(watchPath, YAML.stringify(watchConfig));
-    
+
     return watchPath;
   }
 
@@ -174,7 +195,7 @@ export class TestHelper {
     const packageJson = {
       name,
       version: '1.0.0',
-      main: 'index.js'
+      main: 'index.js',
     };
 
     const pluginCode = `
@@ -206,7 +227,10 @@ export class TestHelper {
     return this.testDir;
   }
 
-  async waitFor(condition: () => Promise<boolean>, timeout: number = 5000): Promise<void> {
+  async waitFor(
+    condition: () => Promise<boolean>,
+    timeout: number = 5000
+  ): Promise<void> {
     const start = Date.now();
     while (Date.now() - start < timeout) {
       if (await condition()) {
@@ -226,25 +250,27 @@ export interface CommandResult {
   error?: Error;
 }
 
-export const createMockConfig = (overrides: Partial<WundrConfig> = {}): WundrConfig => ({
+export const createMockConfig = (
+  overrides: Partial<WundrConfig> = {}
+): WundrConfig => ({
   version: '1.0.0',
   defaultMode: 'cli',
   plugins: [],
   integrations: {},
   ai: {
     provider: 'mock',
-    model: 'test-model'
+    model: 'test-model',
   },
   analysis: {
     patterns: ['src/**/*'],
     excludes: ['node_modules/**'],
-    maxDepth: 10
+    maxDepth: 10,
   },
   governance: {
     rules: [],
-    severity: 'warning'
+    severity: 'warning',
   },
-  ...overrides
+  ...overrides,
 });
 
 export const mockLogger = {
@@ -253,7 +279,7 @@ export const mockLogger = {
   warn: jest.fn(),
   error: jest.fn(),
   success: jest.fn(),
-  setLevel: jest.fn()
+  setLevel: jest.fn(),
 };
 
 export const mockSpinner = {
@@ -263,5 +289,5 @@ export const mockSpinner = {
   warn: jest.fn(),
   info: jest.fn(),
   stop: jest.fn(),
-  text: ''
+  text: '',
 };

@@ -7,7 +7,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,7 +50,7 @@ export function SessionManagerList({
   orchestratorId,
   onSelect,
   onCreateNew,
-  className
+  className,
 }: SessionManagerListProps) {
   const [sessionManagers, setSessionManagers] = useState<SessionManager[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +65,9 @@ export function SessionManagerList({
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/orchestrators/${orchestratorId}/session-managers`);
+      const response = await fetch(
+        `/api/orchestrators/${orchestratorId}/session-managers`
+      );
       if (!response.ok) throw new Error('Failed to fetch session managers');
       const { data } = await response.json();
       setSessionManagers(data);
@@ -74,7 +82,7 @@ export function SessionManagerList({
     const action = currentStatus === 'ACTIVE' ? 'deactivate' : 'activate';
     try {
       const response = await fetch(`/api/session-managers/${id}/${action}`, {
-        method: 'POST'
+        method: 'POST',
       });
       if (!response.ok) throw new Error(`Failed to ${action} session manager`);
       await fetchSessionManagers();
@@ -87,8 +95,8 @@ export function SessionManagerList({
   if (loading) {
     return (
       <div className={cn('space-y-4', className)}>
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 w-full" />
+        {[1, 2, 3].map(i => (
+          <Skeleton key={i} className='h-32 w-full' />
         ))}
       </div>
     );
@@ -96,10 +104,19 @@ export function SessionManagerList({
 
   if (error) {
     return (
-      <Card className={cn('border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20', className)}>
-        <CardContent className="pt-6">
-          <p className="text-red-600 dark:text-red-400">Error: {error}</p>
-          <Button variant="outline" onClick={fetchSessionManagers} className="mt-2">
+      <Card
+        className={cn(
+          'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20',
+          className
+        )}
+      >
+        <CardContent className='pt-6'>
+          <p className='text-red-600 dark:text-red-400'>Error: {error}</p>
+          <Button
+            variant='outline'
+            onClick={fetchSessionManagers}
+            className='mt-2'
+          >
             Retry
           </Button>
         </CardContent>
@@ -109,11 +126,11 @@ export function SessionManagerList({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Session Managers</h2>
+      <div className='flex justify-between items-center'>
+        <h2 className='text-lg font-semibold'>Session Managers</h2>
         {onCreateNew && (
-          <Button onClick={onCreateNew} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={onCreateNew} size='sm'>
+            <Plus className='h-4 w-4 mr-2' />
             New Session Manager
           </Button>
         )}
@@ -121,13 +138,14 @@ export function SessionManagerList({
 
       {sessionManagers.length === 0 ? (
         <Card>
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            No session managers yet. Create one to start orchestrating Claude Code sessions.
+          <CardContent className='pt-6 text-center text-muted-foreground'>
+            No session managers yet. Create one to start orchestrating Claude
+            Code sessions.
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {sessionManagers.map((sm) => (
+        <div className='grid gap-4'>
+          {sessionManagers.map(sm => (
             <Card
               key={sm.id}
               className={cn(
@@ -136,19 +154,19 @@ export function SessionManagerList({
               )}
               onClick={() => onSelect?.(sm)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-base flex items-center gap-2">
+              <CardHeader className='pb-3'>
+                <div className='flex justify-between items-start'>
+                  <div className='flex-1'>
+                    <CardTitle className='text-base flex items-center gap-2'>
                       {sm.name}
                       {sm.isGlobal && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant='outline' className='text-xs'>
                           Global
                         </Badge>
                       )}
                     </CardTitle>
                     {sm.description && (
-                      <CardDescription className="mt-1">
+                      <CardDescription className='mt-1'>
                         {sm.description}
                       </CardDescription>
                     )}
@@ -163,38 +181,37 @@ export function SessionManagerList({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-between items-center text-sm text-muted-foreground">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      <span className="tabular-nums">
+                <div className='flex justify-between items-center text-sm text-muted-foreground'>
+                  <div className='flex items-center gap-4'>
+                    <span className='flex items-center gap-1'>
+                      <Users className='h-4 w-4' />
+                      <span className='tabular-nums'>
                         {sm.subagents.length} / {sm.maxConcurrentSubagents}
                       </span>
-                      <span className="text-xs">subagents</span>
+                      <span className='text-xs'>subagents</span>
                     </span>
-                    <span className="tabular-nums">
+                    <span className='tabular-nums'>
                       {sm.tokenBudgetPerHour.toLocaleString()} tokens/hr
                     </span>
                   </div>
-                  <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className='flex gap-1'
+                    onClick={e => e.stopPropagation()}
+                  >
                     <Button
-                      variant="ghost"
-                      size="icon"
+                      variant='ghost'
+                      size='icon'
                       onClick={() => toggleStatus(sm.id, sm.status)}
                       title={sm.status === 'ACTIVE' ? 'Pause' : 'Activate'}
                     >
                       {sm.status === 'ACTIVE' ? (
-                        <Pause className="h-4 w-4" />
+                        <Pause className='h-4 w-4' />
                       ) : (
-                        <Play className="h-4 w-4" />
+                        <Play className='h-4 w-4' />
                       )}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Settings"
-                    >
-                      <Settings className="h-4 w-4" />
+                    <Button variant='ghost' size='icon' title='Settings'>
+                      <Settings className='h-4 w-4' />
                     </Button>
                   </div>
                 </div>

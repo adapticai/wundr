@@ -43,14 +43,16 @@ export interface RetentionService {
       name?: string | undefined;
       description?: string | undefined;
       isEnabled?: boolean | undefined;
-      rules?: Array<{
-        id: string;
-        resourceType: string;
-        action: string;
-        retentionDays: number;
-        priority: number;
-        conditions?: Record<string, unknown> | undefined;
-      }> | undefined;
+      rules?:
+        | Array<{
+            id: string;
+            resourceType: string;
+            action: string;
+            retentionDays: number;
+            priority: number;
+            conditions?: Record<string, unknown> | undefined;
+          }>
+        | undefined;
     }
   ): Promise<unknown>;
   deletePolicy(id: string): Promise<void>;
@@ -101,7 +103,8 @@ export const RetentionResourceType = {
   VP_CONVERSATION: 'vp_conversation',
 } as const;
 
-export type RetentionResourceTypeValue = (typeof RetentionResourceType)[keyof typeof RetentionResourceType];
+export type RetentionResourceTypeValue =
+  (typeof RetentionResourceType)[keyof typeof RetentionResourceType];
 
 /**
  * Retention action enum values
@@ -112,7 +115,8 @@ export const RetentionAction = {
   ANONYMIZE: 'anonymize',
 } as const;
 
-export type RetentionActionValue = (typeof RetentionAction)[keyof typeof RetentionAction];
+export type RetentionActionValue =
+  (typeof RetentionAction)[keyof typeof RetentionAction];
 
 /**
  * Retention job status enum values
@@ -125,7 +129,8 @@ export const RetentionJobStatus = {
   CANCELLED: 'cancelled',
 } as const;
 
-export type RetentionJobStatusValue = (typeof RetentionJobStatus)[keyof typeof RetentionJobStatus];
+export type RetentionJobStatusValue =
+  (typeof RetentionJobStatus)[keyof typeof RetentionJobStatus];
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -412,7 +417,9 @@ export const retentionMutations = {
    */
   createRetentionPolicy: async (
     _parent: unknown,
-    { input }: {
+    {
+      input,
+    }: {
       input: {
         workspaceId: string;
         name: string;
@@ -452,7 +459,10 @@ export const retentionMutations = {
    */
   updateRetentionPolicy: async (
     _parent: unknown,
-    { id, input }: {
+    {
+      id,
+      input,
+    }: {
       id: string;
       input: {
         name?: string;
@@ -524,7 +534,9 @@ export const retentionMutations = {
    */
   createLegalHold: async (
     _parent: unknown,
-    { input }: {
+    {
+      input,
+    }: {
       input: {
         workspaceId: string;
         name: string;
@@ -549,10 +561,13 @@ export const retentionMutations = {
       {
         userIds: input.scope.userIds,
         channelIds: input.scope.channelIds,
-        dateRange: input.scope.dateStart && input.scope.dateEnd ? {
-          start: input.scope.dateStart,
-          end: input.scope.dateEnd,
-        } : undefined,
+        dateRange:
+          input.scope.dateStart && input.scope.dateEnd
+            ? {
+                start: input.scope.dateStart,
+                end: input.scope.dateEnd,
+              }
+            : undefined,
       },
       context.user.id,
       input.description

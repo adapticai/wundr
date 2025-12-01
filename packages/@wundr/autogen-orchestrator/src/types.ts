@@ -690,7 +690,7 @@ export const ChatParticipantSchema = z.object({
         description: z.string(),
         parameters: z.record(z.unknown()),
         required: z.boolean().optional(),
-      }),
+      })
     )
     .optional(),
   maxConsecutiveReplies: z.number().positive().optional(),
@@ -727,7 +727,7 @@ export const GroupChatConfigSchema = z.object({
             to: z.array(z.string()),
             condition: z.string().optional(),
             weight: z.number().optional(),
-          }),
+          })
         )
         .optional(),
       allowedTransitions: z.record(z.array(z.string())).optional(),
@@ -761,7 +761,7 @@ export const GroupChatConfigSchema = z.object({
           z.function(),
         ]),
         description: z.string().optional(),
-      }),
+      })
     )
     .optional(),
   allowNestedChats: z.boolean().optional(),
@@ -782,7 +782,7 @@ export const GroupChatConfigSchema = z.object({
           .optional(),
         prompt: z.string().optional(),
         shareContext: z.boolean().optional(),
-      }),
+      })
     )
     .optional(),
   adminName: z.string().optional(),

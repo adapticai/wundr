@@ -13,7 +13,10 @@ import {
 } from '../analytics-service';
 
 import type { AnalyticsPeriod } from '../../types/analytics';
-import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
+import type {
+  AnalyticsDatabaseClient,
+  AnalyticsRedisClient,
+} from '../analytics-service';
 
 // =============================================================================
 // MOCK FACTORIES
@@ -64,15 +67,30 @@ function createMockRedis(): AnalyticsRedisClient {
     pipeline: vi.fn(() => ({
       hincrby: vi.fn(() => {
         pipelineCommands.push(vi.fn());
-        return { hincrby: vi.fn(), sadd: vi.fn(), expire: vi.fn(), exec: vi.fn() };
+        return {
+          hincrby: vi.fn(),
+          sadd: vi.fn(),
+          expire: vi.fn(),
+          exec: vi.fn(),
+        };
       }),
       sadd: vi.fn(() => {
         pipelineCommands.push(vi.fn());
-        return { hincrby: vi.fn(), sadd: vi.fn(), expire: vi.fn(), exec: vi.fn() };
+        return {
+          hincrby: vi.fn(),
+          sadd: vi.fn(),
+          expire: vi.fn(),
+          exec: vi.fn(),
+        };
       }),
       expire: vi.fn(() => {
         pipelineCommands.push(vi.fn());
-        return { hincrby: vi.fn(), sadd: vi.fn(), expire: vi.fn(), exec: vi.fn() };
+        return {
+          hincrby: vi.fn(),
+          sadd: vi.fn(),
+          expire: vi.fn(),
+          exec: vi.fn(),
+        };
       }),
       exec: vi.fn().mockResolvedValue([]),
     })),
@@ -126,7 +144,9 @@ describe('AnalyticsService', () => {
     });
 
     it('should flush batch when size limit reached', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 10,
       });
 
@@ -156,7 +176,9 @@ describe('AnalyticsService', () => {
     });
 
     it('should include session ID when provided', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 1,
       });
 
@@ -170,13 +192,16 @@ describe('AnalyticsService', () => {
 
       await analyticsService.flush();
 
-      const createCall = (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mock
-        .calls[0][0];
+      const createCall = (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(createCall.data[0].sessionId).toBe('sess-123');
     });
 
     it('should include metadata when provided', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 1,
       });
 
@@ -194,15 +219,18 @@ describe('AnalyticsService', () => {
 
       await analyticsService.flush();
 
-      const createCall = (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mock
-        .calls[0][0];
+      const createCall = (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       const metadata = JSON.parse(createCall.data[0].metadata);
       expect(metadata.userAgent).toBe('Mozilla/5.0');
       expect(metadata.ipAddress).toBe('192.168.1.1');
     });
 
     it('should track Orchestrator events with vpId', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 1,
       });
 
@@ -215,8 +243,9 @@ describe('AnalyticsService', () => {
 
       await analyticsService.flush();
 
-      const createCall = (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mock
-        .calls[0][0];
+      const createCall = (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(createCall.data[0].orchestratorId).toBe('orchestrator-1');
       expect(createCall.data[0].eventType).toBe('vp.message.sent');
     });
@@ -233,7 +262,9 @@ describe('AnalyticsService', () => {
     });
 
     it('should flush queued events to database', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 3,
       });
 
@@ -256,15 +287,16 @@ describe('AnalyticsService', () => {
       await analyticsService.flush();
 
       expect(mockPrisma.analyticsEvent?.createMany).toHaveBeenCalledTimes(1);
-      const createCall = (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mock
-        .calls[0][0];
+      const createCall = (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       expect(createCall.data).toHaveLength(3);
     });
 
     it('should re-queue events on flush failure', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Database error'),
-      );
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(new Error('Database error'));
 
       await analyticsService.track({
         workspaceId: 'ws-1',
@@ -272,12 +304,16 @@ describe('AnalyticsService', () => {
         eventData: {},
       });
 
-      await expect(analyticsService.flush()).rejects.toThrow(AnalyticsFlushError);
+      await expect(analyticsService.flush()).rejects.toThrow(
+        AnalyticsFlushError
+      );
       expect(analyticsService.getQueueLength()).toBe(1);
     });
 
     it('should serialize eventData as JSON', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 1,
       });
 
@@ -289,15 +325,18 @@ describe('AnalyticsService', () => {
 
       await analyticsService.flush();
 
-      const createCall = (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mock
-        .calls[0][0];
+      const createCall = (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       const eventData = JSON.parse(createCall.data[0].eventData);
       expect(eventData.channelId).toBe('ch-1');
       expect(eventData.messageLength).toBe(100);
     });
 
     it('should auto-flush after interval', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 1,
       });
 
@@ -320,9 +359,15 @@ describe('AnalyticsService', () => {
 
   describe('getMetrics', () => {
     it('should return usage metrics for a workspace', async () => {
-      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(100);
-      (mockPrisma.workspaceMember.count as ReturnType<typeof vi.fn>).mockResolvedValue(10);
-      (mockPrisma.channel.count as ReturnType<typeof vi.fn>).mockResolvedValue(5);
+      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        100
+      );
+      (
+        mockPrisma.workspaceMember.count as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(10);
+      (mockPrisma.channel.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        5
+      );
       (mockPrisma.vP.count as ReturnType<typeof vi.fn>).mockResolvedValue(2);
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
@@ -345,14 +390,20 @@ describe('AnalyticsService', () => {
       (mockPrisma.message.count as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce(100) // total messages
         .mockResolvedValueOnce(20); // threads
-      (mockPrisma.reaction.count as ReturnType<typeof vi.fn>).mockResolvedValue(50);
+      (mockPrisma.reaction.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        50
+      );
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce([
           { date: '2024-01-01', count: BigInt(30) },
           { date: '2024-01-02', count: BigInt(70) },
         ])
-        .mockResolvedValueOnce([{ channelId: 'ch-1', channelName: 'general', count: BigInt(60) }])
-        .mockResolvedValueOnce([{ userId: 'u-1', userName: 'John', count: BigInt(40) }])
+        .mockResolvedValueOnce([
+          { channelId: 'ch-1', channelName: 'general', count: BigInt(60) },
+        ])
+        .mockResolvedValueOnce([
+          { userId: 'u-1', userName: 'John', count: BigInt(40) },
+        ])
         .mockResolvedValue([]);
 
       const metrics = await analyticsService.getMetrics({
@@ -404,7 +455,12 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([]) // daily active
         .mockResolvedValueOnce([]) // top contributors
         .mockResolvedValueOnce([
-          { channelId: 'ch-1', channelName: 'general', messageCount: BigInt(50), memberCount: BigInt(10) },
+          {
+            channelId: 'ch-1',
+            channelName: 'general',
+            messageCount: BigInt(50),
+            memberCount: BigInt(10),
+          },
         ])
         .mockResolvedValue([]);
 
@@ -420,7 +476,9 @@ describe('AnalyticsService', () => {
     });
 
     it('should calculate file metrics correctly', async () => {
-      (mockPrisma.attachment.aggregate as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.attachment.aggregate as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         _count: 25,
         _sum: { fileSize: 1024000 },
         _avg: { fileSize: 40960 },
@@ -433,8 +491,17 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([]) // daily active
         .mockResolvedValueOnce([]) // top contributors
         .mockResolvedValueOnce([]) // most active channels
-        .mockResolvedValueOnce([{ type: 'image/png', count: BigInt(15), size: BigInt(500000) }])
-        .mockResolvedValueOnce([{ userId: 'u-1', userName: 'Bob', count: BigInt(10), size: BigInt(300000) }])
+        .mockResolvedValueOnce([
+          { type: 'image/png', count: BigInt(15), size: BigInt(500000) },
+        ])
+        .mockResolvedValueOnce([
+          {
+            userId: 'u-1',
+            userName: 'Bob',
+            count: BigInt(10),
+            size: BigInt(300000),
+          },
+        ])
         .mockResolvedValue([]);
 
       const metrics = await analyticsService.getMetrics({
@@ -462,7 +529,12 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([]) // files byType
         .mockResolvedValueOnce([]) // top uploaders
         .mockResolvedValueOnce([
-          { vpId: 'orchestrator-1', vpName: 'Sales VP', discipline: 'sales', messagesSent: BigInt(100) },
+          {
+            vpId: 'orchestrator-1',
+            vpName: 'Sales VP',
+            discipline: 'sales',
+            messagesSent: BigInt(100),
+          },
         ])
         .mockResolvedValue([]);
 
@@ -504,7 +576,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.current).toBe(150);
@@ -523,7 +595,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.change).toBe(-50);
@@ -540,7 +612,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.change).toBe(0);
@@ -557,7 +629,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.changePercent).toBe(100);
@@ -573,7 +645,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'active_users',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.current).toBe(30);
@@ -590,7 +662,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'files',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.current).toBe(25);
@@ -602,7 +674,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'unknown_metric',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
       );
 
       expect(trend.current).toBe(0);
@@ -617,7 +689,9 @@ describe('AnalyticsService', () => {
 
   describe('generateInsightReport', () => {
     it('should generate report with highlights', async () => {
-      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(500);
+      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        500
+      );
       (mockPrisma.workspaceMember.count as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce(50)
         .mockResolvedValueOnce(5);
@@ -630,7 +704,10 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([])
         .mockResolvedValue([]);
 
-      const report = await analyticsService.generateInsightReport('ws-1', 'week');
+      const report = await analyticsService.generateInsightReport(
+        'ws-1',
+        'week'
+      );
 
       expect(report.workspaceId).toBe('ws-1');
       expect(report.period).toBe('week');
@@ -641,12 +718,19 @@ describe('AnalyticsService', () => {
     });
 
     it('should include active communication highlight', async () => {
-      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(1000);
+      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        1000
+      );
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
-      const report = await analyticsService.generateInsightReport('ws-1', 'month');
+      const report = await analyticsService.generateInsightReport(
+        'ws-1',
+        'month'
+      );
 
-      const communicationHighlight = report.highlights.find((h) => h.metric === 'messages');
+      const communicationHighlight = report.highlights.find(
+        h => h.metric === 'messages'
+      );
       expect(communicationHighlight).toBeDefined();
       expect(communicationHighlight?.type).toBe('positive');
       expect(communicationHighlight?.value).toBe(1000);
@@ -665,9 +749,14 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([])
         .mockResolvedValue([]);
 
-      const report = await analyticsService.generateInsightReport('ws-1', 'week');
+      const report = await analyticsService.generateInsightReport(
+        'ws-1',
+        'week'
+      );
 
-      const engagementHighlight = report.highlights.find((h) => h.metric === 'engagement_rate');
+      const engagementHighlight = report.highlights.find(
+        h => h.metric === 'engagement_rate'
+      );
       expect(engagementHighlight).toBeDefined();
       expect(engagementHighlight?.value).toBe(60);
       expect(engagementHighlight?.type).toBe('positive');
@@ -686,9 +775,14 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([])
         .mockResolvedValue([]);
 
-      const report = await analyticsService.generateInsightReport('ws-1', 'week');
+      const report = await analyticsService.generateInsightReport(
+        'ws-1',
+        'week'
+      );
 
-      const engagementRec = report.recommendations.find((r) => r.title === 'Boost Engagement');
+      const engagementRec = report.recommendations.find(
+        r => r.title === 'Boost Engagement'
+      );
       expect(engagementRec).toBeDefined();
       expect(engagementRec?.priority).toBe('medium');
     });
@@ -697,12 +791,16 @@ describe('AnalyticsService', () => {
       (mockPrisma.vP.count as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce(5) // total VPs
         .mockResolvedValueOnce(2); // active VPs
-      (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>)
-        .mockResolvedValue([]);
+      (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
-      const report = await analyticsService.generateInsightReport('ws-1', 'week');
+      const report = await analyticsService.generateInsightReport(
+        'ws-1',
+        'week'
+      );
 
-      const vpRec = report.recommendations.find((r) => r.title === 'Activate VPs');
+      const vpRec = report.recommendations.find(
+        r => r.title === 'Activate VPs'
+      );
       expect(vpRec).toBeDefined();
       expect(vpRec?.description).toContain('3 VPs are not currently active');
     });
@@ -719,12 +817,24 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([{ count: BigInt(0) }])
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ channelId: 'ch-1', channelName: 'test', messageCount: BigInt(5), memberCount: BigInt(2) }])
+        .mockResolvedValueOnce([
+          {
+            channelId: 'ch-1',
+            channelName: 'test',
+            messageCount: BigInt(5),
+            memberCount: BigInt(2),
+          },
+        ])
         .mockResolvedValue([]);
 
-      const report = await analyticsService.generateInsightReport('ws-1', 'week');
+      const report = await analyticsService.generateInsightReport(
+        'ws-1',
+        'week'
+      );
 
-      const channelRec = report.recommendations.find((r) => r.title === 'Consolidate Channels');
+      const channelRec = report.recommendations.find(
+        r => r.title === 'Consolidate Channels'
+      );
       expect(channelRec).toBeDefined();
     });
   });
@@ -786,7 +896,11 @@ describe('AnalyticsService', () => {
       const customStart = new Date('2024-01-01');
       const customEnd = new Date('2024-01-31');
 
-      const { startDate, endDate } = analyticsService.getPeriodDates('custom', customStart, customEnd);
+      const { startDate, endDate } = analyticsService.getPeriodDates(
+        'custom',
+        customStart,
+        customEnd
+      );
 
       expect(startDate).toEqual(customStart);
       expect(endDate).toEqual(customEnd);
@@ -799,7 +913,9 @@ describe('AnalyticsService', () => {
       const now = new Date();
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      expect(Math.abs(startDate.getTime() - thirtyDaysAgo.getTime())).toBeLessThan(1000);
+      expect(
+        Math.abs(startDate.getTime() - thirtyDaysAgo.getTime())
+      ).toBeLessThan(1000);
     });
   });
 
@@ -883,7 +999,9 @@ describe('AnalyticsService', () => {
     it('should throw if called without config before initialization', () => {
       resetAnalyticsService();
 
-      expect(() => getAnalyticsService()).toThrow('AnalyticsService not initialized');
+      expect(() => getAnalyticsService()).toThrow(
+        'AnalyticsService not initialized'
+      );
     });
   });
 
@@ -893,9 +1011,15 @@ describe('AnalyticsService', () => {
 
   describe('edge cases', () => {
     it('should handle workspace with no activity', async () => {
-      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
-      (mockPrisma.workspaceMember.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
-      (mockPrisma.channel.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+      (mockPrisma.message.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
+      );
+      (
+        mockPrisma.workspaceMember.count as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(0);
+      (mockPrisma.channel.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        0
+      );
       (mockPrisma.vP.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
       (mockPrisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
@@ -950,22 +1074,25 @@ describe('AnalyticsService', () => {
     });
 
     it('should handle multiple different event types', async () => {
-      (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      (
+        mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
         count: 10,
       });
 
-      const eventTypes: Array<{ type: string; data: Record<string, unknown> }> = [
-        { type: 'message.sent', data: { channelId: 'ch-1' } },
-        { type: 'message.received', data: { channelId: 'ch-1' } },
-        { type: 'file.uploaded', data: { fileSize: 1024 } },
-        { type: 'channel.joined', data: { channelId: 'ch-2' } },
-        { type: 'user.login', data: { device: 'web' } },
-        { type: 'vp.message.sent', data: { vpId: 'orchestrator-1' } },
-        { type: 'search.performed', data: { query: 'test' } },
-        { type: 'reaction.added', data: { emoji: ':thumbsup:' } },
-        { type: 'thread.created', data: { parentId: 'msg-1' } },
-        { type: 'call.started', data: { type: 'huddle' } },
-      ];
+      const eventTypes: Array<{ type: string; data: Record<string, unknown> }> =
+        [
+          { type: 'message.sent', data: { channelId: 'ch-1' } },
+          { type: 'message.received', data: { channelId: 'ch-1' } },
+          { type: 'file.uploaded', data: { fileSize: 1024 } },
+          { type: 'channel.joined', data: { channelId: 'ch-2' } },
+          { type: 'user.login', data: { device: 'web' } },
+          { type: 'vp.message.sent', data: { vpId: 'orchestrator-1' } },
+          { type: 'search.performed', data: { query: 'test' } },
+          { type: 'reaction.added', data: { emoji: ':thumbsup:' } },
+          { type: 'thread.created', data: { parentId: 'msg-1' } },
+          { type: 'call.started', data: { type: 'huddle' } },
+        ];
 
       for (const event of eventTypes) {
         await analyticsService.track({
@@ -980,7 +1107,14 @@ describe('AnalyticsService', () => {
     });
 
     it('should handle all valid analytics periods', async () => {
-      const periods: AnalyticsPeriod[] = ['day', 'week', 'month', 'quarter', 'year', 'custom'];
+      const periods: AnalyticsPeriod[] = [
+        'day',
+        'week',
+        'month',
+        'quarter',
+        'year',
+        'custom',
+      ];
 
       for (const period of periods) {
         const { startDate, endDate } = analyticsService.getPeriodDates(period);

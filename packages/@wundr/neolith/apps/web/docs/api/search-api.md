@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Search API provides comprehensive full-text search functionality across channels, messages, and files within a workspace. It includes advanced features like result highlighting, type filtering, and channel-scoped search.
+The Search API provides comprehensive full-text search functionality across channels, messages, and
+files within a workspace. It includes advanced features like result highlighting, type filtering,
+and channel-scoped search.
 
 ## Endpoint
 
@@ -16,15 +18,15 @@ Requires authentication via session token. User must be a member of the specifie
 
 ## Query Parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `q` | string | Yes | - | Search query string |
-| `type` | enum | No | `all` | Search type: `channels`, `messages`, `files`, or `all` |
-| `channelId` | string | No | - | Limit search to specific channel |
-| `limit` | number | No | `20` | Results per page (max: 100) |
-| `offset` | number | No | `0` | Pagination offset |
-| `highlight` | boolean | No | `true` | Enable result highlighting |
-| `facets` | boolean | No | `false` | Include result facets/aggregations |
+| Parameter   | Type    | Required | Default | Description                                            |
+| ----------- | ------- | -------- | ------- | ------------------------------------------------------ |
+| `q`         | string  | Yes      | -       | Search query string                                    |
+| `type`      | enum    | No       | `all`   | Search type: `channels`, `messages`, `files`, or `all` |
+| `channelId` | string  | No       | -       | Limit search to specific channel                       |
+| `limit`     | number  | No       | `20`    | Results per page (max: 100)                            |
+| `offset`    | number  | No       | `0`     | Pagination offset                                      |
+| `highlight` | boolean | No       | `true`  | Enable result highlighting                             |
+| `facets`    | boolean | No       | `false` | Include result facets/aggregations                     |
 
 ## Response Format
 
@@ -218,9 +220,7 @@ GET /api/workspaces/ws_abc123/search?q=meeting&highlight=false
       { "type": "file", "count": 1 },
       { "type": "channel", "count": 1 }
     ],
-    "channels": [
-      { "id": "ch_456", "name": "general", "count": 2 }
-    ]
+    "channels": [{ "id": "ch_456", "name": "general", "count": 2 }]
   }
 }
 ```
@@ -284,6 +284,7 @@ The search splits queries on whitespace and searches for all terms:
 ### Access Control
 
 Search respects channel access permissions:
+
 - Public channels: Visible to all workspace members
 - Private channels: Only visible to channel members
 - Results filtered based on user's channel memberships
@@ -291,10 +292,12 @@ Search respects channel access permissions:
 ### Relevance Ranking
 
 When `type=all`, results are sorted by:
+
 1. Exact name/title matches (channels and files)
 2. Most recent creation date
 
 Type-specific searches maintain their native ordering:
+
 - Channels: Alphabetically by name
 - Messages: Reverse chronological (newest first)
 - Files: Reverse chronological (newest first)
@@ -302,6 +305,7 @@ Type-specific searches maintain their native ordering:
 ### Faceted Search
 
 When `facets=true`, response includes aggregated counts:
+
 - **Type Facets**: Count of results by type (channel, message, file)
 - **Channel Facets**: Top 10 channels with most matching results
 
@@ -317,6 +321,7 @@ When `facets=true`, response includes aggregated counts:
 ## Rate Limiting
 
 No explicit rate limits, but consider implementing:
+
 - Minimum query length (e.g., 2-3 characters)
 - Debouncing on client-side
 - Caching frequently searched terms
@@ -338,14 +343,11 @@ const searchWorkspace = debounce(async (query: string) => {
     facets: 'true',
   });
 
-  const response = await fetch(
-    `/api/workspaces/${workspaceId}/search?${params}`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const response = await fetch(`/api/workspaces/${workspaceId}/search?${params}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
   const results = await response.json();
   displayResults(results);
@@ -420,4 +422,5 @@ Potential improvements for future versions:
 
 ## Support
 
-For issues or questions about the Search API, contact the API team or refer to the main API documentation.
+For issues or questions about the Search API, contact the API team or refer to the main API
+documentation.

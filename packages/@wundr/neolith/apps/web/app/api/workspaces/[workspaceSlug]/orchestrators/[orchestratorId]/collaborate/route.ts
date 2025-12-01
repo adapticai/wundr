@@ -41,7 +41,7 @@ interface RouteContext {
  */
 async function verifyWorkspaceAccess(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<{ success: boolean; organizationId?: string; error?: string }> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -80,7 +80,7 @@ async function verifyWorkspaceAccess(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -89,9 +89,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -100,14 +100,17 @@ export async function POST(
     const { workspaceSlug: workspaceId, orchestratorId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -119,9 +122,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -132,9 +135,9 @@ export async function POST(
         createCoordinationErrorResponse(
           'Validation failed',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -154,25 +157,30 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Orchestrator not found or not accessible',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Request collaboration using service
-    const result = await requestCollaboration(orchestratorId, taskId, requiredOrchestratorIds, {
-      roles,
-      note,
-    });
+    const result = await requestCollaboration(
+      orchestratorId,
+      taskId,
+      requiredOrchestratorIds,
+      {
+        roles,
+        note,
+      }
+    );
 
     if (!result.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           result.error || 'Collaboration request failed',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -190,7 +198,7 @@ export async function POST(
 
     // Create notifications for all collaborators
     await Promise.all(
-      collaborators.map((collaborator) =>
+      collaborators.map(collaborator =>
         prisma.notification.create({
           data: {
             userId: collaborator.userId,
@@ -210,8 +218,8 @@ export async function POST(
             },
             read: false,
           },
-        }),
-      ),
+        })
+      )
     );
 
     return NextResponse.json({
@@ -219,13 +227,16 @@ export async function POST(
       message: 'Collaboration request created successfully',
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -241,7 +252,7 @@ export async function POST(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -250,9 +261,9 @@ export async function GET(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -261,14 +272,17 @@ export async function GET(
     const { workspaceSlug: workspaceId, orchestratorId } = params;
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -284,9 +298,9 @@ export async function GET(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Orchestrator not found',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -294,7 +308,7 @@ export async function GET(
     const collaborativeTasks = await getCollaborativeTasks(orchestratorId);
 
     // Format response with collaboration details
-    const formattedTasks = collaborativeTasks.map((task) => {
+    const formattedTasks = collaborativeTasks.map(task => {
       const metadata = task.metadata as VPCoordinationMetadata;
       const collaborators = metadata.collaborators || [];
 
@@ -306,7 +320,7 @@ export async function GET(
         priority: task.priority,
         primaryOrchestrator: task.orchestrator,
         workspace: task.workspace,
-        collaborators: collaborators.map((c) => ({
+        collaborators: collaborators.map(c => ({
           orchestratorId: c.orchestratorId,
           role: c.role,
           addedAt: c.addedAt,
@@ -321,13 +335,16 @@ export async function GET(
       count: formattedTasks.length,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -343,7 +360,7 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -352,9 +369,9 @@ export async function DELETE(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -370,21 +387,24 @@ export async function DELETE(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Task ID is required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate workspace access
-    const accessCheck = await verifyWorkspaceAccess(workspaceId, session.user.id);
+    const accessCheck = await verifyWorkspaceAccess(
+      workspaceId,
+      session.user.id
+    );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -400,9 +420,9 @@ export async function DELETE(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Orchestrator not found',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -416,9 +436,9 @@ export async function DELETE(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Task not found',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.TASK_NOT_FOUND,
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.TASK_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -426,7 +446,9 @@ export async function DELETE(
     const collaborators = metadata.collaborators || [];
 
     // Remove Orchestrator from collaborators
-    const updatedCollaborators = collaborators.filter((c) => c.orchestratorId !== orchestratorId);
+    const updatedCollaborators = collaborators.filter(
+      c => c.orchestratorId !== orchestratorId
+    );
 
     // Update task metadata
     await prisma.task.update({
@@ -448,13 +470,16 @@ export async function DELETE(
       },
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate] Error:',
+      error
+    );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -14,7 +14,10 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { ProfileManager } from './src/profiles';
-import { InstallerRegistry, OrchestratorDaemonInstaller } from './src/installers';
+import {
+  InstallerRegistry,
+  OrchestratorDaemonInstaller,
+} from './src/installers';
 import { ConfiguratorService } from './src/configurators';
 import { SetupValidator } from './src/validators';
 import { SetupOrchestrator } from './src/orchestrator';
@@ -61,15 +64,15 @@ class Logger {
   static info(...args: any[]) {
     console.log(...args);
   }
-  
+
   static error(...args: any[]) {
     console.error(chalk.red('Error:'), ...args);
   }
-  
+
   static warn(...args: any[]) {
     console.warn(chalk.yellow('Warning:'), ...args);
   }
-  
+
   static success(...args: any[]) {
     console.log(chalk.green(...args));
   }
@@ -82,7 +85,7 @@ const DEFAULT_CONFIG = {
   rootDir: '~/Development',
   skipPrompts: false,
   verbose: false,
-  profile: 'fullstack'
+  profile: 'fullstack',
 };
 
 // Setup command implementation
@@ -110,21 +113,30 @@ class SetupCommand {
     await this.executeSetup(selectedProfile);
 
     logger.success(chalk.green.bold('\n✅ Setup completed successfully!\n'));
-    logger.info(chalk.cyan('Please restart your terminal to apply all changes.'));
-    logger.info(chalk.gray('Run "npx tsx dev.ts validate" to verify your setup.\n'));
+    logger.info(
+      chalk.cyan('Please restart your terminal to apply all changes.')
+    );
+    logger.info(
+      chalk.gray('Run "npx tsx dev.ts validate" to verify your setup.\n')
+    );
   }
 
   private async initializeContext(): Promise<SetupContext> {
     const platform: SetupPlatform = {
-      os: process.platform === 'darwin' ? 'darwin' : process.platform === 'win32' ? 'win32' : 'linux',
+      os:
+        process.platform === 'darwin'
+          ? 'darwin'
+          : process.platform === 'win32'
+            ? 'win32'
+            : 'linux',
       arch: process.arch as 'x64' | 'arm64',
       node: process.version,
-      shell: process.env.SHELL || 'bash'
+      shell: process.env.SHELL || 'bash',
     };
-    
+
     // Prompt for missing information if not skipping prompts
-    const info = this.options.skipPrompts 
-      ? this.options 
+    const info = this.options.skipPrompts
+      ? this.options
       : await this.promptForMissingInfo(this.options);
 
     return {
@@ -135,12 +147,14 @@ class SetupCommand {
       company: info.company || undefined,
       role: info.role || 'Software Engineer',
       jobTitle: info.jobTitle || 'Building amazing software',
-      rootDir: path.resolve((info.rootDir || '~/Development').replace('~', os.homedir())),
+      rootDir: path.resolve(
+        (info.rootDir || '~/Development').replace('~', os.homedir())
+      ),
       os: platform.os,
       skipPrompts: this.options.skipPrompts || false,
       verbose: this.options.verbose || false,
       selectedTools: [],
-      platform
+      platform,
     };
   }
 
@@ -155,7 +169,7 @@ class SetupCommand {
         validate: (input: string) => {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           return emailRegex.test(input) || 'Please enter a valid email address';
-        }
+        },
       });
     }
 
@@ -164,7 +178,8 @@ class SetupCommand {
         type: 'input',
         name: 'githubUsername',
         message: 'What is your GitHub username?',
-        validate: (input: string) => input.length > 0 || 'GitHub username is required'
+        validate: (input: string) =>
+          input.length > 0 || 'GitHub username is required',
       });
     }
 
@@ -173,7 +188,7 @@ class SetupCommand {
         type: 'input',
         name: 'name',
         message: 'What is your full name?',
-        validate: (input: string) => input.length > 0 || 'Name is required'
+        validate: (input: string) => input.length > 0 || 'Name is required',
       });
     }
 
@@ -182,7 +197,7 @@ class SetupCommand {
         type: 'input',
         name: 'company',
         message: 'What is your company name? (optional)',
-        default: ''
+        default: '',
       });
     }
 
@@ -191,12 +206,14 @@ class SetupCommand {
         type: 'input',
         name: 'role',
         message: 'What is your role/position?',
-        default: 'Software Engineer'
+        default: 'Software Engineer',
       });
     }
 
     if (questions.length > 0) {
-      logger.info(chalk.cyan('\n📝 Please provide the following information:\n'));
+      logger.info(
+        chalk.cyan('\n📝 Please provide the following information:\n')
+      );
       const answers = await inquirer.prompt(questions);
       return { ...options, ...answers };
     }
@@ -209,7 +226,7 @@ class SetupCommand {
 
     try {
       const validator = new SetupValidator();
-      
+
       // Check platform
       const isValid = await validator.validatePlatform(this.context!.platform);
       if (!isValid) {
@@ -237,7 +254,7 @@ class SetupCommand {
 
   private async selectProfile(): Promise<DeveloperProfile> {
     const profileManager = new ProfileManager();
-    
+
     if (this.options.skipPrompts && this.options.profile) {
       const profiles = await profileManager.listProfiles();
       const profile = profiles.find(p => p.name === this.options.profile);
@@ -247,7 +264,7 @@ class SetupCommand {
     }
 
     const profiles = await profileManager.listProfiles();
-    
+
     const { selectedProfile } = await inquirer.prompt([
       {
         type: 'list',
@@ -255,9 +272,9 @@ class SetupCommand {
         message: 'Which developer profile would you like to use?',
         choices: profiles.map(p => ({
           name: `${p.name} - ${p.role}`,
-          value: p.name
-        }))
-      }
+          value: p.name,
+        })),
+      },
     ]);
 
     return profiles.find(p => p.name === selectedProfile)!;
@@ -266,15 +283,20 @@ class SetupCommand {
   private async executeSetup(profile: DeveloperProfile): Promise<void> {
     const profileManager = new ProfileManager();
     const platform: SetupPlatform = {
-      os: process.platform === 'darwin' ? 'darwin' : process.platform === 'win32' ? 'win32' : 'linux',
+      os:
+        process.platform === 'darwin'
+          ? 'darwin'
+          : process.platform === 'win32'
+            ? 'win32'
+            : 'linux',
       arch: process.arch as 'x64' | 'arm64',
       node: process.version,
-      shell: process.env.SHELL || 'bash'
+      shell: process.env.SHELL || 'bash',
     };
     const installerRegistry = new InstallerRegistry(platform);
     const configuratorService = new ConfiguratorService();
     const validator = new SetupValidator();
-    
+
     const orchestrator = new SetupOrchestrator(
       profileManager,
       installerRegistry,
@@ -283,8 +305,10 @@ class SetupCommand {
     );
 
     // Subscribe to progress events
-    orchestrator.on('progress', (progress) => {
-      logger.info(chalk.blue(`[${progress.percentage}%] ${progress.currentStep}`));
+    orchestrator.on('progress', progress => {
+      logger.info(
+        chalk.blue(`[${progress.percentage}%] ${progress.currentStep}`)
+      );
     });
 
     const setupOptions: SetupOptions = {
@@ -295,13 +319,15 @@ class SetupCommand {
       dryRun: false,
       verbose: this.options.verbose || false,
       parallel: this.options.parallel || false,
-      generateReport: true
+      generateReport: true,
     };
 
     const result = await orchestrator.orchestrate(setupOptions);
-    
+
     if (!result.success) {
-      throw new Error(`Setup failed. Failed steps: ${result.failedSteps.length}`);
+      throw new Error(
+        `Setup failed. Failed steps: ${result.failedSteps.length}`
+      );
     }
   }
 }
@@ -337,7 +363,7 @@ class ValidateCommand {
 
   private async validateBrew(): Promise<void> {
     const spinner = ora('Checking Homebrew...').start();
-    
+
     try {
       const validator = new SetupValidator();
       const hasBrew = await validator.validatePackageManager('brew');
@@ -364,11 +390,11 @@ class ValidateCommand {
 
   private async validateNode(): Promise<void> {
     const spinner = ora('Checking Node.js...').start();
-    
+
     try {
       const validator = new SetupValidator();
       const hasNode = await validator.validateNode();
-      
+
       if (hasNode) {
         this.results.push({
           tool: 'Node.js',
@@ -392,11 +418,11 @@ class ValidateCommand {
 
   private async validateDocker(): Promise<void> {
     const spinner = ora('Checking Docker...').start();
-    
+
     try {
       const validator = new SetupValidator();
       const hasDocker = await validator.validateDocker();
-      
+
       if (hasDocker) {
         this.results.push({
           tool: 'Docker',
@@ -420,11 +446,11 @@ class ValidateCommand {
 
   private async validateGit(): Promise<void> {
     const spinner = ora('Checking Git...').start();
-    
+
     try {
       const validator = new SetupValidator();
       const hasGit = await validator.validateGit();
-      
+
       if (hasGit) {
         this.results.push({
           tool: 'Git',
@@ -448,11 +474,11 @@ class ValidateCommand {
 
   private async validateVSCode(): Promise<void> {
     const spinner = ora('Checking VS Code...').start();
-    
+
     try {
       const validator = new SetupValidator();
       const hasVSCode = await validator.validateVSCode();
-      
+
       if (hasVSCode) {
         this.results.push({
           tool: 'VS Code',
@@ -476,11 +502,11 @@ class ValidateCommand {
 
   private async validateClaude(): Promise<void> {
     const spinner = ora('Checking Claude tools...').start();
-    
+
     try {
       const validator = new SetupValidator();
       const hasClaude = await validator.validateClaudeCode();
-      
+
       if (hasClaude) {
         this.results.push({
           tool: 'Claude',
@@ -536,10 +562,18 @@ class ValidateCommand {
     const successful = grouped.success.length;
     const percentage = Math.round((successful / total) * 100);
 
-    logger.info(chalk.cyan.bold(`\n📈 Overall: ${successful}/${total} (${percentage}%) checks passed\n`));
+    logger.info(
+      chalk.cyan.bold(
+        `\n📈 Overall: ${successful}/${total} (${percentage}%) checks passed\n`
+      )
+    );
 
     if (this.hasFixableIssues() && !this.options.fix) {
-      logger.info(chalk.gray('Run "npx tsx dev.ts validate --fix" to attempt automatic fixes.\n'));
+      logger.info(
+        chalk.gray(
+          'Run "npx tsx dev.ts validate --fix" to attempt automatic fixes.\n'
+        )
+      );
     }
   }
 
@@ -550,11 +584,13 @@ class ValidateCommand {
   private async attemptFixes(): Promise<void> {
     logger.info(chalk.cyan.bold('\n🔧 Attempting to fix issues...\n'));
 
-    const fixable = this.results.filter(r => r.canFix && r.status !== 'success');
+    const fixable = this.results.filter(
+      r => r.canFix && r.status !== 'success'
+    );
 
     for (const result of fixable) {
       const spinner = ora(`Fixing ${result.tool}...`).start();
-      
+
       try {
         // Here you would implement specific fix logic for each tool
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -564,7 +600,11 @@ class ValidateCommand {
       }
     }
 
-    logger.info(chalk.cyan('\n🔄 Please run validation again to check if issues are resolved.\n'));
+    logger.info(
+      chalk.cyan(
+        '\n🔄 Please run validation again to check if issues are resolved.\n'
+      )
+    );
   }
 }
 
@@ -575,7 +615,12 @@ class ConfigCommand {
 
   constructor(options: ConfigOptions) {
     this.options = options;
-    this.configPath = path.join(os.homedir(), '.wundr', 'computer-setup', 'config.json');
+    this.configPath = path.join(
+      os.homedir(),
+      '.wundr',
+      'computer-setup',
+      'config.json'
+    );
   }
 
   async execute(): Promise<void> {
@@ -610,19 +655,21 @@ class ConfigCommand {
 
   private async listConfig(): Promise<void> {
     const config = await this.loadConfig();
-    
+
     logger.info(chalk.cyan.bold('\n📋 Configuration:\n'));
-    
+
     for (const [key, value] of Object.entries(config)) {
-      logger.info(`  ${chalk.gray(key)}: ${chalk.white(JSON.stringify(value))}`);
+      logger.info(
+        `  ${chalk.gray(key)}: ${chalk.white(JSON.stringify(value))}`
+      );
     }
-    
+
     logger.info('');
   }
 
   private async getConfig(key: string): Promise<void> {
     const config = await this.loadConfig();
-    
+
     if (key in config) {
       logger.info(`${key}: ${JSON.stringify(config[key])}`);
     } else {
@@ -633,16 +680,21 @@ class ConfigCommand {
   private async setConfig(keyValue: string): Promise<void> {
     const [key, ...valueParts] = keyValue.split('=');
     const value = valueParts.join('=');
-    
+
     if (!key || !value) {
       logger.error('Invalid format. Use: --set key=value');
       return;
     }
-    
+
     const config = await this.loadConfig();
-    
+
     // Parse value
-    let parsedValue: string | number | boolean | Record<string, unknown> | unknown[] = value;
+    let parsedValue:
+      | string
+      | number
+      | boolean
+      | Record<string, unknown>
+      | unknown[] = value;
     if (value === 'true') parsedValue = true;
     else if (value === 'false') parsedValue = false;
     else if (!Number.isNaN(Number(value))) parsedValue = Number(value);
@@ -653,10 +705,10 @@ class ConfigCommand {
         // Keep as string if JSON parse fails
       }
     }
-    
+
     config[key] = parsedValue;
     await this.saveConfig(config);
-    
+
     logger.success(`✅ Set ${key} = ${JSON.stringify(parsedValue)}`);
   }
 
@@ -668,13 +720,19 @@ class ConfigCommand {
 
 async function main() {
   console.log(chalk.blue('╔══════════════════════════════════════╗'));
-  console.log(chalk.blue('║   ') + chalk.green('🖥️  Wundr Computer Setup CLI') + chalk.blue('    ║'));
+  console.log(
+    chalk.blue('║   ') +
+      chalk.green('🖥️  Wundr Computer Setup CLI') +
+      chalk.blue('    ║')
+  );
   console.log(chalk.blue('╚══════════════════════════════════════╝'));
   console.log();
 
   const program = new Command()
     .name('wundr-computer-setup')
-    .description('Automated development environment setup for engineering teams')
+    .description(
+      'Automated development environment setup for engineering teams'
+    )
     .version(version, '-v, --version')
     .option('-V, --verbose', 'Enable verbose output')
     .option('-q, --quiet', 'Suppress all output except errors');
@@ -688,14 +746,18 @@ async function main() {
     .option('-g, --github-email <email>', 'GitHub email')
     .option('-n, --name <name>', 'Full name for Git configuration')
     .option('-c, --company <company>', 'Company name')
-    .option('-r, --root-dir <dir>', 'Root directory for development', '~/Development')
+    .option(
+      '-r, --root-dir <dir>',
+      'Root directory for development',
+      '~/Development'
+    )
     .option('-p, --profile <profile>', 'Developer profile to use', 'fullstack')
     .option('-s, --skip-prompts', 'Skip all confirmation prompts')
     .option('--skip-existing', 'Skip already installed tools')
     .option('--parallel', 'Run installations in parallel')
     .option('--only <tools>', 'Install only specified tools (comma-separated)')
     .option('--exclude <tools>', 'Exclude specified tools (comma-separated)')
-    .action(async (options) => {
+    .action(async options => {
       try {
         const setupCommand = new SetupCommand(options);
         await setupCommand.execute();
@@ -710,7 +772,7 @@ async function main() {
     .command('validate')
     .description('Validate installation and environment')
     .option('--fix', 'Attempt to fix issues automatically')
-    .action(async (options) => {
+    .action(async options => {
       try {
         const validateCommand = new ValidateCommand(options);
         await validateCommand.execute();
@@ -728,7 +790,7 @@ async function main() {
     .option('--get <key>', 'Get a configuration value')
     .option('--set <key=value>', 'Set a configuration value')
     .option('--reset', 'Reset to default configuration')
-    .action(async (options) => {
+    .action(async options => {
       try {
         const configCommand = new ConfigCommand(options);
         await configCommand.execute();
@@ -746,7 +808,7 @@ async function main() {
       try {
         const profileManager = new ProfileManager();
         const profiles = await profileManager.listProfiles();
-        
+
         logger.info(chalk.green('Available profiles:'));
         profiles.forEach(profile => {
           logger.info(`  • ${chalk.cyan(profile.name)} - ${profile.role}`);
@@ -766,12 +828,12 @@ async function main() {
         const profileManager = new ProfileManager();
         const profiles = await profileManager.listProfiles();
         const profile = profiles.find(p => p.name === name);
-        
+
         if (!profile) {
           logger.error(`Profile '${name}' not found`);
           return;
         }
-        
+
         logger.info(chalk.green(`Profile: ${profile.name}`));
         logger.info(chalk.gray(`Role: ${profile.role}`));
         if (profile.team) {
@@ -794,42 +856,55 @@ async function main() {
     .option('--skip-existing', 'Skip already installed tools')
     .action(async (profileName: string = 'fullstack', options: any) => {
       try {
-        logger.info(chalk.yellow(`Running dry-run for profile: ${profileName}`));
-        logger.info(chalk.gray('This will show what would be installed without making changes'));
+        logger.info(
+          chalk.yellow(`Running dry-run for profile: ${profileName}`)
+        );
+        logger.info(
+          chalk.gray(
+            'This will show what would be installed without making changes'
+          )
+        );
         logger.info('');
-        
+
         const profileManager = new ProfileManager();
         const profiles = await profileManager.listProfiles();
         const profile = profiles.find(p => p.name === profileName);
-        
+
         if (!profile) {
           logger.error(`Profile '${profileName}' not found`);
           return;
         }
-        
+
         const platform: SetupPlatform = {
-          os: process.platform === 'darwin' ? 'darwin' : process.platform === 'win32' ? 'win32' : 'linux',
+          os:
+            process.platform === 'darwin'
+              ? 'darwin'
+              : process.platform === 'win32'
+                ? 'win32'
+                : 'linux',
           arch: process.arch as 'x64' | 'arm64',
           node: process.version,
-          shell: process.env.SHELL || 'bash'
+          shell: process.env.SHELL || 'bash',
         };
-        
+
         const installerRegistry = new InstallerRegistry(platform);
         const configuratorService = new ConfiguratorService();
         const validator = new SetupValidator();
-        
+
         const orchestrator = new SetupOrchestrator(
           profileManager,
           installerRegistry,
           configuratorService,
           validator
         );
-        
+
         // Subscribe to progress events
-        orchestrator.on('progress', (progress) => {
-          logger.info(chalk.blue(`[${progress.percentage}%] ${progress.currentStep}`));
+        orchestrator.on('progress', progress => {
+          logger.info(
+            chalk.blue(`[${progress.percentage}%] ${progress.currentStep}`)
+          );
         });
-        
+
         const setupOptions: SetupOptions = {
           profile,
           platform,
@@ -838,16 +913,24 @@ async function main() {
           skipExisting: options.skipExisting || false,
           verbose: false,
           parallel: options.parallel || false,
-          generateReport: true
+          generateReport: true,
         };
-        
+
         const result = await orchestrator.orchestrate(setupOptions);
-        
+
         logger.info('');
         logger.success('Dry-run complete!');
-        logger.info(chalk.gray(`Steps that would be executed: ${result.completedSteps.length}`));
-        logger.info(chalk.gray(`Steps that would be skipped: ${result.skippedSteps.length}`));
-        
+        logger.info(
+          chalk.gray(
+            `Steps that would be executed: ${result.completedSteps.length}`
+          )
+        );
+        logger.info(
+          chalk.gray(
+            `Steps that would be skipped: ${result.skippedSteps.length}`
+          )
+        );
+
         if (result.warnings.length > 0) {
           logger.info(chalk.yellow('Warnings:'));
           result.warnings.forEach(w => logger.info(`  • ${w}`));
@@ -877,8 +960,14 @@ async function main() {
           { name: 'Docker', check: () => validator.validateDocker() },
           { name: 'VS Code', check: () => validator.validateVSCode() },
           { name: 'Claude Code', check: () => validator.validateClaudeCode() },
-          { name: 'pnpm', check: () => validator.validatePackageManager('pnpm') },
-          { name: 'yarn', check: () => validator.validatePackageManager('yarn') },
+          {
+            name: 'pnpm',
+            check: () => validator.validatePackageManager('pnpm'),
+          },
+          {
+            name: 'yarn',
+            check: () => validator.validatePackageManager('yarn'),
+          },
         ];
 
         for (const tool of tools) {
@@ -911,22 +1000,38 @@ async function main() {
   // Global setup command - installs Orchestrator daemon and global wundr resources
   program
     .command('global-setup')
-    .description('Install Orchestrator Daemon and global wundr resources at ~/orchestrator-daemon and ~/.wundr')
-    .option('--orchestrator-daemon-dir <dir>', 'Orchestrator daemon directory', path.join(os.homedir(), 'orchestrator-daemon'))
-    .option('--wundr-config-dir <dir>', 'Wundr config directory', path.join(os.homedir(), '.wundr'))
+    .description(
+      'Install Orchestrator Daemon and global wundr resources at ~/orchestrator-daemon and ~/.wundr'
+    )
+    .option(
+      '--orchestrator-daemon-dir <dir>',
+      'Orchestrator daemon directory',
+      path.join(os.homedir(), 'orchestrator-daemon')
+    )
+    .option(
+      '--wundr-config-dir <dir>',
+      'Wundr config directory',
+      path.join(os.homedir(), '.wundr')
+    )
     .option('--enable-slack', 'Enable Slack integration')
     .option('--enable-gmail', 'Enable Gmail integration')
     .option('--enable-google-drive', 'Enable Google Drive integration')
     .option('--enable-twilio', 'Enable Twilio integration')
     .option('--dry-run', 'Show what would be installed without making changes')
-    .action(async (options) => {
+    .action(async options => {
       try {
-        logger.info(chalk.cyan.bold('\n🌐 Installing Orchestrator Daemon and Global Wundr Resources\n'));
+        logger.info(
+          chalk.cyan.bold(
+            '\n🌐 Installing Orchestrator Daemon and Global Wundr Resources\n'
+          )
+        );
 
         const orchestratorDaemonDir = options.orchestratorDaemonDir;
         const wundrConfigDir = options.wundrConfigDir;
 
-        logger.info(chalk.gray(`Orchestrator Daemon directory: ${orchestratorDaemonDir}`));
+        logger.info(
+          chalk.gray(`Orchestrator Daemon directory: ${orchestratorDaemonDir}`)
+        );
         logger.info(chalk.gray(`Wundr config directory: ${wundrConfigDir}`));
         logger.info('');
 
@@ -968,9 +1073,12 @@ async function main() {
         });
 
         // Subscribe to progress events
-        orchestratorDaemonInstaller.on('progress', (progress: { step: string; percentage: number }) => {
-          spinner.text = `[${progress.percentage}%] ${progress.step}`;
-        });
+        orchestratorDaemonInstaller.on(
+          'progress',
+          (progress: { step: string; percentage: number }) => {
+            spinner.text = `[${progress.percentage}%] ${progress.step}`;
+          }
+        );
 
         const result = await orchestratorDaemonInstaller.installWithResult();
 
@@ -998,10 +1106,18 @@ async function main() {
           }
 
           logger.info(chalk.cyan('Next steps:'));
-          logger.info('  1. Configure integrations in ~/orchestrator-daemon/integrations/');
-          logger.info('  2. Review Orchestrator charter at ~/orchestrator-daemon/orchestrator-charter.yaml');
-          logger.info('  3. Customize session archetypes in ~/.wundr/archetypes/');
-          logger.info('  4. Run "npx tsx dev.ts orchestrator-status" to check Orchestrator daemon status');
+          logger.info(
+            '  1. Configure integrations in ~/orchestrator-daemon/integrations/'
+          );
+          logger.info(
+            '  2. Review Orchestrator charter at ~/orchestrator-daemon/orchestrator-charter.yaml'
+          );
+          logger.info(
+            '  3. Customize session archetypes in ~/.wundr/archetypes/'
+          );
+          logger.info(
+            '  4. Run "npx tsx dev.ts orchestrator-status" to check Orchestrator daemon status'
+          );
           logger.info('');
         } else {
           spinner.fail('Orchestrator Daemon installation failed');
@@ -1026,7 +1142,10 @@ async function main() {
       try {
         logger.info(chalk.cyan.bold('\n🔍 Orchestrator Daemon Status\n'));
 
-        const orchestratorDaemonDir = path.join(os.homedir(), 'orchestrator-daemon');
+        const orchestratorDaemonDir = path.join(
+          os.homedir(),
+          'orchestrator-daemon'
+        );
         const wundrConfigDir = path.join(os.homedir(), '.wundr');
 
         const orchestratorDaemonInstaller = new OrchestratorDaemonInstaller({
@@ -1042,7 +1161,9 @@ async function main() {
           logger.info(chalk.green('✅ Orchestrator Daemon is installed'));
           logger.info(`   Version: ${version || 'unknown'}`);
           logger.info(`   Location: ${orchestratorDaemonDir}`);
-          logger.info(`   Valid: ${isValid ? 'Yes' : 'No (missing components)'}`);
+          logger.info(
+            `   Valid: ${isValid ? 'Yes' : 'No (missing components)'}`
+          );
         } else {
           logger.info(chalk.yellow('⚠️ Orchestrator Daemon is not installed'));
           logger.info('   Run "npx tsx dev.ts global-setup" to install');
@@ -1073,7 +1194,9 @@ async function main() {
           if (await fs.pathExists(sessionIndex)) {
             const indexData = await fs.readJson(sessionIndex);
             logger.info(chalk.cyan('📊 Sessions:'));
-            logger.info(`   Total sessions: ${indexData.sessions?.length || 0}`);
+            logger.info(
+              `   Total sessions: ${indexData.sessions?.length || 0}`
+            );
             logger.info(`   Last updated: ${indexData.lastUpdated || 'never'}`);
           }
         }
@@ -1091,7 +1214,7 @@ async function main() {
       try {
         logger.info(chalk.cyan('🚀 Welcome to Wundr Computer Setup!'));
         logger.info(chalk.gray('Setting up your development environment...\n'));
-        
+
         const answers = await inquirer.prompt([
           {
             type: 'list',
@@ -1104,17 +1227,17 @@ async function main() {
               { name: '🔍 Check installed tools', value: 'check' },
               { name: '⚙️  Configure settings', value: 'config' },
               { name: '🧪 Run dry-run', value: 'dry-run' },
-              { name: '❌ Exit', value: 'exit' }
-            ]
-          }
+              { name: '❌ Exit', value: 'exit' },
+            ],
+          },
         ]);
-        
+
         switch (answers.action) {
           case 'setup': {
             const setupCommand = new SetupCommand({
               rootDir: '~/Development',
               skipPrompts: false,
-              verbose: false
+              verbose: false,
             });
             await setupCommand.execute();
             break;
@@ -1127,7 +1250,7 @@ async function main() {
           case 'profiles': {
             const profileManager = new ProfileManager();
             const profiles = await profileManager.listProfiles();
-            
+
             logger.info(chalk.green('Available profiles:'));
             profiles.forEach(profile => {
               logger.info(`  • ${chalk.cyan(profile.name)} - ${profile.role}`);
@@ -1136,21 +1259,30 @@ async function main() {
           }
           case 'check': {
             const validator = new SetupValidator();
-            
+
             logger.info(chalk.yellow('Checking installed tools...'));
             logger.info('');
-            
+
             const tools = [
               { name: 'Git', check: () => validator.validateGit() },
               { name: 'Node.js', check: () => validator.validateNode() },
               { name: 'Python', check: () => validator.validatePython() },
               { name: 'Docker', check: () => validator.validateDocker() },
               { name: 'VS Code', check: () => validator.validateVSCode() },
-              { name: 'Claude Code', check: () => validator.validateClaudeCode() },
-              { name: 'pnpm', check: () => validator.validatePackageManager('pnpm') },
-              { name: 'yarn', check: () => validator.validatePackageManager('yarn') },
+              {
+                name: 'Claude Code',
+                check: () => validator.validateClaudeCode(),
+              },
+              {
+                name: 'pnpm',
+                check: () => validator.validatePackageManager('pnpm'),
+              },
+              {
+                name: 'yarn',
+                check: () => validator.validatePackageManager('yarn'),
+              },
             ];
-            
+
             for (const tool of tools) {
               try {
                 const isInstalled = await tool.check();
@@ -1176,39 +1308,46 @@ async function main() {
                 type: 'input',
                 name: 'profile',
                 message: 'Which profile to dry-run?',
-                default: 'fullstack'
-              }
+                default: 'fullstack',
+              },
             ]);
-            
-            logger.info(chalk.yellow(`Running dry-run for profile: ${profile}`));
-            
+
+            logger.info(
+              chalk.yellow(`Running dry-run for profile: ${profile}`)
+            );
+
             const profileManager = new ProfileManager();
             const profiles = await profileManager.listProfiles();
             const selectedProfile = profiles.find(p => p.name === profile);
-            
+
             if (!selectedProfile) {
               logger.error(`Profile '${profile}' not found`);
               break;
             }
-            
+
             const platform: SetupPlatform = {
-              os: process.platform === 'darwin' ? 'darwin' : process.platform === 'win32' ? 'win32' : 'linux',
+              os:
+                process.platform === 'darwin'
+                  ? 'darwin'
+                  : process.platform === 'win32'
+                    ? 'win32'
+                    : 'linux',
               arch: process.arch as 'x64' | 'arm64',
               node: process.version,
-              shell: process.env.SHELL || 'bash'
+              shell: process.env.SHELL || 'bash',
             };
-            
+
             const installerRegistry = new InstallerRegistry(platform);
             const configuratorService = new ConfiguratorService();
             const validator = new SetupValidator();
-            
+
             const orchestrator = new SetupOrchestrator(
               profileManager,
               installerRegistry,
               configuratorService,
               validator
             );
-            
+
             const setupOptions: SetupOptions = {
               profile: selectedProfile,
               platform,
@@ -1217,9 +1356,9 @@ async function main() {
               skipExisting: false,
               verbose: false,
               parallel: false,
-              generateReport: true
+              generateReport: true,
             };
-            
+
             await orchestrator.orchestrate(setupOptions);
             logger.success('Dry-run completed!');
             break;
@@ -1237,7 +1376,7 @@ async function main() {
 
   // Parse arguments
   await program.parseAsync(process.argv);
-  
+
   // Show help if no arguments
   if (process.argv.slice(2).length === 0) {
     program.outputHelp();

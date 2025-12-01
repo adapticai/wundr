@@ -168,7 +168,7 @@ describe('Channel API Routes', () => {
         expect.objectContaining({
           name: 'announcements',
           type: 'PUBLIC',
-        }),
+        })
       );
     });
 
@@ -176,7 +176,10 @@ describe('Channel API Routes', () => {
       const session = createMockSession();
       auth.mockResolvedValue(session);
 
-      const mockChannel = createMockChannelResponse({ type: 'PRIVATE', name: 'secret-project' });
+      const mockChannel = createMockChannelResponse({
+        type: 'PRIVATE',
+        name: 'secret-project',
+      });
       mockChannelService.createChannel.mockResolvedValue(mockChannel);
 
       const requestBody = {
@@ -244,11 +247,11 @@ describe('Channel API Routes', () => {
           name: '', // Invalid - empty
           type: 'INVALID_TYPE',
           workspaceId: 'ws-123',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
 
@@ -268,11 +271,11 @@ describe('Channel API Routes', () => {
           name: longName,
           type: 'PUBLIC',
           workspaceId: 'ws-123',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
 
@@ -290,11 +293,11 @@ describe('Channel API Routes', () => {
           name: 'test',
           type: 'PUBLIC',
           workspaceId: 'ws-not-member',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -338,9 +341,7 @@ describe('Channel API Routes', () => {
       const session = createMockSession();
       auth.mockResolvedValue(session);
 
-      const publicChannels = [
-        createMockChannelResponse({ type: 'PUBLIC' }),
-      ];
+      const publicChannels = [createMockChannelResponse({ type: 'PUBLIC' })];
 
       mockChannelService.listChannels.mockResolvedValue({
         data: publicChannels,
@@ -406,11 +407,11 @@ describe('Channel API Routes', () => {
       await expect(
         mockChannelService.listChannels({
           userId: session.user.id,
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
   });
@@ -429,7 +430,10 @@ describe('Channel API Routes', () => {
       });
       mockChannelService.joinChannel.mockResolvedValue(mockMembership);
 
-      const result = await mockChannelService.joinChannel('ch-123', session.user.id);
+      const result = await mockChannelService.joinChannel(
+        'ch-123',
+        session.user.id
+      );
 
       expect(result.userId).toBe(session.user.id);
       expect(result.role).toBe('MEMBER');
@@ -441,15 +445,16 @@ describe('Channel API Routes', () => {
 
       mockChannelService.joinChannel.mockRejectedValue({
         code: 'CANNOT_JOIN_PRIVATE_CHANNEL',
-        message: 'Cannot join private channel. Request an invite from a channel admin.',
+        message:
+          'Cannot join private channel. Request an invite from a channel admin.',
       });
 
       await expect(
-        mockChannelService.joinChannel('ch-private', session.user.id),
+        mockChannelService.joinChannel('ch-private', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CANNOT_JOIN_PRIVATE_CHANNEL',
-        }),
+        })
       );
     });
 
@@ -463,11 +468,11 @@ describe('Channel API Routes', () => {
       });
 
       await expect(
-        mockChannelService.joinChannel('ch-archived', session.user.id),
+        mockChannelService.joinChannel('ch-archived', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CHANNEL_ARCHIVED',
-        }),
+        })
       );
     });
 
@@ -481,11 +486,11 @@ describe('Channel API Routes', () => {
       });
 
       await expect(
-        mockChannelService.joinChannel('ch-123', session.user.id),
+        mockChannelService.joinChannel('ch-123', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ALREADY_CHANNEL_MEMBER',
-        }),
+        })
       );
     });
 
@@ -499,11 +504,11 @@ describe('Channel API Routes', () => {
       });
 
       await expect(
-        mockChannelService.joinChannel('ch-other-workspace', session.user.id),
+        mockChannelService.joinChannel('ch-other-workspace', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -520,7 +525,7 @@ describe('Channel API Routes', () => {
       mockChannelService.leaveChannel.mockResolvedValue(undefined);
 
       await expect(
-        mockChannelService.leaveChannel('ch-123', session.user.id),
+        mockChannelService.leaveChannel('ch-123', session.user.id)
       ).resolves.toBeUndefined();
     });
 
@@ -530,15 +535,16 @@ describe('Channel API Routes', () => {
 
       mockChannelService.leaveChannel.mockRejectedValue({
         code: 'CANNOT_LEAVE_AS_LAST_ADMIN',
-        message: 'Cannot leave as the last admin. Promote another member first or delete the channel.',
+        message:
+          'Cannot leave as the last admin. Promote another member first or delete the channel.',
       });
 
       await expect(
-        mockChannelService.leaveChannel('ch-123', session.user.id),
+        mockChannelService.leaveChannel('ch-123', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CANNOT_LEAVE_AS_LAST_ADMIN',
-        }),
+        })
       );
     });
 
@@ -552,11 +558,11 @@ describe('Channel API Routes', () => {
       });
 
       await expect(
-        mockChannelService.leaveChannel('ch-not-member', session.user.id),
+        mockChannelService.leaveChannel('ch-not-member', session.user.id)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_CHANNEL_MEMBER',
-        }),
+        })
       );
     });
   });
@@ -609,11 +615,11 @@ describe('Channel API Routes', () => {
       });
 
       await expect(
-        mockChannelService.updateChannel('ch-123', { name: 'new-name' }),
+        mockChannelService.updateChannel('ch-123', { name: 'new-name' })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -637,7 +643,7 @@ describe('Channel API Routes', () => {
       mockChannelService.deleteChannel.mockResolvedValue(undefined);
 
       await expect(
-        mockChannelService.deleteChannel('ch-123'),
+        mockChannelService.deleteChannel('ch-123')
       ).resolves.toBeUndefined();
     });
 
@@ -650,12 +656,10 @@ describe('Channel API Routes', () => {
         message: 'Only organization administrators can delete channels',
       });
 
-      await expect(
-        mockChannelService.deleteChannel('ch-123'),
-      ).rejects.toEqual(
+      await expect(mockChannelService.deleteChannel('ch-123')).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -694,11 +698,11 @@ describe('Channel API Routes', () => {
         mockChannelService.addMember('ch-123', {
           userId: 'user-456',
           role: 'MEMBER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
 
@@ -715,11 +719,11 @@ describe('Channel API Routes', () => {
         mockChannelService.addMember('ch-123', {
           userId: 'user-not-in-workspace',
           role: 'MEMBER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'USER_NOT_FOUND',
-        }),
+        })
       );
     });
   });
@@ -736,7 +740,7 @@ describe('Channel API Routes', () => {
       mockChannelService.removeMember.mockResolvedValue(undefined);
 
       await expect(
-        mockChannelService.removeMember('ch-123', 'user-456'),
+        mockChannelService.removeMember('ch-123', 'user-456')
       ).resolves.toBeUndefined();
     });
 
@@ -746,15 +750,16 @@ describe('Channel API Routes', () => {
 
       mockChannelService.removeMember.mockRejectedValue({
         code: 'CANNOT_LEAVE_AS_LAST_ADMIN',
-        message: 'Cannot remove the last channel admin. Promote another member first.',
+        message:
+          'Cannot remove the last channel admin. Promote another member first.',
       });
 
       await expect(
-        mockChannelService.removeMember('ch-123', 'last-admin-id'),
+        mockChannelService.removeMember('ch-123', 'last-admin-id')
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CANNOT_LEAVE_AS_LAST_ADMIN',
-        }),
+        })
       );
     });
   });
@@ -801,11 +806,11 @@ describe('Channel API Routes', () => {
         mockCreateDM({
           userId: session.user.id, // Same as session user
           workspaceId: 'ws-123',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'DM_SELF_NOT_ALLOWED',
-        }),
+        })
       );
     });
   });

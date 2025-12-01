@@ -15,7 +15,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
-import { createErrorResponse, ORCHESTRATOR_ERROR_CODES, orchestratorStatusEnum } from '@/lib/validations/orchestrator';
+import {
+  createErrorResponse,
+  ORCHESTRATOR_ERROR_CODES,
+  orchestratorStatusEnum,
+} from '@/lib/validations/orchestrator';
 
 import type { NextRequest } from 'next/server';
 
@@ -41,7 +45,11 @@ type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
 /**
  * Helper function to check if user has access to an Orchestrator within a workspace
  */
-async function checkOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function checkOrchestratorAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   // First, verify workspace exists and user has access
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -126,15 +134,18 @@ async function checkOrchestratorAccess(workspaceId: string, orchestratorId: stri
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -145,18 +156,28 @@ export async function GET(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Check access
-    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -176,8 +197,11 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -211,10 +235,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/status] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/status] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -252,15 +282,18 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -271,8 +304,11 @@ export async function POST(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -282,8 +318,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -294,21 +333,28 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: UpdateStatusInput = parseResult.data;
 
     // Check access
-    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -320,15 +366,15 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update Orchestrator status',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Update Orchestrator status and user's lastActiveAt in a transaction
     const now = new Date();
-    const updatedOrchestrator = await prisma.$transaction(async (tx) => {
+    const updatedOrchestrator = await prisma.$transaction(async tx => {
       // Update Orchestrator status
       const orchestrator = await tx.orchestrator.update({
         where: { id: orchestratorId },
@@ -357,10 +403,16 @@ export async function POST(
       message: 'Orchestrator status updated successfully',
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/status] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/status] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

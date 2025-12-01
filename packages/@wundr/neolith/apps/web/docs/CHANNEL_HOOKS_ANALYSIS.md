@@ -2,16 +2,19 @@
 
 ## Executive Summary
 
-The `use-channel.ts` hook has been analyzed against the actual API endpoints. Several critical mismatches have been identified that will cause runtime errors.
+The `use-channel.ts` hook has been analyzed against the actual API endpoints. Several critical
+mismatches have been identified that will cause runtime errors.
 
 ## Critical Issues Found
 
 ### 1. API Response Structure Mismatches
 
 #### Issue: `useChannels` expects different response format
+
 **Location**: `/hooks/use-channel.ts:158-170`
 
 **Current Hook Code**:
+
 ```typescript
 const data = await response.json();
 setChannels(
@@ -19,14 +22,15 @@ setChannels(
     ...c,
     createdAt: new Date(c.createdAt),
     updatedAt: new Date(c.updatedAt),
-  })),
+  }))
 );
 ```
 
 **Actual API Response** (`/api/channels/route.ts:197-207`):
+
 ```typescript
 return NextResponse.json({
-  data: channelsWithMembership,  // ← Returns "data" not "channels"
+  data: channelsWithMembership, // ← Returns "data" not "channels"
   pagination: {
     page: filters.page,
     limit: filters.limit,
@@ -43,13 +47,15 @@ return NextResponse.json({
 ---
 
 #### Issue: `useChannel` expects wrong response format
+
 **Location**: `/hooks/use-channel.ts:222-237`
 
 **Current Hook Code**:
+
 ```typescript
 const data = await response.json();
 setChannel({
-  ...data,  // ← Expects channel data at root
+  ...data, // ← Expects channel data at root
   createdAt: new Date(data.createdAt),
   updatedAt: new Date(data.updatedAt),
   members: data.members?.map((m: ChannelMember) => ({
@@ -60,9 +66,10 @@ setChannel({
 ```
 
 **Actual API Response** (`/api/channels/[channelId]/route.ts:155-163`):
+
 ```typescript
 return NextResponse.json({
-  data: channel,  // ← Channel is nested under "data"
+  data: channel, // ← Channel is nested under "data"
   membership: access.channelMembership
     ? {
         role: access.channelMembership.role,
@@ -77,23 +84,27 @@ return NextResponse.json({
 ---
 
 #### Issue: `useChannelMembers` expects different response format
+
 **Location**: `/hooks/use-channel.ts:275-286`
 
 **Current Hook Code**:
+
 ```typescript
 const data = await response.json();
 setMembers(
-  data.members.map((m: ChannelMember) => ({  // ← Expects "members"
+  data.members.map((m: ChannelMember) => ({
+    // ← Expects "members"
     ...m,
     joinedAt: new Date(m.joinedAt),
-  })),
+  }))
 );
 ```
 
 **Actual API Response** (`/api/channels/[channelId]/members/route.ts:156-159`):
+
 ```typescript
 return NextResponse.json({
-  data: members,  // ← Returns "data" not "members"
+  data: members, // ← Returns "data" not "members"
   count: members.length,
 });
 ```
@@ -139,13 +150,15 @@ The hooks call several endpoints that don't exist:
 ### 3. Type Mismatches
 
 #### Issue: Channel type values don't match
-**Hook expects**: `'public'`, `'private'` (lowercase)
-**API uses**: `'PUBLIC'`, `'PRIVATE'` (uppercase)
+
+**Hook expects**: `'public'`, `'private'` (lowercase) **API uses**: `'PUBLIC'`, `'PRIVATE'`
+(uppercase)
 
 **Location**: `/hooks/use-channel.ts:186`
+
 ```typescript
-const publicCh = channels.filter((c) => c.type === 'public' && !c.isStarred);
-const privateCh = channels.filter((c) => c.type === 'private' && !c.isStarred);
+const publicCh = channels.filter(c => c.type === 'public' && !c.isStarred);
+const privateCh = channels.filter(c => c.type === 'private' && !c.isStarred);
 ```
 
 **Fix Required**: Change to uppercase or add type normalization
@@ -153,8 +166,8 @@ const privateCh = channels.filter((c) => c.type === 'private' && !c.isStarred);
 ---
 
 #### Issue: Role type values don't match
-**Hook expects**: `'admin'`, `'member'` (lowercase)
-**API uses**: `'ADMIN'`, `'MEMBER'` (uppercase)
+
+**Hook expects**: `'admin'`, `'member'` (lowercase) **API uses**: `'ADMIN'`, `'MEMBER'` (uppercase)
 
 **Locations**: Multiple places in mutations (lines 90, 95, 481, 533)
 
@@ -165,14 +178,17 @@ const privateCh = channels.filter((c) => c.type === 'private' && !c.isStarred);
 ### 4. Missing Required Query Parameters
 
 #### Issue: `useChannels` doesn't pass required workspaceId
+
 **Location**: `/hooks/use-channel.ts:158`
 
 **Current**:
+
 ```typescript
 const response = await fetch(`/api/workspaces/${workspaceId}/channels`);
 ```
 
 **Should be** (based on actual API):
+
 ```typescript
 const response = await fetch(`/api/channels?workspaceId=${workspaceId}`);
 ```
@@ -184,9 +200,11 @@ The API route requires `workspaceId` as a query parameter, not as a path paramet
 ### 5. Incorrect Mutation Endpoints
 
 #### Issue: `createChannel` uses wrong endpoint
+
 **Location**: `/hooks/use-channel.ts:331`
 
 **Current**:
+
 ```typescript
 const response = await fetch(`/api/workspaces/${workspaceId}/channels`, {
   method: 'POST',
@@ -196,6 +214,7 @@ const response = await fetch(`/api/workspaces/${workspaceId}/channels`, {
 ```
 
 **Should be** (based on actual API):
+
 ```typescript
 const response = await fetch(`/api/channels`, {
   method: 'POST',
@@ -209,21 +228,24 @@ The API expects `workspaceId` in the body, not as a path parameter.
 ---
 
 #### Issue: `inviteMembers` uses wrong payload structure
+
 **Location**: `/hooks/use-channel.ts:486-490`
 
 **Current**:
+
 ```typescript
 const response = await fetch(`/api/channels/${channelId}/members`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ userIds, role }),  // ← Array of userIds
+  body: JSON.stringify({ userIds, role }), // ← Array of userIds
 });
 ```
 
 **Actual API expects** (`/api/channels/[channelId]/members/route.ts`):
+
 ```typescript
 // Single userId per request
-body: JSON.stringify({ userId: userIds[0], role })
+body: JSON.stringify({ userId: userIds[0], role });
 ```
 
 **Fix Required**: Loop through userIds and make individual requests, or update API to accept array
@@ -233,6 +255,7 @@ body: JSON.stringify({ userId: userIds[0], role })
 ## Response Format Standardization
 
 All API endpoints follow this pattern:
+
 ```typescript
 {
   data: <actual data>,
@@ -243,6 +266,7 @@ All API endpoints follow this pattern:
 ```
 
 But hooks expect various formats:
+
 - `data.channels`
 - `data.members`
 - Direct data access
@@ -254,13 +278,15 @@ But hooks expect various formats:
 
 ## Date Field Handling
 
-The API returns ISO date strings that need to be converted to Date objects. The hooks do this correctly, but need to be applied to the correct response structure.
+The API returns ISO date strings that need to be converted to Date objects. The hooks do this
+correctly, but need to be applied to the correct response structure.
 
 **Example of correct handling**:
+
 ```typescript
 const data = await response.json();
 const channel = {
-  ...data.data,  // ← Access data.data
+  ...data.data, // ← Access data.data
   createdAt: new Date(data.data.createdAt),
   updatedAt: new Date(data.data.updatedAt),
 };
@@ -275,7 +301,8 @@ The `use-chat.ts` hook also has similar issues:
 1. **Line 176**: Uses `/api/channels/${channelId}/messages` - Correct ✓
 2. **Line 221**: Uses SSE endpoint `/api/channels/${channelId}/subscribe` - Not implemented in API
 3. **Line 330**: Uses `/api/messages/${parentId}/thread` - Not implemented in API
-4. **Line 418**: Uses `/api/messages` - Not implemented in API (should be `/api/channels/${channelId}/messages`)
+4. **Line 418**: Uses `/api/messages` - Not implemented in API (should be
+   `/api/channels/${channelId}/messages`)
 5. **Line 569**: Uses SSE endpoint `/api/channels/${channelId}/typing` - Correct ✓
 
 ---
@@ -338,5 +365,4 @@ Before deployment, verify:
 
 ---
 
-**Generated**: 2025-11-26
-**Status**: Analysis Complete - Ready for Implementation
+**Generated**: 2025-11-26 **Status**: Analysis Complete - Ready for Implementation

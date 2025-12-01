@@ -22,7 +22,10 @@ import {
   createChannelIntelligenceError,
   CHANNEL_INTELLIGENCE_ERROR_CODES,
 } from '@/lib/validations/channel-intelligence';
-import { ORCHESTRATOR_ERROR_CODES, createErrorResponse } from '@/lib/validations/orchestrator';
+import {
+  ORCHESTRATOR_ERROR_CODES,
+  createErrorResponse,
+} from '@/lib/validations/orchestrator';
 
 import type { NextRequest } from 'next/server';
 
@@ -39,7 +42,7 @@ interface RouteContext {
 async function getOrchestratorWithWorkspaceAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -113,14 +116,17 @@ async function getOrchestratorWithWorkspaceAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -131,21 +137,25 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Invalid parameters',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify access
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -184,7 +194,7 @@ export async function GET(
 
     // For each channel, calculate activity metrics
     const activityMetrics = await Promise.all(
-      memberships.map(async (membership) => {
+      memberships.map(async membership => {
         const messageWhere = {
           channelId: membership.channelId,
           authorId: result.orchestrator.user.id,
@@ -205,7 +215,10 @@ export async function GET(
 
         // Get last message timestamp
         const lastMessage = await prisma.message.findFirst({
-          where: { channelId: membership.channelId, authorId: result.orchestrator.user.id },
+          where: {
+            channelId: membership.channelId,
+            authorId: result.orchestrator.user.id,
+          },
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true },
         });
@@ -222,12 +235,12 @@ export async function GET(
           joinedAt: membership.joinedAt.toISOString(),
           leftAt: membership.leftAt?.toISOString() ?? null,
         };
-      }),
+      })
     );
 
     // Filter by minimum message count
     const filteredMetrics = activityMetrics.filter(
-      (m) => m.messagesSent >= filters.minMessageCount,
+      m => m.messagesSent >= filters.minMessageCount
     );
 
     // Sort
@@ -254,11 +267,11 @@ export async function GET(
       }
 
       if (aValue === null || aValue === '') {
-return 1;
-}
+        return 1;
+      }
       if (bValue === null || bValue === '') {
-return -1;
-}
+        return -1;
+      }
 
       const comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       return filters.sortOrder === 'asc' ? comparison : -comparison;
@@ -267,7 +280,10 @@ return -1;
     // Paginate
     const total = filteredMetrics.length;
     const start = (filters.page - 1) * filters.limit;
-    const paginatedMetrics = filteredMetrics.slice(start, start + filters.limit);
+    const paginatedMetrics = filteredMetrics.slice(
+      start,
+      start + filters.limit
+    );
 
     return NextResponse.json({
       data: paginatedMetrics,
@@ -283,14 +299,14 @@ return -1;
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/channel-activity] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createChannelIntelligenceError(
         'An internal error occurred',
-        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR,
+        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -314,14 +330,17 @@ return -1;
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -334,21 +353,25 @@ export async function POST(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Invalid parameters',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify access
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -364,9 +387,9 @@ export async function POST(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Channel not found in workspace',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.CHANNEL_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -378,9 +401,9 @@ export async function POST(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Invalid JSON body',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -392,7 +415,9 @@ export async function POST(
       channelId,
       eventType: activityData.eventType,
       metadata: activityData.metadata,
-      timestamp: activityData.timestamp ? new Date(activityData.timestamp) : undefined,
+      timestamp: activityData.timestamp
+        ? new Date(activityData.timestamp)
+        : undefined,
     });
 
     return NextResponse.json({
@@ -408,14 +433,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/channel-activity] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createChannelIntelligenceError(
         'An internal error occurred',
-        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR,
+        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,6 +1,7 @@
 # CI/CD Implementation Guide
 
-This document provides a comprehensive guide for implementing and managing the Wundr CI/CD pipeline using GitHub Actions.
+This document provides a comprehensive guide for implementing and managing the Wundr CI/CD pipeline
+using GitHub Actions.
 
 ## Overview
 
@@ -17,11 +18,13 @@ The Wundr project implements a modern CI/CD pipeline with the following key comp
 ### 1. CI Pipeline (`ci.yml`)
 
 **Triggers:**
+
 - Push to `master` or `develop` branches
 - Pull requests to `master`
 - Manual dispatch
 
 **Jobs:**
+
 - **Security Scan**: Trivy vulnerability scanning
 - **Build & Test Matrix**: Cross-platform testing (Ubuntu, macOS, Windows)
 - **E2E Tests**: Playwright end-to-end testing
@@ -32,11 +35,13 @@ The Wundr project implements a modern CI/CD pipeline with the following key comp
 ### 2. CD Pipeline (`cd.yml`)
 
 **Triggers:**
+
 - Push to `master` branch
 - Tagged releases (`v*.*.*`)
 - Manual dispatch with environment selection
 
 **Jobs:**
+
 - **Build & Push**: Docker image building and registry publishing
 - **Deploy Staging**: Automated staging deployment
 - **Deploy Production**: Production deployment with manual approval
@@ -45,10 +50,12 @@ The Wundr project implements a modern CI/CD pipeline with the following key comp
 ### 3. Release Workflow (`release.yml`)
 
 **Triggers:**
+
 - Push to `master` with changelog/package.json changes
 - Manual dispatch with release type selection
 
 **Jobs:**
+
 - **Validate Release**: Determine if release is needed and calculate version
 - **Create Release**: Generate changelog, create GitHub release
 - **Publish NPM**: Publish packages to NPM registry
@@ -58,11 +65,13 @@ The Wundr project implements a modern CI/CD pipeline with the following key comp
 ### 4. Security Scanning (`security.yml`)
 
 **Triggers:**
+
 - Push/PR events
 - Daily scheduled scans (2 AM UTC)
 - Manual dispatch
 
 **Jobs:**
+
 - **CodeQL Analysis**: Static code analysis
 - **Dependency Scan**: NPM audit and vulnerability checking
 - **Container Security**: Docker image scanning
@@ -74,11 +83,13 @@ The Wundr project implements a modern CI/CD pipeline with the following key comp
 ### 5. Monitoring (`monitoring.yml`)
 
 **Triggers:**
+
 - Push to `master`
 - Scheduled every 30 minutes
 - Manual dispatch
 
 **Jobs:**
+
 - **Health Checks**: Application and API health monitoring
 - **Performance Check**: Lighthouse audits and response time monitoring
 - **Infrastructure Check**: Kubernetes cluster health
@@ -93,6 +104,7 @@ The Wundr project implements a modern CI/CD pipeline with the following key comp
 Configure the following secrets in your GitHub repository settings:
 
 #### AWS Deployment
+
 ```
 AWS_ACCESS_KEY_ID         # AWS access key for staging
 AWS_SECRET_ACCESS_KEY     # AWS secret key for staging
@@ -104,6 +116,7 @@ EKS_CLUSTER_NAME_PROD     # EKS cluster name for production
 ```
 
 #### Registry & Publishing
+
 ```
 GITHUB_TOKEN              # GitHub personal access token (auto-provided)
 NPM_TOKEN                 # NPM registry publishing token
@@ -112,6 +125,7 @@ DOCKERHUB_TOKEN           # Docker Hub access token
 ```
 
 #### Code Quality & Security
+
 ```
 CODECOV_TOKEN            # Codecov integration token
 SONAR_TOKEN              # SonarCloud integration token
@@ -119,6 +133,7 @@ GITGUARDIAN_API_KEY      # GitGuardian secret scanning token
 ```
 
 #### Notifications
+
 ```
 SLACK_WEBHOOK_URL        # Slack webhook for general notifications
 SLACK_WEBHOOK_CRITICAL   # Slack webhook for critical alerts
@@ -131,18 +146,21 @@ SLACK_WEBHOOK_CRITICAL   # Slack webhook for critical alerts
 Create the following environments in your GitHub repository with appropriate protection rules:
 
 #### Staging Environment
+
 - **Protection Rules**: None (automatic deployment)
 - **Secrets**: Staging-specific configuration
 - **URL**: `https://staging.wundr.io`
 
 #### Production Environment
-- **Protection Rules**: 
+
+- **Protection Rules**:
   - Required reviewers (at least 2)
   - Deployment window restrictions (business hours)
 - **Secrets**: Production-specific configuration
 - **URL**: `https://wundr.io`
 
 #### Production Rollback Environment
+
 - **Protection Rules**: Break-glass access for emergency rollbacks
 - **Purpose**: Emergency rollback procedures
 
@@ -184,11 +202,13 @@ The production deployment uses a blue-green strategy for zero-downtime deploymen
 ### Rollback Mechanism
 
 Automatic rollback is triggered if:
+
 - Health checks fail after deployment
 - Performance degrades beyond thresholds
 - Error rates increase significantly
 
 Manual rollback can be triggered through:
+
 - GitHub Actions workflow dispatch
 - Production rollback environment approval
 
@@ -197,7 +217,7 @@ Manual rollback can be triggered through:
 ### Health Checks
 
 - **Application Health**: `/health` endpoint monitoring
-- **API Health**: `/api/health` endpoint monitoring  
+- **API Health**: `/api/health` endpoint monitoring
 - **Response Time**: < 5 seconds threshold
 - **SSL Certificate**: 30-day expiry warning
 
@@ -256,28 +276,28 @@ Manual rollback can be triggered through:
 
 #### CI Pipeline Failures
 
-**Symptom**: Tests failing intermittently
-**Solution**: 
+**Symptom**: Tests failing intermittently **Solution**:
+
 - Check for flaky tests
 - Review test environment setup
 - Verify dependency versions
 
-**Symptom**: Docker build failures
-**Solution**:
+**Symptom**: Docker build failures **Solution**:
+
 - Check Dockerfile syntax
 - Verify base image availability
 - Review build context size
 
 #### Deployment Issues
 
-**Symptom**: Kubernetes deployment hanging
-**Solution**:
+**Symptom**: Kubernetes deployment hanging **Solution**:
+
 - Check resource quotas
 - Verify image pull secrets
 - Review deployment manifests
 
-**Symptom**: Health checks failing post-deployment
-**Solution**:
+**Symptom**: Health checks failing post-deployment **Solution**:
+
 - Verify application startup time
 - Check environment variables
 - Review service connectivity
@@ -307,18 +327,21 @@ kubectl rollout status deployment/wundr-production -n wundr-production
 ### Regular Tasks
 
 #### Weekly
+
 - Review security scan results
 - Update dependency versions
 - Check performance metrics
 - Review error logs
 
 #### Monthly
+
 - Update base Docker images
 - Review and update documentation
 - Analyze deployment frequency and success rates
 - Security audit and compliance review
 
 #### Quarterly
+
 - Review and update CI/CD pipeline
 - Capacity planning and scaling assessment
 - Disaster recovery testing

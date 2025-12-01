@@ -443,23 +443,23 @@ mcp_tool__playwright_get_url
 
 ### Common Parameters
 
-| Parameter | Type | Description | Example |
-|-----------|------|-------------|---------|
-| `selector` | string | CSS selector | `".button"`, `"input[name='email']"` |
-| `url` | string | Full URL | `"http://localhost:3000/login"` |
-| `value` | string | Input value | `"user@example.com"` |
-| `timeout` | number | Milliseconds | `5000` |
-| `waitUntil` | string | Load state | `"networkidle"`, `"load"`, `"domcontentloaded"` |
-| `path` | string | File path | `"./screenshots/test.png"` |
-| `state` | string | Element state | `"visible"`, `"hidden"`, `"attached"` |
+| Parameter   | Type   | Description   | Example                                         |
+| ----------- | ------ | ------------- | ----------------------------------------------- |
+| `selector`  | string | CSS selector  | `".button"`, `"input[name='email']"`            |
+| `url`       | string | Full URL      | `"http://localhost:3000/login"`                 |
+| `value`     | string | Input value   | `"user@example.com"`                            |
+| `timeout`   | number | Milliseconds  | `5000`                                          |
+| `waitUntil` | string | Load state    | `"networkidle"`, `"load"`, `"domcontentloaded"` |
+| `path`      | string | File path     | `"./screenshots/test.png"`                      |
+| `state`     | string | Element state | `"visible"`, `"hidden"`, `"attached"`           |
 
 ### Wait States
 
-| State | Behavior |
-|-------|----------|
-| `domcontentloaded` | DOM is fully loaded |
-| `load` | Page load event fired |
-| `networkidle` | No network activity for 500ms |
+| State              | Behavior                      |
+| ------------------ | ----------------------------- |
+| `domcontentloaded` | DOM is fully loaded           |
+| `load`             | Page load event fired         |
+| `networkidle`      | No network activity for 500ms |
 
 ---
 
@@ -468,6 +468,7 @@ mcp_tool__playwright_get_url
 ### Common Errors & Solutions
 
 #### "Timeout waiting for selector"
+
 ```bash
 # Increase timeout
 mcp_tool__playwright_wait_for_selector {
@@ -477,6 +478,7 @@ mcp_tool__playwright_wait_for_selector {
 ```
 
 #### "Element not found"
+
 ```bash
 # Check selector first
 mcp_tool__playwright_query_selector { selector: ".element" }
@@ -486,6 +488,7 @@ mcp_tool__playwright_query_selector { selector: "[data-testid='element']" }
 ```
 
 #### "Navigation failed"
+
 ```bash
 # Wait for load state first
 mcp_tool__playwright_wait_for_load_state { state: "networkidle" }
@@ -495,6 +498,7 @@ mcp_tool__playwright_goto { url: "http://localhost:3000/new-page" }
 ```
 
 #### "Cookie/Session expired"
+
 ```bash
 # Clear and re-authenticate
 mcp_tool__playwright_clear_cookies
@@ -519,6 +523,7 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000/login" }
 ## Integration with CI/CD
 
 ### GitHub Actions Example
+
 ```yaml
 - name: Run Playwright MCP Tests
   run: |
@@ -528,6 +533,7 @@ mcp_tool__playwright_navigate { url: "http://localhost:3000/login" }
 ```
 
 ### Environment Variables
+
 ```bash
 # .env.test
 PLAYWRIGHT_HEADLESS=true
@@ -540,6 +546,7 @@ DEBUG=pw:api
 ## Neolith-Specific Selectors
 
 ### Authentication Form
+
 ```
 email input: input[name='email']
 password input: input[name='password']
@@ -548,6 +555,7 @@ register link: a[href='/register']
 ```
 
 ### Dashboard Navigation
+
 ```
 sidebar: .sidebar
 main nav: .main-navigation
@@ -556,6 +564,7 @@ logout button: button[data-testid='logout']
 ```
 
 ### Common Components
+
 ```
 modal: [role='dialog']
 button: button, [role='button']
@@ -573,6 +582,5 @@ form: form, [role='form']
 
 ---
 
-**Last Updated**: 2025-11-26
-**Playwright MCP Version**: Latest (@executeautomation/playwright-mcp-server)
-**Status**: Connected and Ready
+**Last Updated**: 2025-11-26 **Playwright MCP Version**: Latest
+(@executeautomation/playwright-mcp-server) **Status**: Connected and Ready

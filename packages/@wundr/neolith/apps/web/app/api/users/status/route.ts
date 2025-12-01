@@ -61,8 +61,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createPresenceErrorResponse(
+          'Authentication required',
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -72,8 +75,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createPresenceErrorResponse('Invalid JSON body', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createPresenceErrorResponse(
+          'Invalid JSON body',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -84,9 +90,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -141,7 +147,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       success: true,
       data: {
         userId: user.id,
-        status: prefs.presenceStatus ?? (user.status === 'ACTIVE' ? 'ONLINE' : 'OFFLINE'),
+        status:
+          prefs.presenceStatus ??
+          (user.status === 'ACTIVE' ? 'ONLINE' : 'OFFLINE'),
         customStatus: (prefs.customStatus as string | null | undefined) ?? null,
         lastSeen: user.lastActiveAt?.toISOString() ?? new Date(0).toISOString(),
         isOnline,
@@ -153,9 +161,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

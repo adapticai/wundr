@@ -33,7 +33,9 @@ export function SearchBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [suggestions, setSuggestions] = useState<Array<{ text: string; type: string }>>([]);
+  const [suggestions, setSuggestions] = useState<
+    Array<{ text: string; type: string }>
+  >([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   // Fetch suggestions
@@ -47,7 +49,7 @@ export function SearchBar({
       setIsLoadingSuggestions(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/search/suggestions?q=${encodeURIComponent(query)}`,
+          `/api/workspaces/${workspaceId}/search/suggestions?q=${encodeURIComponent(query)}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -74,7 +76,7 @@ export function SearchBar({
         }
       }
     },
-    [query, onSearch, router, workspaceId],
+    [query, onSearch, router, workspaceId]
   );
 
   const handleSuggestionClick = useCallback(
@@ -83,11 +85,13 @@ export function SearchBar({
       if (onSearch) {
         onSearch(suggestion);
       } else {
-        router.push(`/${workspaceId}/search?q=${encodeURIComponent(suggestion)}`);
+        router.push(
+          `/${workspaceId}/search?q=${encodeURIComponent(suggestion)}`
+        );
       }
       setSuggestions([]);
     },
-    [onSearch, router, workspaceId],
+    [onSearch, router, workspaceId]
   );
 
   // Keyboard shortcut (Cmd/Ctrl + K)
@@ -106,40 +110,40 @@ export function SearchBar({
   return (
     <div className={cn('relative', className)}>
       <form onSubmit={handleSubmit}>
-        <div className="relative">
+        <div className='relative'>
           {/* Search icon */}
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground'
           >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
+            <circle cx='11' cy='11' r='8' />
+            <path d='m21 21-4.3-4.3' />
           </svg>
 
           <Input
             ref={inputRef}
-            type="text"
+            type='text'
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             placeholder={placeholder}
             autoFocus={autoFocus}
-            className="pl-10 pr-24 font-sans"
+            className='pl-10 pr-24 font-sans'
           />
 
           {/* Keyboard shortcut hint */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 text-xs text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 bg-stone-100 dark:bg-stone-800 rounded border border-stone-300 dark:border-stone-700 font-mono text-stone-700 dark:text-stone-300">
+          <div className='absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 text-xs text-muted-foreground'>
+            <kbd className='px-1.5 py-0.5 bg-stone-100 dark:bg-stone-800 rounded border border-stone-300 dark:border-stone-700 font-mono text-stone-700 dark:text-stone-300'>
               Cmd
             </kbd>
-            <kbd className="px-1.5 py-0.5 bg-stone-100 dark:bg-stone-800 rounded border border-stone-300 dark:border-stone-700 font-mono text-stone-700 dark:text-stone-300">
+            <kbd className='px-1.5 py-0.5 bg-stone-100 dark:bg-stone-800 rounded border border-stone-300 dark:border-stone-700 font-mono text-stone-700 dark:text-stone-300'>
               K
             </kbd>
           </div>
@@ -152,11 +156,11 @@ export function SearchBar({
           className={cn(
             'absolute top-full left-0 right-0 mt-1 z-50',
             'bg-card border border-border rounded-lg shadow-lg',
-            'max-h-64 overflow-auto',
+            'max-h-64 overflow-auto'
           )}
         >
           {isLoadingSuggestions ? (
-            <div className="px-4 py-3 text-sm text-muted-foreground font-sans">
+            <div className='px-4 py-3 text-sm text-muted-foreground font-sans'>
               Searching...
             </div>
           ) : (
@@ -167,13 +171,15 @@ export function SearchBar({
                 className={cn(
                   'w-full px-4 py-2 text-left',
                   'flex items-center gap-3',
-                  'hover:bg-accent transition-colors',
+                  'hover:bg-accent transition-colors'
                 )}
               >
-                <span className="text-xs text-muted-foreground uppercase font-heading">
+                <span className='text-xs text-muted-foreground uppercase font-heading'>
                   {suggestion.type}
                 </span>
-                <span className="text-foreground font-sans">{suggestion.text}</span>
+                <span className='text-foreground font-sans'>
+                  {suggestion.text}
+                </span>
               </button>
             ))
           )}

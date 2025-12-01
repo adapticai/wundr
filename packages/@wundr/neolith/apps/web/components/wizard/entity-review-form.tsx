@@ -42,62 +42,87 @@ import {
 import { cn } from '@/lib/utils';
 
 // Entity Type Definitions
-export type EntityType = 'workspace' | 'orchestrator' | 'workflow' | 'session-manager' | 'channel' | 'subagent';
+export type EntityType =
+  | 'workspace'
+  | 'orchestrator'
+  | 'workflow'
+  | 'session-manager'
+  | 'channel'
+  | 'subagent';
 
 // Zod Schemas
 const workspaceSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   purpose: z.string().min(10, 'Purpose must be at least 10 characters'),
-  teamStructure: z.array(
-    z.object({
-      role: z.string().min(1, 'Role is required'),
-      count: z.number().min(1, 'Count must be at least 1'),
-      responsibilities: z.string().optional(),
-    })
-  ).min(1, 'At least one team structure entry is required'),
+  teamStructure: z
+    .array(
+      z.object({
+        role: z.string().min(1, 'Role is required'),
+        count: z.number().min(1, 'Count must be at least 1'),
+        responsibilities: z.string().optional(),
+      })
+    )
+    .min(1, 'At least one team structure entry is required'),
 });
 
 const orchestratorSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-  description: z.string().min(10, 'Description must be at least 10 characters').optional(),
+  description: z
+    .string()
+    .min(10, 'Description must be at least 10 characters')
+    .optional(),
   role: z.string().min(1, 'Role is required'),
-  goals: z.array(z.string().min(1, 'Goal cannot be empty')).min(1, 'At least one goal is required'),
-  capabilities: z.array(z.string().min(1, 'Capability cannot be empty')).min(1, 'At least one capability is required'),
-  personality: z.string().min(10, 'Personality description must be at least 10 characters'),
+  goals: z
+    .array(z.string().min(1, 'Goal cannot be empty'))
+    .min(1, 'At least one goal is required'),
+  capabilities: z
+    .array(z.string().min(1, 'Capability cannot be empty'))
+    .min(1, 'At least one capability is required'),
+  personality: z
+    .string()
+    .min(10, 'Personality description must be at least 10 characters'),
 });
 
 const workflowSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   trigger: z.string().min(1, 'Trigger is required'),
-  steps: z.array(
-    z.object({
-      name: z.string().min(1, 'Step name is required'),
-      action: z.string().min(1, 'Action is required'),
-      params: z.record(z.any()).optional(),
-    })
-  ).min(1, 'At least one step is required'),
-  conditions: z.array(
-    z.object({
-      field: z.string().min(1, 'Field is required'),
-      operator: z.enum(['equals', 'contains', 'greater_than', 'less_than']),
-      value: z.string().min(1, 'Value is required'),
-    })
-  ).optional(),
+  steps: z
+    .array(
+      z.object({
+        name: z.string().min(1, 'Step name is required'),
+        action: z.string().min(1, 'Action is required'),
+        params: z.record(z.any()).optional(),
+      })
+    )
+    .min(1, 'At least one step is required'),
+  conditions: z
+    .array(
+      z.object({
+        field: z.string().min(1, 'Field is required'),
+        operator: z.enum(['equals', 'contains', 'greater_than', 'less_than']),
+        value: z.string().min(1, 'Value is required'),
+      })
+    )
+    .optional(),
 });
 
 const sessionManagerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   scope: z.enum(['global', 'workspace', 'user']),
-  permissions: z.array(z.string().min(1, 'Permission cannot be empty')).min(1, 'At least one permission is required'),
-  rules: z.array(
-    z.object({
-      type: z.string().min(1, 'Rule type is required'),
-      condition: z.string().min(1, 'Condition is required'),
-      action: z.string().min(1, 'Action is required'),
-    })
-  ).min(1, 'At least one rule is required'),
+  permissions: z
+    .array(z.string().min(1, 'Permission cannot be empty'))
+    .min(1, 'At least one permission is required'),
+  rules: z
+    .array(
+      z.object({
+        type: z.string().min(1, 'Rule type is required'),
+        condition: z.string().min(1, 'Condition is required'),
+        action: z.string().min(1, 'Action is required'),
+      })
+    )
+    .min(1, 'At least one rule is required'),
 });
 
 const channelSchema = z.object({
@@ -121,7 +146,13 @@ type SessionManagerData = z.infer<typeof sessionManagerSchema>;
 type ChannelData = z.infer<typeof channelSchema>;
 type SubagentData = z.infer<typeof subagentSchema>;
 
-type EntityData = WorkspaceData | OrchestratorData | WorkflowData | SessionManagerData | ChannelData | SubagentData;
+type EntityData =
+  | WorkspaceData
+  | OrchestratorData
+  | WorkflowData
+  | SessionManagerData
+  | ChannelData
+  | SubagentData;
 
 const entitySchemas = {
   workspace: workspaceSchema,
@@ -152,15 +183,21 @@ function getChangedFields(original: any, current: any, path = ''): string[] {
     return changes;
   }
 
-  const allKeys = new Set([...Object.keys(original || {}), ...Object.keys(current || {})]);
+  const allKeys = new Set([
+    ...Object.keys(original || {}),
+    ...Object.keys(current || {}),
+  ]);
 
-  allKeys.forEach((key) => {
+  allKeys.forEach(key => {
     const newPath = path ? `${path}.${key}` : key;
     if (Array.isArray(original?.[key]) && Array.isArray(current?.[key])) {
       if (JSON.stringify(original[key]) !== JSON.stringify(current[key])) {
         changes.push(newPath);
       }
-    } else if (typeof original?.[key] === 'object' && typeof current?.[key] === 'object') {
+    } else if (
+      typeof original?.[key] === 'object' &&
+      typeof current?.[key] === 'object'
+    ) {
       changes.push(...getChangedFields(original[key], current[key], newPath));
     } else if (original?.[key] !== current?.[key]) {
       changes.push(newPath);
@@ -215,7 +252,9 @@ export function EntityReviewForm({
       setShowJsonEditor(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setJsonError(error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n'));
+        setJsonError(
+          error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n')
+        );
       } else if (error instanceof SyntaxError) {
         setJsonError(`Invalid JSON: ${error.message}`);
       } else {
@@ -224,30 +263,33 @@ export function EntityReviewForm({
     }
   };
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     await onSubmit(data);
   });
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h2 className="text-2xl font-bold">Review {entityType.replace('-', ' ')} Configuration</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h2 className='text-2xl font-bold'>
+            Review {entityType.replace('-', ' ')} Configuration
+          </h2>
+          <p className='text-sm text-muted-foreground mt-1'>
             Review and edit the AI-extracted configuration below
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {hasChanges && (
-            <Badge variant="secondary" className="gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {changedFields.length} change{changedFields.length !== 1 ? 's' : ''}
+            <Badge variant='secondary' className='gap-1'>
+              <AlertCircle className='h-3 w-3' />
+              {changedFields.length} change
+              {changedFields.length !== 1 ? 's' : ''}
             </Badge>
           )}
           {!hasChanges && (
-            <Badge variant="outline" className="gap-1">
-              <CheckCircle2 className="h-3 w-3" />
+            <Badge variant='outline' className='gap-1'>
+              <CheckCircle2 className='h-3 w-3' />
               No changes
             </Badge>
           )}
@@ -255,24 +297,24 @@ export function EntityReviewForm({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-2">
+      <div className='flex items-center gap-2'>
         <Button
-          type="button"
-          variant="outline"
-          size="sm"
+          type='button'
+          variant='outline'
+          size='sm'
           onClick={resetToAI}
           disabled={!hasChanges}
         >
-          <RotateCcw className="h-4 w-4 mr-2" />
+          <RotateCcw className='h-4 w-4 mr-2' />
           Reset to AI suggestions
         </Button>
         <Button
-          type="button"
-          variant="outline"
-          size="sm"
+          type='button'
+          variant='outline'
+          size='sm'
           onClick={toggleJsonEditor}
         >
-          <Code2 className="h-4 w-4 mr-2" />
+          <Code2 className='h-4 w-4 mr-2' />
           {showJsonEditor ? 'Hide' : 'Show'} JSON Editor
         </Button>
       </div>
@@ -281,25 +323,25 @@ export function EntityReviewForm({
       {showJsonEditor && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">JSON Editor</CardTitle>
+            <CardTitle className='text-lg'>JSON Editor</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className='space-y-4'>
             <Textarea
               value={jsonValue}
-              onChange={(e) => setJsonValue(e.target.value)}
-              className="font-mono text-sm min-h-[300px]"
-              placeholder="Enter JSON configuration..."
+              onChange={e => setJsonValue(e.target.value)}
+              className='font-mono text-sm min-h-[300px]'
+              placeholder='Enter JSON configuration...'
             />
             {jsonError && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                <p className="text-sm text-destructive font-mono whitespace-pre-wrap">
+              <div className='bg-destructive/10 border border-destructive/20 rounded-md p-3'>
+                <p className='text-sm text-destructive font-mono whitespace-pre-wrap'>
                   {jsonError}
                 </p>
               </div>
             )}
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <Button onClick={applyJsonChanges}>Apply Changes</Button>
-              <Button variant="outline" onClick={toggleJsonEditor}>
+              <Button variant='outline' onClick={toggleJsonEditor}>
                 Cancel
               </Button>
             </div>
@@ -309,20 +351,33 @@ export function EntityReviewForm({
 
       {/* Form */}
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {entityType === 'workspace' && <WorkspaceFields form={form} changedFields={changedFields} />}
-          {entityType === 'orchestrator' && <OrchestratorFields form={form} changedFields={changedFields} />}
-          {entityType === 'workflow' && <WorkflowFields form={form} changedFields={changedFields} />}
-          {entityType === 'session-manager' && <SessionManagerFields form={form} changedFields={changedFields} />}
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          {entityType === 'workspace' && (
+            <WorkspaceFields form={form} changedFields={changedFields} />
+          )}
+          {entityType === 'orchestrator' && (
+            <OrchestratorFields form={form} changedFields={changedFields} />
+          )}
+          {entityType === 'workflow' && (
+            <WorkflowFields form={form} changedFields={changedFields} />
+          )}
+          {entityType === 'session-manager' && (
+            <SessionManagerFields form={form} changedFields={changedFields} />
+          )}
 
           {/* Submit Actions */}
-          <div className="flex items-center justify-end gap-3 pt-6 border-t">
+          <div className='flex items-center justify-end gap-3 pt-6 border-t'>
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={onCancel}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
             )}
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type='submit' disabled={isSubmitting}>
               {isSubmitting ? 'Creating...' : 'Create Entity'}
             </Button>
           </div>
@@ -340,18 +395,20 @@ interface FieldComponentProps {
 
 function FieldWrapper({
   children,
-  isChanged
+  isChanged,
 }: {
   children: React.ReactNode;
   isChanged: boolean;
 }) {
   return (
-    <div className={cn(
-      'relative',
-      isChanged && 'ring-2 ring-primary/20 rounded-md p-3 -m-3'
-    )}>
+    <div
+      className={cn(
+        'relative',
+        isChanged && 'ring-2 ring-primary/20 rounded-md p-3 -m-3'
+      )}
+    >
       {isChanged && (
-        <Badge variant="secondary" className="absolute -top-2 -right-2 text-xs">
+        <Badge variant='secondary' className='absolute -top-2 -right-2 text-xs'>
           Modified
         </Badge>
       )}
@@ -367,16 +424,16 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <FieldWrapper isChanged={changedFields.includes('name')}>
         <FormField
           control={form.control}
-          name="name"
+          name='name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Workspace Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter workspace name..." {...field} />
+                <Input placeholder='Enter workspace name...' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -387,14 +444,14 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
       <FieldWrapper isChanged={changedFields.includes('description')}>
         <FormField
           control={form.control}
-          name="description"
+          name='description'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Describe the workspace..."
-                  className="min-h-[100px]"
+                  placeholder='Describe the workspace...'
+                  className='min-h-[100px]'
                   {...field}
                 />
               </FormControl>
@@ -407,14 +464,14 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
       <FieldWrapper isChanged={changedFields.includes('purpose')}>
         <FormField
           control={form.control}
-          name="purpose"
+          name='purpose'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Purpose</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="What is the purpose of this workspace?"
-                  className="min-h-[100px]"
+                  placeholder='What is the purpose of this workspace?'
+                  className='min-h-[100px]'
                   {...field}
                 />
               </FormControl>
@@ -427,22 +484,24 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
       <Collapsible defaultOpen>
         <Card>
           <CardHeader>
-            <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80">
-              <CardTitle className="text-lg">Team Structure</CardTitle>
-              <ChevronDown className="h-5 w-5 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+            <CollapsibleTrigger className='flex items-center justify-between w-full hover:opacity-80'>
+              <CardTitle className='text-lg'>Team Structure</CardTitle>
+              <ChevronDown className='h-5 w-5 transition-transform duration-200 [&[data-state=open]]:rotate-180' />
             </CollapsibleTrigger>
           </CardHeader>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               {fields.map((field, index) => (
                 <FieldWrapper
                   key={field.id}
-                  isChanged={changedFields.some(f => f.startsWith(`teamStructure.${index}`))}
+                  isChanged={changedFields.some(f =>
+                    f.startsWith(`teamStructure.${index}`)
+                  )}
                 >
                   <Card>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-4">
+                    <CardContent className='pt-6 space-y-4'>
+                      <div className='flex items-start justify-between gap-4'>
+                        <div className='flex-1 space-y-4'>
                           <FormField
                             control={form.control}
                             name={`teamStructure.${index}.role`}
@@ -450,7 +509,10 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
                               <FormItem>
                                 <FormLabel>Role</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="e.g., Developer, Designer..." {...field} />
+                                  <Input
+                                    placeholder='e.g., Developer, Designer...'
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -465,10 +527,12 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
                                 <FormLabel>Count</FormLabel>
                                 <FormControl>
                                   <Input
-                                    type="number"
+                                    type='number'
                                     min={1}
                                     {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                    onChange={e =>
+                                      field.onChange(parseInt(e.target.value))
+                                    }
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -481,10 +545,12 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
                             name={`teamStructure.${index}.responsibilities`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Responsibilities (Optional)</FormLabel>
+                                <FormLabel>
+                                  Responsibilities (Optional)
+                                </FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="Describe responsibilities..."
+                                    placeholder='Describe responsibilities...'
                                     {...field}
                                   />
                                 </FormControl>
@@ -494,13 +560,13 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
                           />
                         </div>
                         <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
+                          type='button'
+                          variant='destructive'
+                          size='icon'
                           onClick={() => remove(index)}
                           disabled={fields.length === 1}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className='h-4 w-4' />
                         </Button>
                       </div>
                     </CardContent>
@@ -509,12 +575,14 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
               ))}
 
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => append({ role: '', count: 1, responsibilities: '' })}
-                className="w-full"
+                type='button'
+                variant='outline'
+                onClick={() =>
+                  append({ role: '', count: 1, responsibilities: '' })
+                }
+                className='w-full'
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className='h-4 w-4 mr-2' />
                 Add Team Member
               </Button>
             </CardContent>
@@ -526,27 +594,35 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
 }
 
 function OrchestratorFields({ form, changedFields }: FieldComponentProps) {
-  const { fields: goalFields, append: appendGoal, remove: removeGoal } = useFieldArray({
+  const {
+    fields: goalFields,
+    append: appendGoal,
+    remove: removeGoal,
+  } = useFieldArray({
     control: form.control,
     name: 'goals',
   });
 
-  const { fields: capabilityFields, append: appendCapability, remove: removeCapability } = useFieldArray({
+  const {
+    fields: capabilityFields,
+    append: appendCapability,
+    remove: removeCapability,
+  } = useFieldArray({
     control: form.control,
     name: 'capabilities',
   });
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <FieldWrapper isChanged={changedFields.includes('name')}>
         <FormField
           control={form.control}
-          name="name"
+          name='name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>OrchestratorName</FormLabel>
               <FormControl>
-                <Input placeholder="Enter orchestrator name..." {...field} />
+                <Input placeholder='Enter orchestrator name...' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -557,12 +633,15 @@ function OrchestratorFields({ form, changedFields }: FieldComponentProps) {
       <FieldWrapper isChanged={changedFields.includes('role')}>
         <FormField
           control={form.control}
-          name="role"
+          name='role'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Role</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Project Manager, Team Lead..." {...field} />
+                <Input
+                  placeholder='e.g., Project Manager, Team Lead...'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -570,110 +649,115 @@ function OrchestratorFields({ form, changedFields }: FieldComponentProps) {
         />
       </FieldWrapper>
 
-      <Accordion type="multiple" defaultValue={['goals', 'capabilities', 'personality']}>
-        <AccordionItem value="goals">
+      <Accordion
+        type='multiple'
+        defaultValue={['goals', 'capabilities', 'personality']}
+      >
+        <AccordionItem value='goals'>
           <AccordionTrigger>Goals ({goalFields.length})</AccordionTrigger>
-          <AccordionContent className="space-y-3">
+          <AccordionContent className='space-y-3'>
             {goalFields.map((field, index) => (
               <FieldWrapper
                 key={field.id}
                 isChanged={changedFields.includes(`goals.${index}`)}
               >
-                <div className="flex items-start gap-2">
+                <div className='flex items-start gap-2'>
                   <FormField
                     control={form.control}
                     name={`goals.${index}`}
                     render={({ field }) => (
-                      <FormItem className="flex-1">
+                      <FormItem className='flex-1'>
                         <FormControl>
-                          <Input placeholder="Enter goal..." {...field} />
+                          <Input placeholder='Enter goal...' {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
+                    type='button'
+                    variant='ghost'
+                    size='icon'
                     onClick={() => removeGoal(index)}
                     disabled={goalFields.length === 1}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className='h-4 w-4' />
                   </Button>
                 </div>
               </FieldWrapper>
             ))}
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              type='button'
+              variant='outline'
+              size='sm'
               onClick={() => appendGoal('')}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Add Goal
             </Button>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="capabilities">
-          <AccordionTrigger>Capabilities ({capabilityFields.length})</AccordionTrigger>
-          <AccordionContent className="space-y-3">
+        <AccordionItem value='capabilities'>
+          <AccordionTrigger>
+            Capabilities ({capabilityFields.length})
+          </AccordionTrigger>
+          <AccordionContent className='space-y-3'>
             {capabilityFields.map((field, index) => (
               <FieldWrapper
                 key={field.id}
                 isChanged={changedFields.includes(`capabilities.${index}`)}
               >
-                <div className="flex items-start gap-2">
+                <div className='flex items-start gap-2'>
                   <FormField
                     control={form.control}
                     name={`capabilities.${index}`}
                     render={({ field }) => (
-                      <FormItem className="flex-1">
+                      <FormItem className='flex-1'>
                         <FormControl>
-                          <Input placeholder="Enter capability..." {...field} />
+                          <Input placeholder='Enter capability...' {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
+                    type='button'
+                    variant='ghost'
+                    size='icon'
                     onClick={() => removeCapability(index)}
                     disabled={capabilityFields.length === 1}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className='h-4 w-4' />
                   </Button>
                 </div>
               </FieldWrapper>
             ))}
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              type='button'
+              variant='outline'
+              size='sm'
               onClick={() => appendCapability('')}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Add Capability
             </Button>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="personality">
+        <AccordionItem value='personality'>
           <AccordionTrigger>Personality</AccordionTrigger>
           <AccordionContent>
             <FieldWrapper isChanged={changedFields.includes('personality')}>
               <FormField
                 control={form.control}
-                name="personality"
+                name='personality'
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Textarea
                         placeholder="Describe the orchestrator's personality and communication style..."
-                        className="min-h-[120px]"
+                        className='min-h-[120px]'
                         {...field}
                       />
                     </FormControl>
@@ -690,27 +774,35 @@ function OrchestratorFields({ form, changedFields }: FieldComponentProps) {
 }
 
 function WorkflowFields({ form, changedFields }: FieldComponentProps) {
-  const { fields: stepFields, append: appendStep, remove: removeStep } = useFieldArray({
+  const {
+    fields: stepFields,
+    append: appendStep,
+    remove: removeStep,
+  } = useFieldArray({
     control: form.control,
     name: 'steps',
   });
 
-  const { fields: conditionFields, append: appendCondition, remove: removeCondition } = useFieldArray({
+  const {
+    fields: conditionFields,
+    append: appendCondition,
+    remove: removeCondition,
+  } = useFieldArray({
     control: form.control,
     name: 'conditions',
   });
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <FieldWrapper isChanged={changedFields.includes('name')}>
         <FormField
           control={form.control}
-          name="name"
+          name='name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Workflow Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter workflow name..." {...field} />
+                <Input placeholder='Enter workflow name...' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -721,14 +813,14 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
       <FieldWrapper isChanged={changedFields.includes('description')}>
         <FormField
           control={form.control}
-          name="description"
+          name='description'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Describe the workflow..."
-                  className="min-h-[100px]"
+                  placeholder='Describe the workflow...'
+                  className='min-h-[100px]'
                   {...field}
                 />
               </FormControl>
@@ -741,14 +833,19 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
       <FieldWrapper isChanged={changedFields.includes('trigger')}>
         <FormField
           control={form.control}
-          name="trigger"
+          name='trigger'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Trigger</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., on_message, on_schedule..." {...field} />
+                <Input
+                  placeholder='e.g., on_message, on_schedule...'
+                  {...field}
+                />
               </FormControl>
-              <FormDescription>What event triggers this workflow?</FormDescription>
+              <FormDescription>
+                What event triggers this workflow?
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -758,22 +855,26 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
       <Collapsible defaultOpen>
         <Card>
           <CardHeader>
-            <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80">
-              <CardTitle className="text-lg">Workflow Steps ({stepFields.length})</CardTitle>
-              <ChevronDown className="h-5 w-5 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+            <CollapsibleTrigger className='flex items-center justify-between w-full hover:opacity-80'>
+              <CardTitle className='text-lg'>
+                Workflow Steps ({stepFields.length})
+              </CardTitle>
+              <ChevronDown className='h-5 w-5 transition-transform duration-200 [&[data-state=open]]:rotate-180' />
             </CollapsibleTrigger>
           </CardHeader>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               {stepFields.map((field, index) => (
                 <FieldWrapper
                   key={field.id}
-                  isChanged={changedFields.some(f => f.startsWith(`steps.${index}`))}
+                  isChanged={changedFields.some(f =>
+                    f.startsWith(`steps.${index}`)
+                  )}
                 >
                   <Card>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-4">
+                    <CardContent className='pt-6 space-y-4'>
+                      <div className='flex items-start justify-between gap-4'>
+                        <div className='flex-1 space-y-4'>
                           <FormField
                             control={form.control}
                             name={`steps.${index}.name`}
@@ -781,7 +882,10 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                               <FormItem>
                                 <FormLabel>Step Name</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="e.g., Send notification..." {...field} />
+                                  <Input
+                                    placeholder='e.g., Send notification...'
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -795,7 +899,10 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                               <FormItem>
                                 <FormLabel>Action</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="e.g., send_email, create_task..." {...field} />
+                                  <Input
+                                    placeholder='e.g., send_email, create_task...'
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -811,11 +918,17 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                                 <FormControl>
                                   <Textarea
                                     placeholder='{"key": "value"}'
-                                    className="font-mono text-sm"
-                                    value={field.value ? JSON.stringify(field.value, null, 2) : ''}
-                                    onChange={(e) => {
+                                    className='font-mono text-sm'
+                                    value={
+                                      field.value
+                                        ? JSON.stringify(field.value, null, 2)
+                                        : ''
+                                    }
+                                    onChange={e => {
                                       try {
-                                        const parsed = e.target.value ? JSON.parse(e.target.value) : {};
+                                        const parsed = e.target.value
+                                          ? JSON.parse(e.target.value)
+                                          : {};
                                         field.onChange(parsed);
                                       } catch {
                                         // Keep the string value for editing
@@ -829,13 +942,13 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                           />
                         </div>
                         <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
+                          type='button'
+                          variant='destructive'
+                          size='icon'
                           onClick={() => removeStep(index)}
                           disabled={stepFields.length === 1}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className='h-4 w-4' />
                         </Button>
                       </div>
                     </CardContent>
@@ -844,12 +957,12 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
               ))}
 
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={() => appendStep({ name: '', action: '', params: {} })}
-                className="w-full"
+                className='w-full'
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className='h-4 w-4 mr-2' />
                 Add Step
               </Button>
             </CardContent>
@@ -860,22 +973,24 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
       <Collapsible>
         <Card>
           <CardHeader>
-            <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80">
-              <CardTitle className="text-lg">Conditions (Optional)</CardTitle>
-              <ChevronDown className="h-5 w-5 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+            <CollapsibleTrigger className='flex items-center justify-between w-full hover:opacity-80'>
+              <CardTitle className='text-lg'>Conditions (Optional)</CardTitle>
+              <ChevronDown className='h-5 w-5 transition-transform duration-200 [&[data-state=open]]:rotate-180' />
             </CollapsibleTrigger>
           </CardHeader>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               {conditionFields?.map((field, index) => (
                 <FieldWrapper
                   key={field.id}
-                  isChanged={changedFields.some(f => f.startsWith(`conditions.${index}`))}
+                  isChanged={changedFields.some(f =>
+                    f.startsWith(`conditions.${index}`)
+                  )}
                 >
                   <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1 grid grid-cols-3 gap-4">
+                    <CardContent className='pt-6'>
+                      <div className='flex items-start gap-4'>
+                        <div className='flex-1 grid grid-cols-3 gap-4'>
                           <FormField
                             control={form.control}
                             name={`conditions.${index}.field`}
@@ -883,7 +998,10 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                               <FormItem>
                                 <FormLabel>Field</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="e.g., status" {...field} />
+                                  <Input
+                                    placeholder='e.g., status'
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -898,13 +1016,15 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                                 <FormLabel>Operator</FormLabel>
                                 <FormControl>
                                   <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                                     {...field}
                                   >
-                                    <option value="equals">Equals</option>
-                                    <option value="contains">Contains</option>
-                                    <option value="greater_than">Greater Than</option>
-                                    <option value="less_than">Less Than</option>
+                                    <option value='equals'>Equals</option>
+                                    <option value='contains'>Contains</option>
+                                    <option value='greater_than'>
+                                      Greater Than
+                                    </option>
+                                    <option value='less_than'>Less Than</option>
                                   </select>
                                 </FormControl>
                                 <FormMessage />
@@ -919,7 +1039,7 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                               <FormItem>
                                 <FormLabel>Value</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Value" {...field} />
+                                  <Input placeholder='Value' {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -927,12 +1047,12 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                           />
                         </div>
                         <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
+                          type='button'
+                          variant='destructive'
+                          size='icon'
                           onClick={() => removeCondition(index)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className='h-4 w-4' />
                         </Button>
                       </div>
                     </CardContent>
@@ -941,12 +1061,14 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
               ))}
 
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => appendCondition({ field: '', operator: 'equals', value: '' })}
-                className="w-full"
+                type='button'
+                variant='outline'
+                onClick={() =>
+                  appendCondition({ field: '', operator: 'equals', value: '' })
+                }
+                className='w-full'
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className='h-4 w-4 mr-2' />
                 Add Condition
               </Button>
             </CardContent>
@@ -958,27 +1080,35 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
 }
 
 function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
-  const { fields: permissionFields, append: appendPermission, remove: removePermission } = useFieldArray({
+  const {
+    fields: permissionFields,
+    append: appendPermission,
+    remove: removePermission,
+  } = useFieldArray({
     control: form.control,
     name: 'permissions',
   });
 
-  const { fields: ruleFields, append: appendRule, remove: removeRule } = useFieldArray({
+  const {
+    fields: ruleFields,
+    append: appendRule,
+    remove: removeRule,
+  } = useFieldArray({
     control: form.control,
     name: 'rules',
   });
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <FieldWrapper isChanged={changedFields.includes('name')}>
         <FormField
           control={form.control}
-          name="name"
+          name='name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Session Manager Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter session manager name..." {...field} />
+                <Input placeholder='Enter session manager name...' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -989,18 +1119,18 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
       <FieldWrapper isChanged={changedFields.includes('scope')}>
         <FormField
           control={form.control}
-          name="scope"
+          name='scope'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Scope</FormLabel>
               <FormControl>
                 <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   {...field}
                 >
-                  <option value="global">Global</option>
-                  <option value="workspace">Workspace</option>
-                  <option value="user">User</option>
+                  <option value='global'>Global</option>
+                  <option value='workspace'>Workspace</option>
+                  <option value='user'>User</option>
                 </select>
               </FormControl>
               <FormDescription>Scope of session management</FormDescription>
@@ -1010,64 +1140,71 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
         />
       </FieldWrapper>
 
-      <Accordion type="multiple" defaultValue={['permissions', 'rules']}>
-        <AccordionItem value="permissions">
-          <AccordionTrigger>Permissions ({permissionFields.length})</AccordionTrigger>
-          <AccordionContent className="space-y-3">
+      <Accordion type='multiple' defaultValue={['permissions', 'rules']}>
+        <AccordionItem value='permissions'>
+          <AccordionTrigger>
+            Permissions ({permissionFields.length})
+          </AccordionTrigger>
+          <AccordionContent className='space-y-3'>
             {permissionFields.map((field, index) => (
               <FieldWrapper
                 key={field.id}
                 isChanged={changedFields.includes(`permissions.${index}`)}
               >
-                <div className="flex items-start gap-2">
+                <div className='flex items-start gap-2'>
                   <FormField
                     control={form.control}
                     name={`permissions.${index}`}
                     render={({ field }) => (
-                      <FormItem className="flex-1">
+                      <FormItem className='flex-1'>
                         <FormControl>
-                          <Input placeholder="e.g., read, write, delete..." {...field} />
+                          <Input
+                            placeholder='e.g., read, write, delete...'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
+                    type='button'
+                    variant='ghost'
+                    size='icon'
                     onClick={() => removePermission(index)}
                     disabled={permissionFields.length === 1}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className='h-4 w-4' />
                   </Button>
                 </div>
               </FieldWrapper>
             ))}
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              type='button'
+              variant='outline'
+              size='sm'
               onClick={() => appendPermission('')}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Add Permission
             </Button>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="rules">
+        <AccordionItem value='rules'>
           <AccordionTrigger>Rules ({ruleFields.length})</AccordionTrigger>
-          <AccordionContent className="space-y-4">
+          <AccordionContent className='space-y-4'>
             {ruleFields.map((field, index) => (
               <FieldWrapper
                 key={field.id}
-                isChanged={changedFields.some(f => f.startsWith(`rules.${index}`))}
+                isChanged={changedFields.some(f =>
+                  f.startsWith(`rules.${index}`)
+                )}
               >
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1 space-y-4">
+                  <CardContent className='pt-6'>
+                    <div className='flex items-start gap-4'>
+                      <div className='flex-1 space-y-4'>
                         <FormField
                           control={form.control}
                           name={`rules.${index}.type`}
@@ -1075,7 +1212,10 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
                             <FormItem>
                               <FormLabel>Rule Type</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., timeout, max_sessions..." {...field} />
+                                <Input
+                                  placeholder='e.g., timeout, max_sessions...'
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1089,7 +1229,10 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
                             <FormItem>
                               <FormLabel>Condition</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., idle > 30min..." {...field} />
+                                <Input
+                                  placeholder='e.g., idle > 30min...'
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1103,7 +1246,10 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
                             <FormItem>
                               <FormLabel>Action</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., terminate, notify..." {...field} />
+                                <Input
+                                  placeholder='e.g., terminate, notify...'
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1111,13 +1257,13 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
                         />
                       </div>
                       <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
+                        type='button'
+                        variant='destructive'
+                        size='icon'
                         onClick={() => removeRule(index)}
                         disabled={ruleFields.length === 1}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className='h-4 w-4' />
                       </Button>
                     </div>
                   </CardContent>
@@ -1125,12 +1271,14 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
               </FieldWrapper>
             ))}
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => appendRule({ type: '', condition: '', action: '' })}
-              className="w-full"
+              type='button'
+              variant='outline'
+              onClick={() =>
+                appendRule({ type: '', condition: '', action: '' })
+              }
+              className='w-full'
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Add Rule
             </Button>
           </AccordionContent>

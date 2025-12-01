@@ -255,7 +255,10 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
 
     // Any remaining local migrations that weren't matched are pending
     for (const migration of localMigrations) {
-      if (!status.applied.includes(migration) && !status.failed.includes(migration)) {
+      if (
+        !status.applied.includes(migration) &&
+        !status.failed.includes(migration)
+      ) {
         status.pending.push(migration);
       }
     }
@@ -344,7 +347,9 @@ export async function createMigration(name: string): Promise<string> {
  */
 export async function hasPendingSchemaChanges(): Promise<boolean> {
   try {
-    const { stdout } = await executePrismaCommand('migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code');
+    const { stdout } = await executePrismaCommand(
+      'migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code'
+    );
     return false; // No diff means no pending changes
   } catch {
     return true; // Diff found means pending changes

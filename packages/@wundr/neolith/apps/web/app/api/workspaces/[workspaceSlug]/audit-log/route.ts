@@ -85,7 +85,11 @@ interface AuditLogResponse {
  * Determine severity level based on action type
  */
 function getSeverity(action: string): 'info' | 'warning' | 'critical' {
-  if (action.includes('delete') || action.includes('breach') || action.includes('suspicious')) {
+  if (
+    action.includes('delete') ||
+    action.includes('breach') ||
+    action.includes('suspicious')
+  ) {
     return 'critical';
   }
   if (
@@ -101,10 +105,12 @@ function getSeverity(action: string): 'info' | 'warning' | 'critical' {
 /**
  * Determine actor type from user data
  */
-function getActorType(user: { isOrchestrator: boolean } | null): 'user' | 'orchestrator' | 'system' {
+function getActorType(
+  user: { isOrchestrator: boolean } | null
+): 'user' | 'orchestrator' | 'system' {
   if (!user) {
-return 'system';
-}
+    return 'system';
+  }
   return user.isOrchestrator ? 'orchestrator' : 'user';
 }
 
@@ -112,22 +118,32 @@ return 'system';
  * Format changes from JSON to frontend structure
  */
 function formatChanges(
-  changes: unknown,
+  changes: unknown
 ): Array<{ field: string; oldValue: unknown; newValue: unknown }> | undefined {
   if (!changes || typeof changes !== 'object') {
-return undefined;
-}
+    return undefined;
+  }
 
-  const changesObj = changes as { before?: Record<string, unknown>; after?: Record<string, unknown> };
+  const changesObj = changes as {
+    before?: Record<string, unknown>;
+    after?: Record<string, unknown>;
+  };
 
   if (!changesObj.before || !changesObj.after) {
-return undefined;
-}
+    return undefined;
+  }
 
-  const formattedChanges: Array<{ field: string; oldValue: unknown; newValue: unknown }> = [];
+  const formattedChanges: Array<{
+    field: string;
+    oldValue: unknown;
+    newValue: unknown;
+  }> = [];
 
   // Find all fields that changed
-  const allFields = new Set([...Object.keys(changesObj.before), ...Object.keys(changesObj.after)]);
+  const allFields = new Set([
+    ...Object.keys(changesObj.before),
+    ...Object.keys(changesObj.after),
+  ]);
 
   for (const field of allFields) {
     const oldValue = changesObj.before[field];
@@ -163,7 +179,7 @@ return undefined;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse<AuditLogResponse | { error: string; code?: string }>> {
   try {
     // Authentication check
@@ -171,7 +187,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -188,14 +204,17 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '50', 10)));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('pageSize') || '50', 10))
+    );
     const action = searchParams.get('action') || undefined;
     const actorId = searchParams.get('actorId') || undefined;
     const actorType = searchParams.get('actorType') || undefined;
@@ -211,7 +230,7 @@ export async function GET(
       if (isNaN(startDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid startDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -221,7 +240,7 @@ export async function GET(
       if (isNaN(endDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid endDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -264,7 +283,12 @@ export async function GET(
       createdAt: Date;
       action: string;
       userId: string | null;
-      user: { id: string; name: string | null; email: string; isOrchestrator: boolean } | null;
+      user: {
+        id: string;
+        name: string | null;
+        email: string;
+        isOrchestrator: boolean;
+      } | null;
       entityType: string | null;
       entityId: string | null;
       changes: unknown;
@@ -275,7 +299,7 @@ export async function GET(
     }> = [];
 
     // Transform database entries to frontend format
-    const entries: AuditLogEntry[] = logs.map((log) => {
+    const entries: AuditLogEntry[] = logs.map(log => {
       const severity = getSeverity(log.action);
       const actorTypeValue = getActorType(log.user);
       const changes = formatChanges(log.changes);
@@ -329,7 +353,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/audit-log] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch audit log', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

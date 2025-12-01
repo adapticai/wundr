@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document describes the user profile management API endpoints for the Neolith web application. These endpoints allow authenticated users to view and update their profile information.
+This document describes the user profile management API endpoints for the Neolith web application.
+These endpoints allow authenticated users to view and update their profile information.
 
 ## Endpoints
 
@@ -13,6 +14,7 @@ Get the profile of the currently authenticated user.
 **Authentication:** Required (NextAuth session)
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -35,12 +37,14 @@ Get the profile of the currently authenticated user.
 ```
 
 **Status Codes:**
+
 - `200` - Success
 - `401` - Unauthorized (not authenticated)
 - `404` - User not found
 - `500` - Internal server error
 
 **Example:**
+
 ```typescript
 const response = await fetch('/api/users/me', {
   headers: {
@@ -61,6 +65,7 @@ Update the profile of the currently authenticated user.
 **Authentication:** Required (NextAuth session)
 
 **Request Body:**
+
 ```json
 {
   "name": "John Doe",
@@ -70,6 +75,7 @@ Update the profile of the currently authenticated user.
 ```
 
 **Validation Rules:**
+
 - `name`: 1-100 characters (optional)
 - `displayName`: 1-50 characters (optional)
 - `bio`: max 500 characters (optional, nullable)
@@ -77,6 +83,7 @@ Update the profile of the currently authenticated user.
 - `preferences`: JSON object (optional)
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -100,12 +107,14 @@ Update the profile of the currently authenticated user.
 ```
 
 **Status Codes:**
+
 - `200` - Success
 - `400` - Validation error
 - `401` - Unauthorized (not authenticated)
 - `500` - Internal server error
 
 **Example:**
+
 ```typescript
 const response = await fetch('/api/users/me', {
   method: 'PATCH',
@@ -131,9 +140,11 @@ Get a user's profile by their ID.
 **Authentication:** Required (NextAuth session)
 
 **Parameters:**
+
 - `id` - User ID (path parameter)
 
 **Response (viewing another user's profile):**
+
 ```json
 {
   "data": {
@@ -151,9 +162,12 @@ Get a user's profile by their ID.
 }
 ```
 
-**Note:** When viewing another user's profile, sensitive fields like `preferences`, `updatedAt`, and `vpConfig` are excluded. When viewing your own profile via this endpoint, all fields are included (same as `/api/users/me`).
+**Note:** When viewing another user's profile, sensitive fields like `preferences`, `updatedAt`, and
+`vpConfig` are excluded. When viewing your own profile via this endpoint, all fields are included
+(same as `/api/users/me`).
 
 **Status Codes:**
+
 - `200` - Success
 - `400` - Invalid user ID
 - `401` - Unauthorized (not authenticated)
@@ -161,6 +175,7 @@ Get a user's profile by their ID.
 - `500` - Internal server error
 
 **Example:**
+
 ```typescript
 const userId = 'cuid123';
 const response = await fetch(`/api/users/${userId}`, {
@@ -207,14 +222,16 @@ All endpoints return standardized error responses:
 - **POST /api/users/[id]/avatar** - Upload new avatar
 - **DELETE /api/users/[id]/avatar** - Delete avatar
 
-See `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/users/[id]/avatar/route.ts` for details.
+See `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/users/[id]/avatar/route.ts` for
+details.
 
 ### Notification Preferences
 
 - **GET /api/users/me/notifications** - Get notification preferences
 - **PATCH /api/users/me/notifications** - Update notification preferences
 
-See `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/users/me/notifications/route.ts` for details.
+See `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/users/me/notifications/route.ts`
+for details.
 
 ---
 
@@ -243,6 +260,7 @@ See `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/users/me/not
 ### Database Schema
 
 The User model includes:
+
 - `id`: Unique identifier (CUID)
 - `email`: Unique email address
 - `name`: Full name
@@ -291,7 +309,7 @@ function useUserProfile() {
       });
   }, []);
 
-  const updateProfile = async (updates) => {
+  const updateProfile = async updates => {
     const response = await fetch('/api/users/me', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -354,6 +372,7 @@ npm test -- __tests__/api/users-profile.test.ts
 ```
 
 Test coverage includes:
+
 - Authentication checks
 - Profile retrieval
 - Profile updates
@@ -366,6 +385,7 @@ Test coverage includes:
 ## Changelog
 
 ### 2024-11-26 - Initial Implementation
+
 - Created user profile validation schema
 - Implemented GET /api/users/me
 - Implemented PATCH /api/users/me

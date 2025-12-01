@@ -166,20 +166,27 @@ const INITIAL_STATE = {
  * }
  * ```
  */
-export function useInviteModal(options: UseInviteModalOptions): UseInviteModalReturn {
-  const { context, workspaceId, channelId, conversationId, onSuccess } = options;
+export function useInviteModal(
+  options: UseInviteModalOptions
+): UseInviteModalReturn {
+  const { context, workspaceId, channelId, conversationId, onSuccess } =
+    options;
 
   // Modal state
   const [isOpen, setIsOpen] = useState(false);
 
   // Form state
   const [emails, setEmails] = useState<string[]>(INITIAL_STATE.emails);
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>(INITIAL_STATE.selectedUserIds);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
+    INITIAL_STATE.selectedUserIds
+  );
   const [role, setRole] = useState<string>(INITIAL_STATE.role);
   const [message, setMessage] = useState<string>(INITIAL_STATE.message);
 
   // Validation and error state
-  const [emailError, setEmailError] = useState<string | null>(INITIAL_STATE.emailError);
+  const [emailError, setEmailError] = useState<string | null>(
+    INITIAL_STATE.emailError
+  );
   const [error, setError] = useState<string | null>(INITIAL_STATE.error);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -230,7 +237,7 @@ export function useInviteModal(options: UseInviteModalOptions): UseInviteModalRe
 
     // Validate all emails
     if (emails.length > 0) {
-      const invalidEmails = emails.filter((email) => !isValidEmail(email));
+      const invalidEmails = emails.filter(email => !isValidEmail(email));
       if (invalidEmails.length > 0) {
         setEmailError(`Invalid email addresses: ${invalidEmails.join(', ')}`);
         return;
@@ -291,8 +298,12 @@ export function useInviteModal(options: UseInviteModalOptions): UseInviteModalRe
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to send invites' }));
-        throw new Error(errorData.error || errorData.message || 'Failed to send invites');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to send invites' }));
+        throw new Error(
+          errorData.error || errorData.message || 'Failed to send invites'
+        );
       }
 
       // Success - reset form and close modal
@@ -304,7 +315,9 @@ export function useInviteModal(options: UseInviteModalOptions): UseInviteModalRe
         onSuccess();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setError(
+        err instanceof Error ? err.message : 'An unknown error occurred'
+      );
     } finally {
       setIsSubmitting(false);
     }

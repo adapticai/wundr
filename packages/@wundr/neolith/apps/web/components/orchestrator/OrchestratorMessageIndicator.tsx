@@ -46,7 +46,7 @@ export function OrchestratorMessageIndicator({
 }: OrchestratorMessageIndicatorProps) {
   const initials = orchestratorName
     .split(' ')
-    .map((n) => n[0])
+    .map(n => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
@@ -59,21 +59,21 @@ export function OrchestratorMessageIndicator({
       <div className={cn('relative inline-flex', className)}>
         <Avatar className={sizes.avatar}>
           <AvatarImage src={avatarUrl || undefined} alt={orchestratorName} />
-          <AvatarFallback className="bg-primary/10 text-primary">
+          <AvatarFallback className='bg-primary/10 text-primary'>
             {initials}
           </AvatarFallback>
         </Avatar>
         <div
           className={cn(
             'absolute flex items-center justify-center rounded-full bg-primary ring-2 ring-background',
-            sizes.badge,
+            sizes.badge
           )}
         >
           <Bot className={cn('text-primary-foreground', sizes.icon)} />
         </div>
         {showLabel && (
           <Badge
-            variant="secondary"
+            variant='secondary'
             className={cn('absolute -top-1 left-full ml-1', sizes.label)}
           >
             AI
@@ -89,7 +89,7 @@ export function OrchestratorMessageIndicator({
       <div
         className={cn(
           'flex items-center justify-center rounded-full bg-primary/10 p-1',
-          className,
+          className
         )}
       >
         <Bot className={cn('text-primary', sizes.icon)} />
@@ -101,11 +101,11 @@ export function OrchestratorMessageIndicator({
   if (variant === 'label') {
     return (
       <Badge
-        variant="secondary"
+        variant='secondary'
         className={cn(
           'inline-flex items-center gap-1 bg-primary/10 text-primary hover:bg-primary/20',
           sizes.label,
-          className,
+          className
         )}
       >
         <Sparkles className={sizes.icon} />
@@ -120,17 +120,13 @@ export function OrchestratorMessageIndicator({
       <div className={cn('relative inline-flex', className)}>
         <Avatar className={sizes.avatar}>
           <AvatarImage src={avatarUrl || undefined} alt={orchestratorName} />
-          <AvatarFallback className="bg-primary/10 text-primary">
+          <AvatarFallback className='bg-primary/10 text-primary'>
             {initials}
           </AvatarFallback>
         </Avatar>
-        <span
-          className={cn(
-            'absolute -bottom-0.5 -right-0.5 flex h-3 w-3',
-          )}
-        >
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-primary ring-2 ring-background" />
+        <span className={cn('absolute -bottom-0.5 -right-0.5 flex h-3 w-3')}>
+          <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75' />
+          <span className='relative inline-flex h-3 w-3 rounded-full bg-primary ring-2 ring-background' />
         </span>
       </div>
     );
@@ -160,7 +156,7 @@ export function OrchestratorMessageWrapper({
       className={cn(
         'relative rounded-lg border border-primary/20 bg-primary/5',
         'before:absolute before:-left-1 before:top-0 before:h-full before:w-1 before:rounded-full before:bg-primary',
-        className,
+        className
       )}
     >
       {children}
@@ -169,15 +165,19 @@ export function OrchestratorMessageWrapper({
 }
 
 // Compact indicator for message lists
-export function OrchestratorMessageBadge({ className }: { className?: string }) {
+export function OrchestratorMessageBadge({
+  className,
+}: {
+  className?: string;
+}) {
   return (
     <div
       className={cn(
         'inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary',
-        className,
+        className
       )}
     >
-      <Bot className="h-3 w-3" />
+      <Bot className='h-3 w-3' />
       <span>AI</span>
     </div>
   );

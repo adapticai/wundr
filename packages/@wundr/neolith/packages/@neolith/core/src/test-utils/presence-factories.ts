@@ -153,7 +153,12 @@ export interface ChannelPresence {
  * Presence change event
  */
 export interface PresenceChangeEvent {
-  type: 'user_online' | 'user_offline' | 'status_change' | 'vp_online' | 'vp_offline';
+  type:
+    | 'user_online'
+    | 'user_offline'
+    | 'status_change'
+    | 'vp_online'
+    | 'vp_offline';
   userId: string;
   vpId?: string;
   previousStatus?: UserPresenceStatus | VPPresenceStatus;
@@ -171,7 +176,7 @@ export interface PresenceChangeEvent {
  * Create a mock user presence object
  */
 export function createMockUserPresence(
-  overrides?: Partial<UserPresence>,
+  overrides?: Partial<UserPresence>
 ): UserPresence {
   const userId = overrides?.userId ?? generatePresenceTestId('user');
   const now = new Date().toISOString();
@@ -192,7 +197,7 @@ export function createMockUserPresence(
 export function createMockUserPresenceWithCustomStatus(
   customStatus: string,
   emoji?: string,
-  overrides?: Partial<UserPresence>,
+  overrides?: Partial<UserPresence>
 ): UserPresence {
   return createMockUserPresence({
     customStatus,
@@ -206,7 +211,7 @@ export function createMockUserPresenceWithCustomStatus(
  */
 export function createMockUserPresenceList(
   count: number,
-  overrides?: Partial<UserPresence>,
+  overrides?: Partial<UserPresence>
 ): UserPresence[] {
   return Array.from({ length: count }, (_, index) =>
     createMockUserPresence({
@@ -214,7 +219,7 @@ export function createMockUserPresenceList(
       userId: overrides?.userId
         ? `${overrides.userId}_${index}`
         : generatePresenceTestId('user'),
-    }),
+    })
   );
 }
 
@@ -223,7 +228,7 @@ export function createMockUserPresenceList(
  */
 export function createMockOnlineChannelMembers(
   channelId: string,
-  memberCount: number,
+  memberCount: number
 ): UserPresence[] {
   return createMockUserPresenceList(memberCount, {
     status: 'online',
@@ -239,7 +244,7 @@ export function createMockOnlineChannelMembers(
  * Create a mock daemon info object
  */
 export function createMockDaemonInfo(
-  overrides?: Partial<DaemonInfo>,
+  overrides?: Partial<DaemonInfo>
 ): DaemonInfo {
   const daemonId = overrides?.daemonId ?? generatePresenceTestId('daemon');
   const now = new Date().toISOString();
@@ -261,7 +266,7 @@ export function createMockDaemonInfo(
  * Create mock Orchestrator metrics
  */
 export function createMockVPMetrics(
-  overrides?: Partial<OrchestratorMetrics>,
+  overrides?: Partial<OrchestratorMetrics>
 ): VPMetrics {
   return {
     responseTimeMs: Math.floor(Math.random() * 500) + 50,
@@ -279,7 +284,7 @@ export function createMockVPMetrics(
  * Create a mock Orchestrator presence object
  */
 export function createMockVPPresence(
-  overrides?: Partial<OrchestratorPresence>,
+  overrides?: Partial<OrchestratorPresence>
 ): VPPresence {
   const vpId = overrides?.orchestratorId ?? generatePresenceTestId('vp');
   const userId = overrides?.userId ?? generatePresenceTestId('user');
@@ -305,7 +310,7 @@ export function createMockVPPresence(
  */
 export function createMockVPPresenceWithDaemon(
   daemonOverrides?: Partial<DaemonInfo>,
-  vpOverrides?: Partial<OrchestratorPresence>,
+  vpOverrides?: Partial<OrchestratorPresence>
 ): VPPresence {
   return createMockVPPresence({
     ...orchestratorOverrides,
@@ -318,18 +323,16 @@ export function createMockVPPresenceWithDaemon(
  */
 export function createMockVPPresenceList(
   count: number,
-  overrides?: Partial<OrchestratorPresence>,
+  overrides?: Partial<OrchestratorPresence>
 ): VPPresence[] {
-  return Array.from({ length: count }, () =>
-    createMockVPPresence(overrides),
-  );
+  return Array.from({ length: count }, () => createMockVPPresence(overrides));
 }
 
 /**
  * Create a mock offline Orchestrator presence
  */
 export function createMockOfflineVPPresence(
-  overrides?: Partial<OrchestratorPresence>,
+  overrides?: Partial<OrchestratorPresence>
 ): VPPresence {
   const now = new Date();
   const lastSeen = new Date(now.getTime() - 300000); // 5 minutes ago
@@ -351,7 +354,7 @@ export function createMockOfflineVPPresence(
  * Create a mock heartbeat record
  */
 export function createMockHeartbeatRecord(
-  overrides?: Partial<HeartbeatRecord>,
+  overrides?: Partial<HeartbeatRecord>
 ): HeartbeatRecord {
   const vpId = overrides?.orchestratorId ?? generatePresenceTestId('vp');
   const daemonId = overrides?.daemonId ?? generatePresenceTestId('daemon');
@@ -375,7 +378,7 @@ export function createMockHeartbeatSequence(
   vpId: string,
   daemonId: string,
   count: number,
-  intervalMs = 30000,
+  intervalMs = 30000
 ): HeartbeatRecord[] {
   const now = Date.now();
 
@@ -394,7 +397,7 @@ export function createMockHeartbeatSequence(
  * Create a mock heartbeat with errors
  */
 export function createMockErrorHeartbeat(
-  overrides?: Partial<HeartbeatRecord>,
+  overrides?: Partial<HeartbeatRecord>
 ): HeartbeatRecord {
   return createMockHeartbeatRecord({
     ...overrides,
@@ -413,7 +416,7 @@ export function createMockErrorHeartbeat(
  * Create a mock health check status
  */
 export function createMockHealthStatus(
-  overrides?: Partial<HealthCheckStatus>,
+  overrides?: Partial<HealthCheckStatus>
 ): HealthCheckStatus {
   const vpId = overrides?.orchestratorId ?? generatePresenceTestId('vp');
   const now = new Date().toISOString();
@@ -436,7 +439,7 @@ export function createMockHealthStatus(
 export function createMockDegradedHealthStatus(
   vpId: string,
   missedHeartbeats = 1,
-  overrides?: Partial<HealthCheckStatus>,
+  overrides?: Partial<HealthCheckStatus>
 ): HealthCheckStatus {
   const now = new Date();
   const lastHeartbeat = new Date(now.getTime() - missedHeartbeats * 30000);
@@ -458,7 +461,7 @@ export function createMockDegradedHealthStatus(
 export function createMockUnhealthyHealthStatus(
   vpId: string,
   missedHeartbeats = 3,
-  overrides?: Partial<HealthCheckStatus>,
+  overrides?: Partial<HealthCheckStatus>
 ): HealthCheckStatus {
   const now = new Date();
   const lastHeartbeat = new Date(now.getTime() - missedHeartbeats * 30000);
@@ -479,7 +482,7 @@ export function createMockUnhealthyHealthStatus(
  */
 export function createMockUnknownHealthStatus(
   vpId: string,
-  overrides?: Partial<HealthCheckStatus>,
+  overrides?: Partial<HealthCheckStatus>
 ): HealthCheckStatus {
   return createMockHealthStatus({
     vpId,
@@ -500,7 +503,7 @@ export function createMockUnknownHealthStatus(
  * Create a mock channel presence object
  */
 export function createMockChannelPresence(
-  overrides?: Partial<ChannelPresence>,
+  overrides?: Partial<ChannelPresence>
 ): ChannelPresence {
   const channelId = overrides?.channelId ?? generatePresenceTestId('channel');
   const now = new Date().toISOString();
@@ -521,7 +524,7 @@ export function createMockChannelPresence(
 export function createMockActiveChannelPresence(
   channelId: string,
   onlineMemberIds: string[],
-  overrides?: Partial<ChannelPresence>,
+  overrides?: Partial<ChannelPresence>
 ): ChannelPresence {
   return createMockChannelPresence({
     channelId,
@@ -537,13 +540,13 @@ export function createMockActiveChannelPresence(
 export function createMockChannelPresenceWithTyping(
   channelId: string,
   typingUserIds: string[],
-  overrides?: Partial<ChannelPresence>,
+  overrides?: Partial<ChannelPresence>
 ): ChannelPresence {
   const now = new Date().toISOString();
 
   return createMockChannelPresence({
     channelId,
-    typingUsers: typingUserIds.map((userId) => ({
+    typingUsers: typingUserIds.map(userId => ({
       userId,
       startedAt: now,
     })),
@@ -559,7 +562,7 @@ export function createMockChannelPresenceWithTyping(
  * Create a mock presence change event
  */
 export function createMockPresenceChangeEvent(
-  overrides?: Partial<PresenceChangeEvent>,
+  overrides?: Partial<PresenceChangeEvent>
 ): PresenceChangeEvent {
   const userId = overrides?.userId ?? generatePresenceTestId('user');
   const now = new Date().toISOString();
@@ -580,7 +583,7 @@ export function createMockPresenceChangeEvent(
 export function createMockUserOnlineEvent(
   userId: string,
   channelId?: string,
-  organizationId?: string,
+  organizationId?: string
 ): PresenceChangeEvent {
   return createMockPresenceChangeEvent({
     type: 'user_online',
@@ -599,7 +602,7 @@ export function createMockUserOfflineEvent(
   userId: string,
   previousStatus: UserPresenceStatus = 'online',
   channelId?: string,
-  organizationId?: string,
+  organizationId?: string
 ): PresenceChangeEvent {
   return createMockPresenceChangeEvent({
     type: 'user_offline',
@@ -617,7 +620,7 @@ export function createMockUserOfflineEvent(
 export function createMockVPOnlineEvent(
   vpId: string,
   userId: string,
-  organizationId?: string,
+  organizationId?: string
 ): PresenceChangeEvent {
   return createMockPresenceChangeEvent({
     type: 'vp_online',
@@ -636,7 +639,7 @@ export function createMockVPOfflineEvent(
   vpId: string,
   userId: string,
   previousStatus: VPPresenceStatus = 'online',
-  organizationId?: string,
+  organizationId?: string
 ): PresenceChangeEvent {
   return createMockPresenceChangeEvent({
     type: 'vp_offline',

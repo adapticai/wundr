@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document defines the integration architecture for five specialized MCP tools with Claude Flow and the Wundr ecosystem:
+This document defines the integration architecture for five specialized MCP tools with Claude Flow
+and the Wundr ecosystem:
 
 1. **Firecrawl MCP** - Advanced web scraping and crawling
 2. **Context7 MCP** - Intelligent context management
@@ -33,16 +34,19 @@ This document defines the integration architecture for five specialized MCP tool
 ### 2. Integration Patterns
 
 #### Pattern A: Data Collection & Analysis
+
 - **Firecrawl MCP** → scrapes web content
 - **Context7 MCP** → manages and indexes scraped data
 - **Sequential Thinking MCP** → analyzes patterns and insights
 
 #### Pattern B: Automated Testing & Validation
+
 - **Playwright MCP** → executes browser automation
 - **Browser MCP** → provides real Chrome integration
 - **Context7 MCP** → stores test results and context
 
 #### Pattern C: Research & Knowledge Building
+
 - **Firecrawl MCP** → gathers research materials
 - **Sequential Thinking MCP** → structures reasoning
 - **Context7 MCP** → builds knowledge graphs
@@ -52,6 +56,7 @@ This document defines the integration architecture for five specialized MCP tool
 ### 1. Firecrawl MCP Integration
 
 #### Installation Process
+
 ```bash
 # Install Firecrawl MCP
 npm install @firecrawl/mcp-server
@@ -65,6 +70,7 @@ npx claude-flow mcp register firecrawl \
 ```
 
 #### Configuration Template
+
 ```json
 {
   "name": "firecrawl-mcp",
@@ -100,6 +106,7 @@ npx claude-flow mcp register firecrawl \
 ```
 
 #### Agent Integration Patterns
+
 ```typescript
 // Firecrawl Research Agent
 class FirecrawlResearchAgent {
@@ -109,17 +116,17 @@ class FirecrawlResearchAgent {
       options: {
         formats: ['markdown', 'structured'],
         onlyMainContent: true,
-        includePDFs: task.includePDFs || false
-      }
+        includePDFs: task.includePDFs || false,
+      },
     };
-    
+
     const results = await this.firecrawlMCP.crawl(crawlConfig);
     await this.context7MCP.store(results, {
       tags: task.tags,
       category: 'research',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    
+
     return this.sequentialThinkingMCP.analyze(results);
   }
 }
@@ -128,6 +135,7 @@ class FirecrawlResearchAgent {
 ### 2. Context7 MCP Integration
 
 #### Installation Process
+
 ```bash
 # Install Context7 MCP
 npm install @context7/mcp-server
@@ -141,6 +149,7 @@ npx claude-flow mcp init context7 \
 ```
 
 #### Configuration Template
+
 ```json
 {
   "name": "context7-mcp",
@@ -177,25 +186,26 @@ npx claude-flow mcp init context7 \
 ```
 
 #### Agent Integration Patterns
+
 ```typescript
 // Context Management Agent
 class ContextManagerAgent {
   async manageContext(operation: ContextOperation) {
-    switch(operation.type) {
+    switch (operation.type) {
       case 'store':
         return await this.context7MCP.store(operation.data, {
           metadata: operation.metadata,
-          relationships: operation.relationships
+          relationships: operation.relationships,
         });
-      
+
       case 'retrieve':
         const context = await this.context7MCP.query({
           query: operation.query,
           filters: operation.filters,
-          limit: operation.limit || 10
+          limit: operation.limit || 10,
         });
         return this.enrichContext(context);
-      
+
       case 'analyze':
         return await this.sequentialThinkingMCP.processContext(
           await this.context7MCP.getGraph(operation.scope)
@@ -208,6 +218,7 @@ class ContextManagerAgent {
 ### 3. Playwright MCP Integration
 
 #### Installation Process
+
 ```bash
 # Install Playwright MCP
 npm install @playwright/mcp-server
@@ -222,6 +233,7 @@ npx claude-flow mcp register playwright \
 ```
 
 #### Configuration Template
+
 ```json
 {
   "name": "playwright-mcp",
@@ -239,11 +251,11 @@ npx claude-flow mcp register playwright \
     "chromium": {
       "enabled": true,
       "args": ["--no-sandbox", "--disable-dev-shm-usage"],
-      "viewport": {"width": 1920, "height": 1080}
+      "viewport": { "width": 1920, "height": 1080 }
     },
     "firefox": {
       "enabled": true,
-      "preferences": {"network.cookie.cookieBehavior": 0}
+      "preferences": { "network.cookie.cookieBehavior": 0 }
     },
     "webkit": {
       "enabled": false
@@ -266,26 +278,27 @@ npx claude-flow mcp register playwright \
 ```
 
 #### Agent Integration Patterns
+
 ```typescript
 // Playwright Automation Agent
 class PlaywrightAutomationAgent {
   async executeAutomation(task: AutomationTask) {
     const browser = await this.playwrightMCP.launch({
       browser: task.browser || 'chromium',
-      headless: task.headless !== false
+      headless: task.headless !== false,
     });
-    
+
     try {
       const page = await browser.newPage();
       const results = await this.runTestScenario(page, task.scenario);
-      
+
       // Store results in Context7
       await this.context7MCP.store(results, {
         category: 'automation',
         test_run: task.runId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
-      
+
       return results;
     } finally {
       await browser.close();
@@ -297,6 +310,7 @@ class PlaywrightAutomationAgent {
 ### 4. Browser MCP Integration
 
 #### Chrome Installation (macOS)
+
 ```bash
 # Install Chrome if not present
 if ! command -v google-chrome &> /dev/null; then
@@ -314,6 +328,7 @@ claude mcp add browser-mcp npx @browser-mcp/server
 ```
 
 #### Browser MCP Extension Setup
+
 ```bash
 # Create extension directory
 mkdir -p ~/.claude/browser-mcp-extension
@@ -353,6 +368,7 @@ echo "Install manually in Chrome: chrome://extensions/ -> Load unpacked"
 ```
 
 #### Configuration Template
+
 ```json
 {
   "name": "browser-mcp",
@@ -386,30 +402,31 @@ echo "Install manually in Chrome: chrome://extensions/ -> Load unpacked"
 ```
 
 #### Agent Integration Patterns
+
 ```typescript
 // Browser Control Agent
 class BrowserControlAgent {
   async controlBrowser(command: BrowserCommand) {
     const chrome = await this.browserMCP.connectToChrome();
-    
-    switch(command.action) {
+
+    switch (command.action) {
       case 'navigate':
         await chrome.navigate(command.url);
         break;
-      
+
       case 'interact':
         await chrome.executeScript({
-          target: {tabId: command.tabId},
-          function: command.script
+          target: { tabId: command.tabId },
+          function: command.script,
         });
         break;
-      
+
       case 'capture':
         const screenshot = await chrome.captureVisibleTab();
         await this.context7MCP.store(screenshot, {
           category: 'browser-capture',
           url: command.url,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
         break;
     }
@@ -420,6 +437,7 @@ class BrowserControlAgent {
 ### 5. Sequential Thinking MCP Integration
 
 #### Installation Process
+
 ```bash
 # Install Sequential Thinking MCP (MIT)
 npm install @mit/sequential-thinking-mcp
@@ -433,6 +451,7 @@ npx claude-flow mcp init sequential-thinking \
 ```
 
 #### Configuration Template
+
 ```json
 {
   "name": "sequential-thinking-mcp",
@@ -475,6 +494,7 @@ npx claude-flow mcp init sequential-thinking \
 ```
 
 #### Agent Integration Patterns
+
 ```typescript
 // Sequential Reasoning Agent
 class SequentialReasoningAgent {
@@ -483,30 +503,30 @@ class SequentialReasoningAgent {
     const session = await this.sequentialThinkingMCP.startSession({
       task: task.description,
       context: await this.context7MCP.getRelevantContext(task.keywords),
-      reasoning_model: task.reasoningModel || 'step-by-step'
+      reasoning_model: task.reasoningModel || 'step-by-step',
     });
-    
+
     // Execute step-by-step reasoning
     let currentStep = 1;
     while (!session.isComplete() && currentStep <= 20) {
       const step = await session.nextStep();
       const validation = await session.validateStep(step);
-      
+
       if (!validation.isValid) {
         await session.backtrack();
         continue;
       }
-      
+
       // Store intermediate results
       await this.context7MCP.store(step.result, {
         session_id: session.id,
         step_number: currentStep,
-        confidence: validation.confidence
+        confidence: validation.confidence,
       });
-      
+
       currentStep++;
     }
-    
+
     return session.getFinalResult();
   }
 }
@@ -517,6 +537,7 @@ class SequentialReasoningAgent {
 ### 1. Cross-Tool Workflows
 
 #### Research & Analysis Pipeline
+
 ```typescript
 class ResearchAnalysisPipeline {
   async execute(researchQuery: string) {
@@ -524,64 +545,61 @@ class ResearchAnalysisPipeline {
     const webData = await this.firecrawlMCP.research({
       query: researchQuery,
       depth: 3,
-      formats: ['markdown', 'structured']
+      formats: ['markdown', 'structured'],
     });
-    
+
     // Phase 2: Context Storage (Context7)
     const contextId = await this.context7MCP.store(webData, {
       category: 'research',
-      query: researchQuery
+      query: researchQuery,
     });
-    
+
     // Phase 3: Structured Analysis (Sequential Thinking)
     const analysis = await this.sequentialThinkingMCP.analyze({
       data: webData,
       reasoning_model: 'tree-of-thought',
-      validation: true
+      validation: true,
     });
-    
+
     // Phase 4: Validation (Playwright/Browser)
     if (analysis.requires_validation) {
       await this.playwrightMCP.validateClaims(analysis.claims);
     }
-    
+
     return {
       contextId,
       analysis,
-      validation_status: 'completed'
+      validation_status: 'completed',
     };
   }
 }
 ```
 
 #### Automated Testing Workflow
+
 ```typescript
 class AutomatedTestingWorkflow {
   async executeTestSuite(testSuite: TestSuite) {
     // Phase 1: Test Planning (Sequential Thinking)
     const testPlan = await this.sequentialThinkingMCP.planTests({
       requirements: testSuite.requirements,
-      constraints: testSuite.constraints
+      constraints: testSuite.constraints,
     });
-    
+
     // Phase 2: Browser Automation (Playwright)
     const playwrightResults = await Promise.all(
-      testPlan.playwright_tests.map(test => 
-        this.playwrightMCP.executeTest(test)
-      )
+      testPlan.playwright_tests.map(test => this.playwrightMCP.executeTest(test))
     );
-    
+
     // Phase 3: Real Browser Testing (Browser MCP)
     const browserResults = await Promise.all(
-      testPlan.browser_tests.map(test => 
-        this.browserMCP.executeTest(test)
-      )
+      testPlan.browser_tests.map(test => this.browserMCP.executeTest(test))
     );
-    
+
     // Phase 4: Results Storage & Analysis
     const allResults = [...playwrightResults, ...browserResults];
     await this.context7MCP.storeTestResults(allResults);
-    
+
     return await this.sequentialThinkingMCP.analyzeResults(allResults);
   }
 }
@@ -590,6 +608,7 @@ class AutomatedTestingWorkflow {
 ## Configuration Management
 
 ### 1. Environment Setup Script
+
 ```bash
 #!/bin/bash
 # setup-mcp-tools.sh
@@ -606,7 +625,7 @@ npx playwright install
 
 # Configure Claude MCP
 claude mcp add firecrawl npx @firecrawl/mcp-server
-claude mcp add context7 npx @context7/mcp-server  
+claude mcp add context7 npx @context7/mcp-server
 claude mcp add playwright npx @playwright/mcp-server
 claude mcp add browser-mcp npx @browser-mcp/server
 claude mcp add sequential-thinking npx @mit/sequential-thinking-mcp
@@ -618,37 +637,38 @@ echo "MCP Tools setup complete!"
 ```
 
 ### 2. Unified Configuration Manager
+
 ```typescript
 class MCPConfigurationManager {
   private configs: Map<string, MCPConfig> = new Map();
-  
+
   async loadConfigurations() {
     const configFiles = await glob('~/.claude/mcp-configs/*.json');
-    
+
     for (const file of configFiles) {
       const config = await this.loadConfig(file);
       this.configs.set(config.name, config);
     }
   }
-  
+
   async validateConfiguration(toolName: string): Promise<ValidationResult> {
     const config = this.configs.get(toolName);
     if (!config) {
       return { valid: false, error: 'Configuration not found' };
     }
-    
+
     // Validate tool availability
     const toolAvailable = await this.checkToolAvailability(config);
-    
+
     // Validate dependencies
     const depsValid = await this.validateDependencies(config);
-    
+
     // Validate integration settings
     const integrationValid = await this.validateIntegration(config);
-    
+
     return {
       valid: toolAvailable && depsValid && integrationValid,
-      details: { toolAvailable, depsValid, integrationValid }
+      details: { toolAvailable, depsValid, integrationValid },
     };
   }
 }
@@ -657,6 +677,7 @@ class MCPConfigurationManager {
 ## Performance & Monitoring
 
 ### 1. Tool Performance Metrics
+
 ```typescript
 interface MCPToolMetrics {
   tool_name: string;
@@ -674,10 +695,10 @@ class MCPMonitoringService {
       this.getToolMetrics('context7'),
       this.getToolMetrics('playwright'),
       this.getToolMetrics('browser-mcp'),
-      this.getToolMetrics('sequential-thinking')
+      this.getToolMetrics('sequential-thinking'),
     ]);
   }
-  
+
   async optimizeToolUsage(metrics: MCPToolMetrics[]) {
     // Implement dynamic load balancing
     // Adjust concurrent limits based on performance
@@ -687,6 +708,7 @@ class MCPMonitoringService {
 ```
 
 ### 2. Health Checks & Failover
+
 ```typescript
 class MCPHealthManager {
   async performHealthChecks(): Promise<HealthReport> {
@@ -695,16 +717,16 @@ class MCPHealthManager {
       this.checkTool('context7'),
       this.checkTool('playwright'),
       this.checkTool('browser-mcp'),
-      this.checkTool('sequential-thinking')
+      this.checkTool('sequential-thinking'),
     ]);
-    
+
     return {
       overall_health: checks.every(c => c.status === 'fulfilled'),
       individual_status: checks,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
-  
+
   async handleFailover(failedTool: string) {
     const alternatives = this.getAlternativeTools(failedTool);
     await this.redistributeTasks(failedTool, alternatives);
@@ -715,6 +737,7 @@ class MCPHealthManager {
 ## Security & Compliance
 
 ### 1. Security Configuration
+
 ```json
 {
   "security": {
@@ -739,6 +762,7 @@ class MCPHealthManager {
 ```
 
 ### 2. Compliance Framework
+
 ```typescript
 class MCPComplianceManager {
   async auditToolUsage(): Promise<ComplianceReport> {
@@ -746,10 +770,11 @@ class MCPComplianceManager {
       data_handling: await this.auditDataHandling(),
       privacy_compliance: await this.checkPrivacyCompliance(),
       security_standards: await this.validateSecurityStandards(),
-      access_controls: await this.auditAccessControls()
+      access_controls: await this.auditAccessControls(),
     };
   }
 }
 ```
 
-This architecture provides a comprehensive foundation for integrating all five MCP tools with Claude Flow, ensuring scalable, secure, and efficient operations across the Wundr ecosystem.
+This architecture provides a comprehensive foundation for integrating all five MCP tools with Claude
+Flow, ensuring scalable, secure, and efficient operations across the Wundr ecosystem.

@@ -14,10 +14,12 @@ export default function AnalyticsPage(): JSX.Element {
   // Guard against missing workspace slug
   if (!workspaceSlug) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg font-medium text-foreground">Invalid workspace</p>
-          <p className="text-sm text-muted-foreground mt-2">
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <div className='text-center'>
+          <p className='text-lg font-medium text-foreground'>
+            Invalid workspace
+          </p>
+          <p className='text-sm text-muted-foreground mt-2'>
             Unable to load analytics without a valid workspace identifier
           </p>
         </div>
@@ -31,8 +33,8 @@ export default function AnalyticsPage(): JSX.Element {
   }, [setPageHeader]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className='min-h-screen bg-background'>
+      <div className='max-w-7xl mx-auto px-4 py-8'>
         <AnalyticsDashboard workspaceId={workspaceSlug} />
       </div>
     </div>

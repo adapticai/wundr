@@ -2,10 +2,10 @@ module.exports = {
   extends: [
     './index.js',
     'plugin:@typescript-eslint/recommended-type-checked',
-    'plugin:@typescript-eslint/stylistic-type-checked'
+    'plugin:@typescript-eslint/stylistic-type-checked',
   ],
   parserOptions: {
-    project: true
+    project: true,
   },
   rules: {
     // Type-aware rules that require TypeScript project configuration
@@ -17,17 +17,23 @@ module.exports = {
     '@typescript-eslint/return-await': 'error',
     '@typescript-eslint/prefer-nullish-coalescing': 'error',
     '@typescript-eslint/prefer-optional-chain': 'error',
-    '@typescript-eslint/strict-boolean-expressions': ['error', {
-      allowString: false,
-      allowNumber: false,
-      allowNullableObject: false
-    }],
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+      },
+    ],
     '@typescript-eslint/no-unnecessary-type-assertion': 'error',
     '@typescript-eslint/prefer-string-starts-ends-with': 'error',
     '@typescript-eslint/prefer-includes': 'error',
-    '@typescript-eslint/consistent-type-exports': ['error', {
-      fixMixedExportsWithInlineTypeSpecifier: true
-    }]
+    '@typescript-eslint/consistent-type-exports': [
+      'error',
+      {
+        fixMixedExportsWithInlineTypeSpecifier: true,
+      },
+    ],
   },
   overrides: [
     {
@@ -35,8 +41,8 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-unnecessary-condition': 'off',
         '@typescript-eslint/no-floating-promises': 'off',
-        '@typescript-eslint/strict-boolean-expressions': 'off'
-      }
-    }
-  ]
+        '@typescript-eslint/strict-boolean-expressions': 'off',
+      },
+    },
+  ],
 };

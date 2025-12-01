@@ -1,17 +1,16 @@
 # Mobile Configuration Quick Reference
+
 ## Phase 4 Task 4.2 - Configuration Status & Action Items
 
-**Last Updated**: 2025-11-26
-**Status**: 🔴 Configuration Issues - Action Required
+**Last Updated**: 2025-11-26 **Status**: 🔴 Configuration Issues - Action Required
 
 ---
 
 ## TL;DR - What You Need to Know
 
-✅ **Working**: Capacitor config files are correctly set up
-❌ **Broken**: Web app builds server bundles instead of static files
-⚠️ **Missing**: Native iOS and Android projects not initialized
-📊 **Impact**: Mobile app cannot run until architecture is refactored
+✅ **Working**: Capacitor config files are correctly set up ❌ **Broken**: Web app builds server
+bundles instead of static files ⚠️ **Missing**: Native iOS and Android projects not initialized 📊
+**Impact**: Mobile app cannot run until architecture is refactored
 
 ---
 
@@ -41,6 +40,7 @@ ls -d ../web/out/server 2>/dev/null && echo "❌ Server build detected"
 ## Configuration Files Status
 
 ### 1. capacitor.config.ts ✅
+
 ```typescript
 Location: apps/mobile/capacitor.config.ts
 Status:   CORRECT
@@ -59,6 +59,7 @@ Plugins Configured:
 ```
 
 ### 2. package.json ✅
+
 ```json
 Location: apps/mobile/package.json
 Status:   CORRECT
@@ -74,6 +75,7 @@ Dependencies: @capacitor/* v6.0.0
 ```
 
 ### 3. next.config.js ❌
+
 ```javascript
 Location: apps/web/next.config.js
 Status:   INCOMPATIBLE WITH CAPACITOR
@@ -93,16 +95,19 @@ Required:
 ## The Problem in Plain English
 
 **What's Happening**:
+
 - Capacitor needs static HTML/CSS/JS files
 - Next.js is building server bundles that need Node.js
 - Mobile app cannot load server bundles in native WebView
 
 **Why It's Happening**:
+
 - next.config.js missing `output: 'export'`
 - Web app uses 189 API route files (server-side)
 - Architecture designed for server rendering, not static export
 
 **What Needs to Change**:
+
 - Enable static export in Next.js config
 - Move API routes to separate backend service
 - Convert server components to client components
@@ -124,16 +129,19 @@ Dependencies:      @apollo/server, next-auth, prisma
 ### Major Components Requiring Changes
 
 **1. Authentication** (High Priority)
+
 - Current: next-auth with API routes
 - Required: Client-side auth with separate auth service
 - Files: `app/api/auth/[...nextauth]/`
 
 **2. GraphQL API** (High Priority)
+
 - Current: @apollo/server in API routes
 - Required: Standalone GraphQL backend
 - Files: `app/api/graphql/`
 
 **3. Business Logic APIs** (Medium Priority)
+
 - Organizations: 10+ endpoints
 - Tasks: 8+ endpoints
 - Messages: 5+ endpoints
@@ -142,6 +150,7 @@ Dependencies:      @apollo/server, next-auth, prisma
 - VPs: 20+ endpoints
 
 **4. Data Fetching** (Medium Priority)
+
 - Convert server components to client components
 - Implement SWR or React Query for data fetching
 - Add API client layer
@@ -167,16 +176,19 @@ grep -r "fetch.*api/" app/ --include="*.tsx" | wc -l
 ### Phase 2: Architecture Decision (1 day)
 
 **Option A: Full Static Export** (Recommended)
+
 - Pros: True mobile app, offline capable, better performance
 - Cons: 7-10 days refactoring, separate backend needed
 - Best for: Production mobile app
 
 **Option B: Hybrid Build**
+
 - Pros: Quick fix, minimal changes
 - Cons: Maintains technical debt, limited mobile features
 - Best for: MVP or prototype
 
 **Option C: React Native**
+
 - Pros: Native performance, full mobile capabilities
 - Cons: Complete rewrite, 4-6 weeks
 - Best for: Long-term mobile strategy
@@ -186,6 +198,7 @@ grep -r "fetch.*api/" app/ --include="*.tsx" | wc -l
 If choosing Option A:
 
 **Day 1-2: Backend Setup**
+
 ```bash
 # Create standalone backend
 mkdir packages/backend-api
@@ -196,6 +209,7 @@ mv apps/web/app/api/* packages/backend-api/src/routes/
 ```
 
 **Day 3-4: Client Refactoring**
+
 ```typescript
 // Convert from:
 export default async function Page() {
@@ -212,6 +226,7 @@ export default function Page() {
 ```
 
 **Day 5-6: Configuration Updates**
+
 ```javascript
 // next.config.js
 module.exports = {
@@ -219,12 +234,13 @@ module.exports = {
   distDir: 'out',
   images: { unoptimized: true },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.API_URL
-  }
-}
+    NEXT_PUBLIC_API_URL: process.env.API_URL,
+  },
+};
 ```
 
 **Day 7-8: Testing**
+
 ```bash
 # Build and test
 cd apps/web
@@ -240,6 +256,7 @@ npm run open:ios
 ```
 
 **Day 9-10: Polish & Deploy**
+
 - Fix remaining issues
 - Test on real devices
 - Update documentation
@@ -317,6 +334,7 @@ NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
 ## Common Issues & Solutions
 
 ### Issue: "No static HTML files generated"
+
 ```bash
 # Cause: output: 'export' not set
 # Fix: Add to next.config.js
@@ -324,12 +342,14 @@ output: 'export'
 ```
 
 ### Issue: "API routes not working"
+
 ```bash
 # Cause: Static export doesn't support API routes
 # Fix: Move to separate backend or use external API
 ```
 
 ### Issue: "Image optimization error"
+
 ```bash
 # Cause: Static export doesn't support image optimization
 # Fix: Add to next.config.js
@@ -337,6 +357,7 @@ images: { unoptimized: true }
 ```
 
 ### Issue: "Platform not found"
+
 ```bash
 # Cause: ios/android folders not initialized
 # Fix: Run platform add commands
@@ -376,6 +397,7 @@ Key Files:
 ## Documentation Files
 
 Generated for this task:
+
 1. `MOBILE_CONFIG_VERIFICATION_REPORT.md` - Detailed analysis
 2. `CONFIG_VERIFICATION_RESULTS.md` - Test results
 3. `MOBILE_CONFIG_QUICK_REFERENCE.md` - This file
@@ -384,16 +406,16 @@ Generated for this task:
 
 ## Decision Matrix
 
-| Factor | Static Export | Hybrid Build | React Native |
-|--------|---------------|--------------|--------------|
-| Timeline | 7-10 days | 2-3 days | 4-6 weeks |
-| Effort | High | Low | Very High |
-| Mobile UX | Excellent | Good | Excellent |
-| Maintainability | High | Low | High |
-| Offline Support | Yes | Limited | Yes |
-| Native Features | Limited | Limited | Full |
-| Performance | Good | Good | Excellent |
-| **Recommended** | ✅ | ⚠️ | 🔮 Future |
+| Factor          | Static Export | Hybrid Build | React Native |
+| --------------- | ------------- | ------------ | ------------ |
+| Timeline        | 7-10 days     | 2-3 days     | 4-6 weeks    |
+| Effort          | High          | Low          | Very High    |
+| Mobile UX       | Excellent     | Good         | Excellent    |
+| Maintainability | High          | Low          | High         |
+| Offline Support | Yes           | Limited      | Yes          |
+| Native Features | Limited       | Limited      | Full         |
+| Performance     | Good          | Good         | Excellent    |
+| **Recommended** | ✅            | ⚠️           | 🔮 Future    |
 
 ---
 
@@ -408,6 +430,5 @@ Generated for this task:
 
 ---
 
-**Report Status**: COMPLETE
-**Phase 4 Task 4.2**: VERIFIED - ISSUES IDENTIFIED
-**Action Required**: Architecture decision needed before proceeding
+**Report Status**: COMPLETE **Phase 4 Task 4.2**: VERIFIED - ISSUES IDENTIFIED **Action Required**:
+Architecture decision needed before proceeding

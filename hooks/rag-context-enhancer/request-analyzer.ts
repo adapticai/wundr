@@ -57,7 +57,11 @@ export class RequestAnalyzer {
       this.config.complexityPatterns
     );
 
-    const allMatches = [...questionMatches, ...actionMatches, ...complexityMatches];
+    const allMatches = [
+      ...questionMatches,
+      ...actionMatches,
+      ...complexityMatches,
+    ];
 
     // Extract entities from the request
     const entities = this.extractEntities(normalizedRequest);
@@ -73,10 +77,15 @@ export class RequestAnalyzer {
     const contextGoal = this.determineContextGoal(allMatches, entities);
 
     // Generate RAG queries
-    const queries = this.generateQueries(allMatches, entities, normalizedRequest);
+    const queries = this.generateQueries(
+      allMatches,
+      entities,
+      normalizedRequest
+    );
 
     // Determine if enhancement is recommended
-    const shouldEnhance = confidence >= this.config.priority.minConfidenceThreshold;
+    const shouldEnhance =
+      confidence >= this.config.priority.minConfidenceThreshold;
 
     // Generate suggested file patterns based on entities
     const suggestedPatterns = this.generateSuggestedPatterns(entities);
@@ -158,7 +167,8 @@ export class RequestAnalyzer {
     }
 
     // Extract class names (PascalCase)
-    const classPattern = /\b([A-Z][a-zA-Z0-9]+)(?:\s+class|\s+interface|\s+type|\b)/g;
+    const classPattern =
+      /\b([A-Z][a-zA-Z0-9]+)(?:\s+class|\s+interface|\s+type|\b)/g;
     while ((match = classPattern.exec(request)) !== null) {
       if (!this.isCommonWord(match[1])) {
         classes.push(match[1]);
@@ -166,7 +176,8 @@ export class RequestAnalyzer {
     }
 
     // Extract file paths
-    const filePattern = /(?:\/[\w.-]+)+(?:\.\w+)?|\b[\w.-]+\.(?:ts|tsx|js|jsx|md|json)\b/g;
+    const filePattern =
+      /(?:\/[\w.-]+)+(?:\.\w+)?|\b[\w.-]+\.(?:ts|tsx|js|jsx|md|json)\b/g;
     while ((match = filePattern.exec(request)) !== null) {
       files.push(match[0]);
     }
@@ -213,20 +224,104 @@ export class RequestAnalyzer {
    */
   private isCommonWord(word: string): boolean {
     const commonWords = new Set([
-      'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
-      'could', 'should', 'may', 'might', 'must', 'shall',
-      'this', 'that', 'these', 'those', 'what', 'which', 'who',
-      'how', 'when', 'where', 'why', 'all', 'each', 'every',
-      'any', 'some', 'many', 'much', 'more', 'most', 'other',
-      'new', 'old', 'first', 'last', 'long', 'great', 'little',
-      'own', 'same', 'right', 'big', 'high', 'different', 'small',
-      'large', 'next', 'early', 'young', 'important', 'few', 'public',
-      'bad', 'possible', 'late', 'general', 'full', 'special', 'free',
-      'clear', 'sure', 'true', 'false', 'null', 'undefined',
-      'get', 'set', 'add', 'remove', 'update', 'delete', 'create',
-      'find', 'show', 'list', 'check', 'test', 'run', 'start', 'stop',
-      'use', 'using', 'used', 'make', 'making', 'made',
+      'the',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'must',
+      'shall',
+      'this',
+      'that',
+      'these',
+      'those',
+      'what',
+      'which',
+      'who',
+      'how',
+      'when',
+      'where',
+      'why',
+      'all',
+      'each',
+      'every',
+      'any',
+      'some',
+      'many',
+      'much',
+      'more',
+      'most',
+      'other',
+      'new',
+      'old',
+      'first',
+      'last',
+      'long',
+      'great',
+      'little',
+      'own',
+      'same',
+      'right',
+      'big',
+      'high',
+      'different',
+      'small',
+      'large',
+      'next',
+      'early',
+      'young',
+      'important',
+      'few',
+      'public',
+      'bad',
+      'possible',
+      'late',
+      'general',
+      'full',
+      'special',
+      'free',
+      'clear',
+      'sure',
+      'true',
+      'false',
+      'null',
+      'undefined',
+      'get',
+      'set',
+      'add',
+      'remove',
+      'update',
+      'delete',
+      'create',
+      'find',
+      'show',
+      'list',
+      'check',
+      'test',
+      'run',
+      'start',
+      'stop',
+      'use',
+      'using',
+      'used',
+      'make',
+      'making',
+      'made',
     ]);
     return commonWords.has(word.toLowerCase());
   }
@@ -268,7 +363,8 @@ export class RequestAnalyzer {
     const totalMatches =
       questionMatches.length + actionMatches.length + complexityMatches.length;
     if (totalMatches > 1) {
-      confidence += this.config.priority.multiMatchBoost * Math.min(totalMatches - 1, 3);
+      confidence +=
+        this.config.priority.multiMatchBoost * Math.min(totalMatches - 1, 3);
     }
 
     // Normalize to 0-1 range
@@ -341,7 +437,11 @@ export class RequestAnalyzer {
       const pattern = this.findPatternById(match.pattern);
       if (pattern?.queryTemplates) {
         for (const template of pattern.queryTemplates) {
-          const query = this.expandQueryTemplate(template, match.match, entities);
+          const query = this.expandQueryTemplate(
+            template,
+            match.match,
+            entities
+          );
           if (query && !seenQueries.has(query.toLowerCase())) {
             seenQueries.add(query.toLowerCase());
             queries.push({
@@ -523,16 +623,20 @@ export class RequestAnalyzer {
     goal: ContextGoal
   ): string {
     if (!shouldEnhance) {
-      return `RAG enhancement not recommended (confidence: ${(confidence * 100).toFixed(1)}%). ` +
-        `Request does not strongly indicate need for codebase context.`;
+      return (
+        `RAG enhancement not recommended (confidence: ${(confidence * 100).toFixed(1)}%). ` +
+        `Request does not strongly indicate need for codebase context.`
+      );
     }
 
     const matchTypes = new Set(matches.map(m => m.type));
     const typesList = Array.from(matchTypes).join(', ');
 
-    return `RAG enhancement recommended (confidence: ${(confidence * 100).toFixed(1)}%). ` +
+    return (
+      `RAG enhancement recommended (confidence: ${(confidence * 100).toFixed(1)}%). ` +
       `Detected ${matches.length} pattern match(es) of type(s): ${typesList}. ` +
-      `Context goal: ${goal}.`;
+      `Context goal: ${goal}.`
+    );
   }
 
   /**

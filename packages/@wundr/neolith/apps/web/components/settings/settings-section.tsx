@@ -5,18 +5,18 @@
  * Reusable components for consistent settings page layouts.
  * Provides standardized patterns for section headers, groups, and rows.
  */
-"use client";
+'use client';
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 /**
  * Props for the SettingsSection component
@@ -60,9 +60,7 @@ export function SettingsSection({
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent className="space-y-6">
-        {children}
-      </CardContent>
+      <CardContent className='space-y-6'>{children}</CardContent>
     </Card>
   );
 }
@@ -105,20 +103,18 @@ export function SettingsGroup({
   className,
 }: SettingsGroupProps) {
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {(title || description) && (
-        <div className="space-y-1">
+        <div className='space-y-1'>
           {title && (
-            <h4 className="text-sm font-medium leading-none">{title}</h4>
+            <h4 className='text-sm font-medium leading-none'>{title}</h4>
           )}
           {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
+            <p className='text-sm text-muted-foreground'>{description}</p>
           )}
         </div>
       )}
-      <div className="space-y-4">
-        {children}
-      </div>
+      <div className='space-y-4'>{children}</div>
     </div>
   );
 }
@@ -181,35 +177,29 @@ export function SettingsRow({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
+        'flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between',
         className
       )}
     >
       {/* Label and description on the left */}
-      <div className="flex-1 space-y-1">
+      <div className='flex-1 space-y-1'>
         <Label
           htmlFor={htmlFor}
-          className="text-sm font-medium leading-none cursor-pointer"
+          className='text-sm font-medium leading-none cursor-pointer'
         >
           {label}
         </Label>
         {description && (
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className='text-sm text-muted-foreground leading-relaxed'>
             {description}
           </p>
         )}
       </div>
 
       {/* Control and optional action on the right */}
-      <div className="flex items-center gap-3 sm:flex-shrink-0">
-        <div className="flex items-center">
-          {children}
-        </div>
-        {action && (
-          <div className="flex items-center">
-            {action}
-          </div>
-        )}
+      <div className='flex items-center gap-3 sm:flex-shrink-0'>
+        <div className='flex items-center'>{children}</div>
+        {action && <div className='flex items-center'>{action}</div>}
       </div>
     </div>
   );
@@ -231,12 +221,9 @@ export function SettingsRow({
 export function SettingsDivider({ className }: { className?: string }) {
   return (
     <div
-      className={cn(
-        "h-px bg-border my-6",
-        className
-      )}
-      role="separator"
-      aria-orientation="horizontal"
+      className={cn('h-px bg-border my-6', className)}
+      role='separator'
+      aria-orientation='horizontal'
     />
   );
 }

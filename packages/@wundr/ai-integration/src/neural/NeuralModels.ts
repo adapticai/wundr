@@ -32,7 +32,12 @@ export interface ModelInference {
 }
 
 // Inference input/output types for type safety
-type InferenceInput = TaskClassificationInput | AgentSelectionInput | PerformancePredictionInput | PatternRecognitionInput | Record<string, unknown>;
+type InferenceInput =
+  | TaskClassificationInput
+  | AgentSelectionInput
+  | PerformancePredictionInput
+  | PatternRecognitionInput
+  | Record<string, unknown>;
 
 interface TaskClassificationInput {
   description?: string;
@@ -95,23 +100,23 @@ export class NeuralModels extends EventEmitter {
           layers: [
             { type: 'dense', size: 128, activation: 'relu' },
             { type: 'dropout', size: 128, activation: 'relu', dropout: 0.3 },
-            { type: 'dense', size: 64, activation: 'softmax' }
+            { type: 'dense', size: 64, activation: 'softmax' },
           ],
           optimizer: {
             type: 'adam',
             learningRate: 0.001,
             beta1: 0.9,
-            beta2: 0.999
+            beta2: 0.999,
           },
           hyperparameters: {
             epochs: 100,
             batchSize: 32,
-            validationSplit: 0.2
+            validationSplit: 0.2,
           },
           regularization: {
             l2: 0.001,
-            dropout: 0.3
-          }
+            dropout: 0.3,
+          },
         },
       },
       {
@@ -122,22 +127,22 @@ export class NeuralModels extends EventEmitter {
           layers: [
             { type: 'dense', size: 256, activation: 'relu' },
             { type: 'batch_norm', size: 256, activation: 'relu' },
-            { type: 'dense', size: 1, activation: 'sigmoid' }
+            { type: 'dense', size: 1, activation: 'sigmoid' },
           ],
           optimizer: {
             type: 'adam',
             learningRate: 0.0005,
             beta1: 0.9,
-            beta2: 0.999
+            beta2: 0.999,
           },
           hyperparameters: {
             epochs: 150,
             batchSize: 64,
-            validationSplit: 0.25
+            validationSplit: 0.25,
           },
           regularization: {
-            l2: 0.0005
-          }
+            l2: 0.0005,
+          },
         },
       },
       {
@@ -148,21 +153,21 @@ export class NeuralModels extends EventEmitter {
           layers: [
             { type: 'lstm', size: 128, activation: 'tanh' },
             { type: 'dense', size: 64, activation: 'relu' },
-            { type: 'dense', size: 1, activation: 'linear' }
+            { type: 'dense', size: 1, activation: 'linear' },
           ],
           optimizer: {
             type: 'rmsprop',
-            learningRate: 0.002
+            learningRate: 0.002,
           },
           hyperparameters: {
             epochs: 200,
             batchSize: 16,
-            validationSplit: 0.3
+            validationSplit: 0.3,
           },
           regularization: {
             l1: 0.001,
-            dropout: 0.2
-          }
+            dropout: 0.2,
+          },
         },
       },
       {
@@ -171,24 +176,30 @@ export class NeuralModels extends EventEmitter {
         status: 'ready',
         parameters: {
           layers: [
-            { type: 'conv1d', size: 64, activation: 'relu', filters: 64, kernelSize: 3 },
+            {
+              type: 'conv1d',
+              size: 64,
+              activation: 'relu',
+              filters: 64,
+              kernelSize: 3,
+            },
             { type: 'pool', size: 32, activation: 'relu', poolSize: 2 },
-            { type: 'dense', size: 10, activation: 'softmax', units: 10 }
+            { type: 'dense', size: 10, activation: 'softmax', units: 10 },
           ],
           optimizer: {
             type: 'sgd',
             learningRate: 0.01,
-            momentum: 0.9
+            momentum: 0.9,
           },
           hyperparameters: {
             epochs: 120,
             batchSize: 128,
-            validationSplit: 0.2
+            validationSplit: 0.2,
           },
           regularization: {
             l2: 0.01,
-            dropout: 0.4
-          }
+            dropout: 0.4,
+          },
         },
       },
     ];
@@ -275,7 +286,7 @@ export class NeuralModels extends EventEmitter {
           type: 'training-result',
           payload: { performance },
           timestamp: new Date(),
-          source: 'neural-models'
+          source: 'neural-models',
         },
       };
     } catch (error) {
@@ -287,7 +298,7 @@ export class NeuralModels extends EventEmitter {
           code: 'TRAINING_FAILED',
           message: (error as Error).message,
           recoverable: true,
-          details: { modelId, error }
+          details: { modelId, error },
         },
       };
     }
@@ -323,7 +334,10 @@ export class NeuralModels extends EventEmitter {
     dataSize: number
   ): ModelPerformance {
     // Base performance varies by model type
-    const basePerformance: Record<ModelType, { accuracy: number; precision: number; recall: number }> = {
+    const basePerformance: Record<
+      ModelType,
+      { accuracy: number; precision: number; recall: number }
+    > = {
       'pattern-recognition': { accuracy: 0.85, precision: 0.83, recall: 0.87 },
       'performance-prediction': {
         accuracy: 0.78,
@@ -333,11 +347,23 @@ export class NeuralModels extends EventEmitter {
       'task-classification': { accuracy: 0.92, precision: 0.9, recall: 0.94 },
       'agent-selection': { accuracy: 0.88, precision: 0.86, recall: 0.9 },
       'anomaly-detection': { accuracy: 0.84, precision: 0.82, recall: 0.86 },
-      'optimization': { accuracy: 0.81, precision: 0.79, recall: 0.83 },
-      'reinforcement-learning': { accuracy: 0.76, precision: 0.74, recall: 0.78 },
-      'natural-language-processing': { accuracy: 0.89, precision: 0.87, recall: 0.91 },
-      'time-series-forecasting': { accuracy: 0.82, precision: 0.8, recall: 0.84 },
-      'clustering': { accuracy: 0.77, precision: 0.75, recall: 0.79 },
+      optimization: { accuracy: 0.81, precision: 0.79, recall: 0.83 },
+      'reinforcement-learning': {
+        accuracy: 0.76,
+        precision: 0.74,
+        recall: 0.78,
+      },
+      'natural-language-processing': {
+        accuracy: 0.89,
+        precision: 0.87,
+        recall: 0.91,
+      },
+      'time-series-forecasting': {
+        accuracy: 0.82,
+        precision: 0.8,
+        recall: 0.84,
+      },
+      clustering: { accuracy: 0.77, precision: 0.75, recall: 0.79 },
     };
 
     const base = basePerformance[type] || {
@@ -365,7 +391,10 @@ export class NeuralModels extends EventEmitter {
     };
   }
 
-  async predict(modelId: string, input: InferenceInput): Promise<ModelInference> {
+  async predict(
+    modelId: string,
+    input: InferenceInput
+  ): Promise<ModelInference> {
     const model = this.models.get(modelId);
     if (!model) {
       throw new Error(`Model ${modelId} not found`);
@@ -404,7 +433,9 @@ export class NeuralModels extends EventEmitter {
     const inputComplexity = this.calculateInputComplexity(input);
     const baseDelay = 50;
     const complexityDelay = Math.min(inputComplexity * 10, 100);
-    await new Promise(resolve => setTimeout(resolve, baseDelay + complexityDelay));
+    await new Promise(resolve =>
+      setTimeout(resolve, baseDelay + complexityDelay)
+    );
 
     // Generate output based on model type and input characteristics
     switch (model.type) {
@@ -430,14 +461,16 @@ export class NeuralModels extends EventEmitter {
     const inputStr = typeof input === 'string' ? input : JSON.stringify(input);
     const size = inputStr.length;
     const depth = this.getObjectDepth(input);
-    return Math.min((size / 100) + (depth * 2), 10);
+    return Math.min(size / 100 + depth * 2, 10);
   }
 
   private getObjectDepth(obj: unknown, currentDepth = 0): number {
     if (typeof obj !== 'object' || obj === null) return currentDepth;
     const values = Object.values(obj as Record<string, unknown>);
     if (values.length === 0) return currentDepth;
-    return Math.max(...values.map(v => this.getObjectDepth(v, currentDepth + 1)));
+    return Math.max(
+      ...values.map(v => this.getObjectDepth(v, currentDepth + 1))
+    );
   }
 
   private classifyTask(input: InferenceInput): InferenceOutput {
@@ -454,7 +487,10 @@ export class NeuralModels extends EventEmitter {
     } else if (descLower.includes('review') || descLower.includes('check')) {
       taskType = 'review';
       confidence = 0.85;
-    } else if (descLower.includes('implement') || descLower.includes('create')) {
+    } else if (
+      descLower.includes('implement') ||
+      descLower.includes('create')
+    ) {
       taskType = 'coding';
       confidence = 0.92;
     }
@@ -464,7 +500,7 @@ export class NeuralModels extends EventEmitter {
       confidence,
       alternatives: [
         { type: 'testing', confidence: taskType === 'testing' ? 0.15 : 0.25 },
-        { type: 'review', confidence: taskType === 'review' ? 0.12 : 0.20 },
+        { type: 'review', confidence: taskType === 'review' ? 0.12 : 0.2 },
       ],
     };
   }
@@ -479,15 +515,15 @@ export class NeuralModels extends EventEmitter {
 
     if (capabilities.includes('coding') || taskComplexity > 0.5) {
       agents.push('coder');
-      scores['coder'] = 0.85 + (taskComplexity * 0.1);
+      scores['coder'] = 0.85 + taskComplexity * 0.1;
     }
     if (capabilities.includes('review') || capabilities.includes('quality')) {
       agents.push('reviewer');
-      scores['reviewer'] = 0.78 + (taskComplexity * 0.05);
+      scores['reviewer'] = 0.78 + taskComplexity * 0.05;
     }
     if (capabilities.includes('testing')) {
       agents.push('tester');
-      scores['tester'] = 0.80;
+      scores['tester'] = 0.8;
     }
 
     if (agents.length === 0) {
@@ -509,24 +545,29 @@ export class NeuralModels extends EventEmitter {
     const agentCount = inputData?.agentCount || 1;
 
     const baseTime = 600;
-    const estimatedTime = baseTime * (1 + complexity) / Math.sqrt(agentCount);
-    const successProbability = Math.min(0.95, 0.7 + (agentCount * 0.05) - (complexity * 0.1));
+    const estimatedTime = (baseTime * (1 + complexity)) / Math.sqrt(agentCount);
+    const successProbability = Math.min(
+      0.95,
+      0.7 + agentCount * 0.05 - complexity * 0.1
+    );
 
     return {
       estimatedTime: Math.round(estimatedTime),
       successProbability: Math.round(successProbability * 100) / 100,
       resourceRequirements: {
-        cpu: Math.min(0.9, 0.3 + (complexity * 0.4)),
-        memory: Math.min(0.8, 0.2 + (complexity * 0.3))
+        cpu: Math.min(0.9, 0.3 + complexity * 0.4),
+        memory: Math.min(0.8, 0.2 + complexity * 0.3),
       },
-      riskFactors: complexity > 0.7 ? ['complexity', 'dependencies'] : ['dependencies'],
+      riskFactors:
+        complexity > 0.7 ? ['complexity', 'dependencies'] : ['dependencies'],
     };
   }
 
   private recognizePatterns(input: InferenceInput): InferenceOutput {
     const inputData = input as PatternRecognitionInput;
     const pattern = inputData?.pattern || '';
-    const patternLower = typeof pattern === 'string' ? pattern.toLowerCase() : '';
+    const patternLower =
+      typeof pattern === 'string' ? pattern.toLowerCase() : '';
 
     let patternType = 'coordination-pattern';
     let confidence = 0.75;
@@ -688,7 +729,7 @@ export class NeuralModels extends EventEmitter {
           type: 'import-result',
           payload: { modelId: model.id },
           timestamp: new Date(),
-          source: 'neural-models'
+          source: 'neural-models',
         },
       };
     } catch (error) {
@@ -699,7 +740,7 @@ export class NeuralModels extends EventEmitter {
           code: 'IMPORT_FAILED',
           message: (error as Error).message,
           recoverable: true,
-          details: { error }
+          details: { error },
         },
       };
     }

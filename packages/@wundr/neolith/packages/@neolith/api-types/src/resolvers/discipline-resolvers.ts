@@ -12,8 +12,10 @@
  * @module @genesis/api-types/resolvers/discipline-resolvers
  */
 
-
-import type { PrismaClient, orchestrator as PrismaOrchestrator } from '@prisma/client';
+import type {
+  PrismaClient,
+  orchestrator as PrismaOrchestrator,
+} from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
@@ -382,7 +384,9 @@ async function getDisciplineMetadata(
   }
 
   const settings = org.settings as Record<string, unknown> | null;
-  const disciplines = settings?.disciplines as Record<string, { description?: string }> | undefined;
+  const disciplines = settings?.disciplines as
+    | Record<string, { description?: string }>
+    | undefined;
 
   if (!disciplines) {
     return { description: null };
@@ -420,7 +424,8 @@ async function saveDisciplineMetadata(
   }
 
   const settings = (org.settings as Record<string, unknown>) ?? {};
-  const disciplines = (settings.disciplines as Record<string, { description?: string }>) ?? {};
+  const disciplines =
+    (settings.disciplines as Record<string, { description?: string }>) ?? {};
 
   const normalizedName = disciplineName.toLowerCase();
   const existingEntry = disciplines[normalizedName] ?? {};
@@ -517,7 +522,11 @@ export const disciplineQueries = {
 
     // Get discipline metadata
     const disciplineName = orchestrators[0]!.discipline;
-    const metadata = await getDisciplineMetadata(context.prisma, orgId, disciplineName);
+    const metadata = await getDisciplineMetadata(
+      context.prisma,
+      orgId,
+      disciplineName
+    );
 
     return {
       id: args.id,
@@ -685,11 +694,17 @@ export const disciplineMutations = {
     const { input } = args;
 
     // Check organization modification permission
-    const canModify = await canModifyOrganization(context, input.organizationId);
+    const canModify = await canModifyOrganization(
+      context,
+      input.organizationId
+    );
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify this organization', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify this organization',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Validate input
@@ -726,7 +741,12 @@ export const disciplineMutations = {
     if (input.description !== undefined) {
       metadataToSave.description = input.description;
     }
-    await saveDisciplineMetadata(context.prisma, input.organizationId, input.name, metadataToSave);
+    await saveDisciplineMetadata(
+      context.prisma,
+      input.organizationId,
+      input.name,
+      metadataToSave
+    );
 
     // If discipline already has VPs, return existing discipline
     if (existingVPs.length > 0) {
@@ -810,9 +830,12 @@ export const disciplineMutations = {
     // Check organization modification permission
     const canModify = await canModifyOrganization(context, orgId);
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify this organization', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify this organization',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Find VPs with this discipline
@@ -867,9 +890,18 @@ export const disciplineMutations = {
     if (input.description !== undefined) {
       metadataToUpdate.description = input.description;
     }
-    await saveDisciplineMetadata(context.prisma, orgId, newName, metadataToUpdate);
+    await saveDisciplineMetadata(
+      context.prisma,
+      orgId,
+      newName,
+      metadataToUpdate
+    );
 
-    const metadata = await getDisciplineMetadata(context.prisma, orgId, newName);
+    const metadata = await getDisciplineMetadata(
+      context.prisma,
+      orgId,
+      newName
+    );
 
     return createSuccessPayload({
       id: generateDisciplineId(orgId, newName),
@@ -929,9 +961,12 @@ export const disciplineMutations = {
     // Check organization modification permission
     const canModify = await canModifyOrganization(context, orgId);
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify this organization', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify this organization',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Find VPs with this discipline to get the actual name
@@ -953,7 +988,8 @@ export const disciplineMutations = {
 
     if (org) {
       const settings = (org.settings as Record<string, unknown>) ?? {};
-      const disciplines = (settings.disciplines as Record<string, unknown>) ?? {};
+      const disciplines =
+        (settings.disciplines as Record<string, unknown>) ?? {};
 
       // Remove the discipline entry
       const normalizedName = orchestrators?.discipline.toLowerCase() ?? slug;
@@ -965,7 +1001,10 @@ export const disciplineMutations = {
         data: {
           settings: {
             ...settings,
-            disciplines: remainingDisciplines as Record<string, { description?: string }>,
+            disciplines: remainingDisciplines as Record<
+              string,
+              { description?: string }
+            >,
           },
         },
       });
@@ -1031,9 +1070,12 @@ export const disciplineMutations = {
     // Check organization modification permission
     const canModify = await canModifyOrganization(context, orch.organizationId);
     if (!canModify) {
-      throw new GraphQLError('You do not have permission to modify VPs in this organization', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to modify VPs in this organization',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Parse discipline ID
@@ -1049,20 +1091,26 @@ export const disciplineMutations = {
     if (parsed.orgId !== orch.organizationId) {
       return {
         orchestrator: null,
-        errors: [{ code: 'BAD_USER_INPUT', message: 'Discipline must be in the same organization as the VP' }],
+        errors: [
+          {
+            code: 'BAD_USER_INPUT',
+            message: 'Discipline must be in the same organization as the VP',
+          },
+        ],
       };
     }
 
     // Find an existing Orchestrator with this discipline to get the proper casing
-    const existingVPWithDiscipline = await context.prisma.orchestrator.findFirst({
-      where: {
-        organizationId: orch.organizationId,
-        discipline: {
-          contains: parsed.slug,
-          mode: 'insensitive',
+    const existingVPWithDiscipline =
+      await context.prisma.orchestrator.findFirst({
+        where: {
+          organizationId: orch.organizationId,
+          discipline: {
+            contains: parsed.slug,
+            mode: 'insensitive',
+          },
         },
-      },
-    });
+      });
 
     // Get discipline name from existing Orchestrator or from metadata
     let disciplineName: string;
@@ -1076,19 +1124,25 @@ export const disciplineMutations = {
       });
 
       const settings = org?.settings as Record<string, unknown> | null;
-      const disciplines = settings?.disciplines as Record<string, { description?: string }> | undefined;
+      const disciplines = settings?.disciplines as
+        | Record<string, { description?: string }>
+        | undefined;
 
       // Find matching discipline in metadata
-      const matchingKey = disciplines ? Object.keys(disciplines).find(
-        (key) => key.toLowerCase() === parsed.slug.toLowerCase()
-      ) : null;
+      const matchingKey = disciplines
+        ? Object.keys(disciplines).find(
+            key => key.toLowerCase() === parsed.slug.toLowerCase()
+          )
+        : null;
 
       if (matchingKey) {
         // Capitalize first letter
-        disciplineName = matchingKey.charAt(0).toUpperCase() + matchingKey.slice(1);
+        disciplineName =
+          matchingKey.charAt(0).toUpperCase() + matchingKey.slice(1);
       } else {
         // Just use the slug with first letter capitalized
-        disciplineName = parsed.slug.charAt(0).toUpperCase() + parsed.slug.slice(1);
+        disciplineName =
+          parsed.slug.charAt(0).toUpperCase() + parsed.slug.slice(1);
       }
     }
 

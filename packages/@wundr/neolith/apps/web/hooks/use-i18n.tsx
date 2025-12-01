@@ -1,8 +1,23 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from 'react';
 
-import { translate, formatDate, formatTime, formatNumber, formatCurrency, formatRelativeTime, detectBrowserLocale, type SupportedLocale } from '@/lib/i18n';
+import {
+  translate,
+  formatDate,
+  formatTime,
+  formatNumber,
+  formatCurrency,
+  formatRelativeTime,
+  detectBrowserLocale,
+  type SupportedLocale,
+} from '@/lib/i18n';
 
 /**
  * Return type for the useI18n hook
@@ -38,8 +53,16 @@ type I18nContextValue = UseI18nReturn;
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function I18nProvider({ children, initialLocale }: { children: ReactNode; initialLocale?: SupportedLocale }) {
-  const [locale, setLocaleState] = useState<SupportedLocale>(initialLocale || detectBrowserLocale());
+export function I18nProvider({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode;
+  initialLocale?: SupportedLocale;
+}) {
+  const [locale, setLocaleState] = useState<SupportedLocale>(
+    initialLocale || detectBrowserLocale()
+  );
 
   const setLocale = useCallback((newLocale: SupportedLocale) => {
     setLocaleState(newLocale);
@@ -49,9 +72,12 @@ export function I18nProvider({ children, initialLocale }: { children: ReactNode;
     }
   }, []);
 
-  const t = useCallback((key: string, values?: Record<string, string | number>) => {
-    return translate(key, locale, values);
-  }, [locale]);
+  const t = useCallback(
+    (key: string, values?: Record<string, string | number>) => {
+      return translate(key, locale, values);
+    },
+    [locale]
+  );
 
   const value: I18nContextValue = {
     locale,
@@ -60,7 +86,8 @@ export function I18nProvider({ children, initialLocale }: { children: ReactNode;
     formatDate: (date: Date) => formatDate(date, locale),
     formatTime: (date: Date) => formatTime(date, locale),
     formatNumber: (num: number) => formatNumber(num, locale),
-    formatCurrency: (amount: number, currency?: string) => formatCurrency(amount, currency, locale),
+    formatCurrency: (amount: number, currency?: string) =>
+      formatCurrency(amount, currency, locale),
     formatRelativeTime: (date: Date) => formatRelativeTime(date, locale),
   };
 

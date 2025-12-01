@@ -28,7 +28,7 @@ export function OrchestratorStatusBadge({
 
   return (
     <Badge
-      variant="outline"
+      variant='outline'
       className={cn(
         'inline-flex items-center gap-1.5 font-medium',
         config.bgColor,

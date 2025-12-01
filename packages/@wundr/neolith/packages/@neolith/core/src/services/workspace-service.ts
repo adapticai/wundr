@@ -30,7 +30,14 @@ import type {
   PaginatedWorkspaceResult,
   WorkspaceMemberRole,
 } from '../types/organization';
-import type { PrismaClient, Prisma, WorkspaceRole, WorkspaceVisibility , Workspace, WorkspaceMember } from '@neolith/database';
+import type {
+  PrismaClient,
+  Prisma,
+  WorkspaceRole,
+  WorkspaceVisibility,
+  Workspace,
+  WorkspaceMember,
+} from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -45,7 +52,7 @@ export class WorkspaceNotFoundError extends GenesisError {
       `Workspace not found with ${identifierType}: ${identifier}`,
       'WORKSPACE_NOT_FOUND',
       404,
-      { identifier, identifierType },
+      { identifier, identifierType }
     );
     this.name = 'WorkspaceNotFoundError';
   }
@@ -60,7 +67,7 @@ export class WorkspaceAlreadyExistsError extends GenesisError {
       `Workspace with slug '${slug}' already exists in organization`,
       'WORKSPACE_ALREADY_EXISTS',
       409,
-      { slug, organizationId },
+      { slug, organizationId }
     );
     this.name = 'WorkspaceAlreadyExistsError';
   }
@@ -84,12 +91,7 @@ export class WorkspaceValidationError extends GenesisError {
  */
 export class UserNotFoundError extends GenesisError {
   constructor(userId: string) {
-    super(
-      `User not found: ${userId}`,
-      'USER_NOT_FOUND',
-      404,
-      { userId },
-    );
+    super(`User not found: ${userId}`, 'USER_NOT_FOUND', 404, { userId });
     this.name = 'UserNotFoundError';
   }
 }
@@ -103,7 +105,7 @@ export class WorkspaceMemberNotFoundError extends GenesisError {
       `User ${userId} is not a member of workspace ${workspaceId}`,
       'WORKSPACE_MEMBER_NOT_FOUND',
       404,
-      { workspaceId, userId },
+      { workspaceId, userId }
     );
     this.name = 'WorkspaceMemberNotFoundError';
   }
@@ -175,7 +177,11 @@ export interface WorkspaceService {
    * @throws {WorkspaceNotFoundError} If the workspace doesn't exist
    * @throws {UserNotFoundError} If the user doesn't exist
    */
-  addMember(workspaceId: string, userId: string, role: WorkspaceMemberRole): Promise<WorkspaceMember>;
+  addMember(
+    workspaceId: string,
+    userId: string,
+    role: WorkspaceMemberRole
+  ): Promise<WorkspaceMember>;
 
   /**
    * Removes a member from a workspace.
@@ -264,7 +270,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
 
     try {
       // Create workspace and add creator as owner in a transaction
-      const workspace = await this.db.$transaction(async (tx) => {
+      const workspace = await this.db.$transaction(async tx => {
         const newWorkspace = await tx.workspace.create({
           data: {
             name: data.name,
@@ -291,7 +297,10 @@ export class WorkspaceServiceImpl implements WorkspaceService {
 
       return workspace;
     } catch (error) {
-      throw new TransactionError('createWorkspace', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'createWorkspace',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -320,7 +329,10 @@ export class WorkspaceServiceImpl implements WorkspaceService {
    * @param organizationId - The organization ID
    * @returns The workspace with members, or null if not found
    */
-  async getWorkspaceBySlug(slug: string, organizationId: string): Promise<Workspace | null> {
+  async getWorkspaceBySlug(
+    slug: string,
+    organizationId: string
+  ): Promise<Workspace | null> {
     const workspace = await this.db.workspace.findUnique({
       where: {
         organizationId_slug: {
@@ -366,13 +378,14 @@ export class WorkspaceServiceImpl implements WorkspaceService {
    */
   async listWorkspacesWithPagination(
     orgId: string,
-    options: ListWorkspacesOptions = {},
+    options: ListWorkspacesOptions = {}
   ): Promise<PaginatedWorkspaceResult> {
     const {
       visibility,
       userId,
       // includeArchived is reserved for future use
-      includeArchived: _includeArchived = DEFAULT_WORKSPACE_LIST_OPTIONS.includeArchived,
+      includeArchived:
+        _includeArchived = DEFAULT_WORKSPACE_LIST_OPTIONS.includeArchived,
       skip = DEFAULT_WORKSPACE_LIST_OPTIONS.skip,
       take = DEFAULT_WORKSPACE_LIST_OPTIONS.take,
       orderBy = DEFAULT_WORKSPACE_LIST_OPTIONS.orderBy,
@@ -417,7 +430,10 @@ export class WorkspaceServiceImpl implements WorkspaceService {
   /**
    * Updates a workspace.
    */
-  async updateWorkspace(id: string, data: UpdateWorkspaceInput): Promise<Workspace> {
+  async updateWorkspace(
+    id: string,
+    data: UpdateWorkspaceInput
+  ): Promise<Workspace> {
     // Validate input
     this.validateUpdateInput(data);
 
@@ -478,7 +494,8 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     });
 
     // Update workspace settings to mark as archived
-    const currentSettings = (existing.settings as Record<string, unknown>) || {};
+    const currentSettings =
+      (existing.settings as Record<string, unknown>) || {};
     const archived = await this.db.workspace.update({
       where: { id },
       data: {
@@ -511,7 +528,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async tx => {
         // Delete all workspace members
         await tx.workspaceMember.deleteMany({
           where: { workspaceId: id },
@@ -523,7 +540,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
           select: { id: true },
         });
 
-        const channelIds = channels.map((c) => c.id);
+        const channelIds = channels.map(c => c.id);
 
         if (channelIds.length > 0) {
           // Delete all channel members
@@ -553,7 +570,10 @@ export class WorkspaceServiceImpl implements WorkspaceService {
         });
       });
     } catch (error) {
-      throw new TransactionError('deleteWorkspace', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteWorkspace',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -567,7 +587,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
   async addMember(
     workspaceId: string,
     userId: string,
-    role: WorkspaceMemberRole,
+    role: WorkspaceMemberRole
   ): Promise<WorkspaceMember> {
     // Verify workspace exists
     const workspace = await this.getWorkspace(workspaceId);
@@ -636,7 +656,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     // Also remove from all channels in the workspace
-    await this.db.$transaction(async (tx) => {
+    await this.db.$transaction(async tx => {
       // Remove from workspace
       await tx.workspaceMember.delete({
         where: {
@@ -653,7 +673,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
         select: { id: true },
       });
 
-      const channelIds = channels.map((c) => c.id);
+      const channelIds = channels.map(c => c.id);
 
       if (channelIds.length > 0) {
         await tx.channelMember.deleteMany({
@@ -679,7 +699,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
   async updateMemberRole(
     workspaceId: string,
     userId: string,
-    role: WorkspaceMemberRole,
+    role: WorkspaceMemberRole
   ): Promise<WorkspaceMember> {
     // Verify workspace exists
     const workspace = await this.getWorkspace(workspaceId);
@@ -775,7 +795,9 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH) {
-      errors.description = [`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`];
+      errors.description = [
+        `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      ];
     }
 
     if (!data.organizationId) {
@@ -786,7 +808,10 @@ export class WorkspaceServiceImpl implements WorkspaceService {
       errors.createdById = ['Creator ID is required'];
     }
 
-    if (data.visibility && !['PUBLIC', 'PRIVATE', 'INTERNAL'].includes(data.visibility)) {
+    if (
+      data.visibility &&
+      !['PUBLIC', 'PRIVATE', 'INTERNAL'].includes(data.visibility)
+    ) {
       errors.visibility = ['Invalid visibility level'];
     }
 
@@ -810,10 +835,15 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH) {
-      errors.description = [`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`];
+      errors.description = [
+        `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      ];
     }
 
-    if (data.visibility && !['PUBLIC', 'PRIVATE', 'INTERNAL'].includes(data.visibility)) {
+    if (
+      data.visibility &&
+      !['PUBLIC', 'PRIVATE', 'INTERNAL'].includes(data.visibility)
+    ) {
       errors.visibility = ['Invalid visibility level'];
     }
 
@@ -848,7 +878,9 @@ export class WorkspaceServiceImpl implements WorkspaceService {
  * await workspaceService.addMember(workspace.id, 'user_789', 'MEMBER');
  * ```
  */
-export function createWorkspaceService(database?: PrismaClient): WorkspaceServiceImpl {
+export function createWorkspaceService(
+  database?: PrismaClient
+): WorkspaceServiceImpl {
   return new WorkspaceServiceImpl(database);
 }
 

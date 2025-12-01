@@ -58,7 +58,7 @@ export class CommandParser {
    */
   async parseCommand(
     input: string,
-    context?: ConversationContext,
+    context?: ConversationContext
   ): Promise<ParsedCommand> {
     try {
       // First, try template-based parsing for common patterns
@@ -80,7 +80,7 @@ export class CommandParser {
       // Fall back to AI-powered parsing
       const aiResult = await this.aiService.parseNaturalLanguageCommand(
         input,
-        context,
+        context
       );
 
       // Parse the command string into components
@@ -119,7 +119,7 @@ export class CommandParser {
    */
   async parseComplexCommand(
     input: string,
-    context?: ConversationContext,
+    context?: ConversationContext
   ): Promise<ParsedCommand> {
     try {
       // Check if this is a complex command (contains "and", "then", "after")
@@ -143,8 +143,8 @@ export class CommandParser {
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
         if (!step) {
-continue;
-}
+          continue;
+        }
 
         const stepResult = await this.parseCommand(step, context);
 
@@ -189,7 +189,7 @@ continue;
     if (!parsedCommand.command || parsedCommand.command.trim() === '') {
       issues.push('No valid command identified');
       recommendations.push(
-        'Try rephrasing with a specific action like "analyze", "create", or "init"',
+        'Try rephrasing with a specific action like "analyze", "create", or "init"'
       );
     }
 
@@ -207,7 +207,7 @@ continue;
     if (parsedCommand.confidence < 0.6) {
       issues.push('Low confidence in command interpretation');
       recommendations.push(
-        'Consider providing more specific details about what you want to accomplish',
+        'Consider providing more specific details about what you want to accomplish'
       );
     }
 
@@ -226,7 +226,7 @@ continue;
    */
   async generateSuggestions(
     input: string,
-    context?: ConversationContext,
+    context?: ConversationContext
   ): Promise<string[]> {
     try {
       const suggestions = await this.aiService.suggestCommands(input, context);
@@ -445,8 +445,8 @@ continue;
         step =>
           step.length > 0 &&
           !['and', 'then', 'after', 'next', 'followed by'].includes(
-            step.toLowerCase(),
-          ),
+            step.toLowerCase()
+          )
       );
   }
 
@@ -477,7 +477,7 @@ continue;
   private async validateCommandSpecifics(
     parsedCommand: ParsedCommand,
     issues: string[],
-    recommendations: string[],
+    recommendations: string[]
   ): Promise<void> {
     const commandParts = parsedCommand.command.split(' ');
     const baseCommand = commandParts[1]; // Skip "wundr"
@@ -486,10 +486,10 @@ continue;
       case 'create':
         if (parsedCommand.args.length === 0) {
           issues.push(
-            'Create command requires a type (service, component, etc.)',
+            'Create command requires a type (service, component, etc.)'
           );
           recommendations.push(
-            'Specify what you want to create: "wundr create service MyService"',
+            'Specify what you want to create: "wundr create service MyService"'
           );
         }
         break;
@@ -498,7 +498,7 @@ continue;
         // Analyze command is flexible, but we can suggest focus areas
         if (!parsedCommand.options['focus']) {
           recommendations.push(
-            'Consider using --focus to target specific areas (dependencies, duplicates, quality)',
+            'Consider using --focus to target specific areas (dependencies, duplicates, quality)'
           );
         }
         break;
@@ -509,7 +509,7 @@ continue;
           parsedCommand.args.length === 0
         ) {
           recommendations.push(
-            'Specify file patterns to watch: "wundr watch --pattern "**/*.ts""',
+            'Specify file patterns to watch: "wundr watch --pattern "**/*.ts""'
           );
         }
         break;
@@ -520,10 +520,10 @@ continue;
           !parsedCommand.options['interactive']
         ) {
           issues.push(
-            'Batch command requires either a batch file or interactive mode',
+            'Batch command requires either a batch file or interactive mode'
           );
           recommendations.push(
-            'Use --file <batch-file> or --interactive for step-by-step execution',
+            'Use --file <batch-file> or --interactive for step-by-step execution'
           );
         }
         break;

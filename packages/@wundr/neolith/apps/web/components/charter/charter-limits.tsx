@@ -2,7 +2,13 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -85,7 +91,11 @@ function calculateEstimatedCost(limits: CharterResourceLimits): number {
   return tokenCost + memoryCost + cpuCost + sessionCost;
 }
 
-export function CharterLimits({ value, onChange, className }: CharterLimitsProps) {
+export function CharterLimits({
+  value,
+  onChange,
+  className,
+}: CharterLimitsProps) {
   const [localValues, setLocalValues] = React.useState(value);
 
   // Sync local values with prop changes
@@ -93,13 +103,19 @@ export function CharterLimits({ value, onChange, className }: CharterLimitsProps
     setLocalValues(value);
   }, [value]);
 
-  const handleSliderChange = (field: keyof CharterResourceLimits, newValue: number[]) => {
+  const handleSliderChange = (
+    field: keyof CharterResourceLimits,
+    newValue: number[]
+  ) => {
     const updatedValues = { ...localValues, [field]: newValue[0] };
     setLocalValues(updatedValues);
     onChange(updatedValues);
   };
 
-  const handleInputChange = (field: keyof CharterResourceLimits, inputValue: string) => {
+  const handleInputChange = (
+    field: keyof CharterResourceLimits,
+    inputValue: string
+  ) => {
     const numValue = parseInt(inputValue, 10);
     if (isNaN(numValue)) return;
 
@@ -126,62 +142,69 @@ export function CharterLimits({ value, onChange, className }: CharterLimitsProps
           Configure resource constraints for charter execution
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className='space-y-6'>
         {/* Preset Buttons */}
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => applyPreset('low')}
-            className="flex-1"
+            className='flex-1'
           >
             Low
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => applyPreset('medium')}
-            className="flex-1"
+            className='flex-1'
           >
             Medium
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => applyPreset('high')}
-            className="flex-1"
+            className='flex-1'
           >
             High
           </Button>
         </div>
 
         {/* Max Concurrent Sessions */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="maxConcurrentSessions" className="text-sm font-medium">
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <Label
+              htmlFor='maxConcurrentSessions'
+              className='text-sm font-medium'
+            >
               Max Concurrent Sessions
             </Label>
             <Input
-              id="maxConcurrentSessions"
-              type="number"
+              id='maxConcurrentSessions'
+              type='number'
               value={localValues.maxConcurrentSessions}
-              onChange={(e) => handleInputChange('maxConcurrentSessions', e.target.value)}
+              onChange={e =>
+                handleInputChange('maxConcurrentSessions', e.target.value)
+              }
               min={LIMITS.maxConcurrentSessions.min}
               max={LIMITS.maxConcurrentSessions.max}
-              className="w-20 h-8 text-right"
+              className='w-20 h-8 text-right'
             />
           </div>
           <Slider
             value={[localValues.maxConcurrentSessions]}
-            onValueChange={(val) => handleSliderChange('maxConcurrentSessions', val)}
+            onValueChange={val =>
+              handleSliderChange('maxConcurrentSessions', val)
+            }
             min={LIMITS.maxConcurrentSessions.min}
             max={LIMITS.maxConcurrentSessions.max}
             step={LIMITS.maxConcurrentSessions.step}
-            className="w-full"
+            className='w-full'
           />
-          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+          <div className='h-2 bg-secondary rounded-full overflow-hidden'>
             <div
-              className="h-full bg-primary/30 transition-all"
+              className='h-full bg-primary/30 transition-all'
               style={{
                 width: `${(localValues.maxConcurrentSessions / LIMITS.maxConcurrentSessions.max) * 100}%`,
               }}
@@ -190,37 +213,39 @@ export function CharterLimits({ value, onChange, className }: CharterLimitsProps
         </div>
 
         {/* Token Budget Per Hour */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="tokenBudgetPerHour" className="text-sm font-medium">
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='tokenBudgetPerHour' className='text-sm font-medium'>
               Token Budget Per Hour
             </Label>
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <Input
-                id="tokenBudgetPerHour"
-                type="number"
+                id='tokenBudgetPerHour'
+                type='number'
                 value={localValues.tokenBudgetPerHour}
-                onChange={(e) => handleInputChange('tokenBudgetPerHour', e.target.value)}
+                onChange={e =>
+                  handleInputChange('tokenBudgetPerHour', e.target.value)
+                }
                 min={LIMITS.tokenBudgetPerHour.min}
                 max={LIMITS.tokenBudgetPerHour.max}
-                className="w-28 h-8 text-right"
+                className='w-28 h-8 text-right'
               />
-              <span className="text-sm text-muted-foreground">
+              <span className='text-sm text-muted-foreground'>
                 ({formatTokens(localValues.tokenBudgetPerHour)})
               </span>
             </div>
           </div>
           <Slider
             value={[localValues.tokenBudgetPerHour]}
-            onValueChange={(val) => handleSliderChange('tokenBudgetPerHour', val)}
+            onValueChange={val => handleSliderChange('tokenBudgetPerHour', val)}
             min={LIMITS.tokenBudgetPerHour.min}
             max={LIMITS.tokenBudgetPerHour.max}
             step={LIMITS.tokenBudgetPerHour.step}
-            className="w-full"
+            className='w-full'
           />
-          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+          <div className='h-2 bg-secondary rounded-full overflow-hidden'>
             <div
-              className="h-full bg-primary/30 transition-all"
+              className='h-full bg-primary/30 transition-all'
               style={{
                 width: `${(localValues.tokenBudgetPerHour / LIMITS.tokenBudgetPerHour.max) * 100}%`,
               }}
@@ -229,37 +254,37 @@ export function CharterLimits({ value, onChange, className }: CharterLimitsProps
         </div>
 
         {/* Max Memory */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="maxMemoryMB" className="text-sm font-medium">
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='maxMemoryMB' className='text-sm font-medium'>
               Max Memory
             </Label>
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <Input
-                id="maxMemoryMB"
-                type="number"
+                id='maxMemoryMB'
+                type='number'
                 value={localValues.maxMemoryMB}
-                onChange={(e) => handleInputChange('maxMemoryMB', e.target.value)}
+                onChange={e => handleInputChange('maxMemoryMB', e.target.value)}
                 min={LIMITS.maxMemoryMB.min}
                 max={LIMITS.maxMemoryMB.max}
-                className="w-28 h-8 text-right"
+                className='w-28 h-8 text-right'
               />
-              <span className="text-sm text-muted-foreground">
+              <span className='text-sm text-muted-foreground'>
                 ({formatMemory(localValues.maxMemoryMB)})
               </span>
             </div>
           </div>
           <Slider
             value={[localValues.maxMemoryMB]}
-            onValueChange={(val) => handleSliderChange('maxMemoryMB', val)}
+            onValueChange={val => handleSliderChange('maxMemoryMB', val)}
             min={LIMITS.maxMemoryMB.min}
             max={LIMITS.maxMemoryMB.max}
             step={LIMITS.maxMemoryMB.step}
-            className="w-full"
+            className='w-full'
           />
-          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+          <div className='h-2 bg-secondary rounded-full overflow-hidden'>
             <div
-              className="h-full bg-primary/30 transition-all"
+              className='h-full bg-primary/30 transition-all'
               style={{
                 width: `${(localValues.maxMemoryMB / LIMITS.maxMemoryMB.max) * 100}%`,
               }}
@@ -268,35 +293,37 @@ export function CharterLimits({ value, onChange, className }: CharterLimitsProps
         </div>
 
         {/* Max CPU Percent */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="maxCpuPercent" className="text-sm font-medium">
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='maxCpuPercent' className='text-sm font-medium'>
               Max CPU Usage
             </Label>
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <Input
-                id="maxCpuPercent"
-                type="number"
+                id='maxCpuPercent'
+                type='number'
                 value={localValues.maxCpuPercent}
-                onChange={(e) => handleInputChange('maxCpuPercent', e.target.value)}
+                onChange={e =>
+                  handleInputChange('maxCpuPercent', e.target.value)
+                }
                 min={LIMITS.maxCpuPercent.min}
                 max={LIMITS.maxCpuPercent.max}
-                className="w-20 h-8 text-right"
+                className='w-20 h-8 text-right'
               />
-              <span className="text-sm text-muted-foreground">%</span>
+              <span className='text-sm text-muted-foreground'>%</span>
             </div>
           </div>
           <Slider
             value={[localValues.maxCpuPercent]}
-            onValueChange={(val) => handleSliderChange('maxCpuPercent', val)}
+            onValueChange={val => handleSliderChange('maxCpuPercent', val)}
             min={LIMITS.maxCpuPercent.min}
             max={LIMITS.maxCpuPercent.max}
             step={LIMITS.maxCpuPercent.step}
-            className="w-full"
+            className='w-full'
           />
-          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+          <div className='h-2 bg-secondary rounded-full overflow-hidden'>
             <div
-              className="h-full bg-primary/30 transition-all"
+              className='h-full bg-primary/30 transition-all'
               style={{
                 width: `${(localValues.maxCpuPercent / LIMITS.maxCpuPercent.max) * 100}%`,
               }}
@@ -305,12 +332,16 @@ export function CharterLimits({ value, onChange, className }: CharterLimitsProps
         </div>
 
         {/* Cost Estimation */}
-        <div className="pt-4 border-t">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Estimated Cost (per hour)</span>
-            <span className="text-lg font-semibold">${estimatedCost.toFixed(4)}</span>
+        <div className='pt-4 border-t'>
+          <div className='flex items-center justify-between'>
+            <span className='text-sm text-muted-foreground'>
+              Estimated Cost (per hour)
+            </span>
+            <span className='text-lg font-semibold'>
+              ${estimatedCost.toFixed(4)}
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className='text-xs text-muted-foreground mt-1'>
             Based on current resource configuration
           </p>
         </div>

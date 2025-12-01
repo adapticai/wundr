@@ -18,7 +18,10 @@ import { auth } from '@/lib/auth';
 import { createErrorResponse } from '@/lib/validations/task';
 
 import type { CompleteTaskInput } from '@/lib/validations/task-backlog';
-import { BACKLOG_ERROR_CODES, completeTaskSchema } from '@/lib/validations/task-backlog';
+import {
+  BACKLOG_ERROR_CODES,
+  completeTaskSchema,
+} from '@/lib/validations/task-backlog';
 
 /**
  * POST /api/workspaces/[workspaceId]/tasks/[taskId]/complete
@@ -52,15 +55,18 @@ import { BACKLOG_ERROR_CODES, completeTaskSchema } from '@/lib/validations/task-
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; taskId: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; taskId: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user (can be Orchestrator or human)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', BACKLOG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          BACKLOG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -70,8 +76,11 @@ export async function POST(
 
     if (!workspaceId || !taskId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', BACKLOG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          BACKLOG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -123,24 +132,33 @@ export async function POST(
 
     if (!task) {
       return NextResponse.json(
-        createErrorResponse('Task not found in this workspace', BACKLOG_ERROR_CODES.TASK_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Task not found in this workspace',
+          BACKLOG_ERROR_CODES.TASK_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Check if task is already completed
     if (task.status === 'DONE') {
       return NextResponse.json(
-        createErrorResponse('Task is already completed', BACKLOG_ERROR_CODES.ALREADY_COMPLETED),
-        { status: 400 },
+        createErrorResponse(
+          'Task is already completed',
+          BACKLOG_ERROR_CODES.ALREADY_COMPLETED
+        ),
+        { status: 400 }
       );
     }
 
     // Check if task is cancelled
     if (task.status === 'CANCELLED') {
       return NextResponse.json(
-        createErrorResponse('Cannot complete a cancelled task', BACKLOG_ERROR_CODES.INVALID_STATE),
-        { status: 400 },
+        createErrorResponse(
+          'Cannot complete a cancelled task',
+          BACKLOG_ERROR_CODES.INVALID_STATE
+        ),
+        { status: 400 }
       );
     }
 
@@ -160,9 +178,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You do not have permission to complete this task',
-          BACKLOG_ERROR_CODES.FORBIDDEN,
+          BACKLOG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -172,8 +190,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', BACKLOG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          BACKLOG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -184,9 +205,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           BACKLOG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -229,7 +250,7 @@ export async function POST(
 
     // Log completion
     console.log(
-      `[Task Completion] Task ${taskId} "${task.title}" completed by ${session.user.name || session.user.email}`,
+      `[Task Completion] Task ${taskId} "${task.title}" completed by ${session.user.name || session.user.email}`
     );
 
     // If Orchestrator completed the task and there's a channel, post status message
@@ -237,7 +258,7 @@ export async function POST(
       try {
         await prisma.message.create({
           data: {
-            content: `Task completed: **${task.title}**${input.notes ? `\n\n${input.notes}` : ''}${input.artifacts.length > 0 ? `\n\nArtifacts:\n${input.artifacts.map((a) => `- ${a}`).join('\n')}` : ''}`,
+            content: `Task completed: **${task.title}**${input.notes ? `\n\n${input.notes}` : ''}${input.artifacts.length > 0 ? `\n\nArtifacts:\n${input.artifacts.map(a => `- ${a}`).join('\n')}` : ''}`,
             type: 'SYSTEM',
             channelId: task.channelId,
             authorId: task.orchestrator.userId,
@@ -249,7 +270,10 @@ export async function POST(
           },
         });
       } catch (error) {
-        console.error('[Task Completion] Failed to post channel message:', error);
+        console.error(
+          '[Task Completion] Failed to post channel message:',
+          error
+        );
         // Don't fail the completion if channel message fails
       }
     }
@@ -268,7 +292,7 @@ export async function POST(
 
       if (webhooks.length > 0) {
         // Queue webhook deliveries
-        const deliveries = webhooks.map((webhook) => ({
+        const deliveries = webhooks.map(webhook => ({
           webhookId: webhook.id,
           event: 'task.completed',
           payload: {
@@ -291,7 +315,9 @@ export async function POST(
           data: deliveries,
         });
 
-        console.log(`[Task Completion] Queued ${webhooks.length} webhook deliveries`);
+        console.log(
+          `[Task Completion] Queued ${webhooks.length} webhook deliveries`
+        );
       }
     } catch (error) {
       console.error('[Task Completion] Failed to queue webhooks:', error);
@@ -309,21 +335,30 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceId]/tasks/[taskId]/complete] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceId]/tasks/[taskId]/complete] Error:',
+      error
+    );
 
     // Handle Prisma errors
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          createErrorResponse('Task not found', BACKLOG_ERROR_CODES.TASK_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Task not found',
+            BACKLOG_ERROR_CODES.TASK_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', BACKLOG_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        BACKLOG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

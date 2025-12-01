@@ -46,7 +46,7 @@ function isNumber(value: TerminationConditionValue): value is number {
  * Type guard to check if value is a string or string array
  */
 function isStringOrStringArray(
-  value: TerminationConditionValue,
+  value: TerminationConditionValue
 ): value is string | string[] {
   return typeof value === 'string' || Array.isArray(value);
 }
@@ -55,7 +55,7 @@ function isStringOrStringArray(
  * Type guard to check if value is a ConsensusConfigType
  */
 function isConsensusConfig(
-  value: TerminationConditionValue,
+  value: TerminationConditionValue
 ): value is ConsensusConfigType {
   return (
     typeof value === 'object' &&
@@ -71,7 +71,7 @@ function isConsensusConfig(
  * @returns Appropriate termination handler
  */
 export function createTerminationHandler(
-  condition: TerminationCondition,
+  condition: TerminationCondition
 ): TerminationHandler {
   switch (condition.type) {
     case 'max_rounds':
@@ -87,7 +87,7 @@ export function createTerminationHandler(
     case 'keyword':
       if (!isStringOrStringArray(condition.value)) {
         throw new Error(
-          'keyword condition requires a string or string[] value',
+          'keyword condition requires a string or string[] value'
         );
       }
       return new KeywordHandler(condition.value);
@@ -104,7 +104,7 @@ export function createTerminationHandler(
     case 'consensus':
       if (!isConsensusConfig(condition.value)) {
         throw new Error(
-          'consensus condition requires a ConsensusConfigType value',
+          'consensus condition requires a ConsensusConfigType value'
         );
       }
       return new ConsensusHandler(condition.value);
@@ -141,7 +141,7 @@ export class MaxRoundsHandler implements TerminationHandler {
   async evaluate(
     _messages: Message[],
     _participants: ChatParticipant[],
-    context: ChatContext,
+    context: ChatContext
   ): Promise<TerminationResult> {
     const shouldTerminate = context.currentRound >= this.maxRounds;
 
@@ -181,7 +181,7 @@ export class MaxMessagesHandler implements TerminationHandler {
   async evaluate(
     messages: Message[],
     _participants: ChatParticipant[],
-    _context: ChatContext,
+    _context: ChatContext
   ): Promise<TerminationResult> {
     const shouldTerminate = messages.length >= this.maxMessages;
 
@@ -214,7 +214,7 @@ export class KeywordHandler implements TerminationHandler {
   constructor(
     keywords: string | string[],
     caseSensitive = false,
-    requireAll = false,
+    requireAll = false
   ) {
     this.keywords = Array.isArray(keywords) ? keywords : [keywords];
     this.caseSensitive = caseSensitive;
@@ -231,7 +231,7 @@ export class KeywordHandler implements TerminationHandler {
   async evaluate(
     messages: Message[],
     _participants: ChatParticipant[],
-    _context: ChatContext,
+    _context: ChatContext
   ): Promise<TerminationResult> {
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage) {
@@ -293,7 +293,7 @@ export class TimeoutHandler implements TerminationHandler {
   async evaluate(
     _messages: Message[],
     _participants: ChatParticipant[],
-    context: ChatContext,
+    context: ChatContext
   ): Promise<TerminationResult> {
     const elapsed = Date.now() - context.startTime.getTime();
     const shouldTerminate = elapsed >= this.timeoutMs;
@@ -337,7 +337,7 @@ export class FunctionHandler implements TerminationHandler {
   async evaluate(
     messages: Message[],
     participants: ChatParticipant[],
-    context: ChatContext,
+    context: ChatContext
   ): Promise<TerminationResult> {
     try {
       return await this.evaluator(messages, participants, context);
@@ -401,7 +401,7 @@ export class ConsensusHandler implements TerminationHandler {
   async evaluate(
     messages: Message[],
     _participants: ChatParticipant[],
-    _context: ChatContext,
+    _context: ChatContext
   ): Promise<TerminationResult> {
     const windowSize = this.config.windowSize || 10;
     const recentMessages = messages.slice(-windowSize);
@@ -414,12 +414,12 @@ export class ConsensusHandler implements TerminationHandler {
 
       // Check for agreement keywords
       const hasAgreement = this.config.agreementKeywords.some(keyword =>
-        contentLower.includes(keyword.toLowerCase()),
+        contentLower.includes(keyword.toLowerCase())
       );
 
       // Check for disagreement keywords
       const hasDisagreement = this.config.disagreementKeywords.some(keyword =>
-        contentLower.includes(keyword.toLowerCase()),
+        contentLower.includes(keyword.toLowerCase())
       );
 
       if (hasAgreement && !hasDisagreement) {
@@ -431,7 +431,7 @@ export class ConsensusHandler implements TerminationHandler {
 
     const totalVoters = votes.size;
     const agreements = Array.from(votes.values()).filter(
-      v => v === 'agree',
+      v => v === 'agree'
     ).length;
 
     const minParticipants = this.config.minParticipants || 2;
@@ -489,7 +489,7 @@ export class CustomHandler implements TerminationHandler {
   async evaluate(
     messages: Message[],
     participants: ChatParticipant[],
-    context: ChatContext,
+    context: ChatContext
   ): Promise<TerminationResult> {
     // If there's a custom evaluator, use it
     if (this.condition.evaluator) {
@@ -581,7 +581,7 @@ export class TerminationManager {
   async evaluate(
     messages: Message[],
     participants: ChatParticipant[],
-    context: ChatContext,
+    context: ChatContext
   ): Promise<TerminationResult> {
     const results: Array<TerminationResult & { type: string }> = [];
 

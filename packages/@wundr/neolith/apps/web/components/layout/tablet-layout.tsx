@@ -50,14 +50,12 @@ export function TabletLayout({
   return (
     <div className={cn('flex h-full', className)}>
       {/* Sidebar - fixed width, scrollable */}
-      <aside className="w-72 flex-shrink-0 border-r border-border bg-muted/30 overflow-y-auto">
+      <aside className='w-72 flex-shrink-0 border-r border-border bg-muted/30 overflow-y-auto'>
         {sidebar}
       </aside>
 
       {/* Main content - flexible, scrollable */}
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+      <main className='flex-1 overflow-auto'>{children}</main>
     </div>
   );
 }
@@ -70,13 +68,9 @@ export function TabletContent({
   className,
 }: {
   children: React.ReactNode;
-  className?: string
+  className?: string;
 }) {
-  return (
-    <div className={cn('p-4 md:p-6', className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('p-4 md:p-6', className)}>{children}</div>;
 }
 
 /**
@@ -87,13 +81,15 @@ export function TabletGrid({
   className,
 }: {
   children: React.ReactNode;
-  className?: string
+  className?: string;
 }) {
   return (
-    <div className={cn(
-      'grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6',
-      className,
-    )}>
+    <div
+      className={cn(
+        'grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6',
+        className
+      )}
+    >
       {children}
     </div>
   );

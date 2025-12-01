@@ -15,7 +15,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { CreateAgentInput, AgentType, AvailableTool } from '@/types/agent';
-import { AGENT_TYPE_METADATA, AVAILABLE_TOOLS, DEFAULT_MODEL_CONFIGS } from '@/types/agent';
+import {
+  AGENT_TYPE_METADATA,
+  AVAILABLE_TOOLS,
+  DEFAULT_MODEL_CONFIGS,
+} from '@/types/agent';
 
 interface CreateAgentModalProps {
   isOpen: boolean;
@@ -24,7 +28,15 @@ interface CreateAgentModalProps {
   isLoading?: boolean;
 }
 
-const AGENT_TYPES: AgentType[] = ['task', 'research', 'coding', 'data', 'qa', 'support', 'custom'];
+const AGENT_TYPES: AgentType[] = [
+  'task',
+  'research',
+  'coding',
+  'data',
+  'qa',
+  'support',
+  'custom',
+];
 
 const AVAILABLE_MODELS: ReadonlyArray<{ value: string; label: string }> = [
   { value: 'claude-3-opus', label: 'Claude 3 Opus' },
@@ -75,8 +87,8 @@ export function CreateAgentModal({
   }, []);
 
   const handleToolToggle = useCallback((tool: AvailableTool) => {
-    setSelectedTools((prev) =>
-      prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool],
+    setSelectedTools(prev =>
+      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool]
     );
   }, []);
 
@@ -145,66 +157,73 @@ export function CreateAgentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'
       onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="create-agent-title"
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby='create-agent-title'
     >
       <div
-        className="w-full max-w-2xl rounded-lg bg-card shadow-lg"
-        onClick={(e) => e.stopPropagation()}
+        className='w-full max-w-2xl rounded-lg bg-card shadow-lg'
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="border-b px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h2 id="create-agent-title" className="text-lg font-semibold text-foreground">
+        <div className='border-b px-6 py-4'>
+          <div className='flex items-center justify-between'>
+            <h2
+              id='create-agent-title'
+              className='text-lg font-semibold text-foreground'
+            >
               Create New Agent
             </h2>
             <button
-              type="button"
+              type='button'
               onClick={handleClose}
-              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-              aria-label="Close dialog"
+              className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
+              aria-label='Close dialog'
             >
-              <XIcon className="h-5 w-5" />
+              <XIcon className='h-5 w-5' />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
-          <div className="space-y-4">
+        <div className='max-h-[70vh] overflow-y-auto px-6 py-6'>
+          <div className='space-y-4'>
             {/* Name */}
             <div>
-              <Label htmlFor="agent-name">
-                Agent Name <span className="text-red-500">*</span>
+              <Label htmlFor='agent-name'>
+                Agent Name <span className='text-red-500'>*</span>
               </Label>
               <Input
-                id="agent-name"
-                type="text"
+                id='agent-name'
+                type='text'
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Code Reviewer"
+                onChange={e => setName(e.target.value)}
+                placeholder='e.g., Code Reviewer'
                 disabled={isLoading}
               />
             </div>
 
             {/* Type */}
             <div>
-              <Label htmlFor="agent-type">
-                Agent Type <span className="text-red-500">*</span>
+              <Label htmlFor='agent-type'>
+                Agent Type <span className='text-red-500'>*</span>
               </Label>
-              <Select value={type} onValueChange={handleTypeChange} disabled={isLoading}>
-                <SelectTrigger id="agent-type">
+              <Select
+                value={type}
+                onValueChange={handleTypeChange}
+                disabled={isLoading}
+              >
+                <SelectTrigger id='agent-type'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {AGENT_TYPES.map((agentType) => {
+                  {AGENT_TYPES.map(agentType => {
                     const metadata = AGENT_TYPE_METADATA[agentType];
                     return (
                       <SelectItem key={agentType} value={agentType}>
-                        <span className="flex items-center gap-2">
+                        <span className='flex items-center gap-2'>
                           <span>{metadata.icon}</span>
                           <span>{metadata.label}</span>
                         </span>
@@ -213,18 +232,18 @@ export function CreateAgentModal({
                   })}
                 </SelectContent>
               </Select>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className='mt-1 text-xs text-muted-foreground'>
                 {AGENT_TYPE_METADATA[type].description}
               </p>
             </div>
 
             {/* Description */}
             <div>
-              <Label htmlFor="agent-description">Description</Label>
+              <Label htmlFor='agent-description'>Description</Label>
               <Textarea
-                id="agent-description"
+                id='agent-description'
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={e => setDescription(e.target.value)}
                 placeholder="Briefly describe this agent's purpose..."
                 rows={2}
                 disabled={isLoading}
@@ -232,17 +251,23 @@ export function CreateAgentModal({
             </div>
 
             {/* Model Configuration */}
-            <div className="space-y-3 rounded-lg border border-border bg-background p-4">
-              <h3 className="text-sm font-medium text-foreground">Model Configuration</h3>
+            <div className='space-y-3 rounded-lg border border-border bg-background p-4'>
+              <h3 className='text-sm font-medium text-foreground'>
+                Model Configuration
+              </h3>
 
               <div>
-                <Label htmlFor="agent-model">Model</Label>
-                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isLoading}>
-                  <SelectTrigger id="agent-model">
+                <Label htmlFor='agent-model'>Model</Label>
+                <Select
+                  value={selectedModel}
+                  onValueChange={setSelectedModel}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger id='agent-model'>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {AVAILABLE_MODELS.map((model) => (
+                    {AVAILABLE_MODELS.map(model => (
                       <SelectItem key={model.value} value={model.value}>
                         {model.label}
                       </SelectItem>
@@ -251,35 +276,37 @@ export function CreateAgentModal({
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className='grid grid-cols-2 gap-3'>
                 <div>
-                  <Label htmlFor="agent-temperature">Temperature: {temperature.toFixed(1)}</Label>
+                  <Label htmlFor='agent-temperature'>
+                    Temperature: {temperature.toFixed(1)}
+                  </Label>
                   <input
-                    id="agent-temperature"
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
+                    id='agent-temperature'
+                    type='range'
+                    min='0'
+                    max='1'
+                    step='0.1'
                     value={temperature}
-                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                    onChange={e => setTemperature(parseFloat(e.target.value))}
                     disabled={isLoading}
-                    className="w-full"
+                    className='w-full'
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className='mt-1 text-xs text-muted-foreground'>
                     Higher = more creative, lower = more focused
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="agent-max-tokens">Max Tokens</Label>
+                  <Label htmlFor='agent-max-tokens'>Max Tokens</Label>
                   <Input
-                    id="agent-max-tokens"
-                    type="number"
-                    min="256"
-                    max="32000"
-                    step="256"
+                    id='agent-max-tokens'
+                    type='number'
+                    min='256'
+                    max='32000'
+                    step='256'
                     value={maxTokens}
-                    onChange={(e) => {
+                    onChange={e => {
                       const value = parseInt(e.target.value, 10);
                       if (!isNaN(value)) {
                         setMaxTokens(value);
@@ -293,16 +320,16 @@ export function CreateAgentModal({
 
             {/* System Prompt */}
             <div>
-              <Label htmlFor="agent-system-prompt">System Prompt</Label>
+              <Label htmlFor='agent-system-prompt'>System Prompt</Label>
               <Textarea
-                id="agent-system-prompt"
+                id='agent-system-prompt'
                 value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
+                onChange={e => setSystemPrompt(e.target.value)}
                 placeholder="Define the agent's role and behavior..."
                 rows={3}
                 disabled={isLoading}
               />
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className='mt-1 text-xs text-muted-foreground'>
                 Leave empty to use the default prompt for this agent type
               </p>
             </div>
@@ -310,18 +337,18 @@ export function CreateAgentModal({
             {/* Tools */}
             <div>
               <Label>Available Tools</Label>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {AVAILABLE_TOOLS.map((tool) => (
+              <div className='mt-2 grid grid-cols-2 gap-2'>
+                {AVAILABLE_TOOLS.map(tool => (
                   <button
                     key={tool}
-                    type="button"
+                    type='button'
                     onClick={() => handleToolToggle(tool)}
                     disabled={isLoading}
                     className={cn(
                       'rounded-md border px-3 py-2 text-sm transition-colors',
                       selectedTools.includes(tool)
                         ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-background text-foreground hover:border-primary hover:bg-accent',
+                        : 'border-border bg-background text-foreground hover:border-primary hover:bg-accent'
                     )}
                   >
                     {tool.replace(/_/g, ' ')}
@@ -333,8 +360,8 @@ export function CreateAgentModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+        <div className='flex items-center justify-end gap-2 border-t px-6 py-4'>
+          <Button variant='outline' onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleCreate} disabled={!canCreate || isLoading}>
@@ -349,17 +376,17 @@ export function CreateAgentModal({
 function XIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }

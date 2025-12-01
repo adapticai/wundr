@@ -13,7 +13,13 @@ export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 /**
  * Status options for user presence indicators.
  */
-export type UserStatus = 'online' | 'offline' | 'away' | 'busy' | 'dnd' | 'in_call';
+export type UserStatus =
+  | 'online'
+  | 'offline'
+  | 'away'
+  | 'busy'
+  | 'dnd'
+  | 'in_call';
 
 /**
  * User data required for avatar display.
@@ -73,7 +79,10 @@ const sizeConfig: Record<AvatarSize, { container: string; text: string }> = {
  * Shape configuration for avatar border radius.
  * Note: 'circle' is deprecated, prefer 'rounded' (lg), 'rounded-md', or 'rounded-sm'
  */
-const shapeConfig: Record<'circle' | 'rounded' | 'rounded-md' | 'rounded-sm', string> = {
+const shapeConfig: Record<
+  'circle' | 'rounded' | 'rounded-md' | 'rounded-sm',
+  string
+> = {
   circle: 'rounded-lg', // Deprecated: now maps to rounded-lg for consistency
   rounded: 'rounded-lg',
   'rounded-md': 'rounded-md',
@@ -95,19 +104,37 @@ const statusColors: Record<UserStatus, string> = {
 /**
  * Status indicator size configuration based on avatar size.
  */
-const statusSizeConfig: Record<AvatarSize, { dot: string; position: string; border: string }> = {
+const statusSizeConfig: Record<
+  AvatarSize,
+  { dot: string; position: string; border: string }
+> = {
   xs: { dot: 'h-1.5 w-1.5', position: '-bottom-0 -right-0', border: 'border' },
   sm: { dot: 'h-2 w-2', position: '-bottom-0.5 -right-0.5', border: 'border' },
-  md: { dot: 'h-2.5 w-2.5', position: '-bottom-0.5 -right-0.5', border: 'border-2' },
-  lg: { dot: 'h-3 w-3', position: '-bottom-0.5 -right-0.5', border: 'border-2' },
-  xl: { dot: 'h-3.5 w-3.5', position: '-bottom-0.5 -right-0.5', border: 'border-2' },
+  md: {
+    dot: 'h-2.5 w-2.5',
+    position: '-bottom-0.5 -right-0.5',
+    border: 'border-2',
+  },
+  lg: {
+    dot: 'h-3 w-3',
+    position: '-bottom-0.5 -right-0.5',
+    border: 'border-2',
+  },
+  xl: {
+    dot: 'h-3.5 w-3.5',
+    position: '-bottom-0.5 -right-0.5',
+    border: 'border-2',
+  },
   '2xl': { dot: 'h-4 w-4', position: '-bottom-1 -right-1', border: 'border-2' },
 };
 
 /**
  * Manual status size overrides.
  */
-const manualStatusSizeConfig: Record<StatusSize, { dot: string; border: string }> = {
+const manualStatusSizeConfig: Record<
+  StatusSize,
+  { dot: string; border: string }
+> = {
   sm: { dot: 'h-2 w-2', border: 'border' },
   md: { dot: 'h-2.5 w-2.5', border: 'border-2' },
   lg: { dot: 'h-3.5 w-3.5', border: 'border-2' },
@@ -159,7 +186,8 @@ export function UserAvatar({
   const currentStatus = status ?? user.status;
 
   // Hide status indicator on very small avatars (xs) unless explicitly overridden
-  const shouldShowStatus = showStatus && currentStatus && (size !== 'xs' || manualStatusSize);
+  const shouldShowStatus =
+    showStatus && currentStatus && (size !== 'xs' || manualStatusSize);
 
   // Use manual status size if provided, otherwise use automatic sizing
   const autoStatusSize = statusSizeConfig[size];
@@ -171,19 +199,19 @@ export function UserAvatar({
   const isInCall = currentStatus === 'in_call';
 
   return (
-    <div className="relative inline-flex">
+    <div className='relative inline-flex'>
       <Avatar className={cn(container, shapeClass, className)}>
         <AvatarImage
           src={imageUrl || undefined}
           alt={altText}
-          className="object-cover"
+          className='object-cover'
         />
         <AvatarFallback
           className={cn(
             shapeClass,
             text,
             'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-medium',
-            fallbackClassName,
+            fallbackClassName
           )}
         >
           {initials}
@@ -198,18 +226,18 @@ export function UserAvatar({
             statusSizeConfig_final.border,
             statusColors[currentStatus],
             // Add pulse animation for online status
-            currentStatus === 'online' && 'animate-pulse-subtle',
+            currentStatus === 'online' && 'animate-pulse-subtle'
           )}
           aria-label={`Status: ${currentStatus}`}
         >
           {isInCall && (
             <svg
-              className="w-full h-full p-0.5 text-white"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
+              className='w-full h-full p-0.5 text-white'
+              fill='currentColor'
+              viewBox='0 0 20 20'
+              xmlns='http://www.w3.org/2000/svg'
             >
-              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              <path d='M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z' />
             </svg>
           )}
         </span>
@@ -255,7 +283,7 @@ export function GroupAvatar({
           key={`avatar-${index}`}
           user={user}
           size={size}
-          className="ring-2 ring-background"
+          className='ring-2 ring-background'
         />
       ))}
       {remainingCount > 0 && (
@@ -265,7 +293,7 @@ export function GroupAvatar({
             text,
             'flex items-center justify-center rounded-lg',
             'bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300',
-            'ring-2 ring-background font-medium',
+            'ring-2 ring-background font-medium'
           )}
         >
           +{remainingCount}

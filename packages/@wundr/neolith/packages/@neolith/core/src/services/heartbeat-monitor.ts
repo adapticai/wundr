@@ -161,7 +161,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   constructor(
     redis: RedisClient,
     config?: Partial<HeartbeatConfig>,
-    database?: PrismaClient,
+    database?: PrismaClient
   ) {
     this.redis = redis;
     this.config = { ...DEFAULT_HEARTBEAT_CONFIG, ...config };
@@ -240,7 +240,9 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
     const results = new Map<string, HealthStatus>();
 
     // Get all registered OrchestratorIDs
-    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.registeredOrchestrators());
+    const vpIds = await this.redis.smembers(
+      HEARTBEAT_REDIS_KEYS.registeredOrchestrators()
+    );
 
     // Check each VP
     for (const vpId of vpIds) {
@@ -254,11 +256,15 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   /**
    * Checks VPs for a specific organization.
    */
-  async checkOrganizationVPs(orgId: string): Promise<Map<string, HealthStatus>> {
+  async checkOrganizationVPs(
+    orgId: string
+  ): Promise<Map<string, HealthStatus>> {
     const results = new Map<string, HealthStatus>();
 
     // Get OrchestratorIDs for this organization
-    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orgId));
+    const vpIds = await this.redis.smembers(
+      HEARTBEAT_REDIS_KEYS.orgOrchestrators(orgId)
+    );
 
     // Check each VP
     for (const vpId of vpIds) {
@@ -323,7 +329,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   private async handleStateTransition(
     vpId: string,
     previousState: HealthStatus | undefined,
-    currentState: HealthStatus,
+    currentState: HealthStatus
   ): Promise<void> {
     const wasHealthy = previousState?.healthy ?? true;
     const wasUnhealthy = previousState?.status === 'unhealthy';
@@ -376,16 +382,21 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   /**
    * Triggers unhealthy event callbacks.
    */
-  private async triggerUnhealthyEvent(vpId: string, status: HealthStatus): Promise<void> {
+  private async triggerUnhealthyEvent(
+    vpId: string,
+    status: HealthStatus
+  ): Promise<void> {
     this.stats.totalUnhealthyEvents++;
 
     // Update Orchestrator status in database
-    await this.db.orchestrator.update({
-      where: { id: vpId },
-      data: { status: 'AWAY' }, // Set to AWAY for unhealthy
-    }).catch(() => {
-      // Ignore errors if Orchestrator doesn't exist
-    });
+    await this.db.orchestrator
+      .update({
+        where: { id: vpId },
+        data: { status: 'AWAY' }, // Set to AWAY for unhealthy
+      })
+      .catch(() => {
+        // Ignore errors if Orchestrator doesn't exist
+      });
 
     // Call all registered callbacks
     for (const callback of this.unhealthyCallbacks) {
@@ -393,7 +404,10 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
         await callback(vpId, status);
       } catch (error) {
         // Log error but continue with other callbacks
-        console.error(`[HeartbeatMonitor] Error in unhealthy callback for Orchestrator ${vpId}:`, error);
+        console.error(
+          `[HeartbeatMonitor] Error in unhealthy callback for Orchestrator ${vpId}:`,
+          error
+        );
       }
     }
   }
@@ -405,12 +419,14 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
     this.stats.totalRecoveryEvents++;
 
     // Update Orchestrator status in database
-    await this.db.orchestrator.update({
-      where: { id: vpId },
-      data: { status: 'ONLINE' },
-    }).catch(() => {
-      // Ignore errors if Orchestrator doesn't exist
-    });
+    await this.db.orchestrator
+      .update({
+        where: { id: vpId },
+        data: { status: 'ONLINE' },
+      })
+      .catch(() => {
+        // Ignore errors if Orchestrator doesn't exist
+      });
 
     // Call all registered callbacks
     for (const callback of this.recoveredCallbacks) {
@@ -418,7 +434,10 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
         await callback(vpId);
       } catch (error) {
         // Log error but continue with other callbacks
-        console.error(`[HeartbeatMonitor] Error in recovered callback for Orchestrator ${vpId}:`, error);
+        console.error(
+          `[HeartbeatMonitor] Error in recovered callback for Orchestrator ${vpId}:`,
+          error
+        );
       }
     }
   }
@@ -427,12 +446,14 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
    * Deactivates an unhealthy VP.
    */
   private async deactivateVP(vpId: string): Promise<void> {
-    await this.db.orchestrator.update({
-      where: { id: vpId },
-      data: { status: 'OFFLINE' },
-    }).catch(() => {
-      // Ignore errors if Orchestrator doesn't exist
-    });
+    await this.db.orchestrator
+      .update({
+        where: { id: vpId },
+        data: { status: 'OFFLINE' },
+      })
+      .catch(() => {
+        // Ignore errors if Orchestrator doesn't exist
+      });
   }
 }
 
@@ -480,7 +501,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
 export function createHeartbeatMonitor(
   redis: RedisClient,
   config?: Partial<HeartbeatConfig>,
-  database?: PrismaClient,
+  database?: PrismaClient
 ): HeartbeatMonitor {
   return new HeartbeatMonitor(redis, config, database);
 }

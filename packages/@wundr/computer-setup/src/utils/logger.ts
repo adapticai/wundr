@@ -35,15 +35,18 @@ export class Logger {
 
   private getLogLevelFromEnv(): LogLevel {
     const envLevel = process.env.LOG_LEVEL?.toLowerCase() as LogLevel;
-    if (envLevel && Object.prototype.hasOwnProperty.call(Logger.levels, envLevel)) {
+    if (
+      envLevel &&
+      Object.prototype.hasOwnProperty.call(Logger.levels, envLevel)
+    ) {
       return envLevel;
     }
-    
+
     // Check for DEBUG environment variable for backward compatibility
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       return 'debug';
     }
-    
+
     return 'info';
   }
 
@@ -51,11 +54,15 @@ export class Logger {
     return Logger.levels[level] >= Logger.levels[this.level];
   }
 
-  private formatMessage(level: LogLevel, message: string, ...args: unknown[]): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    ...args: unknown[]
+  ): string {
     const timestamp = this.enableTimestamps ? new Date().toISOString() : '';
     const levelStr = level.toUpperCase().padEnd(5);
     const nameStr = this.name.padEnd(20);
-    
+
     let prefix = '';
     if (this.enableTimestamps) {
       prefix += `${timestamp} `;
@@ -79,9 +86,16 @@ export class Logger {
       }
     }
 
-    const fullMessage = args.length > 0 ? `${message} ${args.map(arg => 
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg),
-    ).join(' ')}` : message;
+    const fullMessage =
+      args.length > 0
+        ? `${message} ${args
+            .map(arg =>
+              typeof arg === 'object'
+                ? JSON.stringify(arg, null, 2)
+                : String(arg)
+            )
+            .join(' ')}`
+        : message;
 
     return `${prefix} ${fullMessage}`;
   }

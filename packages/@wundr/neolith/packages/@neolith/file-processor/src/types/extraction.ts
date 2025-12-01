@@ -314,7 +314,15 @@ export interface TableStructure {
 /**
  * Detected column data type.
  */
-export type ColumnType = 'string' | 'number' | 'date' | 'boolean' | 'currency' | 'percentage' | 'mixed' | 'empty';
+export type ColumnType =
+  | 'string'
+  | 'number'
+  | 'date'
+  | 'boolean'
+  | 'currency'
+  | 'percentage'
+  | 'mixed'
+  | 'empty';
 
 // ============================================================================
 // Image Extraction Types
@@ -885,7 +893,13 @@ export interface XlsxSheet {
 /**
  * XLSX cell value type.
  */
-export type XlsxCellValue = string | number | boolean | Date | null | XlsxRichText;
+export type XlsxCellValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | null
+  | XlsxRichText;
 
 /**
  * XLSX rich text value.
@@ -1045,7 +1059,7 @@ export class ExtractionError extends Error {
     message: string,
     code: ExtractionErrorCode,
     cause?: Error,
-    context?: Record<string, unknown>,
+    context?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'ExtractionError';
@@ -1083,7 +1097,7 @@ export class PDFExtractionError extends ExtractionError {
     message: string,
     code: ExtractionErrorCode,
     pageNumber?: number,
-    cause?: Error,
+    cause?: Error
   ) {
     super(message, code, cause, { pageNumber });
     this.name = 'PDFExtractionError';
@@ -1112,7 +1126,7 @@ export class XlsxExtractionError extends ExtractionError {
     message: string,
     code: ExtractionErrorCode,
     sheetName?: string,
-    cause?: Error,
+    cause?: Error
   ) {
     super(message, code, cause, { sheetName });
     this.name = 'XlsxExtractionError';

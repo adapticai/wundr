@@ -1,8 +1,7 @@
-
-
 # **Global Agent Registry Schema & Charters**
 
-This document defines the **Schema** used by the *Organizational Generator* to create the fleet. It is not just a list, but a blueprint for generating the digital workforce.
+This document defines the **Schema** used by the _Organizational Generator_ to create the fleet. It
+is not just a list, but a blueprint for generating the digital workforce.
 
 ---
 
@@ -10,11 +9,11 @@ This document defines the **Schema** used by the *Organizational Generator* to c
 
 **Generated From Prompt:** "An AI-managed \[Industry\] Organization."
 
-| Field | Description | Source |
-| :---- | :---- | :---- |
-| org\_name | Name of the entity. | LLM Gen |
-| mission | High-level objective (e.g., "Maximize Alpha", "Ensure Compliance"). | LLM Gen |
-| vp\_registry | List of VP IDs mapped to physical nodes. | System Config |
+| Field       | Description                                                         | Source        |
+| :---------- | :------------------------------------------------------------------ | :------------ |
+| org_name    | Name of the entity.                                                 | LLM Gen       |
+| mission     | High-level objective (e.g., "Maximize Alpha", "Ensure Compliance"). | LLM Gen       |
+| vp_registry | List of VP IDs mapped to physical nodes.                            | System Config |
 
 ---
 
@@ -23,12 +22,12 @@ This document defines the **Schema** used by the *Organizational Generator* to c
 Quantity: 16 (Fixed/Physical)  
 Role: Node Orchestrator & Context Compiler.
 
-| Field | Definition Strategy |
-| :---- | :---- |
-| **Identity** | Generated Name, Persona, and Slack Handle (e.g., @RiskVP). |
-| **Core Directive** | "You facilitate. You do not code; you compile contexts and manage Session Managers." |
-| **Capabilities** | \- **Context Compilation:** Ability to read Discipline Packs and write config files. \- **Resource Mgmt:** Monitoring CPU/RAM and Token Quotas. \- **Slack Ops:** Triage and routing of human messages. |
-| **Tools (MCP)** | Slack, FileSystem, Shell, Orchestrator. |
+| Field              | Definition Strategy                                                                                                                                                                                     |
+| :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Identity**       | Generated Name, Persona, and Slack Handle (e.g., @RiskVP).                                                                                                                                              |
+| **Core Directive** | "You facilitate. You do not code; you compile contexts and manage Session Managers."                                                                                                                    |
+| **Capabilities**   | \- **Context Compilation:** Ability to read Discipline Packs and write config files. \- **Resource Mgmt:** Monitoring CPU/RAM and Token Quotas. \- **Slack Ops:** Triage and routing of human messages. |
+| **Tools (MCP)**    | Slack, FileSystem, Shell, Orchestrator.                                                                                                                                                                 |
 
 ---
 
@@ -39,19 +38,19 @@ Activation: Spun up by VP when a task matches the discipline.
 
 ### **Example Generated Discipline: "Algorithmic Trading Engineer"**
 
-| Configuration File | Generated Content (Template) |
-| :---- | :---- |
-| **CLAUDE.md** | **Role:** Algo Trading Lead. **Context:** "You are working on the high-frequency execution engine." **Rules:** "Latency is critical. No console.log in hot paths. 100% unit test coverage required." |
-| **claude\_config.json** | **MCP Servers:** \- git-mcp \- postgres-mcp (Market Data DB) \- aws-cloudwatch-mcp (Latency Monitoring) |
-| **settings.json** | **Hooks:** \- PreToolUse: Block git push to main. \- PostToolUse: Run benchmark.sh after code edits. |
+| Configuration File     | Generated Content (Template)                                                                                                                                                                         |
+| :--------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CLAUDE.md**          | **Role:** Algo Trading Lead. **Context:** "You are working on the high-frequency execution engine." **Rules:** "Latency is critical. No console.log in hot paths. 100% unit test coverage required." |
+| **claude_config.json** | **MCP Servers:** \- git-mcp \- postgres-mcp (Market Data DB) \- aws-cloudwatch-mcp (Latency Monitoring)                                                                                              |
+| **settings.json**      | **Hooks:** \- PreToolUse: Block git push to main. \- PostToolUse: Run benchmark.sh after code edits.                                                                                                 |
 
 ### **Example Generated Discipline: "Legal Compliance Auditor"**
 
-| Configuration File | Generated Content (Template) |
-| :---- | :---- |
-| **CLAUDE.md** | **Role:** Senior Compliance Officer. **Context:** "You are auditing communication logs for insider trading risks." **Rules:** "Flag any mention of specific tickers. Reference SEC Reg BI." |
-| **claude\_config.json** | **MCP Servers:** \- filesystem-mcp (Logs Directory) \- slack-export-reader \- rag-knowledge-base (SEC Regulations) |
-| **settings.json** | **Hooks:** \- PostToolUse: Generate a summary report entry in compliance\_log.md. |
+| Configuration File     | Generated Content (Template)                                                                                                                                                                |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **CLAUDE.md**          | **Role:** Senior Compliance Officer. **Context:** "You are auditing communication logs for insider trading risks." **Rules:** "Flag any mention of specific tickers. Reference SEC Reg BI." |
+| **claude_config.json** | **MCP Servers:** \- filesystem-mcp (Logs Directory) \- slack-export-reader \- rag-knowledge-base (SEC Regulations)                                                                          |
+| **settings.json**      | **Hooks:** \- PostToolUse: Generate a summary report entry in compliance_log.md.                                                                                                            |
 
 ---
 
@@ -62,32 +61,32 @@ Assignment: The Org Generator maps subsets of these to specific Disciplines.
 
 ### **Universal Agents (Available to all)**
 
-* researcher: Web search and summarization.  
-* scribe: Documentation writer.  
-* project-manager: Updates progress.md.
+- researcher: Web search and summarization.
+- scribe: Documentation writer.
+- project-manager: Updates progress.md.
 
 ### **Discipline-Specific Agents (Examples)**
 
 #### **1\. The Quantitative Analyst (quant-analyst)**
 
-* **Used By:** Trading VP, Risk VP.  
-* **Tools:** Python-REPL, Pandas, MarketData-MCP.  
-* **Model:** sonnet (Reasoning).  
-* **Charter:** "Analyze time-series data. Detect anomalies. Do not hallucinate data points."
+- **Used By:** Trading VP, Risk VP.
+- **Tools:** Python-REPL, Pandas, MarketData-MCP.
+- **Model:** sonnet (Reasoning).
+- **Charter:** "Analyze time-series data. Detect anomalies. Do not hallucinate data points."
 
 #### **2\. The Solidity Auditor (smart-contract-auditor)**
 
-* **Used By:** Engineering VP (Blockchain Discipline).  
-* **Tools:** Slither, Mythril, Read-File.  
-* **Model:** opus (High reasoning for security).  
-* **Charter:** "Find reentrancy attacks. Verify gas optimization. Assume all inputs are malicious."
+- **Used By:** Engineering VP (Blockchain Discipline).
+- **Tools:** Slither, Mythril, Read-File.
+- **Model:** opus (High reasoning for security).
+- **Charter:** "Find reentrancy attacks. Verify gas optimization. Assume all inputs are malicious."
 
 #### **3\. The Talent Scout (hr-screener)**
 
-* **Used By:** HR VP.  
-* **Tools:** LinkedIn-MCP, Resume-Parser.  
-* **Model:** haiku (Fast processing).  
-* **Charter:** "Match candidates to JDs. Ignore formatting. Score based on skills matrix."
+- **Used By:** HR VP.
+- **Tools:** LinkedIn-MCP, Resume-Parser.
+- **Model:** haiku (Fast processing).
+- **Charter:** "Match candidates to JDs. Ignore formatting. Score based on skills matrix."
 
 ---
 
@@ -97,11 +96,12 @@ Role: To generate the above structure.
 Interface: Conversational CLI.  
 **Workflow:**
 
-1. **User:** "Generate an org for a Video Game Studio."  
-2. **Genesis Agent:** "Understood. Defining Top-Level VPs..."  
-   * *Generates:* VP of Game Design, VP of Engine Dev, VP of Art, VP of QA.  
-3. **Genesis Agent:** "For VP of Engine Dev, defining disciplines..."  
-   * *Generates:* Physics Engine, Networking, Rendering Pipeline.  
-4. **Genesis Agent:** "For 'Physics Engine' discipline, defining sub-agents..."  
-   * *Generates:* collision-optimizer, math-verifier, c++-expert.  
-5. **Genesis Agent:** "Compiling Discipline Packs... Done. 16 VPs configured, 45 Disciplines created, 200+ Agents defined."
+1. **User:** "Generate an org for a Video Game Studio."
+2. **Genesis Agent:** "Understood. Defining Top-Level VPs..."
+   - _Generates:_ VP of Game Design, VP of Engine Dev, VP of Art, VP of QA.
+3. **Genesis Agent:** "For VP of Engine Dev, defining disciplines..."
+   - _Generates:_ Physics Engine, Networking, Rendering Pipeline.
+4. **Genesis Agent:** "For 'Physics Engine' discipline, defining sub-agents..."
+   - _Generates:_ collision-optimizer, math-verifier, c++-expert.
+5. **Genesis Agent:** "Compiling Discipline Packs... Done. 16 VPs configured, 45 Disciplines
+   created, 200+ Agents defined."

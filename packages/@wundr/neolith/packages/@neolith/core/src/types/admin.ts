@@ -78,10 +78,19 @@ export interface SAMLSSOConfig {
   privateKey?: string;
 }
 
-export type SSOConfig = OktaSSOConfig | AzureADSSOConfig | GoogleSSOConfig | SAMLSSOConfig;
+export type SSOConfig =
+  | OktaSSOConfig
+  | AzureADSSOConfig
+  | GoogleSSOConfig
+  | SAMLSSOConfig;
 
 /** Custom member field value types */
-export type MemberCustomFieldValue = string | number | boolean | string[] | Date;
+export type MemberCustomFieldValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | Date;
 
 /** Custom member fields map */
 export type MemberCustomFields = Record<string, MemberCustomFieldValue>;
@@ -139,8 +148,24 @@ export interface BrandingSettings {
   customCss?: string;
 }
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
-export type PermissionResource = 'workspace' | 'channels' | 'messages' | 'members' | 'roles' | 'integrations' | 'workflows' | 'analytics' | 'audit_logs' | 'settings' | 'billing';
+export type PermissionAction =
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'manage';
+export type PermissionResource =
+  | 'workspace'
+  | 'channels'
+  | 'messages'
+  | 'members'
+  | 'roles'
+  | 'integrations'
+  | 'workflows'
+  | 'analytics'
+  | 'audit_logs'
+  | 'settings'
+  | 'billing';
 
 export interface Permission {
   resource: PermissionResource;
@@ -230,7 +255,21 @@ export interface AdminAction {
   timestamp: Date;
 }
 
-export type AdminActionType = 'settings.updated' | 'role.created' | 'role.updated' | 'role.deleted' | 'member.invited' | 'member.removed' | 'member.suspended' | 'member.role_changed' | 'invite.revoked' | 'billing.plan_changed' | 'security.mfa_enabled' | 'security.sso_configured' | 'compliance.dlp_rule_added' | 'compliance.legal_hold_applied';
+export type AdminActionType =
+  | 'settings.updated'
+  | 'role.created'
+  | 'role.updated'
+  | 'role.deleted'
+  | 'member.invited'
+  | 'member.removed'
+  | 'member.suspended'
+  | 'member.role_changed'
+  | 'invite.revoked'
+  | 'billing.plan_changed'
+  | 'security.mfa_enabled'
+  | 'security.sso_configured'
+  | 'compliance.dlp_rule_added'
+  | 'compliance.legal_hold_applied';
 
 /** Admin action detail types based on action type */
 export interface SettingsUpdatedDetails {
@@ -311,75 +350,214 @@ export interface InviteMemberInput {
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
-  displayName: 'Workspace', timezone: 'UTC', locale: 'en-US', allowGuestAccess: false, requireApprovalToJoin: true,
+  displayName: 'Workspace',
+  timezone: 'UTC',
+  locale: 'en-US',
+  allowGuestAccess: false,
+  requireApprovalToJoin: true,
 };
 
 export const DEFAULT_SECURITY_SETTINGS: SecuritySettings = {
-  passwordPolicy: { minLength: 8, requireUppercase: true, requireLowercase: true, requireNumbers: true, requireSpecialChars: false, preventReuse: 3 },
-  sessionTimeout: 480, mfaRequired: false, ssoEnabled: false,
+  passwordPolicy: {
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumbers: true,
+    requireSpecialChars: false,
+    preventReuse: 3,
+  },
+  sessionTimeout: 480,
+  mfaRequired: false,
+  ssoEnabled: false,
 };
 
 export const DEFAULT_MESSAGING_SETTINGS: MessagingSettings = {
-  allowEditing: true, editWindowMinutes: 15, allowDeleting: true, deleteWindowMinutes: 60,
-  maxMessageLength: 10000, maxFileSize: 100 * 1024 * 1024, allowedFileTypes: ['*'], enableThreads: true, enableReactions: true,
+  allowEditing: true,
+  editWindowMinutes: 15,
+  allowDeleting: true,
+  deleteWindowMinutes: 60,
+  maxMessageLength: 10000,
+  maxFileSize: 100 * 1024 * 1024,
+  allowedFileTypes: ['*'],
+  enableThreads: true,
+  enableReactions: true,
 };
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
-  defaultDesktop: true, defaultMobile: true, defaultEmail: false, quietHoursEnabled: false, digestFrequency: 'never',
+  defaultDesktop: true,
+  defaultMobile: true,
+  defaultEmail: false,
+  quietHoursEnabled: false,
+  digestFrequency: 'never',
 };
 
 export const DEFAULT_INTEGRATION_SETTINGS: IntegrationSettings = {
-  allowThirdPartyApps: true, approvedProviders: [], webhooksEnabled: true, apiRateLimitPerMinute: 100,
+  allowThirdPartyApps: true,
+  approvedProviders: [],
+  webhooksEnabled: true,
+  apiRateLimitPerMinute: 100,
 };
 
 export const DEFAULT_COMPLIANCE_SETTINGS: ComplianceSettings = {
-  dataRetentionDays: 365, exportEnabled: true, dlpEnabled: false, eDiscoveryEnabled: false, legalHoldEnabled: false,
+  dataRetentionDays: 365,
+  exportEnabled: true,
+  dlpEnabled: false,
+  eDiscoveryEnabled: false,
+  legalHoldEnabled: false,
 };
 
 export const DEFAULT_BRANDING_SETTINGS: BrandingSettings = {};
 
 export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
-  free: { maxMembers: 10, maxChannels: 25, maxStorage: 5 * 1024 * 1024 * 1024, maxIntegrations: 2, maxWorkflows: 5, auditLogs: false, sso: false, customRoles: false, priority_support: false, vp_agents: 1 },
-  starter: { maxMembers: 50, maxChannels: 100, maxStorage: 25 * 1024 * 1024 * 1024, maxIntegrations: 10, maxWorkflows: 25, auditLogs: true, sso: false, customRoles: false, priority_support: false, vp_agents: 5 },
-  professional: { maxMembers: 250, maxChannels: 500, maxStorage: 100 * 1024 * 1024 * 1024, maxIntegrations: 50, maxWorkflows: 100, auditLogs: true, sso: true, customRoles: true, priority_support: true, vp_agents: 25 },
-  enterprise: { maxMembers: -1, maxChannels: -1, maxStorage: -1, maxIntegrations: -1, maxWorkflows: -1, auditLogs: true, sso: true, customRoles: true, priority_support: true, vp_agents: -1 },
+  free: {
+    maxMembers: 10,
+    maxChannels: 25,
+    maxStorage: 5 * 1024 * 1024 * 1024,
+    maxIntegrations: 2,
+    maxWorkflows: 5,
+    auditLogs: false,
+    sso: false,
+    customRoles: false,
+    priority_support: false,
+    vp_agents: 1,
+  },
+  starter: {
+    maxMembers: 50,
+    maxChannels: 100,
+    maxStorage: 25 * 1024 * 1024 * 1024,
+    maxIntegrations: 10,
+    maxWorkflows: 25,
+    auditLogs: true,
+    sso: false,
+    customRoles: false,
+    priority_support: false,
+    vp_agents: 5,
+  },
+  professional: {
+    maxMembers: 250,
+    maxChannels: 500,
+    maxStorage: 100 * 1024 * 1024 * 1024,
+    maxIntegrations: 50,
+    maxWorkflows: 100,
+    auditLogs: true,
+    sso: true,
+    customRoles: true,
+    priority_support: true,
+    vp_agents: 25,
+  },
+  enterprise: {
+    maxMembers: -1,
+    maxChannels: -1,
+    maxStorage: -1,
+    maxIntegrations: -1,
+    maxWorkflows: -1,
+    auditLogs: true,
+    sso: true,
+    customRoles: true,
+    priority_support: true,
+    vp_agents: -1,
+  },
 };
 
-export const SYSTEM_ROLES: Omit<Role, 'id' | 'workspaceId' | 'createdAt' | 'updatedAt'>[] = [
-  { name: 'owner', description: 'Workspace owner with full control', permissions: [
-    { resource: 'workspace', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'channels', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'messages', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'members', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'roles', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'integrations', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'workflows', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'analytics', actions: ['read', 'manage'] },
-    { resource: 'audit_logs', actions: ['read', 'manage'] },
-    { resource: 'settings', actions: ['read', 'update', 'manage'] },
-    { resource: 'billing', actions: ['read', 'update', 'manage'] },
-  ], isDefault: false, isSystemRole: true, priority: 100 },
-  { name: 'admin', description: 'Workspace administrator', permissions: [
-    { resource: 'channels', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'messages', actions: ['create', 'read', 'update', 'delete', 'manage'] },
-    { resource: 'members', actions: ['create', 'read', 'update', 'delete'] },
-    { resource: 'roles', actions: ['read'] },
-    { resource: 'integrations', actions: ['create', 'read', 'update', 'delete'] },
-    { resource: 'workflows', actions: ['create', 'read', 'update', 'delete'] },
-    { resource: 'analytics', actions: ['read'] },
-    { resource: 'audit_logs', actions: ['read'] },
-    { resource: 'settings', actions: ['read', 'update'] },
-  ], isDefault: false, isSystemRole: true, priority: 80 },
-  { name: 'member', description: 'Standard workspace member', permissions: [
-    { resource: 'channels', actions: ['create', 'read'] },
-    { resource: 'messages', actions: ['create', 'read', 'update', 'delete'] },
-    { resource: 'members', actions: ['read'] },
-    { resource: 'integrations', actions: ['read'] },
-    { resource: 'workflows', actions: ['read'] },
-  ], isDefault: true, isSystemRole: true, priority: 50 },
-  { name: 'guest', description: 'Limited guest access', permissions: [
-    { resource: 'channels', actions: ['read'] },
-    { resource: 'messages', actions: ['create', 'read'] },
-    { resource: 'members', actions: ['read'] },
-  ], isDefault: false, isSystemRole: true, priority: 10 },
+export const SYSTEM_ROLES: Omit<
+  Role,
+  'id' | 'workspaceId' | 'createdAt' | 'updatedAt'
+>[] = [
+  {
+    name: 'owner',
+    description: 'Workspace owner with full control',
+    permissions: [
+      {
+        resource: 'workspace',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'channels',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'messages',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'members',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'roles',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'integrations',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'workflows',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      { resource: 'analytics', actions: ['read', 'manage'] },
+      { resource: 'audit_logs', actions: ['read', 'manage'] },
+      { resource: 'settings', actions: ['read', 'update', 'manage'] },
+      { resource: 'billing', actions: ['read', 'update', 'manage'] },
+    ],
+    isDefault: false,
+    isSystemRole: true,
+    priority: 100,
+  },
+  {
+    name: 'admin',
+    description: 'Workspace administrator',
+    permissions: [
+      {
+        resource: 'channels',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      {
+        resource: 'messages',
+        actions: ['create', 'read', 'update', 'delete', 'manage'],
+      },
+      { resource: 'members', actions: ['create', 'read', 'update', 'delete'] },
+      { resource: 'roles', actions: ['read'] },
+      {
+        resource: 'integrations',
+        actions: ['create', 'read', 'update', 'delete'],
+      },
+      {
+        resource: 'workflows',
+        actions: ['create', 'read', 'update', 'delete'],
+      },
+      { resource: 'analytics', actions: ['read'] },
+      { resource: 'audit_logs', actions: ['read'] },
+      { resource: 'settings', actions: ['read', 'update'] },
+    ],
+    isDefault: false,
+    isSystemRole: true,
+    priority: 80,
+  },
+  {
+    name: 'member',
+    description: 'Standard workspace member',
+    permissions: [
+      { resource: 'channels', actions: ['create', 'read'] },
+      { resource: 'messages', actions: ['create', 'read', 'update', 'delete'] },
+      { resource: 'members', actions: ['read'] },
+      { resource: 'integrations', actions: ['read'] },
+      { resource: 'workflows', actions: ['read'] },
+    ],
+    isDefault: true,
+    isSystemRole: true,
+    priority: 50,
+  },
+  {
+    name: 'guest',
+    description: 'Limited guest access',
+    permissions: [
+      { resource: 'channels', actions: ['read'] },
+      { resource: 'messages', actions: ['create', 'read'] },
+      { resource: 'members', actions: ['read'] },
+    ],
+    isDefault: false,
+    isSystemRole: true,
+    priority: 10,
+  },
 ];

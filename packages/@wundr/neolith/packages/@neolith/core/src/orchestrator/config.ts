@@ -14,21 +14,32 @@
  * Check if orchestrator mode is enabled
  */
 export function isOrchestratorModeEnabled(): boolean {
-  return process.env.ORCHESTRATOR_MODE === 'true' || process.env.NEXT_PUBLIC_ORCHESTRATOR_MODE === 'true';
+  return (
+    process.env.ORCHESTRATOR_MODE === 'true' ||
+    process.env.NEXT_PUBLIC_ORCHESTRATOR_MODE === 'true'
+  );
 }
 
 /**
  * Check if daemon auto-start is enabled
  */
 export function isDaemonAutoStartEnabled(): boolean {
-  return process.env.DAEMON_AUTO_START !== 'false' && process.env.NEXT_PUBLIC_DAEMON_AUTO_START !== 'false';
+  return (
+    process.env.DAEMON_AUTO_START !== 'false' &&
+    process.env.NEXT_PUBLIC_DAEMON_AUTO_START !== 'false'
+  );
 }
 
 /**
  * Get daemon heartbeat interval (default 30 seconds)
  */
 export function getDaemonHeartbeatInterval(): number {
-  const interval = parseInt(process.env.DAEMON_HEARTBEAT_INTERVAL || process.env.NEXT_PUBLIC_DAEMON_HEARTBEAT_INTERVAL || '30000', 10);
+  const interval = parseInt(
+    process.env.DAEMON_HEARTBEAT_INTERVAL ||
+      process.env.NEXT_PUBLIC_DAEMON_HEARTBEAT_INTERVAL ||
+      '30000',
+    10
+  );
   return isNaN(interval) ? 30000 : interval;
 }
 
@@ -36,7 +47,12 @@ export function getDaemonHeartbeatInterval(): number {
  * Get health check interval (default 1 minute)
  */
 export function getHealthCheckInterval(): number {
-  const interval = parseInt(process.env.DAEMON_HEALTH_CHECK_INTERVAL || process.env.NEXT_PUBLIC_DAEMON_HEALTH_CHECK_INTERVAL || '60000', 10);
+  const interval = parseInt(
+    process.env.DAEMON_HEALTH_CHECK_INTERVAL ||
+      process.env.NEXT_PUBLIC_DAEMON_HEALTH_CHECK_INTERVAL ||
+      '60000',
+    10
+  );
   return isNaN(interval) ? 60000 : interval;
 }
 
@@ -44,14 +60,22 @@ export function getHealthCheckInterval(): number {
  * Check if auto-restart is enabled
  */
 export function isDaemonAutoRestartEnabled(): boolean {
-  return process.env.DAEMON_AUTO_RESTART !== 'false' && process.env.NEXT_PUBLIC_DAEMON_AUTO_RESTART !== 'false';
+  return (
+    process.env.DAEMON_AUTO_RESTART !== 'false' &&
+    process.env.NEXT_PUBLIC_DAEMON_AUTO_RESTART !== 'false'
+  );
 }
 
 /**
  * Get max restart attempts (default 3)
  */
 export function getMaxRestartAttempts(): number {
-  const attempts = parseInt(process.env.DAEMON_MAX_RESTART_ATTEMPTS || process.env.NEXT_PUBLIC_DAEMON_MAX_RESTART_ATTEMPTS || '3', 10);
+  const attempts = parseInt(
+    process.env.DAEMON_MAX_RESTART_ATTEMPTS ||
+      process.env.NEXT_PUBLIC_DAEMON_MAX_RESTART_ATTEMPTS ||
+      '3',
+    10
+  );
   return isNaN(attempts) ? 3 : attempts;
 }
 
@@ -59,14 +83,22 @@ export function getMaxRestartAttempts(): number {
  * Check if verbose logging is enabled
  */
 export function isDaemonVerboseEnabled(): boolean {
-  return process.env.DAEMON_VERBOSE === 'true' || process.env.NEXT_PUBLIC_DAEMON_VERBOSE === 'true';
+  return (
+    process.env.DAEMON_VERBOSE === 'true' ||
+    process.env.NEXT_PUBLIC_DAEMON_VERBOSE === 'true'
+  );
 }
 
 /**
  * Get max concurrent conversations (default 10)
  */
 export function getMaxConcurrentConversations(): number {
-  const max = parseInt(process.env.DAEMON_MAX_CONCURRENT_CONVERSATIONS || process.env.NEXT_PUBLIC_DAEMON_MAX_CONCURRENT_CONVERSATIONS || '10', 10);
+  const max = parseInt(
+    process.env.DAEMON_MAX_CONCURRENT_CONVERSATIONS ||
+      process.env.NEXT_PUBLIC_DAEMON_MAX_CONCURRENT_CONVERSATIONS ||
+      '10',
+    10
+  );
   return isNaN(max) ? 10 : max;
 }
 

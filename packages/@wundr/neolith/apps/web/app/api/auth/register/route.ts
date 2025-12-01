@@ -33,8 +33,8 @@ async function hashPassword(password: string): Promise<string> {
     const salt = crypto.randomBytes(16).toString('hex');
     crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {
       if (err) {
-reject(err);
-}
+        reject(err);
+      }
       resolve(`${salt}:${derivedKey.toString('hex')}`);
     });
   });
@@ -44,7 +44,8 @@ reject(err);
 
 // Configuration
 const TOKEN_EXPIRATION_HOURS = 24;
-const EMAIL_VERIFICATION_REQUIRED = process.env.EMAIL_VERIFICATION_REQUIRED === 'true';
+const EMAIL_VERIFICATION_REQUIRED =
+  process.env.EMAIL_VERIFICATION_REQUIRED === 'true';
 
 /**
  * Generate a verification token
@@ -119,8 +120,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAuthErrorResponse('Invalid JSON body', AUTH_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAuthErrorResponse(
+          'Invalid JSON body',
+          AUTH_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -128,10 +132,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = registerSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createAuthErrorResponse('Validation failed', AUTH_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        createAuthErrorResponse(
+          'Validation failed',
+          AUTH_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
@@ -146,9 +154,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'A user with this email already exists',
-          AUTH_ERROR_CODES.EMAIL_EXISTS,
+          AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -156,7 +164,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const hashedPassword = await hashPassword(input.password);
 
     // Create user and credentials account in a transaction
-    const newUser = await prisma.$transaction(async (tx) => {
+    const newUser = await prisma.$transaction(async tx => {
       // Create the user
       const user = await tx.user.create({
         data: {
@@ -190,7 +198,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       try {
         // Generate verification token
         verificationToken = generateVerificationToken();
-        const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000);
+        const expiresAt = new Date(
+          Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000
+        );
 
         // Store verification token in database
         await prisma.verificationToken.create({
@@ -202,52 +212,64 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
 
         // Construct verification URL
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          process.env.NEXTAUTH_URL ||
+          'http://localhost:3000';
         const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
         // Send verification email (non-blocking)
-        sendVerificationEmail(
-          newUser.email,
-          newUser.name || newUser.email,
-          verificationUrl,
-        ).catch((emailError) => {
-          // Log email errors but don't fail the registration
-          if (process.env.NODE_ENV === 'development') {
-            console.error('[POST /api/auth/register] Verification email failed:', emailError);
-          } else {
-            console.error('[POST /api/auth/register] Verification email failed');
+        sendVerificationEmail(newUser.email, verificationToken).catch(
+          emailError => {
+            // Log email errors but don't fail the registration
+            if (process.env.NODE_ENV === 'development') {
+              console.error(
+                '[POST /api/auth/register] Verification email failed:',
+                emailError
+              );
+            } else {
+              console.error(
+                '[POST /api/auth/register] Verification email failed'
+              );
+            }
           }
-        });
+        );
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[POST /api/auth/register] Verification token created for: ${newUser.email}`);
+          console.log(
+            `[POST /api/auth/register] Verification token created for: ${newUser.email}`
+          );
         }
       } catch (tokenError) {
         // Log error but don't fail registration
         if (process.env.NODE_ENV === 'development') {
-          console.error('[POST /api/auth/register] Verification token creation failed:', tokenError);
+          console.error(
+            '[POST /api/auth/register] Verification token creation failed:',
+            tokenError
+          );
         } else {
-          console.error('[POST /api/auth/register] Verification token creation failed');
+          console.error(
+            '[POST /api/auth/register] Verification token creation failed'
+          );
         }
       }
     }
 
     // Send welcome email asynchronously (fire-and-forget)
     // Don't block the registration response on email sending
-    sendWelcomeEmail(
-      newUser.email,
-      newUser.name || newUser.email,
-      process.env.NEXT_PUBLIC_APP_URL
-        ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
-        : undefined,
-    ).catch((emailError) => {
-      // Log email errors but don't fail the registration
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[POST /api/auth/register] Welcome email failed:', emailError);
-      } else {
-        console.error('[POST /api/auth/register] Welcome email failed');
+    sendWelcomeEmail(newUser.email, newUser.name || newUser.email).catch(
+      emailError => {
+        // Log email errors but don't fail the registration
+        if (process.env.NODE_ENV === 'development') {
+          console.error(
+            '[POST /api/auth/register] Welcome email failed:',
+            emailError
+          );
+        } else {
+          console.error('[POST /api/auth/register] Welcome email failed');
+        }
       }
-    });
+    );
 
     // Generate fallback avatar with user's name or email
     try {
@@ -280,12 +302,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           message,
           requiresVerification: EMAIL_VERIFICATION_REQUIRED,
         },
-        { status: 201 },
+        { status: 201 }
       );
     } catch (avatarError) {
       // Only log error message in production, not full error object
       if (process.env.NODE_ENV === 'development') {
-        console.error('[POST /api/auth/register] Avatar generation failed:', avatarError);
+        console.error(
+          '[POST /api/auth/register] Avatar generation failed:',
+          avatarError
+        );
       } else {
         console.error('[POST /api/auth/register] Avatar generation failed');
       }
@@ -312,7 +337,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           message,
           requiresVerification: EMAIL_VERIFICATION_REQUIRED,
         },
-        { status: 201 },
+        { status: 201 }
       );
     }
   } catch (error) {
@@ -324,19 +349,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Handle Prisma unique constraint errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
       return NextResponse.json(
         createAuthErrorResponse(
           'A user with this email already exists',
-          AUTH_ERROR_CODES.EMAIL_EXISTS,
+          AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
-      createAuthErrorResponse('An internal error occurred', AUTH_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAuthErrorResponse(
+        'An internal error occurred',
+        AUTH_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

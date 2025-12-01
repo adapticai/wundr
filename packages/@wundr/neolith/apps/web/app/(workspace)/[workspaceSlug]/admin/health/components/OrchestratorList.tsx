@@ -1,7 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -19,8 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import type { OrchestratorHealthStatus } from '@neolith/core/src/types/health-dashboard';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import type { OrchestratorHealthStatus } from '@neolith/core/types';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -49,13 +59,13 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const filteredOrchestrators = orchestrators.filter((orch) => {
+  const filteredOrchestrators = orchestrators.filter(orch => {
     if (statusFilter === 'all') return true;
     return orch.status === statusFilter;
   });
 
   const toggleRow = (id: string) => {
-    setExpandedRows((prev) => {
+    setExpandedRows(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -69,21 +79,23 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className='flex items-center justify-between'>
           <div>
             <CardTitle>Orchestrators</CardTitle>
-            <CardDescription>Health status of all orchestrator instances</CardDescription>
+            <CardDescription>
+              Health status of all orchestrator instances
+            </CardDescription>
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by status" />
+            <SelectTrigger className='w-40'>
+              <SelectValue placeholder='Filter by status' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="online">Online</SelectItem>
-              <SelectItem value="offline">Offline</SelectItem>
-              <SelectItem value="degraded">Degraded</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
+              <SelectItem value='all'>All Status</SelectItem>
+              <SelectItem value='online'>Online</SelectItem>
+              <SelectItem value='offline'>Offline</SelectItem>
+              <SelectItem value='degraded'>Degraded</SelectItem>
+              <SelectItem value='error'>Error</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -92,7 +104,7 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-8"></TableHead>
+              <TableHead className='w-8'></TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Sessions</TableHead>
@@ -101,29 +113,29 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrchestrators.map((orch) => {
+            {filteredOrchestrators.map(orch => {
               const isExpanded = expandedRows.has(orch.id);
               return (
                 <Collapsible key={orch.id} open={isExpanded} asChild>
                   <>
                     <TableRow
-                      className="cursor-pointer"
+                      className='cursor-pointer'
                       onClick={() => toggleRow(orch.id)}
                     >
                       <TableCell>
                         <CollapsibleTrigger asChild>
-                          <button className="p-0">
+                          <button className='p-0'>
                             {isExpanded ? (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronDown className='h-4 w-4' />
                             ) : (
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className='h-4 w-4' />
                             )}
                           </button>
                         </CollapsibleTrigger>
                       </TableCell>
-                      <TableCell className="font-medium">{orch.name}</TableCell>
+                      <TableCell className='font-medium'>{orch.name}</TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
+                        <div className='flex items-center space-x-2'>
                           <div
                             className={`h-2 w-2 rounded-full ${statusColors[orch.status]}`}
                           />
@@ -134,9 +146,9 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
                       </TableCell>
                       <TableCell>{orch.sessions}</TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">
+                        <div className='space-y-1'>
+                          <div className='flex items-center justify-between text-xs'>
+                            <span className='text-muted-foreground'>
                               {orch.tokenBudget.used.toLocaleString()} /{' '}
                               {orch.tokenBudget.limit.toLocaleString()}
                             </span>
@@ -154,11 +166,11 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
                           </div>
                           <Progress
                             value={orch.tokenBudget.percent}
-                            className="h-2"
+                            className='h-2'
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className='text-sm text-muted-foreground'>
                         {formatDistanceToNow(new Date(orch.lastActivity), {
                           addSuffix: true,
                         })}
@@ -166,20 +178,26 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
                     </TableRow>
                     <CollapsibleContent asChild>
                       <TableRow>
-                        <TableCell colSpan={6} className="bg-muted/50">
-                          <div className="grid gap-4 p-4 md:grid-cols-3">
+                        <TableCell colSpan={6} className='bg-muted/50'>
+                          <div className='grid gap-4 p-4 md:grid-cols-3'>
                             <div>
-                              <p className="text-sm font-medium">Orchestrator ID</p>
-                              <p className="text-sm text-muted-foreground">{orch.id}</p>
+                              <p className='text-sm font-medium'>
+                                Orchestrator ID
+                              </p>
+                              <p className='text-sm text-muted-foreground'>
+                                {orch.id}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-sm font-medium">Average Response Time</p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className='text-sm font-medium'>
+                                Average Response Time
+                              </p>
+                              <p className='text-sm text-muted-foreground'>
                                 {orch.responseTime}ms
                               </p>
                             </div>
                             <div>
-                              <p className="text-sm font-medium">Error Count</p>
+                              <p className='text-sm font-medium'>Error Count</p>
                               <p
                                 className={`text-sm font-medium ${
                                   orch.errorCount > 0
@@ -201,7 +219,7 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
           </TableBody>
         </Table>
         {filteredOrchestrators.length === 0 && (
-          <div className="py-8 text-center text-sm text-muted-foreground">
+          <div className='py-8 text-center text-sm text-muted-foreground'>
             No orchestrators found with the selected filter.
           </div>
         )}

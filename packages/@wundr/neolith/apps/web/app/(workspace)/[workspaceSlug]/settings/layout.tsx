@@ -98,12 +98,12 @@ export default async function SettingsLayout({
         {
           href: `/${workspaceSlug}/settings/profile`,
           label: 'Profile',
-          icon: 'User'
+          icon: 'User',
         },
         {
           href: `/${workspaceSlug}/settings/security`,
           label: 'Security',
-          icon: 'Shield'
+          icon: 'Shield',
         },
       ],
     },
@@ -113,17 +113,17 @@ export default async function SettingsLayout({
         {
           href: `/${workspaceSlug}/settings/notifications`,
           label: 'Notifications',
-          icon: 'Bell'
+          icon: 'Bell',
         },
         {
           href: `/${workspaceSlug}/settings/appearance`,
           label: 'Appearance',
-          icon: 'Palette'
+          icon: 'Palette',
         },
         {
           href: `/${workspaceSlug}/settings/accessibility`,
           label: 'Accessibility',
-          icon: 'Eye'
+          icon: 'Eye',
         },
       ],
     },

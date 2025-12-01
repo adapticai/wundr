@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { useSession } from "next-auth/react"
+import * as React from 'react';
+import { useSession } from 'next-auth/react';
 import {
   AudioWaveform,
   BookOpen,
@@ -13,147 +13,147 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from '@/components/nav-main';
+import { NavProjects } from '@/components/nav-projects';
+import { NavUser } from '@/components/nav-user';
+import { TeamSwitcher } from '@/components/team-switcher';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 // Sample data for navigation (teams, nav items, projects)
 const data = {
   teams: [
     {
-      name: "Acme Inc",
+      name: 'Acme Inc',
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      plan: 'Enterprise',
     },
     {
-      name: "Acme Corp.",
+      name: 'Acme Corp.',
       logo: AudioWaveform,
-      plan: "Startup",
+      plan: 'Startup',
     },
     {
-      name: "Evil Corp.",
+      name: 'Evil Corp.',
       logo: Command,
-      plan: "Free",
+      plan: 'Free',
     },
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
+      title: 'Playground',
+      url: '#',
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: 'History',
+          url: '#',
         },
         {
-          title: "Starred",
-          url: "#",
+          title: 'Starred',
+          url: '#',
         },
         {
-          title: "Settings",
-          url: "#",
+          title: 'Settings',
+          url: '#',
         },
       ],
     },
     {
-      title: "Models",
-      url: "#",
+      title: 'Models',
+      url: '#',
       icon: Bot,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: 'Genesis',
+          url: '#',
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: 'Explorer',
+          url: '#',
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: 'Quantum',
+          url: '#',
         },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
+      title: 'Documentation',
+      url: '#',
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: 'Introduction',
+          url: '#',
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: 'Get Started',
+          url: '#',
         },
         {
-          title: "Tutorials",
-          url: "#",
+          title: 'Tutorials',
+          url: '#',
         },
         {
-          title: "Changelog",
-          url: "#",
+          title: 'Changelog',
+          url: '#',
         },
       ],
     },
     {
-      title: "Settings",
-      url: "#",
+      title: 'Settings',
+      url: '#',
       icon: Settings2,
       items: [
         {
-          title: "General",
-          url: "#",
+          title: 'General',
+          url: '#',
         },
         {
-          title: "Team",
-          url: "#",
+          title: 'Team',
+          url: '#',
         },
         {
-          title: "Billing",
-          url: "#",
+          title: 'Billing',
+          url: '#',
         },
         {
-          title: "Limits",
-          url: "#",
+          title: 'Limits',
+          url: '#',
         },
       ],
     },
   ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
+      name: 'Design Engineering',
+      url: '#',
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
+      name: 'Sales & Marketing',
+      url: '#',
       icon: PieChart,
     },
     {
-      name: "Travel",
-      url: "#",
+      name: 'Travel',
+      url: '#',
       icon: Map,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   // Use actual session user data for the NavUser component
   // Default to 'online' status since the user is actively using the app
@@ -162,10 +162,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     email: session?.user?.email || '',
     avatar: session?.user?.image || '',
     status: 'online' as const,
-  }
+  };
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible='icon' {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
@@ -178,5 +178,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

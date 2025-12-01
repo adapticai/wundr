@@ -48,7 +48,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (Orchestrator service account)
@@ -57,9 +57,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -72,9 +72,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,15 +83,16 @@ export async function GET(
     const queryParams = Object.fromEntries(searchParams.entries());
 
     // Validate filters
-    const parseResult = orchestratorMentionsFiltersSchema.safeParse(queryParams);
+    const parseResult =
+      orchestratorMentionsFiltersSchema.safeParse(queryParams);
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -107,9 +108,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -136,9 +137,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -147,9 +148,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Unauthorized: You can only access mentions for your own Orchestrator',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -165,7 +166,7 @@ export async function GET(
       channel: {
         workspaceId,
       },
-      OR: mentionPatterns.map((pattern) => ({
+      OR: mentionPatterns.map(pattern => ({
         content: {
           contains: pattern,
         },
@@ -253,9 +254,11 @@ export async function GET(
     });
 
     // Format mentions with handled status from metadata
-    const formattedMentions = mentions.map((mention) => {
+    const formattedMentions = mentions.map(mention => {
       const metadata = mention.metadata as Record<string, unknown> | null;
-      const vpMentionData = metadata?.orchestratorMention as Record<string, unknown> | undefined;
+      const vpMentionData = metadata?.orchestratorMention as
+        | Record<string, unknown>
+        | undefined;
 
       return {
         id: mention.id,
@@ -282,13 +285,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/mentions] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/mentions] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -307,7 +313,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (Orchestrator service account)
@@ -316,9 +322,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -331,9 +337,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -345,9 +351,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -358,9 +364,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -376,9 +382,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -397,9 +403,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -417,16 +423,17 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'One or more mentions not found',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Update mentions with handled status
     const updateResults = await Promise.all(
-      mentions.map((mention) => {
-        const existingMetadata = (mention.metadata as Record<string, unknown>) || {};
+      mentions.map(mention => {
+        const existingMetadata =
+          (mention.metadata as Record<string, unknown>) || {};
 
         return prisma.message.update({
           where: { id: mention.id },
@@ -441,25 +448,28 @@ export async function POST(
             } as unknown as Prisma.InputJsonValue,
           },
         });
-      }),
+      })
     );
 
     return NextResponse.json({
       data: {
         updatedCount: updateResults.length,
-        mentionIds: updateResults.map((m) => m.id),
+        mentionIds: updateResults.map(m => m.id),
         handled: input.handled,
       },
       message: `${updateResults.length} mention(s) marked as ${input.handled ? 'handled' : 'unhandled'}`,
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/mentions] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/mentions] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

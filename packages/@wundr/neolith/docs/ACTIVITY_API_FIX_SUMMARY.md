@@ -10,6 +10,7 @@
 ## Problem
 
 The dashboard activity widget was displaying an error:
+
 ```
 Failed to fetch activities: 404 Not Found
 ```
@@ -21,7 +22,9 @@ The Recent Activity section on the dashboard page was completely non-functional.
 ## Investigation
 
 ### Files Checked:
-1. ✅ `/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/dashboard/activity/route.ts`
+
+1. ✅
+   `/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/dashboard/activity/route.ts`
    - **Status:** EXISTS (789 lines of comprehensive API code)
    - **Features:** Cursor-based pagination, type filtering, date range filtering
    - **Sources:** Messages, tasks, workflows, members, files, channels
@@ -30,7 +33,8 @@ The Recent Activity section on the dashboard page was completely non-functional.
    - **Status:** EXISTS (alternative endpoint)
    - **Purpose:** Basic activity log for workspace members
 
-3. ✅ `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx`
+3. ✅
+   `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx`
    - **Status:** Found the bug
    - **Issue:** Calling wrong endpoint
 
@@ -48,6 +52,7 @@ The Recent Activity section on the dashboard page was completely non-functional.
 - **CORRECT:** `/api/workspaces/${workspaceId}/dashboard/activity?limit=5&type=all`
 
 The `/dashboard/activity` endpoint provides:
+
 - Enhanced actor information (user/VP data with avatars)
 - Unified activity feed from multiple sources
 - Better data structure for dashboard widgets
@@ -59,11 +64,13 @@ The `/dashboard/activity` endpoint provides:
 ## Solution
 
 ### File Modified:
+
 `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx`
 
 ### Changes Made:
 
 #### 1. Updated API Endpoint (Line 47)
+
 ```typescript
 // BEFORE:
 const response = await fetch(`/api/workspaces/${workspaceId}/activity?limit=5`);
@@ -73,6 +80,7 @@ const response = await fetch(`/api/workspaces/${workspaceId}/dashboard/activity?
 ```
 
 #### 2. Added Response Transformation (Lines 51-64)
+
 ```typescript
 const result = await response.json();
 
@@ -97,6 +105,7 @@ setActivities(transformedActivities);
 ## API Response Structure
 
 ### Dashboard Activity API (`/dashboard/activity`)
+
 ```typescript
 {
   data: ActivityEntry[],           // Array of enhanced activity entries
@@ -115,6 +124,7 @@ setActivities(transformedActivities);
 ```
 
 ### ActivityEntry Structure
+
 ```typescript
 {
   id: string,                      // Unique activity ID
@@ -145,12 +155,14 @@ setActivities(transformedActivities);
 ## Verification
 
 ### Code Quality Checks:
+
 - ✅ TypeScript syntax validated
 - ✅ Data transformation logic correct
 - ✅ Error handling preserved
 - ✅ ActivityEntry interface compatibility maintained
 
 ### API Endpoint Verification:
+
 - ✅ Endpoint exists and is comprehensive (789 lines)
 - ✅ Supports all required activity types
 - ✅ Returns correct data structure
@@ -158,6 +170,7 @@ setActivities(transformedActivities);
 - ✅ Includes pagination support
 
 ### Files Updated:
+
 - ✅ `dashboard-content.tsx` - API endpoint and transformation logic
 - ✅ `NEOLITH-WEB-BACKLOG.md` - Marked issue as FIXED in 2 locations
 - ✅ Added detailed fix documentation to backlog
@@ -167,13 +180,16 @@ setActivities(transformedActivities);
 ## Impact
 
 ### What's Fixed:
+
 - ✅ Dashboard Recent Activity widget will load correctly
-- ✅ Shows unified feed across all workspace activity types (messages, tasks, workflows, members, files, channels)
+- ✅ Shows unified feed across all workspace activity types (messages, tasks, workflows, members,
+  files, channels)
 - ✅ Displays proper actor names and resource information
 - ✅ Error handling provides clear feedback to users
 - ✅ Ready for pagination if needed in future enhancements
 
 ### What Works Now:
+
 1. Dashboard loads without 404 errors in activity widget
 2. Recent activity displays last 5 activities
 3. Activity types properly formatted and displayed
@@ -188,6 +204,7 @@ setActivities(transformedActivities);
 ### To Verify the Fix:
 
 1. **Start the development server:**
+
    ```bash
    cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
    npm run dev
@@ -216,14 +233,16 @@ setActivities(transformedActivities);
 ## Related Endpoints
 
 ### Comprehensive Activity Hooks Available (Not Yet Used):
+
 The codebase includes sophisticated hooks in `/hooks/use-dashboard.ts`:
 
 - `useDashboardActivity(workspaceId, options)` - Full-featured activity hook with pagination
-- `useDashboardStats(workspaceId, options)` - Stats hook with time range filtering  
+- `useDashboardStats(workspaceId, options)` - Stats hook with time range filtering
 - `useDashboard(workspaceId, statsOptions, activityOptions)` - Combined hook
 
-**Future Enhancement Opportunity:**
-Consider refactoring `dashboard-content.tsx` to use these hooks instead of manual fetching. Benefits:
+**Future Enhancement Opportunity:** Consider refactoring `dashboard-content.tsx` to use these hooks
+instead of manual fetching. Benefits:
+
 - Built-in pagination support
 - Activity type filtering
 - Date range filtering
@@ -236,15 +255,22 @@ Consider refactoring `dashboard-content.tsx` to use these hooks instead of manua
 ## Files Reference
 
 ### Modified Files:
-- `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx` (Lines 44-78)
+
+- `/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/dashboard/dashboard-content.tsx`
+  (Lines 44-78)
 
 ### API Endpoint:
-- `/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/dashboard/activity/route.ts` (789 lines)
+
+- `/packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceId]/dashboard/activity/route.ts`
+  (789 lines)
 
 ### Documentation:
-- `/packages/@wundr/neolith/docs/NEOLITH-WEB-BACKLOG.md` (Updated lines 774, 794, and added detailed fix section)
+
+- `/packages/@wundr/neolith/docs/NEOLITH-WEB-BACKLOG.md` (Updated lines 774, 794, and added detailed
+  fix section)
 
 ### Related Hooks:
+
 - `/packages/@wundr/neolith/apps/web/hooks/use-dashboard.ts` (658 lines)
 
 ---
@@ -253,7 +279,8 @@ Consider refactoring `dashboard-content.tsx` to use these hooks instead of manua
 
 **✅ FIXED - Ready for Testing**
 
-The code has been updated and verified. The dashboard activity widget should now work correctly when the development server is running.
+The code has been updated and verified. The dashboard activity widget should now work correctly when
+the development server is running.
 
 ---
 

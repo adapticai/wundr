@@ -74,7 +74,7 @@ export class PermissionDeniedError extends GenesisError {
     userId: string,
     permission: Permission,
     context: PermissionContext,
-    message?: string,
+    message?: string
   ) {
     const defaultMessage = `User '${userId}' does not have permission '${permission}'`;
     const contextMessage = buildContextMessage(context);
@@ -87,7 +87,7 @@ export class PermissionDeniedError extends GenesisError {
         userId,
         permission,
         context,
-      },
+      }
     );
 
     this.name = 'PermissionDeniedError';
@@ -131,7 +131,7 @@ export class NotAuthenticatedError extends GenesisError {
     super(
       message ?? 'Authentication required',
       PermissionErrorCodes.NOT_AUTHENTICATED,
-      401,
+      401
     );
     this.name = 'NotAuthenticatedError';
   }
@@ -153,7 +153,7 @@ export class NotOrganizationMemberError extends GenesisError {
       `User '${userId}' is not a member of organization '${organizationId}'`,
       PermissionErrorCodes.NOT_ORGANIZATION_MEMBER,
       403,
-      { userId, organizationId },
+      { userId, organizationId }
     );
     this.name = 'NotOrganizationMemberError';
     this.userId = userId;
@@ -173,7 +173,7 @@ export class NotWorkspaceMemberError extends GenesisError {
       `User '${userId}' is not a member of workspace '${workspaceId}'`,
       PermissionErrorCodes.NOT_WORKSPACE_MEMBER,
       403,
-      { userId, workspaceId },
+      { userId, workspaceId }
     );
     this.name = 'NotWorkspaceMemberError';
     this.userId = userId;
@@ -193,7 +193,7 @@ export class NotChannelMemberError extends GenesisError {
       `User '${userId}' is not a member of channel '${channelId}'`,
       PermissionErrorCodes.NOT_CHANNEL_MEMBER,
       403,
-      { userId, channelId },
+      { userId, channelId }
     );
     this.name = 'NotChannelMemberError';
     this.userId = userId;
@@ -232,13 +232,13 @@ export class InsufficientRoleError extends GenesisError {
     userId: string,
     currentRole: string,
     requiredRole: string,
-    scope: RoleScope,
+    scope: RoleScope
   ) {
     super(
       `User '${userId}' has ${scope} role '${currentRole}', but '${requiredRole}' or higher is required`,
       PermissionErrorCodes.INSUFFICIENT_ROLE,
       403,
-      { userId, currentRole, requiredRole, scope },
+      { userId, currentRole, requiredRole, scope }
     );
     this.name = 'InsufficientRoleError';
     this.userId = userId;
@@ -260,10 +260,11 @@ export class InvalidPermissionContextError extends GenesisError {
 
   constructor(missingFields: string[], message?: string) {
     super(
-      message ?? `Invalid permission context: missing ${missingFields.join(', ')}`,
+      message ??
+        `Invalid permission context: missing ${missingFields.join(', ')}`,
       PermissionErrorCodes.INVALID_CONTEXT,
       400,
-      { missingFields },
+      { missingFields }
     );
     this.name = 'InvalidPermissionContextError';
     this.missingFields = missingFields;
@@ -293,7 +294,7 @@ export class InvalidPermissionContextError extends GenesisError {
  * ```
  */
 export function isPermissionDeniedError(
-  error: unknown,
+  error: unknown
 ): error is PermissionDeniedError {
   return error instanceof PermissionDeniedError;
 }
@@ -317,7 +318,7 @@ export function isPermissionDeniedError(
  * ```
  */
 export function isNotAuthenticatedError(
-  error: unknown,
+  error: unknown
 ): error is NotAuthenticatedError {
   return error instanceof NotAuthenticatedError;
 }
@@ -346,6 +347,6 @@ export function isPermissionError(error: unknown): error is GenesisError {
     return false;
   }
   return Object.values(PermissionErrorCodes).includes(
-    error.code as PermissionErrorCode,
+    error.code as PermissionErrorCode
   );
 }

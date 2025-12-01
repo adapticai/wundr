@@ -1,18 +1,21 @@
 # Wundr MCP Tools for Claude Code
 
-This package provides Model Context Protocol (MCP) tools that integrate the Wundr toolkit's powerful features directly into Claude Code, enabling AI-assisted governance, standardization, and monorepo management.
+This package provides Model Context Protocol (MCP) tools that integrate the Wundr toolkit's powerful
+features directly into Claude Code, enabling AI-assisted governance, standardization, and monorepo
+management.
 
 ## 🚀 Quick Start
 
 ### Installation
 
 1. **Install the MCP tools:**
+
    ```bash
    npm install -g @wundr/mcp-tools
    ```
 
-2. **Configure Claude Code:**
-   Add to your Claude Code settings:
+2. **Configure Claude Code:** Add to your Claude Code settings:
+
    ```json
    {
      "mcpServers": {
@@ -33,9 +36,11 @@ This package provides Model Context Protocol (MCP) tools that integrate the Wund
 ## 🛠️ Available Tools
 
 ### 1. Drift Detection (`drift_detection`)
+
 Monitor code quality drift over time by creating baselines and comparing changes.
 
 **Usage in Claude Code:**
+
 ```
 "Check for code drift against the latest baseline"
 "Create a new baseline for drift detection"
@@ -43,9 +48,11 @@ Monitor code quality drift over time by creating baselines and comparing changes
 ```
 
 ### 2. Pattern Standardization (`pattern_standardize`)
+
 Automatically fix code patterns to match your team's standards.
 
 **Usage in Claude Code:**
+
 ```
 "Standardize error handling patterns in the codebase"
 "Review patterns that need manual attention"
@@ -53,9 +60,11 @@ Automatically fix code patterns to match your team's standards.
 ```
 
 ### 3. Monorepo Management (`monorepo_manage`)
+
 Set up and manage monorepo structures with ease.
 
 **Usage in Claude Code:**
+
 ```
 "Initialize a new monorepo structure"
 "Add a new package called auth-service"
@@ -63,9 +72,11 @@ Set up and manage monorepo structures with ease.
 ```
 
 ### 4. Governance Reports (`governance_report`)
+
 Generate comprehensive governance and compliance reports.
 
 **Usage in Claude Code:**
+
 ```
 "Generate weekly governance report"
 "Show code quality compliance status"
@@ -73,9 +84,11 @@ Generate comprehensive governance and compliance reports.
 ```
 
 ### 5. Dependency Analysis (`dependency_analyze`)
+
 Analyze and visualize project dependencies.
 
 **Usage in Claude Code:**
+
 ```
 "Find all circular dependencies"
 "Show unused dependencies in the project"
@@ -83,9 +96,11 @@ Analyze and visualize project dependencies.
 ```
 
 ### 6. Test Baselines (`test_baseline`)
+
 Manage test coverage baselines and track changes.
 
 **Usage in Claude Code:**
+
 ```
 "Create test coverage baseline"
 "Compare current coverage against baseline"
@@ -93,9 +108,11 @@ Manage test coverage baselines and track changes.
 ```
 
 ### 7. Claude Config Helper (`claude_config`)
+
 Generate optimized Claude Code configurations for your project.
 
 **Usage in Claude Code:**
+
 ```
 "Generate CLAUDE.md for this project"
 "Set up coding conventions for Claude Code"
@@ -105,6 +122,7 @@ Generate optimized Claude Code configurations for your project.
 ## 📋 Configuration
 
 ### Environment Variables
+
 ```bash
 WUNDR_MCP_LOG_LEVEL=info    # Logging level (debug, info, warn, error)
 WUNDR_MCP_CACHE_DIR=.cache  # Cache directory for performance
@@ -112,7 +130,9 @@ WUNDR_MCP_TIMEOUT=30000     # Tool timeout in milliseconds
 ```
 
 ### Custom Configuration
+
 Create `.wundr-mcp.json` in your project root:
+
 ```json
 {
   "governance": {
@@ -143,14 +163,17 @@ Create `.wundr-mcp.json` in your project root:
 ## 🔧 Advanced Usage
 
 ### Combining Tools
+
 The MCP tools work together seamlessly:
 
 1. **Full Governance Workflow:**
+
    ```
    "Create a drift baseline, then standardize patterns, and generate a governance report"
    ```
 
 2. **Monorepo Migration:**
+
    ```
    "Analyze dependencies, create monorepo migration plan, then initialize the structure"
    ```
@@ -161,22 +184,23 @@ The MCP tools work together seamlessly:
    ```
 
 ### Automation with Hooks
+
 Configure Claude Code hooks to run tools automatically:
 
 ```javascript
 // .claude/hooks/pre-commit.js
-module.exports = async (context) => {
+module.exports = async context => {
   // Run pattern standardization before commits
-  await context.runMCPTool('pattern_standardize', { 
+  await context.runMCPTool('pattern_standardize', {
     action: 'run',
-    dryRun: false 
+    dryRun: false,
   });
-  
+
   // Check for drift
-  const drift = await context.runMCPTool('drift_detection', { 
-    action: 'detect' 
+  const drift = await context.runMCPTool('drift_detection', {
+    action: 'detect',
   });
-  
+
   if (drift.severity === 'critical') {
     throw new Error('Critical drift detected! Fix issues before committing.');
   }
@@ -196,11 +220,13 @@ module.exports = async (context) => {
 ### Common Issues
 
 1. **Tool not found:**
+
    ```bash
    claude mcp restart wundr
    ```
 
 2. **Permission errors:**
+
    ```bash
    chmod +x $(which wundr-mcp)
    ```
@@ -211,7 +237,9 @@ module.exports = async (context) => {
    ```
 
 ### Debug Mode
+
 Enable debug logging:
+
 ```bash
 export WUNDR_MCP_LOG_LEVEL=debug
 claude mcp logs wundr
@@ -220,6 +248,7 @@ claude mcp logs wundr
 ## 📚 Examples
 
 ### Example 1: Complete Governance Check
+
 ```typescript
 // Claude Code will understand:
 "Run a complete governance check: analyze drift, fix patterns, and generate report"
@@ -231,6 +260,7 @@ claude mcp logs wundr
 ```
 
 ### Example 2: Monorepo Setup
+
 ```typescript
 // Claude Code will understand:
 "Set up a new monorepo for our microservices with auth, api, and worker packages"
@@ -245,6 +275,7 @@ claude mcp logs wundr
 ## 🔗 Integration with CI/CD
 
 ### GitHub Actions
+
 ```yaml
 name: Governance Check
 on: [push, pull_request]

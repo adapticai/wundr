@@ -246,7 +246,14 @@
           "messageAttachments -> messageAttachment[]",
           "savedItems -> savedItem[]"
         ],
-        "indexes": ["channelId", "authorId", "parentId", "type", "createdAt", "deletedAt"]
+        "indexes": [
+          "channelId",
+          "authorId",
+          "parentId",
+          "type",
+          "createdAt",
+          "deletedAt"
+        ]
       },
       {
         "name": "reaction",
@@ -380,7 +387,14 @@
           "daemonCredentials -> daemonCredential[]",
           "orchestratorMemories -> orchestratorMemory[]"
         ],
-        "indexes": ["userId", "organizationId", "workspaceId", "disciplineId", "discipline", "status"],
+        "indexes": [
+          "userId",
+          "organizationId",
+          "workspaceId",
+          "disciplineId",
+          "discipline",
+          "status"
+        ],
         "tableName": "vps"
       },
       {
@@ -509,7 +523,17 @@
           "assignedTo -> user?",
           "backlogItems -> backlogItem[]"
         ],
-        "indexes": ["orchestratorId", "workspaceId", "channelId", "createdById", "assignedToId", "status", "priority", "dueDate", "createdAt"]
+        "indexes": [
+          "orchestratorId",
+          "workspaceId",
+          "channelId",
+          "createdById",
+          "assignedToId",
+          "status",
+          "priority",
+          "dueDate",
+          "createdAt"
+        ]
       },
       {
         "name": "backlog",
@@ -596,7 +620,14 @@
           "workflowId (String, FK)",
           "workspaceId (String)"
         ],
-        "indexes": ["workflowId", "workspaceId", "status", "triggeredBy", "startedAt", "isSimulation"]
+        "indexes": [
+          "workflowId",
+          "workspaceId",
+          "status",
+          "triggeredBy",
+          "startedAt",
+          "isSimulation"
+        ]
       },
       {
         "name": "agent",
@@ -653,7 +684,13 @@
           "updatedAt (DateTime)",
           "connectedAt (DateTime?)"
         ],
-        "indexes": ["workspaceId", "provider", "status", "connectedBy", "createdAt"]
+        "indexes": [
+          "workspaceId",
+          "provider",
+          "status",
+          "connectedBy",
+          "createdAt"
+        ]
       },
       {
         "name": "webhook",
@@ -731,10 +768,7 @@
           "createdAt (DateTime)",
           "updatedAt (DateTime)"
         ],
-        "relations": [
-          "workspace -> workspace",
-          "logs -> deploymentLog[]"
-        ],
+        "relations": ["workspace -> workspace", "logs -> deploymentLog[]"],
         "indexes": ["workspaceId", "status", "environment", "type", "createdAt"]
       },
       {
@@ -801,7 +835,15 @@
           "workspace -> workspace"
         ],
         "uniqueConstraints": ["[userId, messageId]", "[userId, fileId]"],
-        "indexes": ["userId", "workspaceId", "itemType", "status", "messageId", "fileId", "createdAt"]
+        "indexes": [
+          "userId",
+          "workspaceId",
+          "itemType",
+          "status",
+          "messageId",
+          "fileId",
+          "createdAt"
+        ]
       }
     ]
   },
@@ -1202,28 +1244,69 @@
     "FileStatus": ["PENDING", "PROCESSING", "READY", "FAILED"],
     "MessageType": ["TEXT", "FILE", "SYSTEM", "COMMAND"],
     "NotificationPriority": ["LOW", "NORMAL", "HIGH", "URGENT"],
-    "NotificationType": ["MESSAGE", "MENTION", "THREAD_REPLY", "CALL", "CHANNEL_INVITE", "ORGANIZATION_UPDATE", "SYSTEM"],
+    "NotificationType": [
+      "MESSAGE",
+      "MENTION",
+      "THREAD_REPLY",
+      "CALL",
+      "CHANNEL_INVITE",
+      "ORGANIZATION_UPDATE",
+      "SYSTEM"
+    ],
     "OrganizationRole": ["OWNER", "ADMIN", "MEMBER"],
     "PushPlatform": ["web", "ios", "android"],
     "TaskPriority": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
     "TaskStatus": ["TODO", "IN_PROGRESS", "BLOCKED", "DONE", "CANCELLED"],
     "UserStatus": ["ACTIVE", "INACTIVE", "PENDING", "SUSPENDED"],
     "OrchestratorStatus": ["ONLINE", "OFFLINE", "BUSY", "AWAY"],
-    "WorkflowExecutionStatus": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "CANCELLED", "TIMEOUT"],
+    "WorkflowExecutionStatus": [
+      "PENDING",
+      "RUNNING",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "TIMEOUT"
+    ],
     "WorkflowStatus": ["ACTIVE", "INACTIVE", "DRAFT", "ARCHIVED"],
     "WorkspaceRole": ["OWNER", "ADMIN", "MEMBER", "GUEST"],
     "WorkspaceVisibility": ["PUBLIC", "PRIVATE", "INTERNAL"],
     "IntegrationStatus": ["ACTIVE", "INACTIVE", "PENDING", "ERROR", "REVOKED"],
-    "IntegrationProvider": ["SLACK", "GITHUB", "GITLAB", "JIRA", "LINEAR", "NOTION", "GOOGLE_DRIVE", "MICROSOFT_365", "ZAPIER", "CUSTOM"],
+    "IntegrationProvider": [
+      "SLACK",
+      "GITHUB",
+      "GITLAB",
+      "JIRA",
+      "LINEAR",
+      "NOTION",
+      "GOOGLE_DRIVE",
+      "MICROSOFT_365",
+      "ZAPIER",
+      "CUSTOM"
+    ],
     "WebhookStatus": ["ACTIVE", "INACTIVE", "FAILED"],
     "WebhookDeliveryStatus": ["PENDING", "SUCCESS", "FAILED", "RETRYING"],
     "ExportStatus": ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
     "ExportFormat": ["JSON", "CSV"],
-    "DeploymentStatus": ["PENDING", "BUILDING", "DEPLOYING", "ACTIVE", "FAILED", "STOPPED"],
+    "DeploymentStatus": [
+      "PENDING",
+      "BUILDING",
+      "DEPLOYING",
+      "ACTIVE",
+      "FAILED",
+      "STOPPED"
+    ],
     "DeploymentEnvironment": ["DEVELOPMENT", "STAGING", "PRODUCTION"],
     "LogLevel": ["DEBUG", "INFO", "WARN", "ERROR"],
     "DeploymentType": ["SERVICE", "AGENT", "WORKFLOW", "INTEGRATION"],
-    "AgentType": ["TASK", "RESEARCH", "CODING", "DATA", "QA", "SUPPORT", "CUSTOM"],
+    "AgentType": [
+      "TASK",
+      "RESEARCH",
+      "CODING",
+      "DATA",
+      "QA",
+      "SUPPORT",
+      "CUSTOM"
+    ],
     "AgentStatus": ["ACTIVE", "PAUSED", "INACTIVE"],
     "SavedItemType": ["MESSAGE", "FILE", "LINK", "NOTE"],
     "SavedItemStatus": ["IN_PROGRESS", "ARCHIVED", "COMPLETED"]

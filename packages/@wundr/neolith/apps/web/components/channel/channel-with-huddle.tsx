@@ -62,25 +62,31 @@ export function ChannelWithHuddle({
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
 
   // Handlers
-  const handleStartHuddle = useCallback(async (audioOnly: boolean) => {
-    try {
-      await startHuddle(audioOnly);
-      setIsVideoEnabled(!audioOnly);
-      setHuddleView('dialog');
-    } catch (error) {
-      console.error('Failed to start huddle:', error);
-    }
-  }, [startHuddle]);
+  const handleStartHuddle = useCallback(
+    async (audioOnly: boolean) => {
+      try {
+        await startHuddle(audioOnly);
+        setIsVideoEnabled(!audioOnly);
+        setHuddleView('dialog');
+      } catch (error) {
+        console.error('Failed to start huddle:', error);
+      }
+    },
+    [startHuddle]
+  );
 
-  const handleJoinHuddle = useCallback(async (audioOnly: boolean) => {
-    try {
-      await joinHuddle(audioOnly);
-      setIsVideoEnabled(!audioOnly);
-      setHuddleView('dialog');
-    } catch (error) {
-      console.error('Failed to join huddle:', error);
-    }
-  }, [joinHuddle]);
+  const handleJoinHuddle = useCallback(
+    async (audioOnly: boolean) => {
+      try {
+        await joinHuddle(audioOnly);
+        setIsVideoEnabled(!audioOnly);
+        setHuddleView('dialog');
+      } catch (error) {
+        console.error('Failed to join huddle:', error);
+      }
+    },
+    [joinHuddle]
+  );
 
   const handleLeaveHuddle = useCallback(async () => {
     try {
@@ -108,16 +114,16 @@ export function ChannelWithHuddle({
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className='flex flex-col h-full'>
       {/* Channel Header */}
-      <div className="flex items-center border-b">
+      <div className='flex items-center border-b'>
         <ChannelHeader
           channel={channel}
           permissions={permissions}
           workspaceId={workspaceId}
         />
         {/* Add huddle button to header */}
-        <div className="mr-4">
+        <div className='mr-4'>
           <HuddleButton
             hasActiveHuddle={!!huddle && huddle.status === 'active'}
             participantCount={huddle?.participantCount ?? 0}
@@ -131,7 +137,7 @@ export function ChannelWithHuddle({
       </div>
 
       {/* Main channel content */}
-      <div className="flex-1 overflow-auto">
+      <div className='flex-1 overflow-auto'>
         {/* Your channel content here (messages, canvas, files, etc.) */}
       </div>
 
@@ -172,7 +178,7 @@ export function ChannelWithHuddle({
           {huddleView === 'dialog' && (
             <HuddleDialog
               open={true}
-              onOpenChange={(open) => {
+              onOpenChange={open => {
                 if (!open) {
                   setHuddleView('bar');
                 }
@@ -182,7 +188,7 @@ export function ChannelWithHuddle({
               serverUrl={joinData.serverUrl}
               roomName={joinData.roomName}
               onDisconnect={handleLeaveHuddle}
-              onError={(error) => {
+              onError={error => {
                 console.error('Huddle error:', error);
               }}
             />

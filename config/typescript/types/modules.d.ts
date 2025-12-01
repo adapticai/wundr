@@ -78,9 +78,16 @@ declare module 'glob' {
     nounique?: boolean;
   }
 
-  function glob(pattern: string, callback: (err: Error | null, matches: string[]) => void): void;
-  function glob(pattern: string, options: Options, callback: (err: Error | null, matches: string[]) => void): void;
-  
+  function glob(
+    pattern: string,
+    callback: (err: Error | null, matches: string[]) => void
+  ): void;
+  function glob(
+    pattern: string,
+    options: Options,
+    callback: (err: Error | null, matches: string[]) => void
+  ): void;
+
   namespace glob {
     function sync(pattern: string, options?: Options): string[];
     function hasMagic(pattern: string, options?: Options): boolean;
@@ -156,11 +163,11 @@ declare module 'ts-morph' {
     getSymbol(): Symbol | undefined;
   }
 
-  export type ExportedDeclarations = 
-    | ClassDeclaration 
-    | InterfaceDeclaration 
-    | FunctionDeclaration 
-    | EnumDeclaration 
+  export type ExportedDeclarations =
+    | ClassDeclaration
+    | InterfaceDeclaration
+    | FunctionDeclaration
+    | EnumDeclaration
     | TypeAliasDeclaration;
 
   export type ImportDeclaration = any;
@@ -179,7 +186,11 @@ declare module 'commander' {
   export interface Command {
     version(version: string): Command;
     description(description: string): Command;
-    option(flags: string, description?: string, defaultValue?: string | number | boolean): Command;
+    option(
+      flags: string,
+      description?: string,
+      defaultValue?: string | number | boolean
+    ): Command;
     argument(name: string, description?: string): Command;
     action(fn: (...args: readonly unknown[]) => void | Promise<void>): Command;
     command(nameAndArgs: string): Command;
@@ -273,7 +284,9 @@ declare module 'inquirer' {
     when?: (answers: Record<string, unknown>) => boolean;
   }
 
-  function prompt(questions: readonly Question[]): Promise<Record<string, unknown>>;
+  function prompt(
+    questions: readonly Question[]
+  ): Promise<Record<string, unknown>>;
   export { prompt, Question };
 }
 
@@ -292,7 +305,14 @@ declare module 'semver' {
   function eq(v1: string, v2: string): boolean;
   function satisfies(version: string, range: string): boolean;
 
-  type ReleaseType = 'major' | 'premajor' | 'minor' | 'preminor' | 'patch' | 'prepatch' | 'prerelease';
+  type ReleaseType =
+    | 'major'
+    | 'premajor'
+    | 'minor'
+    | 'preminor'
+    | 'patch'
+    | 'prepatch'
+    | 'prerelease';
 
   export {
     valid,
@@ -308,7 +328,7 @@ declare module 'semver' {
     lte,
     eq,
     satisfies,
-    ReleaseType
+    ReleaseType,
   };
 }
 

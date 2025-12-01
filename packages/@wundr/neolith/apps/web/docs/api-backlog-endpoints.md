@@ -5,11 +5,13 @@
 ### 1. Orchestrator Backlog Management
 
 #### Get VP's Task Backlog
+
 ```
 GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ```
 
 **Query Parameters:**
+
 - `status` - Filter by status (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
 - `priority` - Filter by priority (CRITICAL, HIGH, MEDIUM, LOW)
 - `includeCompleted` - Include completed tasks (default: false)
@@ -20,6 +22,7 @@ GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 - `sortOrder` - Sort direction (asc, desc)
 
 **Response:**
+
 ```json
 {
   "data": [...tasks],
@@ -46,11 +49,13 @@ GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ```
 
 #### Add Task to VP's Backlog
+
 ```
 POST /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "Implement feature X",
@@ -68,6 +73,7 @@ POST /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ```
 
 **Response:**
+
 ```json
 {
   "data": {...task},
@@ -80,17 +86,20 @@ POST /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ### 2. Task Polling
 
 #### Get Next Available Task for VP
+
 ```
 GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/next-task
 ```
 
 **Query Parameters:**
+
 - `status` - Filter by status (default: TODO)
 - `minPriority` - Minimum priority (CRITICAL, HIGH, MEDIUM, LOW)
 - `capabilities` - Comma-separated list of required capabilities
 - `deadlineWithinHours` - Consider tasks with deadline within X hours
 
 **Response:**
+
 ```json
 {
   "data": {...task},
@@ -112,6 +121,7 @@ GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/next-task
 ```
 
 **No Tasks Available:**
+
 ```json
 {
   "data": null,
@@ -128,11 +138,13 @@ GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/next-task
 ### 3. Task Assignment
 
 #### Assign Task to Orchestrator or User
+
 ```
 POST /api/workspaces/{workspaceId}/tasks/{taskId}/assign
 ```
 
 **Request Body:**
+
 ```json
 {
   "assigneeId": "vp_123",
@@ -143,6 +155,7 @@ POST /api/workspaces/{workspaceId}/tasks/{taskId}/assign
 ```
 
 **Response:**
+
 ```json
 {
   "data": {...task},
@@ -160,11 +173,13 @@ POST /api/workspaces/{workspaceId}/tasks/{taskId}/assign
 ### 4. Task Completion
 
 #### Mark Task as Complete
+
 ```
 POST /api/workspaces/{workspaceId}/tasks/{taskId}/complete
 ```
 
 **Request Body:**
+
 ```json
 {
   "result": {
@@ -183,6 +198,7 @@ POST /api/workspaces/{workspaceId}/tasks/{taskId}/complete
 ```
 
 **Response:**
+
 ```json
 {
   "data": {...task},
@@ -201,6 +217,7 @@ POST /api/workspaces/{workspaceId}/tasks/{taskId}/complete
 ## Priority Ordering
 
 Tasks are prioritized in this order:
+
 1. **CRITICAL** - Urgent, blocking issues
 2. **HIGH** - Important features or fixes
 3. **MEDIUM** - Standard tasks (default)
@@ -220,18 +237,18 @@ BLOCKED  CANCELLED
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| `VP_NOT_FOUND` | Orchestrator does not exist or is not in workspace |
-| `WORKSPACE_NOT_FOUND` | Workspace does not exist |
-| `TASK_NOT_FOUND` | Task does not exist in workspace |
-| `UNAUTHORIZED` | Authentication required |
-| `FORBIDDEN` | Insufficient permissions |
-| `VALIDATION_ERROR` | Invalid request data |
-| `ALREADY_COMPLETED` | Task is already marked as complete |
-| `INVALID_STATE` | Task cannot transition to requested state |
-| `NO_AVAILABLE_TASKS` | No tasks available for Orchestrator |
-| `INTERNAL_ERROR` | Server error occurred |
+| Code                  | Description                                        |
+| --------------------- | -------------------------------------------------- |
+| `VP_NOT_FOUND`        | Orchestrator does not exist or is not in workspace |
+| `WORKSPACE_NOT_FOUND` | Workspace does not exist                           |
+| `TASK_NOT_FOUND`      | Task does not exist in workspace                   |
+| `UNAUTHORIZED`        | Authentication required                            |
+| `FORBIDDEN`           | Insufficient permissions                           |
+| `VALIDATION_ERROR`    | Invalid request data                               |
+| `ALREADY_COMPLETED`   | Task is already marked as complete                 |
+| `INVALID_STATE`       | Task cannot transition to requested state          |
+| `NO_AVAILABLE_TASKS`  | No tasks available for Orchestrator                |
+| `INTERNAL_ERROR`      | Server error occurred                              |
 
 ---
 
@@ -332,6 +349,7 @@ curl -X GET \
 When a task is completed, the system triggers `task.completed` webhooks:
 
 **Webhook Payload:**
+
 ```json
 {
   "event": "task.completed",
@@ -353,6 +371,7 @@ When a task is completed, the system triggers `task.completed` webhooks:
 ```
 
 Configure webhooks at:
+
 ```
 POST /api/workspaces/{workspaceId}/webhooks
 ```
@@ -362,6 +381,7 @@ POST /api/workspaces/{workspaceId}/webhooks
 ## Rate Limits
 
 Recommended rate limits for Orchestrator daemons:
+
 - **Next task polling:** 1 request per 5 seconds
 - **Backlog queries:** 1 request per 10 seconds
 - **Task operations:** 10 requests per minute
@@ -371,6 +391,7 @@ Recommended rate limits for Orchestrator daemons:
 ## Best Practices
 
 ### For Orchestrator Daemons:
+
 1. Poll for next task at regular intervals (5-10 seconds)
 2. Self-assign task before starting work
 3. Update task status to IN_PROGRESS immediately
@@ -378,6 +399,7 @@ Recommended rate limits for Orchestrator daemons:
 5. Handle NO_AVAILABLE_TASKS gracefully
 
 ### For Human Users:
+
 1. Use `includeStats=true` to monitor Orchestrator performance
 2. Set appropriate priorities for urgent tasks
 3. Add comprehensive task descriptions
@@ -385,6 +407,7 @@ Recommended rate limits for Orchestrator daemons:
 5. Review completion artifacts
 
 ### For Integrations:
+
 1. Subscribe to `task.completed` webhooks
 2. Implement retry logic for failed deliveries
 3. Validate webhook signatures

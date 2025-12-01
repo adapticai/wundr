@@ -20,8 +20,8 @@ export function EmptyWorkflows({
   return (
     <EmptyState
       icon={Workflow}
-      title="No workflows yet"
-      description="Build automated workflows to streamline your processes and connect your tools."
+      title='No workflows yet'
+      description='Build automated workflows to streamline your processes and connect your tools.'
       action={
         onCreateWorkflow
           ? {

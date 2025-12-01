@@ -31,7 +31,9 @@ export default function ActivityPage() {
 
   // State
   const [typeFilter, setTypeFilter] = useState<ActivityType>('all');
-  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('all');
+  const [dateRange, setDateRange] = useState<
+    'today' | 'week' | 'month' | 'all'
+  >('all');
 
   // Calculate date range
   const dateFilter = useMemo(() => {
@@ -56,14 +58,12 @@ export default function ActivityPage() {
   }, [dateRange]);
 
   // Fetch activities
-  const { activities, isLoading, error, loadMore, hasMore, refresh } = useActivity(
-    workspaceId,
-    {
+  const { activities, isLoading, error, loadMore, hasMore, refresh } =
+    useActivity(workspaceId, {
       type: typeFilter,
       dateFrom: dateFilter,
       limit: 20,
-    },
-  );
+    });
 
   // Activity type counts
   const activityCounts = useMemo(() => {
@@ -77,7 +77,7 @@ export default function ActivityPage() {
       channel: 0,
     };
 
-    activities.forEach((activity) => {
+    activities.forEach(activity => {
       if (activity.type !== 'all') {
         counts[activity.type]++;
       }
@@ -87,20 +87,20 @@ export default function ActivityPage() {
   }, [activities]);
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Activity Feed</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className='text-2xl font-bold text-foreground'>Activity Feed</h1>
+          <p className='text-sm text-muted-foreground'>
             Track all workspace activities in one place
           </p>
         </div>
         <button
-          type="button"
+          type='button'
           onClick={refresh}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+          className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
         >
           <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           Refresh
@@ -108,10 +108,12 @@ export default function ActivityPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-4">
+      <div className='flex flex-col gap-4'>
         {/* Activity Type Filter */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Type:</span>
+        <div className='flex flex-wrap gap-2'>
+          <span className='text-sm font-medium text-muted-foreground'>
+            Type:
+          </span>
           {(
             [
               { key: 'all', label: 'All', icon: Activity },
@@ -125,23 +127,23 @@ export default function ActivityPage() {
           ).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
-              type="button"
+              type='button'
               onClick={() => setTypeFilter(key)}
               className={cn(
                 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 typeFilter === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className='h-3.5 w-3.5' />
               {label}
               <span
                 className={cn(
                   'ml-1 rounded-full px-1.5 py-0.5 text-xs',
                   typeFilter === key
                     ? 'bg-primary-foreground/20 text-primary-foreground'
-                    : 'bg-background text-muted-foreground',
+                    : 'bg-background text-muted-foreground'
                 )}
               >
                 {activityCounts[key]}
@@ -151,8 +153,10 @@ export default function ActivityPage() {
         </div>
 
         {/* Date Range Filter */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Time:</span>
+        <div className='flex flex-wrap gap-2'>
+          <span className='text-sm font-medium text-muted-foreground'>
+            Time:
+          </span>
           {(
             [
               { key: 'today', label: 'Today' },
@@ -163,16 +167,16 @@ export default function ActivityPage() {
           ).map(({ key, label }) => (
             <button
               key={key}
-              type="button"
+              type='button'
               onClick={() => setDateRange(key)}
               className={cn(
                 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 dateRange === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
             >
-              <Calendar className="h-3.5 w-3.5" />
+              <Calendar className='h-3.5 w-3.5' />
               {label}
             </button>
           ))}
@@ -181,16 +185,18 @@ export default function ActivityPage() {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-          <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
-            <AlertIcon className="h-5 w-5" />
-            <p className="text-sm font-medium">Failed to load activities</p>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20'>
+          <div className='flex items-center gap-2 text-red-800 dark:text-red-200'>
+            <AlertIcon className='h-5 w-5' />
+            <p className='text-sm font-medium'>Failed to load activities</p>
           </div>
-          <p className="mt-1 text-sm text-red-600 dark:text-red-300">{error.message}</p>
+          <p className='mt-1 text-sm text-red-600 dark:text-red-300'>
+            {error.message}
+          </p>
           <button
-            type="button"
+            type='button'
             onClick={refresh}
-            className="mt-2 text-sm font-medium text-red-800 hover:text-red-900 dark:text-red-200"
+            className='mt-2 text-sm font-medium text-red-800 hover:text-red-900 dark:text-red-200'
           >
             Try again
           </button>
@@ -199,7 +205,7 @@ export default function ActivityPage() {
 
       {/* Loading State */}
       {isLoading && activities.length === 0 && (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {Array.from({ length: 5 }).map((_, i) => (
             <ActivityCardSkeleton key={i} />
           ))}
@@ -210,7 +216,7 @@ export default function ActivityPage() {
       {!isLoading && !error && activities.length === 0 && (
         <EmptyState
           icon={Activity}
-          title="No Activity Yet"
+          title='No Activity Yet'
           description={
             typeFilter === 'all'
               ? 'Activity will appear here as your team works in this workspace.'
@@ -229,18 +235,18 @@ export default function ActivityPage() {
 
       {/* Activity List */}
       {!isLoading && !error && activities.length > 0 && (
-        <div className="space-y-4">
-          {activities.map((activity) => (
+        <div className='space-y-4'>
+          {activities.map(activity => (
             <ActivityCard key={activity.id} activity={activity} />
           ))}
 
           {/* Load More Button */}
           {hasMore && (
-            <div className="flex justify-center pt-4">
+            <div className='flex justify-center pt-4'>
               <button
-                type="button"
+                type='button'
                 onClick={loadMore}
-                className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent'
               >
                 Load More
               </button>
@@ -264,14 +270,14 @@ function ActivityCard({ activity }: ActivityCardProps) {
   const Icon = icon.component;
 
   return (
-    <div className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
-      <div className="flex gap-4">
+    <div className='rounded-lg border bg-card p-4 transition-shadow hover:shadow-md'>
+      <div className='flex gap-4'>
         {/* Icon & Avatar */}
-        <div className="flex flex-col items-center gap-2">
+        <div className='flex flex-col items-center gap-2'>
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-full',
-              icon.bgColor,
+              icon.bgColor
             )}
           >
             <Icon className={cn('h-5 w-5', icon.color)} />
@@ -280,44 +286,51 @@ function ActivityCard({ activity }: ActivityCardProps) {
             <img
               src={activity.actor.avatarUrl}
               alt={activity.actor.displayName || activity.actor.name || 'User'}
-              className="h-8 w-8 rounded-lg object-cover"
+              className='h-8 w-8 rounded-lg object-cover'
             />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-              <span className="text-xs font-medium text-muted-foreground">
-                {(activity.actor.displayName || activity.actor.name || '?')[0].toUpperCase()}
+            <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-muted'>
+              <span className='text-xs font-medium text-muted-foreground'>
+                {(activity.actor.displayName ||
+                  activity.actor.name ||
+                  '?')[0].toUpperCase()}
               </span>
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
+        <div className='flex-1 min-w-0'>
           {/* Header */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm">
-                <span className="font-semibold">
-                  {activity.actor.displayName || activity.actor.name || 'Unknown user'}
+          <div className='flex items-start justify-between gap-2'>
+            <div className='flex-1 min-w-0'>
+              <p className='text-sm'>
+                <span className='font-semibold'>
+                  {activity.actor.displayName ||
+                    activity.actor.name ||
+                    'Unknown user'}
                 </span>
                 {activity.actor.isOrchestrator && (
-                  <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/20 dark:text-purple-300">
+                  <span className='ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'>
                     AI
                   </span>
                 )}
-                <span className="text-muted-foreground"> {activity.action} </span>
+                <span className='text-muted-foreground'>
+                  {' '}
+                  {activity.action}{' '}
+                </span>
                 {activity.target && (
                   <>
-                    <span className="text-muted-foreground">
+                    <span className='text-muted-foreground'>
                       {getTargetTypeLabel(activity.target.type)}
                     </span>
-                    <span className="font-medium"> {activity.target.name}</span>
+                    <span className='font-medium'> {activity.target.name}</span>
                   </>
                 )}
               </p>
             </div>
             <time
-              className="whitespace-nowrap text-xs text-muted-foreground"
+              className='whitespace-nowrap text-xs text-muted-foreground'
               dateTime={activity.timestamp}
             >
               {formatRelativeTime(activity.timestamp)}
@@ -326,14 +339,14 @@ function ActivityCard({ activity }: ActivityCardProps) {
 
           {/* Content Preview */}
           {activity.content && (
-            <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+            <p className='mt-2 text-sm text-muted-foreground line-clamp-2'>
               {activity.content}
             </p>
           )}
 
           {/* Metadata Tags */}
           {Object.keys(activity.metadata).length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className='mt-3 flex flex-wrap gap-2'>
               {renderMetadataTags(activity)}
             </div>
           )}
@@ -348,18 +361,18 @@ function ActivityCard({ activity }: ActivityCardProps) {
  */
 function ActivityCardSkeleton() {
   return (
-    <div className="animate-pulse rounded-lg border bg-card p-4">
-      <div className="flex gap-4">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-10 w-10 rounded-full bg-muted" />
-          <div className="h-8 w-8 rounded-full bg-muted" />
+    <div className='animate-pulse rounded-lg border bg-card p-4'>
+      <div className='flex gap-4'>
+        <div className='flex flex-col items-center gap-2'>
+          <div className='h-10 w-10 rounded-full bg-muted' />
+          <div className='h-8 w-8 rounded-full bg-muted' />
         </div>
-        <div className="flex-1 space-y-3">
-          <div className="h-4 w-3/4 rounded bg-muted" />
-          <div className="h-3 w-full rounded bg-muted" />
-          <div className="flex gap-2">
-            <div className="h-5 w-16 rounded-full bg-muted" />
-            <div className="h-5 w-16 rounded-full bg-muted" />
+        <div className='flex-1 space-y-3'>
+          <div className='h-4 w-3/4 rounded bg-muted' />
+          <div className='h-3 w-full rounded bg-muted' />
+          <div className='flex gap-2'>
+            <div className='h-5 w-16 rounded-full bg-muted' />
+            <div className='h-5 w-16 rounded-full bg-muted' />
           </div>
         </div>
       </div>
@@ -448,20 +461,20 @@ function formatRelativeTime(timestamp: string): string {
   const diffDays = Math.floor(diffHours / 24);
 
   if (diffMins < 1) {
-return 'Just now';
-}
+    return 'Just now';
+  }
   if (diffMins < 60) {
-return `${diffMins}m ago`;
-}
+    return `${diffMins}m ago`;
+  }
   if (diffHours < 24) {
-return `${diffHours}h ago`;
-}
+    return `${diffHours}h ago`;
+  }
   if (diffDays < 7) {
-return `${diffDays}d ago`;
-}
+    return `${diffDays}d ago`;
+  }
   if (diffDays < 30) {
-return `${Math.floor(diffDays / 7)}w ago`;
-}
+    return `${Math.floor(diffDays / 7)}w ago`;
+  }
 
   return date.toLocaleDateString();
 }
@@ -477,21 +490,21 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
     if (activity.metadata.priority) {
       tags.push(
         <span
-          key="priority"
-          className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
+          key='priority'
+          className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium'
         >
           {String(activity.metadata.priority).toUpperCase()}
-        </span>,
+        </span>
       );
     }
     if (activity.metadata.status) {
       tags.push(
         <span
-          key="status"
-          className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
+          key='status'
+          className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium'
         >
           {String(activity.metadata.status)}
-        </span>,
+        </span>
       );
     }
   }
@@ -501,27 +514,33 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
     if (activity.metadata.status) {
       tags.push(
         <span
-          key="status"
+          key='status'
           className={cn(
             'rounded-full px-2 py-0.5 text-xs font-medium',
             activity.metadata.status === 'COMPLETED'
               ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300'
-              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300',
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'
           )}
         >
           {String(activity.metadata.status)}
-        </span>,
+        </span>
       );
     }
   }
 
   // Message metadata
   if (activity.type === 'message') {
-    if (activity.metadata.replyCount && typeof activity.metadata.replyCount === 'number') {
+    if (
+      activity.metadata.replyCount &&
+      typeof activity.metadata.replyCount === 'number'
+    ) {
       tags.push(
-        <span key="replies" className="rounded-full bg-muted px-2 py-0.5 text-xs">
+        <span
+          key='replies'
+          className='rounded-full bg-muted px-2 py-0.5 text-xs'
+        >
           {activity.metadata.replyCount} replies
-        </span>,
+        </span>
       );
     }
   }
@@ -536,12 +555,12 @@ function RefreshIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
     >
-      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+      <path d='M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2' />
     </svg>
   );
 }
@@ -550,14 +569,14 @@ function AlertIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" x2="12" y1="8" y2="12" />
-      <line x1="12" x2="12.01" y1="16" y2="16" />
+      <circle cx='12' cy='12' r='10' />
+      <line x1='12' x2='12' y1='8' y2='12' />
+      <line x1='12' x2='12.01' y1='16' y2='16' />
     </svg>
   );
 }

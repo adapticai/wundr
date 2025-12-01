@@ -134,7 +134,7 @@ export {
  * ```
  */
 export async function createMemoryManager(
-  options: AgentMemoryManagerOptions = {},
+  options: AgentMemoryManagerOptions = {}
 ): Promise<AgentMemoryManager> {
   const manager = new AgentMemoryManager(options);
   await manager.initialize();

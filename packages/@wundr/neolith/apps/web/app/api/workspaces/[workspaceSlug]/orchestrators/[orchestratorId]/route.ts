@@ -39,7 +39,7 @@ interface RouteContext {
 async function getOrchestratorWithWorkspaceAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   // First, verify workspace exists and user has access
   const workspace = await prisma.workspace.findUnique({
@@ -134,15 +134,18 @@ async function getOrchestratorWithWorkspaceAccess(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -153,21 +156,28 @@ export async function GET(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Get Orchestrator with access check
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -221,31 +231,32 @@ export async function GET(
     });
 
     // Fetch task statistics
-    const [completedTasks, totalTasks, completedTasksWithTime] = await Promise.all([
-      // Count completed tasks
-      prisma.task.count({
-        where: {
-          orchestratorId: orchestratorId,
-          status: 'DONE',
-        },
-      }),
-      // Count all tasks
-      prisma.task.count({
-        where: { orchestratorId: orchestratorId },
-      }),
-      // Get completed tasks with time data for average calculation
-      prisma.task.findMany({
-        where: {
-          orchestratorId: orchestratorId,
-          status: 'DONE',
-          completedAt: { not: null },
-        },
-        select: {
-          createdAt: true,
-          completedAt: true,
-        },
-      }),
-    ]);
+    const [completedTasks, totalTasks, completedTasksWithTime] =
+      await Promise.all([
+        // Count completed tasks
+        prisma.task.count({
+          where: {
+            orchestratorId: orchestratorId,
+            status: 'DONE',
+          },
+        }),
+        // Count all tasks
+        prisma.task.count({
+          where: { orchestratorId: orchestratorId },
+        }),
+        // Get completed tasks with time data for average calculation
+        prisma.task.findMany({
+          where: {
+            orchestratorId: orchestratorId,
+            status: 'DONE',
+            completedAt: { not: null },
+          },
+          select: {
+            createdAt: true,
+            completedAt: true,
+          },
+        }),
+      ]);
 
     // Calculate average completion time in hours
     let avgCompletionTime = null;
@@ -278,13 +289,16 @@ export async function GET(
 
     return NextResponse.json({ data: orchestratorDetails });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -305,15 +319,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -324,8 +341,11 @@ export async function PATCH(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -335,8 +355,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -347,24 +370,28 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const input: UpdateOrchestratorInput = parseResult.data;
 
     // Get Orchestrator with access check
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -373,14 +400,14 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Update Orchestrator and user in a transaction
-    const updatedOrchestrator = await prisma.$transaction(async (tx) => {
+    const updatedOrchestrator = await prisma.$transaction(async tx => {
       // Update user profile if provided
       if (input.user) {
         await tx.user.update({
@@ -402,10 +429,13 @@ export async function PATCH(
       return tx.orchestrator.update({
         where: { id: orchestratorId },
         data: {
-          ...(input.discipline !== undefined && { discipline: input.discipline }),
+          ...(input.discipline !== undefined && {
+            discipline: input.discipline,
+          }),
           ...(input.role !== undefined && { role: input.role }),
           ...(input.capabilities !== undefined && {
-            capabilities: input.capabilities as unknown as Prisma.InputJsonValue,
+            capabilities:
+              input.capabilities as unknown as Prisma.InputJsonValue,
           }),
           ...(input.daemonEndpoint !== undefined && {
             daemonEndpoint: input.daemonEndpoint,
@@ -450,13 +480,16 @@ export async function PATCH(
       message: 'Orchestrator updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/orchestrators/:orchestratorId] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/orchestrators/:orchestratorId] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -475,15 +508,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -494,21 +530,28 @@ export async function DELETE(
     // Validate IDs format
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     // Get Orchestrator with access check
-    const result = await getOrchestratorWithWorkspaceAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await getOrchestratorWithWorkspaceAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -517,14 +560,14 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to delete this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Soft delete: Set status to OFFLINE and update user status
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       // Update Orchestrator status to OFFLINE
       await tx.orchestrator.update({
         where: { id: orchestratorId },
@@ -543,7 +586,10 @@ export async function DELETE(
       deletedId: orchestratorId,
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/orchestrators/:orchestratorId] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/orchestrators/:orchestratorId] Error:',
+      error
+    );
 
     // Handle foreign key constraint errors
     if (
@@ -553,18 +599,18 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Cannot delete Orchestrator: it has dependent records',
-          ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+          ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

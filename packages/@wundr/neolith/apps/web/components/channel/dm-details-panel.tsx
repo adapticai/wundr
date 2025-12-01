@@ -66,7 +66,7 @@ export function DMDetailsPanel({
   };
 
   const isGroupDM = members.length > 1;
-  const existingMemberIds = members.map((m) => m.id);
+  const existingMemberIds = members.map(m => m.id);
 
   const handleOpenAddPeopleModal = useCallback(() => {
     if (onAddPeople) {
@@ -100,13 +100,14 @@ export function DMDetailsPanel({
       } catch (error) {
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to add members',
+          description:
+            error instanceof Error ? error.message : 'Failed to add members',
           variant: 'destructive',
         });
         throw error;
       }
     },
-    [channelId, toast],
+    [channelId, toast]
   );
 
   const handleInviteByEmail = useCallback(
@@ -130,76 +131,77 @@ export function DMDetailsPanel({
       } catch (error) {
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to send invitations',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Failed to send invitations',
           variant: 'destructive',
         });
         throw error;
       }
     },
-    [channelId, toast],
+    [channelId, toast]
   );
 
   return (
-    <div
-      className={cn(
-        'flex w-80 flex-col border-l bg-background',
-        className
-      )}
-    >
+    <div className={cn('flex w-80 flex-col border-l bg-background', className)}>
       {/* Header */}
-      <div className="flex h-12 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="font-semibold text-sm">
+      <div className='flex h-12 items-center justify-between border-b px-4'>
+        <div className='flex items-center gap-2'>
+          <Users className='h-4 w-4 text-muted-foreground' />
+          <span className='font-semibold text-sm'>
             {isGroupDM ? 'Members' : 'Details'}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className='text-xs text-muted-foreground'>
             ({members.length})
           </span>
         </div>
         <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
+          variant='ghost'
+          size='icon'
+          className='h-7 w-7'
           onClick={onClose}
         >
-          <X className="h-4 w-4" />
+          <X className='h-4 w-4' />
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4">
+      <div className='flex-1 overflow-y-auto'>
+        <div className='p-4'>
           {/* Add People Button */}
           <Button
-            variant="outline"
-            className="mb-4 w-full justify-start gap-2"
+            variant='outline'
+            className='mb-4 w-full justify-start gap-2'
             onClick={handleOpenAddPeopleModal}
           >
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className='h-4 w-4' />
             Add people
           </Button>
 
           {/* Members List */}
-          <div className="space-y-1">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className='space-y-1'>
+            <p className='mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
               {isGroupDM ? 'In this conversation' : 'Profile'}
             </p>
 
-            {members.map((member) => {
+            {members.map(member => {
               const isCurrentUser = member.id === currentUserId;
 
               return (
                 <div
                   key={member.id}
-                  className="group flex items-center gap-3 rounded-md p-2 hover:bg-accent transition-colors"
+                  className='group flex items-center gap-3 rounded-md p-2 hover:bg-accent transition-colors'
                 >
                   {/* Avatar with status */}
-                  <div className="relative">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={member.image || undefined} alt={member.name} />
+                  <div className='relative'>
+                    <Avatar className='h-9 w-9'>
+                      <AvatarImage
+                        src={member.image || undefined}
+                        alt={member.name}
+                      />
                       <AvatarFallback>
                         {member.isOrchestrator ? (
-                          <Bot className="h-4 w-4" />
+                          <Bot className='h-4 w-4' />
                         ) : (
                           getInitials(member.name)
                         )}
@@ -214,53 +216,55 @@ export function DMDetailsPanel({
                       />
                     )}
                     {member.isOrchestrator && (
-                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
+                      <span className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground'>
                         AI
                       </span>
                     )}
                   </div>
 
                   {/* Name and email */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium text-sm truncate">
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center gap-1'>
+                      <span className='font-medium text-sm truncate'>
                         {member.name}
                       </span>
                       {isCurrentUser && (
-                        <span className="text-xs text-muted-foreground">(you)</span>
+                        <span className='text-xs text-muted-foreground'>
+                          (you)
+                        </span>
                       )}
                     </div>
                     {member.email && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
-                        <Mail className="h-3 w-3" />
-                        <span className="truncate">{member.email}</span>
+                      <div className='flex items-center gap-1 text-xs text-muted-foreground truncate'>
+                        <Mail className='h-3 w-3' />
+                        <span className='truncate'>{member.email}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Actions - visible on hover */}
                   {!isCurrentUser && (
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
                       {onViewProfile && (
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
+                          variant='ghost'
+                          size='icon'
+                          className='h-7 w-7'
                           onClick={() => onViewProfile(member.id)}
-                          title="View profile"
+                          title='View profile'
                         >
-                          <Users className="h-3.5 w-3.5" />
+                          <Users className='h-3.5 w-3.5' />
                         </Button>
                       )}
                       {onStartDM && isGroupDM && (
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
+                          variant='ghost'
+                          size='icon'
+                          className='h-7 w-7'
                           onClick={() => onStartDM(member.id)}
-                          title="Message directly"
+                          title='Message directly'
                         >
-                          <MessageSquare className="h-3.5 w-3.5" />
+                          <MessageSquare className='h-3.5 w-3.5' />
                         </Button>
                       )}
                     </div>
@@ -273,7 +277,7 @@ export function DMDetailsPanel({
       </div>
 
       {/* Footer info */}
-      <div className="border-t p-4 text-xs text-muted-foreground">
+      <div className='border-t p-4 text-xs text-muted-foreground'>
         <p>
           {isGroupDM
             ? `This is a private group conversation between ${members.length} people.`

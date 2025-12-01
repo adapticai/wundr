@@ -18,7 +18,10 @@ import { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { validateTaskDependencies, canTransitionToStatus } from '@/lib/services/task-service';
+import {
+  validateTaskDependencies,
+  canTransitionToStatus,
+} from '@/lib/services/task-service';
 import {
   updateTaskSchema,
   createErrorResponse,
@@ -45,15 +48,18 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -65,15 +71,21 @@ export async function GET(
     // Validate IDs
     if (!orchestratorId || orchestratorId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (!itemId || itemId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid backlog item ID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid backlog item ID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -85,8 +97,11 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -103,7 +118,7 @@ export async function GET(
       if (!workspaceMember) {
         return NextResponse.json(
           createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -142,16 +157,22 @@ export async function GET(
 
     if (!backlogItem) {
       return NextResponse.json(
-        createErrorResponse('Backlog item not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Backlog item not found',
+          TASK_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Verify the backlog item belongs to the requested Orchestrator
     if (backlogItem.backlog.orchestratorId !== orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Backlog item does not belong to this Orchestrator', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Backlog item does not belong to this Orchestrator',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -175,10 +196,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/orchestrators/[id]/backlog/[itemId]] Error:', error);
+    console.error(
+      '[GET /api/orchestrators/[id]/backlog/[itemId]] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -220,15 +247,18 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -240,15 +270,21 @@ export async function PATCH(
     // Validate IDs
     if (!orchestratorId || orchestratorId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (!itemId || itemId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid backlog item ID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid backlog item ID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -260,8 +296,11 @@ export async function PATCH(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -278,7 +317,7 @@ export async function PATCH(
       if (!workspaceMember) {
         return NextResponse.json(
           createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -297,16 +336,22 @@ export async function PATCH(
 
     if (!backlogItem) {
       return NextResponse.json(
-        createErrorResponse('Backlog item not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Backlog item not found',
+          TASK_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Verify the backlog item belongs to the requested Orchestrator
     if (backlogItem.backlog.orchestratorId !== orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Backlog item does not belong to this Orchestrator', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Backlog item does not belong to this Orchestrator',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -323,8 +368,11 @@ export async function PATCH(
 
     if (!currentTask) {
       return NextResponse.json(
-        createErrorResponse('Associated task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Associated task not found',
+          TASK_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -334,8 +382,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -346,9 +397,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -356,24 +407,30 @@ export async function PATCH(
 
     // Validate status transition if changing status
     if (input.status && input.status !== currentTask.status) {
-      const canTransition = await canTransitionToStatus(currentTask.id, input.status);
+      const canTransition = await canTransitionToStatus(
+        currentTask.id,
+        input.status
+      );
       if (!canTransition.allowed) {
         return NextResponse.json(
           createErrorResponse(
             canTransition.reason || 'Invalid status transition',
-            TASK_ERROR_CODES.INVALID_STATE_TRANSITION,
+            TASK_ERROR_CODES.INVALID_STATE_TRANSITION
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     // Validate dependencies if changing
-    if (input.dependsOn && JSON.stringify(input.dependsOn) !== JSON.stringify(currentTask.dependsOn)) {
+    if (
+      input.dependsOn &&
+      JSON.stringify(input.dependsOn) !== JSON.stringify(currentTask.dependsOn)
+    ) {
       const depValidation = await validateTaskDependencies(
         currentTask.id,
         input.dependsOn,
-        currentTask.workspaceId,
+        currentTask.workspaceId
       );
 
       if (!depValidation.isValid) {
@@ -384,9 +441,9 @@ export async function PATCH(
             {
               circularDependencies: depValidation.circularDependencies,
               unresolvedDependencies: depValidation.unresolvedDependencies,
-            },
+            }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -400,8 +457,11 @@ export async function PATCH(
 
       if (!assignee) {
         return NextResponse.json(
-          createErrorResponse('Assignee not found', TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Assignee not found',
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
@@ -411,17 +471,25 @@ export async function PATCH(
       where: { id: currentTask.id },
       data: {
         ...(input.title && { title: input.title }),
-        ...(input.description !== undefined && { description: input.description }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
         ...(input.priority && { priority: input.priority }),
         ...(input.status && { status: input.status }),
-        ...(input.estimatedHours !== undefined && { estimatedHours: input.estimatedHours }),
+        ...(input.estimatedHours !== undefined && {
+          estimatedHours: input.estimatedHours,
+        }),
         ...(input.dueDate !== undefined && {
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
         }),
         ...(input.tags && { tags: input.tags }),
         ...(input.dependsOn && { dependsOn: input.dependsOn }),
-        ...(input.assignedToId !== undefined && { assignedToId: input.assignedToId }),
-        ...(input.metadata && { metadata: input.metadata as Prisma.InputJsonValue }),
+        ...(input.assignedToId !== undefined && {
+          assignedToId: input.assignedToId,
+        }),
+        ...(input.metadata && {
+          metadata: input.metadata as Prisma.InputJsonValue,
+        }),
         // Auto-set completedAt when status changes to DONE
         ...(input.status === 'DONE' && { completedAt: new Date() }),
       },
@@ -467,20 +535,29 @@ export async function PATCH(
       message: 'Backlog item updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/orchestrators/[id]/backlog/[itemId]] Error:', error);
+    console.error(
+      '[PATCH /api/orchestrators/[id]/backlog/[itemId]] Error:',
+      error
+    );
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          createErrorResponse('Backlog item or task not found', TASK_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Backlog item or task not found',
+            TASK_ERROR_CODES.NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -503,15 +580,18 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          TASK_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -523,15 +603,21 @@ export async function DELETE(
     // Validate IDs
     if (!orchestratorId || orchestratorId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid OrchestratorID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid OrchestratorID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
     if (!itemId || itemId.length === 0) {
       return NextResponse.json(
-        createErrorResponse('Invalid backlog item ID', TASK_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid backlog item ID',
+          TASK_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -543,8 +629,11 @@ export async function DELETE(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -561,7 +650,7 @@ export async function DELETE(
       if (!workspaceMember) {
         return NextResponse.json(
           createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -579,16 +668,22 @@ export async function DELETE(
 
     if (!backlogItem) {
       return NextResponse.json(
-        createErrorResponse('Backlog item not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Backlog item not found',
+          TASK_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
     // Verify the backlog item belongs to the requested Orchestrator
     if (backlogItem.backlog.orchestratorId !== orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Backlog item does not belong to this Orchestrator', TASK_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createErrorResponse(
+          'Backlog item does not belong to this Orchestrator',
+          TASK_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -598,25 +693,35 @@ export async function DELETE(
     return NextResponse.json(
       {
         data: null,
-        message: 'Backlog item removed successfully. The underlying task has been preserved.',
+        message:
+          'Backlog item removed successfully. The underlying task has been preserved.',
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
-    console.error('[DELETE /api/orchestrators/[id]/backlog/[itemId]] Error:', error);
+    console.error(
+      '[DELETE /api/orchestrators/[id]/backlog/[itemId]] Error:',
+      error
+    );
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          createErrorResponse('Backlog item not found', TASK_ERROR_CODES.NOT_FOUND),
-          { status: 404 },
+          createErrorResponse(
+            'Backlog item not found',
+            TASK_ERROR_CODES.NOT_FOUND
+          ),
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        TASK_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

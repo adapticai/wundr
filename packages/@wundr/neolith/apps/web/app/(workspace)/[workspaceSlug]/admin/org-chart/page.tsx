@@ -39,21 +39,24 @@ export default function OrgChartPage() {
         setWorkspace(workspaceData);
 
         // Fetch VPs for this workspace
-        const orchestratorsRes = await fetch(`/api/workspaces/${workspaceId}/orchestrators`);
+        const orchestratorsRes = await fetch(
+          `/api/workspaces/${workspaceId}/orchestrators`
+        );
         if (!orchestratorsRes.ok) {
           throw new Error('Failed to fetch Orchestrators');
         }
         const orchestratorsData = await orchestratorsRes.json();
 
         // Transform Orchestrator data to OrgNode format
-        const orgNodes: OrgNode[] = orchestratorsData.orchestrators?.map((vp: VPApiResponse) => ({
-          id: vp.id,
-          name: vp.title,
-          title: vp.description || 'Orchestrator',
-          discipline: vp.discipline || 'General',
-          status: vp.status || 'OFFLINE',
-          avatarUrl: vp.avatarUrl,
-        })) || [];
+        const orgNodes: OrgNode[] =
+          orchestratorsData.orchestrators?.map((vp: VPApiResponse) => ({
+            id: vp.id,
+            name: vp.title,
+            title: vp.description || 'Orchestrator',
+            discipline: vp.discipline || 'General',
+            status: vp.status || 'OFFLINE',
+            avatarUrl: vp.avatarUrl,
+          })) || [];
 
         setVPs(orgNodes);
       } catch (err) {
@@ -71,17 +74,17 @@ export default function OrgChartPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[600px] items-center justify-center">
-        <LoadingSpinner className="h-8 w-8" />
+      <div className='flex min-h-[600px] items-center justify-center'>
+        <LoadingSpinner className='h-8 w-8' />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+      <div className='p-6'>
+        <Alert variant='destructive'>
+          <AlertCircle className='h-4 w-4' />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
@@ -89,11 +92,13 @@ export default function OrgChartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className='min-h-screen bg-stone-950 p-6'>
+      <div className='max-w-7xl mx-auto space-y-6'>
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">Organization Chart</h1>
-          <p className="text-stone-400 mt-2">
+          <h1 className='text-3xl font-bold text-stone-100'>
+            Organization Chart
+          </h1>
+          <p className='text-stone-400 mt-2'>
             Visualize and manage your organization&apos;s Orchestrator hierarchy
           </p>
         </div>

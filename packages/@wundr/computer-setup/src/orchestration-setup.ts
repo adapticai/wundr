@@ -69,7 +69,7 @@ export const DEFAULT_ORCHESTRATION_OPTIONS: OrchestrationOptions = {
  */
 export async function setupOrchestrationFrameworks(
   options: OrchestrationOptions = DEFAULT_ORCHESTRATION_OPTIONS,
-  platform: SetupPlatform,
+  platform: SetupPlatform
 ): Promise<OrchestrationSetupResult> {
   const result: OrchestrationSetupResult = {
     success: false,
@@ -93,10 +93,10 @@ export async function setupOrchestrationFrameworks(
     const pythonAvailable = await checkPythonAvailability();
     if (!pythonAvailable) {
       result.warnings.push(
-        'Python not available - some orchestration features may be limited',
+        'Python not available - some orchestration features may be limited'
       );
       logger.warn(
-        'Python not available - skipping Python-based orchestration frameworks',
+        'Python not available - skipping Python-based orchestration frameworks'
       );
     }
 
@@ -160,8 +160,8 @@ export async function setupOrchestrationFrameworks(
           installedPackages: result.installedPackages,
         },
         null,
-        2,
-      ),
+        2
+      )
     );
 
     result.success = result.errors.length === 0;
@@ -212,7 +212,7 @@ async function getPythonCommand(): Promise<string> {
 async function setupLangGraph(
   config: NonNullable<OrchestrationOptions['langGraph']>,
   _platform: SetupPlatform,
-  pythonAvailable: boolean,
+  pythonAvailable: boolean
 ): Promise<void> {
   logger.info('Setting up LangGraph...');
 
@@ -220,7 +220,7 @@ async function setupLangGraph(
     os.homedir(),
     '.wundr',
     'orchestration',
-    'langgraph',
+    'langgraph'
   );
   await fs.mkdir(langGraphDir, { recursive: true });
 
@@ -265,11 +265,11 @@ async function setupLangGraph(
         ['-m', 'pip', 'install', '--user', 'langgraph', 'langchain'],
         {
           timeout: 180000,
-        },
+        }
       );
     } catch (_error) {
       logger.warn(
-        'Could not install langgraph package - you may need to install it manually',
+        'Could not install langgraph package - you may need to install it manually'
       );
     }
   }
@@ -290,11 +290,11 @@ async function setupLangGraph(
 
   await fs.writeFile(
     path.join(langGraphConfig.graphs.templatesPath, 'example-workflow.json'),
-    JSON.stringify(exampleGraph, null, 2),
+    JSON.stringify(exampleGraph, null, 2)
   );
   await fs.writeFile(
     path.join(langGraphDir, 'config.json'),
-    JSON.stringify(langGraphConfig, null, 2),
+    JSON.stringify(langGraphConfig, null, 2)
   );
 
   logger.info('LangGraph configuration created');
@@ -306,7 +306,7 @@ async function setupLangGraph(
 async function setupCrewAI(
   config: NonNullable<OrchestrationOptions['crewAI']>,
   _platform: SetupPlatform,
-  pythonAvailable: boolean,
+  pythonAvailable: boolean
 ): Promise<void> {
   logger.info('Setting up CrewAI...');
 
@@ -314,7 +314,7 @@ async function setupCrewAI(
     os.homedir(),
     '.wundr',
     'orchestration',
-    'crewai',
+    'crewai'
   );
   await fs.mkdir(crewAIDir, { recursive: true });
 
@@ -357,7 +357,7 @@ async function setupCrewAI(
       });
     } catch (_error) {
       logger.warn(
-        'Could not install crewai package - you may need to install it manually',
+        'Could not install crewai package - you may need to install it manually'
       );
     }
   }
@@ -393,13 +393,13 @@ async function setupCrewAI(
   for (const template of agentTemplates) {
     await fs.writeFile(
       path.join(crewAIConfig.agents.templatesPath, `${template.name}.json`),
-      JSON.stringify(template, null, 2),
+      JSON.stringify(template, null, 2)
     );
   }
 
   await fs.writeFile(
     path.join(crewAIDir, 'config.json'),
-    JSON.stringify(crewAIConfig, null, 2),
+    JSON.stringify(crewAIConfig, null, 2)
   );
 
   logger.info('CrewAI configuration created');
@@ -411,7 +411,7 @@ async function setupCrewAI(
 async function setupAutoGen(
   config: NonNullable<OrchestrationOptions['autoGen']>,
   _platform: SetupPlatform,
-  pythonAvailable: boolean,
+  pythonAvailable: boolean
 ): Promise<void> {
   logger.info('Setting up AutoGen...');
 
@@ -419,7 +419,7 @@ async function setupAutoGen(
     os.homedir(),
     '.wundr',
     'orchestration',
-    'autogen',
+    'autogen'
   );
   await fs.mkdir(autoGenDir, { recursive: true });
 
@@ -467,7 +467,7 @@ async function setupAutoGen(
       });
     } catch (_error) {
       logger.warn(
-        'Could not install pyautogen package - you may need to install it manually',
+        'Could not install pyautogen package - you may need to install it manually'
       );
     }
   }
@@ -483,13 +483,13 @@ async function setupAutoGen(
   await fs.writeFile(
     path.join(
       autoGenConfig.agents.templatesPath,
-      'OAI_CONFIG_LIST.template.json',
+      'OAI_CONFIG_LIST.template.json'
     ),
-    JSON.stringify([oaiConfigTemplate], null, 2),
+    JSON.stringify([oaiConfigTemplate], null, 2)
   );
   await fs.writeFile(
     path.join(autoGenDir, 'config.json'),
-    JSON.stringify(autoGenConfig, null, 2),
+    JSON.stringify(autoGenConfig, null, 2)
   );
 
   logger.info('AutoGen configuration created');
@@ -524,7 +524,7 @@ export async function validateOrchestrationSetup(): Promise<boolean> {
 export function getOrchestrationSteps(
   _profile: DeveloperProfile,
   platform: SetupPlatform,
-  options: OrchestrationOptions = DEFAULT_ORCHESTRATION_OPTIONS,
+  options: OrchestrationOptions = DEFAULT_ORCHESTRATION_OPTIONS
 ): SetupStep[] {
   const steps: SetupStep[] = [];
 

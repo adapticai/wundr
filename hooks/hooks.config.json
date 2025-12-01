@@ -122,11 +122,7 @@
   },
   "neural": {
     "autoTrain": true,
-    "patternTypes": [
-      "task-completion",
-      "file-edit",
-      "agent-collaboration"
-    ],
+    "patternTypes": ["task-completion", "file-edit", "agent-collaboration"],
     "learningRate": 0.1
   },
   "backup": {
@@ -141,12 +137,7 @@
   },
   "notifications": {
     "enabled": true,
-    "events": [
-      "task-start",
-      "task-complete",
-      "task-fail",
-      "session-end"
-    ]
+    "events": ["task-start", "task-complete", "task-fail", "session-end"]
   },
   "performance": {
     "trackMetrics": true,

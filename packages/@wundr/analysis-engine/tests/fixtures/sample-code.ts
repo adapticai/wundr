@@ -69,14 +69,14 @@ export class ComplexUserService {
       const validatedData = await this.validateUserData(userData);
       const processedData = await this.processUserData(validatedData);
       const savedData = await this.saveUser(processedData);
-      
+
       if (savedData) {
         this.cache.set(savedData.id, savedData);
         this.users.push(savedData);
         await this.sendWelcomeEmail(savedData);
         this.updateMetrics('user_created');
         this.lastUpdate = new Date();
-        
+
         // More nested logic
         if (this.config.enableNotifications) {
           if (this.config.notificationTypes.includes('email')) {
@@ -88,7 +88,7 @@ export class ComplexUserService {
             }
           }
         }
-        
+
         return savedData;
       } else {
         throw new Error('Failed to save user');
@@ -118,7 +118,7 @@ export class ComplexUserService {
     return {
       ...userData,
       createdAt: new Date(),
-      id: userData.id || Math.floor(Math.random() * 10000)
+      id: userData.id || Math.floor(Math.random() * 10000),
     };
   }
 
@@ -133,7 +133,7 @@ export class ComplexUserService {
     if (this.cache.has(id)) {
       return this.cache.get(id) || null;
     }
-    
+
     if (this.database) {
       const user = await this.database.findById('users', id);
       if (user) {
@@ -141,13 +141,15 @@ export class ComplexUserService {
       }
       return user;
     }
-    
+
     return this.users.find(u => u.id === id) || null;
   }
 
   private isDuplicateUser(user1: UserData, user2: UserData): boolean {
-    return user1.email === user2.email || 
-           (user1.name === user2.name && user1.id === user2.id);
+    return (
+      user1.email === user2.email ||
+      (user1.name === user2.name && user1.id === user2.id)
+    );
   }
 
   private async sendWelcomeEmail(user: UserData): Promise<void> {
@@ -156,12 +158,15 @@ export class ComplexUserService {
         to: user.email,
         subject: 'Welcome!',
         template: 'welcome',
-        data: { name: user.name }
+        data: { name: user.name },
       });
     }
   }
 
-  private async sendNotification(user: UserData, type: 'email' | 'sms'): Promise<void> {
+  private async sendNotification(
+    user: UserData,
+    type: 'email' | 'sms'
+  ): Promise<void> {
     // Complex notification logic
     try {
       if (type === 'email' && this.emailService) {
@@ -169,12 +174,12 @@ export class ComplexUserService {
           to: user.email,
           subject: 'Notification',
           template: 'notification',
-          data: user
+          data: user,
         });
       } else if (type === 'sms' && this.config.smsService) {
         await this.config.smsService.send({
           to: (user as any).phoneNumber,
-          message: `Hello ${user.name}!`
+          message: `Hello ${user.name}!`,
         });
       }
     } catch (error) {
@@ -215,7 +220,7 @@ export class UserService {
     const savedUser = await this.database.save('users', userInfo);
     this.cache.set(savedUser.id, savedUser);
     this.users.push(savedUser);
-    
+
     return savedUser;
   }
 }
@@ -245,12 +250,12 @@ export class EnhancedUserService extends UserService {
 
   async createUser(userInfo: UserInfo): Promise<UserInfo> {
     const result = await super.createUser(userInfo);
-    
+
     // Enhanced functionality
     if (this.analytics) {
       this.analytics.track('user_created', result);
     }
-    
+
     return result;
   }
 }

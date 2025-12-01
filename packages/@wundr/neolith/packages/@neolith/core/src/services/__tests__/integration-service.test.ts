@@ -55,7 +55,9 @@ function createMockHttpClient(): HttpClient {
   };
 }
 
-function createMockIntegration(overrides: Partial<IntegrationConfig> = {}): IntegrationConfig {
+function createMockIntegration(
+  overrides: Partial<IntegrationConfig> = {}
+): IntegrationConfig {
   const id = overrides.id ?? generateTestId();
   const now = new Date();
   return {
@@ -79,7 +81,9 @@ function createMockIntegration(overrides: Partial<IntegrationConfig> = {}): Inte
   };
 }
 
-function createMockWebhook(overrides: Partial<WebhookConfig> = {}): WebhookConfig {
+function createMockWebhook(
+  overrides: Partial<WebhookConfig> = {}
+): WebhookConfig {
   const id = overrides.id ?? generateTestId();
   const now = new Date();
   return {
@@ -106,7 +110,9 @@ function createMockWebhook(overrides: Partial<WebhookConfig> = {}): WebhookConfi
   };
 }
 
-function createMockDelivery(overrides: Partial<WebhookDelivery> = {}): WebhookDelivery {
+function createMockDelivery(
+  overrides: Partial<WebhookDelivery> = {}
+): WebhookDelivery {
   const id = overrides.id ?? generateTestId();
   return {
     id,
@@ -122,7 +128,7 @@ function createMockDelivery(overrides: Partial<WebhookDelivery> = {}): WebhookDe
 
 function createTestService(
   httpClient?: HttpClient,
-  storage?: IntegrationStorage,
+  storage?: IntegrationStorage
 ): IntegrationServiceImpl {
   const config: IntegrationServiceConfig = {
     storage: storage ?? new InMemoryIntegrationStorage(),
@@ -201,9 +207,9 @@ describe('IntegrationService', () => {
         name: 'Test',
       };
 
-      await expect(service.createIntegration(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError,
-      );
+      await expect(
+        service.createIntegration(input, 'user_123')
+      ).rejects.toThrow(IntegrationValidationError);
     });
 
     it('throws validation error when name is missing', async () => {
@@ -213,9 +219,9 @@ describe('IntegrationService', () => {
         name: '',
       };
 
-      await expect(service.createIntegration(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError,
-      );
+      await expect(
+        service.createIntegration(input, 'user_123')
+      ).rejects.toThrow(IntegrationValidationError);
     });
 
     it('throws validation error when name is too long', async () => {
@@ -225,9 +231,9 @@ describe('IntegrationService', () => {
         name: 'a'.repeat(101),
       };
 
-      await expect(service.createIntegration(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError,
-      );
+      await expect(
+        service.createIntegration(input, 'user_123')
+      ).rejects.toThrow(IntegrationValidationError);
     });
   });
 
@@ -254,7 +260,9 @@ describe('IntegrationService', () => {
       const workspaceId = generateTestId();
       const integration1 = createMockIntegration({ workspaceId });
       const integration2 = createMockIntegration({ workspaceId });
-      const integration3 = createMockIntegration({ workspaceId: 'other_workspace' });
+      const integration3 = createMockIntegration({
+        workspaceId: 'other_workspace',
+      });
 
       await storage.createIntegration(integration1);
       await storage.createIntegration(integration2);
@@ -268,10 +276,16 @@ describe('IntegrationService', () => {
 
     it('filters by provider', async () => {
       const workspaceId = generateTestId();
-      await storage.createIntegration(createMockIntegration({ workspaceId, provider: 'slack' }));
-      await storage.createIntegration(createMockIntegration({ workspaceId, provider: 'github' }));
+      await storage.createIntegration(
+        createMockIntegration({ workspaceId, provider: 'slack' })
+      );
+      await storage.createIntegration(
+        createMockIntegration({ workspaceId, provider: 'github' })
+      );
 
-      const result = await service.listIntegrations(workspaceId, { provider: 'slack' });
+      const result = await service.listIntegrations(workspaceId, {
+        provider: 'slack',
+      });
 
       expect(result.data).toHaveLength(1);
       expect(result.data[0]?.provider).toBe('slack');
@@ -279,10 +293,16 @@ describe('IntegrationService', () => {
 
     it('filters by status', async () => {
       const workspaceId = generateTestId();
-      await storage.createIntegration(createMockIntegration({ workspaceId, status: 'active' }));
-      await storage.createIntegration(createMockIntegration({ workspaceId, status: 'error' }));
+      await storage.createIntegration(
+        createMockIntegration({ workspaceId, status: 'active' })
+      );
+      await storage.createIntegration(
+        createMockIntegration({ workspaceId, status: 'error' })
+      );
 
-      const result = await service.listIntegrations(workspaceId, { status: 'active' });
+      const result = await service.listIntegrations(workspaceId, {
+        status: 'active',
+      });
 
       expect(result.data).toHaveLength(1);
       expect(result.data[0]?.status).toBe('active');
@@ -294,7 +314,10 @@ describe('IntegrationService', () => {
         await storage.createIntegration(createMockIntegration({ workspaceId }));
       }
 
-      const result = await service.listIntegrations(workspaceId, { skip: 2, take: 2 });
+      const result = await service.listIntegrations(workspaceId, {
+        skip: 2,
+        take: 2,
+      });
 
       expect(result.data).toHaveLength(2);
       expect(result.hasMore).toBe(true);
@@ -306,13 +329,17 @@ describe('IntegrationService', () => {
       const mockIntegration = createMockIntegration();
       await storage.createIntegration(mockIntegration);
 
-      const result = await service.updateIntegration(mockIntegration.id, { name: 'Updated Name' });
+      const result = await service.updateIntegration(mockIntegration.id, {
+        name: 'Updated Name',
+      });
 
       expect(result.name).toBe('Updated Name');
     });
 
     it('updates integration settings', async () => {
-      const mockIntegration = createMockIntegration({ settings: { key: 'old' } });
+      const mockIntegration = createMockIntegration({
+        settings: { key: 'old' },
+      });
       await storage.createIntegration(mockIntegration);
 
       const result = await service.updateIntegration(mockIntegration.id, {
@@ -324,7 +351,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(
-        service.updateIntegration('non_existent', { name: 'New' }),
+        service.updateIntegration('non_existent', { name: 'New' })
       ).rejects.toThrow(IntegrationNotFoundError);
     });
   });
@@ -359,7 +386,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(service.deleteIntegration('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError,
+        IntegrationNotFoundError
       );
     });
   });
@@ -393,9 +420,9 @@ describe('IntegrationService', () => {
         tokenType: 'Bearer',
       };
 
-      await expect(service.setOAuthToken('non_existent', token)).rejects.toThrow(
-        IntegrationNotFoundError,
-      );
+      await expect(
+        service.setOAuthToken('non_existent', token)
+      ).rejects.toThrow(IntegrationNotFoundError);
     });
   });
 
@@ -425,14 +452,14 @@ describe('IntegrationService', () => {
       });
       await storage.createIntegration(mockIntegration);
 
-      await expect(service.refreshOAuthToken(mockIntegration.id)).rejects.toThrow(
-        OAuthRefreshError,
-      );
+      await expect(
+        service.refreshOAuthToken(mockIntegration.id)
+      ).rejects.toThrow(OAuthRefreshError);
     });
 
     it('throws error when integration not found', async () => {
       await expect(service.refreshOAuthToken('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError,
+        IntegrationNotFoundError
       );
     });
   });
@@ -476,7 +503,9 @@ describe('IntegrationService', () => {
       const mockIntegration = createMockIntegration({ provider: 'github' });
       await storage.createIntegration(mockIntegration);
 
-      (httpClient.get as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
+      (httpClient.get as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Network error')
+      );
 
       const result = await service.testConnection(mockIntegration.id);
 
@@ -486,7 +515,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(service.testConnection('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError,
+        IntegrationNotFoundError
       );
     });
   });
@@ -520,7 +549,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(service.syncIntegration('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError,
+        IntegrationNotFoundError
       );
     });
   });
@@ -573,7 +602,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createWebhook(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError,
+        IntegrationValidationError
       );
     });
 
@@ -586,7 +615,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createWebhook(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError,
+        IntegrationValidationError
       );
     });
   });
@@ -624,7 +653,9 @@ describe('IntegrationService', () => {
     it('filters by integration ID', async () => {
       const workspaceId = generateTestId();
       const integrationId = generateTestId();
-      await storage.createWebhook(createMockWebhook({ workspaceId, integrationId }));
+      await storage.createWebhook(
+        createMockWebhook({ workspaceId, integrationId })
+      );
       await storage.createWebhook(createMockWebhook({ workspaceId }));
 
       const result = await service.listWebhooks(workspaceId, { integrationId });
@@ -634,10 +665,16 @@ describe('IntegrationService', () => {
 
     it('filters by status', async () => {
       const workspaceId = generateTestId();
-      await storage.createWebhook(createMockWebhook({ workspaceId, status: 'active' }));
-      await storage.createWebhook(createMockWebhook({ workspaceId, status: 'inactive' }));
+      await storage.createWebhook(
+        createMockWebhook({ workspaceId, status: 'active' })
+      );
+      await storage.createWebhook(
+        createMockWebhook({ workspaceId, status: 'inactive' })
+      );
 
-      const result = await service.listWebhooks(workspaceId, { status: 'active' });
+      const result = await service.listWebhooks(workspaceId, {
+        status: 'active',
+      });
 
       expect(result.data).toHaveLength(1);
       expect(result.data[0]?.status).toBe('active');
@@ -669,7 +706,7 @@ describe('IntegrationService', () => {
 
     it('throws error when webhook not found', async () => {
       await expect(
-        service.updateWebhook('non_existent', { name: 'New' }),
+        service.updateWebhook('non_existent', { name: 'New' })
       ).rejects.toThrow(WebhookNotFoundError);
     });
   });
@@ -687,7 +724,7 @@ describe('IntegrationService', () => {
 
     it('throws error when webhook not found', async () => {
       await expect(service.deleteWebhook('non_existent')).rejects.toThrow(
-        WebhookNotFoundError,
+        WebhookNotFoundError
       );
     });
   });
@@ -709,7 +746,7 @@ describe('IntegrationService', () => {
       const result = await service.triggerWebhook(
         mockWebhook.id,
         'message.created',
-        { message: 'test' },
+        { message: 'test' }
       );
 
       expect(result.status).toBe('success');
@@ -722,7 +759,7 @@ describe('IntegrationService', () => {
       await storage.createWebhook(mockWebhook);
 
       await expect(
-        service.triggerWebhook(mockWebhook.id, 'message.created', {}),
+        service.triggerWebhook(mockWebhook.id, 'message.created', {})
       ).rejects.toThrow(WebhookDeliveryError);
     });
 
@@ -731,13 +768,13 @@ describe('IntegrationService', () => {
       await storage.createWebhook(mockWebhook);
 
       await expect(
-        service.triggerWebhook(mockWebhook.id, 'message.deleted', {}),
+        service.triggerWebhook(mockWebhook.id, 'message.deleted', {})
       ).rejects.toThrow(WebhookDeliveryError);
     });
 
     it('throws error when webhook not found', async () => {
       await expect(
-        service.triggerWebhook('non_existent', 'message.created', {}),
+        service.triggerWebhook('non_existent', 'message.created', {})
       ).rejects.toThrow(WebhookNotFoundError);
     });
   });
@@ -763,7 +800,12 @@ describe('IntegrationService', () => {
 
     it('retries on failure and succeeds', async () => {
       const mockWebhook = createMockWebhook({
-        retryPolicy: { maxRetries: 2, initialDelay: 10, maxDelay: 100, backoffMultiplier: 2 },
+        retryPolicy: {
+          maxRetries: 2,
+          initialDelay: 10,
+          maxDelay: 100,
+          backoffMultiplier: 2,
+        },
       });
       await storage.createWebhook(mockWebhook);
 
@@ -782,7 +824,12 @@ describe('IntegrationService', () => {
 
     it('fails after max retries', async () => {
       const mockWebhook = createMockWebhook({
-        retryPolicy: { maxRetries: 2, initialDelay: 10, maxDelay: 100, backoffMultiplier: 2 },
+        retryPolicy: {
+          maxRetries: 2,
+          initialDelay: 10,
+          maxDelay: 100,
+          backoffMultiplier: 2,
+        },
       });
       await storage.createWebhook(mockWebhook);
 
@@ -802,7 +849,12 @@ describe('IntegrationService', () => {
 
     it('increments failure count on failure', async () => {
       const mockWebhook = createMockWebhook({
-        retryPolicy: { maxRetries: 0, initialDelay: 10, maxDelay: 100, backoffMultiplier: 2 },
+        retryPolicy: {
+          maxRetries: 0,
+          initialDelay: 10,
+          maxDelay: 100,
+          backoffMultiplier: 2,
+        },
         failureCount: 0,
       });
       await storage.createWebhook(mockWebhook);
@@ -823,7 +875,12 @@ describe('IntegrationService', () => {
 
     it('marks webhook as failed after 5 consecutive failures', async () => {
       const mockWebhook = createMockWebhook({
-        retryPolicy: { maxRetries: 0, initialDelay: 10, maxDelay: 100, backoffMultiplier: 2 },
+        retryPolicy: {
+          maxRetries: 0,
+          initialDelay: 10,
+          maxDelay: 100,
+          backoffMultiplier: 2,
+        },
         failureCount: 4, // Will become 5 after this failure
       });
       await storage.createWebhook(mockWebhook);
@@ -862,10 +919,16 @@ describe('IntegrationService', () => {
       const mockWebhook = createMockWebhook();
       await storage.createWebhook(mockWebhook);
 
-      await storage.createDelivery(createMockDelivery({ webhookId: mockWebhook.id, status: 'success' }));
-      await storage.createDelivery(createMockDelivery({ webhookId: mockWebhook.id, status: 'failed' }));
+      await storage.createDelivery(
+        createMockDelivery({ webhookId: mockWebhook.id, status: 'success' })
+      );
+      await storage.createDelivery(
+        createMockDelivery({ webhookId: mockWebhook.id, status: 'failed' })
+      );
 
-      const result = await service.getDeliveryHistory(mockWebhook.id, { status: 'success' });
+      const result = await service.getDeliveryHistory(mockWebhook.id, {
+        status: 'success',
+      });
 
       expect(result.data).toHaveLength(1);
       expect(result.data[0]?.status).toBe('success');
@@ -873,7 +936,7 @@ describe('IntegrationService', () => {
 
     it('throws error when webhook not found', async () => {
       await expect(service.getDeliveryHistory('non_existent')).rejects.toThrow(
-        WebhookNotFoundError,
+        WebhookNotFoundError
       );
     });
   });
@@ -924,7 +987,11 @@ describe('IntegrationService', () => {
       const secret = 'test_secret';
       const signature = service.generateSignature(payload, secret);
 
-      const isValid = service.verifyWebhookSignature(payload, signature, secret);
+      const isValid = service.verifyWebhookSignature(
+        payload,
+        signature,
+        secret
+      );
 
       expect(isValid).toBe(true);
     });
@@ -934,7 +1001,11 @@ describe('IntegrationService', () => {
       const secret = 'test_secret';
       const wrongSignature = 'sha256=invalid';
 
-      const isValid = service.verifyWebhookSignature(payload, wrongSignature, secret);
+      const isValid = service.verifyWebhookSignature(
+        payload,
+        wrongSignature,
+        secret
+      );
 
       expect(isValid).toBe(false);
     });
@@ -946,13 +1017,21 @@ describe('IntegrationService', () => {
     });
 
     it('rejects empty payload', () => {
-      const isValid = service.verifyWebhookSignature('', 'sha256=abc', 'secret');
+      const isValid = service.verifyWebhookSignature(
+        '',
+        'sha256=abc',
+        'secret'
+      );
 
       expect(isValid).toBe(false);
     });
 
     it('rejects empty secret', () => {
-      const isValid = service.verifyWebhookSignature('payload', 'sha256=abc', '');
+      const isValid = service.verifyWebhookSignature(
+        'payload',
+        'sha256=abc',
+        ''
+      );
 
       expect(isValid).toBe(false);
     });
@@ -962,7 +1041,11 @@ describe('IntegrationService', () => {
       const secret = 'test_secret';
       const shortSignature = 'sha256=short';
 
-      const isValid = service.verifyWebhookSignature(payload, shortSignature, secret);
+      const isValid = service.verifyWebhookSignature(
+        payload,
+        shortSignature,
+        secret
+      );
 
       expect(isValid).toBe(false);
     });
@@ -988,7 +1071,9 @@ describe('IntegrationService', () => {
 
     it('creates service with custom HTTP client', () => {
       const customHttpClient = createMockHttpClient();
-      const service = createIntegrationService({ httpClient: customHttpClient });
+      const service = createIntegrationService({
+        httpClient: customHttpClient,
+      });
 
       expect(service).toBeInstanceOf(IntegrationServiceImpl);
     });
@@ -1015,7 +1100,7 @@ describe('IntegrationService', () => {
       ]);
 
       expect(deliveries).toHaveLength(3);
-      deliveries.forEach((d) => expect(d.status).toBe('success'));
+      deliveries.forEach(d => expect(d.status).toBe('success'));
     });
 
     it('handles large payload correctly', async () => {
@@ -1030,7 +1115,9 @@ describe('IntegrationService', () => {
 
       const result = await service.deliverWithRetry(delivery);
 
-      expect(result.attempts[0]?.errorMessage).toBe('Payload exceeds maximum size');
+      expect(result.attempts[0]?.errorMessage).toBe(
+        'Payload exceeds maximum size'
+      );
     });
 
     it('handles webhook URL with special characters', async () => {

@@ -33,7 +33,7 @@ program
   .command('analyze')
   .description('Analyze project structure (basic implementation)')
   .option('-p, --path <path>', 'Project path to analyze', '.')
-  .action((options) => {
+  .action(options => {
     console.log(`Analyzing project at: ${options.path}`);
     console.log('Analysis complete (basic implementation)');
   });

@@ -17,28 +17,29 @@ describe('Performance and Scalability Tests', () => {
   describe('Command Execution Performance', () => {
     test('should execute help command quickly', async () => {
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        '--help'
+        '--help',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(2000); // Should complete within 2 seconds
     });
 
     test('should initialize project efficiently', async () => {
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'init', 'project'
+        'init',
+        'project',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
     });
@@ -48,19 +49,19 @@ describe('Performance and Scalability Tests', () => {
         ['init', 'project'],
         ['create', 'component', 'TestComponent1'],
         ['create', 'component', 'TestComponent2'],
-        ['analyze', 'deps']
+        ['analyze', 'deps'],
       ];
 
       const start = performance.now();
-      
+
       for (const cmd of commands) {
         const result = await testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          ...cmd
+          ...cmd,
         ]);
         expect([0, 1]).toContain(result.code); // Allow some failures
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(15000); // All commands within 15 seconds
     });
@@ -69,12 +70,14 @@ describe('Performance and Scalability Tests', () => {
   describe('Memory Usage', () => {
     test('should not leak memory during normal operations', async () => {
       const initialMemory = process.memoryUsage();
-      
+
       // Perform multiple operations
       for (let i = 0; i < 5; i++) {
         await testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          'create', 'component', `Component${i}`
+          'create',
+          'component',
+          `Component${i}`,
         ]);
       }
 
@@ -85,25 +88,25 @@ describe('Performance and Scalability Tests', () => {
 
       const finalMemory = process.memoryUsage();
       const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
-      
+
       // Memory increase should be reasonable (less than 50MB)
       expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
     });
 
     test('should handle large plugin installations', async () => {
       const initialMemory = process.memoryUsage().heapUsed;
-      
+
       // Create multiple plugins
       for (let i = 0; i < 3; i++) {
         await testHelper.createPlugin(`large-plugin-${i}`, [
           { name: 'command1', description: 'Test command 1' },
-          { name: 'command2', description: 'Test command 2' }
+          { name: 'command2', description: 'Test command 2' },
         ]);
       }
 
       const finalMemory = process.memoryUsage().heapUsed;
       const memoryIncrease = finalMemory - initialMemory;
-      
+
       // Should handle plugin creation without excessive memory usage
       expect(memoryIncrease).toBeLessThan(30 * 1024 * 1024);
     });
@@ -112,18 +115,20 @@ describe('Performance and Scalability Tests', () => {
   describe('File System Performance', () => {
     test('should handle many file operations efficiently', async () => {
       const start = performance.now();
-      
+
       // Create many batch jobs
       const promises = [];
       for (let i = 0; i < 10; i++) {
-        promises.push(testHelper.createBatchJob(`batch-${i}`, [
-          `echo "Batch job ${i}"`,
-          'npm --version'
-        ]));
+        promises.push(
+          testHelper.createBatchJob(`batch-${i}`, [
+            `echo "Batch job ${i}"`,
+            'npm --version',
+          ])
+        );
       }
-      
+
       await Promise.all(promises);
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(3000); // Should complete within 3 seconds
     });
@@ -133,21 +138,29 @@ describe('Performance and Scalability Tests', () => {
       const fs = await import('fs-extra');
       for (let i = 0; i < 5; i++) {
         for (let j = 0; j < 10; j++) {
-          const filePath = path.join(testHelper.getTestDir(), `dir${i}`, `file${j}.ts`);
+          const filePath = path.join(
+            testHelper.getTestDir(),
+            `dir${i}`,
+            `file${j}.ts`
+          );
           await fs.ensureDir(path.dirname(filePath));
-          await fs.writeFile(filePath, `// File ${i}-${j}\nexport const value = ${j};`);
+          await fs.writeFile(
+            filePath,
+            `// File ${i}-${j}\nexport const value = ${j};`
+          );
         }
       }
 
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'deps'
+        'analyze',
+        'deps',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(10000); // Should analyze within 10 seconds
     });
@@ -158,40 +171,45 @@ describe('Performance and Scalability Tests', () => {
       // Create multiple plugins
       const pluginPromises = [];
       for (let i = 0; i < 5; i++) {
-        pluginPromises.push(testHelper.createPlugin(`perf-plugin-${i}`, [
-          { name: `cmd${i}`, description: `Command ${i}` }
-        ]));
+        pluginPromises.push(
+          testHelper.createPlugin(`perf-plugin-${i}`, [
+            { name: `cmd${i}`, description: `Command ${i}` },
+          ])
+        );
       }
       await Promise.all(pluginPromises);
 
       const start = performance.now();
-      
+
       // Plugin loading would be tested here in actual implementation
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'list'
+        'plugins',
+        'list',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(3000); // Should list plugins within 3 seconds
     });
 
     test('should handle plugin commands efficiently', async () => {
       const pluginPath = await testHelper.createPlugin('fast-plugin', [
-        { name: 'fast-command', description: 'Fast command' }
+        { name: 'fast-command', description: 'Fast command' },
       ]);
 
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'plugins', 'info', 'fast-plugin'
+        'plugins',
+        'info',
+        'fast-plugin',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect([0, 1]).toContain(result.code);
       expect(duration).toBeLessThan(2000); // Should get info within 2 seconds
     });
@@ -206,16 +224,23 @@ describe('Performance and Scalability Tests', () => {
       );
 
       const start = performance.now();
-      
-      const child = testHelper.runCommand('node', [
-        path.join(__dirname, '../../dist/index.js'),
-        'watch', 'config', 'load', watchConfig
-      ], { timeout: 1000 });
+
+      const child = testHelper.runCommand(
+        'node',
+        [
+          path.join(__dirname, '../../dist/index.js'),
+          'watch',
+          'config',
+          'load',
+          watchConfig,
+        ],
+        { timeout: 1000 }
+      );
 
       // Wait a bit then check
       await new Promise(resolve => setTimeout(resolve, 500));
       const duration = performance.now() - start;
-      
+
       expect(duration).toBeGreaterThan(400); // Should have started
       expect(duration).toBeLessThan(1500); // But not take too long
     });
@@ -224,15 +249,15 @@ describe('Performance and Scalability Tests', () => {
       // This would test watch responsiveness to file changes
       const fs = await import('fs-extra');
       const testFile = path.join(testHelper.getTestDir(), 'watch-test.ts');
-      
+
       await fs.writeFile(testFile, '// Initial content');
-      
+
       // Start watching (mock)
       const start = performance.now();
-      
+
       // Simulate file change
       await fs.writeFile(testFile, '// Modified content');
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(100); // File write should be fast
     });
@@ -244,18 +269,20 @@ describe('Performance and Scalability Tests', () => {
       for (let i = 0; i < 10; i++) {
         commands.push(`echo "Command ${i}"`);
       }
-      
+
       const jobPath = await testHelper.createBatchJob('perf-batch', commands);
-      
+
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'batch', 'run', jobPath
+        'batch',
+        'run',
+        jobPath,
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
     });
@@ -265,19 +292,24 @@ describe('Performance and Scalability Tests', () => {
       for (let i = 0; i < 5; i++) {
         commands.push(`sleep 0.1 && echo "Parallel ${i}"`);
       }
-      
-      const jobPath = await testHelper.createBatchJob('parallel-batch', commands);
-      
+
+      const jobPath = await testHelper.createBatchJob(
+        'parallel-batch',
+        commands
+      );
+
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'batch', 'run', jobPath,
-        '--parallel'
+        'batch',
+        'run',
+        jobPath,
+        '--parallel',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       // Parallel execution should be faster than sequential
       expect(duration).toBeLessThan(3000);
@@ -290,46 +322,50 @@ describe('Performance and Scalability Tests', () => {
         ['help'],
         ['plugins', 'list'],
         ['init', 'config', '--dry-run'],
-        ['analyze', 'deps', '--dry-run']
+        ['analyze', 'deps', '--dry-run'],
       ];
 
       const start = performance.now();
-      
-      const promises = commands.map(cmd => 
+
+      const promises = commands.map(cmd =>
         testHelper.runCommand('node', [
           path.join(__dirname, '../../dist/index.js'),
-          ...cmd
+          ...cmd,
         ])
       );
-      
+
       const results = await Promise.all(promises);
-      
+
       const duration = performance.now() - start;
-      
+
       // All commands should complete
       results.forEach(result => {
         expect([0, 1]).toContain(result.code);
       });
-      
+
       // Concurrent execution should be efficient
       expect(duration).toBeLessThan(8000);
     });
 
     test('should handle resource contention gracefully', async () => {
       const configPath = await testHelper.createWundrConfig();
-      
+
       // Multiple operations trying to access config
       const promises = [];
       for (let i = 0; i < 3; i++) {
-        promises.push(testHelper.runCommand('node', [
-          path.join(__dirname, '../../dist/index.js'),
-          '--config', configPath,
-          'init', 'project'
-        ]));
+        promises.push(
+          testHelper.runCommand('node', [
+            path.join(__dirname, '../../dist/index.js'),
+            '--config',
+            configPath,
+            'init',
+            'project',
+          ])
+        );
       }
-      
+
       const results = await Promise.all(promises);
-      
+
       // At least one should succeed
       const successCount = results.filter(r => r.code === 0).length;
       expect(successCount).toBeGreaterThan(0);
@@ -340,15 +376,15 @@ describe('Performance and Scalability Tests', () => {
     test('should handle large project structures', async () => {
       // Create large project structure
       const fs = await import('fs-extra');
-      
+
       for (let i = 0; i < 20; i++) {
         const dir = path.join(testHelper.getTestDir(), `package-${i}`);
         await fs.ensureDir(dir);
         await fs.writeJson(path.join(dir, 'package.json'), {
           name: `package-${i}`,
-          version: '1.0.0'
+          version: '1.0.0',
         });
-        
+
         // Add some source files
         for (let j = 0; j < 5; j++) {
           await fs.writeFile(
@@ -359,14 +395,15 @@ describe('Performance and Scalability Tests', () => {
       }
 
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        'analyze', 'deps'
+        'analyze',
+        'deps',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(30000); // Should handle large structure within 30 seconds
     });
@@ -380,27 +417,31 @@ describe('Performance and Scalability Tests', () => {
         ai: { provider: 'test', model: 'test' },
         analysis: {
           patterns: Array.from({ length: 20 }, (_, i) => `src/**/*.${i}`),
-          excludes: Array.from({ length: 10 }, (_, i) => `node_modules/**/*.${i}`),
-          maxDepth: 10
+          excludes: Array.from(
+            { length: 10 },
+            (_, i) => `node_modules/**/*.${i}`
+          ),
+          maxDepth: 10,
         },
         governance: {
           rules: Array.from({ length: 30 }, (_, i) => `rule-${i}`),
-          severity: 'warning' as const
-        }
+          severity: 'warning' as const,
+        },
       };
-      
+
       const configPath = await testHelper.createWundrConfig(largeConfig);
-      
+
       const start = performance.now();
-      
+
       const result = await testHelper.runCommand('node', [
         path.join(__dirname, '../../dist/index.js'),
-        '--config', configPath,
-        'help'
+        '--config',
+        configPath,
+        'help',
       ]);
-      
+
       const duration = performance.now() - start;
-      
+
       expect(result.code).toBe(0);
       expect(duration).toBeLessThan(3000); // Should load large config within 3 seconds
     });

@@ -10,12 +10,12 @@ const server = spawn(process.execPath, [serverPath], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    NODE_ENV: process.env.NODE_ENV || 'production'
-  }
+    NODE_ENV: process.env.NODE_ENV || 'production',
+  },
 });
 
 // Handle errors
-server.on('error', (err) => {
+server.on('error', err => {
   console.error('Failed to start Wundr MCP server:', err);
   process.exit(1);
 });

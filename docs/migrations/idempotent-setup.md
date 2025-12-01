@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document outlines the migration plan from the current computer-setup implementation to the new idempotent setup system.
+This document outlines the migration plan from the current computer-setup implementation to the new
+idempotent setup system.
 
 ## Current State
 
@@ -131,7 +132,7 @@ export class NodeInstaller implements BaseInstaller {
   ): Promise<OperationResult<{ version: string }>> {
     return idempotentBrewInstall('node', {
       ...options,
-      update: true
+      update: true,
     });
   }
 
@@ -143,7 +144,7 @@ export class NodeInstaller implements BaseInstaller {
     const version = await this.getVersion();
     return {
       needsAction: false,
-      currentState: { version, path: await which('node') }
+      currentState: { version, path: await which('node') },
     };
   }
 }
@@ -169,10 +170,7 @@ export class IdempotentSetupOrchestrator {
     this.brownfieldHandler = new BrownfieldHandler(platform);
   }
 
-  async orchestrate(
-    profileName: string,
-    options: IdempotentSetupOptions
-  ): Promise<SetupResult> {
+  async orchestrate(profileName: string, options: IdempotentSetupOptions): Promise<SetupResult> {
     // 1. Detect system state
     const state = await this.brownfieldHandler.detectSystemState();
 
@@ -194,9 +192,7 @@ export class IdempotentSetupOrchestrator {
     // 4. Create backup if needed
     if (this.shouldBackup(state)) {
       await this.stateManager.transition('backupRequired');
-      await this.brownfieldHandler.createSystemBackup(
-        this.getRequiredComponents(profileName)
-      );
+      await this.brownfieldHandler.createSystemBackup(this.getRequiredComponents(profileName));
     }
 
     // 5. Execute idempotent installations
@@ -243,7 +239,7 @@ export class RealSetupOrchestrator extends EventEmitter {
     // Use new idempotent orchestrator
     return this.idempotentOrchestrator.orchestrate(profileName, {
       ...options,
-      onProgress: progressCallback
+      onProgress: progressCallback,
     });
   }
 
@@ -283,13 +279,15 @@ export async function migrateFromOldState(
         lastVerified: null,
         configPaths: [],
         dependencies: [],
-        installHistory: [{
-          timestamp: oldState.startTime,
-          success: true,
-          error: null,
-          version: null,
-          durationMs: 0
-        }]
+        installHistory: [
+          {
+            timestamp: oldState.startTime,
+            success: true,
+            error: null,
+            version: null,
+            durationMs: 0,
+          },
+        ],
       }));
 
     // Mark migration in history
@@ -301,7 +299,7 @@ export async function migrateFromOldState(
       durationMs: 0,
       error: null,
       initiatedBy: 'migration-script',
-      sessionId: 'migration'
+      sessionId: 'migration',
     });
 
     return newMetadata;
@@ -407,9 +405,7 @@ describe('Full Setup Flow', () => {
     const handler = new BrownfieldHandler(testPlatform);
     const customizations = await handler.detectUserCustomizations();
 
-    expect(customizations).toContainEqual(
-      expect.objectContaining({ type: 'shell_alias' })
-    );
+    expect(customizations).toContainEqual(expect.objectContaining({ type: 'shell_alias' }));
   });
 });
 ```
@@ -445,6 +441,7 @@ async legacyOrchestrate(...) {
 #### 6.3 Remove Old Code (Future)
 
 In a future major version:
+
 - Remove deprecated methods
 - Remove old state file handling
 - Remove backward compatibility code
@@ -469,23 +466,23 @@ If issues are discovered after deployment:
 
 ## Timeline
 
-| Week | Phase | Deliverables |
-|------|-------|--------------|
-| 1-2 | Foundation | New modules, compilation, basic tests |
-| 2-3 | Integration | Updated installers, state manager |
-| 3-4 | Orchestrator | Idempotent orchestrator, migration |
-| 4-5 | Metadata | State migration, compatibility |
-| 5-6 | Testing | Full test coverage, E2E tests |
-| 6-7 | Cleanup | Deprecation, documentation |
+| Week | Phase        | Deliverables                          |
+| ---- | ------------ | ------------------------------------- |
+| 1-2  | Foundation   | New modules, compilation, basic tests |
+| 2-3  | Integration  | Updated installers, state manager     |
+| 3-4  | Orchestrator | Idempotent orchestrator, migration    |
+| 4-5  | Metadata     | State migration, compatibility        |
+| 5-6  | Testing      | Full test coverage, E2E tests         |
+| 6-7  | Cleanup      | Deprecation, documentation            |
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| Breaking existing setups | Maintain backward compatibility, extensive testing |
-| Data loss during migration | Always backup before migration |
-| Performance regression | Benchmark before/after, optimize detection |
-| Complex rollback scenarios | Test rollback thoroughly, keep backups |
+| Risk                       | Mitigation                                         |
+| -------------------------- | -------------------------------------------------- |
+| Breaking existing setups   | Maintain backward compatibility, extensive testing |
+| Data loss during migration | Always backup before migration                     |
+| Performance regression     | Benchmark before/after, optimize detection         |
+| Complex rollback scenarios | Test rollback thoroughly, keep backups             |
 
 ## Appendix
 
@@ -524,6 +521,7 @@ packages/@wundr/computer-setup/
 ### Dependencies
 
 No new dependencies required. Uses existing:
+
 - `execa` - Command execution
 - `fs-extra` - File operations
 - `crypto` - Checksums
@@ -531,6 +529,7 @@ No new dependencies required. Uses existing:
 ### Configuration
 
 New environment variables (optional):
+
 - `WUNDR_METADATA_PATH` - Override metadata location
 - `WUNDR_BACKUP_PATH` - Override backup location
 - `WUNDR_DRY_RUN` - Force dry-run mode

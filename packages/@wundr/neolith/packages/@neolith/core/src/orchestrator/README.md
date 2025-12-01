@@ -1,12 +1,14 @@
 # Orchestrator Daemon Integration
 
-Orchestrator daemon module for Neolith. Enables orchestrators (AI agents) to run as background daemons within their Neolith instance, handling automated interactions in channels.
+Orchestrator daemon module for Neolith. Enables orchestrators (AI agents) to run as background
+daemons within their Neolith instance, handling automated interactions in channels.
 
 ## Architecture
 
 ### Key Concepts
 
-1. **Orchestrators as Users**: Orchestrators log in like normal users via email/password or Google OAuth
+1. **Orchestrators as Users**: Orchestrators log in like normal users via email/password or Google
+   OAuth
 2. **Background Daemon**: Their Neolith instance runs a daemon in the background for automation
 3. **Auto-start on Login**: Daemon automatically starts when an orchestrator user logs in
 4. **Health Monitoring**: Continuous health checks with auto-restart on failure
@@ -151,7 +153,7 @@ DAEMON_MAX_CONCURRENT_CONVERSATIONS=10
 import {
   buildDaemonManagerConfig,
   buildDaemonConfig,
-  initializeDaemonManager
+  initializeDaemonManager,
 } from '@neolith/core';
 
 // Build config from environment
@@ -181,27 +183,27 @@ daemon.on('stopped', () => {
   console.log('Daemon stopped');
 });
 
-daemon.on('error', (error) => {
+daemon.on('error', error => {
   console.error('Daemon error:', error);
 });
 
-daemon.on('message:processed', (message) => {
+daemon.on('message:processed', message => {
   console.log('Message processed:', message.id);
 });
 
-daemon.on('message:send', (message) => {
+daemon.on('message:send', message => {
   console.log('Sending response:', message.content);
 });
 
-daemon.on('action:execute', (action) => {
+daemon.on('action:execute', action => {
   console.log('Executing action:', action.type);
 });
 
-daemon.on('status:changed', (status) => {
+daemon.on('status:changed', status => {
   console.log('Status changed:', status);
 });
 
-daemon.on('heartbeat', (health) => {
+daemon.on('heartbeat', health => {
   console.log('Heartbeat:', health);
 });
 ```

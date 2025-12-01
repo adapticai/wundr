@@ -47,18 +47,22 @@ interface ContextMenuWrapperProps {
   disabled?: boolean;
 }
 
-function isContextMenuGroup(item: ContextMenuAction | ContextMenuGroup): item is ContextMenuGroup {
+function isContextMenuGroup(
+  item: ContextMenuAction | ContextMenuGroup
+): item is ContextMenuGroup {
   return 'actions' in item;
 }
 
 function formatShortcut(keys: string[]): string {
-  const isMac = typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac =
+    typeof window !== 'undefined' &&
+    navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
   return keys
-    .map((key) => {
+    .map(key => {
       if (!isMac && key === 'Cmd') {
-return 'Ctrl';
-}
+        return 'Ctrl';
+      }
       // Use symbols for common keys on Mac
       if (isMac) {
         switch (key) {
@@ -94,9 +98,7 @@ function renderMenuItem(action: ContextMenuAction, index: number) {
   // Label
   if (action.type === 'label') {
     return (
-      <ContextMenuLabel key={`label-${index}`}>
-        {action.label}
-      </ContextMenuLabel>
+      <ContextMenuLabel key={`label-${index}`}>{action.label}</ContextMenuLabel>
     );
   }
 
@@ -107,14 +109,14 @@ function renderMenuItem(action: ContextMenuAction, index: number) {
         key={`checkbox-${index}`}
         checked={action.checked}
         disabled={action.disabled}
-        onSelect={(e) => {
+        onSelect={e => {
           if (action.onClick) {
             e.preventDefault();
             action.onClick();
           }
         }}
       >
-        {action.icon && <span className="mr-2">{action.icon}</span>}
+        {action.icon && <span className='mr-2'>{action.icon}</span>}
         {action.label}
         {action.shortcut && (
           <ContextMenuShortcut>
@@ -130,11 +132,13 @@ function renderMenuItem(action: ContextMenuAction, index: number) {
     return (
       <ContextMenuSub key={`submenu-${index}`}>
         <ContextMenuSubTrigger disabled={action.disabled}>
-          {action.icon && <span className="mr-2">{action.icon}</span>}
+          {action.icon && <span className='mr-2'>{action.icon}</span>}
           {action.label}
         </ContextMenuSubTrigger>
         <ContextMenuSubContent>
-          {action.children.map((child, childIndex) => renderMenuItem(child, childIndex))}
+          {action.children.map((child, childIndex) =>
+            renderMenuItem(child, childIndex)
+          )}
         </ContextMenuSubContent>
       </ContextMenuSub>
     );
@@ -145,15 +149,17 @@ function renderMenuItem(action: ContextMenuAction, index: number) {
     <ContextMenuItem
       key={`item-${index}`}
       disabled={action.disabled}
-      onSelect={(e) => {
+      onSelect={e => {
         if (action.onClick) {
           e.preventDefault();
           action.onClick();
         }
       }}
     >
-      {action.icon && <span className="mr-2 flex items-center">{action.icon}</span>}
-      <span className="flex-1">{action.label}</span>
+      {action.icon && (
+        <span className='mr-2 flex items-center'>{action.icon}</span>
+      )}
+      <span className='flex-1'>{action.label}</span>
       {action.shortcut && (
         <ContextMenuShortcut>
           {formatShortcut(action.shortcut)}
@@ -179,14 +185,18 @@ export function ContextMenuWrapper({
       <ContextMenuTrigger className={cn('focus:outline-none', className)}>
         {children}
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-64">
+      <ContextMenuContent className='w-64'>
         {items.map((item, index) => {
           if (isContextMenuGroup(item)) {
             return (
               <React.Fragment key={`group-${index}`}>
                 {index > 0 && <ContextMenuSeparator />}
-                {item.label && <ContextMenuLabel>{item.label}</ContextMenuLabel>}
-                {item.actions.map((action, actionIndex) => renderMenuItem(action, actionIndex))}
+                {item.label && (
+                  <ContextMenuLabel>{item.label}</ContextMenuLabel>
+                )}
+                {item.actions.map((action, actionIndex) =>
+                  renderMenuItem(action, actionIndex)
+                )}
               </React.Fragment>
             );
           } else {
@@ -218,9 +228,11 @@ export function ContextMenuRadioGroupWrapper({
 }: ContextMenuRadioGroupWrapperProps) {
   return (
     <ContextMenuRadioGroup value={value} onValueChange={onValueChange}>
-      {items.map((item) => (
+      {items.map(item => (
         <ContextMenuRadioItem key={item.value} value={item.value}>
-          {item.icon && <span className="mr-2 flex items-center">{item.icon}</span>}
+          {item.icon && (
+            <span className='mr-2 flex items-center'>{item.icon}</span>
+          )}
           {item.label}
         </ContextMenuRadioItem>
       ))}

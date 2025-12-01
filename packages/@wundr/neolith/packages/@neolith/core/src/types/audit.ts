@@ -280,21 +280,29 @@ const AUDIT_CATEGORIES: AuditCategory[] = [
 ];
 
 export function isAuditAction(value: unknown): value is AuditAction {
-  return typeof value === 'string' && AUDIT_ACTIONS.includes(value as AuditAction);
+  return (
+    typeof value === 'string' && AUDIT_ACTIONS.includes(value as AuditAction)
+  );
 }
 
 export function isAuditSeverity(value: unknown): value is AuditSeverity {
-  return typeof value === 'string' && AUDIT_SEVERITIES.includes(value as AuditSeverity);
+  return (
+    typeof value === 'string' &&
+    AUDIT_SEVERITIES.includes(value as AuditSeverity)
+  );
 }
 
 export function isAuditCategory(value: unknown): value is AuditCategory {
-  return typeof value === 'string' && AUDIT_CATEGORIES.includes(value as AuditCategory);
+  return (
+    typeof value === 'string' &&
+    AUDIT_CATEGORIES.includes(value as AuditCategory)
+  );
 }
 
 export function isAuditLogEntry(value: unknown): value is AuditLogEntry {
   if (!value || typeof value !== 'object') {
-return false;
-}
+    return false;
+  }
   const entry = value as Record<string, unknown>;
   return (
     typeof entry.id === 'string' &&

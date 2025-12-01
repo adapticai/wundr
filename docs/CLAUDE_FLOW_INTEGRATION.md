@@ -4,7 +4,9 @@ Comprehensive documentation for the enhanced Claude Code and Claude Flow integra
 
 ## 🚀 Overview
 
-This integration combines Claude Code's powerful AI-assisted development with Claude Flow's intelligent agent orchestration, SPARC methodology, and automated workflows for maximum productivity.
+This integration combines Claude Code's powerful AI-assisted development with Claude Flow's
+intelligent agent orchestration, SPARC methodology, and automated workflows for maximum
+productivity.
 
 ### Key Features
 
@@ -99,26 +101,31 @@ This integration combines Claude Code's powerful AI-assisted development with Cl
 ### By Role
 
 **Frontend Developer**
+
 1. [Quick Start](./guides/QUICK_START.md)
 2. [Agent Configuration](./guides/AGENT_CONFIGURATION.md) (React/Vue agents)
 3. [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md) (Frontend templates)
 
 **Backend Developer**
+
 1. [Quick Start](./guides/QUICK_START.md)
 2. [Agent Configuration](./guides/AGENT_CONFIGURATION.md) (API/Database agents)
 3. [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md) (Backend templates)
 
 **Full-Stack Developer**
+
 1. [Quick Start](./guides/QUICK_START.md)
 2. [Git-Worktree Guide](./guides/GIT_WORKTREE.md) (Parallel frontend/backend)
 3. [Agent Configuration](./guides/AGENT_CONFIGURATION.md) (Team coordination)
 
 **DevOps Engineer**
+
 1. [Migration Guide](./guides/MIGRATION.md)
 2. [Hook Development](./guides/HOOK_DEVELOPMENT.md) (CI/CD integration)
 3. [API Reference](./reference/API.md) (Automation)
 
 **Tech Lead**
+
 1. [Quick Start](./guides/QUICK_START.md)
 2. [Agent Configuration](./guides/AGENT_CONFIGURATION.md) (Team setup)
 3. [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md) (Standards)
@@ -126,16 +133,19 @@ This integration combines Claude Code's powerful AI-assisted development with Cl
 ### By Experience Level
 
 **Beginner**
+
 1. [Quick Start Guide](./guides/QUICK_START.md)
 2. [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md)
 3. [Troubleshooting](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
 
 **Intermediate**
+
 1. [Agent Configuration](./guides/AGENT_CONFIGURATION.md)
 2. [Git-Worktree Guide](./guides/GIT_WORKTREE.md)
 3. [Hook Development](./guides/HOOK_DEVELOPMENT.md)
 
 **Advanced**
+
 1. [Hook Development](./guides/HOOK_DEVELOPMENT.md)
 2. [API Reference](./reference/API.md)
 3. [Migration Guide](./guides/MIGRATION.md)
@@ -184,16 +194,19 @@ This integration combines Claude Code's powerful AI-assisted development with Cl
 ### Week 1: Fundamentals
 
 **Day 1-2: Setup and Basics**
+
 - Complete [Quick Start Guide](./guides/QUICK_START.md)
 - Run first SPARC workflow
 - Spawn basic agents
 
 **Day 3-4: Configuration**
+
 - Read [Agent Configuration](./guides/AGENT_CONFIGURATION.md)
 - Customize agents for your project
 - Set up hooks
 
 **Day 5: Practice**
+
 - Build a simple feature using SPARC TDD
 - Try different agent combinations
 - Review generated code
@@ -201,16 +214,19 @@ This integration combines Claude Code's powerful AI-assisted development with Cl
 ### Week 2: Advanced Features
 
 **Day 1-2: Worktrees**
+
 - Study [Git-Worktree Guide](./guides/GIT_WORKTREE.md)
 - Set up parallel development
 - Practice agent isolation
 
 **Day 3-4: Customization**
+
 - Read [Hook Development](./guides/HOOK_DEVELOPMENT.md)
 - Create custom hooks
 - Automate your workflow
 
 **Day 5: Templates**
+
 - Review [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md)
 - Create project template
 - Share with team
@@ -218,16 +234,19 @@ This integration combines Claude Code's powerful AI-assisted development with Cl
 ### Week 3: Mastery
 
 **Day 1-2: Deep Dive**
+
 - Study [API Reference](./reference/API.md)
 - Explore advanced commands
 - Build automation scripts
 
 **Day 3-4: Troubleshooting**
+
 - Read [Troubleshooting Guide](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
 - Set up monitoring
 - Practice debugging
 
 **Day 5: Integration**
+
 - Integrate with CI/CD
 - Set up team workflows
 - Document best practices
@@ -272,7 +291,8 @@ npx claude-flow@alpha github review-pr 123
 npx claude-flow@alpha github pr-enhance 123 --add-tests --add-docs
 ```
 
-**Guides**: [API Reference](./reference/API.md) → [Agent Configuration](./guides/AGENT_CONFIGURATION.md)
+**Guides**: [API Reference](./reference/API.md) →
+[Agent Configuration](./guides/AGENT_CONFIGURATION.md)
 
 ### Workflow 3: Parallel Development
 
@@ -298,7 +318,8 @@ npx claude-flow@alpha worktree merge --from frontend --to main
 npx claude-flow@alpha worktree merge --from tests --to main
 ```
 
-**Guides**: [Git-Worktree](./guides/GIT_WORKTREE.md) → [Agent Configuration](./guides/AGENT_CONFIGURATION.md)
+**Guides**: [Git-Worktree](./guides/GIT_WORKTREE.md) →
+[Agent Configuration](./guides/AGENT_CONFIGURATION.md)
 
 ### Workflow 4: Project Setup
 
@@ -321,7 +342,8 @@ claude mcp add claude-flow npx claude-flow@alpha mcp start
 npx claude-flow@alpha sparc tdd "Create project structure"
 ```
 
-**Guides**: [Quick Start](./guides/QUICK_START.md) → [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md)
+**Guides**: [Quick Start](./guides/QUICK_START.md) →
+[Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md)
 
 ## 🔧 Configuration Examples
 
@@ -416,6 +438,7 @@ npx claude-flow@alpha sparc stats
 ```
 
 **Expected Improvements**:
+
 - Development speed: 2.8-4.4x faster
 - Token usage: 32.3% reduction
 - Code quality: Higher consistency
@@ -436,6 +459,7 @@ See [API Reference](./reference/API.md) for details.
 ### Contributing
 
 Contributions welcome! See:
+
 - Contributing guidelines
 - Code of conduct
 - Development setup
@@ -484,7 +508,4 @@ This documentation provides:
 
 ---
 
-**Version**: 2.0.0
-**Last Updated**: 2025-01-21
-**Maintained By**: Claude Flow Team
-**License**: MIT
+**Version**: 2.0.0 **Last Updated**: 2025-01-21 **Maintained By**: Claude Flow Team **License**: MIT

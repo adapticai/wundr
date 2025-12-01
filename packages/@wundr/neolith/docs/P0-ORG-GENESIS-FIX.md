@@ -16,7 +16,8 @@ Module not found: Can't resolve '@wundr.io/org-genesis'
   at /api/workspaces/generate-org/route.ts:36
 ```
 
-The route file was importing `@wundr.io/org-genesis` but the package was not listed in the web app's dependencies.
+The route file was importing `@wundr.io/org-genesis` but the package was not listed in the web app's
+dependencies.
 
 ---
 
@@ -54,11 +55,13 @@ pnpm install
 ## Verification
 
 1. **pnpm install output confirmed:**
+
    ```
    + @wundr.io/org-genesis 1.0.6 <- ../../../org-genesis
    ```
 
 2. **Build check:** No module resolution errors when building
+
    ```bash
    npm run build
    # ✅ No "@wundr.io/org-genesis" errors found
@@ -66,7 +69,7 @@ pnpm install
 
 3. **Import location:** `/api/workspaces/generate-org/route.ts:36`
    ```typescript
-   await import('@wundr.io/org-genesis')
+   await import('@wundr.io/org-genesis');
    ```
    Now resolves correctly.
 

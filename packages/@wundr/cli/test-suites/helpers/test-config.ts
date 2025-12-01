@@ -12,7 +12,7 @@ export interface TestConfig {
   screenshot: 'off' | 'on' | 'only-on-failure';
   video: 'off' | 'on' | 'retain-on-failure';
   trace: 'off' | 'on' | 'on-first-retry';
-  
+
   // Custom selectors for specific apps
   selectors?: {
     navigation?: string;
@@ -21,14 +21,14 @@ export interface TestConfig {
     searchInput?: string;
     loginButton?: string;
   };
-  
+
   // API configuration
   api?: {
     baseURL?: string;
     headers?: Record<string, string>;
     timeout?: number;
   };
-  
+
   // Test data
   testData?: {
     validUser?: {
@@ -47,18 +47,19 @@ export const defaultConfig: TestConfig = {
   screenshot: 'only-on-failure',
   video: 'retain-on-failure',
   trace: 'on-first-retry',
-  
+
   selectors: {
     navigation: 'nav, [role="navigation"], header',
     mainContent: 'main, [role="main"], #content',
     footer: 'footer, [role="contentinfo"]',
     searchInput: 'input[type="search"], input[placeholder*="search" i]',
-    loginButton: 'button[type="submit"], button:has-text("Login"), button:has-text("Sign in")'
+    loginButton:
+      'button[type="submit"], button:has-text("Login"), button:has-text("Sign in")',
   },
-  
+
   api: {
-    timeout: 10000
-  }
+    timeout: 10000,
+  },
 };
 
 /**
@@ -70,15 +71,15 @@ export function loadConfig(customConfig?: Partial<TestConfig>): TestConfig {
     ...customConfig,
     selectors: {
       ...defaultConfig.selectors,
-      ...customConfig?.selectors
+      ...customConfig?.selectors,
     },
     api: {
       ...defaultConfig.api,
-      ...customConfig?.api
+      ...customConfig?.api,
     },
     testData: {
       ...defaultConfig.testData,
-      ...customConfig?.testData
-    }
+      ...customConfig?.testData,
+    },
   };
 }

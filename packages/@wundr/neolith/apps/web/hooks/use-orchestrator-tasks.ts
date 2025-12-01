@@ -89,10 +89,14 @@ export interface UseOrchestratorTasksReturn {
  * });
  * ```
  */
-export function useOrchestratorTasks(orchestratorId: string, options?: UseOrchestratorTasksOptions): UseOrchestratorTasksReturn {
+export function useOrchestratorTasks(
+  orchestratorId: string,
+  options?: UseOrchestratorTasksOptions
+): UseOrchestratorTasksReturn {
   const [tasks, setTasks] = useState<OrchestratorTask[]>([]);
   const [metrics, setMetrics] = useState<OrchestratorTaskMetrics | null>(null);
-  const [pagination, setPagination] = useState<UseOrchestratorTasksReturn['pagination']>(null);
+  const [pagination, setPagination] =
+    useState<UseOrchestratorTasksReturn['pagination']>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -108,12 +112,16 @@ export function useOrchestratorTasks(orchestratorId: string, options?: UseOrches
       const params = new URLSearchParams();
 
       if (options?.status) {
-        const statusArray = Array.isArray(options.status) ? options.status : [options.status];
+        const statusArray = Array.isArray(options.status)
+          ? options.status
+          : [options.status];
         statusArray.forEach(s => params.append('status', s));
       }
 
       if (options?.priority) {
-        const priorityArray = Array.isArray(options.priority) ? options.priority : [options.priority];
+        const priorityArray = Array.isArray(options.priority)
+          ? options.priority
+          : [options.priority];
         priorityArray.forEach(p => params.append('priority', p));
       }
 
@@ -137,7 +145,9 @@ export function useOrchestratorTasks(orchestratorId: string, options?: UseOrches
         params.set('limit', String(options.limit));
       }
 
-      const response = await fetch(`/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`);
+      const response = await fetch(
+        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch Orchestrator tasks');

@@ -25,7 +25,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { GenerationState, GenerationStep } from '@/hooks/use-org-generator';
+import type {
+  GenerationState,
+  GenerationStep,
+} from '@/hooks/use-org-generator';
 
 export interface GenerationProgressProps {
   /** Current generation state */
@@ -89,54 +92,58 @@ export function GenerationProgress({
   const isGenerating = !isComplete && !hasError;
 
   return (
-    <Card className="w-full">
+    <Card className='w-full'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className='flex items-center gap-2'>
           {isGenerating && (
             <>
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <Loader2 className='h-5 w-5 animate-spin text-primary' />
               Generating Organization
             </>
           )}
           {isComplete && (
             <>
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CheckCircle2 className='h-5 w-5 text-green-600' />
               Generation Complete
             </>
           )}
           {hasError && (
             <>
-              <XCircle className="h-5 w-5 text-destructive" />
+              <XCircle className='h-5 w-5 text-destructive' />
               Generation Failed
             </>
           )}
         </CardTitle>
         <CardDescription>
           {isGenerating && currentStep.description}
-          {isComplete && 'Your workspace and organization structure have been created successfully'}
-          {hasError && 'An error occurred during generation. You can retry or go back to edit.'}
+          {isComplete &&
+            'Your workspace and organization structure have been created successfully'}
+          {hasError &&
+            'An error occurred during generation. You can retry or go back to edit.'}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className='space-y-6'>
         {/* Progress Bar */}
         {isGenerating && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">{currentStep.label}</span>
-              <span className="text-muted-foreground">{Math.round(progress)}%</span>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between text-sm'>
+              <span className='font-medium'>{currentStep.label}</span>
+              <span className='text-muted-foreground'>
+                {Math.round(progress)}%
+              </span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className='h-2' />
           </div>
         )}
 
         {/* Error Display */}
         {hasError && error && (
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription className="ml-2">
-              <p className="font-medium">Error</p>
-              <p className="mt-1 text-sm">{error}</p>
+          <Alert variant='destructive'>
+            <XCircle className='h-4 w-4' />
+            <AlertDescription className='ml-2'>
+              <p className='font-medium'>Error</p>
+              <p className='mt-1 text-sm'>{error}</p>
             </AlertDescription>
           </Alert>
         )}
@@ -144,10 +151,10 @@ export function GenerationProgress({
         {/* Warning Display */}
         {warnings.length > 0 && (
           <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="ml-2">
-              <p className="font-medium">Warnings</p>
-              <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
+            <AlertTriangle className='h-4 w-4' />
+            <AlertDescription className='ml-2'>
+              <p className='font-medium'>Warnings</p>
+              <ul className='mt-2 list-inside list-disc space-y-1 text-sm'>
                 {warnings.map((warning, index) => (
                   <li key={index}>{warning}</li>
                 ))}
@@ -157,9 +164,11 @@ export function GenerationProgress({
         )}
 
         {/* Step Indicators */}
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {steps.map((step, index) => {
-            const currentIndex = steps.findIndex((s) => s.state === currentStep.state);
+            const currentIndex = steps.findIndex(
+              s => s.state === currentStep.state
+            );
             const isPast = index < currentIndex;
             const isCurrent = step.state === currentStep.state;
             const isCompleteStep = step.state === 'complete' && isComplete;
@@ -188,16 +197,16 @@ export function GenerationProgress({
 
         {/* Success Summary */}
         {isComplete && (
-          <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-950/20">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-              <div className="flex-1 space-y-1">
-                <p className="font-medium text-green-900 dark:text-green-100">
+          <div className='rounded-lg border bg-green-50 p-4 dark:bg-green-950/20'>
+            <div className='flex items-start gap-3'>
+              <CheckCircle2 className='h-5 w-5 text-green-600 dark:text-green-400' />
+              <div className='flex-1 space-y-1'>
+                <p className='font-medium text-green-900 dark:text-green-100'>
                   Organization Created Successfully
                 </p>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  Your workspace has been set up with VPs, disciplines, and channels. You can now
-                  start using your organization.
+                <p className='text-sm text-green-700 dark:text-green-300'>
+                  Your workspace has been set up with VPs, disciplines, and
+                  channels. You can now start using your organization.
                 </p>
               </div>
             </div>
@@ -207,9 +216,9 @@ export function GenerationProgress({
 
       {/* Footer Actions */}
       {(hasError || onCancel) && (
-        <CardFooter className="flex items-center justify-between border-t">
+        <CardFooter className='flex items-center justify-between border-t'>
           {onCancel && (
-            <Button variant="ghost" onClick={onCancel} disabled={isRetrying}>
+            <Button variant='ghost' onClick={onCancel} disabled={isRetrying}>
               {hasError ? 'Go Back' : 'Cancel'}
             </Button>
           )}
@@ -217,7 +226,7 @@ export function GenerationProgress({
             <Button onClick={onRetry} disabled={isRetrying}>
               {isRetrying ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Retrying...
                 </>
               ) : (
@@ -241,16 +250,21 @@ interface StepIndicatorProps {
   isLast?: boolean;
 }
 
-function StepIndicator({ label, description, status, isLast = false }: StepIndicatorProps) {
+function StepIndicator({
+  label,
+  description,
+  status,
+  isLast = false,
+}: StepIndicatorProps) {
   const isPending = status === 'pending';
   const isCurrent = status === 'current';
   const isComplete = status === 'complete';
   const isError = status === 'error';
 
   return (
-    <div className="flex gap-3">
+    <div className='flex gap-3'>
       {/* Icon Column */}
-      <div className="flex flex-col items-center">
+      <div className='flex flex-col items-center'>
         {/* Status Icon */}
         <div
           className={cn(
@@ -258,13 +272,17 @@ function StepIndicator({ label, description, status, isLast = false }: StepIndic
             isPending && 'border-muted bg-muted/50',
             isCurrent && 'border-primary bg-primary/10',
             isComplete && 'border-green-600 bg-green-600',
-            isError && 'border-destructive bg-destructive',
+            isError && 'border-destructive bg-destructive'
           )}
         >
-          {isPending && <div className="h-2 w-2 rounded-full bg-muted-foreground" />}
-          {isCurrent && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-          {isComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
-          {isError && <XCircle className="h-4 w-4 text-white" />}
+          {isPending && (
+            <div className='h-2 w-2 rounded-full bg-muted-foreground' />
+          )}
+          {isCurrent && (
+            <Loader2 className='h-4 w-4 animate-spin text-primary' />
+          )}
+          {isComplete && <CheckCircle2 className='h-4 w-4 text-white' />}
+          {isError && <XCircle className='h-4 w-4 text-white' />}
         </div>
 
         {/* Connector Line */}
@@ -274,26 +292,26 @@ function StepIndicator({ label, description, status, isLast = false }: StepIndic
               'mt-1 h-8 w-0.5',
               (isComplete || isCurrent) && 'bg-primary',
               isPending && 'bg-muted',
-              isError && 'bg-destructive',
+              isError && 'bg-destructive'
             )}
           />
         )}
       </div>
 
       {/* Content Column */}
-      <div className="flex-1 pb-6">
+      <div className='flex-1 pb-6'>
         <p
           className={cn(
             'font-medium',
             isPending && 'text-muted-foreground',
             isCurrent && 'text-foreground',
             isComplete && 'text-foreground',
-            isError && 'text-destructive',
+            isError && 'text-destructive'
           )}
         >
           {label}
         </p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        <p className='mt-0.5 text-sm text-muted-foreground'>{description}</p>
       </div>
     </div>
   );

@@ -11,10 +11,7 @@ import { EventEmitter } from 'events';
 
 import { prisma } from '@neolith/database';
 
-import {
-  GenesisError,
-  TransactionError,
-} from '../errors';
+import { GenesisError, TransactionError } from '../errors';
 import {
   DEFAULT_MESSAGE_QUERY_OPTIONS,
   MAX_MESSAGE_LIMIT,
@@ -36,7 +33,12 @@ import type {
   OnReactionAddedCallback,
   OnReactionRemovedCallback,
 } from '../types/message';
-import type { PrismaClient, Prisma, Reaction, MessageType } from '@neolith/database';
+import type {
+  PrismaClient,
+  Prisma,
+  Reaction,
+  MessageType,
+} from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -47,12 +49,9 @@ import type { PrismaClient, Prisma, Reaction, MessageType } from '@neolith/datab
  */
 export class MessageNotFoundError extends GenesisError {
   constructor(messageId: string) {
-    super(
-      `Message not found: ${messageId}`,
-      'MESSAGE_NOT_FOUND',
-      404,
-      { messageId },
-    );
+    super(`Message not found: ${messageId}`, 'MESSAGE_NOT_FOUND', 404, {
+      messageId,
+    });
     this.name = 'MessageNotFoundError';
   }
 }
@@ -62,12 +61,9 @@ export class MessageNotFoundError extends GenesisError {
  */
 export class ChannelNotFoundError extends GenesisError {
   constructor(channelId: string) {
-    super(
-      `Channel not found: ${channelId}`,
-      'CHANNEL_NOT_FOUND',
-      404,
-      { channelId },
-    );
+    super(`Channel not found: ${channelId}`, 'CHANNEL_NOT_FOUND', 404, {
+      channelId,
+    });
     this.name = 'ChannelNotFoundError';
   }
 }
@@ -128,7 +124,10 @@ export interface MessageService {
    * @param options - Query options for pagination and filtering
    * @returns Paginated message results
    */
-  getMessages(channelId: string, options?: MessageQueryOptions): Promise<PaginatedMessages>;
+  getMessages(
+    channelId: string,
+    options?: MessageQueryOptions
+  ): Promise<PaginatedMessages>;
 
   /**
    * Updates a message content.
@@ -182,7 +181,10 @@ export interface ThreadService {
    * @param options - Query options
    * @returns Paginated thread messages
    */
-  getThreadMessages(parentId: string, options?: MessageQueryOptions): Promise<PaginatedMessages>;
+  getThreadMessages(
+    parentId: string,
+    options?: MessageQueryOptions
+  ): Promise<PaginatedMessages>;
 
   /**
    * Gets the count of replies in a thread.
@@ -215,7 +217,11 @@ export interface ReactionService {
    * @throws {MessageNotFoundError} If the message doesn't exist
    * @throws {ReactionError} If the reaction limit is exceeded
    */
-  addReaction(messageId: string, userId: string, emoji: string): Promise<AddReactionResult>;
+  addReaction(
+    messageId: string,
+    userId: string,
+    emoji: string
+  ): Promise<AddReactionResult>;
 
   /**
    * Removes a reaction from a message.
@@ -225,7 +231,11 @@ export interface ReactionService {
    * @param emoji - The emoji to remove
    * @throws {MessageNotFoundError} If the message doesn't exist
    */
-  removeReaction(messageId: string, userId: string, emoji: string): Promise<void>;
+  removeReaction(
+    messageId: string,
+    userId: string,
+    emoji: string
+  ): Promise<void>;
 
   /**
    * Gets all reactions for a message.
@@ -255,7 +265,10 @@ export interface MessageEvents {
    * @param callback - Callback function when a message is created
    * @returns Unsubscribe function
    */
-  onMessageCreated(channelId: string, callback: OnMessageCreatedCallback): () => void;
+  onMessageCreated(
+    channelId: string,
+    callback: OnMessageCreatedCallback
+  ): () => void;
 
   /**
    * Subscribes to message updated events in a channel.
@@ -264,7 +277,10 @@ export interface MessageEvents {
    * @param callback - Callback function when a message is updated
    * @returns Unsubscribe function
    */
-  onMessageUpdated(channelId: string, callback: OnMessageUpdatedCallback): () => void;
+  onMessageUpdated(
+    channelId: string,
+    callback: OnMessageUpdatedCallback
+  ): () => void;
 
   /**
    * Subscribes to message deleted events in a channel.
@@ -273,7 +289,10 @@ export interface MessageEvents {
    * @param callback - Callback function when a message is deleted
    * @returns Unsubscribe function
    */
-  onMessageDeleted(channelId: string, callback: OnMessageDeletedCallback): () => void;
+  onMessageDeleted(
+    channelId: string,
+    callback: OnMessageDeletedCallback
+  ): () => void;
 
   /**
    * Subscribes to reaction added events for a message.
@@ -282,7 +301,10 @@ export interface MessageEvents {
    * @param callback - Callback function when a reaction is added
    * @returns Unsubscribe function
    */
-  onReactionAdded(messageId: string, callback: OnReactionAddedCallback): () => void;
+  onReactionAdded(
+    messageId: string,
+    callback: OnReactionAddedCallback
+  ): () => void;
 
   /**
    * Subscribes to reaction removed events for a message.
@@ -291,7 +313,10 @@ export interface MessageEvents {
    * @param callback - Callback function when a reaction is removed
    * @returns Unsubscribe function
    */
-  onReactionRemoved(messageId: string, callback: OnReactionRemovedCallback): () => void;
+  onReactionRemoved(
+    messageId: string,
+    callback: OnReactionRemovedCallback
+  ): () => void;
 }
 
 // =============================================================================
@@ -303,7 +328,8 @@ export interface MessageEvents {
  * thread management, reactions, and real-time events.
  */
 export class MessageServiceImpl
-  implements MessageService, ThreadService, ReactionService, MessageEvents {
+  implements MessageService, ThreadService, ReactionService, MessageEvents
+{
   private readonly db: PrismaClient;
   private readonly eventEmitter: EventEmitter;
 
@@ -386,7 +412,10 @@ export class MessageServiceImpl
 
       return messageWithRelations;
     } catch (error) {
-      throw new TransactionError('sendMessage', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'sendMessage',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -415,7 +444,7 @@ export class MessageServiceImpl
    */
   async getMessages(
     channelId: string,
-    options: MessageQueryOptions = {},
+    options: MessageQueryOptions = {}
   ): Promise<PaginatedMessages> {
     const {
       limit = DEFAULT_MESSAGE_QUERY_OPTIONS.limit,
@@ -468,7 +497,13 @@ export class MessageServiceImpl
 
     // Get total count and messages in parallel
     const [total, messages] = await Promise.all([
-      this.db.message.count({ where: { channelId, parentId: null, ...(!includeDeleted && { isDeleted: false }) } }),
+      this.db.message.count({
+        where: {
+          channelId,
+          parentId: null,
+          ...(!includeDeleted && { isDeleted: false }),
+        },
+      }),
       this.db.message.findMany({
         where,
         include,
@@ -497,7 +532,10 @@ export class MessageServiceImpl
   /**
    * Updates a message content.
    */
-  async updateMessage(id: string, content: string): Promise<MessageWithRelations> {
+  async updateMessage(
+    id: string,
+    content: string
+  ): Promise<MessageWithRelations> {
     // Validate content
     if (!content || content.trim().length === 0) {
       throw new MessageValidationError('Content validation failed', {
@@ -507,7 +545,9 @@ export class MessageServiceImpl
 
     if (content.length > MAX_MESSAGE_CONTENT_LENGTH) {
       throw new MessageValidationError('Content validation failed', {
-        content: [`Content cannot exceed ${MAX_MESSAGE_CONTENT_LENGTH} characters`],
+        content: [
+          `Content cannot exceed ${MAX_MESSAGE_CONTENT_LENGTH} characters`,
+        ],
       });
     }
 
@@ -555,7 +595,7 @@ export class MessageServiceImpl
     }
 
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async tx => {
         // Delete all reactions first
         await tx.reaction.deleteMany({
           where: { messageId: id },
@@ -575,7 +615,10 @@ export class MessageServiceImpl
       // Emit event
       this.emitMessageDeleted(existing.channelId, id, false);
     } catch (error) {
-      throw new TransactionError('deleteMessage', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'deleteMessage',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -618,7 +661,7 @@ export class MessageServiceImpl
    */
   async createThread(
     parentMessageId: string,
-    data: Omit<SendMessageInput, 'parentId'>,
+    data: Omit<SendMessageInput, 'parentId'>
   ): Promise<MessageWithRelations> {
     // Verify parent exists
     const parent = await this.getMessage(parentMessageId);
@@ -639,7 +682,7 @@ export class MessageServiceImpl
    */
   async getThreadMessages(
     parentId: string,
-    options: MessageQueryOptions = {},
+    options: MessageQueryOptions = {}
   ): Promise<PaginatedMessages> {
     const {
       limit = DEFAULT_MESSAGE_QUERY_OPTIONS.limit,
@@ -686,7 +729,9 @@ export class MessageServiceImpl
     };
 
     const [total, messages] = await Promise.all([
-      this.db.message.count({ where: { parentId, ...(!includeDeleted && { isDeleted: false }) } }),
+      this.db.message.count({
+        where: { parentId, ...(!includeDeleted && { isDeleted: false }) },
+      }),
       this.db.message.findMany({
         where,
         include,
@@ -751,7 +796,7 @@ export class MessageServiceImpl
     ]);
 
     // Get unique participant IDs
-    const participantIds = [...new Set(replies.map((r) => r.authorId))];
+    const participantIds = [...new Set(replies.map(r => r.authorId))];
 
     // Get last reply with author
     const lastReply = await this.db.message.findFirst({
@@ -784,7 +829,7 @@ export class MessageServiceImpl
   async addReaction(
     messageId: string,
     userId: string,
-    emoji: string,
+    emoji: string
   ): Promise<AddReactionResult> {
     // Validate emoji
     if (!emoji || emoji.trim().length === 0) {
@@ -805,13 +850,13 @@ export class MessageServiceImpl
     if (existingReactionCount >= MAX_REACTIONS_PER_MESSAGE) {
       throw new ReactionError(
         `Maximum reactions (${MAX_REACTIONS_PER_MESSAGE}) reached for this message`,
-        { messageId, currentCount: existingReactionCount },
+        { messageId, currentCount: existingReactionCount }
       );
     }
 
     try {
       // Use transaction with upsert-like behavior
-      const result = await this.db.$transaction(async (tx) => {
+      const result = await this.db.$transaction(async tx => {
         // Check if reaction already exists
         const existing = await tx.reaction.findUnique({
           where: {
@@ -866,7 +911,10 @@ export class MessageServiceImpl
         }
       }
 
-      throw new TransactionError('addReaction', error instanceof Error ? error : undefined);
+      throw new TransactionError(
+        'addReaction',
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -876,7 +924,7 @@ export class MessageServiceImpl
   async removeReaction(
     messageId: string,
     userId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void> {
     // Verify message exists
     const message = await this.getMessage(messageId);
@@ -945,7 +993,10 @@ export class MessageServiceImpl
   /**
    * Subscribes to message created events.
    */
-  onMessageCreated(channelId: string, callback: OnMessageCreatedCallback): () => void {
+  onMessageCreated(
+    channelId: string,
+    callback: OnMessageCreatedCallback
+  ): () => void {
     const eventName = `message:created:${channelId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -957,7 +1008,10 @@ export class MessageServiceImpl
   /**
    * Subscribes to message updated events.
    */
-  onMessageUpdated(channelId: string, callback: OnMessageUpdatedCallback): () => void {
+  onMessageUpdated(
+    channelId: string,
+    callback: OnMessageUpdatedCallback
+  ): () => void {
     const eventName = `message:updated:${channelId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -969,7 +1023,10 @@ export class MessageServiceImpl
   /**
    * Subscribes to message deleted events.
    */
-  onMessageDeleted(channelId: string, callback: OnMessageDeletedCallback): () => void {
+  onMessageDeleted(
+    channelId: string,
+    callback: OnMessageDeletedCallback
+  ): () => void {
     const eventName = `message:deleted:${channelId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -981,7 +1038,10 @@ export class MessageServiceImpl
   /**
    * Subscribes to reaction added events.
    */
-  onReactionAdded(messageId: string, callback: OnReactionAddedCallback): () => void {
+  onReactionAdded(
+    messageId: string,
+    callback: OnReactionAddedCallback
+  ): () => void {
     const eventName = `reaction:added:${messageId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -993,7 +1053,10 @@ export class MessageServiceImpl
   /**
    * Subscribes to reaction removed events.
    */
-  onReactionRemoved(messageId: string, callback: OnReactionRemovedCallback): () => void {
+  onReactionRemoved(
+    messageId: string,
+    callback: OnReactionRemovedCallback
+  ): () => void {
     const eventName = `reaction:removed:${messageId}`;
     this.eventEmitter.on(eventName, callback);
 
@@ -1009,31 +1072,53 @@ export class MessageServiceImpl
   /**
    * Emits a message created event.
    */
-  private emitMessageCreated(channelId: string, message: MessageWithRelations): void {
+  private emitMessageCreated(
+    channelId: string,
+    message: MessageWithRelations
+  ): void {
     this.eventEmitter.emit(`message:created:${channelId}`, message);
   }
 
   /**
    * Emits a message updated event.
    */
-  private emitMessageUpdated(channelId: string, message: MessageWithRelations): void {
+  private emitMessageUpdated(
+    channelId: string,
+    message: MessageWithRelations
+  ): void {
     this.eventEmitter.emit(`message:updated:${channelId}`, message);
   }
 
   /**
    * Emits a message deleted event.
    */
-  private emitMessageDeleted(channelId: string, messageId: string, softDelete: boolean): void {
-    this.eventEmitter.emit(`message:deleted:${channelId}`, messageId, softDelete);
+  private emitMessageDeleted(
+    channelId: string,
+    messageId: string,
+    softDelete: boolean
+  ): void {
+    this.eventEmitter.emit(
+      `message:deleted:${channelId}`,
+      messageId,
+      softDelete
+    );
   }
 
   /**
    * Emits a reaction added event.
    */
-  private emitReactionAdded(channelId: string, messageId: string, reaction: Reaction): void {
+  private emitReactionAdded(
+    channelId: string,
+    messageId: string,
+    reaction: Reaction
+  ): void {
     this.eventEmitter.emit(`reaction:added:${messageId}`, messageId, reaction);
     // Also emit channel-level event for subscribers watching the channel
-    this.eventEmitter.emit(`channel:reaction:added:${channelId}`, messageId, reaction);
+    this.eventEmitter.emit(
+      `channel:reaction:added:${channelId}`,
+      messageId,
+      reaction
+    );
   }
 
   /**
@@ -1043,11 +1128,21 @@ export class MessageServiceImpl
     channelId: string,
     messageId: string,
     emoji: string,
-    userId: string,
+    userId: string
   ): void {
-    this.eventEmitter.emit(`reaction:removed:${messageId}`, messageId, emoji, userId);
+    this.eventEmitter.emit(
+      `reaction:removed:${messageId}`,
+      messageId,
+      emoji,
+      userId
+    );
     // Also emit channel-level event
-    this.eventEmitter.emit(`channel:reaction:removed:${channelId}`, messageId, emoji, userId);
+    this.eventEmitter.emit(
+      `channel:reaction:removed:${channelId}`,
+      messageId,
+      emoji,
+      userId
+    );
   }
 
   /**
@@ -1055,13 +1150,19 @@ export class MessageServiceImpl
    */
   private emitThreadUpdated(channelId: string, parentId: string): void {
     // Fire and forget - get summary and emit
-    this.getThreadSummary(parentId).then((summary) => {
-      if (summary) {
-        this.eventEmitter.emit(`thread:updated:${channelId}`, parentId, summary);
-      }
-    }).catch(() => {
-      // Ignore errors in event emission
-    });
+    this.getThreadSummary(parentId)
+      .then(summary => {
+        if (summary) {
+          this.eventEmitter.emit(
+            `thread:updated:${channelId}`,
+            parentId,
+            summary
+          );
+        }
+      })
+      .catch(() => {
+        // Ignore errors in event emission
+      });
   }
 
   // ===========================================================================
@@ -1085,10 +1186,15 @@ export class MessageServiceImpl
     if (data.content === undefined || data.content === null) {
       errors.content = ['Content is required'];
     } else if (data.content.length > MAX_MESSAGE_CONTENT_LENGTH) {
-      errors.content = [`Content cannot exceed ${MAX_MESSAGE_CONTENT_LENGTH} characters`];
+      errors.content = [
+        `Content cannot exceed ${MAX_MESSAGE_CONTENT_LENGTH} characters`,
+      ];
     }
 
-    if (data.type && !['TEXT', 'SYSTEM', 'FILE', 'COMMAND'].includes(data.type)) {
+    if (
+      data.type &&
+      !['TEXT', 'SYSTEM', 'FILE', 'COMMAND'].includes(data.type)
+    ) {
       errors.type = ['Invalid message type'];
     }
 
@@ -1148,7 +1254,9 @@ export class MessageServiceImpl
  * unsubscribe();
  * ```
  */
-export function createMessageService(database?: PrismaClient): MessageServiceImpl {
+export function createMessageService(
+  database?: PrismaClient
+): MessageServiceImpl {
   return new MessageServiceImpl(database);
 }
 

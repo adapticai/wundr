@@ -42,15 +42,18 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', WORK_SESSION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          WORK_SESSION_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -73,9 +76,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORK_SESSION_ERROR_CODES.FORBIDDEN,
+          WORK_SESSION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -91,8 +94,11 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found',
+          WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -124,13 +130,20 @@ export async function GET(
     if (activeTask) {
       const metadata = activeTask.metadata as any;
       progress = metadata?.progress || 0;
-      lastUpdate = metadata?.lastProgressUpdate || activeTask.updatedAt.toISOString();
+      lastUpdate =
+        metadata?.lastProgressUpdate || activeTask.updatedAt.toISOString();
       currentAction = metadata?.lastMessage || null;
-      startedAt = metadata?.executionStartedAt || activeTask.updatedAt.toISOString();
+      startedAt =
+        metadata?.executionStartedAt || activeTask.updatedAt.toISOString();
     }
 
     // Determine work session status
-    let workSessionStatus: 'idle' | 'active' | 'paused' | 'completed' | 'error' = 'idle';
+    let workSessionStatus:
+      | 'idle'
+      | 'active'
+      | 'paused'
+      | 'completed'
+      | 'error' = 'idle';
     if (activeTask) {
       if (orchestrator.status === 'BUSY') {
         workSessionStatus = 'active';
@@ -161,9 +174,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR,
+        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

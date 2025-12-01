@@ -363,11 +363,7 @@
       }
     },
     "ipc_api_surface": {
-      "config": [
-        "config:get",
-        "config:set",
-        "config:getAll"
-      ],
+      "config": ["config:get", "config:set", "config:getAll"],
       "dialog": [
         "dialog:openDirectory",
         "dialog:openFile",
@@ -379,22 +375,14 @@
         "shell:openPath",
         "shell:showItemInFolder"
       ],
-      "app": [
-        "app:getVersion",
-        "app:getPath",
-        "app:getPlatform"
-      ],
+      "app": ["app:getVersion", "app:getPath", "app:getPlatform"],
       "window": [
         "window:minimize",
         "window:maximize",
         "window:close",
         "window:isMaximized"
       ],
-      "updates": [
-        "updates:check",
-        "updates:download",
-        "updates:install"
-      ],
+      "updates": ["updates:check", "updates:download", "updates:install"],
       "events_from_main": [
         "menu:new-organization",
         "menu:open-organization",

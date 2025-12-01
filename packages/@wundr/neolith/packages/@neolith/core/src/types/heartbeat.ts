@@ -131,11 +131,11 @@ export interface HealthStatus {
  * Possible health status types.
  */
 export type HealthStatusType =
-  | 'healthy'    // Normal operation, heartbeats received on schedule
-  | 'degraded'   // Heartbeats delayed or metrics indicate issues
-  | 'unhealthy'  // Multiple missed heartbeats
+  | 'healthy' // Normal operation, heartbeats received on schedule
+  | 'degraded' // Heartbeats delayed or metrics indicate issues
+  | 'unhealthy' // Multiple missed heartbeats
   | 'recovering' // Previously unhealthy, now receiving heartbeats
-  | 'unknown';   // No heartbeat data available
+  | 'unknown'; // No heartbeat data available
 
 // =============================================================================
 // Heartbeat Input Types
@@ -217,14 +217,14 @@ export interface HeartbeatConfig {
  * Default heartbeat configuration.
  */
 export const DEFAULT_HEARTBEAT_CONFIG: HeartbeatConfig = {
-  heartbeatIntervalMs: 30000,       // 30 seconds
-  unhealthyThreshold: 3,            // 3 missed = unhealthy
-  recoveryThreshold: 2,             // 2 consecutive = recovered
-  autoDeactivate: false,            // Don't auto-deactivate
-  heartbeatTTLSeconds: 300,         // 5 minutes TTL
-  maxHistoryEntries: 100,           // Keep 100 history entries
-  monitorIntervalMs: 30000,         // Check every 30 seconds
-  emitEvents: true,                 // Emit status change events
+  heartbeatIntervalMs: 30000, // 30 seconds
+  unhealthyThreshold: 3, // 3 missed = unhealthy
+  recoveryThreshold: 2, // 2 consecutive = recovered
+  autoDeactivate: false, // Don't auto-deactivate
+  heartbeatTTLSeconds: 300, // 5 minutes TTL
+  maxHistoryEntries: 100, // Keep 100 history entries
+  monitorIntervalMs: 30000, // Check every 30 seconds
+  emitEvents: true, // Emit status change events
 };
 
 // =============================================================================
@@ -315,22 +315,33 @@ export interface OrchestratorRecoveredEvent extends HeartbeatEvent {
 /**
  * Callback for Orchestrator unhealthy events.
  */
-export type OnOrchestratorUnhealthyCallback = (orchestratorId: string, status: HealthStatus) => void | Promise<void>;
+export type OnOrchestratorUnhealthyCallback = (
+  orchestratorId: string,
+  status: HealthStatus
+) => void | Promise<void>;
 
 /**
  * Callback for Orchestrator recovered events.
  */
-export type OnOrchestratorRecoveredCallback = (orchestratorId: string) => void | Promise<void>;
+export type OnOrchestratorRecoveredCallback = (
+  orchestratorId: string
+) => void | Promise<void>;
 
 /**
  * Callback for daemon registered events.
  */
-export type OnDaemonRegisteredCallback = (orchestratorId: string, daemonInfo: HeartbeatDaemonInfo) => void | Promise<void>;
+export type OnDaemonRegisteredCallback = (
+  orchestratorId: string,
+  daemonInfo: HeartbeatDaemonInfo
+) => void | Promise<void>;
 
 /**
  * Callback for daemon unregistered events.
  */
-export type OnDaemonUnregisteredCallback = (orchestratorId: string, reason?: string) => void | Promise<void>;
+export type OnDaemonUnregisteredCallback = (
+  orchestratorId: string,
+  reason?: string
+) => void | Promise<void>;
 
 // =============================================================================
 // Redis Key Patterns
@@ -369,7 +380,9 @@ export const HEARTBEAT_REDIS_KEYS = {
 /**
  * Type guard to check if a value is a valid HeartbeatDaemonInfo.
  */
-export function isHeartbeatDaemonInfo(value: unknown): value is HeartbeatDaemonInfo {
+export function isHeartbeatDaemonInfo(
+  value: unknown
+): value is HeartbeatDaemonInfo {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -412,7 +425,9 @@ export function isHealthStatus(value: unknown): value is HealthStatus {
   const obj = value as Record<string, unknown>;
   return (
     typeof obj.healthy === 'boolean' &&
-    ['healthy', 'degraded', 'unhealthy', 'recovering', 'unknown'].includes(obj.status as string) &&
+    ['healthy', 'degraded', 'unhealthy', 'recovering', 'unknown'].includes(
+      obj.status as string
+    ) &&
     typeof obj.missedHeartbeats === 'number'
   );
 }

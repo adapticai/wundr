@@ -77,7 +77,10 @@ export function StatusSelector({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
       setIsOpen(false);
       setShowCustomInput(false);
     }
@@ -118,23 +121,21 @@ export function StatusSelector({
     <div ref={dropdownRef} className={cn('relative', className)}>
       {/* Trigger Button */}
       <Button
-        variant="outline"
+        variant='outline'
         onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'flex items-center gap-2 font-sans',
-        )}
+        className={cn('flex items-center gap-2 font-sans')}
         aria-expanded={isOpen}
-        aria-haspopup="listbox"
+        aria-haspopup='listbox'
       >
-        <PresenceIndicator status={currentStatus} size="md" showPulse={false} />
-        <span className="text-foreground">{statusLabels[currentStatus]}</span>
+        <PresenceIndicator status={currentStatus} size='md' showPulse={false} />
+        <span className='text-foreground'>{statusLabels[currentStatus]}</span>
         {customStatusText && (
-          <span className="text-muted-foreground">- {customStatusText}</span>
+          <span className='text-muted-foreground'>- {customStatusText}</span>
         )}
         <ChevronDownIcon
           className={cn(
             'h-4 w-4 text-muted-foreground transition-transform',
-            isOpen && 'rotate-180',
+            isOpen && 'rotate-180'
           )}
         />
       </Button>
@@ -144,88 +145,88 @@ export function StatusSelector({
         <div
           className={cn(
             'absolute left-0 top-full z-50 mt-2 w-72 rounded-lg border bg-card shadow-lg',
-            'animate-in fade-in-0 zoom-in-95',
+            'animate-in fade-in-0 zoom-in-95'
           )}
-          role="listbox"
-          aria-label="Select status"
+          role='listbox'
+          aria-label='Select status'
         >
-          <div className="p-2">
+          <div className='p-2'>
             {/* Status Options */}
-            <div className="space-y-1">
-              {statusOptions.map((option) => {
+            <div className='space-y-1'>
+              {statusOptions.map(option => {
                 const Icon = option.icon;
                 const isSelected = currentStatus === option.status;
 
                 return (
                   <button
                     key={option.status}
-                    type="button"
+                    type='button'
                     onClick={() => handleStatusSelect(option.status)}
                     className={cn(
                       'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors',
                       isSelected
                         ? 'bg-primary/10 text-primary'
-                        : 'text-foreground hover:bg-accent',
+                        : 'text-foreground hover:bg-accent'
                     )}
-                    role="option"
+                    role='option'
                     aria-selected={isSelected}
                   >
                     <PresenceIndicator
                       status={option.status}
-                      size="md"
+                      size='md'
                       showPulse={false}
                     />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{option.label}</span>
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium'>{option.label}</span>
                         {isSelected && (
-                          <CheckIcon className="h-4 w-4 text-primary" />
+                          <CheckIcon className='h-4 w-4 text-primary' />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-xs text-muted-foreground'>
                         {option.description}
                       </p>
                     </div>
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <Icon className='h-4 w-4 text-muted-foreground' />
                   </button>
                 );
               })}
             </div>
 
             {/* Divider */}
-            <div className="my-2 h-px bg-border" />
+            <div className='my-2 h-px bg-border' />
 
             {/* Custom Status */}
             {showCustomInput ? (
-              <form onSubmit={handleCustomStatusSubmit} className="space-y-2">
+              <form onSubmit={handleCustomStatusSubmit} className='space-y-2'>
                 <Input
                   ref={inputRef}
-                  type="text"
+                  type='text'
                   value={customText}
-                  onChange={(e) => setCustomText(e.target.value)}
+                  onChange={e => setCustomText(e.target.value)}
                   placeholder="What's your status?"
                   maxLength={100}
-                  className="font-sans"
+                  className='font-sans'
                 />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-sans">
+                <div className='flex items-center justify-between'>
+                  <span className='text-xs text-muted-foreground font-sans'>
                     {customText.length}/100
                   </span>
-                  <div className="flex gap-2">
+                  <div className='flex gap-2'>
                     <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
+                      type='button'
+                      variant='ghost'
+                      size='sm'
                       onClick={() => setShowCustomInput(false)}
-                      className="font-sans"
+                      className='font-sans'
                     >
                       Cancel
                     </Button>
                     <Button
-                      type="submit"
-                      size="sm"
+                      type='submit'
+                      size='sm'
                       disabled={!customText.trim()}
-                      className="font-sans"
+                      className='font-sans'
                     >
                       Save
                     </Button>
@@ -234,16 +235,18 @@ export function StatusSelector({
               </form>
             ) : (
               <button
-                type="button"
+                type='button'
                 onClick={() => setShowCustomInput(true)}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors',
-                  'text-foreground hover:bg-accent',
+                  'text-foreground hover:bg-accent'
                 )}
               >
-                <EditIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {customStatusText ? 'Edit custom status' : 'Set a custom status'}
+                <EditIcon className='h-4 w-4 text-muted-foreground' />
+                <span className='text-sm'>
+                  {customStatusText
+                    ? 'Edit custom status'
+                    : 'Set a custom status'}
                 </span>
               </button>
             )}
@@ -251,15 +254,15 @@ export function StatusSelector({
             {/* Clear Status */}
             {customStatusText && !showCustomInput && (
               <button
-                type="button"
+                type='button'
                 onClick={handleClearStatus}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors',
-                  'text-destructive hover:bg-destructive/10',
+                  'text-destructive hover:bg-destructive/10'
                 )}
               >
-                <XIcon className="h-4 w-4" />
-                <span className="text-sm">Clear custom status</span>
+                <XIcon className='h-4 w-4' />
+                <span className='text-sm'>Clear custom status</span>
               </button>
             )}
           </div>
@@ -273,16 +276,16 @@ export function StatusSelector({
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="m6 9 6 6 6-6" />
+      <path d='m6 9 6 6 6-6' />
     </svg>
   );
 }
@@ -290,16 +293,16 @@ function ChevronDownIcon({ className }: { className?: string }) {
 function CheckIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M20 6 9 17l-5-5" />
+      <path d='M20 6 9 17l-5-5' />
     </svg>
   );
 }
@@ -307,17 +310,17 @@ function CheckIcon({ className }: { className?: string }) {
 function CheckCircleIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
+      <circle cx='12' cy='12' r='10' />
+      <path d='m9 12 2 2 4-4' />
     </svg>
   );
 }
@@ -325,17 +328,17 @@ function CheckCircleIcon({ className }: { className?: string }) {
 function ClockIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
+      <circle cx='12' cy='12' r='10' />
+      <polyline points='12 6 12 12 16 14' />
     </svg>
   );
 }
@@ -343,17 +346,17 @@ function ClockIcon({ className }: { className?: string }) {
 function MinusCircleIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="8" x2="16" y1="12" y2="12" />
+      <circle cx='12' cy='12' r='10' />
+      <line x1='8' x2='16' y1='12' y2='12' />
     </svg>
   );
 }
@@ -361,18 +364,18 @@ function MinusCircleIcon({ className }: { className?: string }) {
 function XCircleIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <path d="m15 9-6 6" />
-      <path d="m9 9 6 6" />
+      <circle cx='12' cy='12' r='10' />
+      <path d='m15 9-6 6' />
+      <path d='m9 9 6 6' />
     </svg>
   );
 }
@@ -380,17 +383,17 @@ function XCircleIcon({ className }: { className?: string }) {
 function EditIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-      <path d="m15 5 4 4" />
+      <path d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' />
+      <path d='m15 5 4 4' />
     </svg>
   );
 }
@@ -398,17 +401,17 @@ function EditIcon({ className }: { className?: string }) {
 function XIcon({ className }: { className?: string }) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
       className={className}
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d='M18 6 6 18' />
+      <path d='m6 6 12 12' />
     </svg>
   );
 }

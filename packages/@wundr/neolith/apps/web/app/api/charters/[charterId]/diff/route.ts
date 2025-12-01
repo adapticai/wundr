@@ -39,7 +39,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
     select: { organizationId: true, role: true },
   });
 
-  const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
+  const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
@@ -49,11 +49,16 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
     },
   });
 
-  if (!orchestrator || !accessibleOrgIds.includes(orchestrator.organizationId)) {
+  if (
+    !orchestrator ||
+    !accessibleOrgIds.includes(orchestrator.organizationId)
+  ) {
     return null;
   }
 
-  const membership = userOrganizations.find((m) => m.organizationId === orchestrator.organizationId);
+  const membership = userOrganizations.find(
+    m => m.organizationId === orchestrator.organizationId
+  );
 
   return { orchestrator, role: membership?.role ?? null };
 }
@@ -64,21 +69,25 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
 function deepDiff(
   obj1: Record<string, unknown>,
   obj2: Record<string, unknown>,
-  path = '',
+  path = ''
 ): {
   changed: Array<{ path: string; oldValue: unknown; newValue: unknown }>;
   added: Array<{ path: string; value: unknown }>;
   removed: Array<{ path: string; value: unknown }>;
 } {
   const result = {
-    changed: [] as Array<{ path: string; oldValue: unknown; newValue: unknown }>,
+    changed: [] as Array<{
+      path: string;
+      oldValue: unknown;
+      newValue: unknown;
+    }>,
     added: [] as Array<{ path: string; value: unknown }>,
     removed: [] as Array<{ path: string; value: unknown }>,
   };
 
   const allKeys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
 
-  allKeys.forEach((key) => {
+  allKeys.forEach(key => {
     const currentPath = path ? `${path}.${key}` : key;
     const val1 = obj1[key];
     const val2 = obj2[key];
@@ -96,13 +105,18 @@ function deepDiff(
     }
 
     // Both exist - check if values are different
-    if (typeof val1 === 'object' && val1 !== null && typeof val2 === 'object' && val2 !== null) {
+    if (
+      typeof val1 === 'object' &&
+      val1 !== null &&
+      typeof val2 === 'object' &&
+      val2 !== null
+    ) {
       // Recursively diff nested objects
       if (!Array.isArray(val1) && !Array.isArray(val2)) {
         const nestedDiff = deepDiff(
           val1 as Record<string, unknown>,
           val2 as Record<string, unknown>,
-          currentPath,
+          currentPath
         );
         result.changed.push(...nestedDiff.changed);
         result.added.push(...nestedDiff.added);
@@ -113,7 +127,11 @@ function deepDiff(
 
     // Primitive comparison or array comparison (treat arrays as primitives)
     if (JSON.stringify(val1) !== JSON.stringify(val2)) {
-      result.changed.push({ path: currentPath, oldValue: val1, newValue: val2 });
+      result.changed.push({
+        path: currentPath,
+        oldValue: val1,
+        newValue: val2,
+      });
     }
   });
 
@@ -135,14 +153,20 @@ function deepDiff(
  * GET /api/charters/charter_123/diff?v1=1&v2=2
  * ```
  */
-export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', CHARTER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          CHARTER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -151,8 +175,11 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     const paramResult = charterIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid charter ID format', CHARTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid charter ID format',
+          CHARTER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -162,10 +189,14 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid query parameters', CHARTER_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid query parameters',
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
@@ -210,9 +241,9 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           `Version ${version1} not found`,
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -220,9 +251,9 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           `Version ${version2} not found`,
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -231,28 +262,31 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       return NextResponse.json(
         createErrorResponse(
           'Versions belong to different orchestrators',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          CHARTER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check access
-    const access = await checkOrchestratorAccess(charterVersion1.orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      charterVersion1.orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.FORBIDDEN,
+          CHARTER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Compute diff
     const diff = deepDiff(
       charterVersion1.charterData as Record<string, unknown>,
-      charterVersion2.charterData as Record<string, unknown>,
+      charterVersion2.charterData as Record<string, unknown>
     );
 
     return NextResponse.json({
@@ -271,15 +305,19 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
           changed: diff.changed,
           added: diff.added,
           removed: diff.removed,
-          totalChanges: diff.changed.length + diff.added.length + diff.removed.length,
+          totalChanges:
+            diff.changed.length + diff.added.length + diff.removed.length,
         },
       },
     });
   } catch (error) {
     console.error('[GET /api/charters/:charterId/diff] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', CHARTER_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        CHARTER_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

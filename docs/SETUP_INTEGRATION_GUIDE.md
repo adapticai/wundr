@@ -1,8 +1,8 @@
 # Setup System Integration Guide
 
-**Purpose**: Consolidate and enhance the project initialization system
-**Target**: Unified, comprehensive project setup with full CLAUDE.md and template integration
-**Scope**: Setup commands, generators, templates, and configuration
+**Purpose**: Consolidate and enhance the project initialization system **Target**: Unified,
+comprehensive project setup with full CLAUDE.md and template integration **Scope**: Setup commands,
+generators, templates, and configuration
 
 ---
 
@@ -105,7 +105,7 @@ export class UnifiedClaudeSetupCommands {
       .option('--skip-mcp', 'Skip MCP tools')
       .option('--skip-agents', 'Skip agent configuration')
       .option('--skip-optimization', 'Skip hardware optimization')
-      .action(async (options) => {
+      .action(async options => {
         await this.runCompleteSetup(options);
       });
 
@@ -159,7 +159,6 @@ export class UnifiedClaudeSetupCommands {
 
       spinner.succeed(chalk.green('Claude Code setup completed!'));
       this.displayFinalInstructions();
-
     } catch (error) {
       spinner.fail(chalk.red(`Setup failed: ${error.message}`));
       process.exit(1);
@@ -519,7 +518,8 @@ private async validateSetup(spinner: ora.Ora): Promise<void> {
 
 ### 3.1 Configuration Templates
 
-**File**: `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/eslint.config.js`
+**File**:
+`/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/eslint.config.js`
 
 ```javascript
 export default [
@@ -531,21 +531,22 @@ export default [
       sourceType: 'module',
       globals: {
         console: 'readonly',
-        process: 'readonly'
-      }
+        process: 'readonly',
+      },
     },
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-console': 'warn',
-      'semi': ['error', 'always'],
-      'quotes': ['error', 'single'],
-      'indent': ['error', 2]
-    }
-  }
+      semi: ['error', 'always'],
+      quotes: ['error', 'single'],
+      indent: ['error', 2],
+    },
+  },
 ];
 ```
 
-**File**: `/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/prettier.config.js`
+**File**:
+`/Users/iroselli/wundr/packages/@wundr/computer-setup/resources/templates/prettier.config.js`
 
 ```javascript
 export default {
@@ -556,7 +557,7 @@ export default {
   trailingComma: 'es5',
   bracketSpacing: true,
   arrowParens: 'always',
-  printWidth: 100
+  printWidth: 100,
 };
 ```
 
@@ -569,19 +570,15 @@ export default {
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/index.ts'
-  ],
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/**/index.ts'],
   coverageThreshold: {
     global: {
       branches: 70,
       functions: 70,
       lines: 70,
-      statements: 70
-    }
-  }
+      statements: 70,
+    },
+  },
 };
 ```
 
@@ -595,6 +592,7 @@ export default {
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18.x or higher
 - npm, yarn, or pnpm
 
@@ -608,6 +606,7 @@ export default {
 ## Development Workflow
 
 ### Available Commands
+
 - \`npm run build\` - Build the project
 - \`npm run dev\` - Start development server
 - \`npm run test\` - Run tests
@@ -617,6 +616,7 @@ export default {
 ### Code Style
 
 This project follows strict code standards:
+
 - ESLint for linting
 - Prettier for formatting
 - TypeScript for type safety
@@ -641,11 +641,13 @@ Coverage threshold: 70%
 ## Troubleshooting
 
 ### Build fails
+
 - Check Node.js version: \`node --version\`
 - Clear cache: \`npm run clean\`
 - Reinstall: \`rm -rf node_modules && npm install\`
 
 ### Tests fail
+
 - Run: \`npm run test -- --verbose\`
 - Check for unmet dependencies
 - Review test output carefully
@@ -658,32 +660,27 @@ Coverage threshold: 70%
 
 ## Project Structure
 
-\`\`\`
-project/
-├── src/              # Source code
-├── tests/            # Test files
-├── config/           # Configuration files
-├── scripts/          # Utility scripts
-├── docs/             # Documentation
-├── .claude/          # Claude Code configuration
-├── mcp-tools/        # MCP tool integration
-└── examples/         # Example code
-\`\`\`
+\`\`\` project/ ├── src/ # Source code ├── tests/ # Test files ├── config/ # Configuration files ├──
+scripts/ # Utility scripts ├── docs/ # Documentation ├── .claude/ # Claude Code configuration ├──
+mcp-tools/ # MCP tool integration └── examples/ # Example code \`\`\`
 
 ## Key Components
 
 ### Source Organization
+
 - Modular design
 - Single responsibility principle
 - Clear separation of concerns
 
 ### Testing Strategy
+
 - Unit tests for functions
 - Integration tests for modules
 - E2E tests for workflows
 - Minimum coverage: 70%
 
 ### Build Process
+
 - TypeScript compilation
 - Asset optimization
 - Distribution package creation
@@ -691,12 +688,14 @@ project/
 ## Design Decisions
 
 ### Technology Stack
+
 - Language: TypeScript
 - Build Tool: [specified]
 - Test Framework: Jest
 - Package Manager: npm/yarn/pnpm
 
 ### Quality Standards
+
 - Strict TypeScript mode
 - ESLint enforcement
 - Prettier formatting
@@ -705,16 +704,19 @@ project/
 ## Development Patterns
 
 ### Module Structure
+
 - Each module is self-contained
 - Clear public interfaces
 - Internal implementation hidden
 
 ### Error Handling
+
 - Try-catch for async operations
 - Descriptive error messages
 - Proper error propagation
 
 ### Logging
+
 - Structured logging
 - Appropriate log levels
 - No sensitive data in logs
@@ -799,12 +801,14 @@ echo "✓ Validation complete"
 ## 4. Integration Checklist
 
 ### Pre-Integration
+
 - [ ] Review both claude-setup.ts implementations
 - [ ] Identify common functionality
 - [ ] Plan consolidation approach
 - [ ] Backup existing implementations
 
 ### Implementation
+
 - [ ] Create UnifiedClaudeSetupCommands class
 - [ ] Implement validatePrerequisites()
 - [ ] Implement setupClaudeFlow()
@@ -819,6 +823,7 @@ echo "✓ Validation complete"
 - [ ] Implement validateSetup()
 
 ### Testing
+
 - [ ] Unit test each method
 - [ ] Integration test full flow
 - [ ] Test TypeScript template
@@ -831,12 +836,14 @@ echo "✓ Validation complete"
 - [ ] Test on fresh directory
 
 ### Documentation
+
 - [ ] Update setup documentation
 - [ ] Document new templates
 - [ ] Create troubleshooting guide
 - [ ] Update CLAUDE.md template
 
 ### Deployment
+
 - [ ] Merge to master
 - [ ] Update version
 - [ ] Create release notes
@@ -847,6 +854,7 @@ echo "✓ Validation complete"
 ## 5. Success Criteria
 
 ### Functional Requirements
+
 - ✓ Single unified setup command
 - ✓ Comprehensive project initialization
 - ✓ Dynamic CLAUDE.md generation
@@ -856,6 +864,7 @@ echo "✓ Validation complete"
 - ✓ Full directory structure creation
 
 ### Quality Requirements
+
 - ✓ 90%+ code coverage
 - ✓ All TypeScript errors fixed
 - ✓ No linting violations
@@ -863,12 +872,14 @@ echo "✓ Validation complete"
 - ✓ Zero critical security issues
 
 ### Performance Requirements
+
 - ✓ Setup completes in < 5 minutes
 - ✓ No unnecessary file operations
 - ✓ Efficient validation checks
 - ✓ Parallel operations where possible
 
 ### User Experience
+
 - ✓ Clear progress indication
 - ✓ Helpful error messages
 - ✓ Recovery suggestions on failure
@@ -878,15 +889,15 @@ echo "✓ Validation complete"
 
 ## 6. Timeline Estimate
 
-| Phase | Tasks | Estimated Hours |
-|-------|-------|-----------------|
-| Phase 1 | Code consolidation | 8 |
-| Phase 2 | Integration implementation | 16 |
-| Phase 3 | Template creation | 12 |
-| Phase 4 | Testing | 12 |
-| Phase 5 | Documentation | 8 |
-| Phase 6 | Deployment | 4 |
-| **Total** | | **60** |
+| Phase     | Tasks                      | Estimated Hours |
+| --------- | -------------------------- | --------------- |
+| Phase 1   | Code consolidation         | 8               |
+| Phase 2   | Integration implementation | 16              |
+| Phase 3   | Template creation          | 12              |
+| Phase 4   | Testing                    | 12              |
+| Phase 5   | Documentation              | 8               |
+| Phase 6   | Deployment                 | 4               |
+| **Total** |                            | **60**          |
 
 ---
 
@@ -902,7 +913,4 @@ If integration fails:
 
 ---
 
-**Last Updated**: 2025-11-21
-**Status**: Ready for implementation
-**Priority**: High
-
+**Last Updated**: 2025-11-21 **Status**: Ready for implementation **Priority**: High

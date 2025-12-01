@@ -1,14 +1,14 @@
 # Project Initialization Analysis - Executive Summary
 
-**Date**: 2025-11-21
-**Repository**: /Users/iroselli/wundr
-**Analysis Scope**: Project initialization, boilerplate setup, Claude Code configuration
+**Date**: 2025-11-21 **Repository**: /Users/iroselli/wundr **Analysis Scope**: Project
+initialization, boilerplate setup, Claude Code configuration
 
 ---
 
 ## Key Findings at a Glance
 
 ### Current State: Fragmented Architecture
+
 ```
 ├── 2 parallel claude-setup implementations (700+ lines of duplication)
 ├── Dynamic CLAUDE.md generation (not fully leveraged)
@@ -19,21 +19,22 @@
 
 ### Problems Identified
 
-| Issue | Severity | Impact |
-|-------|----------|--------|
-| Code duplication in setup commands | HIGH | Maintenance burden, inconsistent behavior |
-| Agent templates not copied to projects | HIGH | New projects can't use agents immediately |
-| MCP tools not properly configured | HIGH | Missing powerful development tools |
-| Incomplete directory structure | MEDIUM | Poor project organization |
-| Missing configuration templates | MEDIUM | Developers must create config manually |
-| Git hooks not installed | MEDIUM | Quality standards not enforced |
-| CLAUDE.md template unused | MEDIUM | Static file, no dynamic population |
+| Issue                                  | Severity | Impact                                    |
+| -------------------------------------- | -------- | ----------------------------------------- |
+| Code duplication in setup commands     | HIGH     | Maintenance burden, inconsistent behavior |
+| Agent templates not copied to projects | HIGH     | New projects can't use agents immediately |
+| MCP tools not properly configured      | HIGH     | Missing powerful development tools        |
+| Incomplete directory structure         | MEDIUM   | Poor project organization                 |
+| Missing configuration templates        | MEDIUM   | Developers must create config manually    |
+| Git hooks not installed                | MEDIUM   | Quality standards not enforced            |
+| CLAUDE.md template unused              | MEDIUM   | Static file, no dynamic population        |
 
 ---
 
 ## Files to Update - Quick Reference
 
 ### Setup Commands (Consolidate These):
+
 1. **`/src/cli/commands/claude-setup.ts`** (374 lines)
    - Standalone CLI implementation
    - Basic templates, dynamic CLAUDE.md generation
@@ -45,6 +46,7 @@
    - Status: KEEP AS PRIMARY, extend with missing features
 
 ### Generator Files (Enhance These):
+
 3. **`/src/claude-generator/claude-config-generator.ts`** (335 lines)
    - Project type detection
    - Agent and MCP tool configuration
@@ -55,6 +57,7 @@
    - Status: ADD MORE SECTIONS (custom SPARC, architecture, conventions)
 
 ### Template System (Complete These):
+
 5. **`/packages/@wundr/computer-setup/src/templates/template-manager.ts`**
    - Template copying and customization
    - Status: IMPLEMENT copyAgentTemplates(), copyConfigTemplates()
@@ -70,6 +73,7 @@
 ### 1. Agent Template Integration ❌
 
 **What's Missing**:
+
 - Agent configurations not copied to new projects
 - `.claude/agents/` directory not created
 - Agent setup instructions not in CLAUDE.md
@@ -77,6 +81,7 @@
 **Impact**: New projects must manually run `wundr claude-setup agents`
 
 **Fix**: Add `setupAgentTemplates()` method that:
+
 ```typescript
 // 1. Copy from /.claude/agents/templates/
 // 2. Generate project-specific agent config
@@ -89,6 +94,7 @@
 ### 2. MCP Tools Configuration ❌
 
 **What's Missing**:
+
 - Only stub `install.sh` created
 - No `.claude/mcp-config.json` generated
 - MCP tools not listed in CLAUDE.md
@@ -96,6 +102,7 @@
 **Impact**: MCP tools unavailable in new projects
 
 **Fix**: Add `setupMCPToolConfiguration()` method that:
+
 ```typescript
 // 1. Detect project type
 // 2. Get project-specific MCP tools
@@ -109,6 +116,7 @@
 ### 3. Configuration Files ❌
 
 **What's Missing**:
+
 - `config/eslint.config.js`
 - `config/prettier.config.js`
 - `config/jest.config.js`
@@ -123,6 +131,7 @@
 ### 4. Directory Structure ❌
 
 **What's Missing**:
+
 ```
 project/
 ├── .claude/                 ❌ Not created
@@ -139,6 +148,7 @@ project/
 ### 5. Git Hooks ❌
 
 **What's Missing**:
+
 - Pre-commit hooks not configured
 - husky not installed
 - lint-staged not set up
@@ -150,6 +160,7 @@ project/
 ## What Gets Copied Today vs What Should
 
 ### Currently Copied:
+
 ```
 ✓ CLAUDE.md (dynamic)
 ✓ mcp-tools/ (stub only)
@@ -162,6 +173,7 @@ project/
 ```
 
 ### Should Be Copied (After Fix):
+
 ```
 ✓ CLAUDE.md (enhanced, dynamic)
 ✓ .claude/ (complete directory)
@@ -180,25 +192,30 @@ project/
 ## Project Type Specific Configuration
 
 ### Monorepo
+
 - Agents: package-coordinator, build-orchestrator, version-manager, dependency-analyzer
 - Topology: **hierarchical** (12 max agents)
 - MCP Tools: monorepo_manage (+ common)
 
 ### React/Next.js
+
 - Agents: ui-designer, component-architect, accessibility-tester, performance-optimizer
 - Topology: **mesh** (6 max agents)
 - MCP Tools: ui_analyzer (+ common)
 
 ### Node.js/Backend
+
 - Agents: api-designer, security-auditor, performance-optimizer, database-architect
 - Topology: **mesh** (6 max agents)
 - MCP Tools: api_analyzer (+ common)
 
 ### CLI Tool
+
 - Agents: ux-designer, help-writer, integration-tester, platform-tester
 - Topology: **mesh** (6 max agents)
 
 ### Full-Stack
+
 - Agents: api-designer, ui-designer, integration-tester, security-auditor
 - Topology: **adaptive** (10 max agents)
 - MCP Tools: ui_analyzer (+ common)
@@ -207,43 +224,47 @@ project/
 
 ## Integration Effort Estimate
 
-| Phase | Task | Hours | Complexity |
-|-------|------|-------|-----------|
-| **1** | Code consolidation | 8 | High |
-| **2** | Agent template integration | 6 | Medium |
-| **3** | MCP configuration setup | 6 | Medium |
-| **4** | Directory structure creation | 4 | Low |
-| **5** | Config file generation | 6 | Medium |
-| **6** | Git hooks setup | 4 | Medium |
-| **7** | CLAUDE.md enhancement | 8 | Medium |
-| **8** | Template file creation | 8 | Low |
-| **9** | Testing & validation | 12 | High |
-| **10** | Documentation | 8 | Low |
-| **Total** | | **60 hours** | |
+| Phase     | Task                         | Hours        | Complexity |
+| --------- | ---------------------------- | ------------ | ---------- |
+| **1**     | Code consolidation           | 8            | High       |
+| **2**     | Agent template integration   | 6            | Medium     |
+| **3**     | MCP configuration setup      | 6            | Medium     |
+| **4**     | Directory structure creation | 4            | Low        |
+| **5**     | Config file generation       | 6            | Medium     |
+| **6**     | Git hooks setup              | 4            | Medium     |
+| **7**     | CLAUDE.md enhancement        | 8            | Medium     |
+| **8**     | Template file creation       | 8            | Low        |
+| **9**     | Testing & validation         | 12           | High       |
+| **10**    | Documentation                | 8            | Low        |
+| **Total** |                              | **60 hours** |            |
 
 ---
 
 ## Recommended Action Items (Priority Order)
 
 ### P0 - Critical (Do First)
+
 - [ ] Consolidate two `claude-setup.ts` files into unified class
 - [ ] Integrate `ClaudeConfigGenerator` into setup flow
 - [ ] Implement agent template copying
 - [ ] Implement MCP configuration generation
 
 ### P1 - High (Do Second)
+
 - [ ] Create full directory structure setup
 - [ ] Add configuration template copying
 - [ ] Enhance CLAUDE.md generation with custom sections
 - [ ] Setup Git hooks installation
 
 ### P2 - Medium (Do Third)
+
 - [ ] Create all template files (eslint, prettier, jest, etc.)
 - [ ] Add documentation templates
 - [ ] Implement script template generation
 - [ ] Add CI/CD workflow templates
 
 ### P3 - Low (Do Last)
+
 - [ ] Write comprehensive test suite
 - [ ] Create setup troubleshooting guide
 - [ ] Add template customization guide
@@ -254,6 +275,7 @@ project/
 ## Success Metrics
 
 ### After Implementation:
+
 - Single, unified setup command
 - 100% new projects include all necessary files
 - CLAUDE.md dynamically generated with project-specific content
@@ -264,6 +286,7 @@ project/
 - Complete directory structure created
 
 ### Quality Metrics:
+
 - 90%+ code coverage on setup code
 - Zero TypeScript errors
 - All linting passes
@@ -276,6 +299,7 @@ project/
 ## File Structure After Implementation
 
 ### New Project Directory:
+
 ```
 my-project/
 ├── .claude/
@@ -364,24 +388,28 @@ This analysis includes 4 comprehensive documents:
 ## Next Steps
 
 ### Immediate (This Sprint):
+
 1. Read and review all analysis documents
 2. Create implementation plan
 3. Set up feature branch
 4. Begin code consolidation
 
 ### Short-term (Next Sprint):
+
 1. Implement unified class
 2. Integrate generators
 3. Add template systems
 4. Write tests
 
 ### Medium-term (Following Sprint):
+
 1. Complete documentation
 2. Create template files
 3. End-to-end testing
 4. Team review & feedback
 
 ### Deployment (After Testing):
+
 1. Merge to master
 2. Update version/changelog
 3. Test in production scenario
@@ -393,13 +421,13 @@ This analysis includes 4 comprehensive documents:
 
 ### Risks & Mitigations:
 
-| Risk | Mitigation |
-|------|-----------|
-| Breaking existing setup flow | Keep backward compatibility, use feature flags |
-| Two implementations diverge further | Consolidate immediately |
-| Templates not complete | Create all templates before integration |
-| Performance degradation | Profile setup time, optimize hot paths |
-| User confusion | Clear documentation, migration guide |
+| Risk                                | Mitigation                                     |
+| ----------------------------------- | ---------------------------------------------- |
+| Breaking existing setup flow        | Keep backward compatibility, use feature flags |
+| Two implementations diverge further | Consolidate immediately                        |
+| Templates not complete              | Create all templates before integration        |
+| Performance degradation             | Profile setup time, optimize hot paths         |
+| User confusion                      | Clear documentation, migration guide           |
 
 ---
 
@@ -427,6 +455,7 @@ Before starting implementation, confirm:
 ## Report Quality Assurance
 
 **Analysis Verified**:
+
 - ✓ All file paths confirmed to exist
 - ✓ Code snippets extracted from actual files
 - ✓ Directory structures validated
@@ -436,20 +465,18 @@ Before starting implementation, confirm:
 - ✓ Effort estimates based on code size
 - ✓ Success criteria measurable
 
-**Report Created**: 2025-11-21
-**Analysis Status**: COMPLETE
-**Ready for**: Implementation Planning
+**Report Created**: 2025-11-21 **Analysis Status**: COMPLETE **Ready for**: Implementation Planning
 
 ---
 
 ## Document Map
 
-| Document | Purpose | Sections | Pages |
-|----------|---------|----------|-------|
-| `PROJECT_INITIALIZATION_ANALYSIS.md` | Complete technical analysis | 13 | ~20 |
-| `SETUP_INTEGRATION_GUIDE.md` | Implementation roadmap | 7 | ~15 |
-| `SETUP_CODE_SNIPPETS.md` | Code references | 7 | ~15 |
-| `SETUP_ANALYSIS_SUMMARY.md` | Executive summary | This document | ~8 |
+| Document                             | Purpose                     | Sections      | Pages |
+| ------------------------------------ | --------------------------- | ------------- | ----- |
+| `PROJECT_INITIALIZATION_ANALYSIS.md` | Complete technical analysis | 13            | ~20   |
+| `SETUP_INTEGRATION_GUIDE.md`         | Implementation roadmap      | 7             | ~15   |
+| `SETUP_CODE_SNIPPETS.md`             | Code references             | 7             | ~15   |
+| `SETUP_ANALYSIS_SUMMARY.md`          | Executive summary           | This document | ~8    |
 
 **Total Documentation**: ~58 pages of detailed analysis
 
@@ -458,6 +485,7 @@ Before starting implementation, confirm:
 **End of Executive Summary**
 
 For detailed information, see:
+
 - Implementation details → `SETUP_INTEGRATION_GUIDE.md`
 - Technical architecture → `PROJECT_INITIALIZATION_ANALYSIS.md`
 - Code references → `SETUP_CODE_SNIPPETS.md`

@@ -33,11 +33,21 @@ interface ProfileToolsConfig {
   languages: Record<string, boolean>;
   packageManagers: Record<string, boolean>;
   git: { enabled: boolean };
-  containers: { docker: boolean; dockerCompose: boolean; kubernetes?: boolean; podman?: boolean };
+  containers: {
+    docker: boolean;
+    dockerCompose: boolean;
+    kubernetes?: boolean;
+    podman?: boolean;
+  };
   cloudCLIs: Record<string, boolean>;
   databases: Record<string, boolean>;
   monitoring: Record<string, boolean>;
-  communication: { slack?: boolean; teams?: boolean; discord?: boolean; zoom?: boolean };
+  communication: {
+    slack?: boolean;
+    teams?: boolean;
+    discord?: boolean;
+    zoom?: boolean;
+  };
   frameworks?: Record<string, boolean>;
 }
 
@@ -64,7 +74,12 @@ export class ComputerSetupManager extends EventEmitter {
     this.configManager = new WundrConfigManager({});
     this.profileManager = new ProfileManager(this.configManager);
     const platform: SetupPlatform = {
-      os: process.platform === 'win32' ? 'win32' : process.platform === 'darwin' ? 'darwin' : 'linux',
+      os:
+        process.platform === 'win32'
+          ? 'win32'
+          : process.platform === 'darwin'
+            ? 'darwin'
+            : 'linux',
       arch: process.arch as 'x64' | 'arm64',
       node: process.version,
       shell: process.env.SHELL || 'bash',
@@ -79,11 +94,11 @@ export class ComputerSetupManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     logger.info('Initializing Computer Setup Manager');
-    
+
     await this.configManager.initialize();
     // Auto-discovery handled in constructor
     await this.configuratorService.initialize();
-    
+
     logger.info('Computer Setup Manager initialized');
   }
 
@@ -93,27 +108,27 @@ export class ComputerSetupManager extends EventEmitter {
   async getProfile(profileName: string): Promise<DeveloperProfile> {
     // Try to get the profile from the ProfileManager first
     const profile = await this.profileManager.getProfile(profileName);
-    
+
     if (profile) {
       return profile;
     }
-    
+
     // If not found, create a default one based on the name
     const normalizedName = profileName.toLowerCase().replace(/\s+/g, '');
-    
+
     // Map common profile names to full names
     const profileMap: Record<string, string> = {
-      'frontend': 'Frontend Developer',
-      'backend': 'Backend Developer',
-      'fullstack': 'Full Stack Developer',
-      'fullstackdeveloper': 'Full Stack Developer',
-      'devops': 'DevOps Engineer',
-      'ml': 'Machine Learning Engineer',
-      'mobile': 'Mobile Developer',
+      frontend: 'Frontend Developer',
+      backend: 'Backend Developer',
+      fullstack: 'Full Stack Developer',
+      fullstackdeveloper: 'Full Stack Developer',
+      devops: 'DevOps Engineer',
+      ml: 'Machine Learning Engineer',
+      mobile: 'Mobile Developer',
     };
 
     const fullProfileName = profileMap[normalizedName] || profileName;
-    
+
     // Return a default profile based on the name
     // Use unknown cast to handle simplified ProfileToolsConfig -> DeveloperProfile.tools type conversion
     return {
@@ -140,7 +155,9 @@ export class ComputerSetupManager extends EventEmitter {
           memoryAllocation: '2GB',
         },
       },
-      tools: this.getToolsForProfile(normalizedName) as unknown as DeveloperProfile['tools'],
+      tools: this.getToolsForProfile(
+        normalizedName
+      ) as unknown as DeveloperProfile['tools'],
       createdAt: new Date(),
     } as DeveloperProfile;
   }
@@ -164,7 +181,12 @@ export class ComputerSetupManager extends EventEmitter {
   private getToolsForProfile(profile: string): ProfileToolsConfig {
     const baseTools = {
       languages: { node: true, typescript: true, python: false },
-      packageManagers: { npm: true, pnpm: true, yarn: false, brew: process.platform === 'darwin' },
+      packageManagers: {
+        npm: true,
+        pnpm: true,
+        yarn: false,
+        brew: process.platform === 'darwin',
+      },
       git: { enabled: true },
       containers: { docker: true, dockerCompose: true, kubernetes: false },
       cloudCLIs: { aws: false, gcloud: false, azure: false },
@@ -191,7 +213,11 @@ export class ComputerSetupManager extends EventEmitter {
         return {
           ...baseTools,
           languages: { ...baseTools.languages, javascript: true, python: true },
-          containers: { ...baseTools.containers, docker: true, dockerCompose: true },
+          containers: {
+            ...baseTools.containers,
+            docker: true,
+            dockerCompose: true,
+          },
           frameworks: { react: true, nextjs: true },
           databases: { ...baseTools.databases, postgresql: true, redis: true },
         };
@@ -222,10 +248,10 @@ export class ComputerSetupManager extends EventEmitter {
     };
 
     try {
-      logger.info('Starting computer setup', { 
+      logger.info('Starting computer setup', {
         profile: options.profile.name,
         platform: options.platform.os,
-        mode: options.mode, 
+        mode: options.mode,
       });
 
       // Validate platform compatibility
@@ -233,7 +259,7 @@ export class ComputerSetupManager extends EventEmitter {
 
       // Load or create profile
       const profile = await this.profileManager.loadProfile(options.profile);
-      
+
       // Generate setup steps based on profile
       this.steps = await this.generateSetupSteps(profile, options);
       this.progress.totalSteps = this.steps.length;
@@ -256,16 +282,16 @@ export class ComputerSetupManager extends EventEmitter {
             await this.executeStep(step, options);
             result.completedSteps.push(step.id);
           }
-          
+
           this.progress.completedSteps++;
           this.progress.percentage = Math.round(
-            (this.progress.completedSteps / this.progress.totalSteps) * 100,
+            (this.progress.completedSteps / this.progress.totalSteps) * 100
           );
         } catch (error) {
           logger.error(`Failed to execute step: ${step.name}`, error);
           result.failedSteps.push(step.id);
           result.errors.push(error as Error);
-          
+
           if (step.required) {
             throw error;
           }
@@ -281,12 +307,11 @@ export class ComputerSetupManager extends EventEmitter {
       }
 
       result.success = result.failedSteps.length === 0;
-      logger.info('Computer setup completed', { 
+      logger.info('Computer setup completed', {
         success: result.success,
         completed: result.completedSteps.length,
-        failed: result.failedSteps.length, 
+        failed: result.failedSteps.length,
       });
-
     } catch (error) {
       logger.error('Computer setup failed', error);
       result.errors.push(error as Error);
@@ -303,7 +328,9 @@ export class ComputerSetupManager extends EventEmitter {
   private async validatePlatform(platform: SetupPlatform): Promise<void> {
     const isValid = await this.validator.validatePlatform(platform);
     if (!isValid) {
-      throw new Error(`Platform ${platform.os} ${platform.arch} is not supported`);
+      throw new Error(
+        `Platform ${platform.os} ${platform.arch} is not supported`
+      );
     }
   }
 
@@ -311,59 +338,78 @@ export class ComputerSetupManager extends EventEmitter {
    * Generate setup steps based on profile
    */
   private async generateSetupSteps(
-    profile: DeveloperProfile, 
-    options: SetupOptions,
+    profile: DeveloperProfile,
+    options: SetupOptions
   ): Promise<SetupStep[]> {
     const steps: SetupStep[] = [];
 
     // System prerequisites
-    steps.push(...await this.installerRegistry.getSystemSteps(options.platform));
+    steps.push(
+      ...(await this.installerRegistry.getSystemSteps(options.platform))
+    );
 
     // Development tools
     if (profile.tools?.languages?.node) {
-      steps.push(...await this.installerRegistry.getNodeSteps(profile.tools.languages.node));
+      steps.push(
+        ...(await this.installerRegistry.getNodeSteps(
+          profile.tools.languages.node
+        ))
+      );
     }
     if (profile.tools?.languages?.python) {
-      steps.push(...await this.installerRegistry.getPythonSteps(profile.tools.languages.python));
+      steps.push(
+        ...(await this.installerRegistry.getPythonSteps(
+          profile.tools.languages.python
+        ))
+      );
     }
 
     // Package managers
-    if (profile.tools?.packageManagers?.brew && options.platform.os === 'darwin') {
-      steps.push(...await this.installerRegistry.getBrewSteps());
+    if (
+      profile.tools?.packageManagers?.brew &&
+      options.platform.os === 'darwin'
+    ) {
+      steps.push(...(await this.installerRegistry.getBrewSteps()));
     }
 
     // Container tools
     if (profile.tools?.containers?.docker) {
-      steps.push(...await this.installerRegistry.getDockerSteps());
+      steps.push(...(await this.installerRegistry.getDockerSteps()));
     }
 
     // AI tools
     if (profile.preferences?.aiTools?.claudeCode) {
-      steps.push(...await this.installerRegistry.getClaudeCodeSteps());
+      steps.push(...(await this.installerRegistry.getClaudeCodeSteps()));
     }
     if (profile.preferences?.aiTools?.claudeFlow) {
-      steps.push(...await this.installerRegistry.getClaudeFlowSteps(
-        profile.preferences.aiTools.swarmAgents || [],
-      ));
+      steps.push(
+        ...(await this.installerRegistry.getClaudeFlowSteps(
+          profile.preferences.aiTools.swarmAgents || []
+        ))
+      );
     }
 
     // Communication tools
     if (profile.tools?.communication?.slack) {
-      steps.push(...await this.installerRegistry.getSlackSteps());
+      steps.push(...(await this.installerRegistry.getSlackSteps()));
     }
 
     // Git configuration
     if (profile.preferences?.gitConfig) {
-      steps.push(...await this.configuratorService.getGitConfigSteps(
-        profile.preferences.gitConfig,
-      ));
+      steps.push(
+        ...(await this.configuratorService.getGitConfigSteps(
+          profile.preferences.gitConfig
+        ))
+      );
     }
 
     // Editor setup
     if (profile.preferences?.editor) {
-      steps.push(...await this.configuratorService.getEditorSteps(
-        profile.preferences?.editor,
-      ));
+      steps.push(
+        ...(await this.configuratorService.getEditorSteps(
+          profile.preferences?.editor
+        ))
+      );
     }
 
     // Sort steps by dependencies
@@ -380,8 +426,8 @@ export class ComputerSetupManager extends EventEmitter {
 
     const visit = (step: SetupStep) => {
       if (visited.has(step.id)) {
-return;
-}
+        return;
+      }
       if (visiting.has(step.id)) {
         throw new Error(`Circular dependency detected: ${step.id}`);
       }
@@ -391,8 +437,8 @@ return;
       for (const depId of step.dependencies) {
         const dep = steps.find(s => s.id === depId);
         if (dep) {
-visit(dep);
-}
+          visit(dep);
+        }
       }
 
       visiting.delete(step.id);
@@ -412,9 +458,11 @@ visit(dep);
    */
   private async runPreflightChecks(options: SetupOptions): Promise<void> {
     logger.info('Running pre-flight checks');
-    
+
     // Check disk space
-    const hasSpace = await this.validator.checkDiskSpace(10 * 1024 * 1024 * 1024); // 10GB
+    const hasSpace = await this.validator.checkDiskSpace(
+      10 * 1024 * 1024 * 1024
+    ); // 10GB
     if (!hasSpace) {
       throw new Error('Insufficient disk space. At least 10GB required.');
     }
@@ -437,7 +485,10 @@ visit(dep);
   /**
    * Execute a single setup step
    */
-  private async executeStep(step: SetupStep, options: SetupOptions): Promise<void> {
+  private async executeStep(
+    step: SetupStep,
+    options: SetupOptions
+  ): Promise<void> {
     logger.info(`Executing step: ${step.name}`);
     this.progress.logs.push(`Starting: ${step.name}`);
 
@@ -457,7 +508,7 @@ visit(dep);
       logger.info(`Step completed: ${step.name}`);
     } catch (error) {
       this.progress.logs.push(`Failed: ${step.name} - ${error}`);
-      
+
       // Attempt rollback if available
       if (step.rollback) {
         logger.info(`Attempting rollback for: ${step.name}`);
@@ -468,7 +519,7 @@ visit(dep);
           logger.error(`Rollback failed for ${step.name}`, rollbackError);
         }
       }
-      
+
       throw error;
     }
   }
@@ -476,7 +527,10 @@ visit(dep);
   /**
    * Run post-setup tasks
    */
-  private async runPostSetup(profile: DeveloperProfile, _options: SetupOptions): Promise<void> {
+  private async runPostSetup(
+    profile: DeveloperProfile,
+    _options: SetupOptions
+  ): Promise<void> {
     logger.info('Running post-setup tasks');
 
     // Save profile for future use
@@ -498,7 +552,7 @@ visit(dep);
     // Configure AI agents
     if (profile.preferences.aiTools.claudeFlow) {
       await this.configuratorService.configureClaudeFlow(
-        profile.preferences.aiTools,
+        profile.preferences.aiTools
       );
     }
 
@@ -511,7 +565,7 @@ visit(dep);
   private async generateReport(
     profile: DeveloperProfile,
     options: SetupOptions,
-    result: SetupResult,
+    result: SetupResult
   ): Promise<SetupReport> {
     const report = {
       timestamp: new Date(),
@@ -528,7 +582,7 @@ visit(dep);
       process.env.HOME || '',
       '.wundr',
       'setup-reports',
-      `setup-${Date.now()}.json`,
+      `setup-${Date.now()}.json`
     );
     await fs.ensureDir(path.dirname(reportPath));
     await fs.writeJson(reportPath, report, { spaces: 2 });
@@ -540,22 +594,27 @@ visit(dep);
   /**
    * Generate next steps for the user
    */
-  private generateNextSteps(profile: DeveloperProfile, result: SetupResult): string[] {
+  private generateNextSteps(
+    profile: DeveloperProfile,
+    result: SetupResult
+  ): string[] {
     const steps: string[] = [];
 
     steps.push('1. Restart your terminal to apply shell configurations');
     steps.push('2. Run "wundr doctor" to verify installation');
-    
+
     if (profile.preferences.gitConfig.sshKey) {
       steps.push('3. Add your SSH key to GitHub/GitLab');
     }
-    
+
     if (profile.tools?.communication?.slack) {
       steps.push('4. Sign in to Slack workspaces');
     }
-    
+
     if (result.failedSteps.length > 0) {
-      steps.push('5. Review failed steps and run "wundr setup --retry" to complete');
+      steps.push(
+        '5. Review failed steps and run "wundr setup --retry" to complete'
+      );
     }
 
     steps.push('6. Review team onboarding documentation');

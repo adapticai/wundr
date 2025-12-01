@@ -361,22 +361,14 @@
       "/apps/web/lib/services/orchestrator-coordination-service.ts",
       "/apps/web/lib/services/orchestrator-analytics-service.ts"
     ],
-    "validations": [
-      "/apps/web/lib/validations/orchestrator-coordination.ts"
-    ],
-    "types": [
-      "/packages/@neolith/core/src/types/vp.ts"
-    ],
+    "validations": ["/apps/web/lib/validations/orchestrator-coordination.ts"],
+    "types": ["/packages/@neolith/core/src/types/vp.ts"],
     "components": [
       "/apps/web/app/(workspace)/[workspaceId]/analytics/page.tsx",
       "/apps/web/components/analytics/analytics-dashboard.tsx"
     ],
-    "database": [
-      "/packages/@neolith/database/prisma/schema.prisma"
-    ],
-    "packages": [
-      "/packages/@wundr/agent-observability/package.json"
-    ]
+    "database": ["/packages/@neolith/database/prisma/schema.prisma"],
+    "packages": ["/packages/@wundr/agent-observability/package.json"]
   },
   "conclusion": {
     "summary": "Phase 2 Wave 2.2 is approximately 55% complete. Cross-VP coordination (delegation, collaboration) is well-implemented. However, critical features like consensus mechanisms, work rhythm enforcement, and observability integration are missing or incomplete.",

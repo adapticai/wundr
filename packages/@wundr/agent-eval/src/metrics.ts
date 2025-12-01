@@ -72,7 +72,7 @@ export function calculateMedian(values: number[]): number {
  */
 export function calculatePercentile(
   values: number[],
-  percentile: number,
+  percentile: number
 ): number {
   if (values.length === 0) {
     return 0;
@@ -97,7 +97,7 @@ export function calculatePercentile(
 export function calculateConfidenceInterval(
   values: number[],
   confidence: number = 0.95,
-  iterations: number = 1000,
+  iterations: number = 1000
 ): { lower: number; upper: number } {
   if (values.length === 0) {
     return { lower: 0, upper: 0 };
@@ -110,7 +110,7 @@ export function calculateConfidenceInterval(
   for (let i = 0; i < iterations; i++) {
     const sample = Array.from(
       { length: values.length },
-      () => values[Math.floor(Math.random() * values.length)],
+      () => values[Math.floor(Math.random() * values.length)]
     );
     bootstrapMeans.push(calculateMean(sample));
   }
@@ -134,7 +134,7 @@ export function calculateConfidenceInterval(
  */
 export function calculateWeightedScore(
   criterionResults: CriterionResult[],
-  rubric: GradingRubric,
+  rubric: GradingRubric
 ): number {
   if (criterionResults.length === 0) {
     return 0;
@@ -158,7 +158,7 @@ export function calculateWeightedScore(
 export function determinePassStatus(
   criterionResults: CriterionResult[],
   overallScore: number,
-  rubric: GradingRubric,
+  rubric: GradingRubric
 ): boolean {
   // Check overall threshold
   if (overallScore < rubric.passingThreshold) {
@@ -200,7 +200,7 @@ export function calculateConsistencyScore(iterationScores: number[]): number {
  * @returns Summary statistics
  */
 export function generateSummary(
-  testResults: TestCaseResult[],
+  testResults: TestCaseResult[]
 ): EvalResultsSummary {
   if (testResults.length === 0) {
     return {
@@ -330,7 +330,7 @@ export function calculateScoreTrend(evalResults: EvalResults[]): {
  */
 export function compareEvalRuns(
   baseline: EvalResults,
-  current: EvalResults,
+  current: EvalResults
 ): {
   overallChange: number;
   criterionChanges: Record<string, { change: number; significant: boolean }>;
@@ -347,7 +347,7 @@ export function compareEvalRuns(
     { change: number; significant: boolean }
   > = {};
   for (const [criterionId, currentAvg] of Object.entries(
-    current.summary.criterionAverages,
+    current.summary.criterionAverages
   )) {
     const baselineAvg = baseline.summary.criterionAverages[criterionId] || 0;
     const change = currentAvg - baselineAvg;
@@ -359,10 +359,10 @@ export function compareEvalRuns(
 
   // Find new failures and fixed tests
   const baselinePassedIds = new Set(
-    baseline.testResults.filter(r => r.passed).map(r => r.testCaseId),
+    baseline.testResults.filter(r => r.passed).map(r => r.testCaseId)
   );
   const _currentPassedIds = new Set(
-    current.testResults.filter(r => r.passed).map(r => r.testCaseId),
+    current.testResults.filter(r => r.passed).map(r => r.testCaseId)
   );
 
   const newFailures = current.testResults
@@ -375,10 +375,10 @@ export function compareEvalRuns(
 
   // Calculate consistency change
   const baselineConsistency = calculateConsistencyScore(
-    baseline.testResults.map(r => r.score),
+    baseline.testResults.map(r => r.score)
   );
   const currentConsistency = calculateConsistencyScore(
-    current.testResults.map(r => r.score),
+    current.testResults.map(r => r.score)
   );
   const consistencyChange = currentConsistency - baselineConsistency;
 
@@ -402,7 +402,7 @@ export function compareEvalRuns(
  */
 export function analyzeFailures(evalResults: EvalResults): FailureAnalysis {
   const failedResults = evalResults.testResults.filter(
-    r => !r.passed || r.error,
+    r => !r.passed || r.error
   );
   const failedTestCaseIds = [...new Set(failedResults.map(r => r.testCaseId))];
 
@@ -448,8 +448,8 @@ export function analyzeFailures(evalResults: EvalResults): FailureAnalysis {
         matchingTestCases: failedResults
           .filter(r =>
             r.criterionResults.some(
-              cr => cr.criterionId === criterion.criterionId && !cr.passed,
-            ),
+              cr => cr.criterionId === criterion.criterionId && !cr.passed
+            )
           )
           .map(r => r.testCaseId),
         frequency: criterion.failureRate,
@@ -479,24 +479,24 @@ export function analyzeFailures(evalResults: EvalResults): FailureAnalysis {
     commonFailingCriteria[0].failureRate >= 0.5
   ) {
     rootCauses.push(
-      `Primary weakness in ${commonFailingCriteria[0].criterionName} (avg score: ${commonFailingCriteria[0].avgScore.toFixed(1)})`,
+      `Primary weakness in ${commonFailingCriteria[0].criterionName} (avg score: ${commonFailingCriteria[0].avgScore.toFixed(1)})`
     );
     recommendations.push(
-      `Improve agent's ${commonFailingCriteria[0].criterionName.toLowerCase()} through targeted training or prompt refinement`,
+      `Improve agent's ${commonFailingCriteria[0].criterionName.toLowerCase()} through targeted training or prompt refinement`
     );
   }
 
   if (erroredResults.length > 0) {
     rootCauses.push('Agent execution instability causing test failures');
     recommendations.push(
-      'Increase timeout limits and implement better error handling',
+      'Increase timeout limits and implement better error handling'
     );
   }
 
   if (failedResults.length > evalResults.testResults.length * 0.5) {
     rootCauses.push('Widespread performance issues across the test suite');
     recommendations.push(
-      'Consider fundamental improvements to the agent before re-evaluation',
+      'Consider fundamental improvements to the agent before re-evaluation'
     );
   }
 
@@ -557,7 +557,7 @@ export function aggregateIterationMetrics(results: TestCaseResult[]): {
  */
 export function calculateInterRaterReliability(
   llmScores: number[],
-  humanScores: number[],
+  humanScores: number[]
 ): {
   correlation: number;
   meanAbsoluteError: number;
@@ -593,13 +593,13 @@ export function calculateInterRaterReliability(
 
   // Calculate mean absolute error
   const absoluteErrors = llmScores.map((score, i) =>
-    Math.abs(score - humanScores[i]),
+    Math.abs(score - humanScores[i])
   );
   const meanAbsoluteError = calculateMean(absoluteErrors);
 
   // Calculate exact agreement (within 1 point)
   const agreementCount = llmScores.filter(
-    (score, i) => Math.abs(score - humanScores[i]) <= 1,
+    (score, i) => Math.abs(score - humanScores[i]) <= 1
   ).length;
   const agreement = agreementCount / n;
 

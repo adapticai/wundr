@@ -69,7 +69,7 @@ export function GridView({
   // Get unique participants (filter duplicates by sid)
   const participants = useMemo(() => {
     const participantMap = new Map<string, TrackReferenceOrPlaceholder>();
-    tracks.forEach((track) => {
+    tracks.forEach(track => {
       if (track.participant) {
         participantMap.set(track.participant.sid, track);
       }
@@ -79,7 +79,7 @@ export function GridView({
 
   const layout = useMemo(
     () => getGridLayout(participants.length),
-    [participants.length],
+    [participants.length]
   );
 
   // Determine tile size based on grid
@@ -92,10 +92,12 @@ export function GridView({
 
   if (participants.length === 0) {
     return (
-      <div className={clsx('flex items-center justify-center h-full', className)}>
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">No participants yet</p>
-          <p className="text-sm mt-1">Waiting for others to join...</p>
+      <div
+        className={clsx('flex items-center justify-center h-full', className)}
+      >
+        <div className='text-center text-muted-foreground'>
+          <p className='text-lg font-medium'>No participants yet</p>
+          <p className='text-sm mt-1'>Waiting for others to join...</p>
         </div>
       </div>
     );
@@ -108,12 +110,12 @@ export function GridView({
         layout.cols,
         layout.rows,
         'auto-rows-fr',
-        className,
+        className
       )}
-      role="region"
-      aria-label="Video grid"
+      role='region'
+      aria-label='Video grid'
     >
-      {participants.map((trackRef) => (
+      {participants.map(trackRef => (
         <ParticipantTile
           key={trackRef.participant?.sid || 'unknown'}
           participant={trackRef.participant!}
@@ -121,7 +123,7 @@ export function GridView({
           isPinned={trackRef.participant?.sid === pinnedParticipantId}
           onPin={onPin}
           size={tileSize}
-          className="group min-h-0 min-w-0"
+          className='group min-h-0 min-w-0'
         />
       ))}
     </div>

@@ -1,10 +1,12 @@
 # Huddle Feature Implementation
 
-This document describes the complete implementation of the Huddle feature for channels in the Neolith Next.js app.
+This document describes the complete implementation of the Huddle feature for channels in the
+Neolith Next.js app.
 
 ## Overview
 
-The Huddle feature provides Slack-like audio/video huddles for channels, allowing team members to quickly start informal voice or video conversations directly from any channel.
+The Huddle feature provides Slack-like audio/video huddles for channels, allowing team members to
+quickly start informal voice or video conversations directly from any channel.
 
 ## Components
 
@@ -13,12 +15,14 @@ The Huddle feature provides Slack-like audio/video huddles for channels, allowin
 #### 1. HuddleButton (`components/channel/huddle-button.tsx`)
 
 Button component for the channel header that:
+
 - Shows "Huddle" when no active huddle exists
 - Shows "Join Huddle (N)" when there's an active huddle
 - Shows "In Huddle (N)" when user is participating
 - Provides dropdown options for video or audio-only modes
 
 **Props:**
+
 ```typescript
 interface HuddleButtonProps {
   hasActiveHuddle?: boolean;
@@ -35,6 +39,7 @@ interface HuddleButtonProps {
 #### 2. HuddleBar (`components/channel/huddle-bar.tsx`)
 
 Floating bar displayed at the bottom of the screen when in a huddle:
+
 - Shows channel name
 - Displays participant avatars (up to 5, with overflow count)
 - Audio/video mute controls
@@ -42,6 +47,7 @@ Floating bar displayed at the bottom of the screen when in a huddle:
 - Click to expand to full view
 
 **Props:**
+
 ```typescript
 interface HuddleBarProps {
   huddleId: string;
@@ -61,12 +67,14 @@ interface HuddleBarProps {
 #### 3. HuddlePip (`components/channel/huddle-pip.tsx`)
 
 Picture-in-picture floating window:
+
 - Draggable around the screen
 - Shows participant video tiles (up to 6)
 - Quick controls for audio/video
 - Expand and leave buttons
 
 **Props:**
+
 ```typescript
 interface HuddlePipProps {
   channelName: string;
@@ -84,11 +92,13 @@ interface HuddlePipProps {
 #### 4. HuddleDialog (`components/channel/huddle-dialog.tsx`)
 
 Full-screen modal dialog with video interface:
+
 - Uses the `VideoRoom` component for call UI
 - Full LiveKit integration
 - Modal with close/minimize options
 
 **Props:**
+
 ```typescript
 interface HuddleDialogProps {
   open: boolean;
@@ -109,6 +119,7 @@ interface HuddleDialogProps {
 All endpoints are scoped to a specific channel:
 
 #### 1. Start Huddle
+
 ```
 POST /api/channels/:channelId/huddle/start
 ```
@@ -116,6 +127,7 @@ POST /api/channels/:channelId/huddle/start
 Creates a new huddle in the channel. Only one active huddle per channel is allowed.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -139,6 +151,7 @@ Creates a new huddle in the channel. Only one active huddle per channel is allow
 ```
 
 #### 2. Join Huddle
+
 ```
 POST /api/channels/:channelId/huddle/join
 ```
@@ -146,6 +159,7 @@ POST /api/channels/:channelId/huddle/join
 Join the active huddle in the channel and receive LiveKit token.
 
 **Request Body:**
+
 ```json
 {
   "displayName": "John Doe",
@@ -154,6 +168,7 @@ Join the active huddle in the channel and receive LiveKit token.
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -170,6 +185,7 @@ Join the active huddle in the channel and receive LiveKit token.
 ```
 
 #### 3. Leave Huddle
+
 ```
 POST /api/channels/:channelId/huddle/leave
 ```
@@ -177,6 +193,7 @@ POST /api/channels/:channelId/huddle/leave
 Leave the current huddle. If the last participant leaves, the huddle ends automatically.
 
 **Response:**
+
 ```json
 {
   "message": "Left huddle successfully"
@@ -184,6 +201,7 @@ Leave the current huddle. If the last participant leaves, the huddle ends automa
 ```
 
 #### 4. Get Huddle Status
+
 ```
 GET /api/channels/:channelId/huddle/status
 ```
@@ -191,6 +209,7 @@ GET /api/channels/:channelId/huddle/status
 Get the current status of the channel's huddle.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -221,25 +240,27 @@ Returns `null` if no active huddle.
 React hook for managing huddle state in a channel.
 
 **Usage:**
+
 ```typescript
 const {
-  huddle,           // Current huddle data
-  isInHuddle,       // Whether user is in the huddle
-  isLoading,        // Loading state
-  error,            // Any error
-  joinData,         // LiveKit token and room info when joined
-  startHuddle,      // Start a new huddle
-  joinHuddle,       // Join existing huddle
-  leaveHuddle,      // Leave current huddle
-  refreshStatus,    // Manually refresh status
+  huddle, // Current huddle data
+  isInHuddle, // Whether user is in the huddle
+  isLoading, // Loading state
+  error, // Any error
+  joinData, // LiveKit token and room info when joined
+  startHuddle, // Start a new huddle
+  joinHuddle, // Join existing huddle
+  leaveHuddle, // Leave current huddle
+  refreshStatus, // Manually refresh status
 } = useChannelHuddle({
   channelId: 'ch_123',
-  pollInterval: 30000,  // Poll every 30s
-  autoPoll: true,       // Enable auto-polling
+  pollInterval: 30000, // Poll every 30s
+  autoPoll: true, // Enable auto-polling
 });
 ```
 
 **Features:**
+
 - Automatic polling for huddle status updates
 - Manages LiveKit token state
 - Handles all API calls
@@ -323,6 +344,7 @@ interface ChannelSettings {
 ```
 
 This approach:
+
 - Allows one active huddle per channel
 - Doesn't require database migrations
 - Simple to implement and query
@@ -339,6 +361,7 @@ The huddle feature uses LiveKit for real-time audio/video:
    - Video mode: camera, microphone, screen share
 
 **Environment Variables:**
+
 ```bash
 LIVEKIT_URL=wss://your-livekit-server.com
 LIVEKIT_API_KEY=your-api-key
@@ -384,11 +407,13 @@ Users can switch between views using minimize/expand buttons.
 ## Real-time Updates
 
 The hook polls the status endpoint every 30 seconds (configurable) to:
+
 - Update participant count
 - Detect if huddle ended
 - Sync huddle state across tabs
 
 For production, consider using:
+
 - WebSocket connections for real-time updates
 - LiveKit webhooks for participant events
 - Server-sent events (SSE) for status changes
@@ -396,6 +421,7 @@ For production, consider using:
 ## Permissions
 
 Channel-based permissions apply:
+
 - Must be a channel member to start/join huddles
 - Archived channels cannot have huddles
 - Private channels: huddles inherit privacy
@@ -462,6 +488,7 @@ apps/web/
 ## Dependencies
 
 Required packages:
+
 - `@livekit/components-react` - LiveKit React components
 - `livekit-client` - LiveKit client SDK
 - `lucide-react` - Icons

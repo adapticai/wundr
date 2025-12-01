@@ -2,7 +2,13 @@
 
 import * as React from 'react';
 import { Save, X, AlertCircle, Loader2, Lightbulb } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,8 +98,12 @@ export function CharterEditor({
   const [newValue, setNewValue] = React.useState('');
 
   // Personality
-  const [selectedTraits, setSelectedTraits] = React.useState<PersonalityTrait[]>(
-    initialCharter?.personality?.traits ? [...(initialCharter.personality.traits as PersonalityTrait[])] : []
+  const [selectedTraits, setSelectedTraits] = React.useState<
+    PersonalityTrait[]
+  >(
+    initialCharter?.personality?.traits
+      ? [...(initialCharter.personality.traits as PersonalityTrait[])]
+      : []
   );
   const [communicationStyle, setCommunicationStyle] = React.useState(
     initialCharter?.personality?.communicationStyle || ''
@@ -101,7 +111,9 @@ export function CharterEditor({
   const [decisionMakingStyle, setDecisionMakingStyle] = React.useState(
     initialCharter?.personality?.decisionMakingStyle || ''
   );
-  const [background, setBackground] = React.useState(initialCharter?.personality?.background || '');
+  const [background, setBackground] = React.useState(
+    initialCharter?.personality?.background || ''
+  );
 
   // Expertise
   const [expertise, setExpertise] = React.useState<string[]>(
@@ -131,7 +143,8 @@ export function CharterEditor({
     initialCharter?.operationalSettings?.workHours?.end || '17:00'
   );
   const [timezone, setTimezone] = React.useState(
-    initialCharter?.operationalSettings?.workHours?.timezone || 'America/New_York'
+    initialCharter?.operationalSettings?.workHours?.timezone ||
+      'America/New_York'
   );
   const [responseTimeTarget, setResponseTimeTarget] = React.useState(
     initialCharter?.operationalSettings?.responseTimeTarget || 30
@@ -178,7 +191,10 @@ export function CharterEditor({
       },
     };
 
-    localStorage.setItem(`charter-draft-${orchestratorId}`, JSON.stringify(draft));
+    localStorage.setItem(
+      `charter-draft-${orchestratorId}`,
+      JSON.stringify(draft)
+    );
     setLastSaved(new Date());
   }, [
     orchestratorId,
@@ -218,15 +234,25 @@ export function CharterEditor({
         setBackground(draft.personality?.background || '');
         setExpertise(draft.expertise || []);
         setTone(draft.communicationPreferences?.tone || 'professional');
-        setResponseLength(draft.communicationPreferences?.responseLength || 'balanced');
+        setResponseLength(
+          draft.communicationPreferences?.responseLength || 'balanced'
+        );
         setFormality(draft.communicationPreferences?.formality || 'medium');
         setUseEmoji(draft.communicationPreferences?.useEmoji || false);
-        setWorkHoursStart(draft.operationalSettings?.workHours?.start || '09:00');
+        setWorkHoursStart(
+          draft.operationalSettings?.workHours?.start || '09:00'
+        );
         setWorkHoursEnd(draft.operationalSettings?.workHours?.end || '17:00');
-        setTimezone(draft.operationalSettings?.workHours?.timezone || 'America/New_York');
-        setResponseTimeTarget(draft.operationalSettings?.responseTimeTarget || 30);
+        setTimezone(
+          draft.operationalSettings?.workHours?.timezone || 'America/New_York'
+        );
+        setResponseTimeTarget(
+          draft.operationalSettings?.responseTimeTarget || 30
+        );
         setAutoEscalation(draft.operationalSettings?.autoEscalation || false);
-        setEscalationThreshold(draft.operationalSettings?.escalationThreshold || 60);
+        setEscalationThreshold(
+          draft.operationalSettings?.escalationThreshold || 60
+        );
       } catch (error) {
         console.error('Failed to load draft:', error);
       }
@@ -238,7 +264,7 @@ export function CharterEditor({
    */
   const handleAddValue = React.useCallback(() => {
     if (newValue.trim() && !values.includes(newValue.trim())) {
-      setValues((prev) => [...prev, newValue.trim()]);
+      setValues(prev => [...prev, newValue.trim()]);
       setNewValue('');
       setIsDirty(true);
     }
@@ -248,7 +274,7 @@ export function CharterEditor({
    * Handle removing a value
    */
   const handleRemoveValue = React.useCallback((value: string) => {
-    setValues((prev) => prev.filter((v) => v !== value));
+    setValues(prev => prev.filter(v => v !== value));
     setIsDirty(true);
   }, []);
 
@@ -256,8 +282,8 @@ export function CharterEditor({
    * Handle toggling a personality trait
    */
   const handleTraitToggle = React.useCallback((trait: PersonalityTrait) => {
-    setSelectedTraits((prev) =>
-      prev.includes(trait) ? prev.filter((t) => t !== trait) : [...prev, trait]
+    setSelectedTraits(prev =>
+      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait]
     );
     setIsDirty(true);
   }, []);
@@ -267,7 +293,7 @@ export function CharterEditor({
    */
   const handleAddExpertise = React.useCallback(() => {
     if (newExpertise.trim() && !expertise.includes(newExpertise.trim())) {
-      setExpertise((prev) => [...prev, newExpertise.trim()]);
+      setExpertise(prev => [...prev, newExpertise.trim()]);
       setNewExpertise('');
       setIsDirty(true);
     }
@@ -277,7 +303,7 @@ export function CharterEditor({
    * Handle removing expertise
    */
   const handleRemoveExpertise = React.useCallback((item: string) => {
-    setExpertise((prev) => prev.filter((e) => e !== item));
+    setExpertise(prev => prev.filter(e => e !== item));
     setIsDirty(true);
   }, []);
 
@@ -319,7 +345,15 @@ export function CharterEditor({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [mission, vision, values, selectedTraits, communicationStyle, decisionMakingStyle, expertise]);
+  }, [
+    mission,
+    vision,
+    values,
+    selectedTraits,
+    communicationStyle,
+    decisionMakingStyle,
+    expertise,
+  ]);
 
   /**
    * Handle save
@@ -409,18 +443,19 @@ export function CharterEditor({
 
   return (
     <Card className={cn('flex h-full flex-col overflow-hidden', className)}>
-      <CardHeader className="border-b">
-        <div className="flex items-start justify-between">
+      <CardHeader className='border-b'>
+        <div className='flex items-start justify-between'>
           <div>
             <CardTitle>Charter Editor</CardTitle>
             <CardDescription>
-              Define the mission, values, and operational parameters for this orchestrator
+              Define the mission, values, and operational parameters for this
+              orchestrator
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {lastSaved && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Save className="h-3 w-3" />
+              <div className='flex items-center gap-1 text-xs text-muted-foreground'>
+                <Save className='h-3 w-3' />
                 <span>Draft saved {lastSaved.toLocaleTimeString()}</span>
               </div>
             )}
@@ -428,86 +463,91 @@ export function CharterEditor({
         </div>
       </CardHeader>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
-        <div className="border-b px-6">
-          <TabsList className="h-12">
-            <TabsTrigger value="mission">Mission & Vision</TabsTrigger>
-            <TabsTrigger value="values">Values & Personality</TabsTrigger>
-            <TabsTrigger value="expertise">Expertise</TabsTrigger>
-            <TabsTrigger value="communication">Communication</TabsTrigger>
-            <TabsTrigger value="operations">Operations</TabsTrigger>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className='flex flex-1 flex-col overflow-hidden'
+      >
+        <div className='border-b px-6'>
+          <TabsList className='h-12'>
+            <TabsTrigger value='mission'>Mission & Vision</TabsTrigger>
+            <TabsTrigger value='values'>Values & Personality</TabsTrigger>
+            <TabsTrigger value='expertise'>Expertise</TabsTrigger>
+            <TabsTrigger value='communication'>Communication</TabsTrigger>
+            <TabsTrigger value='operations'>Operations</TabsTrigger>
           </TabsList>
         </div>
 
-        <CardContent className="flex-1 overflow-y-auto p-6">
+        <CardContent className='flex-1 overflow-y-auto p-6'>
           {/* Mission & Vision Tab */}
-          <TabsContent value="mission" className="m-0 space-y-6">
-            <div className="space-y-4">
+          <TabsContent value='mission' className='m-0 space-y-6'>
+            <div className='space-y-4'>
               <Alert>
-                <Lightbulb className="h-4 w-4" />
+                <Lightbulb className='h-4 w-4' />
                 <AlertDescription>
-                  Define the core purpose and long-term aspirations of this orchestrator.
+                  Define the core purpose and long-term aspirations of this
+                  orchestrator.
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-2">
-                <Label htmlFor="mission" className="required">
+              <div className='space-y-2'>
+                <Label htmlFor='mission' className='required'>
                   Mission Statement
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
                 <Textarea
-                  id="mission"
+                  id='mission'
                   value={mission}
-                  onChange={(e) => {
+                  onChange={e => {
                     setMission(e.target.value);
                     setIsDirty(true);
                     if (errors.mission) {
-                      setErrors((prev) => ({ ...prev, mission: undefined }));
+                      setErrors(prev => ({ ...prev, mission: undefined }));
                     }
                   }}
-                  placeholder="What is the primary purpose of this orchestrator?"
+                  placeholder='What is the primary purpose of this orchestrator?'
                   className={cn(errors.mission && 'border-destructive')}
                   rows={4}
                   disabled={isLoading}
                 />
                 {errors.mission && (
-                  <p className="flex items-center gap-1 text-xs text-destructive">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className='flex items-center gap-1 text-xs text-destructive'>
+                    <AlertCircle className='h-3 w-3' />
                     {errors.mission}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   A clear statement of what this orchestrator aims to accomplish
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="vision" className="required">
+              <div className='space-y-2'>
+                <Label htmlFor='vision' className='required'>
                   Vision Statement
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
                 <Textarea
-                  id="vision"
+                  id='vision'
                   value={vision}
-                  onChange={(e) => {
+                  onChange={e => {
                     setVision(e.target.value);
                     setIsDirty(true);
                     if (errors.vision) {
-                      setErrors((prev) => ({ ...prev, vision: undefined }));
+                      setErrors(prev => ({ ...prev, vision: undefined }));
                     }
                   }}
-                  placeholder="What is the long-term vision for this orchestrator?"
+                  placeholder='What is the long-term vision for this orchestrator?'
                   className={cn(errors.vision && 'border-destructive')}
                   rows={4}
                   disabled={isLoading}
                 />
                 {errors.vision && (
-                  <p className="flex items-center gap-1 text-xs text-destructive">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className='flex items-center gap-1 text-xs text-destructive'>
+                    <AlertCircle className='h-3 w-3' />
                     {errors.vision}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   The aspirational future state this orchestrator works towards
                 </p>
               </div>
@@ -515,37 +555,38 @@ export function CharterEditor({
           </TabsContent>
 
           {/* Values & Personality Tab */}
-          <TabsContent value="values" className="m-0 space-y-6">
-            <div className="space-y-4">
+          <TabsContent value='values' className='m-0 space-y-6'>
+            <div className='space-y-4'>
               <Alert>
-                <Lightbulb className="h-4 w-4" />
+                <Lightbulb className='h-4 w-4' />
                 <AlertDescription>
-                  Define the core values and personality traits that guide this orchestrator's behavior.
+                  Define the core values and personality traits that guide this
+                  orchestrator's behavior.
                 </AlertDescription>
               </Alert>
 
               {/* Core Values */}
-              <div className="space-y-2">
-                <Label htmlFor="newValue" className="required">
+              <div className='space-y-2'>
+                <Label htmlFor='newValue' className='required'>
                   Core Values
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
-                <div className="flex gap-2">
+                <div className='flex gap-2'>
                   <Input
-                    id="newValue"
+                    id='newValue'
                     value={newValue}
-                    onChange={(e) => setNewValue(e.target.value)}
-                    onKeyDown={(e) => {
+                    onChange={e => setNewValue(e.target.value)}
+                    onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         handleAddValue();
                       }
                     }}
-                    placeholder="Add a core value..."
+                    placeholder='Add a core value...'
                     disabled={isLoading}
                   />
                   <Button
-                    type="button"
+                    type='button'
                     onClick={handleAddValue}
                     disabled={isLoading || !newValue.trim()}
                   >
@@ -553,26 +594,26 @@ export function CharterEditor({
                   </Button>
                 </div>
                 {errors.values && (
-                  <p className="flex items-center gap-1 text-xs text-destructive">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className='flex items-center gap-1 text-xs text-destructive'>
+                    <AlertCircle className='h-3 w-3' />
                     {errors.values}
                   </p>
                 )}
                 {values.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {values.map((value) => (
+                  <div className='mt-3 flex flex-wrap gap-2'>
+                    {values.map(value => (
                       <span
                         key={value}
-                        className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm"
+                        className='inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm'
                       >
                         {value}
                         <button
-                          type="button"
+                          type='button'
                           onClick={() => handleRemoveValue(value)}
                           disabled={isLoading}
-                          className="ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/10"
+                          className='ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/10'
                         >
-                          <X className="h-3 w-3" />
+                          <X className='h-3 w-3' />
                         </button>
                       </span>
                     ))}
@@ -581,16 +622,16 @@ export function CharterEditor({
               </div>
 
               {/* Personality Traits */}
-              <div className="space-y-2">
-                <Label className="required">
+              <div className='space-y-2'>
+                <Label className='required'>
                   Personality Traits
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
-                <div className="flex flex-wrap gap-2">
-                  {PERSONALITY_TRAITS.map((trait) => (
+                <div className='flex flex-wrap gap-2'>
+                  {PERSONALITY_TRAITS.map(trait => (
                     <button
                       key={trait}
-                      type="button"
+                      type='button'
                       onClick={() => handleTraitToggle(trait)}
                       disabled={isLoading}
                       className={cn(
@@ -605,105 +646,108 @@ export function CharterEditor({
                   ))}
                 </div>
                 {errors.personality && (
-                  <p className="flex items-center gap-1 text-xs text-destructive">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className='flex items-center gap-1 text-xs text-destructive'>
+                    <AlertCircle className='h-3 w-3' />
                     {errors.personality}
                   </p>
                 )}
               </div>
 
               {/* Communication Style */}
-              <div className="space-y-2">
-                <Label htmlFor="communicationStyle" className="required">
+              <div className='space-y-2'>
+                <Label htmlFor='communicationStyle' className='required'>
                   Communication Style
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
                 <Input
-                  id="communicationStyle"
+                  id='communicationStyle'
                   value={communicationStyle}
-                  onChange={(e) => {
+                  onChange={e => {
                     setCommunicationStyle(e.target.value);
                     setIsDirty(true);
                   }}
-                  placeholder="e.g., Direct and concise, Collaborative and inclusive"
+                  placeholder='e.g., Direct and concise, Collaborative and inclusive'
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   How this orchestrator prefers to communicate
                 </p>
               </div>
 
               {/* Decision Making Style */}
-              <div className="space-y-2">
-                <Label htmlFor="decisionMakingStyle" className="required">
+              <div className='space-y-2'>
+                <Label htmlFor='decisionMakingStyle' className='required'>
                   Decision Making Style
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
                 <Input
-                  id="decisionMakingStyle"
+                  id='decisionMakingStyle'
                   value={decisionMakingStyle}
-                  onChange={(e) => {
+                  onChange={e => {
                     setDecisionMakingStyle(e.target.value);
                     setIsDirty(true);
                   }}
-                  placeholder="e.g., Data-driven, Consensus-based, Intuitive"
+                  placeholder='e.g., Data-driven, Consensus-based, Intuitive'
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   How this orchestrator approaches decision making
                 </p>
               </div>
 
               {/* Background */}
-              <div className="space-y-2">
-                <Label htmlFor="background">Background Context</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='background'>Background Context</Label>
                 <Textarea
-                  id="background"
+                  id='background'
                   value={background}
-                  onChange={(e) => {
+                  onChange={e => {
                     setBackground(e.target.value);
                     setIsDirty(true);
                   }}
-                  placeholder="Provide any relevant background or context..."
+                  placeholder='Provide any relevant background or context...'
                   rows={3}
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">Optional contextual information</p>
+                <p className='text-xs text-muted-foreground'>
+                  Optional contextual information
+                </p>
               </div>
             </div>
           </TabsContent>
 
           {/* Expertise Tab */}
-          <TabsContent value="expertise" className="m-0 space-y-6">
-            <div className="space-y-4">
+          <TabsContent value='expertise' className='m-0 space-y-6'>
+            <div className='space-y-4'>
               <Alert>
-                <Lightbulb className="h-4 w-4" />
+                <Lightbulb className='h-4 w-4' />
                 <AlertDescription>
-                  Define the areas of expertise and specialization for this orchestrator.
+                  Define the areas of expertise and specialization for this
+                  orchestrator.
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-2">
-                <Label htmlFor="newExpertise" className="required">
+              <div className='space-y-2'>
+                <Label htmlFor='newExpertise' className='required'>
                   Areas of Expertise
-                  <span className="ml-1 text-destructive">*</span>
+                  <span className='ml-1 text-destructive'>*</span>
                 </Label>
-                <div className="flex gap-2">
+                <div className='flex gap-2'>
                   <Input
-                    id="newExpertise"
+                    id='newExpertise'
                     value={newExpertise}
-                    onChange={(e) => setNewExpertise(e.target.value)}
-                    onKeyDown={(e) => {
+                    onChange={e => setNewExpertise(e.target.value)}
+                    onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         handleAddExpertise();
                       }
                     }}
-                    placeholder="Add an area of expertise..."
+                    placeholder='Add an area of expertise...'
                     disabled={isLoading}
                   />
                   <Button
-                    type="button"
+                    type='button'
                     onClick={handleAddExpertise}
                     disabled={isLoading || !newExpertise.trim()}
                   >
@@ -711,181 +755,184 @@ export function CharterEditor({
                   </Button>
                 </div>
                 {errors.expertise && (
-                  <p className="flex items-center gap-1 text-xs text-destructive">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className='flex items-center gap-1 text-xs text-destructive'>
+                    <AlertCircle className='h-3 w-3' />
                     {errors.expertise}
                   </p>
                 )}
                 {expertise.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {expertise.map((item) => (
+                  <div className='mt-3 flex flex-wrap gap-2'>
+                    {expertise.map(item => (
                       <span
                         key={item}
-                        className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm"
+                        className='inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm'
                       >
                         {item}
                         <button
-                          type="button"
+                          type='button'
                           onClick={() => handleRemoveExpertise(item)}
                           disabled={isLoading}
-                          className="ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/10"
+                          className='ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/10'
                         >
-                          <X className="h-3 w-3" />
+                          <X className='h-3 w-3' />
                         </button>
                       </span>
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Technical skills, domain knowledge, and specialized capabilities
+                <p className='text-xs text-muted-foreground'>
+                  Technical skills, domain knowledge, and specialized
+                  capabilities
                 </p>
               </div>
             </div>
           </TabsContent>
 
           {/* Communication Preferences Tab */}
-          <TabsContent value="communication" className="m-0 space-y-6">
-            <div className="space-y-4">
+          <TabsContent value='communication' className='m-0 space-y-6'>
+            <div className='space-y-4'>
               <Alert>
-                <Lightbulb className="h-4 w-4" />
+                <Lightbulb className='h-4 w-4' />
                 <AlertDescription>
-                  Configure how this orchestrator communicates with users and other systems.
+                  Configure how this orchestrator communicates with users and
+                  other systems.
                 </AlertDescription>
               </Alert>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className='grid gap-4 sm:grid-cols-2'>
                 {/* Tone */}
-                <div className="space-y-2">
-                  <Label htmlFor="tone">Communication Tone</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='tone'>Communication Tone</Label>
                   <select
-                    id="tone"
+                    id='tone'
                     value={tone}
-                    onChange={(e) => {
+                    onChange={e => {
                       setTone(e.target.value as CommunicationTone);
                       setIsDirty(true);
                     }}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                     disabled={isLoading}
                   >
-                    <option value="formal">Formal</option>
-                    <option value="professional">Professional</option>
-                    <option value="casual">Casual</option>
-                    <option value="friendly">Friendly</option>
+                    <option value='formal'>Formal</option>
+                    <option value='professional'>Professional</option>
+                    <option value='casual'>Casual</option>
+                    <option value='friendly'>Friendly</option>
                   </select>
                 </div>
 
                 {/* Response Length */}
-                <div className="space-y-2">
-                  <Label htmlFor="responseLength">Response Length</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='responseLength'>Response Length</Label>
                   <select
-                    id="responseLength"
+                    id='responseLength'
                     value={responseLength}
-                    onChange={(e) => {
+                    onChange={e => {
                       setResponseLength(e.target.value as ResponseLength);
                       setIsDirty(true);
                     }}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                     disabled={isLoading}
                   >
-                    <option value="concise">Concise</option>
-                    <option value="balanced">Balanced</option>
-                    <option value="detailed">Detailed</option>
+                    <option value='concise'>Concise</option>
+                    <option value='balanced'>Balanced</option>
+                    <option value='detailed'>Detailed</option>
                   </select>
                 </div>
 
                 {/* Formality */}
-                <div className="space-y-2">
-                  <Label htmlFor="formality">Formality Level</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='formality'>Formality Level</Label>
                   <select
-                    id="formality"
+                    id='formality'
                     value={formality}
-                    onChange={(e) => {
+                    onChange={e => {
                       setFormality(e.target.value as FormalityLevel);
                       setIsDirty(true);
                     }}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                     disabled={isLoading}
                   >
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <option value='high'>High</option>
+                    <option value='medium'>Medium</option>
+                    <option value='low'>Low</option>
                   </select>
                 </div>
               </div>
 
               {/* Use Emoji */}
-              <label className="flex cursor-pointer items-center gap-3">
+              <label className='flex cursor-pointer items-center gap-3'>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={useEmoji}
-                  onChange={(e) => {
+                  onChange={e => {
                     setUseEmoji(e.target.checked);
                     setIsDirty(true);
                   }}
                   disabled={isLoading}
-                  className="h-4 w-4 rounded border-input text-primary"
+                  className='h-4 w-4 rounded border-input text-primary'
                 />
-                <span className="text-sm">Allow emoji in responses</span>
+                <span className='text-sm'>Allow emoji in responses</span>
               </label>
             </div>
           </TabsContent>
 
           {/* Operational Settings Tab */}
-          <TabsContent value="operations" className="m-0 space-y-6">
-            <div className="space-y-4">
+          <TabsContent value='operations' className='m-0 space-y-6'>
+            <div className='space-y-4'>
               <Alert>
-                <Lightbulb className="h-4 w-4" />
+                <Lightbulb className='h-4 w-4' />
                 <AlertDescription>
-                  Configure operational parameters and escalation rules for this orchestrator.
+                  Configure operational parameters and escalation rules for this
+                  orchestrator.
                 </AlertDescription>
               </Alert>
 
               {/* Work Hours */}
-              <div className="space-y-3">
+              <div className='space-y-3'>
                 <Label>Work Hours</Label>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="workHoursStart" className="text-xs">
+                <div className='grid gap-4 sm:grid-cols-3'>
+                  <div className='space-y-2'>
+                    <Label htmlFor='workHoursStart' className='text-xs'>
                       Start Time
                     </Label>
                     <Input
-                      id="workHoursStart"
-                      type="time"
+                      id='workHoursStart'
+                      type='time'
                       value={workHoursStart}
-                      onChange={(e) => {
+                      onChange={e => {
                         setWorkHoursStart(e.target.value);
                         setIsDirty(true);
                       }}
                       disabled={isLoading}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="workHoursEnd" className="text-xs">
+                  <div className='space-y-2'>
+                    <Label htmlFor='workHoursEnd' className='text-xs'>
                       End Time
                     </Label>
                     <Input
-                      id="workHoursEnd"
-                      type="time"
+                      id='workHoursEnd'
+                      type='time'
                       value={workHoursEnd}
-                      onChange={(e) => {
+                      onChange={e => {
                         setWorkHoursEnd(e.target.value);
                         setIsDirty(true);
                       }}
                       disabled={isLoading}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone" className="text-xs">
+                  <div className='space-y-2'>
+                    <Label htmlFor='timezone' className='text-xs'>
                       Timezone
                     </Label>
                     <Input
-                      id="timezone"
+                      id='timezone'
                       value={timezone}
-                      onChange={(e) => {
+                      onChange={e => {
                         setTimezone(e.target.value);
                         setIsDirty(true);
                       }}
-                      placeholder="America/New_York"
+                      placeholder='America/New_York'
                       disabled={isLoading}
                     />
                   </div>
@@ -893,59 +940,59 @@ export function CharterEditor({
               </div>
 
               {/* Response Time Target */}
-              <div className="space-y-2">
-                <Label htmlFor="responseTimeTarget">
+              <div className='space-y-2'>
+                <Label htmlFor='responseTimeTarget'>
                   Response Time Target (minutes)
                 </Label>
                 <Input
-                  id="responseTimeTarget"
-                  type="number"
-                  min="1"
+                  id='responseTimeTarget'
+                  type='number'
+                  min='1'
                   value={responseTimeTarget}
-                  onChange={(e) => {
+                  onChange={e => {
                     setResponseTimeTarget(parseInt(e.target.value) || 30);
                     setIsDirty(true);
                   }}
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   Target time to respond to requests
                 </p>
               </div>
 
               {/* Auto Escalation */}
-              <label className="flex cursor-pointer items-center gap-3">
+              <label className='flex cursor-pointer items-center gap-3'>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={autoEscalation}
-                  onChange={(e) => {
+                  onChange={e => {
                     setAutoEscalation(e.target.checked);
                     setIsDirty(true);
                   }}
                   disabled={isLoading}
-                  className="h-4 w-4 rounded border-input text-primary"
+                  className='h-4 w-4 rounded border-input text-primary'
                 />
-                <span className="text-sm">Enable automatic escalation</span>
+                <span className='text-sm'>Enable automatic escalation</span>
               </label>
 
               {/* Escalation Threshold */}
               {autoEscalation && (
-                <div className="space-y-2">
-                  <Label htmlFor="escalationThreshold">
+                <div className='space-y-2'>
+                  <Label htmlFor='escalationThreshold'>
                     Escalation Threshold (minutes)
                   </Label>
                   <Input
-                    id="escalationThreshold"
-                    type="number"
-                    min="1"
+                    id='escalationThreshold'
+                    type='number'
+                    min='1'
                     value={escalationThreshold}
-                    onChange={(e) => {
+                    onChange={e => {
                       setEscalationThreshold(parseInt(e.target.value) || 60);
                       setIsDirty(true);
                     }}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className='text-xs text-muted-foreground'>
                     Time before auto-escalating unresolved issues
                   </p>
                 </div>
@@ -955,29 +1002,38 @@ export function CharterEditor({
         </CardContent>
 
         {/* Footer Actions */}
-        <div className="border-t px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
+        <div className='border-t px-6 py-4'>
+          <div className='flex items-center justify-between'>
+            <div className='text-sm text-muted-foreground'>
               {Object.keys(errors).length > 0 && (
-                <span className="flex items-center gap-1 text-destructive">
-                  <AlertCircle className="h-4 w-4" />
+                <span className='flex items-center gap-1 text-destructive'>
+                  <AlertCircle className='h-4 w-4' />
                   Please fix validation errors before saving
                 </span>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={handleCancel} disabled={isLoading}>
+            <div className='flex gap-2'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={handleCancel}
+                disabled={isLoading}
+              >
                 Cancel
               </Button>
-              <Button type="button" onClick={handleSave} disabled={isLoading || !isDirty}>
+              <Button
+                type='button'
+                onClick={handleSave}
+                disabled={isLoading || !isDirty}
+              >
                 {isSaving ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save className='mr-2 h-4 w-4' />
                     Save Charter
                   </>
                 )}

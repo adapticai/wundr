@@ -15,7 +15,6 @@ import { randomBytes } from 'crypto';
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
-
 import { auth } from '@/lib/auth';
 import { sendInvitationEmail, type EmailResponse } from '@/lib/email';
 import {
@@ -27,7 +26,7 @@ import {
   type InviteStatus,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -54,14 +53,17 @@ function generateInviteToken(): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -77,8 +79,11 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Workspace not found',
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -89,10 +94,16 @@ export async function GET(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -109,9 +120,9 @@ export async function GET(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -141,8 +152,11 @@ export async function GET(
     return NextResponse.json({ invites });
   } catch (_error) {
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch invites',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -158,14 +172,17 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -181,8 +198,11 @@ export async function POST(
 
     if (!workspaceRecord) {
       return NextResponse.json(
-        createAdminErrorResponse('Workspace not found', ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 },
+        createAdminErrorResponse(
+          'Workspace not found',
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -197,10 +217,16 @@ export async function POST(
       },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -210,8 +236,11 @@ export async function POST(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAdminErrorResponse(
+          'Invalid JSON body',
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -222,9 +251,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -247,9 +276,9 @@ export async function POST(
         createAdminErrorResponse(
           'Some emails are already members',
           ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER,
-          { existingEmails },
+          { existingEmails }
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -259,7 +288,8 @@ export async function POST(
       select: { settings: true },
     });
 
-    const settings = (workspaceWithSettings?.settings as Record<string, unknown>) || {};
+    const settings =
+      (workspaceWithSettings?.settings as Record<string, unknown>) || {};
     const currentInvites = (settings.invites as Invite[]) || [];
 
     // Create new invites
@@ -309,7 +339,8 @@ export async function POST(
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     // Send invitation emails
-    const emailResults: { email: string; success: boolean; error?: string }[] = [];
+    const emailResults: { email: string; success: boolean; error?: string }[] =
+      [];
 
     for (const invite of newInvites) {
       try {
@@ -317,7 +348,8 @@ export async function POST(
 
         const emailResult: EmailResponse = await sendInvitationEmail({
           email: invite.email,
-          inviterName: membership.user.name || membership.user.email || 'Team member',
+          inviterName:
+            membership.user.name || membership.user.email || 'Team member',
           workspaceName,
           invitationUrl,
           role: invite.role,
@@ -331,10 +363,16 @@ export async function POST(
         });
 
         if (!emailResult.success) {
-          console.error(`[Admin Invites] Failed to send email to ${invite.email}:`, emailResult.error);
+          console.error(
+            `[Admin Invites] Failed to send email to ${invite.email}:`,
+            emailResult.error
+          );
         }
       } catch (error) {
-        console.error(`[Admin Invites] Exception sending email to ${invite.email}:`, error);
+        console.error(
+          `[Admin Invites] Exception sending email to ${invite.email}:`,
+          error
+        );
         emailResults.push({
           email: invite.email,
           success: false,
@@ -356,19 +394,25 @@ export async function POST(
     const successCount = emailResults.filter(r => r.success).length;
     const failedCount = emailResults.filter(r => !r.success).length;
 
-    return NextResponse.json({
-      invites: newInvites,
-      emailResults: {
-        total: emailResults.length,
-        succeeded: successCount,
-        failed: failedCount,
-        details: emailResults,
+    return NextResponse.json(
+      {
+        invites: newInvites,
+        emailResults: {
+          total: emailResults.length,
+          succeeded: successCount,
+          failed: failedCount,
+          details: emailResults,
+        },
       },
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (_error) {
     return NextResponse.json(
-      createAdminErrorResponse('Failed to create invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to create invites',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

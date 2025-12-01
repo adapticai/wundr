@@ -15,11 +15,11 @@ test.describe('API Health Checks', () => {
       '/status',
       '/api/status',
       '/_health',
-      '/ping'
+      '/ping',
     ];
 
     let healthyEndpoint = null;
-    
+
     for (const endpoint of healthEndpoints) {
       try {
         const response = await request.get(`${baseURL}${endpoint}`);
@@ -38,23 +38,18 @@ test.describe('API Health Checks', () => {
 
   test('API returns proper content types', async ({ request, baseURL }) => {
     // Try to find an API endpoint
-    const apiEndpoints = [
-      '/api',
-      '/api/v1',
-      '/api/v2',
-      '/graphql'
-    ];
+    const apiEndpoints = ['/api', '/api/v1', '/api/v2', '/graphql'];
 
     for (const endpoint of apiEndpoints) {
       try {
         const response = await request.get(`${baseURL}${endpoint}`);
         if (response.ok() || response.status() === 404) {
           const contentType = response.headers()['content-type'];
-          
+
           // Should return JSON or HTML
           expect(
             contentType?.includes('application/json') ||
-            contentType?.includes('text/html')
+              contentType?.includes('text/html')
           ).toBeTruthy();
         }
       } catch {
@@ -65,11 +60,13 @@ test.describe('API Health Checks', () => {
 
   test('API handles errors gracefully', async ({ request, baseURL }) => {
     // Test 404 handling
-    const response = await request.get(`${baseURL}/api/nonexistent-endpoint-${Date.now()}`);
-    
+    const response = await request.get(
+      `${baseURL}/api/nonexistent-endpoint-${Date.now()}`
+    );
+
     // Should return appropriate status code
     expect([404, 400, 401, 403]).toContain(response.status());
-    
+
     // Should not expose sensitive information
     const body = await response.text();
     expect(body).not.toContain('stack');
@@ -78,12 +75,12 @@ test.describe('API Health Checks', () => {
 
   test('API responds within acceptable time', async ({ request, baseURL }) => {
     const startTime = Date.now();
-    
+
     // Make a simple request
     await request.get(`${baseURL}/`);
-    
+
     const responseTime = Date.now() - startTime;
-    
+
     // Should respond within 5 seconds
     expect(responseTime).toBeLessThan(5000);
   });
@@ -92,18 +89,18 @@ test.describe('API Health Checks', () => {
     try {
       const response = await request.get(`${baseURL}/api`, {
         headers: {
-          'Origin': 'https://example.com'
-        }
+          Origin: 'https://example.com',
+        },
       });
 
       const headers = response.headers();
-      
+
       // Check for CORS headers if API exists
       if (response.status() !== 404) {
-        const hasCorsHeaders = 
+        const hasCorsHeaders =
           headers['access-control-allow-origin'] !== undefined ||
           headers['access-control-allow-methods'] !== undefined;
-        
+
         // Log CORS configuration
         console.log('CORS configured:', hasCorsHeaders);
       }
@@ -119,7 +116,7 @@ test.describe('API Health Checks', () => {
     for (const method of methods) {
       try {
         const response = await request.fetch(`${baseURL}/api`, {
-          method
+          method,
         });
         results[method] = response.status();
       } catch {

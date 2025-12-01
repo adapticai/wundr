@@ -5,12 +5,23 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
-import { CheckCircle2, XCircle, Mail, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  CheckCircle2,
+  XCircle,
+  Mail,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 
 /**
  * Verification status types
  */
-type VerificationStatus = 'verifying' | 'success' | 'error' | 'expired' | 'invalid';
+type VerificationStatus =
+  | 'verifying'
+  | 'success'
+  | 'error'
+  | 'expired'
+  | 'invalid';
 
 /**
  * Loading fallback for the verify email page
@@ -19,7 +30,9 @@ function VerifyEmailLoading() {
   return (
     <div className='space-y-6'>
       <div className='space-y-2 text-center'>
-        <h2 className='text-2xl font-semibold tracking-tight'>Verify your email</h2>
+        <h2 className='text-2xl font-semibold tracking-tight'>
+          Verify your email
+        </h2>
         <p className='text-sm text-muted-foreground'>
           Verifying your email address...
         </p>
@@ -50,7 +63,9 @@ function VerifyEmailContent() {
     const tokenParam = searchParams.get('token');
     if (!tokenParam) {
       setStatus('invalid');
-      setError('No verification token provided. Please use the link from your email.');
+      setError(
+        'No verification token provided. Please use the link from your email.'
+      );
       return;
     }
 
@@ -169,16 +184,14 @@ function VerifyEmailContent() {
                 Email verified successfully!
               </p>
               <p className='mt-2 text-sm text-green-600/80 dark:text-green-400/80'>
-                Your email has been verified. You can now sign in to your account.
+                Your email has been verified. You can now sign in to your
+                account.
               </p>
               <p className='mt-2 text-xs text-muted-foreground'>
                 Redirecting to login page...
               </p>
             </div>
-            <Button
-              onClick={() => router.push('/login')}
-              className='w-full'
-            >
+            <Button onClick={() => router.push('/login')} className='w-full'>
               Continue to login
             </Button>
           </>
@@ -250,11 +263,11 @@ function VerifyEmailContent() {
             </div>
             <div className='rounded-md bg-destructive/10 p-4 text-center'>
               <p className='font-medium text-destructive'>
-                {status === 'invalid' ? 'Invalid verification link' : 'Verification failed'}
+                {status === 'invalid'
+                  ? 'Invalid verification link'
+                  : 'Verification failed'}
               </p>
-              <p className='mt-2 text-sm text-destructive/80'>
-                {error}
-              </p>
+              <p className='mt-2 text-sm text-destructive/80'>{error}</p>
             </div>
 
             {token && (
@@ -309,7 +322,8 @@ function VerifyEmailContent() {
           {status === 'success' ? 'Email verified!' : 'Verify your email'}
         </h2>
         <p className='text-sm text-muted-foreground'>
-          {status === 'verifying' && 'Please wait while we verify your email address'}
+          {status === 'verifying' &&
+            'Please wait while we verify your email address'}
           {status === 'success' && 'Your email has been successfully verified'}
           {status === 'expired' && 'Your verification link has expired'}
           {status === 'invalid' && 'The verification link is invalid'}

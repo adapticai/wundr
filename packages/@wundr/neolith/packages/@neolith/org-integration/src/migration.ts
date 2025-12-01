@@ -4,7 +4,6 @@
  * Functions for migrating org-genesis results to Slack workspace resources.
  */
 
-
 import type {
   DisciplineDefinition,
   DisciplineMapping,
@@ -90,7 +89,10 @@ export async function migrateOrgGenesisResult(
   }
 
   // Determine overall status
-  const status = determineOverallStatus(orchestratorMappings, disciplineMappings);
+  const status = determineOverallStatus(
+    orchestratorMappings,
+    disciplineMappings
+  );
 
   if (options.verbose) {
     logMigrationComplete(
@@ -130,7 +132,11 @@ export async function createOrchestratorUsersFromManifest(
   const orchestratorMapper = createOrchestratorMapper();
 
   for (const orchestrator of orchestrators) {
-    const mapping = await createSingleOrchestratorUser(orchestrator, organizationId, options);
+    const mapping = await createSingleOrchestratorUser(
+      orchestrator,
+      organizationId,
+      options
+    );
     mappings.push(mapping);
 
     if (mapping.status === 'success' && mapping.slackUserId) {
@@ -360,7 +366,8 @@ function determineOverallStatus(
   disciplineMappings: DisciplineMappingResult
 ): 'complete' | 'partial' | 'failed' {
   const totalOperations = orchestratorMappings.total + disciplineMappings.total;
-  const totalSuccessful = orchestratorMappings.successful + disciplineMappings.successful;
+  const totalSuccessful =
+    orchestratorMappings.successful + disciplineMappings.successful;
   const totalFailed = orchestratorMappings.failed + disciplineMappings.failed;
 
   if (totalOperations === 0) {
@@ -405,7 +412,9 @@ function logMigrationStart(
   // eslint-disable-next-line no-console
   console.log(`  Organization: ${neolithResult.manifest.name}`);
   // eslint-disable-next-line no-console
-  console.log(`  Orchestrators to create: ${neolithResult.orchestrators.length}`);
+  console.log(
+    `  Orchestrators to create: ${neolithResult.orchestrators.length}`
+  );
   // eslint-disable-next-line no-console
   console.log(`  Disciplines to create: ${neolithResult.disciplines.length}`);
   // eslint-disable-next-line no-console
@@ -423,7 +432,9 @@ function logMigrationComplete(
   // eslint-disable-next-line no-console
   console.log('Migration complete!');
   // eslint-disable-next-line no-console
-  console.log(`  Orchestrators: ${orchestratorMappings.successful}/${orchestratorMappings.total} successful`);
+  console.log(
+    `  Orchestrators: ${orchestratorMappings.successful}/${orchestratorMappings.total} successful`
+  );
   // eslint-disable-next-line no-console
   console.log(
     `  Channels: ${disciplineMappings.successful}/${disciplineMappings.total} successful`

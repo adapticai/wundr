@@ -4,26 +4,22 @@ module.exports = {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      useESM: true,
-      tsconfig: {
-        module: 'ESNext',
-        moduleResolution: 'node',
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          module: 'ESNext',
+          moduleResolution: 'node',
+        },
       },
-    }],
+    ],
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
-    '<rootDir>/src/**/*.test.ts',
-  ],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/*.test.ts',
-  ],
+  testMatch: ['<rootDir>/tests/**/*.test.ts', '<rootDir>/src/**/*.test.ts'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/**/*.test.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   testTimeout: 30000,

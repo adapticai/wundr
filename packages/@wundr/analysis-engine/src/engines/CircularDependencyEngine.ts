@@ -32,8 +32,9 @@ interface CircularDetectionConfig {
 /**
  * High-performance circular dependency detection engine
  */
-export class CircularDependencyEngine
-  implements BaseAnalyzer<CircularDependency[]> {
+export class CircularDependencyEngine implements BaseAnalyzer<
+  CircularDependency[]
+> {
   public readonly name = 'CircularDependencyEngine';
   public readonly version = '2.0.0';
 
@@ -57,7 +58,7 @@ export class CircularDependencyEngine
 
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    analysisConfig: AnalysisConfig
   ): Promise<CircularDependency[]> {
     // Build dependency graph from entities
     this.buildDependencyGraph(entities);
@@ -76,7 +77,7 @@ export class CircularDependencyEngine
       // Merge with madge results, avoiding duplicates
       const uniqueInternalCycles = this.filterUniqueCycles(
         circularDependencies,
-        internalCycles,
+        internalCycles
       );
       circularDependencies.push(...uniqueInternalCycles);
     }
@@ -134,7 +135,7 @@ export class CircularDependencyEngine
    * Detect circular dependencies using madge
    */
   private async detectWithMadge(
-    targetDir: string,
+    targetDir: string
   ): Promise<CircularDependency[]> {
     try {
       const result = execSync(
@@ -143,7 +144,7 @@ export class CircularDependencyEngine
           encoding: 'utf-8',
           timeout: 60000, // 1 minute timeout
           cwd: targetDir,
-        },
+        }
       );
 
       const madgeOutput = JSON.parse(result.toString());
@@ -152,23 +153,24 @@ export class CircularDependencyEngine
       return cycles.map((cycle: string[]) => ({
         id: createId(),
         cycle: cycle.map(file =>
-          normalizeFilePath(path.resolve(targetDir, file)),
+          normalizeFilePath(path.resolve(targetDir, file))
         ),
         severity: this.calculateCycleSeverity(cycle),
         depth: cycle.length,
         files: cycle.map(file =>
-          normalizeFilePath(path.resolve(targetDir, file)),
+          normalizeFilePath(path.resolve(targetDir, file))
         ),
         suggestions: this.generateCycleSuggestions(cycle),
         source: 'madge',
         weight: this.calculateCycleWeight(
-          cycle.map(file => normalizeFilePath(path.resolve(targetDir, file))),
+          cycle.map(file => normalizeFilePath(path.resolve(targetDir, file)))
         ),
       }));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       console.warn(
-        `⚠️ Madge analysis failed, falling back to internal analysis: ${errorMessage}`,
+        `⚠️ Madge analysis failed, falling back to internal analysis: ${errorMessage}`
       );
       return [];
     }
@@ -234,12 +236,12 @@ export class CircularDependencyEngine
           strongConnect(neighbor);
           lowlinks.set(
             node,
-            Math.min(lowlinks.get(node)!, lowlinks.get(neighbor)!),
+            Math.min(lowlinks.get(node)!, lowlinks.get(neighbor)!)
           );
         } else if (onStack.has(neighbor)) {
           lowlinks.set(
             node,
-            Math.min(lowlinks.get(node)!, indices.get(neighbor)!),
+            Math.min(lowlinks.get(node)!, indices.get(neighbor)!)
           );
         }
       }
@@ -384,7 +386,7 @@ export class CircularDependencyEngine
    * Calculate cycle severity based on length and weight
    */
   private calculateCycleSeverity(
-    cycle: string[],
+    cycle: string[]
   ): 'critical' | 'high' | 'medium' | 'low' {
     const depth = cycle.length;
     const weight = this.calculateCycleWeight(cycle);
@@ -429,7 +431,7 @@ export class CircularDependencyEngine
     // Add cycle-specific suggestions
     if (cycle.length > 4) {
       suggestions.push(
-        'Break the cycle by introducing intermediate abstraction layers',
+        'Break the cycle by introducing intermediate abstraction layers'
       );
     }
 
@@ -446,13 +448,13 @@ export class CircularDependencyEngine
    */
   private filterUniqueCycles(
     existingCycles: CircularDependency[],
-    newCycles: CircularDependency[],
+    newCycles: CircularDependency[]
   ): CircularDependency[] {
     const uniqueCycles: CircularDependency[] = [];
 
     for (const newCycle of newCycles) {
       const isDuplicate = existingCycles.some(existing =>
-        this.cyclesAreEquivalent(existing.cycle, newCycle.cycle),
+        this.cyclesAreEquivalent(existing.cycle, newCycle.cycle)
       );
 
       if (!isDuplicate) {
@@ -531,12 +533,14 @@ export class CircularDependencyEngine
 
     return {
       affectedFiles: cycle.files,
-      complexityIncrease: Math.min(100, (depth * 10) + (weight * 5)),
-      maintainabilityScore: Math.max(0, 100 - (depth * 15) - (weight * 8)),
+      complexityIncrease: Math.min(100, depth * 10 + weight * 5),
+      maintainabilityScore: Math.max(0, 100 - depth * 15 - weight * 8),
       refactoringEffort:
-        depth > 5 || weight > 10 ? 'high' :
-        depth > 3 || weight > 5 ? 'medium' :
-        'low',
+        depth > 5 || weight > 10
+          ? 'high'
+          : depth > 3 || weight > 5
+            ? 'medium'
+            : 'low',
     };
   }
 
@@ -584,19 +588,19 @@ export class CircularDependencyEngine
    */
   private findRelatedCycles(
     currentCycle: CircularDependency,
-    allCycles: CircularDependency[],
+    allCycles: CircularDependency[]
   ): string[] {
     const currentFiles = new Set(currentCycle.files);
     const relatedCycleIds: string[] = [];
 
     for (const otherCycle of allCycles) {
       if (otherCycle.id === currentCycle.id) {
-continue;
-}
+        continue;
+      }
 
       // Check if cycles share any files
       const sharedFiles = otherCycle.files.filter(file =>
-        currentFiles.has(file),
+        currentFiles.has(file)
       );
       if (sharedFiles.length > 0) {
         relatedCycleIds.push(otherCycle.id);

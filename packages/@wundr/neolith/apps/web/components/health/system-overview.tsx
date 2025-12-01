@@ -62,17 +62,21 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <Card className={cn('transition-all hover:shadow-md', statusColors[status], className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className={cn('p-2 rounded-lg', iconColors[status])}>
-          {icon}
-        </div>
+    <Card
+      className={cn(
+        'transition-all hover:shadow-md',
+        statusColors[status],
+        className
+      )}
+    >
+      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardTitle className='text-sm font-medium'>{title}</CardTitle>
+        <div className={cn('p-2 rounded-lg', iconColors[status])}>{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className='text-2xl font-bold'>{value}</div>
         {subtitle && (
-          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+          <p className='text-xs text-muted-foreground mt-1'>{subtitle}</p>
         )}
       </CardContent>
     </Card>
@@ -83,8 +87,13 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
   data,
   className,
 }) => {
-  const getOrchestratorStatus = (): 'success' | 'warning' | 'error' | 'neutral' => {
-    const percentage = (data.orchestrators.active / data.orchestrators.total) * 100;
+  const getOrchestratorStatus = ():
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'neutral' => {
+    const percentage =
+      (data.orchestrators.active / data.orchestrators.total) * 100;
     if (percentage >= 90) return 'success';
     if (percentage >= 70) return 'warning';
     if (percentage < 70) return 'error';
@@ -103,7 +112,11 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
     return 'success';
   };
 
-  const getErrorRateStatus = (): 'success' | 'warning' | 'error' | 'neutral' => {
+  const getErrorRateStatus = ():
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'neutral' => {
     if (data.errorRate.rate >= data.errorRate.threshold) return 'error';
     if (data.errorRate.rate >= data.errorRate.threshold * 0.7) return 'warning';
     return 'success';
@@ -112,31 +125,31 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
   return (
     <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
       <StatCard
-        title="Orchestrators"
+        title='Orchestrators'
         value={data.orchestrators.active}
         subtitle={`${data.orchestrators.total} total`}
-        icon={<Users className="h-4 w-4" />}
+        icon={<Users className='h-4 w-4' />}
         status={getOrchestratorStatus()}
       />
       <StatCard
-        title="Active Sessions"
+        title='Active Sessions'
         value={data.sessions.active}
         subtitle={`${data.sessions.total} total sessions`}
-        icon={<Activity className="h-4 w-4" />}
+        icon={<Activity className='h-4 w-4' />}
         status={getSessionStatus()}
       />
       <StatCard
-        title="Token Usage"
+        title='Token Usage'
         value={`${data.tokens.percentage.toFixed(1)}%`}
         subtitle={`${data.tokens.used.toLocaleString()} / ${data.tokens.total.toLocaleString()}`}
-        icon={<Coins className="h-4 w-4" />}
+        icon={<Coins className='h-4 w-4' />}
         status={getTokenStatus()}
       />
       <StatCard
-        title="Error Rate"
+        title='Error Rate'
         value={`${data.errorRate.rate.toFixed(2)}%`}
         subtitle={`Threshold: ${data.errorRate.threshold.toFixed(2)}%`}
-        icon={<AlertTriangle className="h-4 w-4" />}
+        icon={<AlertTriangle className='h-4 w-4' />}
         status={getErrorRateStatus()}
       />
     </div>

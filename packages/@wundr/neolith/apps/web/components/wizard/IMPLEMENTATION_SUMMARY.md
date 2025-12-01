@@ -2,7 +2,9 @@
 
 ## Overview
 
-Successfully created a reusable, production-ready ConversationalWizard component system for LLM-powered entity creation. The component provides a chat-style interface that seamlessly transitions to a form-based editing view.
+Successfully created a reusable, production-ready ConversationalWizard component system for
+LLM-powered entity creation. The component provides a chat-style interface that seamlessly
+transitions to a form-based editing view.
 
 ## Files Created
 
@@ -80,6 +82,7 @@ ConversationalWizard (Main)
 ## Features Implemented
 
 ### Chat Interface
+
 - [x] Message bubbles with role-based styling
 - [x] User and AI avatars
 - [x] Timestamp display with smart formatting
@@ -89,6 +92,7 @@ ConversationalWizard (Main)
 - [x] Streaming cursor animation
 
 ### Input & Controls
+
 - [x] Auto-expanding textarea
 - [x] Send button with disabled state
 - [x] Enter to send (Shift+Enter for new line)
@@ -97,6 +101,7 @@ ConversationalWizard (Main)
 - [x] Cancel button
 
 ### Form View
+
 - [x] Dynamic field rendering based on entity type
 - [x] Field validation with error messages
 - [x] Live update sync with parent
@@ -106,12 +111,14 @@ ConversationalWizard (Main)
 - [x] Accessible form labels and ARIA attributes
 
 ### Tab Navigation
+
 - [x] Smooth switching between chat and form
 - [x] Disabled form tab until data is extracted
 - [x] Visual indicators for active tab
 - [x] Keyboard navigation support
 
 ### Data Management
+
 - [x] Message history tracking
 - [x] Extracted data state management
 - [x] Form data validation
@@ -146,6 +153,7 @@ ConversationalWizard (Main)
 ## Supported Entity Types
 
 All types from `@/components/creation/types`:
+
 - workspace
 - orchestrator
 - session-manager
@@ -156,12 +164,14 @@ All types from `@/components/creation/types`:
 ## Integration Points
 
 ### With Existing Components
+
 - Uses `@/components/ui/*` (shadcn/ui components)
 - Imports `EntityType` from `@/components/creation/types`
 - Compatible with existing Dialog/Modal patterns
 - Follows project styling conventions
 
 ### With Backend APIs
+
 - Flexible `onSendMessage` handler for LLM API calls
 - Returns structured data for entity creation
 - Supports progressive data extraction
@@ -170,33 +180,36 @@ All types from `@/components/creation/types`:
 ## Usage Patterns
 
 ### 1. Basic Usage
+
 ```tsx
 <ConversationalWizard
-  entityType="workspace"
-  onComplete={(data) => createWorkspace(data)}
+  entityType='workspace'
+  onComplete={data => createWorkspace(data)}
   onCancel={() => close()}
 />
 ```
 
 ### 2. With Custom LLM
+
 ```tsx
 <ConversationalWizard
-  entityType="orchestrator"
+  entityType='orchestrator'
   onSendMessage={async (msg, history) => ({
     response: await callLLM(msg, history),
-    extractedData: parseResponse(response)
+    extractedData: parseResponse(response),
   })}
-  onComplete={(data) => createOrchestrator(data)}
+  onComplete={data => createOrchestrator(data)}
   onCancel={() => close()}
 />
 ```
 
 ### 3. Edit Mode
+
 ```tsx
 <ConversationalWizard
-  entityType="workflow"
+  entityType='workflow'
   initialData={existingWorkflow}
-  onComplete={(data) => updateWorkflow(data)}
+  onComplete={data => updateWorkflow(data)}
   onCancel={() => close()}
 />
 ```
@@ -260,7 +273,7 @@ All types from `@/components/creation/types`:
 - shadcn/ui components
 - lucide-react (icons)
 - class-variance-authority
-- @radix-ui/* (via shadcn/ui)
+- @radix-ui/\* (via shadcn/ui)
 
 ## Known Limitations
 
@@ -283,11 +296,13 @@ All types from `@/components/creation/types`:
 ## Migration from Existing Components
 
 The new wizard can replace these existing components:
+
 - `components/creation/conversational-creator.tsx`
 - `components/creation/chat-message.tsx`
 - `components/creation/spec-review-form.tsx`
 
 Key differences:
+
 - More reusable and generic
 - Better TypeScript types
 - Improved accessibility
@@ -297,6 +312,7 @@ Key differences:
 ## File Locations
 
 All files are located in:
+
 ```
 /Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/wizard/
 ```

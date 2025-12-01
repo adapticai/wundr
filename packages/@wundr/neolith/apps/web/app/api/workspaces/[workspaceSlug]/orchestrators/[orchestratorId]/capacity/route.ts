@@ -15,8 +15,14 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { getCapacity, updateCapacity } from '@/lib/services/orchestrator-scheduling-service';
-import { createErrorResponse, ORCHESTRATOR_ERROR_CODES } from '@/lib/validations/orchestrator';
+import {
+  getCapacity,
+  updateCapacity,
+} from '@/lib/services/orchestrator-scheduling-service';
+import {
+  createErrorResponse,
+  ORCHESTRATOR_ERROR_CODES,
+} from '@/lib/validations/orchestrator';
 import {
   getCapacitySchema,
   updateCapacitySchema,
@@ -34,7 +40,11 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an Orchestrator within a workspace
  */
-async function checkVPAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function checkVPAccess(
+  workspaceId: string,
+  orchestratorId: string,
+  userId: string
+) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -116,14 +126,17 @@ async function checkVPAccess(workspaceId: string, orchestratorId: string, userId
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -132,16 +145,26 @@ export async function GET(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
-    const result = await checkVPAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkVPAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -156,9 +179,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -188,10 +211,16 @@ export async function GET(
 
     return NextResponse.json({ data: capacity });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/capacity] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/capacity] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -231,14 +260,17 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createErrorResponse(
+          'Authentication required',
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -247,8 +279,11 @@ export async function PATCH(
 
     if (!workspaceId || !orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Invalid parameters', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid parameters',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -257,8 +292,11 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createErrorResponse(
+          'Invalid JSON body',
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -268,17 +306,24 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const result = await checkVPAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkVPAccess(
+      workspaceId,
+      orchestratorId,
+      session.user.id
+    );
     if (!result) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        createErrorResponse(
+          'Orchestrator not found or access denied',
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
       );
     }
 
@@ -287,23 +332,32 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update Orchestrator capacity',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
-    const updatedCapacity = await updateCapacity(orchestratorId, parseResult.data);
+    const updatedCapacity = await updateCapacity(
+      orchestratorId,
+      parseResult.data
+    );
 
     return NextResponse.json({
       data: updatedCapacity,
       message: 'Capacity updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceId/orchestrators/:orchestratorId/capacity] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceId/orchestrators/:orchestratorId/capacity] Error:',
+      error
+    );
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createErrorResponse(
+        'An internal error occurred',
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

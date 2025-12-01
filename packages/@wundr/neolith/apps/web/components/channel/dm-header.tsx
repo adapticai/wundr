@@ -131,12 +131,12 @@ function StackedAvatars({
   };
 
   return (
-    <div className="flex items-center">
-      <div className="flex -space-x-2">
+    <div className='flex items-center'>
+      <div className='flex -space-x-2'>
         {visibleParticipants.map((participant, index) => (
           <div
             key={participant.id}
-            className="relative"
+            className='relative'
             style={{ zIndex: maxVisible - index }}
           >
             <Avatar
@@ -145,10 +145,15 @@ function StackedAvatars({
                 'border-2 border-background ring-0'
               )}
             >
-              <AvatarImage src={participant.image || undefined} alt={participant.name} />
-              <AvatarFallback className={cn('text-[10px]', size === 'sm' && 'text-[8px]')}>
+              <AvatarImage
+                src={participant.image || undefined}
+                alt={participant.name}
+              />
+              <AvatarFallback
+                className={cn('text-[10px]', size === 'sm' && 'text-[8px]')}
+              >
                 {participant.isOrchestrator ? (
-                  <Bot className="h-3 w-3" />
+                  <Bot className='h-3 w-3' />
                 ) : (
                   getInitials(participant.name)
                 )}
@@ -165,7 +170,7 @@ function StackedAvatars({
             )}
             {/* Orchestrator badge */}
             {participant.isOrchestrator && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[6px] font-bold text-primary-foreground">
+              <span className='absolute -right-0.5 -top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[6px] font-bold text-primary-foreground'>
                 AI
               </span>
             )}
@@ -186,7 +191,7 @@ function StackedAvatars({
       </div>
       {/* Total participant count */}
       {participants.length > 1 && (
-        <span className="ml-2 text-xs text-muted-foreground font-medium">
+        <span className='ml-2 text-xs text-muted-foreground font-medium'>
           {participants.length}
         </span>
       )}
@@ -200,15 +205,15 @@ function StackedAvatars({
  */
 function ConversationName({ participants }: { participants: DMParticipant[] }) {
   if (participants.length === 0) {
-    return <span className="font-semibold text-sm">Unknown Conversation</span>;
+    return <span className='font-semibold text-sm'>Unknown Conversation</span>;
   }
 
   if (participants.length === 1) {
     return (
-      <span className="font-semibold text-sm flex items-center gap-1.5">
+      <span className='font-semibold text-sm flex items-center gap-1.5'>
         {participants[0].name}
         {participants[0].isOrchestrator && (
-          <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+          <Bot className='h-3.5 w-3.5 text-muted-foreground' />
         )}
       </span>
     );
@@ -216,11 +221,11 @@ function ConversationName({ participants }: { participants: DMParticipant[] }) {
 
   // Group conversation - show first 2-3 names
   const maxNames = 2;
-  const displayNames = participants.slice(0, maxNames).map((p) => p.name);
+  const displayNames = participants.slice(0, maxNames).map(p => p.name);
   const remaining = participants.length - maxNames;
 
   return (
-    <span className="font-semibold text-sm">
+    <span className='font-semibold text-sm'>
       {displayNames.join(', ')}
       {remaining > 0 && `, +${remaining}`}
     </span>
@@ -280,9 +285,9 @@ export function DMHeader({
   return (
     <div className={cn('flex flex-col border-b', className)}>
       {/* Main header row */}
-      <div className="flex h-12 items-center justify-between px-4">
+      <div className='flex h-12 items-center justify-between px-4'>
         {/* Left section - Star button, Avatars and names */}
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {/* Star button */}
           <StarButton
             isStarred={isStarred}
@@ -291,23 +296,27 @@ export function DMHeader({
           />
           <button
             onClick={onViewDetails}
-            className="flex items-center gap-3 hover:bg-accent rounded-md px-2 py-1 transition-colors"
+            className='flex items-center gap-3 hover:bg-accent rounded-md px-2 py-1 transition-colors'
           >
-            <StackedAvatars participants={participants} maxVisible={3} size="md" />
-            <div className="flex items-center gap-2">
+            <StackedAvatars
+              participants={participants}
+              maxVisible={3}
+              size='md'
+            />
+            <div className='flex items-center gap-2'>
               <ConversationName participants={participants} />
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              <ChevronDown className='h-4 w-4 text-muted-foreground' />
             </div>
           </button>
         </div>
 
         {/* Right section - Actions */}
-        <div className="flex items-center gap-1">
+        <div className='flex items-center gap-1'>
           {/* Call button */}
           <DMCallButton
             channelId={conversationId}
             workspaceId={workspaceId}
-            participantIds={participants.map((p) => p.id)}
+            participantIds={participants.map(p => p.id)}
             onCallInitiated={onCallInitiated}
             iconOnly
           />
@@ -317,25 +326,26 @@ export function DMHeader({
             <DropdownMenuTrigger asChild>
               <Button
                 variant={hasActiveHuddle ? 'default' : 'ghost'}
-                size="sm"
+                size='sm'
                 className={cn(
                   'h-8 gap-2',
-                  hasActiveHuddle && 'bg-green-600 hover:bg-green-700 text-white'
+                  hasActiveHuddle &&
+                    'bg-green-600 hover:bg-green-700 text-white'
                 )}
               >
-                <Headphones className="h-4 w-4" />
+                <Headphones className='h-4 w-4' />
                 {hasActiveHuddle ? (
-                  <span className="text-xs">{huddleParticipantCount}</span>
+                  <span className='text-xs'>{huddleParticipantCount}</span>
                 ) : null}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align='end' className='w-56'>
               <DropdownMenuItem onClick={onStartHuddle}>
-                <Headphones className="mr-2 h-4 w-4" />
+                <Headphones className='mr-2 h-4 w-4' />
                 {hasActiveHuddle ? 'Join huddle' : 'Start a huddle'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onCopyHuddleLink}>
-                <Link2 className="mr-2 h-4 w-4" />
+                <Link2 className='mr-2 h-4 w-4' />
                 Copy huddle link
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -344,43 +354,43 @@ export function DMHeader({
           {/* Notifications button with dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant='ghost' size='icon' className='h-8 w-8'>
                 {localNotificationSetting === 'muted' ||
                 localNotificationSetting === 'nothing' ? (
-                  <BellOff className="h-4 w-4" />
+                  <BellOff className='h-4 w-4' />
                 ) : (
-                  <Bell className="h-4 w-4" />
+                  <Bell className='h-4 w-4' />
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
+            <DropdownMenuContent align='end' className='w-64'>
+              <DropdownMenuLabel className='text-xs text-muted-foreground'>
                 Notification preference
               </DropdownMenuLabel>
               <DropdownMenuRadioGroup
                 value={localNotificationSetting}
                 onValueChange={handleNotificationChange}
               >
-                <DropdownMenuRadioItem value="all">
-                  <div className="flex flex-col">
+                <DropdownMenuRadioItem value='all'>
+                  <div className='flex flex-col'>
                     <span>All new posts</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className='text-xs text-muted-foreground'>
                       Get notified for all messages
                     </span>
                   </div>
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="mentions">
-                  <div className="flex flex-col">
+                <DropdownMenuRadioItem value='mentions'>
+                  <div className='flex flex-col'>
                     <span>Just @mentions</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className='text-xs text-muted-foreground'>
                       Only when you're mentioned
                     </span>
                   </div>
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="nothing">
-                  <div className="flex flex-col">
+                <DropdownMenuRadioItem value='nothing'>
+                  <div className='flex flex-col'>
                     <span>Nothing</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className='text-xs text-muted-foreground'>
                       No notifications at all
                     </span>
                   </div>
@@ -393,10 +403,10 @@ export function DMHeader({
                   localNotificationSetting === 'muted' && 'bg-accent'
                 )}
               >
-                <BellOff className="mr-2 h-4 w-4" />
-                <div className="flex flex-col">
+                <BellOff className='mr-2 h-4 w-4' />
+                <div className='flex flex-col'>
                   <span>Mute conversation</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className='text-xs text-muted-foreground'>
                     {localNotificationSetting === 'muted'
                       ? 'Currently muted'
                       : 'Silence all notifications'}
@@ -405,7 +415,7 @@ export function DMHeader({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
+                <Settings className='mr-2 h-4 w-4' />
                 Advanced notification options
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -413,36 +423,36 @@ export function DMHeader({
 
           {/* Search button */}
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+            variant='ghost'
+            size='icon'
+            className='h-8 w-8'
             onClick={onSearch}
-            title="Search in conversation"
+            title='Search in conversation'
           >
-            <Search className="h-4 w-4" />
+            <Search className='h-4 w-4' />
           </Button>
 
           {/* More actions dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant='ghost' size='icon' className='h-8 w-8'>
+                <MoreHorizontal className='h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuContent align='end' className='w-64'>
               <DropdownMenuItem onClick={onViewDetails}>
-                <Info className="mr-2 h-4 w-4" />
+                <Info className='mr-2 h-4 w-4' />
                 {isGroupDM ? 'Conversation details' : 'View profile'}
               </DropdownMenuItem>
               {isGroupDM && (
                 <DropdownMenuItem onClick={onViewDetails}>
-                  <Users className="mr-2 h-4 w-4" />
+                  <Users className='mr-2 h-4 w-4' />
                   View all {participants.length} members
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onSummarize}>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className='mr-2 h-4 w-4' />
                 Get a summary of this conversation
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -458,10 +468,10 @@ export function DMHeader({
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <Copy className="mr-2 h-4 w-4" />
+                  <Copy className='mr-2 h-4 w-4' />
                   Copy
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-48">
+                <DropdownMenuSubContent className='w-48'>
                   <DropdownMenuItem onClick={onCopyName}>
                     Copy name
                   </DropdownMenuItem>
@@ -475,16 +485,16 @@ export function DMHeader({
               </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onSearch}>
-                <Search className="mr-2 h-4 w-4" />
+                <Search className='mr-2 h-4 w-4' />
                 Search in conversation
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onOpenInNewWindow}>
-                <ExternalLink className="mr-2 h-4 w-4" />
+                <ExternalLink className='mr-2 h-4 w-4' />
                 Open in new window
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <BookOpen className="mr-2 h-4 w-4" />
+                <BookOpen className='mr-2 h-4 w-4' />
                 View conversation history
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -521,8 +531,13 @@ export function LegacyDMHeader({
 }: LegacyDMHeaderProps) {
   if (!user) {
     return (
-      <div className={cn('flex h-12 items-center justify-between border-b px-4', className)}>
-        <span className="text-sm text-muted-foreground">Loading...</span>
+      <div
+        className={cn(
+          'flex h-12 items-center justify-between border-b px-4',
+          className
+        )}
+      >
+        <span className='text-sm text-muted-foreground'>Loading...</span>
       </div>
     );
   }
@@ -531,7 +546,7 @@ export function LegacyDMHeader({
     <DMHeader
       participants={[user]}
       workspaceId={workspaceId}
-      conversationId=""
+      conversationId=''
       onViewDetails={onViewProfile}
       className={className}
     />

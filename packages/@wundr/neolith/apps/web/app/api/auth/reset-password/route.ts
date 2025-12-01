@@ -104,8 +104,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createAuthErrorResponse('Invalid JSON body', AUTH_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        createAuthErrorResponse(
+          'Invalid JSON body',
+          AUTH_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
       );
     }
 
@@ -113,17 +116,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = resetPasswordSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createAuthErrorResponse('Validation failed', AUTH_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
-        { status: 400 },
+        createAuthErrorResponse(
+          'Validation failed',
+          AUTH_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
+        { status: 400 }
       );
     }
 
     const input: ResetPasswordInput = parseResult.data;
 
     // Hash the provided token to match against stored token
-    const hashedToken = crypto.createHash('sha256').update(input.token).digest('hex');
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(input.token)
+      .digest('hex');
 
     // Find the account with the reset token
     const account = await prisma.account.findFirst({
@@ -138,8 +148,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!account) {
       return NextResponse.json(
-        createAuthErrorResponse('Invalid or expired reset token', AUTH_ERROR_CODES.INVALID_TOKEN),
-        { status: 400 },
+        createAuthErrorResponse(
+          'Invalid or expired reset token',
+          AUTH_ERROR_CODES.INVALID_TOKEN
+        ),
+        { status: 400 }
       );
     }
 
@@ -156,8 +169,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       return NextResponse.json(
-        createAuthErrorResponse('Reset token has expired', AUTH_ERROR_CODES.EXPIRED_TOKEN),
-        { status: 400 },
+        createAuthErrorResponse(
+          'Reset token has expired',
+          AUTH_ERROR_CODES.TOKEN_EXPIRED
+        ),
+        { status: 400 }
       );
     }
 
@@ -177,7 +193,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // SECURITY: Only log in development, avoid exposing user email in production logs
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
-      console.log('[POST /api/auth/reset-password] Password reset successfully for user:', account.user.email);
+      console.log(
+        '[POST /api/auth/reset-password] Password reset successfully for user:',
+        account.user.email
+      );
     } else {
       // eslint-disable-next-line no-console
       console.log('[POST /api/auth/reset-password] Password reset successful');
@@ -188,26 +207,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const timestamp = new Date();
     const ipAddress = getIpAddress(request);
 
-    sendPasswordChangedEmail(
-      account.user.email,
-      account.user.name || account.user.email,
-      timestamp,
-      ipAddress,
-    ).catch((error) => {
+    sendPasswordChangedEmail(account.user.email).catch(error => {
       // Log error but don't fail the request
-      console.error('[POST /api/auth/reset-password] Failed to send confirmation email:', {
-        email: account.user.email,
-        error: error.message,
-        timestamp: timestamp.toISOString(),
-        ipAddress,
-      });
+      console.error(
+        '[POST /api/auth/reset-password] Failed to send confirmation email:',
+        {
+          email: account.user.email,
+          error: error.message,
+          timestamp: timestamp.toISOString(),
+          ipAddress,
+        }
+      );
     });
 
     return NextResponse.json(
       {
-        message: 'Password reset successfully. You can now login with your new password.',
+        message:
+          'Password reset successfully. You can now login with your new password.',
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     // Only log detailed error in development
@@ -218,8 +236,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     return NextResponse.json(
-      createAuthErrorResponse('An internal error occurred', AUTH_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAuthErrorResponse(
+        'An internal error occurred',
+        AUTH_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

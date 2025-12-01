@@ -487,7 +487,12 @@ async function checkMessageRateLimit(
   channelId: string
 ): Promise<RateLimitResult> {
   if (!isAuthenticated(context)) {
-    return { allowed: false, retryAfterSeconds: 0, currentCount: 0, maxCount: RATE_LIMIT_MAX_MESSAGES };
+    return {
+      allowed: false,
+      retryAfterSeconds: 0,
+      currentCount: 0,
+      maxCount: RATE_LIMIT_MAX_MESSAGES,
+    };
   }
 
   const userId = context.user.id;
@@ -506,14 +511,22 @@ async function checkMessageRateLimit(
       resetAt: now + windowMs,
     };
     rateLimitStore.set(key, entry);
-    return { allowed: true, currentCount: 1, maxCount: RATE_LIMIT_MAX_MESSAGES };
+    return {
+      allowed: true,
+      currentCount: 1,
+      maxCount: RATE_LIMIT_MAX_MESSAGES,
+    };
   }
 
   // Check if under limit
   if (entry.count < RATE_LIMIT_MAX_MESSAGES) {
     entry.count++;
     rateLimitStore.set(key, entry);
-    return { allowed: true, currentCount: entry.count, maxCount: RATE_LIMIT_MAX_MESSAGES };
+    return {
+      allowed: true,
+      currentCount: entry.count,
+      maxCount: RATE_LIMIT_MAX_MESSAGES,
+    };
   }
 
   // Rate limited
@@ -590,7 +603,10 @@ async function getMaxMessageLength(
  * @param maxLength - Maximum allowed message length
  * @throws GraphQLError if content is invalid
  */
-function validateMessageContent(content: string, maxLength: number = DEFAULT_MAX_MESSAGE_LENGTH): void {
+function validateMessageContent(
+  content: string,
+  maxLength: number = DEFAULT_MAX_MESSAGE_LENGTH
+): void {
   if (!content || content.trim().length === 0) {
     throw new GraphQLError('Message content is required', {
       extensions: { code: 'BAD_USER_INPUT', field: 'content' },
@@ -637,9 +653,9 @@ function validateEmoji(emoji: string): void {
  * @returns Base64 encoded cursor
  */
 function generateCursor(message: Message): string {
-  return Buffer.from(`${message.createdAt.toISOString()}:${message.id}`).toString(
-    'base64'
-  );
+  return Buffer.from(
+    `${message.createdAt.toISOString()}:${message.id}`
+  ).toString('base64');
 }
 
 /**
@@ -1055,7 +1071,9 @@ export const messageQueries = {
       select: { channelId: true },
     });
 
-    const accessibleChannelIds = accessibleChannels.map((cm: { channelId: string }) => cm.channelId);
+    const accessibleChannelIds = accessibleChannels.map(
+      (cm: { channelId: string }) => cm.channelId
+    );
 
     // Build search query
     const where: Prisma.messageWhereInput = {
@@ -1067,7 +1085,7 @@ export const messageQueries = {
     // Apply filters
     if (filters?.channelIds && filters.channelIds.length > 0) {
       // Intersect with accessible channels
-      const filteredChannels = filters.channelIds.filter((id) =>
+      const filteredChannels = filters.channelIds.filter(id =>
         accessibleChannelIds.includes(id)
       );
       where.channelId = { in: filteredChannels };
@@ -1078,7 +1096,10 @@ export const messageQueries = {
     }
 
     if (filters?.dateFrom) {
-      where.createdAt = { ...(where.createdAt as object), gte: filters.dateFrom };
+      where.createdAt = {
+        ...(where.createdAt as object),
+        gte: filters.dateFrom,
+      };
     }
 
     if (filters?.dateTo) {
@@ -1149,7 +1170,10 @@ export const messageMutations = {
     const { input } = args;
 
     // Validate content with configurable max length
-    const maxMessageLength = await getMaxMessageLength(context, input.channelId);
+    const maxMessageLength = await getMaxMessageLength(
+      context,
+      input.channelId
+    );
     try {
       validateMessageContent(input.content, maxMessageLength);
     } catch (error) {
@@ -1165,9 +1189,12 @@ export const messageMutations = {
     // Check channel access
     const memberInfo = await getChannelMemberInfo(context, input.channelId);
     if (!memberInfo.isMember) {
-      throw new GraphQLError('You must be a member of this channel to send messages', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You must be a member of this channel to send messages',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // If threadId is provided, verify parent message exists and is in the same channel
@@ -1179,7 +1206,10 @@ export const messageMutations = {
       });
 
       if (!parentMessage || parentMessage.isDeleted) {
-        return createErrorPayload('NOT_FOUND', 'Thread parent message not found');
+        return createErrorPayload(
+          'NOT_FOUND',
+          'Thread parent message not found'
+        );
       }
 
       if (parentMessage.channelId !== input.channelId) {
@@ -1197,15 +1227,19 @@ export const messageMutations = {
     let metadata: Prisma.InputJsonValue = {};
 
     if (context.messageService) {
-      processedContent = await context.messageService.processContent(input.content);
-      const extractedMetadata = await context.messageService.extractMetadata(
-        processedContent
+      processedContent = await context.messageService.processContent(
+        input.content
       );
+      const extractedMetadata =
+        await context.messageService.extractMetadata(processedContent);
       metadata = extractedMetadata as Prisma.InputJsonValue;
     }
 
     // Rate limiting: Check if user has exceeded message rate limit
-    const rateLimitResult = await checkMessageRateLimit(context, input.channelId);
+    const rateLimitResult = await checkMessageRateLimit(
+      context,
+      input.channelId
+    );
     if (!rateLimitResult.allowed) {
       return createErrorPayload(
         'RATE_LIMITED',
@@ -1285,7 +1319,10 @@ export const messageMutations = {
     const { input } = args;
 
     // Validate content with configurable max length
-    const maxMessageLength = await getMaxMessageLength(context, input.channelId);
+    const maxMessageLength = await getMaxMessageLength(
+      context,
+      input.channelId
+    );
     try {
       validateMessageContent(input.content, maxMessageLength);
     } catch (error) {
@@ -1301,9 +1338,12 @@ export const messageMutations = {
     // Check channel access
     const memberInfo = await getChannelMemberInfo(context, input.channelId);
     if (!memberInfo.isMember) {
-      throw new GraphQLError('You must be a member of this channel to send messages', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You must be a member of this channel to send messages',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Validate parent message if provided
@@ -1326,7 +1366,8 @@ export const messageMutations = {
     }
 
     // Determine message type - Prisma schema has TEXT, FILE, SYSTEM, COMMAND
-    const messageType: PrismaMessageType = (input.type as PrismaMessageType) ?? 'TEXT';
+    const messageType: PrismaMessageType =
+      (input.type as PrismaMessageType) ?? 'TEXT';
 
     // Create the message - use parentId as per Prisma schema
     const message = await context.prisma.message.create({
@@ -1350,9 +1391,12 @@ export const messageMutations = {
     });
 
     if (input.parentMessageId) {
-      await context.pubsub.publish(`${THREAD_UPDATED}_${input.parentMessageId}`, {
-        threadUpdated: messageData,
-      });
+      await context.pubsub.publish(
+        `${THREAD_UPDATED}_${input.parentMessageId}`,
+        {
+          threadUpdated: messageData,
+        }
+      );
     }
 
     return createSuccessPayload(messageData);
@@ -1438,10 +1482,9 @@ export const messageMutations = {
     const messageData = toMessage(message);
 
     // Publish message updated event
-    await context.pubsub.publish(
-      `${MESSAGE_UPDATED}_${message.channelId}`,
-      { messageUpdated: messageData }
-    );
+    await context.pubsub.publish(`${MESSAGE_UPDATED}_${message.channelId}`, {
+      messageUpdated: messageData,
+    });
 
     return createSuccessPayload(messageData);
   },
@@ -1505,9 +1548,12 @@ export const messageMutations = {
 
     // Check deletion permissions
     if (!canDeleteMessage(context, messageData, memberInfo.role)) {
-      throw new GraphQLError('You do not have permission to delete this message', {
-        extensions: { code: 'FORBIDDEN' },
-      });
+      throw new GraphQLError(
+        'You do not have permission to delete this message',
+        {
+          extensions: { code: 'FORBIDDEN' },
+        }
+      );
     }
 
     // Soft delete - preserve the record but mark as deleted
@@ -1520,10 +1566,9 @@ export const messageMutations = {
     });
 
     // Publish message deleted event
-    await context.pubsub.publish(
-      `${MESSAGE_DELETED}_${message.channelId}`,
-      { messageDeleted: args.id }
-    );
+    await context.pubsub.publish(`${MESSAGE_DELETED}_${message.channelId}`, {
+      messageDeleted: args.id,
+    });
 
     return {
       success: true,
@@ -1576,7 +1621,9 @@ export const messageMutations = {
       if (error instanceof GraphQLError) {
         return {
           message: null,
-          errors: [{ code: error.extensions?.code as string, message: error.message }],
+          errors: [
+            { code: error.extensions?.code as string, message: error.message },
+          ],
         };
       }
       throw error;
@@ -1630,10 +1677,9 @@ export const messageMutations = {
     const messageData = toMessage(message);
 
     // Publish reaction changed event
-    await context.pubsub.publish(
-      `${REACTION_CHANGED}_${message.channelId}`,
-      { reactionChanged: messageData }
-    );
+    await context.pubsub.publish(`${REACTION_CHANGED}_${message.channelId}`, {
+      reactionChanged: messageData,
+    });
 
     return { message: messageData, errors: [] };
   },
@@ -1707,10 +1753,9 @@ export const messageMutations = {
     const messageData = toMessage(message);
 
     // Publish reaction changed event
-    await context.pubsub.publish(
-      `${REACTION_CHANGED}_${message.channelId}`,
-      { reactionChanged: messageData }
-    );
+    await context.pubsub.publish(`${REACTION_CHANGED}_${message.channelId}`, {
+      reactionChanged: messageData,
+    });
 
     return { message: messageData, errors: [] };
   },
@@ -1784,21 +1829,25 @@ export const messageMutations = {
     }
 
     // Pin the message by setting metadata.pinned
-    const existingMetadata = (message.metadata as Record<string, unknown>) ?? {};
+    const existingMetadata =
+      (message.metadata as Record<string, unknown>) ?? {};
     const updatedMessage = await context.prisma.message.update({
       where: { id: args.id },
       data: {
-        metadata: { ...existingMetadata, pinned: true, pinnedAt: new Date().toISOString() },
+        metadata: {
+          ...existingMetadata,
+          pinned: true,
+          pinnedAt: new Date().toISOString(),
+        },
       },
     });
 
     const updatedMessageData = toMessage(updatedMessage);
 
     // Publish message updated event
-    await context.pubsub.publish(
-      `${MESSAGE_UPDATED}_${message.channelId}`,
-      { messageUpdated: updatedMessageData }
-    );
+    await context.pubsub.publish(`${MESSAGE_UPDATED}_${message.channelId}`, {
+      messageUpdated: updatedMessageData,
+    });
 
     return createSuccessPayload(updatedMessageData);
   },
@@ -1872,8 +1921,13 @@ export const messageMutations = {
     }
 
     // Unpin the message by removing metadata.pinned
-    const existingMetadata = (message.metadata as Record<string, unknown>) ?? {};
-    const { pinned: _pinned, pinnedAt: _pinnedAt, ...restMetadata } = existingMetadata;
+    const existingMetadata =
+      (message.metadata as Record<string, unknown>) ?? {};
+    const {
+      pinned: _pinned,
+      pinnedAt: _pinnedAt,
+      ...restMetadata
+    } = existingMetadata;
     const updatedMessage = await context.prisma.message.update({
       where: { id: args.id },
       data: {
@@ -1884,10 +1938,9 @@ export const messageMutations = {
     const updatedMessageData = toMessage(updatedMessage);
 
     // Publish message updated event
-    await context.pubsub.publish(
-      `${MESSAGE_UPDATED}_${message.channelId}`,
-      { messageUpdated: updatedMessageData }
-    );
+    await context.pubsub.publish(`${MESSAGE_UPDATED}_${message.channelId}`, {
+      messageUpdated: updatedMessageData,
+    });
 
     return createSuccessPayload(updatedMessageData);
   },
@@ -1943,7 +1996,9 @@ export const messageMutations = {
     if (!message || message.channelId !== channelId) {
       return {
         channel: null,
-        errors: [{ code: 'NOT_FOUND', message: 'Message not found in channel' }],
+        errors: [
+          { code: 'NOT_FOUND', message: 'Message not found in channel' },
+        ],
       };
     }
 
@@ -2014,7 +2069,9 @@ export const messageSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${MESSAGE_CREATED}_${args.channelId}`);
+      return context.pubsub.asyncIterator(
+        `${MESSAGE_CREATED}_${args.channelId}`
+      );
     },
   },
 
@@ -2051,7 +2108,9 @@ export const messageSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${MESSAGE_UPDATED}_${args.channelId}`);
+      return context.pubsub.asyncIterator(
+        `${MESSAGE_UPDATED}_${args.channelId}`
+      );
     },
   },
 
@@ -2084,7 +2143,9 @@ export const messageSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${MESSAGE_DELETED}_${args.channelId}`);
+      return context.pubsub.asyncIterator(
+        `${MESSAGE_DELETED}_${args.channelId}`
+      );
     },
   },
 
@@ -2123,7 +2184,9 @@ export const messageSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${REACTION_CHANGED}_${args.channelId}`);
+      return context.pubsub.asyncIterator(
+        `${REACTION_CHANGED}_${args.channelId}`
+      );
     },
   },
 
@@ -2165,7 +2228,10 @@ export const messageSubscriptions = {
         });
       }
 
-      const hasAccess = await canAccessChannel(context, parentMessage.channelId);
+      const hasAccess = await canAccessChannel(
+        context,
+        parentMessage.channelId
+      );
       if (!hasAccess) {
         throw new GraphQLError('Access denied to this channel', {
           extensions: { code: 'FORBIDDEN' },
@@ -2195,11 +2261,7 @@ export const MessageFieldResolvers = {
    * @param context - GraphQL context
    * @returns The author user
    */
-  author: async (
-    parent: Message,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  author: async (parent: Message, _args: unknown, context: GraphQLContext) => {
     return context.prisma.user.findUnique({
       where: { id: parent.userId },
     });
@@ -2213,11 +2275,7 @@ export const MessageFieldResolvers = {
    * @param context - GraphQL context
    * @returns The channel
    */
-  channel: async (
-    parent: Message,
-    _args: unknown,
-    context: GraphQLContext
-  ) => {
+  channel: async (parent: Message, _args: unknown, context: GraphQLContext) => {
     return context.prisma.channel.findUnique({
       where: { id: parent.channelId },
     });
@@ -2284,7 +2342,9 @@ export const MessageFieldResolvers = {
       } else {
         reactionMap.set(reaction.emoji, {
           emoji: reaction.emoji,
-          users: [{ id: reaction.user.id, displayName: reaction.user.displayName }],
+          users: [
+            { id: reaction.user.id, displayName: reaction.user.displayName },
+          ],
           count: 1,
         });
       }
@@ -2383,7 +2443,7 @@ export const MessageFieldResolvers = {
       include: { file: true },
     });
 
-    return attachments.map((a: typeof attachments[number]) => a.file);
+    return attachments.map((a: (typeof attachments)[number]) => a.file);
   },
 
   /**

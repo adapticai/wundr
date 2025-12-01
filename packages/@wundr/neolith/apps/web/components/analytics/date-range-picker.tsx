@@ -10,7 +10,12 @@ export interface DateRangePickerProps {
   className?: string;
 }
 
-export function DateRangePicker({ from, to, onSelect, className }: DateRangePickerProps) {
+export function DateRangePicker({
+  from,
+  to,
+  onSelect,
+  className,
+}: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [fromInput, setFromInput] = useState(from ? formatDate(from) : '');
   const [toInput, setToInput] = useState(to ? formatDate(to) : '');
@@ -18,7 +23,10 @@ export function DateRangePicker({ from, to, onSelect, className }: DateRangePick
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -62,9 +70,10 @@ export function DateRangePicker({ from, to, onSelect, className }: DateRangePick
     setIsOpen(false);
   };
 
-  const displayText = from || to
-    ? `${from ? formatDisplayDate(from) : '...'} - ${to ? formatDisplayDate(to) : '...'}`
-    : 'Custom range';
+  const displayText =
+    from || to
+      ? `${from ? formatDisplayDate(from) : '...'} - ${to ? formatDisplayDate(to) : '...'}`
+      : 'Custom range';
 
   return (
     <div className={clsx('relative', className)} ref={containerRef}>
@@ -73,7 +82,7 @@ export function DateRangePicker({ from, to, onSelect, className }: DateRangePick
         className={clsx(
           'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2',
           'bg-muted text-muted-foreground hover:bg-muted/80',
-          (from || to) && 'bg-primary/10 text-primary',
+          (from || to) && 'bg-primary/10 text-primary'
         )}
       >
         <CalendarIcon />
@@ -81,42 +90,42 @@ export function DateRangePicker({ from, to, onSelect, className }: DateRangePick
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-lg shadow-lg p-4 z-50">
-          <div className="space-y-4">
+        <div className='absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-lg shadow-lg p-4 z-50'>
+          <div className='space-y-4'>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className='block text-sm font-medium text-foreground mb-1'>
                 From
               </label>
               <input
-                type="date"
+                type='date'
                 value={fromInput}
-                onChange={(e) => setFromInput(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={e => setFromInput(e.target.value)}
+                className='w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className='block text-sm font-medium text-foreground mb-1'>
                 To
               </label>
               <input
-                type="date"
+                type='date'
                 value={toInput}
-                onChange={(e) => setToInput(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={e => setToInput(e.target.value)}
+                className='w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
               />
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className='flex gap-2 pt-2'>
               <button
                 onClick={handleClear}
-                className="flex-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg transition-colors"
+                className='flex-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg transition-colors'
               >
                 Clear
               </button>
               <button
                 onClick={handleApply}
-                className="flex-1 px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                className='flex-1 px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors'
               >
                 Apply
               </button>
@@ -130,11 +139,18 @@ export function DateRangePicker({ from, to, onSelect, className }: DateRangePick
 
 function CalendarIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      className='w-4 h-4'
+    >
+      <rect x='3' y='4' width='18' height='18' rx='2' ry='2' />
+      <line x1='16' y1='2' x2='16' y2='6' />
+      <line x1='8' y1='2' x2='8' y2='6' />
+      <line x1='3' y1='10' x2='21' y2='10' />
     </svg>
   );
 }
