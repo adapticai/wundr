@@ -83,10 +83,36 @@ const indexHtml = `<!DOCTYPE html>
 </html>`;
 
 try {
-  // Ensure out directory exists
+  // Remove native C++ addon files from standalone folder (causes Netlify middleware errors)
+  // The Netlify plugin scans these and fails because C++ addons aren't supported in edge runtime
+  const standaloneDir = path.join(__dirname, '..', '.next', 'standalone');
+  if (fs.existsSync(standaloneDir)) {
+    // Find and remove .node files (native C++ addons)
+    const removeNodeFiles = dir => {
+      if (!fs.existsSync(dir)) return;
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          removeNodeFiles(fullPath);
+        } else if (
+          entry.name.endsWith('.node') ||
+          entry.name.endsWith('.dylib.node')
+        ) {
+          fs.unlinkSync(fullPath);
+          console.log(`✓ Removed native addon: ${entry.name}`);
+        }
+      }
+    };
+    removeNodeFiles(standaloneDir);
+  }
+
+  // Check if out directory exists (optional for Netlify deployment)
   if (!fs.existsSync(outDir)) {
-    console.error(`Error: Output directory not found at ${outDir}`);
-    process.exit(1);
+    console.log(
+      `Note: Output directory not found at ${outDir} - skipping index.html creation (not needed for SSR deployment)`
+    );
+    process.exit(0); // Exit successfully - this is expected for Netlify
   }
 
   // Create or overwrite index.html

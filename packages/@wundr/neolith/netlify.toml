@@ -14,8 +14,12 @@
 # =============================================================================
 
 [build]
-  # Build command for Next.js (install deps, build workspace packages, then build web)
-  command = "pnpm install --no-frozen-lockfile && pnpm --filter '@neolith/*' run build && cd apps/web && pnpm run build"
+  # Build command for Next.js (install deps, generate prisma, build workspace packages, then build web)
+  # Note: We run prisma generate explicitly after install to ensure @prisma/client is available
+  # Note: NODE_ENV should NOT be set in .env files to avoid Next.js 16 static generation issues
+  # Note: We use --ignore-scripts to skip postinstall hooks, then run prisma generate explicitly
+  # Note: pnpm --filter '@neolith/*' run build includes apps/web build, no need for separate cd
+  command = "pnpm install --no-frozen-lockfile --ignore-scripts && cd packages/@neolith/database && pnpm exec prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build"
   # Output directory for Next.js
   publish = "apps/web/.next"
   # Base directory for monorepo
@@ -24,7 +28,12 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
-  NODE_ENV = "production"
+  # Do NOT set NODE_ENV here - it prevents devDependencies from being installed
+  # which breaks the build. NODE_ENV=production is set automatically by Next.js during build
+  PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
+  # Disable Edge Functions for middleware to avoid C++ addon issues (sharp, prisma)
+  # This runs middleware at origin (SSR) instead, which supports full Node.js
+  NEXT_DISABLE_NETLIFY_EDGE = "true"
 
 # Redirect rules for SPA routing
 [[redirects]]
@@ -62,10 +71,10 @@
 
 # Development context
 [context.deploy-preview]
-  command = "pnpm install --no-frozen-lockfile && pnpm --filter '@neolith/*' run build && cd apps/web && pnpm run build"
+  command = "pnpm install --no-frozen-lockfile && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build && cd apps/web && NODE_ENV=production pnpm run build"
 
 [context.branch-deploy]
-  command = "pnpm install --no-frozen-lockfile && pnpm --filter '@neolith/*' run build && cd apps/web && pnpm run build"
+  command = "pnpm install --no-frozen-lockfile && cd packages/@neolith/database && npx prisma generate && cd ../.. && pnpm --filter '@neolith/*' run build && cd apps/web && NODE_ENV=production pnpm run build"
 
 # Functions configuration
 [functions]
