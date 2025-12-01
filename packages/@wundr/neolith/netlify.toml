@@ -91,3 +91,4 @@
 # NOTE: NEXT_DISABLE_NETLIFY_EDGE=true must be set as an environment variable
 # in the Netlify dashboard (Site settings > Environment variables) with Build scope
 # to disable edge functions for middleware and avoid C++ addon errors.
+
