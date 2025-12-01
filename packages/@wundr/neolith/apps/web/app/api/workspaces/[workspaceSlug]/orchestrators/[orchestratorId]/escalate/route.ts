@@ -240,6 +240,9 @@ export async function POST(
       targetUserIds = workspaceAdmins.map(admin => admin.userId);
     }
 
+    // Use severity if provided, otherwise fallback to priority
+    const severity = input.severity ?? input.priority;
+
     // Update task status to BLOCKED
     const updatedTask = await prisma.task.update({
       where: { id: input.taskId },
@@ -251,7 +254,7 @@ export async function POST(
             escalatedAt: new Date().toISOString(),
             escalatedBy: orchestrator.user.id,
             reason: input.reason,
-            severity: input.severity,
+            severity: severity,
             context: input.context,
           },
         } as unknown as Prisma.InputJsonValue,
@@ -268,16 +271,14 @@ export async function POST(
             title: `Task Escalation: ${task.title}`,
             body: input.reason,
             priority:
-              input.severity === 'critical'
-                ? ('URGENT' as const)
-                : ('HIGH' as const),
+              severity === 'critical' ? ('URGENT' as const) : ('HIGH' as const),
             resourceId: task.id,
             resourceType: 'task',
             metadata: {
               taskId: task.id,
               orchestratorId,
               orchestratorName: orchestrator.user.name,
-              severity: input.severity,
+              severity: severity,
               context: input.context,
             } as unknown as Prisma.InputJsonValue,
           },
@@ -298,14 +299,14 @@ export async function POST(
       if (channel) {
         channelMessage = await prisma.message.create({
           data: {
-            content: `⚠️ **Task Escalation** (${input.severity.toUpperCase()})\n\n**Task:** ${task.title}\n**Reason:** ${input.reason}\n\nTask has been escalated for review.`,
+            content: `⚠️ **Task Escalation** (${severity.toUpperCase()})\n\n**Task:** ${task.title}\n**Reason:** ${input.reason}\n\nTask has been escalated for review.`,
             type: 'SYSTEM',
             channelId: channel.id,
             authorId: orchestrator.user.id,
             metadata: {
               taskId: task.id,
               escalation: true,
-              severity: input.severity,
+              severity: severity,
             } as unknown as Prisma.InputJsonValue,
           },
         });

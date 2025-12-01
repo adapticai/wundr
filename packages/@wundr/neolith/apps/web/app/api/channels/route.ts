@@ -169,8 +169,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
 
     // Calculate pagination
-    const skip = (filters.page - 1) * filters.limit;
-    const take = filters.limit;
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+    const skip = (page - 1) * limit;
+    const take = limit;
 
     // Build orderBy
     const orderBy: Prisma.channelOrderByWithRelationInput = {
@@ -208,15 +210,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const hasNextPage = filters.page < totalPages;
-    const hasPreviousPage = filters.page > 1;
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
 
     return NextResponse.json({
       data: channelsWithMembership,
       pagination: {
-        page: filters.page,
-        limit: filters.limit,
+        page,
+        limit,
         totalCount,
         totalPages,
         hasNextPage,
@@ -300,6 +302,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const input: CreateChannelInput = parseResult.data;
 
+    // Workspace ID is required for creating channels
+    if (!input.workspaceId) {
+      return NextResponse.json(
+        createErrorResponse(
+          'workspaceId is required',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
     // Check workspace access
     const access = await checkWorkspaceAccess(
       input.workspaceId,
@@ -333,6 +346,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .replace(/^-|-$/g, '');
 
     // Create channel with creator as admin and initial members
+    // At this point, workspaceId is guaranteed to exist due to the check above
+    const workspaceId = input.workspaceId;
+
     const channel = await prisma.$transaction(async tx => {
       // Create the channel
       const newChannel = await tx.channel.create({
@@ -342,7 +358,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           type: input.type,
           description: input.description,
           topic: input.topic,
-          workspaceId: input.workspaceId,
+          workspaceId,
           createdById: session.user.id,
         },
       });
@@ -358,13 +374,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Add initial members (if provided and not the creator)
       const memberIdsToAdd = input.memberIds.filter(
-        id => id !== session.user.id
+        (id: string) => id !== session.user.id
       );
       if (memberIdsToAdd.length > 0) {
         // Verify all members are workspace members
         const workspaceMembers = await tx.workspaceMember.findMany({
           where: {
-            workspaceId: input.workspaceId,
+            workspaceId,
             userId: { in: memberIdsToAdd },
           },
           select: { userId: true },

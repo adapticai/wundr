@@ -115,7 +115,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const user = await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        status: status === 'OFFLINE' ? 'INACTIVE' : 'ACTIVE',
+        status: status === 'offline' ? 'INACTIVE' : 'ACTIVE',
         lastActiveAt: new Date(),
         preferences: {
           ...currentPrefs,

@@ -194,9 +194,9 @@ const AWS_MCP_SERVER: MCPServerConfig = {
   command: 'npx',
   args: ['@wundr/mcp-aws'],
   env: {
-    AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID}',
-    AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY}',
-    AWS_REGION: '${AWS_REGION}',
+    MY_AWS_ACCESS_KEY_ID: '${MY_AWS_ACCESS_KEY_ID}',
+    MY_AWS_SECRET_ACCESS_KEY: '${MY_AWS_SECRET_ACCESS_KEY}',
+    MY_AWS_REGION: '${MY_AWS_REGION}',
   },
   description: 'AWS cloud services integration for infrastructure management',
 };

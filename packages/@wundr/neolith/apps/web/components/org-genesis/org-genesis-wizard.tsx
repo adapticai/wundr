@@ -72,7 +72,6 @@ export function OrgGenesisWizard() {
     description: 50,
     config: 75,
     preview: 100,
-    customize: 100,
   };
 
   const handleBasicInfoSubmit = (data: OrgBasicInfo) => {
@@ -90,10 +89,10 @@ export function OrgGenesisWizard() {
 
     // Generate organization
     const fullInput: GenerateOrgInput = {
-      ...wizardData.basicInfo,
-      ...wizardData.description,
-      ...data,
-    } as GenerateOrgInput;
+      basicInfo: wizardData.basicInfo as OrgBasicInfo,
+      description: wizardData.description as OrgDescription,
+      config: data,
+    };
 
     await generateOrganization(fullInput);
   };
@@ -129,16 +128,17 @@ export function OrgGenesisWizard() {
 
   const handleRegenerate = async () => {
     const fullInput: GenerateOrgInput = {
-      ...wizardData.basicInfo,
-      ...wizardData.description,
-      ...wizardData.config,
-    } as GenerateOrgInput;
+      basicInfo: wizardData.basicInfo as OrgBasicInfo,
+      description: wizardData.description as OrgDescription,
+      config: wizardData.config as OrgConfig,
+    };
 
     await generateOrganization(fullInput);
   };
 
   const handleCustomize = () => {
-    setCurrentStep('customize');
+    // Future: Navigate to customization page
+    console.log('Customize organization', generatedOrg);
   };
 
   const handleAccept = async () => {
@@ -259,7 +259,7 @@ function BasicInfoStep({
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
-              name='organizationName'
+              name='name'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization Name</FormLabel>
@@ -279,7 +279,7 @@ function BasicInfoStep({
 
             <FormField
               control={form.control}
-              name='organizationType'
+              name='type'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization Type</FormLabel>
@@ -408,22 +408,26 @@ function ConfigStep({
 }) {
   const form = useForm<OrgConfig>({
     resolver: zodResolver(orgConfigSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      riskTolerance: 'medium',
+      teamSize: '1-10',
+      ...initialData,
+    },
   });
 
   const [assetInput, setAssetInput] = useState('');
-  const assets = form.watch('targetAssets') || [];
+  const assets = form.watch('assets') || [];
 
   const handleAddAsset = () => {
     if (assetInput.trim() && !assets.includes(assetInput.trim())) {
-      form.setValue('targetAssets', [...assets, assetInput.trim()]);
+      form.setValue('assets', [...assets, assetInput.trim()]);
       setAssetInput('');
     }
   };
 
   const handleRemoveAsset = (asset: string) => {
     form.setValue(
-      'targetAssets',
+      'assets',
       assets.filter(a => a !== asset)
     );
   };
@@ -441,7 +445,7 @@ function ConfigStep({
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
-              name='targetAssets'
+              name='assets'
               render={() => (
                 <FormItem>
                   <FormLabel>Target Assets / Markets</FormLabel>
@@ -469,7 +473,7 @@ function ConfigStep({
 
                     {assets.length > 0 && (
                       <div className='flex flex-wrap gap-2'>
-                        {assets.map(asset => (
+                        {assets.map((asset: string) => (
                           <Badge
                             key={asset}
                             variant='secondary'
@@ -504,9 +508,7 @@ function ConfigStep({
                   <FormLabel>Risk Tolerance</FormLabel>
                   <FormControl>
                     <div className='grid grid-cols-3 gap-3'>
-                      {(
-                        ['conservative', 'moderate', 'aggressive'] as const
-                      ).map(level => (
+                      {(['low', 'medium', 'high'] as const).map(level => (
                         <button
                           key={level}
                           type='button'
@@ -538,7 +540,7 @@ function ConfigStep({
                   <FormLabel>Team Size</FormLabel>
                   <FormControl>
                     <div className='grid grid-cols-3 gap-3'>
-                      {(['small', 'medium', 'large'] as const).map(size => (
+                      {(['1-10', '11-50', '51-200'] as const).map(size => (
                         <button
                           key={size}
                           type='button'
@@ -549,11 +551,11 @@ function ConfigStep({
                               : 'border-border hover:border-primary/50'
                           }`}
                         >
-                          <div className='font-medium capitalize'>{size}</div>
+                          <div className='font-medium'>{size}</div>
                           <div className='text-xs text-muted-foreground'>
-                            {size === 'small' && '1-10'}
-                            {size === 'medium' && '10-50'}
-                            {size === 'large' && '50+'}
+                            {size === '1-10' && 'Small'}
+                            {size === '11-50' && 'Medium'}
+                            {size === '51-200' && 'Large'}
                           </div>
                         </button>
                       ))}

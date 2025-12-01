@@ -121,8 +121,8 @@ export async function GET(
     }
 
     // Get all processing jobs for this file
-    const fileJobs = Array.from(processingJobs.values())
-      .filter(job => job.fileId === params.id)
+    const fileJobs = processingJobs
+      .list({ fileId: params.id })
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     // Calculate summary statistics

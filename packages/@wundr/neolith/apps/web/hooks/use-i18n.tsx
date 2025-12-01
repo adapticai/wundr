@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import {
-  translate,
+  t as translate,
   formatDate,
   formatTime,
   formatNumber,
@@ -74,7 +74,7 @@ export function I18nProvider({
 
   const t = useCallback(
     (key: string, values?: Record<string, string | number>) => {
-      return translate(key, locale, values);
+      return translate(key, values);
     },
     [locale]
   );
@@ -83,12 +83,12 @@ export function I18nProvider({
     locale,
     setLocale,
     t,
-    formatDate: (date: Date) => formatDate(date, locale),
-    formatTime: (date: Date) => formatTime(date, locale),
-    formatNumber: (num: number) => formatNumber(num, locale),
+    formatDate: (date: Date) => formatDate(date),
+    formatTime: (date: Date) => formatTime(date),
+    formatNumber: (num: number) => formatNumber(num),
     formatCurrency: (amount: number, currency?: string) =>
-      formatCurrency(amount, currency, locale),
-    formatRelativeTime: (date: Date) => formatRelativeTime(date, locale),
+      formatCurrency(amount, currency),
+    formatRelativeTime: (date: Date) => formatRelativeTime(date),
   };
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

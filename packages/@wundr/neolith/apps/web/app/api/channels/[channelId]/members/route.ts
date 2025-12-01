@@ -437,12 +437,11 @@ export async function POST(
       currentUser?.displayName || currentUser?.name || 'Someone';
 
     for (const membership of newMemberships) {
-      NotificationService.notifyChannelInvite(
-        membership.userId,
-        params.channelId,
-        access.channel.name,
-        inviterName
-      ).catch(err => {
+      NotificationService.notifyChannelInvite({
+        userId: membership.userId,
+        channelId: params.channelId,
+        inviterId: session.user.id,
+      }).catch((err: unknown) => {
         console.error(
           '[POST /api/channels/:channelId/members] Failed to send channel invite notification:',
           err

@@ -58,6 +58,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.1",
     "@tanstack/react-table": "^8.21.3",
+    "@types/ws": "^8.5.10",
     "@wundr.io/org-genesis": "link:../../../org-genesis",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
@@ -65,6 +66,7 @@
     "date-fns": "^4.1.0",
     "graphql": "^16.8.1",
     "html2canvas": "^1.4.1",
+    "ioredis": "^5.4.1",
     "jspdf": "^3.0.4",
     "livekit-client": "^2.5.0",
     "lucide-react": "^0.554.0",
@@ -85,8 +87,8 @@
     "tailwind-merge": "^2.2.0",
     "vaul": "^1.1.2",
     "web-vitals": "^5.1.0",
-    "zod": "^3.25.76",
-    "ioredis": "^5.4.1"
+    "ws": "^8.14.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@neolith/eslint-config": "workspace:*",

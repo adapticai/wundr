@@ -115,14 +115,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
 
     // Calculate pagination
-    const skip = (filters.page - 1) * filters.limit;
-    const take = filters.limit;
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+    const skip = (page - 1) * limit;
+    const take = limit;
 
-    // Build orderBy
-    const orderBy: Prisma.orchestratorOrderByWithRelationInput =
-      filters.sortBy === 'createdAt' || filters.sortBy === 'updatedAt'
-        ? { [filters.sortBy]: filters.sortOrder }
-        : { [filters.sortBy]: filters.sortOrder };
+    // Build orderBy - cast to proper Prisma type
+    const orderBy: Prisma.orchestratorOrderByWithRelationInput = {
+      [filters.sortBy]: filters.sortOrder,
+    } as Prisma.orchestratorOrderByWithRelationInput;
 
     // Fetch Orchestrators and total count in parallel
     const [orchestrators, totalCount] = await Promise.all([
@@ -155,15 +156,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ]);
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const hasNextPage = filters.page < totalPages;
-    const hasPreviousPage = filters.page > 1;
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
 
     return NextResponse.json({
       data: orchestrators,
       pagination: {
-        page: filters.page,
-        limit: filters.limit,
+        page,
+        limit,
         totalCount,
         totalPages,
         hasNextPage,

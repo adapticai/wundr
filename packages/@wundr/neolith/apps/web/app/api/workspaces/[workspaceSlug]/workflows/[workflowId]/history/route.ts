@@ -189,7 +189,7 @@ export async function GET(
   NextResponse<
     | ListExecutionsResponse
     | SingleExecutionResponse
-    | { error: string; code: string; details?: Record<string, unknown> }
+    | { error: string; message: string }
   >
 > {
   try {

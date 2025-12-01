@@ -151,7 +151,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       fileId: string;
       type: string;
       status: string;
-      priority: string;
+      priority: string | number;
       createdAt: string;
     }> = [];
 
@@ -197,21 +197,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         id: jobId,
         fileId: file.id,
         type: input.type,
-        status: 'pending',
-        priority: input.priority ?? 'normal',
+        status: 'pending' as const,
+        priority: typeof input.priority === 'number' ? input.priority : 0,
         progress: 0,
-        options: input.options ?? null,
-        result: null,
-        error: null,
+        options: input.options ?? undefined,
+        result: undefined,
+        error: undefined,
         workspaceId: file.workspaceId,
         createdById: session.user.id,
-        callbackUrl: input.callbackUrl ?? null,
+        callbackUrl: input.callbackUrl ?? undefined,
         metadata: {
           batchJob: true,
           batchSize: input.fileIds.length,
         },
-        startedAt: null,
-        completedAt: null,
+        startedAt: undefined,
+        completedAt: undefined,
         createdAt: now,
         updatedAt: now,
       };
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         fileId: file.id,
         type: input.type,
         status: 'pending',
-        priority: job.priority,
+        priority: typeof input.priority === 'number' ? input.priority : 0,
         createdAt: now.toISOString(),
       });
     }

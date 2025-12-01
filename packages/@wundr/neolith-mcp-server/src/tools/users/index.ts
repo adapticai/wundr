@@ -56,7 +56,7 @@ export {
 } from './set-presence';
 
 // Export API client
-export { NeolithApiClient, createNeolithApiClient, type NeolithApiClientConfig } from '../../lib/api-client';
+export { NeolithApiClient, createNeolithApiClient, type NeolithApiClientConfig } from '@/lib/api-client';
 
 /**
  * Collection of all user tool definitions for registration

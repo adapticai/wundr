@@ -82,8 +82,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Build where clause - only global subagents
     const where: Prisma.subagentWhereInput = {
       isGlobal: true,
-      ...(scope && { scope }),
-      ...(status && { status }),
+      ...(scope && { scope: scope as Prisma.EnumAgentScopeFilter }),
+      ...(status && { status: status as Prisma.EnumAgentStatusFilter }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -218,13 +218,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         charterId: input.charterId,
         charterData: input.charterData as Prisma.InputJsonValue,
         isGlobal: true,
-        scope: 'UNIVERSAL',
+        scope: 'UNIVERSAL' as const,
         tier: input.tier ?? 3,
         capabilities: (input.capabilities ?? []) as Prisma.InputJsonValue,
         mcpTools: input.mcpTools ?? [],
         maxTokensPerTask: input.maxTokensPerTask ?? 50000,
         worktreeRequirement: input.worktreeRequirement ?? 'read',
-        status: 'ACTIVE', // Universal subagents start active
+        status: 'ACTIVE' as const, // Universal subagents start active
       },
     });
 

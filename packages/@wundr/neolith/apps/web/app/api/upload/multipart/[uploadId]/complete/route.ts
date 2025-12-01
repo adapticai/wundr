@@ -47,16 +47,17 @@ async function completeMultipartUpload(
   s3Bucket: string,
   parts: { partNumber: number; eTag: string }[]
 ): Promise<void> {
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
-  const { S3Client, CompleteMultipartUploadCommand } =
-    await import('@aws-sdk/client-s3');
+  const { S3Client, CompleteMultipartUploadCommand } = await import(
+    '@aws-sdk/client-s3'
+  );
 
   const client = new S3Client({
     region,
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+      accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+      secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
     },
   });
 
@@ -97,7 +98,7 @@ function generateThumbnailUrl(s3Key: string, mimeType: string): string | null {
 
   // Fallback to S3 URL
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
   return `https://${s3Bucket}.s3.${region}.amazonaws.com/${thumbnailPrefix}${s3Key}`;
 }
 
@@ -149,10 +150,10 @@ async function triggerFileProcessing(
       if (sqsModule) {
         const { SQSClient, SendMessageCommand } = sqsModule;
         const sqsClient = new SQSClient({
-          region: process.env.AWS_REGION ?? 'us-east-1',
+          region: process.env.MY_AWS_REGION ?? 'us-east-1',
           credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+            accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
           },
         });
 

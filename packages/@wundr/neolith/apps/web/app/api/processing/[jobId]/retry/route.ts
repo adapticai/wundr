@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { processingJobs } from '@/lib/services/processing-stores';
+import type { ProcessingJob } from '@/lib/services/processing-stores';
 import {
   jobIdParamSchema,
   createProcessingErrorResponse,
@@ -139,16 +140,16 @@ export async function POST(
     const now = new Date();
 
     // Create new job based on original
-    const newJob = {
+    const newJob: ProcessingJob = {
       id: newJobId,
       fileId: originalJob.fileId,
       type: originalJob.type,
-      status: 'pending',
+      status: 'pending' as const,
       priority: originalJob.priority,
       progress: 0,
       options: originalJob.options,
-      result: null,
-      error: null,
+      result: undefined,
+      error: undefined,
       workspaceId: originalJob.workspaceId,
       createdById: session.user.id,
       callbackUrl: originalJob.callbackUrl,
@@ -157,8 +158,8 @@ export async function POST(
         retriedFrom: originalJob.id,
         retryCount: ((originalJob.metadata?.retryCount as number) ?? 0) + 1,
       },
-      startedAt: null,
-      completedAt: null,
+      startedAt: undefined,
+      completedAt: undefined,
       createdAt: now,
       updatedAt: now,
     };

@@ -64,19 +64,20 @@ async function initiateMultipartUpload(
   s3Bucket: string,
   contentType: string
 ): Promise<MultipartInitResponse> {
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
   const expiresIn = 24 * 3600; // 24 hours for multipart uploads
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
   try {
-    const { S3Client, CreateMultipartUploadCommand } =
-      await import('@aws-sdk/client-s3');
+    const { S3Client, CreateMultipartUploadCommand } = await import(
+      '@aws-sdk/client-s3'
+    );
 
     const client = new S3Client({
       region,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
       },
     });
 

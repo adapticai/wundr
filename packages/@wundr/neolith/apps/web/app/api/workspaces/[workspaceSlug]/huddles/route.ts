@@ -216,14 +216,16 @@ export async function POST(
 
         const huddle = createHuddle(
           workspace.id,
-          name,
+          channelId || `default-${workspace.id}`,
           {
             id: user.id,
             name: user.displayName || user.name || user.email,
-            email: user.email,
-            image: user.avatarUrl,
-          },
-          channelId
+            avatar: user.avatarUrl || undefined,
+            isMuted: false,
+            isVideoEnabled: false,
+            isSpeaking: false,
+            isHandRaised: false,
+          }
         );
 
         return NextResponse.json({ data: huddle }, { status: 201 });
@@ -264,8 +266,11 @@ export async function POST(
         const participant = joinHuddle(huddleId, {
           id: user.id,
           name: user.displayName || user.name || user.email,
-          email: user.email,
-          image: user.avatarUrl,
+          avatar: user.avatarUrl || undefined,
+          isMuted: false,
+          isVideoEnabled: false,
+          isSpeaking: false,
+          isHandRaised: false,
         });
 
         if (!participant) {
@@ -332,7 +337,7 @@ export async function POST(
 
         // Only allow ending by participants
         const isParticipant = huddle.participants.some(
-          p => p.user.id === session.user.id
+          p => p.id === session.user.id
         );
         if (!isParticipant) {
           return NextResponse.json(

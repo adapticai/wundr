@@ -128,7 +128,6 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// @ts-expect-error Utility function kept for future route handler tests
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,

@@ -27,7 +27,13 @@ import type { NextRequest } from 'next/server';
 /**
  * Default notification preferences
  */
-const DEFAULT_PREFERENCES: NotificationPreferencesInput = {
+const DEFAULT_PREFERENCES: Omit<NotificationPreferencesInput, 'userId'> = {
+  channels: {
+    in_app: true,
+    email: true,
+    push: true,
+    webhook: false,
+  },
   messages: true,
   mentions: true,
   threads: true,
@@ -49,8 +55,9 @@ const DEFAULT_PREFERENCES: NotificationPreferencesInput = {
  * Extract notification preferences from user preferences JSON
  */
 function extractNotificationPreferences(
-  preferences: Prisma.JsonValue
-): NotificationPreferencesInput {
+  preferences: Prisma.JsonValue,
+  userId: string
+): Omit<NotificationPreferencesInput, 'userId'> {
   if (
     typeof preferences === 'object' &&
     preferences !== null &&
@@ -64,9 +71,13 @@ function extractNotificationPreferences(
       notifications !== null &&
       !Array.isArray(notifications)
     ) {
+      const notifPrefs = notifications as Omit<
+        NotificationPreferencesInput,
+        'userId'
+      >;
       return {
         ...DEFAULT_PREFERENCES,
-        ...(notifications as NotificationPreferencesInput),
+        ...notifPrefs,
       };
     }
   }
@@ -141,7 +152,10 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const notificationPrefs = extractNotificationPreferences(user.preferences);
+    const notificationPrefs = extractNotificationPreferences(
+      user.preferences,
+      session.user.id
+    );
 
     return NextResponse.json({ data: notificationPrefs });
   } catch (error) {
@@ -266,24 +280,29 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         : {};
 
     const currentNotificationPrefs = extractNotificationPreferences(
-      user.preferences
+      user.preferences,
+      session.user.id
     );
 
-    // Merge preferences
-    const updatedNotificationPrefs: NotificationPreferencesInput = {
+    // Merge preferences (exclude userId from merge)
+    const { userId: _userId, ...inputWithoutUserId } = input;
+    const updatedNotificationPrefs: Omit<
+      NotificationPreferencesInput,
+      'userId'
+    > = {
       ...currentNotificationPrefs,
-      ...input,
+      ...inputWithoutUserId,
       // Deep merge for nested objects
-      ...(input.quietHours && {
+      ...(inputWithoutUserId.quietHours && {
         quietHours: {
           ...currentNotificationPrefs.quietHours,
-          ...input.quietHours,
+          ...inputWithoutUserId.quietHours,
         },
       }),
-      ...(input.email && {
+      ...(inputWithoutUserId.email && {
         email: {
           ...currentNotificationPrefs.email,
-          ...input.email,
+          ...inputWithoutUserId.email,
         },
       }),
     };

@@ -42,7 +42,13 @@ interface WorktreeEntry {
   repoRoot: string;
   created: string;
   updated: string;
-  status: 'active' | 'completed' | 'merging' | 'merged' | 'conflict' | 'abandoned';
+  status:
+    | 'active'
+    | 'completed'
+    | 'merging'
+    | 'merged'
+    | 'conflict'
+    | 'abandoned';
   commits: string[];
   mergeStrategy?: 'auto' | 'squash' | 'pr' | 'manual';
   mergeResult?: {
@@ -198,7 +204,10 @@ function isGitRepo(dir: string): boolean {
 
 function getRepoRoot(dir: string): string {
   try {
-    return execSync('git rev-parse --show-toplevel', { cwd: dir, encoding: 'utf-8' }).trim();
+    return execSync('git rev-parse --show-toplevel', {
+      cwd: dir,
+      encoding: 'utf-8',
+    }).trim();
   } catch {
     return dir;
   }
@@ -206,15 +215,25 @@ function getRepoRoot(dir: string): string {
 
 function getCurrentBranch(dir: string): string {
   try {
-    return execSync('git branch --show-current', { cwd: dir, encoding: 'utf-8' }).trim();
+    return execSync('git branch --show-current', {
+      cwd: dir,
+      encoding: 'utf-8',
+    }).trim();
   } catch {
     return 'main';
   }
 }
 
-function getCommitsBetween(dir: string, base: string, head: string = 'HEAD'): string[] {
+function getCommitsBetween(
+  dir: string,
+  base: string,
+  head: string = 'HEAD'
+): string[] {
   try {
-    const output = execSync(`git log ${base}..${head} --oneline`, { cwd: dir, encoding: 'utf-8' });
+    const output = execSync(`git log ${base}..${head} --oneline`, {
+      cwd: dir,
+      encoding: 'utf-8',
+    });
     return output.trim().split('\n').filter(Boolean);
   } catch {
     return [];
@@ -223,7 +242,10 @@ function getCommitsBetween(dir: string, base: string, head: string = 'HEAD'): st
 
 function hasConflicts(worktreePath: string, baseBranch: string): boolean {
   try {
-    execSync(`git merge --no-commit --no-ff ${baseBranch}`, { cwd: worktreePath, stdio: 'pipe' });
+    execSync(`git merge --no-commit --no-ff ${baseBranch}`, {
+      cwd: worktreePath,
+      stdio: 'pipe',
+    });
     execSync('git merge --abort', { cwd: worktreePath, stdio: 'pipe' });
     return false;
   } catch {
@@ -238,7 +260,10 @@ function hasConflicts(worktreePath: string, baseBranch: string): boolean {
 
 function getConflictFiles(worktreePath: string): string[] {
   try {
-    const output = execSync('git diff --name-only --diff-filter=U', { cwd: worktreePath, encoding: 'utf-8' });
+    const output = execSync('git diff --name-only --diff-filter=U', {
+      cwd: worktreePath,
+      encoding: 'utf-8',
+    });
     return output.trim().split('\n').filter(Boolean);
   } catch {
     return [];
@@ -255,7 +280,10 @@ function generateWorktreeId(agentType: string): string {
   return `${agentType}-${timestamp}-${random}`;
 }
 
-function createWorktree(options: SpawnOptions, workingDir: string): WorktreeEntry | null {
+function createWorktree(
+  options: SpawnOptions,
+  workingDir: string
+): WorktreeEntry | null {
   const state = loadState();
 
   // Check limits
@@ -284,10 +312,13 @@ function createWorktree(options: SpawnOptions, workingDir: string): WorktreeEntr
     }
 
     // Create the worktree with a new branch
-    execSync(`git worktree add -b "${branchName}" "${worktreePath}" "${baseBranch}"`, {
-      cwd: repoRoot,
-      stdio: 'pipe',
-    });
+    execSync(
+      `git worktree add -b "${branchName}" "${worktreePath}" "${baseBranch}"`,
+      {
+        cwd: repoRoot,
+        stdio: 'pipe',
+      }
+    );
 
     // Create metadata file in worktree
     const metadata = {
@@ -424,13 +455,17 @@ ${options.task}`,
   }
 
   // Handle process completion
-  claudeProcess.on('exit', (code) => {
+  claudeProcess.on('exit', code => {
     console.log(`Agent process exited with code ${code}`);
     markWorktreeCompleted(worktree.id);
 
     // Queue for merge if auto-merge enabled
     if (options.autoMerge) {
-      queueForMerge(worktree.id, options.mergeStrategy || 'auto', options.priority || 1);
+      queueForMerge(
+        worktree.id,
+        options.mergeStrategy || 'auto',
+        options.priority || 1
+      );
     }
   });
 
@@ -466,10 +501,15 @@ function queueForMerge(
   state.mergeQueue.sort((a, b) => b.priority - a.priority);
 
   saveState(state);
-  console.log(`Queued ${worktreeId} for merge (strategy: ${strategy}, priority: ${priority})`);
+  console.log(
+    `Queued ${worktreeId} for merge (strategy: ${strategy}, priority: ${priority})`
+  );
 }
 
-async function performMerge(worktreeId: string, options: MergeOptions): Promise<{
+async function performMerge(
+  worktreeId: string,
+  options: MergeOptions
+): Promise<{
   success: boolean;
   message: string;
   prUrl?: string;
@@ -495,7 +535,10 @@ async function performMerge(worktreeId: string, options: MergeOptions): Promise<
         message: 'Merge conflicts detected',
         conflictFiles,
       });
-      return { success: false, message: `Conflicts in: ${conflictFiles.join(', ')}` };
+      return {
+        success: false,
+        message: `Conflicts in: ${conflictFiles.join(', ')}`,
+      };
     }
   }
 
@@ -510,7 +553,10 @@ async function performMerge(worktreeId: string, options: MergeOptions): Promise<
       case 'pr':
         return await doPrMerge(entry);
       default:
-        return { success: false, message: `Unknown strategy: ${options.strategy}` };
+        return {
+          success: false,
+          message: `Unknown strategy: ${options.strategy}`,
+        };
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -519,23 +565,40 @@ async function performMerge(worktreeId: string, options: MergeOptions): Promise<
   }
 }
 
-async function doAutoMerge(entry: WorktreeEntry): Promise<{ success: boolean; message: string }> {
+async function doAutoMerge(
+  entry: WorktreeEntry
+): Promise<{ success: boolean; message: string }> {
   try {
     // Checkout base branch in repo root
-    execSync(`git checkout ${entry.baseBranch}`, { cwd: entry.repoRoot, stdio: 'pipe' });
+    execSync(`git checkout ${entry.baseBranch}`, {
+      cwd: entry.repoRoot,
+      stdio: 'pipe',
+    });
 
     // Try fast-forward first
     try {
-      execSync(`git merge --ff-only ${entry.branch}`, { cwd: entry.repoRoot, stdio: 'pipe' });
-      updateWorktreeStatus(entry.id, 'merged', { success: true, message: 'Fast-forward merge' });
-      return { success: true, message: 'Fast-forward merge successful' };
-    } catch {
-      // Fall back to regular merge
-      execSync(`git merge ${entry.branch} -m "Merge ${entry.branch} (agent worktree ${entry.id})"`, {
+      execSync(`git merge --ff-only ${entry.branch}`, {
         cwd: entry.repoRoot,
         stdio: 'pipe',
       });
-      updateWorktreeStatus(entry.id, 'merged', { success: true, message: 'Merge commit created' });
+      updateWorktreeStatus(entry.id, 'merged', {
+        success: true,
+        message: 'Fast-forward merge',
+      });
+      return { success: true, message: 'Fast-forward merge successful' };
+    } catch {
+      // Fall back to regular merge
+      execSync(
+        `git merge ${entry.branch} -m "Merge ${entry.branch} (agent worktree ${entry.id})"`,
+        {
+          cwd: entry.repoRoot,
+          stdio: 'pipe',
+        }
+      );
+      updateWorktreeStatus(entry.id, 'merged', {
+        success: true,
+        message: 'Merge commit created',
+      });
       return { success: true, message: 'Merge successful' };
     }
   } catch (error) {
@@ -543,9 +606,17 @@ async function doAutoMerge(entry: WorktreeEntry): Promise<{ success: boolean; me
   }
 }
 
-async function doSquashMerge(entry: WorktreeEntry): Promise<{ success: boolean; message: string }> {
-  execSync(`git checkout ${entry.baseBranch}`, { cwd: entry.repoRoot, stdio: 'pipe' });
-  execSync(`git merge --squash ${entry.branch}`, { cwd: entry.repoRoot, stdio: 'pipe' });
+async function doSquashMerge(
+  entry: WorktreeEntry
+): Promise<{ success: boolean; message: string }> {
+  execSync(`git checkout ${entry.baseBranch}`, {
+    cwd: entry.repoRoot,
+    stdio: 'pipe',
+  });
+  execSync(`git merge --squash ${entry.branch}`, {
+    cwd: entry.repoRoot,
+    stdio: 'pipe',
+  });
 
   const commitCount = entry.commits.length;
   const commitMsg = `feat(${entry.agentType}): merge agent worktree ${entry.id}
@@ -555,7 +626,10 @@ Squashed ${commitCount} commits from ${entry.branch}
 Task: ${entry.taskDescription.substring(0, 100)}
 `;
 
-  execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { cwd: entry.repoRoot, stdio: 'pipe' });
+  execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, {
+    cwd: entry.repoRoot,
+    stdio: 'pipe',
+  });
 
   updateWorktreeStatus(entry.id, 'merged', {
     success: true,
@@ -565,9 +639,14 @@ Task: ${entry.taskDescription.substring(0, 100)}
   return { success: true, message: `Squash merged ${commitCount} commits` };
 }
 
-async function doPrMerge(entry: WorktreeEntry): Promise<{ success: boolean; message: string; prUrl?: string }> {
+async function doPrMerge(
+  entry: WorktreeEntry
+): Promise<{ success: boolean; message: string; prUrl?: string }> {
   // Push branch
-  execSync(`git push -u origin ${entry.branch}`, { cwd: entry.path, stdio: 'pipe' });
+  execSync(`git push -u origin ${entry.branch}`, {
+    cwd: entry.path,
+    stdio: 'pipe',
+  });
 
   // Create PR using gh CLI
   const prTitle = `[${entry.agentType}] Agent worktree ${entry.id}`;
@@ -585,7 +664,11 @@ async function doPrMerge(entry: WorktreeEntry): Promise<{ success: boolean; mess
       { cwd: entry.path, encoding: 'utf-8' }
     ).trim();
 
-    updateWorktreeStatus(entry.id, 'merged', { success: true, message: 'PR created', prUrl });
+    updateWorktreeStatus(entry.id, 'merged', {
+      success: true,
+      message: 'PR created',
+      prUrl,
+    });
     return { success: true, message: 'Pull request created', prUrl };
   } catch (error) {
     throw new Error(`Failed to create PR: ${error}`);
@@ -607,12 +690,18 @@ function cleanupMergedWorktrees(): { cleaned: number; errors: string[] } {
     try {
       // Remove worktree
       if (fs.existsSync(entry.path)) {
-        execSync(`git worktree remove "${entry.path}" --force`, { cwd: entry.repoRoot, stdio: 'pipe' });
+        execSync(`git worktree remove "${entry.path}" --force`, {
+          cwd: entry.repoRoot,
+          stdio: 'pipe',
+        });
       }
 
       // Delete branch
       try {
-        execSync(`git branch -D "${entry.branch}"`, { cwd: entry.repoRoot, stdio: 'pipe' });
+        execSync(`git branch -D "${entry.branch}"`, {
+          cwd: entry.repoRoot,
+          stdio: 'pipe',
+        });
       } catch {
         // Branch might already be deleted
       }
@@ -639,7 +728,9 @@ function cleanupMergedWorktrees(): { cleaned: number; errors: string[] } {
   return { cleaned, errors };
 }
 
-function cleanupStaleWorktrees(timeoutMs: number = DEFAULT_CONFIG.worktreeTimeoutMs): {
+function cleanupStaleWorktrees(
+  timeoutMs: number = DEFAULT_CONFIG.worktreeTimeoutMs
+): {
   cleaned: number;
   errors: string[];
 } {
@@ -711,7 +802,9 @@ class WorktreeOrchestrator extends EventEmitter {
     console.log('[daemon] Running cleanup...');
     const staleResult = cleanupStaleWorktrees();
     const mergedResult = cleanupMergedWorktrees();
-    console.log(`[daemon] Cleanup: ${staleResult.cleaned} stale, ${mergedResult.cleaned} merged`);
+    console.log(
+      `[daemon] Cleanup: ${staleResult.cleaned} stale, ${mergedResult.cleaned} merged`
+    );
   }
 
   private async processMergeQueue(): Promise<void> {
@@ -734,7 +827,9 @@ class WorktreeOrchestrator extends EventEmitter {
     saveState(state);
 
     // Perform merge
-    const result = await performMerge(item.worktreeId, { strategy: item.strategy });
+    const result = await performMerge(item.worktreeId, {
+      strategy: item.strategy,
+    });
 
     if (!result.success && item.attempts < DEFAULT_CONFIG.maxMergeRetries) {
       // Re-queue with increased attempts
@@ -772,7 +867,9 @@ async function main(): Promise<void> {
         agentType,
         task,
         autoMerge: args.includes('--auto-merge'),
-        mergeStrategy: (args.find(a => a.startsWith('--strategy='))?.split('=')[1] as any) || 'auto',
+        mergeStrategy:
+          (args.find(a => a.startsWith('--strategy='))?.split('=')[1] as any) ||
+          'auto',
       });
 
       if (!result.success) {
@@ -781,7 +878,7 @@ async function main(): Promise<void> {
       }
 
       // Wait for process to complete
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         result.process?.on('exit', () => resolve());
       });
       break;
@@ -789,10 +886,14 @@ async function main(): Promise<void> {
 
     case 'merge': {
       const worktreeId = args[1];
-      const strategy = (args.find(a => a.startsWith('--strategy='))?.split('=')[1] || 'auto') as any;
+      const strategy = (args
+        .find(a => a.startsWith('--strategy='))
+        ?.split('=')[1] || 'auto') as any;
 
       if (!worktreeId) {
-        console.error('Usage: merge <worktree-id> [--strategy=<auto|squash|pr>]');
+        console.error(
+          'Usage: merge <worktree-id> [--strategy=<auto|squash|pr>]'
+        );
         process.exit(1);
       }
 
@@ -804,7 +905,9 @@ async function main(): Promise<void> {
     }
 
     case 'list': {
-      const statusFilter = args.find(a => a.startsWith('--status='))?.split('=')[1];
+      const statusFilter = args
+        .find(a => a.startsWith('--status='))
+        ?.split('=')[1];
       const state = loadState();
 
       let worktrees = state.worktrees;

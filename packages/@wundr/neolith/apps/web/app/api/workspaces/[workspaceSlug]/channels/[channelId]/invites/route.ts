@@ -455,7 +455,7 @@ export async function POST(
             emailResults.push({
               email: invite.email,
               success: emailResult.success,
-              error: emailResult.error?.message,
+              error: emailResult.error,
             });
 
             if (!emailResult.success) {

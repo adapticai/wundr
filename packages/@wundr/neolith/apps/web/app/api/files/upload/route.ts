@@ -120,8 +120,8 @@ async function uploadToS3(
 ): Promise<{ success: boolean; localPath?: string; error?: string }> {
   // Check if S3 credentials are configured
   const hasS3Credentials =
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY &&
+    process.env.MY_AWS_ACCESS_KEY_ID &&
+    process.env.MY_AWS_SECRET_ACCESS_KEY &&
     process.env.STORAGE_BUCKET;
 
   if (!hasS3Credentials) {
@@ -145,13 +145,13 @@ async function uploadToS3(
     }
 
     const { S3Client, PutObjectCommand } = s3Module;
-    const region = process.env.AWS_REGION ?? 'us-east-1';
+    const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
     const client = new S3Client({
       region,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
       },
     });
 
@@ -589,10 +589,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Generate S3 key and bucket
-    // Use STORAGE_BUCKET (consistent with hasS3Credentials check) or AWS_S3_BUCKET_NAME as fallback
+    // Use STORAGE_BUCKET (consistent with hasS3Credentials check) or MY_AWS_S3_BUCKET_NAME as fallback
     const s3Bucket =
       process.env.STORAGE_BUCKET ||
-      process.env.AWS_S3_BUCKET_NAME ||
+      process.env.MY_AWS_S3_BUCKET_NAME ||
       process.env.AWS_S3_BUCKET ||
       'genesis-uploads';
     const s3Key = generateS3Key(resolvedWorkspaceId, file.name);

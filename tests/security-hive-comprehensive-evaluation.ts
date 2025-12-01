@@ -69,7 +69,7 @@ describe('Security & Compliance Hive - Comprehensive Evaluation', () => {
     mockSecretScanner = {
       patterns: [
         {name: 'AWS Access Key', pattern: /AKIA[0-9A-Z]{16}/g, severity: 'critical'},
-        {name: 'AWS Secret Key', pattern: /aws_secret_access_key\s*=\s*['\"]?([A-Za-z0-9/+=]{40})['\"]?/gi, severity: 'critical'},
+        {name: 'AWS Secret Key', pattern: /MY_AWS_SECRET_ACCESS_KEY\s*=\s*['\"]?([A-Za-z0-9/+=]{40})['\"]?/gi, severity: 'critical'},
         {name: 'GitHub Token', pattern: /gh[pousr]_[A-Za-z0-9_]{36,255}/g, severity: 'high'},
         {name: 'Generic API Key', pattern: /(?:api[_-]?key|apikey)\s*[:=]\s*['\"]?([a-zA-Z0-9_\-]{20,})['\"]?/gi, severity: 'medium'},
         {name: 'JWT Token', pattern: /eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/g, severity: 'medium'},

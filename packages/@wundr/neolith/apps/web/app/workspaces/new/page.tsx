@@ -65,7 +65,7 @@ const workspaceDataSchema = z.object({
   targetAssets: z
     .array(z.string())
     .min(1, 'At least one target asset required'),
-  riskTolerance: z.enum(['conservative', 'moderate', 'aggressive']),
+  riskTolerance: z.enum(['low', 'moderate', 'high']),
   teamSize: z.enum(['small', 'medium', 'large']),
 });
 
@@ -208,7 +208,6 @@ Feel free to describe it in your own words - I'll help extract the details we ne
         teamSize: data.teamSize,
         verbose: false,
         dryRun: false,
-        includeOptionalDisciplines: false,
       };
 
       const result = await generateOrg(input);
@@ -689,22 +688,20 @@ function ReviewForm({
             <div className='space-y-2'>
               <Label>Risk Tolerance</Label>
               <div className='grid grid-cols-3 gap-2'>
-                {(['conservative', 'moderate', 'aggressive'] as const).map(
-                  level => (
-                    <button
-                      key={level}
-                      type='button'
-                      onClick={() => form.setValue('riskTolerance', level)}
-                      className={`rounded-lg border-2 p-3 text-center transition-all text-sm ${
-                        form.watch('riskTolerance') === level
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className='font-medium capitalize'>{level}</div>
-                    </button>
-                  )
-                )}
+                {(['low', 'moderate', 'high'] as const).map(level => (
+                  <button
+                    key={level}
+                    type='button'
+                    onClick={() => form.setValue('riskTolerance', level)}
+                    className={`rounded-lg border-2 p-3 text-center transition-all text-sm ${
+                      form.watch('riskTolerance') === level
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className='font-medium capitalize'>{level}</div>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -787,8 +784,7 @@ Ready to generate your organization structure!`;
     strategy: 'What is your business or investment strategy?',
     'target assets or markets':
       'What markets or asset classes will you focus on? (e.g., crypto, equities, bonds)',
-    'risk tolerance':
-      'What is your risk tolerance? (conservative, moderate, or aggressive)',
+    'risk tolerance': 'What is your risk tolerance? (low, moderate, or high)',
     'expected team size':
       'How large do you expect your team to be? (small, medium, or large)',
   };
@@ -862,8 +858,10 @@ function extractInformationFromConversation(
   }
 
   // Extract risk tolerance
-  if (lower.includes('conservative')) data.riskTolerance = 'conservative';
-  else if (lower.includes('aggressive')) data.riskTolerance = 'aggressive';
+  if (lower.includes('low') || lower.includes('conservative'))
+    data.riskTolerance = 'low';
+  else if (lower.includes('high') || lower.includes('aggressive'))
+    data.riskTolerance = 'high';
   else if (lower.includes('moderate')) data.riskTolerance = 'moderate';
 
   // Extract team size

@@ -21,9 +21,8 @@ const shapeClasses: Record<AvatarShape, string> = {
   full: 'rounded-full', // Deprecated - prefer lg/md/sm
 };
 
-interface AvatarProps extends React.ComponentPropsWithoutRef<
-  typeof AvatarPrimitive.Root
-> {
+interface AvatarProps
+  extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
   /**
    * Shape of the avatar border radius
    * @default 'lg'
@@ -47,9 +46,8 @@ const Avatar = React.forwardRef<
 ));
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
-interface AvatarFallbackProps extends React.ComponentPropsWithoutRef<
-  typeof AvatarPrimitive.Fallback
-> {
+interface AvatarFallbackProps
+  extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> {
   /**
    * Shape of the fallback border radius (should match parent Avatar shape)
    * @default 'lg'

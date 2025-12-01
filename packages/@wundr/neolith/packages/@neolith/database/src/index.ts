@@ -46,6 +46,7 @@ export type {
   orchestrator as Orchestrator,
   workspace as Workspace,
   workspaceMember as WorkspaceMember,
+  workflow as Workflow,
   workflowExecution as WorkflowExecution,
   savedItem as SavedItem,
 } from '@prisma/client';
@@ -69,6 +70,8 @@ export {
   TaskStatus,
   UserStatus,
   OrchestratorStatus,
+  WorkflowStatus,
+  WorkflowExecutionStatus,
   WorkspaceRole,
   WorkspaceVisibility,
 } from '@prisma/client';

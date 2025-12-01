@@ -5021,8 +5021,8 @@ LIVEKIT_API_SECRET="..."
 # S3/Storage
 S3_BUCKET="genesis-app-files"
 S3_REGION="us-east-1"
-AWS_ACCESS_KEY_ID="..."
-AWS_SECRET_ACCESS_KEY="..."
+MY_AWS_ACCESS_KEY_ID="..."
+MY_AWS_SECRET_ACCESS_KEY="..."
 
 # Daemon API
 DAEMON_JWT_SECRET="your-daemon-jwt-secret"

@@ -225,13 +225,14 @@ export async function GET(
     }
 
     // Fetch thread replies
+    const limit = filters.limit ?? 50;
     const replies = await prisma.message.findMany({
       where: {
         parentId: params.id,
         isDeleted: false,
         ...cursorCondition,
       },
-      take: filters.limit + 1,
+      take: limit + 1,
       orderBy: {
         createdAt: 'asc',
       },
@@ -278,8 +279,8 @@ export async function GET(
     });
 
     // Check if there are more replies
-    const hasMore = replies.length > filters.limit;
-    const resultReplies = hasMore ? replies.slice(0, filters.limit) : replies;
+    const hasMore = replies.length > limit;
+    const resultReplies = hasMore ? replies.slice(0, limit) : replies;
 
     // Get total reply count
     const totalCount = await prisma.message.count({

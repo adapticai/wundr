@@ -44,7 +44,7 @@ async function listUploadedParts(
   { partNumber: number; eTag: string; size: number; lastModified: Date }[]
 > {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
   try {
     const { S3Client, ListPartsCommand } = await import('@aws-sdk/client-s3');
@@ -52,8 +52,8 @@ async function listUploadedParts(
     const client = new S3Client({
       region,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
       },
     });
 
@@ -88,16 +88,17 @@ async function abortMultipartUpload(
   s3Key: string
 ): Promise<void> {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
-  const { S3Client, AbortMultipartUploadCommand } =
-    await import('@aws-sdk/client-s3');
+  const { S3Client, AbortMultipartUploadCommand } = await import(
+    '@aws-sdk/client-s3'
+  );
 
   const client = new S3Client({
     region,
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+      accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+      secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
     },
   });
 

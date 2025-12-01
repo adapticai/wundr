@@ -51,13 +51,12 @@ const channelIdParamSchema = z.object({
 function buildMimeTypeFilter(
   type: 'image' | 'document' | 'audio' | 'video' | 'archive'
 ): Prisma.StringFilter {
-  // Map singular type names to their ALLOWED_FILE_TYPES keys
+  // Map type names to their ALLOWED_FILE_TYPES keys
   const typeKeyMap: Record<string, keyof typeof ALLOWED_FILE_TYPES> = {
-    image: 'images',
-    document: 'documents',
+    image: 'image',
+    document: 'document',
     audio: 'audio',
     video: 'video',
-    archive: 'archives',
   };
   const typeKey = typeKeyMap[type];
   const mimeTypes = ALLOWED_FILE_TYPES[typeKey] as readonly string[];
@@ -226,9 +225,10 @@ export async function GET(
     }
 
     // Fetch files
+    const limit = filters.limit ?? 50;
     const files = await prisma.file.findMany({
       where,
-      take: filters.limit + 1,
+      take: limit + 1,
       orderBy: {
         createdAt: 'desc',
       },
@@ -257,8 +257,8 @@ export async function GET(
     });
 
     // Check if there are more files
-    const hasMore = files.length > filters.limit;
-    const resultFiles = hasMore ? files.slice(0, filters.limit) : files;
+    const hasMore = files.length > limit;
+    const resultFiles = hasMore ? files.slice(0, limit) : files;
     const nextCursor = hasMore
       ? (resultFiles[resultFiles.length - 1]?.id ?? null)
       : null;
@@ -267,7 +267,7 @@ export async function GET(
     const transformedFiles = resultFiles.map(file => ({
       ...file,
       size: Number(file.size),
-      url: generateFileUrl(file.s3Key, file.s3Bucket),
+      url: generateFileUrl(file.s3Key),
     }));
 
     // Get total count for the channel

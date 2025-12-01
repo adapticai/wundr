@@ -95,8 +95,8 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -108,8 +108,8 @@ export async function POST(
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid charter ID format',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid charter ID format'
         ),
         { status: 400 }
       );
@@ -122,8 +122,8 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid JSON body',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid JSON body'
         ),
         { status: 400 }
       );
@@ -134,8 +134,8 @@ export async function POST(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Validation failed',
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
           }
@@ -147,10 +147,11 @@ export async function POST(
     const input: RollbackCharterInput = parseResult.data;
 
     // Find the target version to rollback to
+    const targetVersionNumber = parseInt(input.targetVersion, 10);
     const targetVersion = await prisma.charterVersion.findFirst({
       where: {
         charterId: params.charterId,
-        version: input.targetVersion,
+        version: targetVersionNumber,
       },
       select: {
         id: true,
@@ -163,8 +164,8 @@ export async function POST(
     if (!targetVersion) {
       return NextResponse.json(
         createErrorResponse(
-          `Target version ${input.targetVersion} not found`,
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          `Target version ${input.targetVersion} not found`
         ),
         { status: 404 }
       );
@@ -178,8 +179,8 @@ export async function POST(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Orchestrator not found or access denied'
         ),
         { status: 403 }
       );
@@ -189,8 +190,8 @@ export async function POST(
     if (access.role !== 'OWNER' && access.role !== 'ADMIN') {
       return NextResponse.json(
         createErrorResponse(
-          'Insufficient permissions to rollback charter version',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Insufficient permissions to rollback charter version'
         ),
         { status: 403 }
       );
@@ -229,7 +230,9 @@ export async function POST(
           charterId: params.charterId,
           orchestratorId: targetVersion.orchestratorId,
           version: nextVersion,
-          charterData: targetVersion.charterData,
+          charterData: JSON.parse(
+            JSON.stringify(targetVersion.charterData)
+          ) as Prisma.InputJsonValue,
           changeLog,
           createdBy: session.user.id,
           isActive: true,
@@ -274,8 +277,8 @@ export async function POST(
     ) {
       return NextResponse.json(
         createErrorResponse(
-          'A charter version with this number already exists',
-          CHARTER_ERROR_CODES.DUPLICATE_VERSION
+          CHARTER_ERROR_CODES.DUPLICATE_VERSION,
+          'A charter version with this number already exists'
         ),
         { status: 409 }
       );
@@ -283,8 +286,8 @@ export async function POST(
 
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );

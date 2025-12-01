@@ -292,7 +292,8 @@ export async function POST(
           taskId,
           fromVpId: orchestratorId,
           toVpId: toOrchestratorId,
-          handoffAt: result.handoffAt.toISOString(),
+          handoffAt:
+            result.handoffAt?.toISOString() ?? new Date().toISOString(),
           context: fullHandoffContext,
           notes,
           notificationType: 'TASK_HANDOFF',
@@ -320,7 +321,8 @@ export async function POST(
           taskId,
           fromVpId: orchestratorId,
           toVpId: toOrchestratorId,
-          handoffAt: result.handoffAt.toISOString(),
+          handoffAt:
+            result.handoffAt?.toISOString() ?? new Date().toISOString(),
           notificationType: 'TASK_HANDOFF_COMPLETE',
         },
         read: false,

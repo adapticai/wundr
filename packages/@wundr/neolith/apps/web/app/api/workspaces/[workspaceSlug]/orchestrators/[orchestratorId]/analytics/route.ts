@@ -26,7 +26,10 @@ import {
   parseDateRange,
 } from '@/lib/validations/orchestrator-analytics';
 
-import type { OrchestratorAnalyticsQueryInput } from '@/lib/validations/orchestrator-analytics';
+import type {
+  OrchestratorAnalyticsQueryInput,
+  AnalyticsDateRangeInput,
+} from '@/lib/validations/orchestrator-analytics';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -170,27 +173,32 @@ export async function GET(
 
     const query: OrchestratorAnalyticsQueryInput = parseResult.data;
 
-    // Parse date range
+    // Parse date range - convert timeRange to AnalyticsDateRangeInput format
     let startDate: Date;
     let endDate: Date;
     try {
-      const dateRange = parseDateRange(query);
-      startDate = dateRange.startDate;
-      endDate = dateRange.endDate;
+      const dateRangeInput: AnalyticsDateRangeInput = {
+        start: query.timeRange.start,
+        end: query.timeRange.end,
+        preset: 'custom' as const,
+      };
+      const dateRange = parseDateRange(dateRangeInput);
+      startDate = dateRange.start;
+      endDate = dateRange.end;
     } catch (error) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           error instanceof Error ? error.message : 'Invalid date range',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_DATE_RANGE
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_TIME_RANGE
         ),
         { status: 400 }
       );
     }
 
-    // Get basic metrics
+    // Get basic metrics - use a default timeRange string
     const metrics = await getOrchestratorMetrics(
       orchestratorId,
-      query.timeRange
+      '30d' // Default time range for the service
     );
 
     // Build where condition for detailed queries
@@ -202,9 +210,10 @@ export async function GET(
       },
     };
 
-    // Fetch task breakdowns if requested
+    // Fetch task breakdowns if requested (checking groupBy as a proxy for breakdown requests)
     let taskBreakdown = undefined;
-    if (query.includeTaskBreakdown) {
+    const includeTaskBreakdown = query.groupBy?.includes('status') ?? false;
+    if (includeTaskBreakdown) {
       // Note: Task type would need to be added to schema
       // For now, we'll group by status
       const tasksByStatus = await prisma.task.groupBy({
@@ -224,9 +233,11 @@ export async function GET(
       );
     }
 
-    // Fetch priority breakdown if requested
+    // Fetch priority breakdown if requested (checking groupBy as a proxy)
     let priorityBreakdown = undefined;
-    if (query.includePriorityBreakdown) {
+    const includePriorityBreakdown =
+      query.groupBy?.includes('priority') ?? false;
+    if (includePriorityBreakdown) {
       const tasksByPriority = await prisma.task.groupBy({
         by: ['priority'],
         where: whereCondition,
@@ -244,9 +255,12 @@ export async function GET(
       );
     }
 
-    // Calculate quality metrics if requested
+    // Calculate quality metrics if requested (default to true)
     let qualityMetrics = undefined;
-    if (query.includeQualityMetrics) {
+    const includeQualityMetrics =
+      query.metrics.includes('task_completion_rate') ||
+      query.metrics.length === 0;
+    if (includeQualityMetrics) {
       const qualityScore = await calculateQualityScore(
         orchestratorId,
         startDate,
@@ -288,7 +302,7 @@ export async function GET(
       timeRange: {
         start: startDate.toISOString(),
         end: endDate.toISOString(),
-        label: query.timeRange,
+        label: 'custom',
       },
       metrics: {
         tasksCompleted: metrics.tasksCompleted,

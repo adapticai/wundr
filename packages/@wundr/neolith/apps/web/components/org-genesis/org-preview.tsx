@@ -94,7 +94,7 @@ export function OrgPreview({
             </CardHeader>
             <CardContent>
               <div className='space-y-2'>
-                {manifest.values.map((value, index) => (
+                {manifest.values.map((value: string, index: number) => (
                   <div key={index} className='flex items-start gap-2'>
                     <div className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary'>
                       {index + 1}
@@ -157,9 +157,9 @@ export function OrgPreview({
 
         {/* Details Tab */}
         <TabsContent value='details' className='space-y-4 mt-6'>
-          {orchestrators.map(orch => {
+          {orchestrators.map((orch: any) => {
             const orchDisciplines = disciplines.filter(
-              d => d.orchestratorId === orch.id
+              (d: any) => d.orchestratorId === orch.id
             );
 
             return (
@@ -182,7 +182,7 @@ export function OrgPreview({
                       Responsibilities
                     </h4>
                     <ul className='list-inside list-disc space-y-1 text-sm text-muted-foreground'>
-                      {orch.responsibilities.map((resp, i) => (
+                      {orch.responsibilities.map((resp: string, i: number) => (
                         <li key={i}>{resp}</li>
                       ))}
                     </ul>
@@ -194,7 +194,7 @@ export function OrgPreview({
                       Key Performance Indicators
                     </h4>
                     <div className='flex flex-wrap gap-2'>
-                      {orch.kpis.map((kpi, i) => (
+                      {orch.kpis.map((kpi: string, i: number) => (
                         <Badge key={i} variant='outline'>
                           {kpi}
                         </Badge>
@@ -209,9 +209,9 @@ export function OrgPreview({
                         Disciplines
                       </h4>
                       <div className='space-y-3'>
-                        {orchDisciplines.map(discipline => {
+                        {orchDisciplines.map((discipline: any) => {
                           const disciplineAgents = agents.filter(
-                            a => a.disciplineId === discipline.id
+                            (a: any) => a.disciplineId === discipline.id
                           );
 
                           return (
@@ -240,14 +240,16 @@ export function OrgPreview({
 
                               {discipline.capabilities.length > 0 && (
                                 <div className='flex flex-wrap gap-1'>
-                                  {discipline.capabilities.map((cap, i) => (
-                                    <span
-                                      key={i}
-                                      className='rounded bg-background px-2 py-0.5 text-xs text-muted-foreground'
-                                    >
-                                      {cap}
-                                    </span>
-                                  ))}
+                                  {discipline.capabilities.map(
+                                    (cap: string, i: number) => (
+                                      <span
+                                        key={i}
+                                        className='rounded bg-background px-2 py-0.5 text-xs text-muted-foreground'
+                                      >
+                                        {cap}
+                                      </span>
+                                    )
+                                  )}
                                 </div>
                               )}
                             </div>

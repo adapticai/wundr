@@ -582,18 +582,6 @@ export function useBudgetMutations(
 
       const result: ApiResponse<BudgetStatus> = await response.json();
       return result.data;
-    },
-    {
-      // Optimistically update the budget data
-      optimisticData: currentData =>
-        currentData
-          ? {
-              ...currentData,
-              limits: currentData.limits,
-            }
-          : undefined,
-      populateCache: true,
-      revalidate: true,
     }
   );
 
@@ -620,18 +608,6 @@ export function useBudgetMutations(
 
       const result: ApiResponse<BudgetStatus> = await response.json();
       return result.data;
-    },
-    {
-      // Optimistically update the budget data
-      optimisticData: currentData =>
-        currentData
-          ? {
-              ...currentData,
-              autoPauseEnabled: currentData.autoPauseEnabled,
-            }
-          : undefined,
-      populateCache: true,
-      revalidate: true,
     }
   );
 

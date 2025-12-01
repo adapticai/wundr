@@ -82,12 +82,12 @@ function mapUserStatusToPresence(
 
   switch (status) {
     case 'ACTIVE':
-      return 'ONLINE';
+      return 'online';
     case 'INACTIVE':
     case 'PENDING':
     case 'SUSPENDED':
     default:
-      return 'OFFLINE';
+      return 'offline';
   }
 }
 
@@ -104,8 +104,8 @@ function buildPresenceResponse(user: {
   const online = isUserOnline(user.lastActiveAt);
   return {
     userId: user.id,
-    status: online ? mapUserStatusToPresence(user.status, prefs) : 'OFFLINE',
-    customStatus: prefs.customStatus ?? null,
+    status: online ? mapUserStatusToPresence(user.status, prefs) : 'offline',
+    customStatus: prefs.customStatus ?? undefined,
     lastSeen: user.lastActiveAt?.toISOString() ?? new Date(0).toISOString(),
     isOnline: online,
   };

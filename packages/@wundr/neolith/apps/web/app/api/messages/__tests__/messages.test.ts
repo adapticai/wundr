@@ -93,7 +93,8 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// @ts-expect-error Reserved for future integration tests
+// Reserved for future integration tests
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
@@ -153,7 +154,8 @@ function createMockReactionResponse(overrides?: Record<string, unknown>) {
   };
 }
 
-// @ts-expect-error Reserved for future integration tests
+// Reserved for future integration tests
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _createMockChannelMember(overrides?: Record<string, unknown>) {
   return {
     id: 'member-123',

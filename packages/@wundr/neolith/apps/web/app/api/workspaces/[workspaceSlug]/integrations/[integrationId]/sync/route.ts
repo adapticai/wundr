@@ -92,11 +92,11 @@ export async function POST(
     }
 
     // Trigger sync
-    const result = await syncIntegration(workspaceId, integrationId);
+    const result = await syncIntegration(integrationId);
 
     if (
       !result.success &&
-      result.errors.some(e => e.error === 'Integration not found')
+      result.errors?.some((e: any) => e.error === 'Integration not found')
     ) {
       return NextResponse.json(
         createErrorResponse(

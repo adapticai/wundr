@@ -489,8 +489,7 @@ export interface JiraEventPayload extends BaseIntegrationEventPayload {
 /**
  * Generic event payload for custom or other integrations.
  */
-export interface GenericIntegrationEventPayload
-  extends BaseIntegrationEventPayload {
+export interface GenericIntegrationEventPayload extends BaseIntegrationEventPayload {
   source:
     | 'teams'
     | 'notion'

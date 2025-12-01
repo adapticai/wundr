@@ -80,7 +80,6 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// @ts-expect-error Reserved for future integration tests
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,

@@ -256,12 +256,11 @@ export async function POST(
 
       // Send notifications to workspace members
       for (const user of workspaceUsers) {
-        NotificationService.notifyChannelInvite(
-          user.id,
-          params.channelId,
-          access.channel.name,
-          inviterName
-        ).catch(err => {
+        NotificationService.notifyChannelInvite({
+          userId: user.id,
+          channelId: params.channelId,
+          inviterId: session.user.id,
+        }).catch((err: unknown) => {
           console.error(
             '[POST /api/channels/:channelId/invites] Failed to send notification:',
             err

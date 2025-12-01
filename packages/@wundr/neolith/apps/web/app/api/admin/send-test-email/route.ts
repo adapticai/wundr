@@ -120,12 +120,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         break;
 
       case 'invitation':
-        result = await sendInvitationEmail(
-          to,
-          props.inviterName || 'Admin User',
-          props.workspaceName || 'Test Workspace',
-          props.token || 'test-token'
-        );
+        result = await sendInvitationEmail({
+          email: to,
+          inviterName: props.inviterName || 'Admin User',
+          workspaceName: props.workspaceName || 'Test Workspace',
+          invitationUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/accept?token=${props.token || 'test-token'}`,
+          role: props.role,
+          message: props.message,
+        });
         break;
 
       case 'notification':

@@ -100,17 +100,7 @@ export async function GET(
       include: {
         orchestrator: {
           include: {
-            discipline: {
-              include: {
-                organization: {
-                  include: {
-                    members: {
-                      where: { userId: session.user.id },
-                    },
-                  },
-                },
-              },
-            },
+            organization: true,
           },
         },
       },
@@ -127,9 +117,14 @@ export async function GET(
     }
 
     // Check organization membership
-    const orgMembers =
-      sessionManager.orchestrator.discipline.organization.members;
-    if (orgMembers.length === 0) {
+    const orgMember = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId: sessionManager.orchestrator.organizationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!orgMember) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this session manager',
@@ -142,8 +137,8 @@ export async function GET(
     // Build where clause
     const where: Prisma.subagentWhereInput = {
       sessionManagerId,
-      ...(status && { status }),
-      ...(scope && { scope }),
+      ...(status && { status: status as any }),
+      ...(scope && { scope: scope as any }),
     };
 
     // Fetch subagents and total count in parallel
@@ -283,17 +278,7 @@ export async function POST(
       include: {
         orchestrator: {
           include: {
-            discipline: {
-              include: {
-                organization: {
-                  include: {
-                    members: {
-                      where: { userId: session.user.id },
-                    },
-                  },
-                },
-              },
-            },
+            organization: true,
           },
         },
       },
@@ -310,9 +295,14 @@ export async function POST(
     }
 
     // Check organization membership
-    const orgMembers =
-      sessionManager.orchestrator.discipline.organization.members;
-    if (orgMembers.length === 0) {
+    const orgMember = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId: sessionManager.orchestrator.organizationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!orgMember) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this session manager',
@@ -346,12 +336,12 @@ export async function POST(
         name: input.name,
         description: input.description,
         charterId: input.charterId,
-        charterData: input.charterData,
+        charterData: input.charterData as Prisma.InputJsonValue,
         sessionManagerId,
         isGlobal: input.isGlobal ?? false,
-        scope: input.scope ?? 'DISCIPLINE',
+        scope: (input.scope ?? 'DISCIPLINE') as any,
         tier: input.tier ?? 3,
-        capabilities: input.capabilities ?? [],
+        capabilities: (input.capabilities ?? []) as Prisma.InputJsonValue,
         mcpTools: input.mcpTools ?? [],
         maxTokensPerTask: input.maxTokensPerTask ?? 50000,
         worktreeRequirement: input.worktreeRequirement ?? 'none',

@@ -305,7 +305,7 @@ export async function POST(
         taskId,
         taskTitle,
         assignerName
-      ).catch(err => {
+      ).catch((err: Error) => {
         console.error(
           '[POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign] Failed to send task assignment notification:',
           err

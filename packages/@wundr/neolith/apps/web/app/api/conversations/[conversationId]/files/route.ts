@@ -53,11 +53,11 @@ function buildMimeTypeFilter(
 ): Prisma.StringFilter {
   // Map singular type names to their ALLOWED_FILE_TYPES keys
   const typeKeyMap: Record<string, keyof typeof ALLOWED_FILE_TYPES> = {
-    image: 'images',
-    document: 'documents',
+    image: 'image',
+    document: 'document',
     audio: 'audio',
     video: 'video',
-    archive: 'archives',
+    archive: 'archive',
   };
   const typeKey = typeKeyMap[type];
   const mimeTypes = ALLOWED_FILE_TYPES[typeKey] as readonly string[];

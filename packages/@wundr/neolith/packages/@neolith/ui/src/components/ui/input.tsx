@@ -56,7 +56,8 @@ const inputVariants = cva(
  * Extends standard HTML input attributes with variant and size options.
  */
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
+  extends
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
     VariantProps<typeof inputVariants> {
   /**
    * Error message to display. When provided, applies error styling.

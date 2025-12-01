@@ -14,13 +14,13 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  messageSearchSchema,
   workspaceIdParamSchema,
   createErrorResponse,
   MESSAGE_ERROR_CODES,
 } from '@/lib/validations/message';
+import { messageSearchSchema } from '@/lib/validations/search';
+import type { MessageSearchQuery } from '@/lib/validations/search';
 
-import type { MessageSearchInput } from '@/lib/validations/message';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -118,7 +118,7 @@ export async function GET(
       );
     }
 
-    const filters: MessageSearchInput = parseResult.data;
+    const filters: MessageSearchQuery = parseResult.data;
 
     // Check workspace membership
     const membership = await checkWorkspaceMembership(
@@ -182,21 +182,22 @@ export async function GET(
       isDeleted: false,
       // Full-text search on content
       content: {
-        contains: filters.q,
+        contains: filters.query!,
         mode: 'insensitive',
       },
       // Optional filters
       ...(filters.userId && { userId: filters.userId }),
-      ...(filters.type && { type: filters.type }),
-      ...(filters.from && { createdAt: { gte: filters.from } }),
-      ...(filters.to && { createdAt: { lte: filters.to } }),
+      // Note: filters.type is a SearchType (for search result filtering), not MessageType (for database filtering)
+      // So we don't filter by type in the database query
+      ...(filters.from && { createdAt: { gte: new Date(filters.from) } }),
+      ...(filters.to && { createdAt: { lte: new Date(filters.to) } }),
     };
 
     // Handle date range filter
     if (filters.from && filters.to) {
       where.createdAt = {
-        gte: filters.from,
-        lte: filters.to,
+        gte: new Date(filters.from),
+        lte: new Date(filters.to),
       };
     }
 
@@ -246,7 +247,7 @@ export async function GET(
 
     // Highlight search terms in content
     const highlightedMessages = messages.map(message => {
-      const regex = new RegExp(`(${escapeRegExp(filters.q)})`, 'gi');
+      const regex = new RegExp(`(${escapeRegExp(filters.query!)})`, 'gi');
       const highlightedContent = message.content.replace(
         regex,
         '<mark>$1</mark>'
@@ -261,7 +262,7 @@ export async function GET(
 
     return NextResponse.json({
       data: highlightedMessages,
-      query: filters.q,
+      query: filters.query!,
       pagination: {
         total: totalCount,
         limit: filters.limit,

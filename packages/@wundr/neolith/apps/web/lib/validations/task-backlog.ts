@@ -65,7 +65,10 @@ export type CompleteTaskInput = z.infer<typeof completeTaskSchema>;
  */
 export const nextTaskFiltersSchema = z.object({
   /** Filter by status (default: TODO) */
-  status: z.union([taskStatusEnum, z.array(taskStatusEnum)]).default('TODO'),
+  status: z
+    .union([taskStatusEnum, z.array(taskStatusEnum)])
+    .optional()
+    .default('TODO'),
 
   /** Minimum priority to consider */
   minPriority: taskPriorityEnum.optional(),

@@ -79,7 +79,6 @@ interface PlanChangeRequest {
  * Mock billing data generator
  * @deprecated - Reserved for future use
  */
-// @ts-expect-error - Reserved for future use
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _generateMockBillingInfo(
   workspaceId: string,

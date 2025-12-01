@@ -11,7 +11,7 @@
  * @module app/api/orchestrators/[orchestratorId]/budget/route
  */
 
-import { prisma } from '@neolith/database';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -449,9 +449,10 @@ export async function PATCH(
           orchestratorId: orchestrator.id,
           charterId: charter?.charterId ?? 'default',
           version: nextVersion,
-          charterData: updatedCharterData as Record<string, unknown>,
+          charterData: updatedCharterData as Prisma.InputJsonValue,
           changeLog: 'Updated token budget limits',
           isActive: true,
+          createdBy: session.user.id,
         },
       });
     });

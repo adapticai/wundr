@@ -258,7 +258,7 @@ export async function GET(
 
     // Add statistics if requested
     if (filters.includeStats) {
-      const stats = await getTaskMetrics(orchestratorId, workspaceId);
+      const stats = await getTaskMetrics({ orchestratorId });
       response.statistics = stats;
     }
 
@@ -431,7 +431,7 @@ export async function POST(
       workspaceId
     );
 
-    if (!depValidation.isValid) {
+    if (!depValidation.valid) {
       return NextResponse.json(
         createErrorResponse(
           'Invalid task dependencies',

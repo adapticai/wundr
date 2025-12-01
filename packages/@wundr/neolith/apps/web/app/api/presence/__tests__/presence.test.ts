@@ -104,7 +104,6 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// @ts-expect-error Reserved for future integration tests
 function _createMockRequest(
   method: string,
   path: string,
@@ -390,7 +389,6 @@ describe('Presence API', () => {
       mockAuth.mockResolvedValue(session);
 
       // In actual implementation, would check channel membership
-      // @ts-expect-error Used to demonstrate route context
       const _channelId = 'restricted-channel';
       const isMember = false; // Simulating non-member
 
@@ -567,7 +565,6 @@ describe('Presence API', () => {
     });
 
     it('stores metrics', async () => {
-      // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
       const orchestratorId = 'orchestrator-123';
       const daemonId = 'daemon-456';
@@ -638,7 +635,6 @@ describe('Presence API', () => {
     });
 
     it('returns health status in response', async () => {
-      // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
       const orchestratorId = 'orchestrator-123';
       const daemonId = 'daemon-456';
@@ -674,7 +670,6 @@ describe('Presence API', () => {
 
   describe('GET /api/daemon/health', () => {
     it('returns Orchestrator health status', async () => {
-      // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
       const orchestratorId = 'orchestrator-123';
 

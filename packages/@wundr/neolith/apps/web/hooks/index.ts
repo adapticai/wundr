@@ -124,7 +124,7 @@ export type {
   BudgetStatus,
   UsageHistoryPoint,
   HistoryParams,
-  AlertSeverity,
+  AlertSeverity as BudgetAlertSeverity,
   BudgetAlert,
   AlertConfig,
   UseBudgetReturn,
@@ -244,7 +244,7 @@ export {
   useDashboardActivity,
 } from './use-dashboard';
 export type {
-  TimeRange,
+  TimeRange as DashboardTimeRange,
   ActivityType,
   MemberStats,
   ChannelStats,
@@ -314,7 +314,7 @@ export {
   useChannelPresence,
   useSetStatus,
   useOrchestratorHealth,
-  useOrchestratorHealthList,
+  useWorkspaceOrchestratorHealthList,
   usePresenceHeartbeat,
   usePresenceSubscription,
 } from './use-presence';
@@ -326,7 +326,7 @@ export type {
   UseChannelPresenceReturn,
   UseSetStatusReturn,
   UseOrchestratorHealthReturn,
-  UseOrchestratorHealthListReturn,
+  UseWorkspaceOrchestratorHealthListReturn,
   UsePresenceSubscriptionReturn,
 } from './use-presence';
 
@@ -386,14 +386,14 @@ export type {
 // =============================================================================
 export {
   useHealthDashboard,
-  useOrchestratorHealth,
+  useOrchestratorHealthList,
   useMetricsChart,
   useHealthAlerts,
 } from './use-health-dashboard';
 export type {
   HealthStatus,
-  AlertSeverity,
-  TimeRange,
+  HealthAlertSeverity,
+  HealthTimeRange,
   SystemHealthOverview,
   OrchestratorHealth,
   PaginationMetadata,
@@ -402,7 +402,7 @@ export type {
   ChartDataPoint,
   HealthAlert,
   UseHealthDashboardReturn,
-  UseOrchestratorHealthReturn,
+  UseOrchestratorHealthListReturn,
   UseMetricsChartReturn,
   UseHealthAlertsReturn,
 } from './use-health-dashboard';

@@ -67,12 +67,19 @@ interface CallWithAccess {
   call: {
     id: string;
     channelId: string;
-    type: 'audio' | 'video';
-    status: 'pending' | 'active' | 'ended' | 'failed';
+    type: 'audio' | 'video' | 'screen_share';
+    status:
+      | 'pending'
+      | 'ringing'
+      | 'active'
+      | 'ended'
+      | 'missed'
+      | 'declined'
+      | 'failed';
     roomName: string;
-    startedAt: Date | null;
-    endedAt: Date | null;
-    createdAt: Date;
+    startedAt: Date | string | null;
+    endedAt: Date | string | null;
+    createdAt: Date | string;
     createdById: string;
   };
   channel: {
@@ -232,7 +239,11 @@ async function getCallWithAccess(
     call: {
       ...settings.activeCall,
       channelId: channel.id,
-      createdById: settings.activeCall.createdBy.id,
+      createdById:
+        settings.activeCall.createdBy?.id ??
+        settings.activeCall.createdById ??
+        '',
+      createdAt: settings.activeCall.createdAt ?? new Date(),
     },
     channel,
     orgMembership,

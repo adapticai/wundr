@@ -23,7 +23,7 @@ interface MockUser {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'MEMBER' | 'VIEWER';
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
 }
 
 interface MockFile {

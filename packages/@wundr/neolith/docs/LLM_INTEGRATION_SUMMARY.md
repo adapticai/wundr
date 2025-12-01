@@ -14,13 +14,13 @@ models.
 
 Added dependencies:
 
-- `@adaptic/lumic-utils` - Core LLM utilities (file link to `/Users/iroselli/adapticai/lumic-utils`)
+- `@adaptic/lumic-utils` - Core LLM utilities (npm package ^1.0.6)
 - `openai` v5.8.2 - OpenAI SDK (peer dependency)
 
 ```json
 {
   "dependencies": {
-    "@adaptic/lumic-utils": "file:../../../../../../../adapticai/lumic-utils",
+    "@adaptic/lumic-utils": "^1.0.6",
     "openai": "^5.8.2"
   }
 }

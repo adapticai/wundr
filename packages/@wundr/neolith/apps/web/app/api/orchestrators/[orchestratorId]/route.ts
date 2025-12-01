@@ -286,7 +286,9 @@ export async function PATCH(
           ...(input.daemonEndpoint !== undefined && {
             daemonEndpoint: input.daemonEndpoint,
           }),
-          ...(input.status !== undefined && { status: input.status }),
+          ...(input.status !== undefined && {
+            status: input.status as 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY',
+          }),
         },
         include: {
           user: {

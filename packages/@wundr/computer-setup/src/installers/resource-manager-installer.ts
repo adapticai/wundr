@@ -104,7 +104,11 @@ export class ResourceManagerInstaller extends EventEmitter {
    */
   async getVersion(): Promise<string | null> {
     try {
-      const configPath = path.join(this.wundrDir, 'resource-manager', 'config.json');
+      const configPath = path.join(
+        this.wundrDir,
+        'resource-manager',
+        'config.json'
+      );
       const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
       return config.version || '1.0.0';
     } catch {
@@ -117,14 +121,14 @@ export class ResourceManagerInstaller extends EventEmitter {
    */
   async install(
     _profile?: DeveloperProfile,
-    _platform?: SetupPlatform,
+    _platform?: SetupPlatform
   ): Promise<void> {
     const result = await this.installWithResult();
     if (!result.success) {
       throw new Error(
         result.errors.length > 0
           ? result.errors[0].message
-          : 'Resource Manager installation failed',
+          : 'Resource Manager installation failed'
       );
     }
   }
@@ -147,7 +151,10 @@ export class ResourceManagerInstaller extends EventEmitter {
       await this.createDirectoryStructure();
       installedComponents.push('directory-structure');
 
-      this.emit('progress', { step: 'Installing worktree scripts', percentage: 15 });
+      this.emit('progress', {
+        step: 'Installing worktree scripts',
+        percentage: 15,
+      });
 
       // 2. Install worktree scripts (idempotent)
       const worktreeResult = await this.installWorktreeScripts();
@@ -157,7 +164,10 @@ export class ResourceManagerInstaller extends EventEmitter {
         skippedComponents.push('worktree-scripts');
       }
 
-      this.emit('progress', { step: 'Creating resource manager wrapper', percentage: 30 });
+      this.emit('progress', {
+        step: 'Creating resource manager wrapper',
+        percentage: 30,
+      });
 
       // 3. Install resource manager wrapper script
       const wrapperResult = await this.installResourceManagerWrapper();
@@ -167,7 +177,10 @@ export class ResourceManagerInstaller extends EventEmitter {
         skippedComponents.push('resource-manager-wrapper');
       }
 
-      this.emit('progress', { step: 'Configuring session pool', percentage: 45 });
+      this.emit('progress', {
+        step: 'Configuring session pool',
+        percentage: 45,
+      });
 
       // 4. Install session pool configuration
       const poolResult = await this.installSessionPoolConfig();
@@ -177,7 +190,10 @@ export class ResourceManagerInstaller extends EventEmitter {
         skippedComponents.push('session-pool-config');
       }
 
-      this.emit('progress', { step: 'Installing daemon service', percentage: 60 });
+      this.emit('progress', {
+        step: 'Installing daemon service',
+        percentage: 60,
+      });
 
       // 5. Install daemon service (launchd/systemd)
       if (this.config.enableDaemon) {
@@ -193,7 +209,10 @@ export class ResourceManagerInstaller extends EventEmitter {
         }
       }
 
-      this.emit('progress', { step: 'Installing cleanup utilities', percentage: 65 });
+      this.emit('progress', {
+        step: 'Installing cleanup utilities',
+        percentage: 65,
+      });
 
       // 6. Install cleanup utilities
       const cleanupResult = await this.installCleanupUtilities();
@@ -203,7 +222,10 @@ export class ResourceManagerInstaller extends EventEmitter {
         skippedComponents.push('cleanup-utilities');
       }
 
-      this.emit('progress', { step: 'Installing worktree hooks', percentage: 75 });
+      this.emit('progress', {
+        step: 'Installing worktree hooks',
+        percentage: 75,
+      });
 
       // 7. Install worktree subagent hook (for automatic worktree isolation)
       const hookResult = await this.installWorktreeHooks();
@@ -213,7 +235,10 @@ export class ResourceManagerInstaller extends EventEmitter {
         skippedComponents.push('worktree-hooks');
       }
 
-      this.emit('progress', { step: 'Installing merge utilities', percentage: 82 });
+      this.emit('progress', {
+        step: 'Installing merge utilities',
+        percentage: 82,
+      });
 
       // 8. Install worktree merge utilities
       const mergeResult = await this.installMergeUtilities();
@@ -223,17 +248,24 @@ export class ResourceManagerInstaller extends EventEmitter {
         skippedComponents.push('merge-utilities');
       }
 
-      this.emit('progress', { step: 'Installing orchestrator manager', percentage: 88 });
+      this.emit('progress', {
+        step: 'Installing orchestrator manager',
+        percentage: 88,
+      });
 
       // 9. Install orchestrator worktree manager
-      const orchestratorResult = await this.installOrchestratorWorktreeManager();
+      const orchestratorResult =
+        await this.installOrchestratorWorktreeManager();
       if (orchestratorResult.installed) {
         installedComponents.push('orchestrator-worktree-manager');
       } else {
         skippedComponents.push('orchestrator-worktree-manager');
       }
 
-      this.emit('progress', { step: 'Configuring shell integration', percentage: 95 });
+      this.emit('progress', {
+        step: 'Configuring shell integration',
+        percentage: 95,
+      });
 
       // 10. Add shell integration
       await this.installShellIntegration();
@@ -244,7 +276,9 @@ export class ResourceManagerInstaller extends EventEmitter {
       logger.info('Resource Manager installed successfully');
       logger.info(`  Installed: ${installedComponents.join(', ')}`);
       if (skippedComponents.length > 0) {
-        logger.info(`  Skipped (already present): ${skippedComponents.join(', ')}`);
+        logger.info(
+          `  Skipped (already present): ${skippedComponents.join(', ')}`
+        );
       }
 
       return {
@@ -283,7 +317,9 @@ export class ResourceManagerInstaller extends EventEmitter {
 
       const allValid = checks.every(Boolean);
       if (!allValid) {
-        logger.warn('Resource Manager validation failed - some components missing');
+        logger.warn(
+          'Resource Manager validation failed - some components missing'
+        );
       }
       return allValid;
     } catch (error) {
@@ -300,7 +336,8 @@ export class ResourceManagerInstaller extends EventEmitter {
       {
         id: 'install-resource-manager',
         name: 'Install Resource Manager',
-        description: 'Install session pooling, worktree isolation, and daemon services',
+        description:
+          'Install session pooling, worktree isolation, and daemon services',
         category: 'ai',
         required: false,
         dependencies: ['install-claude', 'install-orchestrator-daemon'],
@@ -337,7 +374,11 @@ export class ResourceManagerInstaller extends EventEmitter {
   // ============================================================================
 
   private async checkWorktreeScripts(): Promise<boolean> {
-    const scripts = ['create-agent-worktree.sh', 'cleanup-worktree.sh', 'worktree-status.sh'];
+    const scripts = [
+      'create-agent-worktree.sh',
+      'cleanup-worktree.sh',
+      'worktree-status.sh',
+    ];
     const wundrScriptsDir = path.join(this.wundrDir, 'scripts');
 
     for (const script of scripts) {
@@ -545,9 +586,18 @@ else
 fi
 `;
 
-    await fs.writeFile(path.join(targetDir, 'create-agent-worktree.sh'), createWorktreeScript);
-    await fs.writeFile(path.join(targetDir, 'cleanup-worktree.sh'), cleanupWorktreeScript);
-    await fs.writeFile(path.join(targetDir, 'worktree-status.sh'), worktreeStatusScript);
+    await fs.writeFile(
+      path.join(targetDir, 'create-agent-worktree.sh'),
+      createWorktreeScript
+    );
+    await fs.writeFile(
+      path.join(targetDir, 'cleanup-worktree.sh'),
+      cleanupWorktreeScript
+    );
+    await fs.writeFile(
+      path.join(targetDir, 'worktree-status.sh'),
+      worktreeStatusScript
+    );
 
     await fs.chmod(path.join(targetDir, 'create-agent-worktree.sh'), 0o755);
     await fs.chmod(path.join(targetDir, 'cleanup-worktree.sh'), 0o755);
@@ -559,13 +609,27 @@ fi
   // ============================================================================
 
   private async checkResourceManagerWrapper(): Promise<boolean> {
-    const wrapperPath = path.join(this.claudeDir, 'scripts', 'claude-resource-manager');
+    const wrapperPath = path.join(
+      this.claudeDir,
+      'scripts',
+      'claude-resource-manager'
+    );
     return fsSync.existsSync(wrapperPath);
   }
 
-  private async installResourceManagerWrapper(): Promise<{ installed: boolean }> {
-    const wrapperPath = path.join(this.claudeDir, 'scripts', 'claude-resource-manager');
-    const wundrWrapperPath = path.join(this.wundrDir, 'scripts', 'claude-resource-manager');
+  private async installResourceManagerWrapper(): Promise<{
+    installed: boolean;
+  }> {
+    const wrapperPath = path.join(
+      this.claudeDir,
+      'scripts',
+      'claude-resource-manager'
+    );
+    const wundrWrapperPath = path.join(
+      this.wundrDir,
+      'scripts',
+      'claude-resource-manager'
+    );
 
     // Check if already installed with current version
     if (fsSync.existsSync(wrapperPath)) {
@@ -932,12 +996,20 @@ main "$@"
   // ============================================================================
 
   private async checkSessionPoolConfig(): Promise<boolean> {
-    const configPath = path.join(this.wundrDir, 'resource-manager', 'config.json');
+    const configPath = path.join(
+      this.wundrDir,
+      'resource-manager',
+      'config.json'
+    );
     return fsSync.existsSync(configPath);
   }
 
   private async installSessionPoolConfig(): Promise<{ installed: boolean }> {
-    const configPath = path.join(this.wundrDir, 'resource-manager', 'config.json');
+    const configPath = path.join(
+      this.wundrDir,
+      'resource-manager',
+      'config.json'
+    );
 
     const config = {
       version: '2.0.0',
@@ -981,7 +1053,11 @@ main "$@"
   // Private Methods - Daemon Service
   // ============================================================================
 
-  private async installDaemonService(): Promise<{ installed: boolean; running: boolean; error?: string }> {
+  private async installDaemonService(): Promise<{
+    installed: boolean;
+    running: boolean;
+    error?: string;
+  }> {
     const platform = os.platform();
 
     if (platform === 'darwin') {
@@ -993,12 +1069,23 @@ main "$@"
     return { installed: false, running: false, error: 'Unsupported platform' };
   }
 
-  private async installLaunchdService(): Promise<{ installed: boolean; running: boolean; error?: string }> {
+  private async installLaunchdService(): Promise<{
+    installed: boolean;
+    running: boolean;
+    error?: string;
+  }> {
     const plistName = 'io.wundr.resource-manager.plist';
-    const plistPath = path.join(this.homeDir, 'Library', 'LaunchAgents', plistName);
+    const plistPath = path.join(
+      this.homeDir,
+      'Library',
+      'LaunchAgents',
+      plistName
+    );
 
     // Ensure LaunchAgents directory exists
-    await fs.mkdir(path.join(this.homeDir, 'Library', 'LaunchAgents'), { recursive: true });
+    await fs.mkdir(path.join(this.homeDir, 'Library', 'LaunchAgents'), {
+      recursive: true,
+    });
 
     const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -1045,7 +1132,9 @@ main "$@"
     try {
       // Unload existing service if present
       try {
-        execSync(`launchctl unload "${plistPath}" 2>/dev/null`, { stdio: 'ignore' });
+        execSync(`launchctl unload "${plistPath}" 2>/dev/null`, {
+          stdio: 'ignore',
+        });
       } catch {
         // Ignore errors if service wasn't loaded
       }
@@ -1069,7 +1158,11 @@ main "$@"
     }
   }
 
-  private async installSystemdService(): Promise<{ installed: boolean; running: boolean; error?: string }> {
+  private async installSystemdService(): Promise<{
+    installed: boolean;
+    running: boolean;
+    error?: string;
+  }> {
     const serviceDir = path.join(this.homeDir, '.config', 'systemd', 'user');
     const serviceName = 'wundr-resource-manager.service';
     const servicePath = path.join(serviceDir, serviceName);
@@ -1118,7 +1211,9 @@ WantedBy=timers.target
         logger.info('Enabled and started systemd timer');
         return { installed: true, running: true };
       } catch {
-        logger.warn('Could not auto-enable systemd timer. Enable manually with:');
+        logger.warn(
+          'Could not auto-enable systemd timer. Enable manually with:'
+        );
         logger.warn(`  systemctl --user enable --now ${timerName}`);
         return { installed: true, running: false };
       }
@@ -1169,12 +1264,20 @@ else
 fi
 `;
 
-    const cleanupPath = path.join(this.wundrDir, 'scripts', 'cleanup-claude-sessions.sh');
+    const cleanupPath = path.join(
+      this.wundrDir,
+      'scripts',
+      'cleanup-claude-sessions.sh'
+    );
     await fs.writeFile(cleanupPath, cleanupScript);
     await fs.chmod(cleanupPath, 0o755);
 
     // Also add to ~/.claude/scripts
-    const claudeCleanupPath = path.join(this.claudeDir, 'scripts', 'cleanup-claude-sessions.sh');
+    const claudeCleanupPath = path.join(
+      this.claudeDir,
+      'scripts',
+      'cleanup-claude-sessions.sh'
+    );
     await fs.writeFile(claudeCleanupPath, cleanupScript);
     await fs.chmod(claudeCleanupPath, 0o755);
 
@@ -1200,7 +1303,10 @@ fi
     for (const sourceDir of possibleSourceDirs) {
       const hookSource = path.join(sourceDir, 'worktree-subagent-hook.js');
       if (fsSync.existsSync(hookSource)) {
-        await fs.copyFile(hookSource, path.join(hooksDir, 'worktree-subagent-hook.js'));
+        await fs.copyFile(
+          hookSource,
+          path.join(hooksDir, 'worktree-subagent-hook.js')
+        );
         await fs.chmod(path.join(hooksDir, 'worktree-subagent-hook.js'), 0o755);
         sourceFound = true;
         break;
@@ -1270,8 +1376,14 @@ fi
     for (const sourceDir of possibleSourceDirs) {
       const mergeSource = path.join(sourceDir, 'worktree-merge.sh');
       if (fsSync.existsSync(mergeSource)) {
-        await fs.copyFile(mergeSource, path.join(scriptsDir, 'worktree-merge.sh'));
-        await fs.copyFile(mergeSource, path.join(claudeScriptsDir, 'worktree-merge.sh'));
+        await fs.copyFile(
+          mergeSource,
+          path.join(scriptsDir, 'worktree-merge.sh')
+        );
+        await fs.copyFile(
+          mergeSource,
+          path.join(claudeScriptsDir, 'worktree-merge.sh')
+        );
         await fs.chmod(path.join(scriptsDir, 'worktree-merge.sh'), 0o755);
         await fs.chmod(path.join(claudeScriptsDir, 'worktree-merge.sh'), 0o755);
         sourceFound = true;
@@ -1305,8 +1417,14 @@ fi
 echo "Merge worktree \${WORKTREE_ID} with strategy: \${STRATEGY}"
 echo "Full merge functionality requires jq. Install with: brew install jq"
 `;
-      await fs.writeFile(path.join(scriptsDir, 'worktree-merge.sh'), minimalMergeScript);
-      await fs.writeFile(path.join(claudeScriptsDir, 'worktree-merge.sh'), minimalMergeScript);
+      await fs.writeFile(
+        path.join(scriptsDir, 'worktree-merge.sh'),
+        minimalMergeScript
+      );
+      await fs.writeFile(
+        path.join(claudeScriptsDir, 'worktree-merge.sh'),
+        minimalMergeScript
+      );
       await fs.chmod(path.join(scriptsDir, 'worktree-merge.sh'), 0o755);
       await fs.chmod(path.join(claudeScriptsDir, 'worktree-merge.sh'), 0o755);
     }
@@ -1319,7 +1437,9 @@ echo "Full merge functionality requires jq. Install with: brew install jq"
   // Private Methods - Orchestrator Worktree Manager
   // ============================================================================
 
-  private async installOrchestratorWorktreeManager(): Promise<{ installed: boolean }> {
+  private async installOrchestratorWorktreeManager(): Promise<{
+    installed: boolean;
+  }> {
     const scriptsDir = path.join(this.wundrDir, 'scripts');
 
     // Try to copy from bundled resources
@@ -1330,12 +1450,23 @@ echo "Full merge functionality requires jq. Install with: brew install jq"
 
     let sourceFound = false;
     for (const sourceDir of possibleSourceDirs) {
-      const managerSource = path.join(sourceDir, 'orchestrator-worktree-manager.ts');
+      const managerSource = path.join(
+        sourceDir,
+        'orchestrator-worktree-manager.ts'
+      );
       if (fsSync.existsSync(managerSource)) {
-        await fs.copyFile(managerSource, path.join(scriptsDir, 'orchestrator-worktree-manager.ts'));
-        await fs.chmod(path.join(scriptsDir, 'orchestrator-worktree-manager.ts'), 0o755);
+        await fs.copyFile(
+          managerSource,
+          path.join(scriptsDir, 'orchestrator-worktree-manager.ts')
+        );
+        await fs.chmod(
+          path.join(scriptsDir, 'orchestrator-worktree-manager.ts'),
+          0o755
+        );
         sourceFound = true;
-        logger.info('Installed orchestrator-worktree-manager.ts from bundled resources');
+        logger.info(
+          'Installed orchestrator-worktree-manager.ts from bundled resources'
+        );
         break;
       }
     }
@@ -1365,12 +1496,21 @@ else
 fi
 `;
 
-    await fs.writeFile(path.join(scriptsDir, 'orchestrator-worktree'), wrapperScript);
+    await fs.writeFile(
+      path.join(scriptsDir, 'orchestrator-worktree'),
+      wrapperScript
+    );
     await fs.chmod(path.join(scriptsDir, 'orchestrator-worktree'), 0o755);
 
     // Also add to claude scripts
-    await fs.writeFile(path.join(this.claudeDir, 'scripts', 'orchestrator-worktree'), wrapperScript);
-    await fs.chmod(path.join(this.claudeDir, 'scripts', 'orchestrator-worktree'), 0o755);
+    await fs.writeFile(
+      path.join(this.claudeDir, 'scripts', 'orchestrator-worktree'),
+      wrapperScript
+    );
+    await fs.chmod(
+      path.join(this.claudeDir, 'scripts', 'orchestrator-worktree'),
+      0o755
+    );
 
     logger.info('Installed orchestrator worktree manager');
     return { installed: true };
@@ -1437,7 +1577,9 @@ export CLAUDE_WORKTREE_ENABLED=1
           const content = await fs.readFile(configFile, 'utf-8');
           if (!content.includes('Wundr Resource Manager')) {
             await fs.appendFile(configFile, integrationBlock);
-            logger.info(`Added resource manager integration to ${path.basename(configFile)}`);
+            logger.info(
+              `Added resource manager integration to ${path.basename(configFile)}`
+            );
           }
         }
       } catch {

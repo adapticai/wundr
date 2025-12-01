@@ -56,8 +56,8 @@ STORAGE_BUCKET=my-app-files
 STORAGE_REGION=us-east-1
 
 # AWS credentials
-AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+MY_AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+MY_AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 # For R2/MinIO
 STORAGE_ENDPOINT=https://your-account.r2.cloudflarestorage.com
@@ -412,8 +412,8 @@ Test with real S3 (development bucket):
 ```bash
 # Set test credentials
 export AVATAR_STORAGE_BUCKET=test-avatars-bucket
-export AWS_ACCESS_KEY_ID=...
-export AWS_SECRET_ACCESS_KEY=...
+export MY_AWS_ACCESS_KEY_ID=...
+export MY_AWS_SECRET_ACCESS_KEY=...
 
 # Run tests
 npm run test:integration -- avatar-service

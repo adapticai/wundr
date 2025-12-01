@@ -248,22 +248,22 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
       setState(prev => ({ ...prev, daemonStatus: status }));
     };
 
-    const onStreamStart = (
-      sessionId: string,
-      metadata?: Record<string, unknown>
-    ) => {
-      handlers.onStreamStart?.(sessionId, metadata);
+    const onStreamStart = (data: {
+      sessionId: string;
+      metadata?: Record<string, unknown>;
+    }) => {
+      handlers.onStreamStart?.(data.sessionId, data.metadata);
     };
 
     const onStreamChunk = (chunk: StreamChunk) => {
       handlers.onStreamChunk?.(chunk);
     };
 
-    const onStreamEnd = (
-      sessionId: string,
-      metadata?: Record<string, unknown>
-    ) => {
-      handlers.onStreamEnd?.(sessionId, metadata);
+    const onStreamEnd = (data: {
+      sessionId: string;
+      metadata?: Record<string, unknown>;
+    }) => {
+      handlers.onStreamEnd?.(data.sessionId, data.metadata);
     };
 
     const onToolCallStart = (info: ToolCallInfo) => {
@@ -274,20 +274,24 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
       handlers.onToolCallResult?.(info);
     };
 
-    const onTaskExecuting = (sessionId: string, taskId: string) => {
-      handlers.onTaskExecuting?.(sessionId, taskId);
+    const onTaskExecuting = (data: { sessionId: string; taskId: string }) => {
+      handlers.onTaskExecuting?.(data.sessionId, data.taskId);
     };
 
-    const onTaskCompleted = (
-      sessionId: string,
-      taskId: string,
-      result?: unknown
-    ) => {
-      handlers.onTaskCompleted?.(sessionId, taskId, result);
+    const onTaskCompleted = (data: {
+      sessionId: string;
+      taskId: string;
+      result?: unknown;
+    }) => {
+      handlers.onTaskCompleted?.(data.sessionId, data.taskId, data.result);
     };
 
-    const onTaskFailed = (sessionId: string, taskId: string, error: string) => {
-      handlers.onTaskFailed?.(sessionId, taskId, error);
+    const onTaskFailed = (data: {
+      sessionId: string;
+      taskId: string;
+      error: string;
+    }) => {
+      handlers.onTaskFailed?.(data.sessionId, data.taskId, data.error);
     };
 
     // Register event listeners

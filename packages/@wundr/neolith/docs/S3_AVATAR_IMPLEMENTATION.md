@@ -311,8 +311,8 @@ model User {
 STORAGE_PROVIDER=s3
 STORAGE_BUCKET=your-bucket-name
 STORAGE_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-access-key-id
-AWS_SECRET_ACCESS_KEY=your-secret-access-key
+MY_AWS_ACCESS_KEY_ID=your-access-key-id
+MY_AWS_SECRET_ACCESS_KEY=your-secret-access-key
 ```
 
 ### Optional Variables
@@ -352,8 +352,8 @@ AVATAR_STORAGE_ENDPOINT=https://avatars.r2.cloudflarestorage.com
 ```bash
 # Test with real S3 bucket
 export AVATAR_STORAGE_BUCKET=test-avatars
-export AWS_ACCESS_KEY_ID=...
-export AWS_SECRET_ACCESS_KEY=...
+export MY_AWS_ACCESS_KEY_ID=...
+export MY_AWS_SECRET_ACCESS_KEY=...
 
 npm run test:integration -- avatar-service
 ```

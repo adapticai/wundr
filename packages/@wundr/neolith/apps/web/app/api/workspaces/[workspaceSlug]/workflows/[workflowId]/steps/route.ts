@@ -103,7 +103,7 @@ interface WorkflowStep {
   conditions?: Array<{
     field: string;
     operator: string;
-    value: string | number | boolean | string[];
+    value?: string | number | boolean | string[];
   }>;
   onError?: 'stop' | 'continue' | 'retry';
   retryConfig?: {

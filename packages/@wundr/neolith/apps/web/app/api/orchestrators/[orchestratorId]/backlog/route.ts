@@ -121,8 +121,51 @@ export async function GET(
     }
 
     // Parse and validate query parameters
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const parseResult = vpBacklogFiltersSchema.safeParse(searchParams);
+    const searchParams = request.nextUrl.searchParams;
+    const queryParams: Record<string, unknown> = {
+      workspaceId: orchestrator.workspaceId || '',
+    };
+
+    // Parse query parameters with proper type conversion
+    if (searchParams.has('status')) {
+      const statusParam = searchParams.get('status');
+      queryParams.status = statusParam?.includes(',')
+        ? statusParam.split(',')
+        : statusParam;
+    }
+    if (searchParams.has('priority')) {
+      const priorityParam = searchParams.get('priority');
+      queryParams.priority = priorityParam?.includes(',')
+        ? priorityParam.split(',')
+        : priorityParam;
+    }
+    if (searchParams.has('tags')) {
+      queryParams.tags = searchParams.get('tags')?.split(',');
+    }
+    if (searchParams.has('searchTerm')) {
+      queryParams.searchTerm = searchParams.get('searchTerm');
+    }
+    if (searchParams.has('limit')) {
+      queryParams.limit = parseInt(searchParams.get('limit') || '50', 10);
+    }
+    if (searchParams.has('offset')) {
+      queryParams.offset = parseInt(searchParams.get('offset') || '0', 10);
+    }
+    if (searchParams.has('page')) {
+      queryParams.page = parseInt(searchParams.get('page') || '1', 10);
+    }
+    if (searchParams.has('includeCompleted')) {
+      queryParams.includeCompleted =
+        searchParams.get('includeCompleted') === 'true';
+    }
+    if (searchParams.has('sortBy')) {
+      queryParams.sortBy = searchParams.get('sortBy');
+    }
+    if (searchParams.has('sortOrder')) {
+      queryParams.sortOrder = searchParams.get('sortOrder');
+    }
+
+    const parseResult = vpBacklogFiltersSchema.safeParse(queryParams);
 
     if (!parseResult.success) {
       return NextResponse.json(
@@ -158,7 +201,7 @@ export async function GET(
         priority: { in: priorityArray as TaskPriority[] },
       }),
       ...(!filters.includeCompleted && {
-        status: { notIn: ['DONE', 'CANCELLED'] },
+        status: { notIn: ['DONE', 'CANCELLED'] as TaskStatus[] },
       }),
     };
 

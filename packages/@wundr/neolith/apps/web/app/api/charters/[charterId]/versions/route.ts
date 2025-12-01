@@ -93,8 +93,8 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -102,12 +102,14 @@ export async function GET(
 
     // Validate charterId parameter
     const params = await context.params;
-    const paramResult = charterIdParamSchema.safeParse(params);
+    const paramResult = charterIdParamSchema.safeParse({
+      id: params.charterId,
+    });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid charter ID format',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid charter ID format'
         ),
         { status: 400 }
       );
@@ -120,8 +122,8 @@ export async function GET(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid query parameters',
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid query parameters',
           {
             errors: parseResult.error.flatten().fieldErrors,
           }
@@ -131,16 +133,18 @@ export async function GET(
     }
 
     const filters: CharterFiltersInput = parseResult.data;
+    const limit = filters.limit ?? 20;
+    const offset = filters.offset ?? 0;
 
     // Build where clause
     const where: Prisma.charterVersionWhereInput = {
       charterId: params.charterId,
-      ...(filters.isActive !== undefined && { isActive: filters.isActive }),
+      ...(filters.status && { status: filters.status }),
     };
 
     // Calculate pagination
-    const skip = (filters.page - 1) * filters.limit;
-    const take = filters.limit;
+    const skip = offset;
+    const take = limit;
 
     // Fetch charter versions and check access to the first one's orchestrator
     const [versions, totalCount] = await Promise.all([
@@ -149,7 +153,16 @@ export async function GET(
         skip,
         take,
         orderBy: { version: 'desc' },
-        include: {
+        select: {
+          id: true,
+          charterId: true,
+          orchestratorId: true,
+          version: true,
+          charterData: true,
+          changeLog: true,
+          createdBy: true,
+          isActive: true,
+          createdAt: true,
           creator: {
             select: {
               id: true,
@@ -181,8 +194,8 @@ export async function GET(
       if (!access) {
         return NextResponse.json(
           createErrorResponse(
-            'Orchestrator not found or access denied',
-            CHARTER_ERROR_CODES.FORBIDDEN
+            CHARTER_ERROR_CODES.FORBIDDEN,
+            'Orchestrator not found or access denied'
           ),
           { status: 403 }
         );
@@ -190,15 +203,15 @@ export async function GET(
     }
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const hasNextPage = filters.page < totalPages;
-    const hasPreviousPage = filters.page > 1;
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = offset + limit < totalCount;
+    const hasPreviousPage = offset > 0;
 
     return NextResponse.json({
       data: versions,
       pagination: {
-        page: filters.page,
-        limit: filters.limit,
+        offset,
+        limit,
         totalCount,
         totalPages,
         hasNextPage,
@@ -209,8 +222,8 @@ export async function GET(
     console.error('[GET /api/charters/:charterId/versions] Error:', error);
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );
@@ -248,8 +261,8 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -257,12 +270,14 @@ export async function POST(
 
     // Validate charterId parameter
     const params = await context.params;
-    const paramResult = charterIdParamSchema.safeParse(params);
+    const paramResult = charterIdParamSchema.safeParse({
+      id: params.charterId,
+    });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid charter ID format',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid charter ID format'
         ),
         { status: 400 }
       );
@@ -275,8 +290,8 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid JSON body',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid JSON body'
         ),
         { status: 400 }
       );
@@ -287,8 +302,8 @@ export async function POST(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Validation failed',
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
           }
@@ -303,8 +318,8 @@ export async function POST(
     if (input.charterId !== params.charterId) {
       return NextResponse.json(
         createErrorResponse(
-          'Charter ID mismatch between route and body',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Charter ID mismatch between route and body'
         ),
         { status: 400 }
       );
@@ -319,8 +334,8 @@ export async function POST(
     if (!existingVersion) {
       return NextResponse.json(
         createErrorResponse(
-          'No existing charter found. Use orchestrator charter API to create first version.',
-          CHARTER_ERROR_CODES.NOT_FOUND
+          CHARTER_ERROR_CODES.CHARTER_NOT_FOUND,
+          'No existing charter found. Use orchestrator charter API to create first version.'
         ),
         { status: 404 }
       );
@@ -334,8 +349,8 @@ export async function POST(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Orchestrator not found or access denied'
         ),
         { status: 403 }
       );
@@ -345,8 +360,8 @@ export async function POST(
     if (access.role !== 'OWNER' && access.role !== 'ADMIN') {
       return NextResponse.json(
         createErrorResponse(
-          'Insufficient permissions to create charter version',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Insufficient permissions to create charter version'
         ),
         { status: 403 }
       );
@@ -374,8 +389,16 @@ export async function POST(
         select: { version: true },
       });
 
-      const nextVersion =
-        input.version ?? (maxVersion ? maxVersion.version + 1 : 1);
+      const nextVersion = maxVersion ? maxVersion.version + 1 : 1;
+
+      // Create charter data from input
+      const charterData = {
+        name: input.name,
+        description: input.description,
+        objectives: input.objectives,
+        constraints: input.constraints,
+        metadata: input.metadata,
+      };
 
       // Create new version
       return tx.charterVersion.create({
@@ -383,12 +406,21 @@ export async function POST(
           charterId: params.charterId,
           orchestratorId: existingVersion.orchestratorId,
           version: nextVersion,
-          charterData: input.charterData as unknown as Prisma.InputJsonValue,
-          changeLog: input.changeLog,
+          charterData: charterData as unknown as Prisma.InputJsonValue,
+          changeLog: `Version ${nextVersion}: ${input.description}`,
           createdBy: session.user.id,
           isActive: true,
         },
-        include: {
+        select: {
+          id: true,
+          charterId: true,
+          orchestratorId: true,
+          version: true,
+          charterData: true,
+          changeLog: true,
+          createdBy: true,
+          isActive: true,
+          createdAt: true,
           creator: {
             select: {
               id: true,
@@ -424,8 +456,8 @@ export async function POST(
     ) {
       return NextResponse.json(
         createErrorResponse(
-          'A charter version with this number already exists',
-          CHARTER_ERROR_CODES.DUPLICATE_VERSION
+          CHARTER_ERROR_CODES.DUPLICATE_VERSION,
+          'A charter version with this number already exists'
         ),
         { status: 409 }
       );
@@ -433,8 +465,8 @@ export async function POST(
 
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );

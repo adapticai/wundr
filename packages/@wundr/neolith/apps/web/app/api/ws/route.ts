@@ -14,7 +14,8 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getWebSocketServer } from '@/lib/realtime/init';
+import { getWebSocketServer } from '../../../lib/realtime/server';
+import type { WebSocketServer } from 'ws';
 
 /**
  * List of allowed origins for CORS
@@ -94,7 +95,12 @@ export async function GET(req: NextRequest) {
 
   try {
     // Get WebSocket server singleton
-    const wsServer = getWebSocketServer();
+    const wsServer: WebSocketServer | null = getWebSocketServer();
+
+    // Check if WebSocket server is available
+    if (!wsServer) {
+      throw new Error('WebSocket server not initialized');
+    }
 
     // The actual WebSocket upgrade is handled by the server
     // In Next.js, we need to access the underlying Node.js request/response
@@ -109,7 +115,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Handle the upgrade via our WebSocket server
-    wsServer.handleUpgrade(nodeReq, socket, Buffer.alloc(0), ws => {
+    wsServer.handleUpgrade(nodeReq, socket, Buffer.alloc(0), (ws: any) => {
       wsServer.emit('connection', ws, nodeReq);
     });
 

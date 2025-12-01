@@ -21,7 +21,7 @@ import {
 } from '@/lib/validations/orchestrator-conversation';
 
 import type { DelegateTaskInput } from '@/lib/validations/orchestrator-conversation';
-import type { Prisma } from '@neolith/database';
+import type { Prisma, TaskPriority } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -225,29 +225,45 @@ export async function POST(
       select: { id: true },
     });
 
+    // Build task update data
+    const taskUpdateData: Prisma.taskUpdateInput = {
+      assignedTo: {
+        connect: { id: targetUser.id },
+      },
+      metadata: {
+        ...existingMetadata,
+        delegationChain,
+        lastDelegation: {
+          from: orchestrator.user.id,
+          to: targetUser.id,
+          at: new Date().toISOString(),
+          note: input.note,
+        },
+        ...input.metadata,
+      } as unknown as Prisma.InputJsonValue,
+    };
+
+    // Update orchestratorId only if target is an Orchestrator
+    if (targetOrchestrator) {
+      taskUpdateData.orchestrator = {
+        connect: { id: targetOrchestrator.id },
+      };
+    }
+
+    // Update priority if provided
+    if (input.priority) {
+      taskUpdateData.priority = input.priority.toUpperCase() as TaskPriority;
+    }
+
+    // Update due date if provided
+    if (input.dueDate) {
+      taskUpdateData.dueDate = new Date(input.dueDate);
+    }
+
     // Update task with new assignee
     const updatedTask = await prisma.task.update({
       where: { id: input.taskId },
-      data: {
-        assignedToId: targetUser.id,
-        // Update orchestratorId only if target is an Orchestrator
-        ...(targetOrchestrator && { orchestratorId: targetOrchestrator.id }),
-        // Update priority if provided
-        ...(input.priority && { priority: input.priority }),
-        // Update due date if provided
-        ...(input.dueDate && { dueDate: new Date(input.dueDate) }),
-        metadata: {
-          ...existingMetadata,
-          delegationChain,
-          lastDelegation: {
-            from: orchestrator.user.id,
-            to: targetUser.id,
-            at: new Date().toISOString(),
-            note: input.note,
-          },
-          ...input.metadata,
-        } as unknown as Prisma.InputJsonValue,
-      },
+      data: taskUpdateData,
       include: {
         assignedTo: {
           select: {
@@ -272,7 +288,7 @@ export async function POST(
             input.note ||
             `${orchestrator.user.name} has delegated a task to you`,
           priority:
-            input.priority === 'CRITICAL'
+            input.priority === 'critical'
               ? ('URGENT' as const)
               : ('NORMAL' as const),
           resourceId: task.id,

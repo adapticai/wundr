@@ -280,7 +280,7 @@ export async function PATCH(
         currentTask.workspaceId
       );
 
-      if (!depValidation.isValid) {
+      if (!depValidation.valid) {
         return NextResponse.json(
           createErrorResponse(
             'Invalid task dependencies',
@@ -321,8 +321,12 @@ export async function PATCH(
         ...(input.description !== undefined && {
           description: input.description,
         }),
-        ...(input.priority && { priority: input.priority }),
-        ...(input.status && { status: input.status }),
+        ...(input.priority && {
+          priority: input.priority as import('@neolith/database').TaskPriority,
+        }),
+        ...(input.status && {
+          status: input.status as import('@neolith/database').TaskStatus,
+        }),
         ...(input.estimatedHours !== undefined && {
           estimatedHours: input.estimatedHours,
         }),

@@ -466,7 +466,7 @@ async function setupApiKeyManagement(
       anthropic: { envVar: `${config.envPrefix || 'WUNDR_'}ANTHROPIC_API_KEY` },
       google: { envVar: `${config.envPrefix || 'WUNDR_'}GOOGLE_API_KEY` },
       // Cloud services
-      aws: { envVar: 'AWS_ACCESS_KEY_ID' },
+      aws: { envVar: 'MY_AWS_ACCESS_KEY_ID' },
       gcp: { envVar: 'GOOGLE_APPLICATION_CREDENTIALS' },
       azure: { envVar: 'AZURE_API_KEY' },
     },
@@ -498,8 +498,8 @@ ${config.envPrefix || 'WUNDR_'}ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
 ${config.envPrefix || 'WUNDR_'}GOOGLE_API_KEY=your-google-api-key-here
 
 # Cloud Services
-# AWS_ACCESS_KEY_ID=your-aws-access-key
-# AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+# MY_AWS_ACCESS_KEY_ID=your-aws-access-key
+# MY_AWS_SECRET_ACCESS_KEY=your-aws-secret-key
 
 # Development
 # DATABASE_URL=your-database-connection-string

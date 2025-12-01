@@ -121,41 +121,36 @@ export async function POST(
       input.taskId,
       {
         note: input.note,
-        priority: input.priority,
+        priority: input.priority as
+          | 'LOW'
+          | 'MEDIUM'
+          | 'HIGH'
+          | 'CRITICAL'
+          | undefined,
         dueDate: input.dueDate ? new Date(input.dueDate) : undefined,
       }
     );
 
     if (!result.success) {
-      // Determine appropriate status code based on error
-      let statusCode = 500;
-      let errorCode: (typeof ORCHESTRATOR_COORDINATION_ERROR_CODES)[keyof typeof ORCHESTRATOR_COORDINATION_ERROR_CODES] =
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR;
-
-      if (result.error?.includes('not found')) {
-        statusCode = 404;
-        errorCode = ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND;
-      } else if (result.error?.includes('does not belong')) {
-        statusCode = 403;
-        errorCode = ORCHESTRATOR_COORDINATION_ERROR_CODES.INVALID_OWNERSHIP;
-      } else if (result.error?.includes('organization')) {
-        statusCode = 400;
-        errorCode =
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.DIFFERENT_ORGANIZATION;
-      }
-
       return NextResponse.json(
         createCoordinationErrorResponse(
           result.error || 'Delegation failed',
-          errorCode
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: statusCode }
+        { status: 500 }
       );
     }
 
     return NextResponse.json({
-      data: result,
-      message: result.message || 'Task delegated successfully',
+      data: {
+        success: result.success,
+        taskId: result.taskId,
+        fromOrchestratorId: result.fromOrchestratorId,
+        toOrchestratorId: result.toOrchestratorId,
+        delegatedAt: result.delegatedAt,
+        message: result.message,
+      },
+      message: 'Task delegated successfully',
     });
   } catch (error) {
     console.error('[POST /api/orchestrators/:id/delegate] Error:', error);

@@ -42,9 +42,9 @@ ENCRYPTION_KEY=your-32-char-encryption-key-here
 #### AWS (if using AWS deployment)
 
 ```bash
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
-AWS_REGION=us-east-1
+MY_AWS_ACCESS_KEY_ID=AKIA...
+MY_AWS_SECRET_ACCESS_KEY=...
+MY_AWS_REGION=us-east-1
 ```
 
 #### Vercel (if using Vercel deployment)
@@ -94,7 +94,7 @@ Configure these in GitHub repository settings (`Settings > Secrets and variables
 ```bash
 # Repository settings
 DOMAIN_NAME=wundr.yourdomain.com
-AWS_REGION=us-east-1
+MY_AWS_REGION=us-east-1
 STORAGE_CLASS=gp2
 DATA_STORAGE_SIZE=10Gi
 LOGS_STORAGE_SIZE=5Gi

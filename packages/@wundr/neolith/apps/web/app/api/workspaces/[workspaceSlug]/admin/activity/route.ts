@@ -162,7 +162,7 @@ export async function GET(
       // Format response
       const actions: AdminAction[] = actionsResult.map(a => ({
         id: a.id,
-        action: a.action as AdminActionType,
+        action: a.action,
         actorId: a.actor_id,
         actor: actorMap.get(a.actor_id) || {
           id: a.actor_id,

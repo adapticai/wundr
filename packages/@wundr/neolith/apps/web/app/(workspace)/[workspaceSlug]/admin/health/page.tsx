@@ -2,7 +2,7 @@
 
 import {
   useHealthDashboard,
-  useOrchestratorHealth,
+  useOrchestratorHealthList,
   useMetricsChart,
   useHealthAlerts,
 } from '@/hooks/use-health-dashboard';
@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
  */
 export default function HealthDashboardPage() {
   const { overview, error, isLoading, refetch } = useHealthDashboard();
-  const { orchestrators } = useOrchestratorHealth();
+  const { orchestrators } = useOrchestratorHealthList();
   const { chartData } = useMetricsChart();
   const { alerts } = useHealthAlerts();
 

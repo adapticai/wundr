@@ -176,7 +176,7 @@ export function UserAvatar({
 }: UserAvatarProps) {
   // Support both 'image' and 'avatarUrl' properties for compatibility
   const imageUrl = user.image || user.avatarUrl;
-  const initials = getInitials(user.name);
+  const initials = getInitials(user.name ?? '');
   const altText = user.name || 'User avatar';
 
   const { container, text } = sizeConfig[size];

@@ -302,36 +302,47 @@ export async function PATCH(
       }
     }
 
+    // Build update data object
+    const updateData: Prisma.sessionManagerUpdateInput = {};
+
+    if (input.name !== undefined) {
+      updateData.name = input.name;
+    }
+    if (input.description !== undefined) {
+      updateData.description = input.description;
+    }
+    if (input.charterId !== undefined) {
+      updateData.charterId = input.charterId;
+    }
+    if (input.charterData !== undefined) {
+      updateData.charterData = input.charterData as Prisma.InputJsonValue;
+    }
+    if (input.disciplineId !== undefined) {
+      updateData.disciplineId = input.disciplineId;
+    }
+    if (input.isGlobal !== undefined) {
+      updateData.isGlobal = input.isGlobal;
+    }
+    if (input.globalConfig !== undefined) {
+      updateData.globalConfig = input.globalConfig as Prisma.InputJsonValue;
+    }
+    if (input.status !== undefined) {
+      updateData.status = input.status;
+    }
+    if (input.maxConcurrentSubagents !== undefined) {
+      updateData.maxConcurrentSubagents = input.maxConcurrentSubagents;
+    }
+    if (input.tokenBudgetPerHour !== undefined) {
+      updateData.tokenBudgetPerHour = input.tokenBudgetPerHour;
+    }
+    if (input.worktreeConfig !== undefined) {
+      updateData.worktreeConfig = input.worktreeConfig as Prisma.InputJsonValue;
+    }
+
     // Update session manager
     const updatedSessionManager = await prisma.sessionManager.update({
       where: { id: params.id },
-      data: {
-        ...(input.name !== undefined && { name: input.name }),
-        ...(input.description !== undefined && {
-          description: input.description,
-        }),
-        ...(input.charterId !== undefined && { charterId: input.charterId }),
-        ...(input.charterData !== undefined && {
-          charterData: input.charterData as Prisma.InputJsonValue,
-        }),
-        ...(input.disciplineId !== undefined && {
-          disciplineId: input.disciplineId,
-        }),
-        ...(input.isGlobal !== undefined && { isGlobal: input.isGlobal }),
-        ...(input.globalConfig !== undefined && {
-          globalConfig: input.globalConfig as Prisma.InputJsonValue,
-        }),
-        ...(input.status !== undefined && { status: input.status }),
-        ...(input.maxConcurrentSubagents !== undefined && {
-          maxConcurrentSubagents: input.maxConcurrentSubagents,
-        }),
-        ...(input.tokenBudgetPerHour !== undefined && {
-          tokenBudgetPerHour: input.tokenBudgetPerHour,
-        }),
-        ...(input.worktreeConfig !== undefined && {
-          worktreeConfig: input.worktreeConfig as Prisma.InputJsonValue,
-        }),
-      },
+      data: updateData,
       include: {
         orchestrator: {
           include: {

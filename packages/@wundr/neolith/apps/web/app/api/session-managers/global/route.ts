@@ -75,7 +75,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Build where clause - only global session managers
     const where: Prisma.sessionManagerWhereInput = {
       isGlobal: true,
-      ...(status && { status }),
+      ...(status && { status: status as Prisma.EnumAgentStatusFilter }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             select: {
               id: true,
               userId: true,
-              discipline: true,
+              disciplineId: true,
               role: true,
             },
           },

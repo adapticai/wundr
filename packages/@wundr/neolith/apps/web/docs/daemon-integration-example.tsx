@@ -72,7 +72,7 @@ export function SessionManagerExample() {
           status: 'pending',
         },
         sessionType: 'claude-code',
-        memoryProfile: 'default',
+        memoryProfile: { profile: 'default' },
       });
 
       console.log('Session spawned:', session.id);
@@ -111,7 +111,7 @@ export function SessionManagerExample() {
                 <p>ID: {session.id}</p>
                 <p>Type: {session.type}</p>
                 <p>Status: {session.status}</p>
-                <p>Task: {session.task.description}</p>
+                <p>Task: {session.task?.description ?? 'No task'}</p>
                 <p>Tokens Used: {session.metrics.tokensUsed}</p>
                 <button onClick={() => stopSession(session.id)}>
                   Stop Session
@@ -177,8 +177,13 @@ export function StreamingOutputExample() {
 
     executeTask({
       sessionId,
-      task: 'Analyze the codebase and suggest improvements',
-      streamResponse: true,
+      task: {
+        type: 'analysis',
+        description: 'Analyze the codebase and suggest improvements',
+        priority: 'medium',
+        status: 'pending',
+      },
+      streamOutput: true,
     });
   };
 

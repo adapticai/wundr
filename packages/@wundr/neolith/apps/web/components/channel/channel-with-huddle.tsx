@@ -185,7 +185,7 @@ export function ChannelWithHuddle({
               }}
               channelName={channel.name}
               token={joinData.token}
-              serverUrl={joinData.serverUrl}
+              serverUrl={joinData.serverUrl ?? ''}
               roomName={joinData.roomName}
               onDisconnect={handleLeaveHuddle}
               onError={error => {

@@ -64,7 +64,7 @@ private encryptPassword(password: string): string {
 **Verified Patterns:**
 
 1. **AWS Access Key** - `AKIA[0-9A-Z]{16}` (Critical)
-2. **AWS Secret Key** - `aws_secret_access_key=...` (Critical)
+2. **AWS Secret Key** - `MY_AWS_SECRET_ACCESS_KEY=...` (Critical)
 3. **GitHub Token** - `gh[pousr]_[A-Za-z0-9_]{36,255}` (High)
 4. **Generic API Key** - `api[_-]?key[:=]...` (Medium)
 5. **JWT Token** - `eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*` (Medium)

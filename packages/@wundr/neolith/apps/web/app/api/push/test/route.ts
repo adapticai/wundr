@@ -172,7 +172,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Parse optional request body
-    let input: TestNotificationInput = {};
+    let input: Partial<TestNotificationInput> = {};
     try {
       const contentType = request.headers.get('content-type');
       if (contentType?.includes('application/json')) {

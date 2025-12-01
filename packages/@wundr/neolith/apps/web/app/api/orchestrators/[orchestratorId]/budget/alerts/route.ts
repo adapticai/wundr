@@ -11,7 +11,7 @@
  * @module app/api/orchestrators/[orchestratorId]/budget/alerts/route
  */
 
-import { prisma } from '@neolith/database';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -423,9 +423,10 @@ export async function POST(
           orchestratorId: orchestrator.id,
           charterId: charter?.charterId ?? 'default',
           version: nextVersion,
-          charterData: updatedCharterData as Record<string, unknown>,
+          charterData: updatedCharterData as Prisma.InputJsonValue,
           changeLog: 'Updated budget alert configuration',
           isActive: true,
+          createdBy: session.user.id,
         },
       });
     });

@@ -163,8 +163,8 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -176,8 +176,8 @@ export async function GET(
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid charter ID format',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid charter ID format'
         ),
         { status: 400 }
       );
@@ -190,8 +190,8 @@ export async function GET(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid query parameters',
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid query parameters',
           {
             errors: parseResult.error.flatten().fieldErrors,
           }
@@ -201,8 +201,8 @@ export async function GET(
     }
 
     const query: DiffQueryInput = parseResult.data;
-    const version1 = parseInt(query.v1, 10);
-    const version2 = parseInt(query.v2, 10);
+    const version1 = parseInt(query.fromVersion, 10);
+    const version2 = parseInt(query.toVersion, 10);
 
     // Fetch both versions
     const [charterVersion1, charterVersion2] = await Promise.all([
@@ -240,8 +240,8 @@ export async function GET(
     if (!charterVersion1) {
       return NextResponse.json(
         createErrorResponse(
-          `Version ${version1} not found`,
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          `Version ${version1} not found`
         ),
         { status: 404 }
       );
@@ -250,8 +250,8 @@ export async function GET(
     if (!charterVersion2) {
       return NextResponse.json(
         createErrorResponse(
-          `Version ${version2} not found`,
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          `Version ${version2} not found`
         ),
         { status: 404 }
       );
@@ -261,8 +261,8 @@ export async function GET(
     if (charterVersion1.orchestratorId !== charterVersion2.orchestratorId) {
       return NextResponse.json(
         createErrorResponse(
-          'Versions belong to different orchestrators',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Versions belong to different orchestrators'
         ),
         { status: 400 }
       );
@@ -276,8 +276,8 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Orchestrator not found or access denied'
         ),
         { status: 403 }
       );
@@ -314,8 +314,8 @@ export async function GET(
     console.error('[GET /api/charters/:charterId/diff] Error:', error);
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );

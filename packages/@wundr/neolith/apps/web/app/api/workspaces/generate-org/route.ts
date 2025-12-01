@@ -49,7 +49,6 @@ async function getOrgGenesisModules() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GenesisResult = any;
 
-// @ts-expect-error Reserved for future strict typing
 type _GenesisResultDetailed = {
   manifest: {
     id: string;
@@ -93,7 +92,6 @@ type _GenesisResultDetailed = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type NeolithResult = any;
 
-// @ts-expect-error Reserved for future strict typing
 type _NeolithResultDetailed = {
   manifest: {
     id: string;

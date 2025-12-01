@@ -89,6 +89,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { userIds } = parseResult.data;
 
+    if (!userIds || userIds.length === 0) {
+      return NextResponse.json(
+        createPresenceErrorResponse(
+          'userIds array is required and must not be empty',
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
     // Build SSE stream URL
     const streamUrl = `/api/presence/stream?userIds=${userIds.join(',')}`;
 

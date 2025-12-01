@@ -55,7 +55,7 @@ export class SecretScanner extends EventEmitter {
     },
     {
       name: 'AWS Secret Key',
-      pattern: /aws_secret_access_key\s*=\s*['"]?([A-Za-z0-9/+=]{40})['"]?/gi,
+      pattern: /MY_AWS_SECRET_ACCESS_KEY\s*=\s*['"]?([A-Za-z0-9/+=]{40})['"]?/gi,
       description: 'AWS Secret Access Key',
       severity: 'critical',
       category: 'cloud'

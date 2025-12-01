@@ -210,11 +210,11 @@ export async function PATCH(
     const parseResult = updateIntegrationSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse(
-          'Validation failed',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
-        ),
+        {
+          error: INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          message: 'Validation failed',
+          errors: parseResult.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }

@@ -8,6 +8,7 @@ import type {
   ActionType,
   WorkflowVariable,
   ChannelType,
+  ConditionConfig,
 } from '@/types/workflow';
 import { ACTION_TYPE_CONFIG, DEFAULT_ACTION_CONFIGS } from '@/types/workflow';
 
@@ -695,9 +696,20 @@ interface ConditionConfigProps {
 }
 
 function ConditionConfig({ config, onChange }: ConditionConfigProps) {
-  const condition = config.condition as
-    | { field?: string; operator?: string; value?: string }
-    | undefined;
+  // Type guard to check if config.condition is a valid ConditionConfig
+  const isConditionConfig = (value: unknown): value is ConditionConfig => {
+    if (!value || typeof value !== 'object') return false;
+    const obj = value as Record<string, unknown>;
+    return (
+      typeof obj.field === 'string' &&
+      typeof obj.operator === 'string' &&
+      (obj.value === undefined || typeof obj.value === 'string')
+    );
+  };
+
+  const condition = isConditionConfig(config.condition)
+    ? config.condition
+    : undefined;
 
   return (
     <div className='space-y-4'>
@@ -719,11 +731,10 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
           onChange={e =>
             onChange({
               condition: {
-                ...condition,
                 field: e.target.value,
                 operator: condition?.operator || 'equals',
                 value: condition?.value || '',
-              },
+              } as ConditionConfig,
             })
           }
           placeholder='e.g., trigger.message.content'
@@ -744,7 +755,6 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
           onChange={e =>
             onChange({
               condition: {
-                ...condition,
                 field: condition?.field || '',
                 operator: e.target.value as
                   | 'equals'
@@ -753,7 +763,7 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
                   | 'less_than'
                   | 'exists',
                 value: condition?.value || '',
-              },
+              } as ConditionConfig,
             })
           }
           className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
@@ -780,11 +790,10 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
           onChange={e =>
             onChange({
               condition: {
-                ...condition,
                 field: condition?.field || '',
                 operator: condition?.operator || 'equals',
                 value: e.target.value,
-              },
+              } as ConditionConfig,
             })
           }
           placeholder='Value to compare'

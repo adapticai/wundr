@@ -17,7 +17,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
 
   // Group disciplines by Orchestrator
   const disciplinesByOrchestrator = disciplines.reduce(
-    (acc, discipline) => {
+    (acc: Record<string, typeof disciplines>, discipline: any) => {
       if (!acc[discipline.orchestratorId]) {
         acc[discipline.orchestratorId] = [];
       }
@@ -29,7 +29,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
 
   // Count agents by discipline
   const agentsByDiscipline = agents.reduce(
-    (acc, agent) => {
+    (acc: Record<string, number>, agent: any) => {
       acc[agent.disciplineId] = (acc[agent.disciplineId] || 0) + 1;
       return acc;
     },
@@ -51,7 +51,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
 
       {/* Orchestrators and Disciplines */}
       <div className='space-y-8'>
-        {orchestrators.map((orchestrator, orchestratorIndex) => {
+        {orchestrators.map((orchestrator: any, orchestratorIndex: number) => {
           const orchestratorDisciplines =
             disciplinesByOrchestrator[orchestrator.id] || [];
 
@@ -79,7 +79,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
                       </div>
 
                       <div className='grid gap-2 sm:grid-cols-2'>
-                        {orchestratorDisciplines.map(discipline => {
+                        {orchestratorDisciplines.map((discipline: any) => {
                           const agentCount =
                             agentsByDiscipline[discipline.id] || 0;
 
@@ -111,7 +111,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
                                 <div className='mt-2 flex flex-wrap gap-1'>
                                   {discipline.capabilities
                                     .slice(0, 3)
-                                    .map((cap, i) => (
+                                    .map((cap: string, i: number) => (
                                       <span
                                         key={i}
                                         className='rounded bg-background px-1.5 py-0.5 text-xs text-muted-foreground'
@@ -140,15 +140,19 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
                         KEY PERFORMANCE INDICATORS
                       </div>
                       <ul className='space-y-1'>
-                        {orchestrator.kpis.slice(0, 3).map((kpi, i) => (
-                          <li
-                            key={i}
-                            className='flex items-start gap-2 text-sm'
-                          >
-                            <CheckIcon className='h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400 mt-0.5' />
-                            <span className='text-muted-foreground'>{kpi}</span>
-                          </li>
-                        ))}
+                        {orchestrator.kpis
+                          .slice(0, 3)
+                          .map((kpi: string, i: number) => (
+                            <li
+                              key={i}
+                              className='flex items-start gap-2 text-sm'
+                            >
+                              <CheckIcon className='h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400 mt-0.5' />
+                              <span className='text-muted-foreground'>
+                                {kpi}
+                              </span>
+                            </li>
+                          ))}
                       </ul>
                     </div>
                   )}

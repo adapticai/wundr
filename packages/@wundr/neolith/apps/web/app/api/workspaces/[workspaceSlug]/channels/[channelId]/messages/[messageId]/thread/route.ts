@@ -163,7 +163,8 @@ export async function GET(
       );
     }
 
-    const { limit, before, after } = queryResult.data;
+    const { limit: limitParam, before, after } = queryResult.data;
+    const limit = limitParam ?? 50;
 
     // Check access
     const access = await checkAccess(

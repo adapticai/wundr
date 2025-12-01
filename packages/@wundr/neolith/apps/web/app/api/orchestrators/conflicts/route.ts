@@ -132,7 +132,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       data: result,
-      message: result.message || 'Conflict resolved successfully',
+      message: 'Conflict resolved successfully',
     });
   } catch (error) {
     console.error('[POST /api/orchestrators/conflicts] Error:', error);

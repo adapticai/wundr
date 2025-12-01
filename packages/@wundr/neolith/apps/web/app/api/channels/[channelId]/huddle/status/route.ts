@@ -114,7 +114,9 @@ export async function GET(
       roomName: activeHuddle.roomName,
       status: activeHuddle.status,
       createdAt: new Date(activeHuddle.createdAt),
-      endedAt: activeHuddle.endedAt ? new Date(activeHuddle.endedAt) : null,
+      endedAt: activeHuddle.endedAt
+        ? new Date(activeHuddle.endedAt).toISOString()
+        : null,
       createdBy: activeHuddle.createdBy,
       participantCount: activeHuddle.participantCount,
     };

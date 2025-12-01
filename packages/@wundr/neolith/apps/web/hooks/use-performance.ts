@@ -12,15 +12,8 @@ import {
   requestIdleCallbackPolyfill,
   cancelIdleCallbackPolyfill,
   createLazyObserver,
-} from '@/lib/performance';
-
-// =============================================================================
-// Types
-// =============================================================================
-
-import type {
-  CoreWebVitals as LibCoreWebVitals,
-  PerformanceRating as LibPerformanceRating,
+  type CoreWebVitals as LibCoreWebVitals,
+  type PerformanceRating as LibPerformanceRating,
 } from '@/lib/performance';
 
 // Re-export the CoreWebVitals type for backwards compatibility
@@ -244,7 +237,7 @@ export function useWebVitals(): UseWebVitalsReturn {
   useEffect(() => {
     let mounted = true;
 
-    measureWebVitals().then(measured => {
+    measureWebVitals().then((measured: Partial<LibCoreWebVitals>) => {
       if (mounted) {
         setVitals(measured);
         setLoading(false);

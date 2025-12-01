@@ -90,6 +90,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const input: PushUnsubscribeInput = parseResult.data;
 
+    // Validate required token field
+    if (!input.token) {
+      return NextResponse.json(
+        createNotificationErrorResponse(
+          'Push token is required',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
     // Find the subscription
     const subscription = await prisma.pushSubscription.findUnique({
       where: { token: input.token },

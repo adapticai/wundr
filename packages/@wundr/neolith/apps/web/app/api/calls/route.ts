@@ -37,7 +37,7 @@ interface SendCallInviteParams {
   callId: string;
   channelId: string;
   roomName: string;
-  callType: 'audio' | 'video';
+  callType: 'audio' | 'video' | 'screen_share';
   invitedUserIds: string[];
   inviterUserId: string;
   inviterName: string;

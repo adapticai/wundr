@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import type { NeolithApiClient } from '../../lib/api-client';
+import type { NeolithApiClient } from '@/lib/api-client';
 interface McpToolResult<T = unknown> { success: boolean; data?: T; message?: string; error?: string; }
 import type { CurrentUserProfile } from './get-current-user';
 

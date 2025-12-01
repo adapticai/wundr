@@ -398,8 +398,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       unsubscribedAt.all = now;
     } else {
       // Unsubscribe from specific email type
-      emailUnsubscribed[emailType] = true;
-      unsubscribedAt[emailType] = now;
+      (emailUnsubscribed as any)[emailType] = true;
+      (unsubscribedAt as any)[emailType] = now;
     }
 
     // Update user preferences in database

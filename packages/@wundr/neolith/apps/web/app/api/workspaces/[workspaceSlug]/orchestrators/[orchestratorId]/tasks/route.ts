@@ -450,7 +450,7 @@ export async function POST(
       workspaceId
     );
 
-    if (!depValidation.isValid) {
+    if (!depValidation.valid) {
       return NextResponse.json(
         createErrorResponse(
           'Invalid task dependencies',

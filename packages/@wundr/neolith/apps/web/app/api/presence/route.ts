@@ -78,12 +78,12 @@ function mapUserStatusToPresence(
 
   switch (status) {
     case 'ACTIVE':
-      return 'ONLINE';
+      return 'online';
     case 'INACTIVE':
     case 'PENDING':
     case 'SUSPENDED':
     default:
-      return 'OFFLINE';
+      return 'offline';
   }
 }
 
@@ -100,8 +100,8 @@ function buildPresenceResponse(user: {
   const online = isUserOnline(user.lastActiveAt);
   return {
     userId: user.id,
-    status: online ? mapUserStatusToPresence(user.status, prefs) : 'OFFLINE',
-    customStatus: prefs.customStatus ?? null,
+    status: online ? mapUserStatusToPresence(user.status, prefs) : 'offline',
+    customStatus: prefs.customStatus ?? undefined,
     lastSeen: user.lastActiveAt?.toISOString() ?? new Date(0).toISOString(),
     isOnline: online,
   };
@@ -270,12 +270,12 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const user = await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        status: input.status === 'OFFLINE' ? 'INACTIVE' : 'ACTIVE',
+        status: input.status === 'offline' ? 'INACTIVE' : 'ACTIVE',
         lastActiveAt: new Date(),
         preferences: {
           ...currentPrefs,
           presenceStatus: input.status,
-          customStatus: input.customStatus ?? null,
+          customStatus: input.customStatus ?? undefined,
         },
       },
       select: {

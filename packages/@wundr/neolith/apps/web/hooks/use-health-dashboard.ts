@@ -16,14 +16,14 @@ import { toast } from './use-toast';
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
 
 /**
- * Alert severity levels
+ * Alert severity levels for health dashboard
  */
-export type AlertSeverity = 'info' | 'warning' | 'critical';
+export type HealthAlertSeverity = 'info' | 'warning' | 'critical';
 
 /**
- * Time range options for metrics
+ * Time range options for health metrics
  */
-export type TimeRange = '1h' | '24h' | '7d' | '30d';
+export type HealthTimeRange = '1h' | '24h' | '7d' | '30d';
 
 /**
  * System-wide health overview
@@ -158,7 +158,7 @@ export interface HealthAlert {
   /** Orchestrator name (if applicable) */
   orchestratorName?: string;
   /** Alert severity */
-  severity: AlertSeverity;
+  severity: HealthAlertSeverity;
   /** Alert title */
   title: string;
   /** Alert message/description */
@@ -327,7 +327,10 @@ export function useHealthDashboard(): UseHealthDashboardReturn {
         toast({
           variant: 'destructive',
           title: 'Failed to load health overview',
-          description: err.message || 'Unable to fetch system health data',
+          description:
+            err instanceof Error
+              ? err.message
+              : 'Unable to fetch system health data',
         });
       },
     });
@@ -350,9 +353,9 @@ export function useHealthDashboard(): UseHealthDashboardReturn {
 // =============================================================================
 
 /**
- * Return type for the useOrchestratorHealth hook
+ * Return type for the useOrchestratorHealthList hook
  */
-export interface UseOrchestratorHealthReturn {
+export interface UseOrchestratorHealthListReturn {
   /** List of orchestrator health statuses */
   orchestrators: OrchestratorHealth[];
   /** Total count of orchestrators */
@@ -381,7 +384,7 @@ export interface UseOrchestratorHealthReturn {
  * @example
  * ```tsx
  * function OrchestratorHealthList() {
- *   const { orchestrators, total, isLoading, pagination } = useOrchestratorHealth({
+ *   const { orchestrators, total, isLoading, pagination } = useOrchestratorHealthList({
  *     status: 'degraded',
  *     page: 1,
  *     limit: 20,
@@ -403,9 +406,9 @@ export interface UseOrchestratorHealthReturn {
  * }
  * ```
  */
-export function useOrchestratorHealth(
+export function useOrchestratorHealthList(
   filters: OrchestratorHealthFilters = {}
-): UseOrchestratorHealthReturn {
+): UseOrchestratorHealthListReturn {
   const queryString = useMemo(() => buildFilterQueryString(filters), [filters]);
   const url = queryString
     ? `/api/admin/health/orchestrators?${queryString}`
@@ -435,7 +438,9 @@ export function useOrchestratorHealth(
           variant: 'destructive',
           title: 'Failed to load orchestrator health',
           description:
-            err.message || 'Unable to fetch orchestrator health data',
+            err instanceof Error
+              ? err.message
+              : 'Unable to fetch orchestrator health data',
         });
       },
     }
@@ -471,9 +476,9 @@ export interface UseMetricsChartReturn {
   /** Error object if fetch failed */
   error: Error | null;
   /** Current time range */
-  timeRange: TimeRange;
+  timeRange: HealthTimeRange;
   /** Function to change the time range */
-  setTimeRange: (range: TimeRange) => void;
+  setTimeRange: (range: HealthTimeRange) => void;
   /** Function to manually refetch the data */
   refetch: () => void;
 }
@@ -494,7 +499,7 @@ export interface UseMetricsChartReturn {
  *
  *   return (
  *     <div>
- *       <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as TimeRange)}>
+ *       <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as HealthTimeRange)}>
  *         <option value="1h">Last Hour</option>
  *         <option value="24h">Last 24 Hours</option>
  *         <option value="7d">Last 7 Days</option>
@@ -515,9 +520,9 @@ export interface UseMetricsChartReturn {
  * ```
  */
 export function useMetricsChart(
-  initialTimeRange: TimeRange = '24h'
+  initialTimeRange: HealthTimeRange = '24h'
 ): UseMetricsChartReturn {
-  const [timeRange, setTimeRange] = useState<TimeRange>(initialTimeRange);
+  const [timeRange, setTimeRange] = useState<HealthTimeRange>(initialTimeRange);
   const url = `/api/admin/health/metrics?timeRange=${timeRange}`;
 
   const { data, error, isLoading, mutate } = useSWR<MetricDataPoint[]>(
@@ -529,7 +534,8 @@ export function useMetricsChart(
         toast({
           variant: 'destructive',
           title: 'Failed to load metrics',
-          description: err.message || 'Unable to fetch metrics data',
+          description:
+            err instanceof Error ? err.message : 'Unable to fetch metrics data',
         });
       },
     }
@@ -567,7 +573,10 @@ export function useMetricsChart(
 /**
  * Format timestamp for chart display based on time range
  */
-function formatTimestamp(timestamp: string, timeRange: TimeRange): string {
+function formatTimestamp(
+  timestamp: string,
+  timeRange: HealthTimeRange
+): string {
   const date = new Date(timestamp);
 
   switch (timeRange) {
@@ -619,7 +628,7 @@ export interface UseHealthAlertsReturn {
   /** Whether a mutation is in progress */
   isMutating: boolean;
   /** Filter alerts by severity */
-  filterBySeverity: (severity?: AlertSeverity) => HealthAlert[];
+  filterBySeverity: (severity?: HealthAlertSeverity) => HealthAlert[];
   /** Function to manually refetch the alerts */
   refetch: () => void;
 }
@@ -671,7 +680,10 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
         toast({
           variant: 'destructive',
           title: 'Failed to load alerts',
-          description: err.message || 'Unable to fetch health alerts',
+          description:
+            err instanceof Error
+              ? err.message
+              : 'Unable to fetch health alerts',
         });
       },
     }
@@ -733,7 +745,7 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
   );
 
   const filterBySeverity = useCallback(
-    (severity?: AlertSeverity): HealthAlert[] => {
+    (severity?: HealthAlertSeverity): HealthAlert[] => {
       if (!data) return [];
       if (!severity) return data;
       return data.filter(alert => alert.severity === severity);

@@ -109,12 +109,7 @@ export async function GET(
         controllerRef = controller;
 
         // Add subscriber to store
-        addSubscriber({
-          userId,
-          workspaceId,
-          controller,
-          lastPing: Date.now(),
-        });
+        addSubscriber(workspaceId, userId);
 
         // Send initial state with current huddles
         const huddles = getWorkspaceHuddles(workspaceId);

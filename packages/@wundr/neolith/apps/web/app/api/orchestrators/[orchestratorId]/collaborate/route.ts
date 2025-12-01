@@ -17,7 +17,7 @@ import { orchestratorIdParamSchema } from '@/lib/validations/orchestrator';
 import {
   collaborationRequestSchema,
   createCoordinationErrorResponse,
-  ORCHESTRATOR_COORDINATION_ERROR_CODES,
+  COORDINATION_ERROR_CODES,
 } from '@/lib/validations/orchestrator-coordination';
 
 import type { CollaborationRequestInput } from '@/lib/validations/orchestrator-coordination';
@@ -67,7 +67,7 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
+          COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
         { status: 401 }
       );
@@ -80,7 +80,7 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid OrchestratorID format',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
         { status: 400 }
       );
@@ -96,7 +96,7 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
         { status: 400 }
       );
@@ -108,7 +108,7 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Validation failed',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR,
           { errors: parseResult.error.flatten().fieldErrors }
         ),
         { status: 400 }
@@ -122,60 +122,40 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Primary Orchestrator cannot be a collaborator',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
         { status: 400 }
       );
     }
 
     // Request collaboration
+    // Note: requestCollaboration expects (requestingOrchestrator, targetOrchestrator, collaborationRequest)
+    // For multiple orchestrators, we'll call it for the first one as primary
+    const targetOrchestratorId = input.requiredOrchestratorIds[0];
     const result = await requestCollaboration(
       primaryVpId,
-      input.taskId,
-      input.requiredOrchestratorIds,
+      targetOrchestratorId,
       {
-        roles: input.roles,
-        note: input.note,
+        taskId: input.taskId,
+        type: 'assist', // Default collaboration type
+        context: {
+          requiredOrchestratorIds: input.requiredOrchestratorIds,
+          roles: input.roles,
+          note: input.note,
+        },
       }
     );
 
-    if (!result.success) {
-      // Determine appropriate status code based on error
-      let statusCode = 500;
-      let errorCode: (typeof ORCHESTRATOR_COORDINATION_ERROR_CODES)[keyof typeof ORCHESTRATOR_COORDINATION_ERROR_CODES] =
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR;
-
-      if (result.error?.includes('not found')) {
-        statusCode = 404;
-        errorCode = ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND;
-      } else if (result.error?.includes('does not belong')) {
-        statusCode = 403;
-        errorCode = ORCHESTRATOR_COORDINATION_ERROR_CODES.INVALID_OWNERSHIP;
-      } else if (result.error?.includes('organization')) {
-        statusCode = 400;
-        errorCode =
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.DIFFERENT_ORGANIZATION;
-      }
-
-      return NextResponse.json(
-        createCoordinationErrorResponse(
-          result.error || 'Collaboration request failed',
-          errorCode
-        ),
-        { status: statusCode }
-      );
-    }
-
     return NextResponse.json({
       data: result,
-      message: result.message || 'Collaboration request sent successfully',
+      message: 'Collaboration request sent successfully',
     });
   } catch (error) {
     console.error('[POST /api/orchestrators/:id/collaborate] Error:', error);
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
+        COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
       { status: 500 }
     );

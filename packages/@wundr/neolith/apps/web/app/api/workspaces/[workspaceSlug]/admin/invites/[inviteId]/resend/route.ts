@@ -193,7 +193,7 @@ export async function POST(
           createAdminErrorResponse(
             'Failed to send invitation email',
             ADMIN_ERROR_CODES.INTERNAL_ERROR,
-            { emailError: emailResult.error?.message }
+            { emailError: emailResult.error }
           ),
           { status: 500 }
         );

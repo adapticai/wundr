@@ -10,7 +10,6 @@
  * @module app/api/workspaces/[workspaceId]/orchestrators/analytics/comparison/route
  */
 
-import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -32,55 +31,24 @@ interface RouteContext {
 }
 
 /**
- * Helper to verify workspace access
- */
-async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { id: true, organizationId: true, name: true },
-  });
-
-  if (!workspace) {
-    return null;
-  }
-
-  const orgMembership = await prisma.organizationMember.findUnique({
-    where: {
-      organizationId_userId: {
-        organizationId: workspace.organizationId,
-        userId,
-      },
-    },
-  });
-
-  if (!orgMembership) {
-    return null;
-  }
-
-  return { workspace, orgMembership };
-}
-
-/**
  * GET /api/workspaces/:workspaceId/orchestrators/analytics/comparison
  *
  * Compare Orchestrator performance across workspace.
- * Returns ranked list of Orchestrators by selected metric with percentile rankings.
+ * Returns comparison data for multiple orchestrators across selected metrics.
  *
  * Query Parameters:
- * - metric: Metric to compare by (taskCompletionRate, avgResponseTime, qualityScore, tasksCompleted, errorRate)
- * - timeRange: Time range for comparison (24h, 7d, 30d, 90d) - default: 30d
- * - limit: Number of top performers to return (1-50) - default: 10
- * - discipline: Filter by discipline (optional)
- * - includeInactive: Include inactive Orchestrators (boolean) - default: false
- * - sortOrder: Sort order (asc, desc) - default: desc
+ * - orchestratorIds: Array of orchestrator IDs to compare (2-10 required)
+ * - metrics: Array of metrics to compare (task_completion_rate, average_task_duration, etc.)
+ * - timeRange: Object with start/end ISO datetime strings and optional granularity
+ * - normalization: Normalization method (none, percentage, zscore) - default: none
  *
  * @param request - Next.js request object with query parameters
  * @param context - Route context containing workspace ID
- * @returns Orchestrator comparison data with rankings
+ * @returns Orchestrator comparison data
  *
  * @example
  * ```
- * GET /api/workspaces/ws_123/orchestrators/analytics/comparison?metric=taskCompletionRate&limit=10
+ * GET /api/workspaces/ws_123/orchestrators/analytics/comparison?orchestratorIds[]=id1&orchestratorIds[]=id2&metrics[]=task_completion_rate
  * ```
  */
 export async function GET(
@@ -115,22 +83,32 @@ export async function GET(
       );
     }
 
-    // Verify access
-    const access = await verifyWorkspaceAccess(workspaceId, session.user.id);
-    if (!access) {
-      return NextResponse.json(
-        createAnalyticsErrorResponse(
-          'Workspace not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.WORKSPACE_NOT_FOUND
-        ),
-        { status: 404 }
-      );
-    }
+    // Parse query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const orchestratorIds = searchParams.getAll('orchestratorIds[]');
+    const metrics = searchParams.getAll('metrics[]');
+    const timeRangeStart = searchParams.get('timeRange.start');
+    const timeRangeEnd = searchParams.get('timeRange.end');
+    const timeRangeGranularity = searchParams.get('timeRange.granularity');
+    const normalization = searchParams.get('normalization') || 'none';
 
-    // Parse and validate query parameters
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
+    // Build validation input
+    const validationInput = {
+      orchestratorIds,
+      metrics,
+      timeRange: {
+        start:
+          timeRangeStart ||
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        end: timeRangeEnd || new Date().toISOString(),
+        ...(timeRangeGranularity && { granularity: timeRangeGranularity }),
+      },
+      normalization,
+    };
+
+    // Validate query parameters
     const parseResult =
-      orchestratorComparisonQuerySchema.safeParse(searchParams);
+      orchestratorComparisonQuerySchema.safeParse(validationInput);
 
     if (!parseResult.success) {
       return NextResponse.json(
@@ -145,137 +123,21 @@ export async function GET(
 
     const query: OrchestratorComparisonQueryInput = parseResult.data;
 
-    // Calculate date range
-    const endDate = new Date();
-    const startDate = new Date();
-    switch (query.timeRange) {
-      case '24h':
-        startDate.setHours(startDate.getHours() - 24);
-        break;
-      case '7d':
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case '30d':
-        startDate.setDate(startDate.getDate() - 30);
-        break;
-      case '90d':
-        startDate.setDate(startDate.getDate() - 90);
-        break;
-    }
-
     // Get Orchestrator comparison data
     const comparison = await compareOrchestrators(
-      access.workspace.organizationId,
-      query.metric,
-      query.limit,
-      startDate,
-      endDate
+      query.orchestratorIds,
+      query.metrics
     );
-
-    // Filter by discipline if specified
-    let filteredComparison = comparison;
-    if (query.discipline) {
-      filteredComparison = comparison.filter(
-        orchestrator =>
-          orchestrator.discipline.toLowerCase() ===
-          query.discipline?.toLowerCase()
-      );
-    }
-
-    // Filter inactive Orchestrators if not included
-    if (!query.includeInactive) {
-      const activeOrchestratorIds = await prisma.orchestrator
-        .findMany({
-          where: {
-            organizationId: access.workspace.organizationId,
-            status: { not: 'OFFLINE' },
-          },
-          select: { id: true },
-        })
-        .then(orchestrators =>
-          orchestrators.map(orchestrator => orchestrator.id)
-        );
-
-      filteredComparison = filteredComparison.filter(orchestrator =>
-        activeOrchestratorIds.includes(orchestrator.orchestratorId)
-      );
-    }
-
-    // Get total Orchestrator count for context
-    const totalOrchestratorCount = await prisma.orchestrator.count({
-      where: {
-        organizationId: access.workspace.organizationId,
-        ...(query.discipline && { discipline: query.discipline }),
-        ...(query.includeInactive ? {} : { status: { not: 'OFFLINE' } }),
-      },
-    });
-
-    // Calculate summary statistics
-    const metricValues = filteredComparison.map(
-      orchestrator => orchestrator.metricValue
-    );
-    const avgMetricValue =
-      metricValues.length > 0
-        ? metricValues.reduce((sum, val) => sum + val, 0) / metricValues.length
-        : 0;
-    const maxMetricValue =
-      metricValues.length > 0 ? Math.max(...metricValues) : 0;
-    const minMetricValue =
-      metricValues.length > 0 ? Math.min(...metricValues) : 0;
 
     // Build response
     const response = {
       workspaceId,
-      workspaceName: access.workspace.name,
-      metric: query.metric,
-      timeRange: {
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        label: query.timeRange,
-      },
-      rankings: filteredComparison.map(orchestrator => ({
-        rank: orchestrator.rank,
-        orchestratorId: orchestrator.orchestratorId,
-        orchestratorName: orchestrator.orchestratorName,
-        discipline: orchestrator.discipline,
-        role: orchestrator.role,
-        metricValue: Math.round(orchestrator.metricValue * 100) / 100,
-        percentile: orchestrator.percentile,
-        trend: orchestrator.trend,
-      })),
-      summary: {
-        totalOrchestrators: totalOrchestratorCount,
-        rankedOrchestrators: filteredComparison.length,
-        metric: query.metric,
-        avgValue: Math.round(avgMetricValue * 100) / 100,
-        maxValue: Math.round(maxMetricValue * 100) / 100,
-        minValue: Math.round(minMetricValue * 100) / 100,
-      },
-      insights: [] as string[],
+      orchestratorIds: query.orchestratorIds,
+      metrics: query.metrics,
+      timeRange: query.timeRange,
+      normalization: query.normalization,
+      comparison,
     };
-
-    // Add insights
-    if (filteredComparison.length === 0) {
-      response.insights.push(
-        'No Orchestrator data available for the selected criteria'
-      );
-    } else {
-      const topPerformer = filteredComparison[0];
-      response.insights.push(
-        `Top performer: ${topPerformer.orchestratorName} (${topPerformer.discipline}) with ${Math.round(topPerformer.metricValue * 100) / 100}`
-      );
-
-      if (filteredComparison.length >= 3) {
-        const topThreeAvg =
-          filteredComparison
-            .slice(0, 3)
-            .reduce((sum, orchestrator) => sum + orchestrator.metricValue, 0) /
-          3;
-        response.insights.push(
-          `Top 3 average: ${Math.round(topThreeAvg * 100) / 100}`
-        );
-      }
-    }
 
     return NextResponse.json({
       data: response,

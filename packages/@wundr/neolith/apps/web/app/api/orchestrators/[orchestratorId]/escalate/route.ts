@@ -248,6 +248,9 @@ export async function POST(
       );
     }
 
+    // Use severity if provided, otherwise fallback to priority
+    const severity = input.severity ?? input.priority;
+
     // Update task with escalation status
     const taskMetadata = task.metadata as Record<string, unknown> | null;
     const updatedTaskMetadata = {
@@ -255,7 +258,7 @@ export async function POST(
       escalation: {
         escalatedAt: new Date().toISOString(),
         reason: input.reason,
-        severity: input.severity,
+        severity: severity,
         orchestratorId: orchestrator.id,
         orchestratorName: orchestrator.user.name,
         context: input.context,
@@ -272,7 +275,7 @@ export async function POST(
 
     // Create escalation message in channel
     const escalationContent =
-      `🚨 **Task Escalation** (${input.severity.toUpperCase()})\n\n` +
+      `🚨 **Task Escalation** (${severity.toUpperCase()})\n\n` +
       `**Orchestrator:** ${orchestrator.user.name}\n` +
       `**Task:** ${task.title}\n` +
       `**Reason:** ${input.reason}\n\n` +
@@ -280,7 +283,7 @@ export async function POST(
 
     const escalationMetadata = {
       type: 'escalation',
-      severity: input.severity,
+      severity: severity,
       taskId: task.id,
       orchestratorId: orchestrator.id,
       reason: input.reason,

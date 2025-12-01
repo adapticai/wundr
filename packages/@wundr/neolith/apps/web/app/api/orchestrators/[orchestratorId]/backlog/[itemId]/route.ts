@@ -363,6 +363,7 @@ export async function PATCH(
         workspaceId: true,
         status: true,
         dependsOn: true,
+        assignedToId: true,
       },
     });
 
@@ -433,7 +434,7 @@ export async function PATCH(
         currentTask.workspaceId
       );
 
-      if (!depValidation.isValid) {
+      if (!depValidation.valid) {
         return NextResponse.json(
           createErrorResponse(
             'Invalid task dependencies',

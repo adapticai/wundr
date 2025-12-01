@@ -56,20 +56,20 @@ declare module 'next-auth' {
     user: {
       id: string;
       isOrchestrator: boolean;
-      role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
+      role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
     } & DefaultSession['user'];
   }
 
   interface User {
     isOrchestrator?: boolean;
-    role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
+    role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     isOrchestrator?: boolean;
-    role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
+    role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
   }
 }
 
@@ -480,7 +480,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub;
         session.user.isOrchestrator = Boolean(token.isOrchestrator ?? false);
         session.user.role =
-          (token.role as 'ADMIN' | 'MEMBER' | 'VIEWER') ?? 'MEMBER';
+          (token.role as 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST') ?? 'MEMBER';
 
         // Fetch the user's avatar from the database (S3 URL)
         try {

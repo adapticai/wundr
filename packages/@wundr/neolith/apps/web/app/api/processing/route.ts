@@ -17,9 +17,10 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { processingJobs } from '@/lib/services/processing-stores';
+import type { ProcessingJob } from '@/lib/services/processing-stores';
 import {
   createJobSchema,
-  jobListSchema,
+  jobListQuerySchema,
   createProcessingErrorResponse,
   PROCESSING_ERROR_CODES,
   supportsTextExtraction,
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           `Processing type '${input.type}' is not supported for file type '${file.mimeType}'`,
-          PROCESSING_ERROR_CODES.UNSUPPORTED_FILE_TYPE
+          PROCESSING_ERROR_CODES.UNSUPPORTED_TYPE
         ),
         { status: 400 }
       );
@@ -180,37 +181,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const jobId = `job_${crypto.randomBytes(12).toString('hex')}`;
     const now = new Date();
 
-    const job = {
+    const job: ProcessingJob = {
       id: jobId,
       fileId: input.fileId,
-      type: input.type,
-      status: 'pending',
-      priority: input.priority ?? 'normal',
-      progress: 0,
-      options: input.options ?? null,
-      result: null,
-      error: null,
       workspaceId: file.workspaceId,
       createdById: session.user.id,
-      callbackUrl: input.callbackUrl ?? null,
-      metadata: input.metadata ?? null,
-      startedAt: null,
-      completedAt: null,
+      type: input.type,
+      status: 'pending',
+      priority: typeof input.priority === 'number' ? input.priority : 0,
+      progress: 0,
+      options: input.options,
+      result: undefined,
+      error: undefined,
+      callbackUrl: input.callbackUrl,
+      metadata: input.metadata,
       createdAt: now,
       updatedAt: now,
+      startedAt: undefined,
+      completedAt: undefined,
     };
 
     // Store job (in production, this would be added to a queue)
     processingJobs.set(jobId, job);
-
-    // Simulate job being queued
-    setTimeout(() => {
-      const storedJob = processingJobs.get(jobId);
-      if (storedJob && storedJob.status === 'pending') {
-        storedJob.status = 'queued';
-        storedJob.updatedAt = new Date();
-      }
-    }, 100);
 
     return NextResponse.json(
       {
@@ -268,7 +260,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const parseResult = jobListSchema.safeParse(searchParams);
+    const parseResult = jobListQuerySchema.safeParse(searchParams);
 
     if (!parseResult.success) {
       return NextResponse.json(
@@ -293,10 +285,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       userWorkspaces.map(w => w.workspaceId)
     );
 
-    // Filter jobs from in-memory store
-    let jobs = Array.from(processingJobs.values()).filter(job =>
-      accessibleWorkspaceIds.has(job.workspaceId)
-    );
+    // Get all jobs from in-memory store and filter by accessible workspaces
+    let jobs = processingJobs
+      .list()
+      .filter(job => accessibleWorkspaceIds.has(job.workspaceId));
 
     // Apply filters
     if (filters.status) {
@@ -311,8 +303,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Sort jobs
     jobs.sort((a, b) => {
-      const aVal = a[filters.sortBy as keyof typeof a];
-      const bVal = b[filters.sortBy as keyof typeof b];
+      const sortKey = filters.sortBy as keyof ProcessingJob;
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
       const comparison =
         aVal instanceof Date && bVal instanceof Date
           ? aVal.getTime() - bVal.getTime()
@@ -349,9 +342,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       status: job.status,
       priority: job.priority,
       progress: job.progress,
-      error: job.error,
-      startedAt: job.startedAt?.toISOString() ?? null,
-      completedAt: job.completedAt?.toISOString() ?? null,
+      error: job.error ?? undefined,
+      startedAt: job.startedAt?.toISOString() ?? undefined,
+      completedAt: job.completedAt?.toISOString() ?? undefined,
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),
     }));

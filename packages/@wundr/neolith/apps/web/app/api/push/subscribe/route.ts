@@ -103,6 +103,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const input: PushSubscriptionInput = parseResult.data;
 
+    // Validate required token field
+    if (!input.token) {
+      return NextResponse.json(
+        createNotificationErrorResponse(
+          'Push token is required',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
     // Check if subscription already exists for this token
     const existingSubscription = await prisma.pushSubscription.findUnique({
       where: { token: input.token },
@@ -118,7 +129,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         where: { id: existingSubscription.id },
         data: {
           userId: session.user.id,
-          platform: input.platform,
+          platform:
+            input.platform && ['web', 'ios', 'android'].includes(input.platform)
+              ? (input.platform as 'web' | 'ios' | 'android')
+              : 'web',
           userAgent: input.userAgent,
           deviceName: input.deviceName,
           deviceModel: input.deviceModel,
@@ -133,7 +147,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: {
           userId: session.user.id,
           token: input.token,
-          platform: input.platform,
+          platform:
+            input.platform && ['web', 'ios', 'android'].includes(input.platform)
+              ? (input.platform as 'web' | 'ios' | 'android')
+              : 'web',
           userAgent: input.userAgent,
           deviceName: input.deviceName,
           deviceModel: input.deviceModel,

@@ -210,10 +210,10 @@ export async function POST(
           huddle = {
             id: foundHuddle.id,
             workspaceId: workspace.id,
-            isPublic: foundHuddle.isPublic,
+            isPublic: foundHuddle.isPublic ?? true,
             status: foundHuddle.status,
             roomName: foundHuddle.roomName,
-            createdById: foundHuddle.createdBy.id,
+            createdById: foundHuddle.createdBy?.id ?? '',
           };
           break;
         }

@@ -102,7 +102,6 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// @ts-expect-error Utility function kept for future route handler tests
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
@@ -347,7 +346,7 @@ describe('Workflow API Routes', () => {
         user: {
           id: 'user-123',
           email: 'test@example.com',
-          role: 'VIEWER',
+          role: 'GUEST',
           organizationId: 'org-123',
         },
       });
@@ -632,7 +631,7 @@ describe('Workflow API Routes', () => {
         user: {
           id: 'other-user',
           email: 'other@example.com',
-          role: 'VIEWER',
+          role: 'GUEST',
           organizationId: 'other-org',
         },
       });
@@ -789,7 +788,7 @@ describe('Workflow API Routes', () => {
         user: {
           id: 'user-123',
           email: 'test@example.com',
-          role: 'VIEWER',
+          role: 'GUEST',
           organizationId: 'org-123',
         },
       });

@@ -263,8 +263,15 @@ export function CharterConstraints({
 
   const applyPreset = (preset: keyof typeof PRESETS) => {
     const presetValues = PRESETS[preset];
-    setLocalConstraints(presetValues);
-    onChange(presetValues);
+    // Spread arrays to make them mutable
+    const mutablePreset: CharterConstraints = {
+      forbiddenCommands: [...presetValues.forbiddenCommands],
+      forbiddenPaths: [...presetValues.forbiddenPaths],
+      forbiddenActions: [...presetValues.forbiddenActions],
+      requireApprovalFor: [...presetValues.requireApprovalFor],
+    };
+    setLocalConstraints(mutablePreset);
+    onChange(mutablePreset);
   };
 
   const resetToDefaults = () => {

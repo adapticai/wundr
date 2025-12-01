@@ -34,6 +34,17 @@ interface RouteContext {
 }
 
 /**
+ * Type guard to check if a value is a valid condition object
+ */
+function isValidCondition(
+  value: unknown
+): value is { field: string; operator: string; value?: unknown } {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+  return typeof obj.field === 'string' && typeof obj.operator === 'string';
+}
+
+/**
  * Check if trigger conditions are met
  */
 function checkTriggerConditions(
@@ -44,7 +55,13 @@ function checkTriggerConditions(
     return true;
   }
 
-  for (const condition of trigger.conditions) {
+  for (const conditionValue of trigger.conditions) {
+    // Type guard to ensure condition has the expected shape
+    if (!isValidCondition(conditionValue)) {
+      console.warn('Invalid condition format:', conditionValue);
+      continue;
+    }
+    const condition = conditionValue;
     const fieldValue = getNestedValue(eventData, condition.field);
 
     switch (condition.operator) {
@@ -147,10 +164,12 @@ function checkTriggerFilters(
     return true;
   }
 
-  const { channelIds, userIds, orchestratorIds } = trigger.filters;
+  const channelIds = trigger.filters.channelIds;
+  const userIds = trigger.filters.userIds;
+  const orchestratorIds = trigger.filters.orchestratorIds;
 
   // Check channel filter
-  if (channelIds && channelIds.length > 0) {
+  if (Array.isArray(channelIds) && channelIds.length > 0) {
     const eventChannelId = eventData.channelId as string | undefined;
     if (!eventChannelId || !channelIds.includes(eventChannelId)) {
       return false;
@@ -158,7 +177,7 @@ function checkTriggerFilters(
   }
 
   // Check user filter
-  if (userIds && userIds.length > 0) {
+  if (Array.isArray(userIds) && userIds.length > 0) {
     const eventUserId = eventData.userId as string | undefined;
     if (!eventUserId || !userIds.includes(eventUserId)) {
       return false;
@@ -166,7 +185,7 @@ function checkTriggerFilters(
   }
 
   // Check Orchestrator filter
-  if (orchestratorIds && orchestratorIds.length > 0) {
+  if (Array.isArray(orchestratorIds) && orchestratorIds.length > 0) {
     const eventOrchestratorId = eventData.orchestratorId as string | undefined;
     if (
       !eventOrchestratorId ||
@@ -377,11 +396,11 @@ export async function POST(
     const workflows = await prisma.workflow.findMany({
       where: {
         workspaceId,
-        status: 'ACTIVE',
+        status: 'ACTIVE' as const,
         trigger: {
           path: ['type'],
           equals: input.event,
-        },
+        } as Prisma.JsonFilter,
       },
     });
 
@@ -389,8 +408,8 @@ export async function POST(
     const matchingWorkflows = workflows.filter(workflow => {
       const trigger = workflow.trigger as unknown as WorkflowTrigger;
       return (
-        checkTriggerConditions(trigger, input.data) &&
-        checkTriggerFilters(trigger, input.data)
+        checkTriggerConditions(trigger, input.data ?? {}) &&
+        checkTriggerFilters(trigger, input.data ?? {})
       );
     });
 
@@ -402,7 +421,7 @@ export async function POST(
           workflow.id,
           workspaceId,
           input.event,
-          input.data,
+          input.data ?? {},
           session.user.id
         );
         executions.push(result.executionId);

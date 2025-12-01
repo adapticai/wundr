@@ -86,8 +86,8 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -105,8 +105,8 @@ export async function GET(
     if (!charterIdResult.success || !versionResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid charter ID or version format',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid charter ID or version format'
         ),
         { status: 400 }
       );
@@ -144,8 +144,8 @@ export async function GET(
     if (!charterVersion) {
       return NextResponse.json(
         createErrorResponse(
-          'Charter version not found',
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          'Charter version not found'
         ),
         { status: 404 }
       );
@@ -159,8 +159,8 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Orchestrator not found or access denied'
         ),
         { status: 403 }
       );
@@ -174,8 +174,8 @@ export async function GET(
     );
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );
@@ -202,8 +202,8 @@ export async function PATCH(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -221,8 +221,8 @@ export async function PATCH(
     if (!charterIdResult.success || !versionResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid charter ID or version format',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid charter ID or version format'
         ),
         { status: 400 }
       );
@@ -237,8 +237,8 @@ export async function PATCH(
     } catch {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid JSON body',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid JSON body'
         ),
         { status: 400 }
       );
@@ -249,8 +249,8 @@ export async function PATCH(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Validation failed',
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
           }
@@ -276,8 +276,8 @@ export async function PATCH(
     if (!charterVersion) {
       return NextResponse.json(
         createErrorResponse(
-          'Charter version not found',
-          CHARTER_ERROR_CODES.VERSION_NOT_FOUND
+          CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
+          'Charter version not found'
         ),
         { status: 404 }
       );
@@ -291,8 +291,8 @@ export async function PATCH(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Orchestrator not found or access denied'
         ),
         { status: 403 }
       );
@@ -302,8 +302,8 @@ export async function PATCH(
     if (access.role !== 'OWNER' && access.role !== 'ADMIN') {
       return NextResponse.json(
         createErrorResponse(
-          'Insufficient permissions to update charter version',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Insufficient permissions to update charter version'
         ),
         { status: 403 }
       );
@@ -347,8 +347,8 @@ export async function PATCH(
     );
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );

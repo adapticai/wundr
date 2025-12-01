@@ -10,7 +10,7 @@
  * @module app/api/workspaces/[workspaceId]/workflows/route
  */
 
-import { prisma } from '@neolith/database';
+import { prisma, WorkflowStatus } from '@neolith/database';
 import { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
@@ -143,15 +143,17 @@ export async function GET(
 
     const filters: WorkflowFiltersInput = parseResult.data;
 
-    // Build where clause
+    // Build where clause with proper type casting
     const where: Prisma.workflowWhereInput = {
       workspaceId,
-      ...(filters.status && { status: filters.status }),
+      ...(filters.status && {
+        status: filters.status as Prisma.EnumWorkflowStatusFilter | undefined,
+      }),
       ...(filters.trigger && {
         trigger: {
           path: ['type'],
           equals: filters.trigger,
-        },
+        } as Prisma.JsonFilter,
       }),
       ...(filters.search && {
         OR: [
@@ -351,7 +353,7 @@ export async function POST(
         description: input.description,
         trigger: input.trigger as Prisma.InputJsonValue,
         actions: input.actions as unknown as Prisma.InputJsonValue,
-        status: input.status,
+        status: (input.status || 'DRAFT') as WorkflowStatus,
         tags: input.tags ?? [],
         metadata: input.metadata as Prisma.InputJsonValue,
         workspaceId,

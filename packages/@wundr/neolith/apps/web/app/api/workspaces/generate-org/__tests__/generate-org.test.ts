@@ -344,8 +344,9 @@ describe('POST /api/workspaces/generate-org', () => {
 
     it('should handle migration validation errors gracefully', async () => {
       const { createGenesisEngine } = await import('@wundr.io/org-genesis');
-      const { migrateOrgGenesisResult } =
-        await import('@neolith/org-integration');
+      const { migrateOrgGenesisResult } = await import(
+        '@neolith/org-integration'
+      );
 
       const mockGenesisResult = {
         manifest: {
@@ -410,8 +411,9 @@ describe('POST /api/workspaces/generate-org', () => {
 
     it('should create workspace with full org structure successfully', async () => {
       const { createGenesisEngine } = await import('@wundr.io/org-genesis');
-      const { migrateOrgGenesisResult } =
-        await import('@neolith/org-integration');
+      const { migrateOrgGenesisResult } = await import(
+        '@neolith/org-integration'
+      );
 
       const mockGenesisResult = {
         manifest: {

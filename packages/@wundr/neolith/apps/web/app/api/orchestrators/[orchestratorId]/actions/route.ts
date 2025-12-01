@@ -42,6 +42,11 @@ const ACTION_TO_STATUS: Record<
 > = {
   activate: 'ONLINE',
   deactivate: 'OFFLINE',
+  start: 'ONLINE',
+  stop: 'OFFLINE',
+  pause: 'AWAY',
+  resume: 'ONLINE',
+  restart: 'BUSY',
 };
 
 /**

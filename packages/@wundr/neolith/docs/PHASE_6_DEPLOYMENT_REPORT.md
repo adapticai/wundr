@@ -53,7 +53,7 @@ Railway/Netlify/Vercel.
 | Database   | `DATABASE_URL`                                       |
 | OAuth      | `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET` |
 | AI         | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`                |
-| Storage    | `AWS_ACCESS_KEY_ID/SECRET`, `STORAGE_BUCKET`         |
+| Storage    | `MY_AWS_ACCESS_KEY_ID/SECRET`, `STORAGE_BUCKET`         |
 | LiveKit    | `LIVEKIT_API_KEY/SECRET`, `LIVEKIT_URL`              |
 | Email      | `RESEND_API_KEY`                                     |
 | Push       | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`              |

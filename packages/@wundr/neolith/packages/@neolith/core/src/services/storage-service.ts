@@ -1091,8 +1091,8 @@ export class StorageServiceImpl implements StorageService {
  * - STORAGE_PROVIDER: 's3' | 'r2' | 'minio'
  * - STORAGE_BUCKET: S3 bucket name
  * - STORAGE_REGION: AWS region
- * - AWS_ACCESS_KEY_ID or STORAGE_ACCESS_KEY_ID
- * - AWS_SECRET_ACCESS_KEY or STORAGE_SECRET_ACCESS_KEY
+ * - MY_AWS_ACCESS_KEY_ID or STORAGE_ACCESS_KEY_ID
+ * - MY_AWS_SECRET_ACCESS_KEY or STORAGE_SECRET_ACCESS_KEY
  *
  * Optional environment variables:
  * - STORAGE_ENDPOINT: Custom endpoint for R2/MinIO
@@ -1107,11 +1107,11 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
     's3') as StorageConfig['provider'];
   const bucket = process.env.STORAGE_BUCKET;
   const region =
-    process.env.STORAGE_REGION || process.env.AWS_REGION || 'us-east-1';
+    process.env.STORAGE_REGION || process.env.MY_AWS_REGION || 'us-east-1';
   const accessKeyId =
-    process.env.STORAGE_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+    process.env.STORAGE_ACCESS_KEY_ID || process.env.MY_AWS_ACCESS_KEY_ID;
   const secretAccessKey =
-    process.env.STORAGE_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+    process.env.STORAGE_SECRET_ACCESS_KEY || process.env.MY_AWS_SECRET_ACCESS_KEY;
   const endpoint = process.env.STORAGE_ENDPOINT;
   const publicUrlBase = process.env.STORAGE_PUBLIC_URL;
   const maxFileSize = process.env.STORAGE_MAX_FILE_SIZE

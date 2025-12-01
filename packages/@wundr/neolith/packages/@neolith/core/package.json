@@ -16,7 +16,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@adaptic/lumic-utils": "file:../../../../../../../adapticai/lumic-utils",
+    "@adaptic/lumic-utils": "^1.0.6",
     "@aws-sdk/client-s3": "^3.679.0",
     "@aws-sdk/s3-request-presigner": "^3.679.0",
     "@livekit/protocol": "^1.43.2",

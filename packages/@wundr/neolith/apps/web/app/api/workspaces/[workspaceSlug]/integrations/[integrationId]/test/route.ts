@@ -82,9 +82,9 @@ export async function POST(
     }
 
     // Test integration connection
-    const result = await testIntegration(workspaceId, integrationId);
+    const result = await testIntegration(integrationId);
 
-    if (!result.success && result.message === 'Integration not found') {
+    if (!result.success && result.error === 'Integration not found') {
       return NextResponse.json(
         createErrorResponse(
           'Integration not found',

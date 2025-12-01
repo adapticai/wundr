@@ -37,7 +37,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { OrchestratorCharter } from '@/types/orchestrator';
+import type { OrchestratorCharter } from '@/types/orchestrator';
 import { toast } from 'sonner';
 
 /**

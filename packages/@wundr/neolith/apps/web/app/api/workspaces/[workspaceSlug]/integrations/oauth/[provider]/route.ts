@@ -25,6 +25,18 @@ import { createErrorResponse } from '@/lib/validations/organization';
 import type { NextRequest } from 'next/server';
 
 /**
+ * Valid OAuth provider types
+ */
+type OAuthProvider = 'github' | 'slack' | 'google';
+
+/**
+ * Type guard to check if a string is a valid OAuth provider
+ */
+function isValidOAuthProvider(provider: string): provider is OAuthProvider {
+  return ['github', 'slack', 'google'].includes(provider);
+}
+
+/**
  * Route context with workspace ID and provider parameters
  */
 interface RouteContext {
@@ -75,11 +87,11 @@ export async function GET(
       );
     }
 
-    // Normalize provider name
-    const provider = providerParam.toUpperCase();
+    // Normalize provider name to lowercase
+    const providerLower = providerParam.toLowerCase();
 
-    // Validate provider
-    if (!OAUTH_PROVIDERS[provider]) {
+    // Validate provider using type guard
+    if (!isValidOAuthProvider(providerLower)) {
       return NextResponse.json(
         createErrorResponse(
           `Unsupported OAuth provider: ${providerParam}`,
@@ -88,6 +100,9 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // TypeScript now knows provider is OAuthProvider type
+    const provider: OAuthProvider = providerLower;
 
     // Check workspace access and admin permission
     const access = await checkWorkspaceAccess(workspaceId, session.user.id);
@@ -112,17 +127,20 @@ export async function GET(
     }
 
     // Generate OAuth state
-    const state = generateOAuthState(workspaceId, provider);
+    const state = generateOAuthState();
 
     // Build redirect URI
     const baseUrl = process.env.NEXTAUTH_URL ?? request.nextUrl.origin;
-    const redirectUri = `${baseUrl}/api/workspaces/${workspaceId}/integrations/oauth/${providerParam.toLowerCase()}/callback`;
+    const redirectUri = `${baseUrl}/api/workspaces/${workspaceId}/integrations/oauth/${provider}/callback`;
 
     // Build authorization URL
+    const providerUpper = provider.toUpperCase();
+    const clientId = process.env[`${providerUpper}_CLIENT_ID`] || '';
     const authorizationUrl = buildOAuthAuthorizationUrl(
       provider,
-      state,
-      redirectUri
+      clientId,
+      redirectUri,
+      state
     );
 
     if (!authorizationUrl) {
@@ -147,10 +165,10 @@ export async function GET(
     // Redirect to authorization URL
     return NextResponse.redirect(authorizationUrl);
   } catch (error) {
-    logger.error(
-      'OAuth flow initiation failed',
-      error instanceof Error ? error : new Error(String(error))
-    );
+    logger.error('OAuth flow initiation failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

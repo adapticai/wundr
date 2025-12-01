@@ -85,6 +85,19 @@ const PLAN_LIMITS: Record<
       'API access',
     ],
   },
+  BUSINESS: {
+    name: 'Business',
+    members: 500,
+    storage: 1000,
+    channels: 500,
+    features: [
+      'Unlimited messaging',
+      'Unlimited channels',
+      '1TB storage',
+      'Advanced permissions',
+      'Priority support',
+    ],
+  },
   ENTERPRISE: {
     name: 'Enterprise',
     members: -1,

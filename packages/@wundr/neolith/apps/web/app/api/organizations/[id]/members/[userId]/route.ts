@@ -17,12 +17,12 @@ import { auth } from '@/lib/auth';
 import {
   organizationIdParamSchema,
   userIdParamSchema,
-  updateMemberRoleSchema,
+  updateOrganizationMemberRoleSchema,
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
 
-import type { UpdateMemberRoleInput } from '@/lib/validations/organization';
+import type { UpdateOrganizationMemberRoleInput } from '@/lib/validations/organization';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -158,7 +158,7 @@ export async function PATCH(
     }
 
     // Validate input
-    const parseResult = updateMemberRoleSchema.safeParse(body);
+    const parseResult = updateOrganizationMemberRoleSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
@@ -170,7 +170,7 @@ export async function PATCH(
       );
     }
 
-    const input: UpdateMemberRoleInput = parseResult.data;
+    const input: UpdateOrganizationMemberRoleInput = parseResult.data;
 
     // Cannot assign OWNER role via this endpoint
     if (input.role === 'OWNER') {

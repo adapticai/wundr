@@ -60,7 +60,9 @@ const SeverityBadge: React.FC<{ severity: AlertSeverity }> = ({ severity }) => {
     },
   };
 
-  const { variant, icon: Icon, label, className } = variants[severity];
+  const config = variants[severity];
+  const { variant, icon: Icon, label } = config;
+  const className = 'className' in config ? config.className : undefined;
 
   return (
     <Badge variant={variant} className={cn('gap-1', className)}>

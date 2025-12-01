@@ -226,12 +226,13 @@ export async function GET(
     }
 
     // Fetch messages
+    const limit = filters.limit ?? 50;
     const messages = await prisma.message.findMany({
       where: {
         ...where,
         ...cursorCondition,
       },
-      take: filters.limit + 1, // Fetch one extra to determine if there are more
+      take: limit + 1, // Fetch one extra to determine if there are more
       orderBy: {
         createdAt: filters.direction === 'before' ? 'desc' : 'asc',
       },
@@ -283,10 +284,8 @@ export async function GET(
     });
 
     // Check if there are more messages
-    const hasMore = messages.length > filters.limit;
-    const resultMessages = hasMore
-      ? messages.slice(0, filters.limit)
-      : messages;
+    const hasMore = messages.length > limit;
+    const resultMessages = hasMore ? messages.slice(0, limit) : messages;
 
     // Reverse if fetching before cursor to maintain chronological order
     if (filters.direction === 'before') {
@@ -317,15 +316,17 @@ export async function GET(
     const transformedMessages = resultMessages.map(message => ({
       ...message,
       reactions: groupReactions(message.reactions, session.user.id),
-      messageAttachments: message.messageAttachments.map(attachment => ({
-        ...attachment,
-        file: attachment.file
-          ? {
-              ...attachment.file,
-              size: Number(attachment.file.size),
-            }
-          : null,
-      })),
+      messageAttachments: (message.messageAttachments ?? []).map(
+        attachment => ({
+          ...attachment,
+          file: attachment.file
+            ? {
+                ...attachment.file,
+                size: Number(attachment.file.size),
+              }
+            : null,
+        })
+      ),
     }));
 
     return NextResponse.json({
@@ -495,7 +496,7 @@ export async function POST(
         messageAttachments:
           input.attachmentIds && input.attachmentIds.length > 0
             ? {
-                create: input.attachmentIds.map(fileId => ({
+                create: input.attachmentIds.map((fileId: string) => ({
                   id: crypto.randomUUID(),
                   fileId,
                 })),
@@ -550,7 +551,7 @@ export async function POST(
 
       // Get author's display name
       const authorName =
-        message.author.displayName || message.author.name || 'Someone';
+        message.author?.displayName || message.author?.name || 'Someone';
 
       // Create preview (truncate to 100 chars)
       const messagePreview =
@@ -562,13 +563,12 @@ export async function POST(
       for (const mentionedUser of mentionedUsers) {
         if (mentionedUser.id !== session.user.id) {
           // Fire and forget - don't block the response
-          NotificationService.notifyMention(
-            mentionedUser.id,
-            message.id,
-            params.channelId,
-            authorName,
-            messagePreview
-          ).catch(err => {
+          NotificationService.notifyMention({
+            userId: mentionedUser.id,
+            messageId: message.id,
+            channelId: params.channelId,
+            mentionedBy: authorName,
+          }).catch((err: unknown) => {
             console.error(
               '[POST /api/channels/:channelId/messages] Failed to send mention notification:',
               err
@@ -587,21 +587,19 @@ export async function POST(
 
       if (parentMessage && parentMessage.authorId !== session.user.id) {
         const authorName =
-          message.author.displayName || message.author.name || 'Someone';
+          message.author?.displayName || message.author?.name || 'Someone';
         const messagePreview =
           input.content.length > 100
             ? input.content.substring(0, 100) + '...'
             : input.content;
 
         // Fire and forget
-        NotificationService.notifyThreadReply(
-          parentMessage.authorId,
-          message.id,
-          input.parentId,
-          params.channelId,
-          authorName,
-          messagePreview
-        ).catch(err => {
+        NotificationService.notifyThreadReply({
+          userId: parentMessage.authorId,
+          messageId: message.id,
+          channelId: params.channelId,
+          repliedBy: authorName,
+        }).catch((err: unknown) => {
           console.error(
             '[POST /api/channels/:channelId/messages] Failed to send thread reply notification:',
             err
@@ -611,17 +609,21 @@ export async function POST(
     }
 
     // Transform message to convert BigInt file sizes to numbers for JSON serialization
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const messageWithAttachments = message as any;
     const transformedMessage = {
       ...message,
-      messageAttachments: message.messageAttachments.map(attachment => ({
-        ...attachment,
-        file: attachment.file
-          ? {
-              ...attachment.file,
-              size: Number(attachment.file.size),
-            }
-          : null,
-      })),
+      messageAttachments: (messageWithAttachments.messageAttachments ?? []).map(
+        (attachment: any) => ({
+          ...attachment,
+          file: attachment.file
+            ? {
+                ...attachment.file,
+                size: Number(attachment.file.size),
+              }
+            : null,
+        })
+      ),
     };
 
     return NextResponse.json(

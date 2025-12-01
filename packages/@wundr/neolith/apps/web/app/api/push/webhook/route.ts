@@ -146,6 +146,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Validate required webhook fields
+    if (!payload.token || !payload.status || !payload.notificationId) {
+      return NextResponse.json(
+        createNotificationErrorResponse(
+          'Missing required webhook fields (token, status, notificationId)',
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
     // Find the push subscription by token
     const subscription = await prisma.pushSubscription.findUnique({
       where: { token: payload.token },
@@ -196,17 +207,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Store webhook event for analytics and debugging
-    await prisma.notification.updateMany({
-      where: { id: payload.notificationId },
-      data: {
-        metadata: {
-          webhookStatus: payload.status,
-          webhookPlatform: payload.platform,
-          webhookTimestamp: payload.timestamp,
-          webhookProcessedAt: new Date().toISOString(),
+    if (payload.notificationId) {
+      await prisma.notification.updateMany({
+        where: { id: payload.notificationId },
+        data: {
+          metadata: {
+            webhookStatus: payload.status,
+            webhookPlatform: payload.platform ?? 'unknown',
+            webhookTimestamp: payload.timestamp ?? new Date().toISOString(),
+            webhookProcessedAt: new Date().toISOString(),
+          },
         },
-      },
-    });
+      });
+    }
 
     return NextResponse.json({
       success: true,

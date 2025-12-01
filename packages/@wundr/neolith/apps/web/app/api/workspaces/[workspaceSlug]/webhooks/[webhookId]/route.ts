@@ -77,7 +77,7 @@ export async function GET(
 
     // Check workspace access
     const access = await checkWorkspaceAccess(workspaceId, session.user.id);
-    if (!access) {
+    if (!access || !access.hasAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
@@ -175,7 +175,7 @@ export async function PATCH(
 
     // Check workspace access and admin permission
     const access = await checkWorkspaceAccess(workspaceId, session.user.id);
-    if (!access) {
+    if (!access || !access.hasAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
@@ -233,7 +233,7 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Webhook not found',
-          INTEGRATION_ERROR_CODES.WEBHOOK_NOT_FOUND
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
         { status: 404 }
       );
@@ -306,7 +306,7 @@ export async function DELETE(
 
     // Check workspace access and admin permission
     const access = await checkWorkspaceAccess(workspaceId, session.user.id);
-    if (!access) {
+    if (!access || !access.hasAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
@@ -333,7 +333,7 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Webhook not found',
-          INTEGRATION_ERROR_CODES.WEBHOOK_NOT_FOUND
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
         { status: 404 }
       );

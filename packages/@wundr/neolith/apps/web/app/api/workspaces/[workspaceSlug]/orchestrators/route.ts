@@ -194,12 +194,10 @@ export async function GET(
       }),
     };
 
-    // Build orderBy based on sortBy field
-    // Map sortBy to the correct field
-    // The schema only allows: 'createdAt', 'updatedAt', 'discipline', 'role', 'status'
+    // Build orderBy - cast to proper Prisma type
     const orderBy: Prisma.orchestratorOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
-    };
+    } as Prisma.orchestratorOrderByWithRelationInput;
 
     // Determine pagination approach
     let skip: number | undefined;

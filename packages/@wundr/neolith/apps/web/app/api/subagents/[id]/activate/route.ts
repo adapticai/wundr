@@ -62,17 +62,7 @@ async function checkSubagentAccess(subagentId: string, userId: string) {
         include: {
           orchestrator: {
             include: {
-              disciplineRef: {
-                include: {
-                  organization: {
-                    include: {
-                      members: {
-                        where: { userId },
-                      },
-                    },
-                  },
-                },
-              },
+              organization: true,
             },
           },
         },
@@ -80,21 +70,25 @@ async function checkSubagentAccess(subagentId: string, userId: string) {
     },
   });
 
-  if (!subagent) {
+  if (!subagent || !subagent.sessionManager) {
     return null;
   }
 
   // Check if user has access (via organization membership)
-  const orgMembers =
-    subagent.sessionManager?.orchestrator.disciplineRef.organization.members ||
-    [];
-  if (orgMembers.length === 0) {
+  const orgMember = await prisma.organizationMember.findFirst({
+    where: {
+      organizationId: subagent.sessionManager.orchestrator.organizationId,
+      userId,
+    },
+  });
+
+  if (!orgMember) {
     return null;
   }
 
   return {
     subagent,
-    orgMembership: orgMembers[0],
+    orgMembership: orgMember,
   };
 }
 

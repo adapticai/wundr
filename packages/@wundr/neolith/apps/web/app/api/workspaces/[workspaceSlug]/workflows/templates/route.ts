@@ -691,6 +691,16 @@ export async function POST(
       }
 
       // Create workflow from template
+      if (!template) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Template not found',
+            WORKFLOW_ERROR_CODES.TEMPLATE_NOT_FOUND
+          ),
+          { status: 404 }
+        );
+      }
+
       const workflow = await prisma.workflow.create({
         data: {
           name: input.name ?? template.name,
@@ -698,7 +708,7 @@ export async function POST(
           trigger: template.trigger as unknown as Prisma.InputJsonValue,
           actions: template.actions as unknown as Prisma.InputJsonValue,
           status: 'DRAFT', // Start as draft so user can configure before activating
-          tags: template.tags,
+          tags: template.tags ?? [],
           metadata: {
             createdFromTemplate: template.id,
             templateName: template.name,

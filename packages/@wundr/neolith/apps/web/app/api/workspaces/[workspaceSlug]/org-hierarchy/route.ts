@@ -85,7 +85,9 @@ export async function GET(
   _request: NextRequest,
   context: RouteContext
 ): Promise<
-  NextResponse<{ data: OrgHierarchyResponse } | { error: string; code: string }>
+  NextResponse<
+    { data: OrgHierarchyResponse } | { error: string; message: string }
+  >
 > {
   try {
     // Authenticate user

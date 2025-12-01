@@ -9,7 +9,7 @@ import {
   OrchestratorStatusCard,
   OrchestratorStatusCardSkeleton,
 } from '@/components/presence/orchestrator-status-card';
-import { useOrchestratorHealthList } from '@/hooks/use-presence';
+import { useWorkspaceOrchestratorHealthList } from '@/hooks/use-presence';
 import { cn } from '@/lib/utils';
 
 type FilterStatus = 'all' | 'online' | 'offline' | 'unhealthy';
@@ -38,7 +38,7 @@ export default function OrchestratorHealthDashboardPage() {
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
   const { orchestratorList, isLoading, refetch } =
-    useOrchestratorHealthList(workspaceSlug);
+    useWorkspaceOrchestratorHealthList(workspaceSlug);
 
   // Filter Orchestrators based on selected filter
   const filteredOrchestrators = useMemo(() => {

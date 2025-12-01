@@ -37,6 +37,17 @@ interface RouteContext {
 }
 
 /**
+ * Type guard to check if a value is a valid condition object
+ */
+function isValidCondition(
+  value: unknown
+): value is { field: string; operator: string; value?: unknown } {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+  return typeof obj.field === 'string' && typeof obj.operator === 'string';
+}
+
+/**
  * Simulate workflow actions (dry run - no actual execution)
  */
 function simulateWorkflowActions(
@@ -56,7 +67,13 @@ function simulateWorkflowActions(
       // Check conditions if any
       let conditionsMet = true;
       if (action.conditions && action.conditions.length > 0) {
-        for (const condition of action.conditions) {
+        for (const conditionValue of action.conditions) {
+          // Type guard to ensure condition has the expected shape
+          if (!isValidCondition(conditionValue)) {
+            console.warn('Invalid condition format:', conditionValue);
+            continue;
+          }
+          const condition = conditionValue;
           const fieldValue = sampleData[condition.field];
           switch (condition.operator) {
             case 'equals':
@@ -260,7 +277,7 @@ export async function POST(
     // Simulate workflow actions
     const { steps, success, error } = simulateWorkflowActions(
       actions,
-      input.sampleData
+      input.sampleData ?? {}
     );
 
     const completedAt = new Date();

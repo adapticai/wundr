@@ -106,11 +106,11 @@ Configure the following secrets in your GitHub repository settings:
 #### AWS Deployment
 
 ```
-AWS_ACCESS_KEY_ID         # AWS access key for staging
-AWS_SECRET_ACCESS_KEY     # AWS secret key for staging
-AWS_ACCESS_KEY_ID_PROD    # AWS access key for production
-AWS_SECRET_ACCESS_KEY_PROD # AWS secret key for production
-AWS_REGION                # AWS region (e.g., us-west-2)
+MY_AWS_ACCESS_KEY_ID         # AWS access key for staging
+MY_AWS_SECRET_ACCESS_KEY     # AWS secret key for staging
+MY_AWS_ACCESS_KEY_ID_PROD    # AWS access key for production
+MY_AWS_SECRET_ACCESS_KEY_PROD # AWS secret key for production
+MY_AWS_REGION                # AWS region (e.g., us-west-2)
 EKS_CLUSTER_NAME          # EKS cluster name for staging
 EKS_CLUSTER_NAME_PROD     # EKS cluster name for production
 ```

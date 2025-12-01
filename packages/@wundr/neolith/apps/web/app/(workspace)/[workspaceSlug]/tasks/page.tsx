@@ -48,32 +48,27 @@ interface Task {
 // =============================================================================
 
 const STATUS_CONFIG = {
-  pending: {
+  TODO: {
     label: 'To Do',
     color: 'text-blue-600',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
   },
-  in_progress: {
+  IN_PROGRESS: {
     label: 'In Progress',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
   },
-  blocked: {
+  BLOCKED: {
     label: 'Blocked',
     color: 'text-red-600',
     bgColor: 'bg-red-50 dark:bg-red-900/20',
   },
-  completed: {
+  DONE: {
     label: 'Done',
     color: 'text-green-600',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
   },
-  failed: {
-    label: 'Failed',
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
-  },
-  cancelled: {
+  CANCELLED: {
     label: 'Cancelled',
     color: 'text-gray-600',
     bgColor: 'bg-gray-50 dark:bg-gray-900/20',
@@ -81,10 +76,10 @@ const STATUS_CONFIG = {
 } as const;
 
 const PRIORITY_CONFIG = {
-  urgent: { label: 'Urgent', color: 'text-red-600', icon: '!' },
-  high: { label: 'High', color: 'text-orange-600', icon: '!' },
-  medium: { label: 'Medium', color: 'text-yellow-600', icon: '!' },
-  low: { label: 'Low', color: 'text-green-600', icon: '!' },
+  CRITICAL: { label: 'Critical', color: 'text-red-600', icon: '!' },
+  HIGH: { label: 'High', color: 'text-orange-600', icon: '!' },
+  MEDIUM: { label: 'Medium', color: 'text-yellow-600', icon: '!' },
+  LOW: { label: 'Low', color: 'text-green-600', icon: '!' },
 } as const;
 
 // =============================================================================
@@ -124,15 +119,15 @@ export default function TasksPage() {
     };
 
     tasks.forEach(task => {
-      if (task.status === 'pending') {
+      if (task.status === 'TODO') {
         stats.todo++;
-      } else if (task.status === 'in_progress') {
+      } else if (task.status === 'IN_PROGRESS') {
         stats.inProgress++;
-      } else if (task.status === 'blocked') {
+      } else if (task.status === 'BLOCKED') {
         stats.blocked++;
-      } else if (task.status === 'completed') {
+      } else if (task.status === 'DONE') {
         stats.done++;
-      } else if (task.status === 'cancelled') {
+      } else if (task.status === 'CANCELLED') {
         stats.cancelled++;
       }
     });
@@ -366,8 +361,9 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task }: TaskCardProps) {
-  const statusConfig = STATUS_CONFIG[task.status];
-  const priorityConfig = PRIORITY_CONFIG[task.priority];
+  const statusConfig = STATUS_CONFIG[task.status as keyof typeof STATUS_CONFIG];
+  const priorityConfig =
+    PRIORITY_CONFIG[task.priority as keyof typeof PRIORITY_CONFIG];
 
   return (
     <div className='rounded-lg border bg-card p-4 transition-shadow hover:shadow-md'>

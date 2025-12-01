@@ -117,7 +117,7 @@ export function AppHeader({ user, compact = false }: AppHeaderProps) {
             aria-expanded={isMenuOpen}
           >
             <div className='flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground'>
-              {getInitials(user?.name)}
+              {getInitials(user?.name ?? '')}
             </div>
             <ChevronDownIcon />
           </button>

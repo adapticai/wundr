@@ -180,8 +180,9 @@ export async function GET(
       primaryOrchestratorId: string;
       collaborators: Array<{
         orchestratorId: string;
-        role: string;
-        addedAt: string;
+        role?: string;
+        status?: 'pending' | 'accepted' | 'active' | 'completed' | 'rejected';
+        addedAt?: string;
       }>;
     }> = [];
 
@@ -248,8 +249,8 @@ export async function GET(
               taskTitle: task.title,
               fromOrchestratorId: handoff.fromOrchestratorId,
               toOrchestratorId: handoff.toOrchestratorId,
-              handoffAt: handoff.handoffAt,
-              context: handoff.context,
+              handoffAt: handoff.handedOffAt,
+              context: handoff.context ?? {},
             });
           }
         });
@@ -412,6 +413,7 @@ export async function POST(
       collaborators: requiredOrchestratorIds.map(orchestratorId => ({
         orchestratorId,
         role: 'collaborator',
+        status: 'pending' as const,
         addedAt: new Date().toISOString(),
       })),
     };

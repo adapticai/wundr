@@ -25,22 +25,20 @@ import {
 } from '@/lib/validations/orchestrator';
 
 /**
- * Maps action to Orchestrator status
+ * Maps action to Orchestrator status (for activate/deactivate only)
  */
-const ACTION_TO_STATUS: Record<
-  OrchestratorBulkActionInput['action'],
-  OrchestratorStatusType
+const ACTION_TO_STATUS: Partial<
+  Record<OrchestratorBulkActionInput['action'], OrchestratorStatusType>
 > = {
   activate: 'ONLINE',
   deactivate: 'OFFLINE',
 };
 
 /**
- * Maps action to User status
+ * Maps action to User status (for activate/deactivate only)
  */
-const ACTION_TO_USER_STATUS: Record<
-  OrchestratorBulkActionInput['action'],
-  'ACTIVE' | 'INACTIVE'
+const ACTION_TO_USER_STATUS: Partial<
+  Record<OrchestratorBulkActionInput['action'], 'ACTIVE' | 'INACTIVE'>
 > = {
   activate: 'ACTIVE',
   deactivate: 'INACTIVE',
@@ -122,6 +120,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const input: OrchestratorBulkActionInput = parseResult.data;
 
+    // Normalize IDs (support both 'ids' and 'orchestratorIds' fields)
+    const orchestratorIds = input.ids || input.orchestratorIds || [];
+
     // Get user's organization memberships with admin/owner roles
     const userOrganizations = await prisma.organizationMember.findMany({
       where: {
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Fetch all requested VPs
     const orchestrators = await prisma.orchestrator.findMany({
-      where: { id: { in: input.ids } },
+      where: { id: { in: orchestratorIds } },
       include: {
         user: {
           select: { id: true, name: true },
@@ -153,8 +154,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Process each Orchestrator
     const results: BulkOperationResult[] = [];
-    const newStatus = ACTION_TO_STATUS[input.action];
-    const newUserStatus = ACTION_TO_USER_STATUS[input.action];
+
+    // Check if action is valid for status updates
+    const isStatusUpdateAction =
+      input.action === 'activate' || input.action === 'deactivate';
+
+    // Only process activate/deactivate actions for now
+    if (!isStatusUpdateAction) {
+      return NextResponse.json(
+        createErrorResponse(
+          `Bulk action '${input.action}' is not yet implemented`,
+          ORCHESTRATOR_ERROR_CODES.INVALID_REQUEST
+        ),
+        { status: 400 }
+      );
+    }
+
+    const newStatus = ACTION_TO_STATUS[input.action]!;
+    const newUserStatus = ACTION_TO_USER_STATUS[input.action]!;
 
     // Track VPs to update (those we have permission for)
     const orchestratorsToUpdate: {
@@ -163,7 +180,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       previousStatus: string;
     }[] = [];
 
-    for (const orchestratorId of input.ids) {
+    for (const orchestratorId of orchestratorIds) {
       const orchestrator = vpMap.get(orchestratorId);
 
       // Check if Orchestrator exists
@@ -251,7 +268,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response = {
       action: input.action,
       summary: {
-        total: input.ids.length,
+        total: orchestratorIds.length,
         success: successCount,
         failed: failureCount,
         skipped: skippedCount,

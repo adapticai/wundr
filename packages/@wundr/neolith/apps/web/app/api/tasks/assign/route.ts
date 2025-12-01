@@ -150,7 +150,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check if not found tasks exist
     const foundTaskIds = tasks.map(t => t.id);
-    const notFoundIds = input.taskIds.filter(id => !foundTaskIds.includes(id));
+    const notFoundIds = input.taskIds.filter(
+      (id: string) => !foundTaskIds.includes(id)
+    );
 
     // Assign tasks in a transaction
     const assignedTasks = await prisma.$transaction(async tx => {
@@ -231,7 +233,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           result.taskId,
           taskTitle,
           assignerName
-        ).catch(err => {
+        ).catch((err: Error) => {
           console.error(
             `[POST /api/tasks/assign] Failed to send notification for task ${result.taskId}:`,
             err

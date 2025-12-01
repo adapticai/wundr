@@ -46,7 +46,7 @@ async function generatePartUploadUrl(
   s3Bucket: string,
   partNumber: number
 ): Promise<PartUrlResponse> {
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
   const expiresIn = 3600; // 1 hour
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
@@ -57,8 +57,8 @@ async function generatePartUploadUrl(
     const client = new S3Client({
       region,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
       },
     });
 

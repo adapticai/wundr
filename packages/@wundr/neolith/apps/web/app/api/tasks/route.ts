@@ -91,11 +91,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const accessibleWorkspaceIds = userWorkspaces.map(m => m.workspaceId);
 
     if (!accessibleWorkspaceIds.length) {
+      const page = filters.page ?? 1;
+      const limit = filters.limit ?? 20;
       return NextResponse.json({
         data: [],
         pagination: {
-          page: filters.page,
-          limit: filters.limit,
+          page,
+          limit,
           totalCount: 0,
           totalPages: 0,
           hasNextPage: false,
@@ -156,8 +158,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
 
     // Calculate pagination
-    const skip = (filters.page - 1) * filters.limit;
-    const take = filters.limit;
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+    const skip = (page - 1) * limit;
+    const take = limit;
 
     // Build orderBy with priority-aware sorting
     const orderBy: Prisma.taskOrderByWithRelationInput[] = [];
@@ -200,15 +204,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ]);
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const hasNextPage = filters.page < totalPages;
-    const hasPreviousPage = filters.page > 1;
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
 
     return NextResponse.json({
       data: tasks,
       pagination: {
-        page: filters.page,
-        limit: filters.limit,
+        page,
+        limit,
         totalCount,
         totalPages,
         hasNextPage,
@@ -354,7 +358,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       input.workspaceId
     );
 
-    if (!depValidation.isValid) {
+    if (!depValidation.valid) {
       return NextResponse.json(
         createErrorResponse(
           'Invalid task dependencies',
@@ -391,8 +395,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       data: {
         title: input.title,
         description: input.description,
-        priority: input.priority,
-        status: input.status,
+        priority: input.priority as TaskPriority,
+        status: input.status as TaskStatus,
         estimatedHours: input.estimatedHours,
         dueDate: input.dueDate ? new Date(input.dueDate) : null,
         tags: input.tags,

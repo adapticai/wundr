@@ -167,7 +167,7 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
       return {
         huddle: {
           ...huddle,
-          createdById: huddle.createdBy.id,
+          createdById: huddle.createdBy?.id ?? '',
         },
         workspace: fullWorkspace!,
         orgMembership,

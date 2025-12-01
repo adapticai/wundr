@@ -164,13 +164,15 @@ export async function POST(
     }
 
     // Request collaboration using service
+    // Note: Service expects (requestingOrchestrator, targetOrchestrator, collaborationRequest)
+    // For multi-orchestrator requests, we use the first target
     const result = await requestCollaboration(
       orchestratorId,
-      taskId,
-      requiredOrchestratorIds,
+      requiredOrchestratorIds[0],
       {
-        roles,
-        note,
+        taskId,
+        type: 'assist', // Default collaboration type
+        context: { roles, note, allTargets: requiredOrchestratorIds },
       }
     );
 

@@ -451,8 +451,8 @@ docker run -d \
 | `REDIS_URL`             | No       | Redis for caching              | `redis://host:6379`                   |
 | `S3_BUCKET`             | No       | File storage bucket            | `my-bucket`                           |
 | `S3_REGION`             | No       | S3 region                      | `us-east-1`                           |
-| `AWS_ACCESS_KEY_ID`     | No       | S3 credentials                 | From AWS IAM                          |
-| `AWS_SECRET_ACCESS_KEY` | No       | S3 credentials                 | From AWS IAM                          |
+| `MY_AWS_ACCESS_KEY_ID`     | No       | S3 credentials                 | From AWS IAM                          |
+| `MY_AWS_SECRET_ACCESS_KEY` | No       | S3 credentials                 | From AWS IAM                          |
 
 ### Orchestrator-Daemon (Local - Each Agent Machine)
 

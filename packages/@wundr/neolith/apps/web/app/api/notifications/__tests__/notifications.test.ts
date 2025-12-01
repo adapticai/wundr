@@ -96,7 +96,8 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// @ts-expect-error Reserved for future integration tests
+// Reserved for future integration tests - unused currently
+/* istanbul ignore next */
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,

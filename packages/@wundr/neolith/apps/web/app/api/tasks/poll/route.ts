@@ -114,8 +114,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     // Add status filter if provided
-    if (input.status && input.status.length > 0) {
-      where.status = { in: input.status as TaskStatus[] };
+    if (input.status) {
+      const statusArray = Array.isArray(input.status)
+        ? input.status
+        : [input.status];
+      if (statusArray.length > 0) {
+        where.status = { in: statusArray as TaskStatus[] };
+      }
     }
 
     // Add priority filter if provided (minPriority = CRITICAL > HIGH > MEDIUM > LOW)
@@ -143,9 +148,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Fetch tasks
+    const limit = input.limit ?? 100;
     const tasks = await prisma.task.findMany({
       where,
-      take: input.limit,
+      take: limit,
       orderBy: [
         { priority: 'asc' }, // CRITICAL first
         { dueDate: 'asc' }, // Then by due date
@@ -167,7 +173,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       polledAt: new Date().toISOString(),
       since: input.since,
       tasksReturned: tasks.length,
-      hasMore: tasks.length >= input.limit,
+      hasMore: tasks.length >= limit,
     };
 
     return NextResponse.json({

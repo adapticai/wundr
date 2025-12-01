@@ -197,11 +197,10 @@ export async function GET(
       );
     }
 
-    const availability = await checkAvailability(
-      orchestratorId,
-      startDate,
-      endDate
-    );
+    const availability = await checkAvailability(orchestratorId, {
+      start: startDate,
+      end: endDate,
+    });
 
     return NextResponse.json({ data: availability });
   } catch (error) {
@@ -346,12 +345,14 @@ export async function POST(
     const startDate = new Date(startTime);
 
     try {
-      const reservation = await reserveTimeSlot(
-        orchestratorId,
-        taskId,
-        startDate,
-        durationMinutes
+      const endDate = new Date(
+        startDate.getTime() + (durationMinutes ?? 60) * 60000
       );
+      const reservation = await reserveTimeSlot(orchestratorId, {
+        start: startDate,
+        end: endDate,
+        taskId,
+      });
 
       return NextResponse.json(
         {

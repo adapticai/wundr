@@ -441,11 +441,15 @@ export async function POST(
       );
     }
 
-    // Calculate accuracy metrics
-    const variance = actualHours - estimatedHours;
-    const accuracy = Math.round(
-      (1 - Math.abs(variance) / Math.max(estimatedHours, actualHours)) * 100
-    );
+    // Calculate accuracy metrics (only if both values are provided)
+    const variance = (actualHours ?? 0) - (estimatedHours ?? 0);
+    const accuracy =
+      estimatedHours && actualHours
+        ? Math.round(
+            (1 - Math.abs(variance) / Math.max(estimatedHours, actualHours)) *
+              100
+          )
+        : undefined;
 
     // Update task metadata with time tracking info
     const currentMetadata = (task.metadata as Record<string, unknown>) || {};
@@ -453,7 +457,8 @@ export async function POST(
     await prisma.task.update({
       where: { id: taskId },
       data: {
-        estimatedHours: Math.round(estimatedHours),
+        estimatedHours:
+          estimatedHours !== undefined ? Math.round(estimatedHours) : undefined,
         metadata: {
           ...currentMetadata,
           timeTracking: {

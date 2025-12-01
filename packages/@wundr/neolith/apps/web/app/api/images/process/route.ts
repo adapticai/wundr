@@ -49,7 +49,7 @@ async function processImage(
   s3Bucket: string,
   operations: ImageOperation[],
   outputFormat: string | undefined,
-  _quality: number
+  _quality: number | undefined
 ): Promise<ImageVariant> {
   // In production, this would:
   // 1. Download the image from S3
@@ -83,7 +83,8 @@ async function processImage(
     : `https://${s3Bucket}.s3.${region}.amazonaws.com/${variantKey}`;
 
   // Estimate size based on dimensions and quality
-  const estimatedSize = Math.floor((width * height * 3 * _quality) / 100);
+  const quality = _quality ?? 85; // Default to 85% quality
+  const estimatedSize = Math.floor((width * height * 3 * quality) / 100);
 
   return {
     id: `var_${randomId}`,

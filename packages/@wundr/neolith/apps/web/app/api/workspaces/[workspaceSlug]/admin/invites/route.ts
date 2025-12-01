@@ -110,7 +110,7 @@ export async function GET(
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const filters = {
-      status: searchParams.get('status') || undefined,
+      status: (searchParams.get('status') as InviteStatus | null) || undefined,
     };
 
     // Validate filters
@@ -145,8 +145,9 @@ export async function GET(
     });
 
     // Filter by status if specified
-    if (parseResult.data.status) {
-      invites = invites.filter(i => i.status === parseResult.data.status);
+    const { status } = parseResult.data;
+    if (status) {
+      invites = invites.filter(i => i.status === status);
     }
 
     return NextResponse.json({ invites });
@@ -310,7 +311,7 @@ export async function POST(
         invitedBy: {
           id: membership.user.id,
           name: membership.user.name,
-          email: membership.user.email,
+          email: membership.user.email || '',
         },
       };
     });
@@ -359,7 +360,7 @@ export async function POST(
         emailResults.push({
           email: invite.email,
           success: emailResult.success,
-          error: emailResult.error?.message,
+          error: emailResult.error,
         });
 
         if (!emailResult.success) {

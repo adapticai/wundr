@@ -185,24 +185,26 @@ export async function GET(
     }
 
     // Detect anomalies
-    const anomalies = await detectAnomalies(
-      orchestratorId,
-      query.threshold,
-      startDate,
-      endDate
-    );
+    const anomalies = await detectAnomalies(orchestratorId, query.threshold);
 
     // Filter by minimum severity
-    const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
-    const minSeverityLevel = severityOrder[query.minSeverity];
+    const severityOrder: Record<string, number> = {
+      low: 1,
+      medium: 2,
+      high: 3,
+      critical: 4,
+    };
+    const minSeverityLevel = query.minSeverity
+      ? severityOrder[query.minSeverity]
+      : 1;
 
     const filteredAnomalies = anomalies.filter(
-      anomaly => severityOrder[anomaly.severity] >= minSeverityLevel
+      (anomaly: any) => severityOrder[anomaly.severity] >= minSeverityLevel
     );
 
     // Group anomalies by severity
     const anomaliesBySeverity = filteredAnomalies.reduce(
-      (acc, anomaly) => {
+      (acc: Record<string, any[]>, anomaly: any) => {
         if (!acc[anomaly.severity]) {
           acc[anomaly.severity] = [];
         }
@@ -214,7 +216,7 @@ export async function GET(
 
     // Calculate overall health score
     let healthScore = 100;
-    filteredAnomalies.forEach(anomaly => {
+    filteredAnomalies.forEach((anomaly: any) => {
       switch (anomaly.severity) {
         case 'critical':
           healthScore -= 25;
@@ -247,7 +249,7 @@ export async function GET(
         totalAnomalies: filteredAnomalies.length,
         byType: Object.entries(
           filteredAnomalies.reduce(
-            (acc, a) => {
+            (acc: Record<string, number>, a: any) => {
               acc[a.anomalyType] = (acc[a.anomalyType] || 0) + 1;
               return acc;
             },
@@ -270,7 +272,7 @@ export async function GET(
             : healthScore >= 40
               ? 'degraded'
               : 'critical',
-      anomalies: filteredAnomalies.map(anomaly => ({
+      anomalies: filteredAnomalies.map((anomaly: any) => ({
         type: anomaly.anomalyType,
         severity: anomaly.severity,
         description: anomaly.description,
@@ -301,7 +303,7 @@ export async function GET(
     }
 
     const lowCompletionAnomaly = filteredAnomalies.find(
-      a => a.anomalyType === 'low_completion_rate'
+      (a: any) => a.anomalyType === 'low_completion_rate'
     );
     if (lowCompletionAnomaly) {
       response.recommendations.push(
@@ -310,7 +312,7 @@ export async function GET(
     }
 
     const highResponseTimeAnomaly = filteredAnomalies.find(
-      a => a.anomalyType === 'high_response_time'
+      (a: any) => a.anomalyType === 'high_response_time'
     );
     if (highResponseTimeAnomaly) {
       response.recommendations.push(

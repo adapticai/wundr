@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import type { NeolithApiClient } from '../../lib/api-client';
+import type { NeolithApiClient } from '@/lib/api-client';
 
 // =============================================================================
 // Input Schema

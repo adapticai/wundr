@@ -16,7 +16,7 @@ import { auth } from '@/lib/auth';
 import {
   callIdParamSchema,
   CALL_ERROR_CODES,
-  type CallParticipant,
+  type DbCallParticipant,
 } from '@/lib/validations/call';
 import { createErrorResponse } from '@/lib/validations/organization';
 
@@ -161,7 +161,7 @@ export async function GET(
     }
 
     // Get participants
-    let participants: CallParticipant[] = [];
+    let participants: DbCallParticipant[] = [];
 
     try {
       const participantResults = await prisma.$queryRaw<

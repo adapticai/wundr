@@ -98,7 +98,8 @@ async function handleSlackWebhook(
   }
 
   // Verify signature
-  if (!verifySlackSignature(body, signature, timestamp)) {
+  const slackSecret = process.env.SLACK_SIGNING_SECRET || '';
+  if (!verifySlackSignature(timestamp, body, signature, slackSecret)) {
     return NextResponse.json(
       createErrorResponse(
         'Invalid Slack signature',
@@ -170,7 +171,8 @@ async function handleGitHubWebhook(
   }
 
   // Verify signature
-  if (!verifyGitHubSignature(body, signature)) {
+  const githubSecret = process.env.GITHUB_WEBHOOK_SECRET || '';
+  if (!verifyGitHubSignature(body, signature, githubSecret)) {
     return NextResponse.json(
       createErrorResponse(
         'Invalid GitHub signature',
@@ -319,10 +321,10 @@ export async function POST(
         );
     }
   } catch (error) {
-    logger.error(
-      'Webhook processing failed',
-      error instanceof Error ? error : new Error(String(error))
-    );
+    logger.error('Webhook processing failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -376,10 +378,10 @@ export async function GET(
       { status: 405 }
     );
   } catch (error: unknown) {
-    logger.error(
-      'Webhook GET failed',
-      error instanceof Error ? error : new Error(String(error))
-    );
+    logger.error('Webhook GET failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

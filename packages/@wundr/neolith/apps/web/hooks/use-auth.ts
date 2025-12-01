@@ -13,7 +13,7 @@ export interface AuthUser {
   email?: string | null;
   image?: string | null;
   isOrchestrator: boolean;
-  role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
+  role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
 }
 
 export interface UseAuthReturn {
@@ -26,7 +26,7 @@ export interface UseAuthReturn {
   /** Whether the authenticated user is an Orchestrator (AI Agent) */
   isOrchestrator: boolean;
   /** The user's role in the system */
-  role: 'ADMIN' | 'MEMBER' | 'VIEWER' | undefined;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST' | undefined;
   /** Function to trigger sign in */
   signIn: typeof signIn;
   /** Function to sign out and redirect to home */

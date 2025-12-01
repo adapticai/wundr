@@ -119,7 +119,7 @@ export async function GET(
     const totalPages = Math.ceil(total / limit);
 
     // Remove secret hash from response
-    const safeWebhooks = webhooks.map(w => {
+    const safeWebhooks = webhooks.map((w: any) => {
       const { secretHash: _secret, ...webhook } = w;
       return webhook;
     });

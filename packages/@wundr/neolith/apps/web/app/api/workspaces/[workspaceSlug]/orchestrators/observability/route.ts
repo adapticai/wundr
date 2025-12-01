@@ -37,6 +37,21 @@ interface RouteContext {
 }
 
 /**
+ * Orchestrator health status interface
+ */
+interface OrchestratorHealthStatus {
+  orchestratorId: string;
+  status: string;
+  isHealthy: boolean;
+  healthScore: number;
+  lastActiveAt?: Date;
+  issues: string[];
+  currentTasksCount: number;
+  errorRate: number;
+  avgResponseTimeMinutes: number;
+}
+
+/**
  * Helper to verify workspace access
  */
 async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
@@ -156,16 +171,17 @@ export async function GET(
     // Filter by status if specified
     let filteredStatuses = healthStatuses;
     if (query.statusFilter && query.statusFilter.length > 0) {
-      filteredStatuses = healthStatuses.filter(status =>
-        query.statusFilter?.includes(
-          status.status as 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY'
-        )
+      filteredStatuses = healthStatuses.filter(
+        (status: OrchestratorHealthStatus) =>
+          query.statusFilter?.includes(
+            status.status as 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY'
+          )
       );
     }
 
     // Get Orchestrator details if requested
     const orchestratorDetails = await Promise.all(
-      filteredStatuses.map(async status => {
+      filteredStatuses.map(async (status: OrchestratorHealthStatus) => {
         const orchestrator = await prisma.orchestrator.findUnique({
           where: { id: status.orchestratorId },
           include: {
@@ -229,32 +245,49 @@ export async function GET(
     const summary = {
       totalOrchestrators: filteredStatuses.length,
       byStatus: {
-        online: filteredStatuses.filter(s => s.status === 'ONLINE').length,
-        offline: filteredStatuses.filter(s => s.status === 'OFFLINE').length,
-        busy: filteredStatuses.filter(s => s.status === 'BUSY').length,
-        away: filteredStatuses.filter(s => s.status === 'AWAY').length,
+        online: filteredStatuses.filter(
+          (s: OrchestratorHealthStatus) => s.status === 'ONLINE'
+        ).length,
+        offline: filteredStatuses.filter(
+          (s: OrchestratorHealthStatus) => s.status === 'OFFLINE'
+        ).length,
+        busy: filteredStatuses.filter(
+          (s: OrchestratorHealthStatus) => s.status === 'BUSY'
+        ).length,
+        away: filteredStatuses.filter(
+          (s: OrchestratorHealthStatus) => s.status === 'AWAY'
+        ).length,
       },
       health: {
-        healthy: filteredStatuses.filter(s => s.isHealthy).length,
-        unhealthy: filteredStatuses.filter(s => !s.isHealthy).length,
+        healthy: filteredStatuses.filter(
+          (s: OrchestratorHealthStatus) => s.isHealthy
+        ).length,
+        unhealthy: filteredStatuses.filter(
+          (s: OrchestratorHealthStatus) => !s.isHealthy
+        ).length,
         avgHealthScore:
           filteredStatuses.length > 0
             ? Math.round(
-                filteredStatuses.reduce((sum, s) => sum + s.healthScore, 0) /
-                  filteredStatuses.length
+                filteredStatuses.reduce(
+                  (sum: number, s: OrchestratorHealthStatus) =>
+                    sum + s.healthScore,
+                  0
+                ) / filteredStatuses.length
               )
             : 0,
       },
       tasks: {
         totalActive: filteredStatuses.reduce(
-          (sum, s) => sum + s.currentTasksCount,
+          (sum: number, s: OrchestratorHealthStatus) =>
+            sum + s.currentTasksCount,
           0
         ),
         avgPerOrchestrator:
           filteredStatuses.length > 0
             ? Math.round(
                 filteredStatuses.reduce(
-                  (sum, s) => sum + s.currentTasksCount,
+                  (sum: number, s: OrchestratorHealthStatus) =>
+                    sum + s.currentTasksCount,
                   0
                 ) / filteredStatuses.length
               )
@@ -278,7 +311,7 @@ export async function GET(
     };
 
     // Generate alerts for unhealthy Orchestrators
-    filteredStatuses.forEach(status => {
+    filteredStatuses.forEach((status: OrchestratorHealthStatus) => {
       if (!status.isHealthy) {
         response.alerts.push({
           severity:

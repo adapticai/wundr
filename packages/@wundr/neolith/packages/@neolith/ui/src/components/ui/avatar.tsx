@@ -77,7 +77,8 @@ const statusVariants = cva(
  * Props for the Avatar component.
  */
 export interface AvatarProps
-  extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>,
+  extends
+    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>,
     VariantProps<typeof avatarVariants> {
   /**
    * Image source URL for the avatar.

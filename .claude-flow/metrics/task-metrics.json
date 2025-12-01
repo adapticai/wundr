@@ -1,58 +1,34 @@
 [
   {
-    "id": "cmd-hooks-1764551841114",
+    "id": "cmd-hooks-1764585292238",
     "type": "hooks",
     "success": true,
-    "duration": 1.3265829999999994,
-    "timestamp": 1764551841115,
+    "duration": 1.333833999999996,
+    "timestamp": 1764585292239,
     "metadata": {}
   },
   {
-    "id": "cmd-hooks-1764551861800",
+    "id": "cmd-hooks-1764585313967",
     "type": "hooks",
     "success": true,
-    "duration": 3008.6253330000004,
-    "timestamp": 1764551864808,
+    "duration": 3008.081917,
+    "timestamp": 1764585316975,
     "metadata": {}
   },
   {
-    "id": "cmd-hooks-1764551884871",
+    "id": "cmd-hooks-1764585340864",
     "type": "hooks",
     "success": true,
-    "duration": 3007.5723749999997,
-    "timestamp": 1764551887878,
+    "duration": 3007.523084,
+    "timestamp": 1764585343872,
     "metadata": {}
   },
   {
-    "id": "cmd-hooks-1764551899741",
+    "id": "cmd-hooks-1764585464405",
     "type": "hooks",
     "success": true,
-    "duration": 3008.3476250000003,
-    "timestamp": 1764551902749,
-    "metadata": {}
-  },
-  {
-    "id": "cmd-hooks-1764551912706",
-    "type": "hooks",
-    "success": true,
-    "duration": 3008.3918750000003,
-    "timestamp": 1764551915714,
-    "metadata": {}
-  },
-  {
-    "id": "cmd-hooks-1764551929233",
-    "type": "hooks",
-    "success": true,
-    "duration": 3007.351625,
-    "timestamp": 1764551932240,
-    "metadata": {}
-  },
-  {
-    "id": "cmd-hooks-1764551944336",
-    "type": "hooks",
-    "success": true,
-    "duration": 3008.682291,
-    "timestamp": 1764551947345,
+    "duration": 3008.1914580000002,
+    "timestamp": 1764585467413,
     "metadata": {}
   }
 ]

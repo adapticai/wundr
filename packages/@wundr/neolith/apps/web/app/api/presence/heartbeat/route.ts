@@ -157,7 +157,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Parse request body (optional)
-    let body: HeartbeatInput = {};
+    let body: Partial<HeartbeatInput> = {};
     try {
       const rawBody = await request.text();
       if (rawBody) {
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const input = parseResult.data;
-    const now = input.timestamp ?? new Date();
+    const now = input.timestamp ? new Date(input.timestamp) : new Date();
 
     // Update user's last activity
     await prisma.user.update({

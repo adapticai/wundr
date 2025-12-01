@@ -91,8 +91,8 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -105,8 +105,8 @@ export async function GET(
     if (!orchestratorId) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator ID is required',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Orchestrator ID is required'
         ),
         { status: 400 }
       );
@@ -120,8 +120,8 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          'Orchestrator not found or access denied'
         ),
         { status: 404 }
       );
@@ -158,8 +158,8 @@ export async function GET(
     if (!activeCharter) {
       return NextResponse.json(
         createErrorResponse(
-          'No active charter found for this orchestrator',
-          CHARTER_ERROR_CODES.NO_ACTIVE_VERSION
+          CHARTER_ERROR_CODES.NO_ACTIVE_VERSION,
+          'No active charter found for this orchestrator'
         ),
         { status: 404 }
       );
@@ -173,8 +173,8 @@ export async function GET(
     );
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );
@@ -226,8 +226,8 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse(
-          'Authentication required',
-          CHARTER_ERROR_CODES.UNAUTHORIZED
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
         ),
         { status: 401 }
       );
@@ -240,8 +240,8 @@ export async function POST(
     if (!orchestratorId) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator ID is required',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Orchestrator ID is required'
         ),
         { status: 400 }
       );
@@ -254,8 +254,8 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createErrorResponse(
-          'Invalid JSON body',
-          CHARTER_ERROR_CODES.VALIDATION_ERROR
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Invalid JSON body'
         ),
         { status: 400 }
       );
@@ -274,8 +274,8 @@ export async function POST(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse(
-          'Validation failed',
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
           }
@@ -294,8 +294,8 @@ export async function POST(
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
-          'Orchestrator not found or access denied',
-          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          'Orchestrator not found or access denied'
         ),
         { status: 404 }
       );
@@ -305,8 +305,8 @@ export async function POST(
     if (access.role !== 'OWNER' && access.role !== 'ADMIN') {
       return NextResponse.json(
         createErrorResponse(
-          'Insufficient permissions to create/update charter',
-          CHARTER_ERROR_CODES.FORBIDDEN
+          CHARTER_ERROR_CODES.FORBIDDEN,
+          'Insufficient permissions to create/update charter'
         ),
         { status: 403 }
       );
@@ -387,8 +387,8 @@ export async function POST(
     ) {
       return NextResponse.json(
         createErrorResponse(
-          'A charter version with this number already exists',
-          CHARTER_ERROR_CODES.DUPLICATE_VERSION
+          CHARTER_ERROR_CODES.DUPLICATE_VERSION,
+          'A charter version with this number already exists'
         ),
         { status: 409 }
       );
@@ -396,8 +396,8 @@ export async function POST(
 
     return NextResponse.json(
       createErrorResponse(
-        'An internal error occurred',
-        CHARTER_ERROR_CODES.INTERNAL_ERROR
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
       ),
       { status: 500 }
     );

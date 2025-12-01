@@ -59,9 +59,9 @@ export interface UseSetStatusReturn {
 export type UseOrchestratorHealthReturn = OrchestratorHealthStatus | null;
 
 /**
- * Return type for useOrchestratorHealthList hook
+ * Return type for useWorkspaceOrchestratorHealthList hook
  */
-export interface UseOrchestratorHealthListReturn {
+export interface UseWorkspaceOrchestratorHealthListReturn {
   /** List of Orchestrator health statuses */
   orchestratorList: OrchestratorHealthStatus[];
   /** Whether the list is loading */
@@ -447,9 +447,9 @@ export function useOrchestratorHealth(
  * @param workspaceId - The ID of the workspace to fetch Orchestrator health for
  * @returns List of Orchestrator health statuses with loading state and refetch method
  */
-export function useOrchestratorHealthList(
+export function useWorkspaceOrchestratorHealthList(
   workspaceId: string
-): UseOrchestratorHealthListReturn {
+): UseWorkspaceOrchestratorHealthListReturn {
   const [orchestratorList, setOrchestratorList] = useState<
     OrchestratorHealthStatus[]
   >([]);

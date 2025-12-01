@@ -7,7 +7,6 @@
 
 import {
   generateUnsubscribeUrl,
-  generateUnsubscribeToken,
   verifyUnsubscribeToken,
 } from '../lib/email';
 import type { EmailType } from '../lib/email';
@@ -16,7 +15,14 @@ console.log('🧪 Testing Email Unsubscribe Functionality\n');
 
 // Test user ID
 const testUserId = 'test-user-123';
-const emailTypes: EmailType[] = ['marketing', 'notifications', 'digest', 'all'];
+const emailTypes: EmailType[] = [
+  'welcome',
+  'verification',
+  'password_reset',
+  'notification',
+  'invitation',
+  'channel_invitation',
+];
 
 console.log('='.repeat(80));
 console.log('1. Generating Unsubscribe URLs');
@@ -29,11 +35,13 @@ emailTypes.forEach(emailType => {
 });
 
 console.log('\n' + '='.repeat(80));
-console.log('2. Generating and Verifying Tokens');
+console.log('2. Generating and Verifying Tokens (from URLs)');
 console.log('='.repeat(80));
 
 emailTypes.forEach(emailType => {
-  const token = generateUnsubscribeToken(testUserId, emailType);
+  // Extract token from the generated URL
+  const url = generateUnsubscribeUrl(testUserId, emailType);
+  const token = url.split('token=')[1];
   const payload = verifyUnsubscribeToken(token);
 
   console.log(`\n${emailType.toUpperCase()}:`);
@@ -43,7 +51,6 @@ emailTypes.forEach(emailType => {
   if (payload) {
     console.log(`  User ID: ${payload.userId}`);
     console.log(`  Email Type: ${payload.emailType}`);
-    console.log(`  Timestamp: ${new Date(payload.timestamp).toISOString()}`);
   }
 });
 
@@ -69,7 +76,7 @@ console.log('\n' + '='.repeat(80));
 console.log('4. Example Email Footer');
 console.log('='.repeat(80));
 
-const exampleUrl = generateUnsubscribeUrl('user-abc-123', 'notifications');
+const exampleUrl = generateUnsubscribeUrl('user-abc-123', 'notification');
 console.log(`
 Email Footer Example:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

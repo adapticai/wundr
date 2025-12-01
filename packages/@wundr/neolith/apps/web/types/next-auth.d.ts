@@ -11,9 +11,9 @@ import type { DefaultSession, DefaultUser } from 'next-auth';
 import type { DefaultJWT } from 'next-auth/jwt';
 
 /**
- * User role enumeration matching the database schema
+ * User role enumeration matching the database schema (WorkspaceRole)
  */
-type UserRole = 'ADMIN' | 'MEMBER' | 'VIEWER';
+type UserRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
 
 declare module 'next-auth' {
   /**

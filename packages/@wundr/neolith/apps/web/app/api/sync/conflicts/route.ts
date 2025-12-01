@@ -59,13 +59,21 @@ function deepMerge(
 }
 
 /**
+ * Result of resolving a single conflict
+ */
+type ConflictResolutionResult = {
+  success: boolean;
+  error?: string;
+};
+
+/**
  * Resolve a single conflict
  */
 async function resolveConflict(
   conflict: ConflictItem,
   resolution: ResolveConflictInput,
   userId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ConflictResolutionResult> {
   try {
     let dataToApply: Record<string, unknown>;
 
@@ -384,8 +392,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Process resolutions
-    const results: { conflictId: string; success: boolean; error?: string }[] =
-      [];
+    type ConflictResolutionStatus = {
+      conflictId: string;
+      success: boolean;
+      error?: string;
+    };
+
+    const results: ConflictResolutionStatus[] = [];
     const resolvedIds: string[] = [];
     let resolved = 0;
     let failed = 0;

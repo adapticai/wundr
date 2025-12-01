@@ -204,11 +204,14 @@ export async function POST(
       );
     }
 
+    // Get the channelId (we've already validated channel exists above)
+    const validChannelId = channel.id;
+
     // Ensure Orchestrator is a member of the channel (or add them)
     const channelMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
-          channelId: input.channelId,
+          channelId: validChannelId,
           userId: orchestrator.user.id,
         },
       },
@@ -218,7 +221,7 @@ export async function POST(
       // Add Orchestrator to channel as a member
       await prisma.channelMember.create({
         data: {
-          channelId: input.channelId,
+          channelId: validChannelId,
           userId: orchestrator.user.id,
           role: 'MEMBER',
         },
@@ -236,9 +239,9 @@ export async function POST(
     // Create the status message
     const statusMessage = await prisma.message.create({
       data: {
-        content: input.message,
+        content: input.message ?? '',
         type: 'SYSTEM',
-        channelId: input.channelId,
+        channelId: validChannelId,
         authorId: orchestrator.user.id,
         metadata: metadata as Prisma.InputJsonValue,
       },

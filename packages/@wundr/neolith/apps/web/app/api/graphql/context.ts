@@ -23,8 +23,8 @@ export interface ContextUser {
   email: string;
   /** User's display name */
   name: string | null;
-  /** User's role in the system */
-  role: 'ADMIN' | 'MEMBER' | 'VIEWER';
+  /** User's role in the system (WorkspaceRole) */
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
 }
 
 /**

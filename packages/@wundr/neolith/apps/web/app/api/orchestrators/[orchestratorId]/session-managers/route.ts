@@ -11,6 +11,7 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -152,21 +153,11 @@ export async function GET(
     const take = Math.min(parseInt(searchParams.get('take') || '50'), 100);
 
     // Build where clause
-    const where: {
-      orchestratorId: string;
-      status?: string;
-      isGlobal?: boolean;
-    } = {
+    const where: Prisma.sessionManagerWhereInput = {
       orchestratorId: params.orchestratorId,
+      ...(status && { status: status as Prisma.EnumAgentStatusFilter }),
+      ...(isGlobalParam !== null && { isGlobal: isGlobalParam === 'true' }),
     };
-
-    if (status) {
-      where.status = status;
-    }
-
-    if (isGlobalParam !== null) {
-      where.isGlobal = isGlobalParam === 'true';
-    }
 
     // Fetch session managers and total count in parallel
     const [data, total] = await Promise.all([
@@ -341,20 +332,31 @@ export async function POST(
       );
     }
 
+    // Validate required fields
+    if (!input.charterId) {
+      return NextResponse.json(
+        createErrorResponse(
+          'charterId is required',
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
     // Create session manager
     const sessionManager = await prisma.sessionManager.create({
       data: {
         name: input.name,
         description: input.description,
         charterId: input.charterId,
-        charterData: input.charterData,
-        disciplineId: input.disciplineId,
+        charterData: (input.charterData ?? {}) as never,
+        disciplineId: input.disciplineId ?? null,
         orchestratorId: params.orchestratorId,
-        isGlobal: input.isGlobal,
-        globalConfig: input.globalConfig,
-        maxConcurrentSubagents: input.maxConcurrentSubagents,
-        tokenBudgetPerHour: input.tokenBudgetPerHour,
-        worktreeConfig: input.worktreeConfig,
+        isGlobal: input.isGlobal ?? false,
+        globalConfig: (input.globalConfig ?? null) as never,
+        maxConcurrentSubagents: input.maxConcurrentSubagents ?? 20,
+        tokenBudgetPerHour: input.tokenBudgetPerHour ?? 100000,
+        worktreeConfig: (input.worktreeConfig ?? null) as never,
         status: 'INACTIVE',
       },
       include: {

@@ -136,12 +136,18 @@ export async function GET(
           settings: {
             ...settings,
             invites: updatedInvites,
-          },
+          } as Prisma.InputJsonValue,
         },
       });
 
       foundInvite.status = 'EXPIRED';
     }
+
+    // Get creator details
+    const creator = await prisma.user.findUnique({
+      where: { id: foundInvite.invitedBy.id },
+      select: { name: true, email: true },
+    });
 
     // Return invitation details (without sensitive token)
     const invitationDetails: InvitationDetails = {
@@ -150,8 +156,8 @@ export async function GET(
       role: foundInvite.role,
       workspaceName: foundWorkspace.name,
       workspaceSlug: foundWorkspace.slug,
-      inviterName: foundInvite.invitedBy.name,
-      inviterEmail: foundInvite.invitedBy.email,
+      inviterName: creator?.name ?? null,
+      inviterEmail: creator?.email ?? null,
       expiresAt: foundInvite.expiresAt.toISOString(),
       status: foundInvite.status,
     };
@@ -351,7 +357,7 @@ export async function POST(
     const invites = (settings.invites as Invite[]) || [];
     const updatedInvites = invites.map(i => {
       if (i.id === foundInvite!.id) {
-        return { ...i, status: 'ACCEPTED' as InviteStatus };
+        return { ...i, status: 'accepted' as InviteStatus };
       }
       return i;
     });
@@ -362,7 +368,7 @@ export async function POST(
         settings: {
           ...settings,
           invites: updatedInvites,
-        },
+        } as Prisma.InputJsonValue,
       },
     });
 

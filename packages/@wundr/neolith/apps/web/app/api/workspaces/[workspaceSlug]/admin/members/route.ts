@@ -77,11 +77,15 @@ export async function GET(
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const filters = {
-      status: searchParams.get('status') || undefined,
+      status: (searchParams.get('status') as MemberStatus | null) || undefined,
       roleId: searchParams.get('roleId') || undefined,
       search: searchParams.get('search') || undefined,
-      limit: searchParams.get('limit') || '20',
-      offset: searchParams.get('offset') || '0',
+      limit: searchParams.get('limit')
+        ? parseInt(searchParams.get('limit')!)
+        : 20,
+      offset: searchParams.get('offset')
+        ? parseInt(searchParams.get('offset')!)
+        : 0,
     };
 
     // Validate filters

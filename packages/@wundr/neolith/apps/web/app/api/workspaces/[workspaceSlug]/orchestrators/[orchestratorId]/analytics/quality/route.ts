@@ -171,13 +171,13 @@ export async function GET(
     let endDate: Date;
     try {
       const dateRange = parseDateRange(query);
-      startDate = dateRange.startDate;
-      endDate = dateRange.endDate;
+      startDate = dateRange.start;
+      endDate = dateRange.end;
     } catch (error) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           error instanceof Error ? error.message : 'Invalid date range',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_DATE_RANGE
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_TIME_RANGE
         ),
         { status: 400 }
       );
@@ -217,12 +217,13 @@ export async function GET(
       totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
     // Build response
+    const preset = 'preset' in query ? query.preset : 'custom';
     const qualityMetrics = {
       orchestratorId,
       timeRange: {
         start: startDate.toISOString(),
         end: endDate.toISOString(),
-        label: query.timeRange,
+        label: preset,
       },
       overallScore: qualityScore.score,
       grade:
@@ -262,7 +263,8 @@ export async function GET(
       );
     }
 
-    if (qualityScore.breakdown.onTime && qualityScore.breakdown.onTime < 30) {
+    const breakdown = qualityScore.breakdown;
+    if (breakdown && breakdown.onTime && breakdown.onTime < 30) {
       qualityMetrics.insights.push(
         'Frequent deadline misses - investigate blockers'
       );
@@ -422,7 +424,7 @@ export async function POST(
           taskId: input.taskId,
           orchestratorId,
           rating: input.rating,
-          category: input.category,
+          feedbackType: input.feedbackType,
           recordedAt: new Date().toISOString(),
         },
       },

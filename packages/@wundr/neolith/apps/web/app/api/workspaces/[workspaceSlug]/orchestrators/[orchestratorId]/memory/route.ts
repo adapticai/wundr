@@ -169,7 +169,9 @@ export async function GET(
     }
 
     const filters: MemoryFiltersInput = parseResult.data;
-    const skip = (filters.page - 1) * filters.limit;
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+    const skip = (page - 1) * limit;
 
     // Build where clause
     const where: Prisma.orchestratorMemoryWhereInput = {
@@ -203,7 +205,7 @@ export async function GET(
         where,
         orderBy,
         skip,
-        take: filters.limit,
+        take: limit,
       }),
       prisma.orchestratorMemory.count({ where }),
     ]);
@@ -211,11 +213,11 @@ export async function GET(
     return NextResponse.json({
       data: memories,
       pagination: {
-        page: filters.page,
-        limit: filters.limit,
+        page,
+        limit,
         total: totalCount,
-        pages: Math.ceil(totalCount / filters.limit),
-        hasMore: filters.page * filters.limit < totalCount,
+        pages: Math.ceil(totalCount / limit),
+        hasMore: page * limit < totalCount,
       },
     });
   } catch (error) {
@@ -317,7 +319,12 @@ export async function POST(
     const input: CreateMemoryInput = parseResult.data;
 
     // Create memory using service
-    const memory = await storeMemory(orchestratorId, input);
+    const memory = await storeMemory(orchestratorId, input.key, {
+      content: input.value,
+      type: input.scope,
+      tags: input.metadata ? Object.keys(input.metadata) : undefined,
+      ttl: input.ttl,
+    });
 
     return NextResponse.json(
       { data: memory, message: 'Memory created successfully' },
