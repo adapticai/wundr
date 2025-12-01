@@ -3,6 +3,13 @@
 
 set -e
 
+# Skip cleanup in CI environments (Netlify, GitHub Actions, etc.)
+# The process cleanup can kill the CI build process itself
+if [[ -n "${NETLIFY:-}" || -n "${CI:-}" ]]; then
+  echo "CI environment detected; skipping Next.js process cleanup."
+  exit 0
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
