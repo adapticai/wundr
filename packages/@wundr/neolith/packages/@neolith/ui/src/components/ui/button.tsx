@@ -84,8 +84,7 @@ const buttonVariants = cva(
  * Extends standard HTML button attributes with variant and size options.
  */
 export interface ButtonProps
-  extends
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   /**
    * When true, renders as a child component (useful for Radix UI Slot).
