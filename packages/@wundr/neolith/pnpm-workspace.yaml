@@ -1,5 +1,0 @@
-# pnpm-workspace.yaml
-# Neolith workspace configuration for Netlify deployment
-packages:
-  - "apps/*"
-  - "packages/@neolith/*"
