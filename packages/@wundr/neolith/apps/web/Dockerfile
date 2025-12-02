@@ -28,6 +28,10 @@ RUN pnpm install --frozen-lockfile
 # Generate Prisma client
 RUN cd packages/@wundr/neolith/packages/@neolith/database && npx prisma generate
 
+# Build shared packages that the web app depends on
+# The @neolith/ui package needs to be built to generate the dist/ folder
+RUN pnpm --filter @neolith/ui build
+
 # Build the web app (using webpack mode to avoid Turbopack path alias issues in monorepos)
 WORKDIR /app/packages/@wundr/neolith/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
