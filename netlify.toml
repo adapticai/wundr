@@ -71,8 +71,10 @@
   command = "pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
 
 # Plugins configuration
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# DISABLED: @netlify/plugin-nextjs doesn't work with monorepos when base is at root
+# The plugin looks for .next in base directory but we use cd in build command
+# [[plugins]]
+#   package = "@netlify/plugin-nextjs"
 
 # Custom plugin disabled - using NEXT_DISABLE_NETLIFY_EDGE instead
 # [[plugins]]
