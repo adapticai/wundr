@@ -16,8 +16,8 @@
 
 [build]
   # Build command runs from repo root where pnpm-lock.yaml exists
-  # Then navigates to neolith directory to run the actual build
-  command = "pnpm install --shamefully-hoist && cd packages/@wundr/neolith && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && cd apps/web && pnpm run build"
+  # Uses pnpm filter to run prisma generate from the database package with correct version
+  command = "pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
   # Publish directory relative to repo root
   publish = "packages/@wundr/neolith/apps/web/.next"
   # NO base directory - must be at root for pnpm-lock.yaml detection
@@ -65,10 +65,10 @@
 
 # Development context
 [context.deploy-preview]
-  command = "pnpm install --shamefully-hoist && cd packages/@wundr/neolith && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && cd apps/web && pnpm run build"
+  command = "pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
 
 [context.branch-deploy]
-  command = "pnpm install --shamefully-hoist && cd packages/@wundr/neolith && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && cd apps/web && pnpm run build"
+  command = "pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
 
 # Plugins configuration
 [[plugins]]
