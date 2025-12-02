@@ -28,19 +28,20 @@
   PNPM_FLAGS = "--shamefully-hoist"
   PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
   NEXT_DISABLE_NETLIFY_EDGE = "true"
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  CI = "true"
 
-# Redirect rules for SPA routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
-
-# API routes handled by Netlify Functions
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
+# Note: Next.js handles its own routing via the standalone server
+# These redirects are disabled for SSR mode
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+#   force = false
+# [[redirects]]
+#   from = "/api/*"
+#   to = "/.netlify/functions/:splat"
+#   status = 200
 
 # Security headers
 [[headers]]
