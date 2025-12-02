@@ -113,7 +113,8 @@ analysis-output/
 # Build outputs
 build/
 dist/
-lib/
+# Note: /lib/ excludes only top-level lib folder, not nested src/lib/ folders
+/lib/
 esm/
 cjs/
 
