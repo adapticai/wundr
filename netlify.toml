@@ -28,7 +28,10 @@
   PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
   NEXT_DISABLE_NETLIFY_EDGE = "true"
   # Skip the OpenNext plugin as it doesn't support monorepos with cd workaround
+  # Note: NETLIFY_NEXT_PLUGIN_SKIP no longer works in v5
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  # Force disable the Next.js plugin
+  NEXT_PLUGIN_FORCE_RUN = "false"
   # Disable automatic framework detection for Next.js
   NETLIFY_USE_PNPM = "true"
   CI = "true"
