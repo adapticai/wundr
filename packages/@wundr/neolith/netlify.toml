@@ -2,7 +2,6 @@
 # Neolith Netlify Deployment Configuration
 # =============================================================================
 # This configuration deploys the Neolith web application to Netlify.
-# Located at repo root to ensure pnpm-lock.yaml is detected.
 #
 # Prerequisites:
 #   - Netlify CLI installed: npm install -g netlify-cli
@@ -16,16 +15,19 @@
 
 [build]
   # Build command for Next.js
-  # Runs from the repository ROOT where pnpm-lock.yaml exists.
-  # This is required for Netlify to detect pnpm and install dependencies correctly.
+  # Key: cd up to repo root to run pnpm install where pnpm-lock.yaml exists
+  # Then come back to run the build from this directory
   #
   # Build steps:
-  # 1. Install dependencies with hoisting (for Netlify Lambda compatibility)
-  # 2. Generate Prisma client
-  # 3. Build the neolith web app
-  command = "pnpm install --shamefully-hoist && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/web' run build"
-  # Output directory for Next.js (relative to repo root)
-  publish = "packages/@wundr/neolith/apps/web/.next"
+  # 1. Navigate to repo root (where pnpm-lock.yaml is)
+  # 2. Install dependencies with hoisting
+  # 3. Generate Prisma client
+  # 4. Build @neolith/web from root
+  command = "cd ../../.. && pnpm install --shamefully-hoist && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/web' run build"
+  # Output directory for Next.js (relative to base)
+  publish = "apps/web/.next"
+  # Base directory for this neolith package
+  base = "packages/@wundr/neolith"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -76,10 +78,10 @@
 
 # Development context
 [context.deploy-preview]
-  command = "pnpm install --shamefully-hoist && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/web' run build"
+  command = "cd ../../.. && pnpm install --shamefully-hoist && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/web' run build"
 
 [context.branch-deploy]
-  command = "pnpm install --shamefully-hoist && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/web' run build"
+  command = "cd ../../.. && pnpm install --shamefully-hoist && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/web' run build"
 
 # Plugins configuration
 # Note: Plugins run in order - our custom plugin MUST run after @netlify/plugin-nextjs
@@ -88,16 +90,16 @@
   package = "@netlify/plugin-nextjs"
 
 [[plugins]]
-  package = "./packages/@wundr/neolith/apps/web/netlify-plugins/remove-middleware-edge"
+  package = "./apps/web/netlify-plugins/remove-middleware-edge"
 
 # Functions configuration
 [functions]
-  directory = "packages/@wundr/neolith/apps/web/netlify/functions"
+  directory = "apps/web/netlify/functions"
   node_bundler = "esbuild"
 
 # Dev server configuration
 [dev]
-  command = "cd packages/@wundr/neolith/apps/web && pnpm run dev"
+  command = "cd apps/web && pnpm run dev"
   port = 3000
   targetPort = 3000
   autoLaunch = false
