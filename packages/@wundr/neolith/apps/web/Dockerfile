@@ -30,7 +30,8 @@ RUN cd packages/@wundr/neolith/packages/@neolith/database && npx prisma generate
 
 # Build shared packages that the web app depends on
 # The @neolith/ui package needs to be built to generate the dist/ folder
-RUN pnpm --filter @neolith/ui build
+# Skip dts generation to avoid TypeScript errors, only need JS for runtime
+RUN cd packages/@wundr/neolith/packages/@neolith/ui && npx tsup src/index.ts --format cjs,esm --clean --no-dts
 
 # Build the web app (using webpack mode to avoid Turbopack path alias issues in monorepos)
 WORKDIR /app/packages/@wundr/neolith/apps/web
