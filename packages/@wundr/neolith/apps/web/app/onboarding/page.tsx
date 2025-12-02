@@ -10,7 +10,11 @@
 import { redirect } from 'next/navigation';
 
 import { OrgGenesisWizard } from '@/components/org-genesis';
+import { Logo } from '@/components/ui/Logo';
 import { auth } from '@/lib/auth';
+
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Welcome to Neolith - Create Your Organization',
@@ -29,14 +33,7 @@ export default async function OnboardingPage() {
     <div className='flex min-h-screen flex-col bg-stone-950'>
       <header className='border-b border-stone-800 px-6 py-4'>
         <div className='mx-auto flex max-w-4xl items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600'>
-              <span className='text-sm font-bold text-white'>N</span>
-            </div>
-            <span className='text-lg font-semibold text-stone-100'>
-              Neolith
-            </span>
-          </div>
+          <Logo className='h-6 text-stone-100' />
           <div className='flex items-center gap-2 text-sm text-stone-400'>
             <span>Signed in as</span>
             <span className='font-medium text-stone-200'>

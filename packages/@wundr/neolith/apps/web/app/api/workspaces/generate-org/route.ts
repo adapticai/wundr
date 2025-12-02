@@ -23,9 +23,11 @@ import { auth } from '@/lib/auth';
 import {
   createGenesisErrorResponse,
   GENESIS_ERROR_CODES,
-  type GenerateOrgInput,
-  generateOrgSchema,
 } from '@/lib/validations/workspace-genesis';
+import {
+  generateOrgInputSchema,
+  type GenerateOrgInput as WizardInput,
+} from '@/lib/validations/org-genesis';
 import type {
   AgentApiResponse,
   DisciplineApiResponse,
@@ -213,7 +215,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const parseResult = generateOrgSchema.safeParse(body);
+    const parseResult = generateOrgInputSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
         createGenesisErrorResponse(
@@ -227,38 +229,89 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const input: GenerateOrgInput = parseResult.data;
+    const wizardInput: WizardInput = parseResult.data;
+
+    // Transform wizard input to org-genesis engine format
+    const orgSlug = wizardInput.basicInfo.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const input = {
+      organizationName: wizardInput.basicInfo.name,
+      organizationType: wizardInput.basicInfo.type,
+      description: wizardInput.description.description,
+      strategy: wizardInput.description.strategy || '',
+      targetAssets: wizardInput.config.assets || [],
+      riskTolerance: wizardInput.config.riskTolerance,
+      teamSize: wizardInput.config.teamSize,
+      // Generate workspace name/slug from org name
+      workspaceName: wizardInput.basicInfo.name,
+      workspaceSlug: orgSlug,
+      workspaceDescription: wizardInput.description.description,
+      workspaceIconUrl: undefined,
+      verbose: false,
+      dryRun: false,
+    };
 
     // =========================================================================
-    // 3. Verify Organization Membership & Permissions
+    // 3. Create or Verify Organization
     // =========================================================================
-    const membership = await prisma.organizationMember.findUnique({
-      where: {
-        organizationId_userId: {
-          organizationId: input.organizationId,
-          userId: session.user.id,
-        },
-      },
+    // For onboarding flow, we create a new organization. For existing users,
+    // they would specify an organizationId. Since the wizard doesn't provide one,
+    // we create a new organization.
+
+    // Check if org with this slug already exists
+    let organization = await prisma.organization.findUnique({
+      where: { slug: orgSlug },
     });
 
-    if (!membership) {
-      return NextResponse.json(
-        createGenesisErrorResponse(
-          'Organization not found or access denied',
-          GENESIS_ERROR_CODES.ORG_NOT_FOUND
-        ),
-        { status: 404 }
-      );
-    }
+    if (organization) {
+      // Organization exists - check if user has permission
+      const membership = await prisma.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: organization.id,
+            userId: session.user.id,
+          },
+        },
+      });
 
-    if (!['OWNER', 'ADMIN'].includes(membership.role)) {
-      return NextResponse.json(
-        createGenesisErrorResponse(
-          'Insufficient permissions. Admin or Owner role required.',
-          GENESIS_ERROR_CODES.FORBIDDEN
-        ),
-        { status: 403 }
-      );
+      if (!membership) {
+        return NextResponse.json(
+          createGenesisErrorResponse(
+            'An organization with this name already exists. Please choose a different name.',
+            GENESIS_ERROR_CODES.ORG_NOT_FOUND
+          ),
+          { status: 409 }
+        );
+      }
+
+      if (!['OWNER', 'ADMIN'].includes(membership.role)) {
+        return NextResponse.json(
+          createGenesisErrorResponse(
+            'Insufficient permissions. Admin or Owner role required.',
+            GENESIS_ERROR_CODES.FORBIDDEN
+          ),
+          { status: 403 }
+        );
+      }
+    } else {
+      // Create new organization
+      organization = await prisma.organization.create({
+        data: {
+          name: input.organizationName,
+          slug: orgSlug,
+          description: input.description,
+          organizationMembers: {
+            create: {
+              userId: session.user.id,
+              role: 'OWNER',
+            },
+          },
+        },
+      });
+      console.log('[generate-org] Created new organization:', organization.id);
     }
 
     // =========================================================================
@@ -266,7 +319,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // =========================================================================
     const existingWorkspace = await prisma.workspace.findFirst({
       where: {
-        organizationId: input.organizationId,
+        organizationId: organization.id,
         slug: input.workspaceSlug,
       },
     });
@@ -437,7 +490,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             slug: input.workspaceSlug,
             description: input.workspaceDescription || input.description,
             avatarUrl: input.workspaceIconUrl,
-            organizationId: input.organizationId,
+            organizationId: organization.id,
             settings: {
               orgGenesis: {
                 manifestId: genesisResult.manifest.id,
@@ -466,7 +519,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             data: {
               name: discipline.name,
               description: discipline.description,
-              organizationId: input.organizationId,
+              organizationId: organization.id,
               color: getColorForDiscipline(discipline.name),
               icon: getIconForDiscipline(discipline.name),
             },
@@ -511,7 +564,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           await tx.orchestrator.create({
             data: {
               userId: orchestratorUser.id,
-              organizationId: input.organizationId,
+              organizationId: organization.id,
               workspaceId: newWorkspace.id,
               disciplineId: primaryDisciplineId,
               discipline: orchestratorDisciplines[0]?.name || 'General',

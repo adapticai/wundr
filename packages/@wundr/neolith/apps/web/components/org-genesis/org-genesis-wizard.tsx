@@ -114,7 +114,13 @@ export function OrgGenesisWizard() {
         throw new Error(result.error || 'Failed to generate organization');
       }
 
-      setGeneratedOrg(result.data);
+      // API returns { data: workspace, genesis: {...}, ... }
+      // Add workspaceId to the result for easy access
+      const orgData = {
+        ...result,
+        workspaceId: result.data?.id,
+      };
+      setGeneratedOrg(orgData);
       setCurrentStep('preview');
     } catch (err) {
       const errorMessage =
