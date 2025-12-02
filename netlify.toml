@@ -74,13 +74,14 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-[[plugins]]
-  package = "./packages/@wundr/neolith/apps/web/netlify-plugins/remove-middleware-edge"
+# Custom plugin disabled - using NEXT_DISABLE_NETLIFY_EDGE instead
+# [[plugins]]
+#   package = "./packages/@wundr/neolith/apps/web/netlify-plugins/remove-middleware-edge"
 
-# Functions configuration (relative to repo root)
-[functions]
-  directory = "packages/@wundr/neolith/apps/web/netlify/functions"
-  node_bundler = "esbuild"
+# Functions configuration - disabled as directory doesn't exist
+# [functions]
+#   directory = "packages/@wundr/neolith/apps/web/netlify/functions"
+#   node_bundler = "esbuild"
 
 # Dev server configuration
 [dev]
