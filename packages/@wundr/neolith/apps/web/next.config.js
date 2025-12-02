@@ -63,8 +63,8 @@ const nextConfig = {
     optimizePackageImports: ['@apollo/client', 'lucide-react'],
   },
 
-  // Turbopack configuration - enable with empty config to allow both webpack and turbopack
-  turbopack: {},
+  // Turbopack configuration - disabled for Docker builds due to path alias issues in monorepos
+  // turbopack: {},
 
   // Strict mode for React
   reactStrictMode: true,
@@ -81,10 +81,10 @@ const nextConfig = {
   // Compression
   compress: true,
 
-  // Standalone output mode for Electron/desktop app bundling
-  // Disabled due to sharp dependency issues in pnpm workspace
-  // TODO: Re-enable for production desktop builds
-  // output: 'standalone',
+  // Standalone output mode - REQUIRED for Netlify deployment with Next.js 14+
+  // The @netlify/plugin-nextjs v5 expects standalone output for server functions
+  // Without this, server functions fail with "Cannot find module 'next/dist/server/lib/start-server.js'"
+  output: 'standalone',
 
   // Environment variables exposed to the browser
   env: {
