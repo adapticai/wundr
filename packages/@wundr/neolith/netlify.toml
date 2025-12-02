@@ -15,15 +15,14 @@
 
 [build]
   # Build command for Next.js
-  # Note: This runs from the neolith base directory but uses the root workspace
-  # The duplicate pnpm-lock.yaml and pnpm-workspace.yaml have been removed from neolith
-  # to ensure Netlify uses the root workspace configuration correctly.
+  # Note: This runs from the neolith base directory as a standalone workspace.
+  # The pnpm-workspace.yaml is present but NO pnpm-lock.yaml (uses fresh install)
   #
   # Build steps:
-  # 1. Go to repo root and install all deps with hoisting
+  # 1. Install dependencies with hoisting (for Netlify Lambda compatibility)
   # 2. Generate Prisma client
   # 3. Build all @neolith/* packages (including apps/web)
-  command = "cd ../../.. && pnpm install --no-frozen-lockfile && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
+  command = "pnpm install --no-frozen-lockfile && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
   # Output directory for Next.js (relative to base)
   publish = "apps/web/.next"
   # Base directory for monorepo
@@ -78,10 +77,10 @@
 
 # Development context
 [context.deploy-preview]
-  command = "cd ../../.. && pnpm install --no-frozen-lockfile && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
+  command = "pnpm install --no-frozen-lockfile && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
 
 [context.branch-deploy]
-  command = "cd ../../.. && pnpm install --no-frozen-lockfile && npx prisma generate --schema=packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
+  command = "pnpm install --no-frozen-lockfile && npx prisma generate --schema=packages/@neolith/database/prisma/schema.prisma && pnpm --filter '@neolith/*' run build"
 
 # Plugins configuration
 # Note: Plugins run in order - our custom plugin MUST run after @netlify/plugin-nextjs
