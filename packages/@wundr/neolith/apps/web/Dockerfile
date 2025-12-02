@@ -46,6 +46,9 @@ RUN cd packages/@wundr/neolith/packages/@neolith/org-integration && npx tsc
 # Build @neolith/ui (using tsup, skip dts to avoid TypeScript errors)
 RUN cd packages/@wundr/neolith/packages/@neolith/ui && npx tsup src/index.ts --format cjs,esm --clean --no-dts
 
+# Ensure public folder exists (may be empty but required for Docker COPY)
+RUN mkdir -p /app/packages/@wundr/neolith/apps/web/public
+
 # Build the web app (using webpack mode to avoid Turbopack path alias issues in monorepos)
 WORKDIR /app/packages/@wundr/neolith/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
