@@ -15,14 +15,19 @@ export const BUILD_ERROR_PATTERNS: ErrorPattern[] = [
     severity: 'high',
     autoFixable: true,
     commonCauses: ['Incompatible peer dependencies', 'Version conflicts'],
-    suggestedFix: 'Update package.json with compatible versions, run npm install',
+    suggestedFix:
+      'Update package.json with compatible versions, run npm install',
   },
   {
     pattern: /Cannot find module ['"]([^'"]+)['"]/,
     classification: 'Import Error',
     severity: 'high',
     autoFixable: true,
-    commonCauses: ['Missing dependency', 'Incorrect import path', 'Typo in module name'],
+    commonCauses: [
+      'Missing dependency',
+      'Incorrect import path',
+      'Typo in module name',
+    ],
     suggestedFix: 'Install missing module or fix import path',
   },
   {
@@ -30,7 +35,11 @@ export const BUILD_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'TypeScript Error',
     severity: 'high',
     autoFixable: true,
-    commonCauses: ['Type mismatch', 'Missing type declaration', 'Invalid type assertion'],
+    commonCauses: [
+      'Type mismatch',
+      'Missing type declaration',
+      'Invalid type assertion',
+    ],
     suggestedFix: 'Fix type errors as indicated by TypeScript compiler',
   },
   {
@@ -74,7 +83,11 @@ export const RUNTIME_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Connection Error',
     severity: 'critical',
     autoFixable: true,
-    commonCauses: ['Database unreachable', 'Service not running', 'Network issue'],
+    commonCauses: [
+      'Database unreachable',
+      'Service not running',
+      'Network issue',
+    ],
     suggestedFix: 'Add retry logic with exponential backoff',
   },
   {
@@ -90,7 +103,11 @@ export const RUNTIME_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Timeout Error',
     severity: 'high',
     autoFixable: true,
-    commonCauses: ['Slow external service', 'Network latency', 'Long-running operation'],
+    commonCauses: [
+      'Slow external service',
+      'Network latency',
+      'Long-running operation',
+    ],
     suggestedFix: 'Add timeout handling and retry logic',
   },
   {
@@ -98,7 +115,10 @@ export const RUNTIME_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Null Reference Error',
     severity: 'high',
     autoFixable: true,
-    commonCauses: ['Accessing property of null/undefined', 'Missing null check'],
+    commonCauses: [
+      'Accessing property of null/undefined',
+      'Missing null check',
+    ],
     suggestedFix: 'Add null check before accessing property',
   },
   {
@@ -106,7 +126,11 @@ export const RUNTIME_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Reference Error',
     severity: 'high',
     autoFixable: false,
-    commonCauses: ['Variable not declared', 'Scope issue', 'Typo in variable name'],
+    commonCauses: [
+      'Variable not declared',
+      'Scope issue',
+      'Typo in variable name',
+    ],
     suggestedFix: 'Declare variable or fix reference',
   },
   {
@@ -114,7 +138,10 @@ export const RUNTIME_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Port In Use Error',
     severity: 'high',
     autoFixable: false,
-    commonCauses: ['Another process using port', 'Previous instance not terminated'],
+    commonCauses: [
+      'Another process using port',
+      'Previous instance not terminated',
+    ],
     suggestedFix: 'Kill process using port or use different port',
   },
   {
@@ -122,7 +149,11 @@ export const RUNTIME_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'DNS Error',
     severity: 'high',
     autoFixable: false,
-    commonCauses: ['Invalid hostname', 'DNS resolution failed', 'Network issue'],
+    commonCauses: [
+      'Invalid hostname',
+      'DNS resolution failed',
+      'Network issue',
+    ],
     suggestedFix: 'Verify hostname, check network connectivity',
   },
   {
@@ -142,7 +173,11 @@ export const DATABASE_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Database Connection Error',
     severity: 'critical',
     autoFixable: true,
-    commonCauses: ['Database not running', 'Wrong connection string', 'Firewall blocking'],
+    commonCauses: [
+      'Database not running',
+      'Wrong connection string',
+      'Firewall blocking',
+    ],
     suggestedFix: 'Add connection retry with backoff, verify connection string',
   },
   {
@@ -150,8 +185,13 @@ export const DATABASE_ERROR_PATTERNS: ErrorPattern[] = [
     classification: 'Connection Pool Exhausted',
     severity: 'critical',
     autoFixable: true,
-    commonCauses: ['Connection leak', 'Pool too small', 'Connections not released'],
-    suggestedFix: 'Implement connection pooling, ensure connections are released',
+    commonCauses: [
+      'Connection leak',
+      'Pool too small',
+      'Connections not released',
+    ],
+    suggestedFix:
+      'Implement connection pooling, ensure connections are released',
   },
   {
     pattern: /deadlock/i,
@@ -224,7 +264,7 @@ export function getFixSuggestions(errors: string[]): Array<{
   suggestion: string;
   autoFixable: boolean;
 }> {
-  return errors.map((error) => {
+  return errors.map(error => {
     const pattern = matchErrorPattern(error);
     return {
       error,

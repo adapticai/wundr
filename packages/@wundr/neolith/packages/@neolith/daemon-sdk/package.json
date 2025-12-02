@@ -21,15 +21,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "genesis",
-    "daemon",
-    "sdk",
-    "websocket",
-    "ai-agents"
-  ],
+  "files": ["dist"],
+  "keywords": ["genesis", "daemon", "sdk", "websocket", "ai-agents"],
   "license": "MIT"
 }

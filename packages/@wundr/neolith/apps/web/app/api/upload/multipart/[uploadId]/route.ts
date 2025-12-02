@@ -90,9 +90,8 @@ async function abortMultipartUpload(
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
-  const { S3Client, AbortMultipartUploadCommand } = await import(
-    '@aws-sdk/client-s3'
-  );
+  const { S3Client, AbortMultipartUploadCommand } =
+    await import('@aws-sdk/client-s3');
 
   const client = new S3Client({
     region,

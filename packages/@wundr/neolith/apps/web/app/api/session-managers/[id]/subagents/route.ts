@@ -170,10 +170,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error(
-      '[GET /api/session-managers/:id/subagents] Error:',
-      error
-    );
+    console.error('[GET /api/session-managers/:id/subagents] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -362,10 +359,7 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
-    console.error(
-      '[POST /api/session-managers/:id/subagents] Error:',
-      error
-    );
+    console.error('[POST /api/session-managers/:id/subagents] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

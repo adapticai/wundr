@@ -86,15 +86,22 @@ export const railway = {
     filter?: string;
   }): Promise<RailwayLogEntry[]> {
     const { serviceId, lines = 500, since = '10m', filter } = options;
-    logger.debug(`mcp__railway__get_logs { serviceId: "${serviceId}", lines: ${lines}, since: "${since}"${filter ? `, filter: "${filter}"` : ''} }`);
+    logger.debug(
+      `mcp__railway__get_logs { serviceId: "${serviceId}", lines: ${lines}, since: "${since}"${filter ? `, filter: "${filter}"` : ''} }`
+    );
     return [];
   },
 
   /**
    * Get recent deployments for a project
    */
-  async getDeployments(projectId: string, limit = 5): Promise<RailwayDeploymentStatus[]> {
-    logger.debug(`mcp__railway__get_deployments { projectId: "${projectId}", limit: ${limit} }`);
+  async getDeployments(
+    projectId: string,
+    limit = 5
+  ): Promise<RailwayDeploymentStatus[]> {
+    logger.debug(
+      `mcp__railway__get_deployments { projectId: "${projectId}", limit: ${limit} }`
+    );
     return [];
   },
 
@@ -128,7 +135,10 @@ export const netlify = {
   /**
    * Get deployment status for a Netlify site
    */
-  async deployStatus(siteId?: string, deployId?: string): Promise<NetlifyDeployStatus> {
+  async deployStatus(
+    siteId?: string,
+    deployId?: string
+  ): Promise<NetlifyDeployStatus> {
     const params = siteId ? `siteId: "${siteId}"` : `deployId: "${deployId}"`;
     logger.debug(`mcp__netlify__deploy_status { ${params} }`);
     return {} as NetlifyDeployStatus;
@@ -138,7 +148,9 @@ export const netlify = {
    * Fetch build logs for a deploy
    */
   async getBuildLogs(deployId: string): Promise<NetlifyBuildLog> {
-    logger.debug(`mcp__netlify__get_build_logs { deployId: "${deployId}", includeOutput: true }`);
+    logger.debug(
+      `mcp__netlify__get_build_logs { deployId: "${deployId}", includeOutput: true }`
+    );
     return {} as NetlifyBuildLog;
   },
 
@@ -146,7 +158,9 @@ export const netlify = {
    * Get recent deployments for a site
    */
   async getDeploys(siteId: string, limit = 5): Promise<NetlifyDeployStatus[]> {
-    logger.debug(`mcp__netlify__get_deploys { siteId: "${siteId}", limit: ${limit} }`);
+    logger.debug(
+      `mcp__netlify__get_deploys { siteId: "${siteId}", limit: ${limit} }`
+    );
     return [];
   },
 
@@ -161,7 +175,9 @@ export const netlify = {
   /**
    * Trigger a new deploy
    */
-  async triggerDeploy(siteId: string): Promise<{ deployId: string; state: string }> {
+  async triggerDeploy(
+    siteId: string
+  ): Promise<{ deployId: string; state: string }> {
     logger.debug(`mcp__netlify__trigger_deploy { siteId: "${siteId}" }`);
     return { deployId: '', state: 'building' };
   },
@@ -169,24 +185,40 @@ export const netlify = {
   /**
    * Get serverless function logs
    */
-  async getFunctionLogs(siteId: string, functionName: string, limit = 500): Promise<string[]> {
-    logger.debug(`mcp__netlify__get_function_logs { siteId: "${siteId}", functionName: "${functionName}", limit: ${limit} }`);
+  async getFunctionLogs(
+    siteId: string,
+    functionName: string,
+    limit = 500
+  ): Promise<string[]> {
+    logger.debug(
+      `mcp__netlify__get_function_logs { siteId: "${siteId}", functionName: "${functionName}", limit: ${limit} }`
+    );
     return [];
   },
 };
 
 // Utility functions
-export function detectPlatform(projectPath: string): 'railway' | 'netlify' | null {
-  if (fs.existsSync(path.join(projectPath, 'railway.json')) || process.env.RAILWAY_PROJECT_ID) {
+export function detectPlatform(
+  projectPath: string
+): 'railway' | 'netlify' | null {
+  if (
+    fs.existsSync(path.join(projectPath, 'railway.json')) ||
+    process.env.RAILWAY_PROJECT_ID
+  ) {
     return 'railway';
   }
-  if (fs.existsSync(path.join(projectPath, 'netlify.toml')) || process.env.NETLIFY_SITE_ID) {
+  if (
+    fs.existsSync(path.join(projectPath, 'netlify.toml')) ||
+    process.env.NETLIFY_SITE_ID
+  ) {
     return 'netlify';
   }
   return null;
 }
 
-export function getPlatformConfig(platform: 'railway' | 'netlify'): Record<string, string> {
+export function getPlatformConfig(
+  platform: 'railway' | 'netlify'
+): Record<string, string> {
   if (platform === 'railway') {
     return {
       projectId: process.env.RAILWAY_PROJECT_ID || '',

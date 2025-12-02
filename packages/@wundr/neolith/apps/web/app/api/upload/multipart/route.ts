@@ -69,9 +69,8 @@ async function initiateMultipartUpload(
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
   try {
-    const { S3Client, CreateMultipartUploadCommand } = await import(
-      '@aws-sdk/client-s3'
-    );
+    const { S3Client, CreateMultipartUploadCommand } =
+      await import('@aws-sdk/client-s3');
 
     const client = new S3Client({
       region,

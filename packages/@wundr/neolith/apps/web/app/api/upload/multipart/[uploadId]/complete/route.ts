@@ -49,9 +49,8 @@ async function completeMultipartUpload(
 ): Promise<void> {
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
-  const { S3Client, CompleteMultipartUploadCommand } = await import(
-    '@aws-sdk/client-s3'
-  );
+  const { S3Client, CompleteMultipartUploadCommand } =
+    await import('@aws-sdk/client-s3');
 
   const client = new S3Client({
     region,

@@ -4,6 +4,9 @@ import { prisma } from '@neolith/database';
 
 import { auth } from '@/lib/auth';
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
+
 /**
  * Dashboard Redirect Page
  *

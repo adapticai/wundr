@@ -11,14 +11,7 @@
     "test": "jest",
     "lint": "eslint src --ext .ts"
   },
-  "keywords": [
-    "file-processor",
-    "pdf",
-    "docx",
-    "xlsx",
-    "ocr",
-    "genesis"
-  ],
+  "keywords": ["file-processor", "pdf", "docx", "xlsx", "ocr", "genesis"],
   "author": "Adaptic.ai",
   "license": "MIT",
   "dependencies": {

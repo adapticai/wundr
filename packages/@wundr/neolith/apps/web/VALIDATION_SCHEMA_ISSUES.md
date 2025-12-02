@@ -1,7 +1,9 @@
 # Channel Validation Schema Issues - Analysis Report
 
 ## Overview
-Analysis of `/lib/validations/organization.ts` (which contains channel validation schemas) reveals mismatches between Zod validation schemas and Prisma database enums.
+
+Analysis of `/lib/validations/organization.ts` (which contains channel validation schemas) reveals
+mismatches between Zod validation schemas and Prisma database enums.
 
 ## Issues Found
 
@@ -10,11 +12,13 @@ Analysis of `/lib/validations/organization.ts` (which contains channel validatio
 **Location**: `lib/validations/organization.ts:125`
 
 **Current Schema**:
+
 ```typescript
 export const memberRoleEnum = z.enum(['OWNER', 'ADMIN', 'MEMBER', 'GUEST']);
 ```
 
 **Prisma Schema** (schema.prisma:706-711):
+
 ```prisma
 enum WorkspaceRole {
   OWNER
@@ -33,11 +37,13 @@ enum WorkspaceRole {
 **Location**: `lib/validations/organization.ts:352`
 
 **Current Schema**:
+
 ```typescript
 export const channelRoleEnum = z.enum(['OWNER', 'ADMIN', 'MEMBER']);
 ```
 
 **Prisma Schema** (schema.prisma:602-606):
+
 ```prisma
 enum ChannelRole {
   OWNER
@@ -51,6 +57,7 @@ enum ChannelRole {
 ### 3. OrganizationRole (Not in validation file, but for reference)
 
 **Prisma Schema** (schema.prisma:646-650):
+
 ```prisma
 enum OrganizationRole {
   OWNER
@@ -64,6 +71,7 @@ enum OrganizationRole {
 ## Impact on Codebase
 
 ### Files Using Old `VIEWER` Role
+
 The following files still reference the deprecated `VIEWER` role and need updates:
 
 1. **Type Definitions**:
@@ -86,25 +94,30 @@ The following files still reference the deprecated `VIEWER` role and need update
 ## Recommended Actions
 
 ### Immediate (DONE)
+
 - [x] Update `memberRoleEnum` in `lib/validations/organization.ts` to match Prisma
 
 ### High Priority (TODO)
+
 - [ ] Update all TypeScript type definitions to use `GUEST` instead of `VIEWER`
 - [ ] Update all test files to use `GUEST` instead of `VIEWER`
 - [ ] Update GraphQL context and resolvers
 
 ### Medium Priority (TODO)
+
 - [ ] Update documentation to reflect `GUEST` role
 - [ ] Search for any runtime role checks that use `VIEWER`
 - [ ] Add migration notes if `VIEWER` was previously used
 
 ### Low Priority
+
 - [ ] Consider if semantic meaning of `GUEST` vs `VIEWER` is clear to developers
 - [ ] Update any user-facing documentation or UI labels
 
 ## Schema Validation Coverage
 
 ### Currently Validated
+
 - ✅ Channel creation
 - ✅ Channel updates
 - ✅ Channel member role updates
@@ -112,11 +125,13 @@ The following files still reference the deprecated `VIEWER` role and need update
 - ✅ Workspace member roles
 
 ### Missing Validations
+
 No critical validations appear to be missing for channel operations.
 
 ## Error Codes
 
 All necessary error codes are present in `ORG_ERROR_CODES`:
+
 - `CHANNEL_NOT_FOUND`
 - `CHANNEL_ARCHIVED`
 - `CANNOT_JOIN_PRIVATE`
@@ -128,12 +143,14 @@ All necessary error codes are present in `ORG_ERROR_CODES`:
 
 ## Conclusion
 
-The primary issue was the `memberRoleEnum` using `VIEWER` instead of `GUEST`. This has been corrected to match the Prisma schema. However, multiple TypeScript files throughout the codebase still reference the old `VIEWER` role and will need to be updated to use `GUEST` for full consistency.
+The primary issue was the `memberRoleEnum` using `VIEWER` instead of `GUEST`. This has been
+corrected to match the Prisma schema. However, multiple TypeScript files throughout the codebase
+still reference the old `VIEWER` role and will need to be updated to use `GUEST` for full
+consistency.
 
 The `channelRoleEnum` was already correct and matches Prisma exactly.
 
 ---
 
-**Date**: December 1, 2025
-**Analyzer**: Claude Code
-**File**: `/Users/granfar/wundr/packages/@wundr/neolith/apps/web/lib/validations/organization.ts`
+**Date**: December 1, 2025 **Analyzer**: Claude Code **File**:
+`/Users/granfar/wundr/packages/@wundr/neolith/apps/web/lib/validations/organization.ts`

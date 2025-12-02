@@ -5,10 +5,7 @@
  * Run with: npx tsx scripts/test-unsubscribe.ts
  */
 
-import {
-  generateUnsubscribeUrl,
-  verifyUnsubscribeToken,
-} from '../lib/email';
+import { generateUnsubscribeUrl, verifyUnsubscribeToken } from '../lib/email';
 import type { EmailType } from '../lib/email';
 
 console.log('🧪 Testing Email Unsubscribe Functionality\n');

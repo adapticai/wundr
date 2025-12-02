@@ -39,7 +39,8 @@ const labelVariants = cva(
  * Extends standard HTML label attributes with variant options.
  */
 export interface LabelProps
-  extends React.LabelHTMLAttributes<HTMLLabelElement>,
+  extends
+    React.LabelHTMLAttributes<HTMLLabelElement>,
     VariantProps<typeof labelVariants> {
   /**
    * When true, applies error styling to the label.

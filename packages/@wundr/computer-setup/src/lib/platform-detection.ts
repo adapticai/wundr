@@ -32,7 +32,9 @@ export interface DetectionSummary {
 /**
  * Detect Railway platform from config file
  */
-function detectRailwayFromConfig(projectPath: string): PlatformDetectionResult | null {
+function detectRailwayFromConfig(
+  projectPath: string
+): PlatformDetectionResult | null {
   const railwayJsonPath = path.join(projectPath, 'railway.json');
   const railwayTomlPath = path.join(projectPath, 'railway.toml');
 
@@ -88,7 +90,9 @@ function detectRailwayFromEnv(): PlatformDetectionResult | null {
 /**
  * Detect Netlify platform from config file
  */
-function detectNetlifyFromConfig(projectPath: string): PlatformDetectionResult | null {
+function detectNetlifyFromConfig(
+  projectPath: string
+): PlatformDetectionResult | null {
   const netlifyTomlPath = path.join(projectPath, 'netlify.toml');
   const netlifyJsonPath = path.join(projectPath, '.netlify/state.json');
 
@@ -123,7 +127,11 @@ function detectNetlifyFromEnv(): PlatformDetectionResult | null {
     envVars.push('NETLIFY_SITE_ID');
   }
   if (process.env.NETLIFY_ACCESS_TOKEN || process.env.NETLIFY_AUTH_TOKEN) {
-    envVars.push(process.env.NETLIFY_ACCESS_TOKEN ? 'NETLIFY_ACCESS_TOKEN' : 'NETLIFY_AUTH_TOKEN');
+    envVars.push(
+      process.env.NETLIFY_ACCESS_TOKEN
+        ? 'NETLIFY_ACCESS_TOKEN'
+        : 'NETLIFY_AUTH_TOKEN'
+    );
   }
   if (process.env.NETLIFY) {
     envVars.push('NETLIFY');
@@ -144,7 +152,9 @@ function detectNetlifyFromEnv(): PlatformDetectionResult | null {
 /**
  * Main detection function - detects all deployment platforms
  */
-export function detectPlatforms(projectPath: string = process.cwd()): DetectionSummary {
+export function detectPlatforms(
+  projectPath: string = process.cwd()
+): DetectionSummary {
   const platforms: PlatformDetectionResult[] = [];
 
   // Check Railway
@@ -152,20 +162,20 @@ export function detectPlatforms(projectPath: string = process.cwd()): DetectionS
   const railwayEnv = detectRailwayFromEnv();
 
   if (railwayConfig) {
-platforms.push(railwayConfig);
-} else if (railwayEnv) {
-platforms.push(railwayEnv);
-}
+    platforms.push(railwayConfig);
+  } else if (railwayEnv) {
+    platforms.push(railwayEnv);
+  }
 
   // Check Netlify
   const netlifyConfig = detectNetlifyFromConfig(projectPath);
   const netlifyEnv = detectNetlifyFromEnv();
 
   if (netlifyConfig) {
-platforms.push(netlifyConfig);
-} else if (netlifyEnv) {
-platforms.push(netlifyEnv);
-}
+    platforms.push(netlifyConfig);
+  } else if (netlifyEnv) {
+    platforms.push(netlifyEnv);
+  }
 
   // Determine primary platform (prefer config file over env)
   const configPlatform = platforms.find(p => p.source === 'config_file');
@@ -182,7 +192,9 @@ platforms.push(netlifyEnv);
 /**
  * Quick check if any deployment platform is detected
  */
-export function hasDeploymentPlatform(projectPath: string = process.cwd()): boolean {
+export function hasDeploymentPlatform(
+  projectPath: string = process.cwd()
+): boolean {
   const { platforms } = detectPlatforms(projectPath);
   return platforms.length > 0;
 }
@@ -190,7 +202,9 @@ export function hasDeploymentPlatform(projectPath: string = process.cwd()): bool
 /**
  * Get the primary deployment platform
  */
-export function getPrimaryPlatform(projectPath: string = process.cwd()): DetectedPlatform | null {
+export function getPrimaryPlatform(
+  projectPath: string = process.cwd()
+): DetectedPlatform | null {
   const { primary } = detectPlatforms(projectPath);
   return primary;
 }
@@ -213,7 +227,8 @@ export function getPlatformConfig(platform: DetectedPlatform): {
   if (platform === 'netlify') {
     return {
       siteId: process.env.NETLIFY_SITE_ID,
-      apiToken: process.env.NETLIFY_ACCESS_TOKEN || process.env.NETLIFY_AUTH_TOKEN,
+      apiToken:
+        process.env.NETLIFY_ACCESS_TOKEN || process.env.NETLIFY_AUTH_TOKEN,
     };
   }
 
@@ -245,7 +260,9 @@ export function validatePlatformConfig(platform: DetectedPlatform): {
       missing.push('NETLIFY_SITE_ID');
     }
     if (!process.env.NETLIFY_ACCESS_TOKEN && !process.env.NETLIFY_AUTH_TOKEN) {
-      warnings.push('NETLIFY_ACCESS_TOKEN not set - some features may be limited');
+      warnings.push(
+        'NETLIFY_ACCESS_TOKEN not set - some features may be limited'
+      );
     }
   }
 
@@ -259,7 +276,9 @@ export function validatePlatformConfig(platform: DetectedPlatform): {
 /**
  * Print detection summary to logger
  */
-export function printDetectionSummary(projectPath: string = process.cwd()): void {
+export function printDetectionSummary(
+  projectPath: string = process.cwd()
+): void {
   const summary = detectPlatforms(projectPath);
 
   logger.info('[Platform Detection] Deployment Platform Detection');

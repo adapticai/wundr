@@ -54,9 +54,6 @@
       "types": "./dist/migration.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "prisma"
-  ],
+  "files": ["dist", "prisma"],
   "license": "MIT"
 }

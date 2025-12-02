@@ -5,6 +5,9 @@ import { Providers } from '@/components/providers';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
+// Force all pages to be dynamically rendered to avoid Next.js 16 static generation issues
+export const dynamic = 'force-dynamic';
+
 const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-outfit',

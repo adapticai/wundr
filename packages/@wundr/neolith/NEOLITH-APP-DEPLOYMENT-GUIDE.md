@@ -436,21 +436,21 @@ docker run -d \
 
 ### Neolith Web App (Cloud - Netlify/Vercel)
 
-| Variable                | Required | Description                    | Example                               |
-| ----------------------- | -------- | ------------------------------ | ------------------------------------- |
-| `DATABASE_URL`          | Yes      | PostgreSQL connection string   | `postgresql://user:pass@host:5432/db` |
-| `AUTH_SECRET`           | Yes      | NextAuth.js secret (32+ chars) | `your-random-secret-string`           |
-| `AUTH_URL`              | Yes      | Public URL of your app         | `https://your-app.netlify.app`        |
-| `NEXTAUTH_URL`          | Yes      | Same as AUTH_URL               | `https://your-app.netlify.app`        |
-| `ANTHROPIC_API_KEY`     | No       | For server-side AI features    | `sk-ant-...`                          |
-| `OPENAI_API_KEY`        | No       | Alternative AI provider        | `sk-...`                              |
-| `GITHUB_CLIENT_ID`      | No       | GitHub OAuth                   | From GitHub Developer Settings        |
-| `GITHUB_CLIENT_SECRET`  | No       | GitHub OAuth                   | From GitHub Developer Settings        |
-| `GOOGLE_CLIENT_ID`      | No       | Google OAuth                   | From Google Cloud Console             |
-| `GOOGLE_CLIENT_SECRET`  | No       | Google OAuth                   | From Google Cloud Console             |
-| `REDIS_URL`             | No       | Redis for caching              | `redis://host:6379`                   |
-| `S3_BUCKET`             | No       | File storage bucket            | `my-bucket`                           |
-| `S3_REGION`             | No       | S3 region                      | `us-east-1`                           |
+| Variable                   | Required | Description                    | Example                               |
+| -------------------------- | -------- | ------------------------------ | ------------------------------------- |
+| `DATABASE_URL`             | Yes      | PostgreSQL connection string   | `postgresql://user:pass@host:5432/db` |
+| `AUTH_SECRET`              | Yes      | NextAuth.js secret (32+ chars) | `your-random-secret-string`           |
+| `AUTH_URL`                 | Yes      | Public URL of your app         | `https://your-app.netlify.app`        |
+| `NEXTAUTH_URL`             | Yes      | Same as AUTH_URL               | `https://your-app.netlify.app`        |
+| `ANTHROPIC_API_KEY`        | No       | For server-side AI features    | `sk-ant-...`                          |
+| `OPENAI_API_KEY`           | No       | Alternative AI provider        | `sk-...`                              |
+| `GITHUB_CLIENT_ID`         | No       | GitHub OAuth                   | From GitHub Developer Settings        |
+| `GITHUB_CLIENT_SECRET`     | No       | GitHub OAuth                   | From GitHub Developer Settings        |
+| `GOOGLE_CLIENT_ID`         | No       | Google OAuth                   | From Google Cloud Console             |
+| `GOOGLE_CLIENT_SECRET`     | No       | Google OAuth                   | From Google Cloud Console             |
+| `REDIS_URL`                | No       | Redis for caching              | `redis://host:6379`                   |
+| `S3_BUCKET`                | No       | File storage bucket            | `my-bucket`                           |
+| `S3_REGION`                | No       | S3 region                      | `us-east-1`                           |
 | `MY_AWS_ACCESS_KEY_ID`     | No       | S3 credentials                 | From AWS IAM                          |
 | `MY_AWS_SECRET_ACCESS_KEY` | No       | S3 credentials                 | From AWS IAM                          |
 

@@ -2,17 +2,21 @@
 
 ## Summary
 
-Fixed scheduling schema type mismatches between validation schemas and service layer implementations.
+Fixed scheduling schema type mismatches between validation schemas and service layer
+implementations.
 
 ## Problem
 
-The validation schemas in `/lib/validations/orchestrator-scheduling.ts` were defining incorrect types that didn't match:
+The validation schemas in `/lib/validations/orchestrator-scheduling.ts` were defining incorrect
+types that didn't match:
+
 1. What the service layer expected
 2. What Prisma schema supports
 
 ### Before (Incorrect)
 
 **Capacity Schema:**
+
 ```typescript
 export const updateCapacitySchema = z.object({
   agentId: z.string(),
@@ -24,6 +28,7 @@ export const updateCapacitySchema = z.object({
 ```
 
 **Schedule Schema:**
+
 ```typescript
 export const updateWorkScheduleSchema = z.object({
   agentId: z.string(),
@@ -50,6 +55,7 @@ Updated schemas to match service layer expectations:
 ### After (Correct)
 
 **Capacity Schema:**
+
 ```typescript
 export const updateCapacitySchema = z.object({
   max: z.number().positive().optional(),
@@ -58,6 +64,7 @@ export const updateCapacitySchema = z.object({
 ```
 
 **Schedule Schema:**
+
 ```typescript
 export const updateWorkScheduleSchema = z.object({
   workingHours: z
@@ -76,6 +83,7 @@ export const updateWorkScheduleSchema = z.object({
 Also fixed the GET endpoint query parameter schemas:
 
 **Before:**
+
 ```typescript
 export const getCapacitySchema = z.object({
   agentId: z.string().optional(),
@@ -92,6 +100,7 @@ export const getWorkScheduleSchema = z.object({
 ```
 
 **After:**
+
 ```typescript
 export const getCapacitySchema = z.object({
   includeMetrics: z
@@ -127,8 +136,10 @@ schedule: {
 ## Affected Files
 
 - `/lib/validations/orchestrator-scheduling.ts` - Fixed validation schemas
-- `/app/api/workspaces/[workspaceSlug]/orchestrators/[orchestratorId]/capacity/route.ts` - Uses updateCapacitySchema
-- `/app/api/workspaces/[workspaceSlug]/orchestrators/[orchestratorId]/schedule/route.ts` - Uses updateWorkScheduleSchema
+- `/app/api/workspaces/[workspaceSlug]/orchestrators/[orchestratorId]/capacity/route.ts` - Uses
+  updateCapacitySchema
+- `/app/api/workspaces/[workspaceSlug]/orchestrators/[orchestratorId]/schedule/route.ts` - Uses
+  updateWorkScheduleSchema
 - `/lib/services/orchestrator-scheduling-service.ts` - Service implementations
 
 ## Testing
@@ -136,6 +147,7 @@ schedule: {
 To test the fix:
 
 1. **Capacity Update:**
+
 ```bash
 curl -X PATCH \
   http://localhost:3000/api/workspaces/ws_123/orchestrators/orch_456/capacity \
@@ -144,6 +156,7 @@ curl -X PATCH \
 ```
 
 2. **Schedule Update:**
+
 ```bash
 curl -X PATCH \
   http://localhost:3000/api/workspaces/ws_123/orchestrators/orch_456/schedule \

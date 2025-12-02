@@ -71,8 +71,6 @@
       "types": "./dist/redis/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "license": "UNLICENSED"
 }

@@ -1111,7 +1111,8 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
   const accessKeyId =
     process.env.STORAGE_ACCESS_KEY_ID || process.env.MY_AWS_ACCESS_KEY_ID;
   const secretAccessKey =
-    process.env.STORAGE_SECRET_ACCESS_KEY || process.env.MY_AWS_SECRET_ACCESS_KEY;
+    process.env.STORAGE_SECRET_ACCESS_KEY ||
+    process.env.MY_AWS_SECRET_ACCESS_KEY;
   const endpoint = process.env.STORAGE_ENDPOINT;
   const publicUrlBase = process.env.STORAGE_PUBLIC_URL;
   const maxFileSize = process.env.STORAGE_MAX_FILE_SIZE
