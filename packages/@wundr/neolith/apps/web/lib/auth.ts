@@ -21,33 +21,28 @@ import GitHub from 'next-auth/providers/github';
 import Google from 'next-auth/providers/google';
 
 /**
- * Validate required environment variables
- * Only validates at runtime, not during build (CI=true)
+ * Check if OAuth providers are configured
+ * Returns which providers are available based on environment variables
  */
-function validateEnvVars() {
-  // Skip validation during build time (CI=true is set in Dockerfile)
-  // Environment variables are available at runtime from Railway
-  if (process.env.CI === 'true') {
-    return;
-  }
+function getConfiguredProviders() {
+  const github = !!(
+    process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+  );
+  const google = !!(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+  );
 
-  const requiredVars = [
-    'GITHUB_CLIENT_ID',
-    'GITHUB_CLIENT_SECRET',
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
-  ];
-  const missing = requiredVars.filter(varName => !process.env[varName]);
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}`
+  // Log which providers are available (helpful for debugging deployments)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `Auth providers configured: GitHub=${github}, Google=${google}`
     );
   }
+
+  return { github, google };
 }
 
-// Validate on module load (skipped during build)
-validateEnvVars();
+const configuredProviders = getConfiguredProviders();
 
 /**
  * Email verification configuration
@@ -187,50 +182,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   // Configure authentication providers
+  // Only include OAuth providers when their environment variables are configured
   providers: [
-    /**
-     * GitHub OAuth Provider
-     * Used for developer authentication and linking GitHub accounts
-     *
-     * allowDangerousEmailAccountLinking: Allows linking OAuth accounts to existing
-     * users with the same email. This is safe because GitHub verifies email addresses.
-     */
-    GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID ?? '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
-      allowDangerousEmailAccountLinking: true,
-      profile(profile) {
-        return {
-          id: profile.id.toString(),
-          name: profile.name ?? profile.login,
-          email: profile.email,
-          image: profile.avatar_url,
-          isOrchestrator: false,
-        };
-      },
-    }),
+    // GitHub OAuth Provider (only if configured)
+    ...(configuredProviders.github
+      ? [
+          GitHub({
+            clientId: process.env.GITHUB_CLIENT_ID!,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+            allowDangerousEmailAccountLinking: true,
+            profile(profile) {
+              return {
+                id: profile.id.toString(),
+                name: profile.name ?? profile.login,
+                email: profile.email,
+                image: profile.avatar_url,
+                isOrchestrator: false,
+              };
+            },
+          }),
+        ]
+      : []),
 
-    /**
-     * Google OAuth Provider
-     * Used for general user authentication
-     *
-     * allowDangerousEmailAccountLinking: Allows linking OAuth accounts to existing
-     * users with the same email. This is safe because Google verifies email addresses.
-     */
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      allowDangerousEmailAccountLinking: true,
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          isOrchestrator: false,
-        };
-      },
-    }),
+    // Google OAuth Provider (only if configured)
+    ...(configuredProviders.google
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            allowDangerousEmailAccountLinking: true,
+            profile(profile) {
+              return {
+                id: profile.sub,
+                name: profile.name,
+                email: profile.email,
+                image: profile.picture,
+                isOrchestrator: false,
+              };
+            },
+          }),
+        ]
+      : []),
 
     /**
      * Credentials Provider for Email/Password and OrchestratorService Accounts
