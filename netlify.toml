@@ -15,12 +15,11 @@
 # =============================================================================
 
 [build]
-  # Base directory set to web app for OpenNext plugin to find next.config.js
-  base = "packages/@wundr/neolith/apps/web"
-  # Build from web app directory - go back to root for pnpm install, then return
-  command = "cd ../../../../../ && pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
-  # Publish directory relative to base
-  publish = ".next"
+  # NO base directory - must be at root for pnpm-lock.yaml detection
+  # Build command handles navigation to web app directory
+  command = "pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
+  # Publish directory relative to repo root
+  publish = "packages/@wundr/neolith/apps/web/.next"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -28,7 +27,10 @@
   PNPM_FLAGS = "--shamefully-hoist"
   PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
   NEXT_DISABLE_NETLIFY_EDGE = "true"
+  # Skip the OpenNext plugin as it doesn't support monorepos with cd workaround
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  # Disable automatic framework detection for Next.js
+  NETLIFY_USE_PNPM = "true"
   CI = "true"
 
 # Note: Next.js handles its own routing via the standalone server
