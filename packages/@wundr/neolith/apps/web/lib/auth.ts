@@ -22,8 +22,15 @@ import Google from 'next-auth/providers/google';
 
 /**
  * Validate required environment variables
+ * Only validates at runtime, not during build (CI=true)
  */
 function validateEnvVars() {
+  // Skip validation during build time (CI=true is set in Dockerfile)
+  // Environment variables are available at runtime from Railway
+  if (process.env.CI === 'true') {
+    return;
+  }
+
   const requiredVars = [
     'GITHUB_CLIENT_ID',
     'GITHUB_CLIENT_SECRET',
@@ -39,7 +46,7 @@ function validateEnvVars() {
   }
 }
 
-// Validate on module load
+// Validate on module load (skipped during build)
 validateEnvVars();
 
 /**
