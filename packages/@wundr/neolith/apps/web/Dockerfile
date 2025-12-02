@@ -37,6 +37,12 @@ RUN cd packages/@wundr/neolith/packages/@neolith/database && npx tsc
 # Build @neolith/core (needs TypeScript compilation, exports from dist/)
 RUN cd packages/@wundr/neolith/packages/@neolith/core && npx tsc
 
+# Build @wundr.io/org-genesis (needed by generate-org route, exports from dist/)
+RUN cd packages/@wundr/org-genesis && npx tsc
+
+# Build @neolith/org-integration (needed by generate-org route, exports from dist/)
+RUN cd packages/@wundr/neolith/packages/@neolith/org-integration && npx tsc
+
 # Build @neolith/ui (using tsup, skip dts to avoid TypeScript errors)
 RUN cd packages/@wundr/neolith/packages/@neolith/ui && npx tsup src/index.ts --format cjs,esm --clean --no-dts
 
