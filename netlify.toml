@@ -15,12 +15,12 @@
 # =============================================================================
 
 [build]
-  # Build command runs from repo root where pnpm-lock.yaml exists
-  # Uses pnpm filter to run prisma generate from the database package with correct version
-  command = "pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
-  # Publish directory relative to repo root
-  publish = "packages/@wundr/neolith/apps/web/.next"
-  # NO base directory - must be at root for pnpm-lock.yaml detection
+  # Base directory set to web app for OpenNext plugin to find next.config.js
+  base = "packages/@wundr/neolith/apps/web"
+  # Build from web app directory - go back to root for pnpm install, then return
+  command = "cd ../../../../../ && pnpm install --shamefully-hoist && pnpm --filter @neolith/database exec prisma generate && cd packages/@wundr/neolith/apps/web && pnpm run build"
+  # Publish directory relative to base
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
