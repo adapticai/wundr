@@ -29,8 +29,15 @@ RUN pnpm install --frozen-lockfile
 RUN cd packages/@wundr/neolith/packages/@neolith/database && npx prisma generate
 
 # Build shared packages that the web app depends on
-# The @neolith/ui package needs to be built to generate the dist/ folder
-# Skip dts generation to avoid TypeScript errors, only need JS for runtime
+# These packages need to be compiled to dist/ before Next.js can import them
+
+# Build @neolith/database (needs TypeScript compilation, exports from dist/)
+RUN cd packages/@wundr/neolith/packages/@neolith/database && npx tsc
+
+# Build @neolith/core (needs TypeScript compilation, exports from dist/)
+RUN cd packages/@wundr/neolith/packages/@neolith/core && npx tsc
+
+# Build @neolith/ui (using tsup, skip dts to avoid TypeScript errors)
 RUN cd packages/@wundr/neolith/packages/@neolith/ui && npx tsup src/index.ts --format cjs,esm --clean --no-dts
 
 # Build the web app (using webpack mode to avoid Turbopack path alias issues in monorepos)
