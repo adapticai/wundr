@@ -63,8 +63,8 @@ const nextConfig = {
     optimizePackageImports: ['@apollo/client', 'lucide-react'],
   },
 
-  // Turbopack configuration - disabled for Docker builds due to path alias issues in monorepos
-  // turbopack: {},
+  // Turbopack configuration - required for Next.js 16+ builds
+  turbopack: {},
 
   // Strict mode for React
   reactStrictMode: true,

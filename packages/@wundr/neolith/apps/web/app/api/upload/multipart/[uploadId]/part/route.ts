@@ -69,7 +69,8 @@ async function generatePartUploadUrl(
       PartNumber: partNumber,
     });
 
-    const uploadUrl = await getSignedUrl(client, command, { expiresIn });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const uploadUrl = await getSignedUrl(client as any, command, { expiresIn });
 
     return {
       uploadUrl,
