@@ -339,7 +339,9 @@ export class StorageServiceImpl implements StorageService {
       signedUrlExpiration:
         config.signedUrlExpiration ??
         DEFAULT_STORAGE_CONFIG.signedUrlExpiration,
-      defaultACL: config.defaultACL ?? DEFAULT_STORAGE_CONFIG.defaultACL,
+      // Don't default ACL - many S3 buckets have "Object Ownership: Bucket owner enforced"
+      // which disables ACLs entirely. Leave undefined unless explicitly set.
+      defaultACL: config.defaultACL,
       allowedMimeTypes:
         config.allowedMimeTypes ?? DEFAULT_STORAGE_CONFIG.allowedMimeTypes,
     };
@@ -1118,10 +1120,11 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
   const maxFileSize = process.env.STORAGE_MAX_FILE_SIZE
     ? parseInt(process.env.STORAGE_MAX_FILE_SIZE, 10)
     : undefined;
-  // Default to 'public-read' for user-facing files (avatars, icons, etc.)
-  const defaultACL = (process.env.STORAGE_DEFAULT_ACL || 'public-read') as
-    | 'private'
-    | 'public-read';
+  // Default to undefined (no ACL) since S3 buckets with "Object Ownership: Bucket owner enforced"
+  // don't support ACLs. Public access should be controlled via bucket policy instead.
+  const defaultACL = process.env.STORAGE_DEFAULT_ACL
+    ? (process.env.STORAGE_DEFAULT_ACL as 'private' | 'public-read')
+    : undefined;
 
   if (!bucket || !accessKeyId || !secretAccessKey) {
     throw new StorageConfigError(

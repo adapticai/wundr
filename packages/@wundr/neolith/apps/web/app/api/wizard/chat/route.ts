@@ -18,8 +18,10 @@
 
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
-import { streamText, tool, zodSchema } from 'ai';
+import { convertToModelMessages, streamText, tool, zodSchema } from 'ai';
 import { z } from 'zod';
+
+import type { UIMessage } from '@ai-sdk/react';
 
 import { getEntityPrompt, type EntityType } from '@/lib/ai';
 import { auth } from '@/lib/auth';
@@ -153,7 +155,10 @@ export async function POST(req: Request) {
     }
 
     // Parse request body
-    const { messages, entityType } = await req.json();
+    const { messages: uiMessages, entityType } = (await req.json()) as {
+      messages: UIMessage[];
+      entityType: EntityType;
+    };
 
     // Validate entity type
     const validEntityTypes: EntityType[] = [
@@ -172,7 +177,7 @@ export async function POST(req: Request) {
     }
 
     // Validate messages
-    if (!Array.isArray(messages) || messages.length === 0) {
+    if (!Array.isArray(uiMessages) || uiMessages.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'messages array is required and must not be empty',
@@ -180,6 +185,9 @@ export async function POST(req: Request) {
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
+
+    // Convert UIMessage[] to ModelMessage[] for AI SDK
+    const modelMessages = convertToModelMessages(uiMessages);
 
     // Get system prompt and tools for entity type
     const systemPrompt = getEntityPrompt(entityType);
@@ -198,7 +206,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model,
       system: systemPrompt,
-      messages,
+      messages: modelMessages,
       tools,
       temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
     });

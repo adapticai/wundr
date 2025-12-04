@@ -696,7 +696,8 @@ function createAvatarStorageService(): StorageServiceImpl {
     // Avatar-specific settings
     maxFileSize: 10 * 1024 * 1024, // 10MB
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-    defaultACL: 'public-read',
+    // Note: ACL is omitted because S3 buckets with "Object Ownership: Bucket owner enforced"
+    // don't allow ACLs. Public access should be controlled via bucket policy instead.
   });
 }
 
