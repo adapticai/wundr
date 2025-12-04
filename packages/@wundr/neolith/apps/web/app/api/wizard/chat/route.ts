@@ -17,11 +17,17 @@
  */
 
 import { anthropic } from '@ai-sdk/anthropic';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI, openai } from '@ai-sdk/openai';
 import { convertToModelMessages, streamText, tool, zodSchema } from 'ai';
 import { z } from 'zod';
 
 import type { UIMessage } from '@ai-sdk/react';
+
+// Create DeepSeek provider using OpenAI-compatible API
+const deepseek = createOpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: process.env.DEEPSEEK_API_KEY,
+});
 
 import { getEntityPrompt, type EntityType } from '@/lib/ai';
 import { auth } from '@/lib/auth';
@@ -194,13 +200,25 @@ export async function POST(req: Request) {
     const tools = getToolsForEntity(entityType);
 
     // Determine which model to use based on environment
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
-    const model =
-      provider === 'openai'
-        ? openai(process.env.OPENAI_MODEL || 'gpt-4o')
-        : anthropic(
-            process.env.DEFAULT_LLM_MODEL || 'claude-sonnet-4-20250514'
-          );
+    // Supported providers: 'deepseek', 'openai', 'anthropic'
+    const provider = process.env.DEFAULT_LLM_PROVIDER || 'deepseek';
+
+    let model;
+    switch (provider) {
+      case 'deepseek':
+        // DeepSeek models: 'deepseek-chat', 'deepseek-coder', 'deepseek-reasoner'
+        model = deepseek(process.env.DEEPSEEK_MODEL || 'deepseek-chat');
+        break;
+      case 'openai':
+        model = openai(process.env.OPENAI_MODEL || 'gpt-4o');
+        break;
+      case 'anthropic':
+      default:
+        model = anthropic(
+          process.env.DEFAULT_LLM_MODEL || 'claude-sonnet-4-20250514'
+        );
+        break;
+    }
 
     // Stream the response
     const result = streamText({
