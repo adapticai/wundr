@@ -81,14 +81,13 @@ export function useAIWizardChat({
     Record<string, unknown>[]
   >([]);
 
-  // Create stable initial messages to avoid hydration mismatch
-  const initialMessages = React.useMemo(
-    () => (initialGreeting ? [createInitialMessage(initialGreeting)] : []),
+  // Create stable initial greeting message
+  const greetingMessage = React.useMemo(
+    () => (initialGreeting ? createInitialMessage(initialGreeting) : null),
     [initialGreeting]
   );
 
   const chat = useChat({
-    initialMessages,
     transport: new DefaultChatTransport({
       api: '/api/wizard/chat',
       body: { entityType, workspaceSlug },
@@ -105,6 +104,21 @@ export function useAIWizardChat({
       }
     },
   });
+
+  // Combine greeting message with chat messages
+  const allMessages = React.useMemo(() => {
+    if (greetingMessage && chat.messages.length === 0) {
+      return [greetingMessage];
+    }
+    if (greetingMessage) {
+      // Once there are real messages, prepend greeting if not already there
+      const hasGreeting = chat.messages.some(m => m.id === 'greeting');
+      if (!hasGreeting) {
+        return [greetingMessage, ...chat.messages];
+      }
+    }
+    return chat.messages;
+  }, [greetingMessage, chat.messages]);
 
   const handleSubmit = React.useCallback(
     async (e?: React.FormEvent) => {
@@ -155,7 +169,7 @@ export function useAIWizardChat({
   );
 
   return {
-    messages: chat.messages,
+    messages: allMessages,
     status: chat.status,
     error: chat.error,
     sendMessage: chat.sendMessage,
