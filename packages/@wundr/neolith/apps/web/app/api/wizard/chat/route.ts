@@ -202,6 +202,30 @@ export async function POST(req: Request) {
     // Determine which model to use based on environment
     // Supported providers: 'deepseek', 'openai', 'anthropic'
     const provider = process.env.DEFAULT_LLM_PROVIDER || 'deepseek';
+    console.log(`[POST /api/wizard/chat] Using provider: ${provider}`);
+
+    // Validate API key for selected provider
+    if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) {
+      console.error('[POST /api/wizard/chat] DEEPSEEK_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'DeepSeek API key not configured' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
+      console.error('[POST /api/wizard/chat] OPENAI_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+      console.error('[POST /api/wizard/chat] ANTHROPIC_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Anthropic API key not configured' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     let model;
     switch (provider) {
