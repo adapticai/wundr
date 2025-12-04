@@ -24,9 +24,12 @@ import { z } from 'zod';
 import type { UIMessage } from '@ai-sdk/react';
 
 // Create DeepSeek provider using OpenAI-compatible API
+// Note: compatibility: 'compatible' forces using Chat Completions API (/chat/completions)
+// instead of the newer Responses API (/responses) which DeepSeek doesn't support
 const deepseek = createOpenAI({
   baseURL: 'https://api.deepseek.com',
   apiKey: process.env.DEEPSEEK_API_KEY,
+  compatibility: 'compatible',
 });
 
 import { getEntityPrompt, type EntityType } from '@/lib/ai';
