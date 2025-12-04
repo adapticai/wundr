@@ -505,8 +505,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Determine which LLM provider to use
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
+    // Determine which LLM provider to use (OpenAI default)
+    const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
 
     // Extract data using appropriate LLM
     let extractedData: ExtractedData;

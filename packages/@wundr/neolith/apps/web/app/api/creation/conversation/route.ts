@@ -561,8 +561,8 @@ export async function POST(
       conversationReq.workspaceContext
     );
 
-    // Determine which LLM provider to use
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
+    // Determine which LLM provider to use (OpenAI default)
+    const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
 
     // Create streaming response
     const stream = new ReadableStream({

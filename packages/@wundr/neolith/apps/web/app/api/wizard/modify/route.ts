@@ -517,8 +517,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
     const tools = buildTools(modifyReq.entityType);
 
-    // Determine which LLM provider to use
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
+    // Determine which LLM provider to use (OpenAI default for tool calling support)
+    const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
 
     // Call appropriate LLM API
     let response: ModifyResponse;
