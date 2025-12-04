@@ -14,6 +14,7 @@ import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { type TaskMetadata } from '@/lib/types/task-metadata';
 import { createErrorResponse } from '@/lib/validations/task';
 import {
   BACKLOG_ERROR_CODES,
@@ -96,6 +97,7 @@ export async function POST(
         workspaceId: true,
         channelId: true,
         status: true,
+        metadata: true,
         orchestratorId: true,
         assignedToId: true,
         completedAt: true,
@@ -215,23 +217,29 @@ export async function POST(
 
     const completedAt = new Date();
 
+    // Get existing metadata
+    const existingMetadata = (task.metadata || {}) as TaskMetadata;
+
+    // Build updated metadata with proper typing
+    const updatedMetadata: TaskMetadata = {
+      ...existingMetadata,
+      completion: {
+        completedBy: session.user.id,
+        completedAt: completedAt.toISOString(),
+        result: input.result,
+        notes: input.notes,
+        artifacts: input.artifacts,
+        ...input.metadata,
+      },
+    };
+
     // Update task to DONE status
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
       data: {
         status: 'DONE',
         completedAt,
-        metadata: {
-          ...(task as any).metadata,
-          completion: {
-            completedBy: session.user.id,
-            completedAt: completedAt.toISOString(),
-            result: input.result,
-            notes: input.notes,
-            artifacts: input.artifacts,
-            ...input.metadata,
-          },
-        } as Prisma.InputJsonValue,
+        metadata: updatedMetadata as unknown as Prisma.InputJsonValue,
       },
       include: {
         orchestrator: {

@@ -19,7 +19,10 @@ import {
 
 import { CapabilityToggle } from './CapabilityToggle';
 
-import type { CapabilityConfig } from '@/lib/validations/orchestrator-config';
+import type {
+  CapabilityConfig,
+  PermissionLevel,
+} from '@/lib/validations/orchestrator-config';
 
 interface CapabilitySettingsProps {
   orchestratorId: string;
@@ -127,20 +130,23 @@ export function CapabilitySettings({
       ...prev,
       [type]: {
         ...prev[type],
-        type: type as any,
+        type: type,
         enabled,
         permissionLevel: prev[type]?.permissionLevel || 'read',
       },
     }));
   };
 
-  const handlePermissionChange = (type: string, permissionLevel: string) => {
+  const handlePermissionChange = (
+    type: string,
+    permissionLevel: PermissionLevel
+  ) => {
     setCapabilities(prev => ({
       ...prev,
       [type]: {
         ...prev[type],
-        type: type as any,
-        permissionLevel: permissionLevel as any,
+        type: type,
+        permissionLevel,
       },
     }));
   };
@@ -154,7 +160,7 @@ export function CapabilitySettings({
       ...prev,
       [type]: {
         ...prev[type],
-        type: type as any,
+        type: type,
         rateLimit: {
           ...prev[type]?.rateLimit,
           [field]: value ? Number(value) : undefined,

@@ -59,10 +59,14 @@ export const agentConfigSchema = z.object({
   parameters: z.record(z.unknown()).optional(),
 });
 
+export const permissionLevelEnum = z.enum(['read', 'write', 'admin']);
+
+export type PermissionLevel = z.infer<typeof permissionLevelEnum>;
+
 export const capabilityConfigSchema = z.object({
   type: z.string(),
   enabled: z.boolean().optional(),
-  permissionLevel: z.enum(['read', 'write', 'admin']).optional(),
+  permissionLevel: permissionLevelEnum.optional(),
   rateLimit: z
     .object({
       maxPerHour: z.number().optional(),

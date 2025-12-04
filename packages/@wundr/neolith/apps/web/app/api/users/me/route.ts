@@ -208,7 +208,17 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       updateData.avatarUrl = input.avatarUrl;
     }
     if (input.preferences !== undefined) {
-      updateData.preferences = input.preferences;
+      // Fetch current preferences to merge with new ones
+      const currentUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { preferences: true },
+      });
+
+      const currentPrefs = (currentUser?.preferences as Record<string, unknown>) || {};
+      updateData.preferences = {
+        ...currentPrefs,
+        ...input.preferences,
+      };
     }
 
     // Update user profile

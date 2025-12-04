@@ -132,7 +132,7 @@ export function useTouchDevice(): boolean {
       (window.matchMedia('(hover: none)').matches ||
         window.matchMedia('(pointer: coarse)').matches ||
         navigator.maxTouchPoints > 0 ||
-        (navigator as any).msMaxTouchPoints > 0);
+        (navigator.msMaxTouchPoints ?? 0) > 0);
 
     setIsTouch(isTouch);
   }, []);

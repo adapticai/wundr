@@ -80,15 +80,24 @@ export default function GeneralSettingsPage() {
       setDescription(settings.description || '');
       setSlug(settings.slug || '');
       setVisibility(settings.visibility || 'private');
-      // Icon would come from settings if available
-      setIcon((settings as any).icon || '');
-      setDefaultChannelId((settings as any).defaultChannelId || '');
+
+      // Extended settings properties with proper typing
+      const extendedSettings = settings as typeof settings & {
+        icon?: string;
+        defaultChannelId?: string;
+        defaultTimezone?: string;
+        defaultLanguage?: string;
+        allowDiscovery?: boolean;
+      };
+
+      setIcon(extendedSettings.icon || '');
+      setDefaultChannelId(extendedSettings.defaultChannelId || '');
       setDefaultTimezone(
-        (settings as any).defaultTimezone ||
+        extendedSettings.defaultTimezone ||
           Intl.DateTimeFormat().resolvedOptions().timeZone
       );
-      setDefaultLanguage((settings as any).defaultLanguage || 'en');
-      setAllowDiscovery((settings as any).allowDiscovery || false);
+      setDefaultLanguage(extendedSettings.defaultLanguage || 'en');
+      setAllowDiscovery(extendedSettings.allowDiscovery || false);
     }
   }, [settings]);
 
@@ -206,11 +215,13 @@ export default function GeneralSettingsPage() {
   const handleSaveDefaults = useCallback(async () => {
     setIsSaving(true);
     try {
-      await updateSettings({
+      // Type-safe partial update with extended properties
+      const updates: Record<string, string> = {
         defaultChannelId,
         defaultTimezone,
         defaultLanguage,
-      } as any);
+      };
+      await updateSettings(updates);
       toast({
         title: 'Success',
         description: 'Default settings updated',
@@ -236,10 +247,12 @@ export default function GeneralSettingsPage() {
   const handleSaveDiscoverability = useCallback(async () => {
     setIsSaving(true);
     try {
-      await updateSettings({
+      // Type-safe partial update with extended properties
+      const updates: Record<string, string | boolean> = {
         visibility,
         allowDiscovery,
-      } as any);
+      };
+      await updateSettings(updates);
       toast({
         title: 'Success',
         description: 'Discoverability settings updated',
@@ -625,33 +638,60 @@ export default function GeneralSettingsPage() {
                 Created
               </p>
               <p className='text-sm'>
-                {(settings as any)?.createdAt
-                  ? new Date((settings as any).createdAt).toLocaleDateString(
+                {(() => {
+                  const extendedSettings = settings as typeof settings & {
+                    createdAt?: string | Date;
+                  };
+                  if (extendedSettings.createdAt) {
+                    return new Date(extendedSettings.createdAt).toLocaleDateString(
                       'en-US',
                       {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                       }
-                    )
-                  : 'Unknown'}
+                    );
+                  }
+                  return 'Unknown';
+                })()}
               </p>
             </div>
             <div>
               <p className='text-sm font-medium text-muted-foreground'>Owner</p>
-              <p className='text-sm'>{(settings as any)?.owner || 'Unknown'}</p>
+              <p className='text-sm'>
+                {(() => {
+                  const extendedSettings = settings as typeof settings & {
+                    owner?: string;
+                  };
+                  return extendedSettings.owner || 'Unknown';
+                })()}
+              </p>
             </div>
             <div>
               <p className='text-sm font-medium text-muted-foreground'>
                 Members
               </p>
-              <p className='text-sm'>{(settings as any)?.memberCount || 0}</p>
+              <p className='text-sm'>
+                {(() => {
+                  const extendedSettings = settings as typeof settings & {
+                    memberCount?: number;
+                  };
+                  return extendedSettings.memberCount || 0;
+                })()}
+              </p>
             </div>
             <div>
               <p className='text-sm font-medium text-muted-foreground'>
                 Channels
               </p>
-              <p className='text-sm'>{(settings as any)?.channelCount || 0}</p>
+              <p className='text-sm'>
+                {(() => {
+                  const extendedSettings = settings as typeof settings & {
+                    channelCount?: number;
+                  };
+                  return extendedSettings.channelCount || 0;
+                })()}
+              </p>
             </div>
           </div>
         </CardContent>

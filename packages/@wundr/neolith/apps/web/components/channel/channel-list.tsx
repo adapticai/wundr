@@ -41,6 +41,45 @@ import type {
 import type { User } from '@/types/chat';
 
 /**
+ * Flat participant structure (when API returns user properties directly on participant)
+ */
+interface FlatParticipant {
+  id: string;
+  name?: string;
+  displayName?: string;
+  avatarUrl?: string | null;
+  status?: string | null;
+  isOrchestrator?: boolean;
+}
+
+/**
+ * Union type that handles both nested and flat participant structures
+ * API can return either:
+ * - Nested: DirectMessageParticipant with { id, user: User, isOrchestrator }
+ * - Flat: { id, name, avatarUrl, status, isOrchestrator } (user properties at top level)
+ */
+type ParticipantStructure = DirectMessageParticipant | FlatParticipant;
+
+/**
+ * Type guard to check if participant has nested user structure
+ */
+function hasNestedUser(
+  participant: ParticipantStructure
+): participant is DirectMessageParticipant {
+  return 'user' in participant && participant.user !== null && participant.user !== undefined;
+}
+
+/**
+ * Safely extract participant ID, handling both flat and nested structures
+ */
+function getParticipantId(participant: ParticipantStructure): string {
+  if (hasNestedUser(participant)) {
+    return participant.user.id;
+  }
+  return participant.id;
+}
+
+/**
  * Props for the ChannelList component
  */
 interface ChannelListProps {
@@ -257,7 +296,7 @@ export function ChannelList({
       }
       // Check if all participants are the current user
       const otherParticipants = dm.participants.filter(p => {
-        const participantId = (p as any).id || (p as any).user?.id;
+        const participantId = getParticipantId(p as ParticipantStructure);
         return participantId !== currentUserId;
       });
       return otherParticipants.length === 0;
@@ -887,7 +926,7 @@ function DirectMessageItem({
 
   // Filter out current user from participants to get "other" participants
   const otherParticipants = dm.participants.filter(p => {
-    const participantId = p.id || (p as any).user?.id;
+    const participantId = getParticipantId(p as ParticipantStructure);
     return participantId !== currentUserId;
   });
 
@@ -899,16 +938,28 @@ function DirectMessageItem({
   // The API can return either { id, name, avatarUrl, status, isOrchestrator } (flat)
   // or { id, user: { name, avatarUrl, ... }, isOrchestrator } (nested)
   const getParticipantInfo = (p: DirectMessageParticipant) => {
-    // Cast to any to handle both structures
-    const participant = p as any;
-    // Check if nested user structure exists
-    const user = participant.user || participant;
+    const participant = p as ParticipantStructure;
+
+    // Type-safe handling of nested vs flat structure
+    if (hasNestedUser(participant)) {
+      // Nested structure: { id, user: {...}, isOrchestrator }
+      const user = participant.user;
+      return {
+        id: user.id,
+        name: user.displayName || user.name || 'Unknown',
+        avatarUrl: user.avatarUrl || user.image,
+        status: user.status,
+        isOrchestrator: participant.isOrchestrator,
+      };
+    }
+
+    // Flat structure: { id, name, avatarUrl, status, isOrchestrator }
     return {
-      id: participant.id || user.id,
-      name: user.displayName || user.name || participant.name || 'Unknown',
-      avatarUrl: user.avatarUrl || user.image || participant.avatarUrl,
-      status: user.status || participant.status,
-      isOrchestrator: user.isOrchestrator || participant.isOrchestrator,
+      id: participant.id,
+      name: (participant as FlatParticipant).displayName || (participant as FlatParticipant).name || 'Unknown',
+      avatarUrl: (participant as FlatParticipant).avatarUrl,
+      status: (participant as FlatParticipant).status,
+      isOrchestrator: participant.isOrchestrator,
     };
   };
 

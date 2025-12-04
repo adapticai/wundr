@@ -86,7 +86,13 @@ export const userPreferencesSchema = z.object({
   language: z.string().optional(),
   notifications: z.record(z.boolean()).optional(),
   privacy: z.record(z.boolean()).optional(),
-});
+  // Profile fields
+  fullName: z.string().optional(),
+  title: z.string().optional(),
+  pronouns: z.string().optional(),
+  customPronouns: z.string().optional(),
+  statusMessage: z.string().optional(),
+}).passthrough(); // Allow additional fields not explicitly defined
 
 /**
  * Create standardized user error response

@@ -177,11 +177,15 @@ export function useNotificationBadge() {
     setCount(newCount);
 
     // Update badge if supported (mainly for PWA)
-    if ('setAppBadge' in navigator) {
+    if ('setAppBadge' in navigator && navigator.setAppBadge) {
       if (newCount > 0) {
-        (navigator as any).setAppBadge(newCount);
-      } else {
-        (navigator as any).clearAppBadge();
+        navigator.setAppBadge(newCount).catch(err => {
+          console.warn('Failed to set app badge:', err);
+        });
+      } else if (navigator.clearAppBadge) {
+        navigator.clearAppBadge().catch(err => {
+          console.warn('Failed to clear app badge:', err);
+        });
       }
     }
   }, []);

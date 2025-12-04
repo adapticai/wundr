@@ -268,7 +268,7 @@ export function detectBrowserLocale(): Locale {
     return 'en'; // Default for SSR
   }
 
-  const browserLocale = navigator.language || (navigator as any).userLanguage;
+  const browserLocale = navigator.language || navigator.userLanguage || 'en';
   const languageCode = browserLocale.split('-')[0] as Locale;
 
   // Check if the detected locale is supported

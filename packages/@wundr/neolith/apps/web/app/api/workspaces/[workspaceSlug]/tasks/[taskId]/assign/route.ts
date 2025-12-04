@@ -14,6 +14,10 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { NotificationService } from '@/lib/services/notification-service';
+import {
+  getAssignmentHistory,
+  type TaskMetadata,
+} from '@/lib/types/task-metadata';
 import { createErrorResponse, TASK_ERROR_CODES } from '@/lib/validations/task';
 import {
   assignTaskSchema,
@@ -110,9 +114,11 @@ export async function POST(
       },
       select: {
         id: true,
+        title: true,
         workspaceId: true,
         assignedToId: true,
         status: true,
+        metadata: true,
         assignedTo: {
           select: {
             id: true,
@@ -246,26 +252,33 @@ export async function POST(
     const oldAssigneeId = task.assignedToId;
     const oldAssigneeName = task.assignedTo?.name || 'Unassigned';
 
+    // Get existing metadata and assignment history
+    const existingMetadata = (task.metadata || {}) as TaskMetadata;
+    const existingAssignmentHistory = getAssignmentHistory(existingMetadata);
+
+    // Build updated metadata with proper typing
+    const updatedMetadata: TaskMetadata = {
+      ...existingMetadata,
+      assignmentHistory: [
+        ...existingAssignmentHistory,
+        {
+          timestamp: new Date().toISOString(),
+          fromUserId: oldAssigneeId,
+          toUserId: assigneeUserId,
+          assigneeType: input.assigneeType,
+          assignedBy: session.user.id,
+          notes: input.notes,
+        },
+      ],
+      ...(input.metadata || {}),
+    };
+
     // Update task assignment
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
       data: {
         assignedToId: assigneeUserId,
-        metadata: {
-          ...(task as any).metadata,
-          assignmentHistory: [
-            ...((task as any).metadata?.assignmentHistory || []),
-            {
-              timestamp: new Date().toISOString(),
-              fromUserId: oldAssigneeId,
-              toUserId: assigneeUserId,
-              assigneeType: input.assigneeType,
-              assignedBy: session.user.id,
-              notes: input.notes,
-            },
-          ],
-          ...(input.metadata || {}),
-        } as Prisma.InputJsonValue,
+        metadata: updatedMetadata as unknown as Prisma.InputJsonValue,
       },
       include: {
         orchestrator: {
@@ -296,9 +309,8 @@ export async function POST(
       const assignerName =
         currentUser?.displayName || currentUser?.name || 'Someone';
 
-      // Get task title from updatedTask
-      const taskTitle =
-        (updatedTask as any).title || `Task #${taskId.slice(-6)}`;
+      // Use task title from original task query
+      const taskTitle = task.title || `Task #${taskId.slice(-6)}`;
 
       NotificationService.notifyTaskAssigned(
         assigneeUserId,

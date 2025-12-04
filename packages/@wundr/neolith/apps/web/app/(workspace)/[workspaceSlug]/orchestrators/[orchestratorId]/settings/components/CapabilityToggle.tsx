@@ -25,7 +25,10 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 
-import type { CapabilityConfig } from '@/lib/validations/orchestrator-config';
+import type {
+  CapabilityConfig,
+  PermissionLevel,
+} from '@/lib/validations/orchestrator-config';
 
 interface CapabilityToggleProps {
   capability: {
@@ -36,7 +39,7 @@ interface CapabilityToggleProps {
   };
   config?: CapabilityConfig;
   onToggle: (enabled: boolean) => void;
-  onPermissionChange: (level: string) => void;
+  onPermissionChange: (level: PermissionLevel) => void;
   onRateLimitChange: (field: string, value: string) => void;
   disabled?: boolean;
   isAdmin?: boolean;
@@ -106,14 +109,15 @@ export function CapabilityToggle({
               </Label>
               <Select
                 value={config?.permissionLevel || 'read'}
-                onValueChange={onPermissionChange}
+                onValueChange={value =>
+                  onPermissionChange(value as PermissionLevel)
+                }
                 disabled={disabled}
               >
                 <SelectTrigger id={`permission-${capability.type}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='none'>None</SelectItem>
                   <SelectItem value='read'>Read</SelectItem>
                   <SelectItem value='write'>Write</SelectItem>
                   {isAdmin && <SelectItem value='admin'>Admin</SelectItem>}

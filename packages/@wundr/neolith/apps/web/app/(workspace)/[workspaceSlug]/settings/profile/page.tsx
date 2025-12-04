@@ -26,6 +26,17 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * Extended user preferences stored in the preferences JSON field
+ */
+interface UserPreferences {
+  fullName?: string;
+  title?: string;
+  pronouns?: string;
+  customPronouns?: string;
+  statusMessage?: string;
+}
+
 interface ProfileData {
   name: string;
   fullName: string;
@@ -71,18 +82,48 @@ export default function ProfileSettingsPage() {
   const [userTimeZone, setUserTimeZone] = useState<string>('');
 
   useEffect(() => {
-    if (session?.user) {
-      setProfileData({
-        name: session.user.name || '',
-        fullName: (session.user as any).fullName || '',
-        email: session.user.email || '',
-        avatar: session.user.image || '',
-        title: (session.user as any).title || '',
-        pronouns: (session.user as any).pronouns || '',
-        customPronouns: (session.user as any).customPronouns || '',
-        statusMessage: (session.user as any).statusMessage || '',
-      });
-    }
+    const loadUserProfile = async () => {
+      if (!session?.user?.id) {
+        return;
+      }
+
+      try {
+        // Fetch full user profile including preferences
+        const response = await fetch('/api/users/me');
+        if (!response.ok) {
+          throw new Error('Failed to fetch user profile');
+        }
+
+        const { data: user } = await response.json();
+        const prefs = (user.preferences || {}) as UserPreferences;
+
+        setProfileData({
+          name: session.user.name || '',
+          fullName: prefs.fullName || '',
+          email: session.user.email || '',
+          avatar: session.user.image || '',
+          title: prefs.title || '',
+          pronouns: prefs.pronouns || '',
+          customPronouns: prefs.customPronouns || '',
+          statusMessage: prefs.statusMessage || '',
+        });
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
+        // Fallback to session data
+        setProfileData({
+          name: session.user.name || '',
+          fullName: '',
+          email: session.user.email || '',
+          avatar: session.user.image || '',
+          title: '',
+          pronouns: '',
+          customPronouns: '',
+          statusMessage: '',
+        });
+      }
+    };
+
+    loadUserProfile();
 
     // Detect user's timezone
     try {
@@ -106,10 +147,34 @@ export default function ProfileSettingsPage() {
         }
 
         try {
+          // Separate core fields from preference fields
+          const { name, fullName, title, pronouns, customPronouns, statusMessage, ...coreFields } = data;
+
+          // Build the request payload
+          const payload: Record<string, unknown> = { ...coreFields };
+
+          // Add name to core fields if provided
+          if (name !== undefined) {
+            payload.name = name;
+          }
+
+          // Build preferences object for fields that go into preferences JSON
+          const preferencesToUpdate: UserPreferences = {};
+          if (fullName !== undefined) preferencesToUpdate.fullName = fullName;
+          if (title !== undefined) preferencesToUpdate.title = title;
+          if (pronouns !== undefined) preferencesToUpdate.pronouns = pronouns;
+          if (customPronouns !== undefined) preferencesToUpdate.customPronouns = customPronouns;
+          if (statusMessage !== undefined) preferencesToUpdate.statusMessage = statusMessage;
+
+          // If we have preferences to update, add them to the payload
+          if (Object.keys(preferencesToUpdate).length > 0) {
+            payload.preferences = preferencesToUpdate;
+          }
+
           const response = await fetch('/api/users/me', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
+            body: JSON.stringify(payload),
           });
 
           if (!response.ok) {

@@ -114,12 +114,25 @@ export default function SecurityCompliancePage() {
   );
 }
 
+// Type definitions for security settings
+type SsoProvider = 'okta' | 'azure' | 'google';
+type ComplianceMode = 'none' | 'gdpr' | 'hipaa' | 'sox';
+
+// Type guards
+function isSsoProvider(value: string): value is SsoProvider {
+  return ['okta', 'azure', 'google'].includes(value);
+}
+
+function isComplianceMode(value: string): value is ComplianceMode {
+  return ['none', 'gdpr', 'hipaa', 'sox'].includes(value);
+}
+
 // Settings Types
 interface SecuritySettings {
   // Authentication
   twoFactorRequired: boolean;
   ssoEnabled: boolean;
-  ssoProvider?: 'okta' | 'azure' | 'google' | null;
+  ssoProvider?: SsoProvider | null;
   allowedAuthMethods: string[];
 
   // Session Policies
@@ -142,7 +155,7 @@ interface SecuritySettings {
   // Audit & Compliance
   activityLogRetentionDays: number;
   auditLogsEnabled: boolean;
-  complianceMode: 'none' | 'gdpr' | 'hipaa' | 'sox' | null;
+  complianceMode: ComplianceMode | null;
 
   // API & Integrations
   apiRateLimit: number;
@@ -256,7 +269,14 @@ function AuthenticationSection({
               <select
                 id='ssoProvider'
                 value={ssoProvider ?? ''}
-                onChange={e => setSsoProvider((e.target.value as any) || null)}
+                onChange={e => {
+                  const value = e.target.value;
+                  if (value === '') {
+                    setSsoProvider(null);
+                  } else if (isSsoProvider(value)) {
+                    setSsoProvider(value);
+                  }
+                }}
                 className={cn(
                   'block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm',
@@ -840,7 +860,7 @@ function AuditComplianceSection({
   const [auditLogsEnabled, setAuditLogsEnabled] = useState(
     settings?.auditLogsEnabled ?? true
   );
-  const [complianceMode, setComplianceMode] = useState(
+  const [complianceMode, setComplianceMode] = useState<ComplianceMode>(
     settings?.complianceMode ?? 'none'
   );
 
@@ -862,7 +882,7 @@ function AuditComplianceSection({
       await onSave({
         activityLogRetentionDays,
         auditLogsEnabled,
-        complianceMode,
+        complianceMode: complianceMode === 'none' ? null : complianceMode,
       });
     },
     [activityLogRetentionDays, auditLogsEnabled, complianceMode, onSave]
@@ -937,7 +957,12 @@ function AuditComplianceSection({
           <select
             id='complianceMode'
             value={complianceMode ?? 'none'}
-            onChange={e => setComplianceMode(e.target.value as any)}
+            onChange={e => {
+              const value = e.target.value;
+              if (isComplianceMode(value)) {
+                setComplianceMode(value);
+              }
+            }}
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',

@@ -27,6 +27,69 @@ import {
 } from '@/hooks/use-chat';
 
 import type { Message, User } from '@/types/chat';
+import type { ChannelMember } from '@/types/channel';
+
+/**
+ * Flexible member type that can represent various API response formats
+ */
+type FlexibleMember = ChannelMember | (User & Partial<ChannelMember>);
+
+/**
+ * Type guard and transformer for channel member data
+ * Handles both ChannelMember format and various API response formats
+ */
+function normalizeChannelMember(
+  member: FlexibleMember,
+  currentUser: User | null
+): User & { isOrchestrator: boolean } {
+  // Type-safe extraction with fallbacks
+  const memberId =
+    'userId' in member
+      ? member.userId
+      : 'user' in member && typeof member.user === 'object' && member.user !== null && 'id' in member.user
+        ? member.user.id
+        : 'id' in member
+          ? member.id
+          : '';
+
+  const memberUser =
+    'user' in member && typeof member.user === 'object' && member.user !== null
+      ? member.user
+      : member;
+
+  const displayName =
+    'displayName' in memberUser && typeof memberUser.displayName === 'string'
+      ? memberUser.displayName
+      : 'name' in memberUser && typeof memberUser.name === 'string'
+        ? memberUser.name
+        : 'Unknown';
+
+  const email =
+    'email' in memberUser && typeof memberUser.email === 'string'
+      ? memberUser.email
+      : '';
+
+  const avatarUrl =
+    'avatarUrl' in memberUser && typeof memberUser.avatarUrl === 'string'
+      ? memberUser.avatarUrl
+      : 'image' in memberUser && typeof memberUser.image === 'string'
+        ? memberUser.image
+        : undefined;
+
+  const isOrchestrator =
+    ('isOrchestrator' in member && member.isOrchestrator === true) ||
+    ('isOrchestrator' in memberUser && memberUser.isOrchestrator === true) ||
+    false;
+
+  return {
+    id: typeof memberId === 'string' ? memberId : String(memberId || ''),
+    name: displayName,
+    email,
+    image: avatarUrl,
+    status: 'online' as const,
+    isOrchestrator,
+  };
+}
 
 export default function DMPage() {
   const params = useParams();
@@ -66,12 +129,12 @@ export default function DMPage() {
   const { channel, isLoading: isChannelLoading } = useChannel(dmId);
 
   // Derive isStarred: use local state for optimistic updates, fallback to channel data
-  const isStarred = localIsStarred ?? (channel as any)?.isStarred ?? false;
+  const isStarred = localIsStarred ?? channel?.isStarred ?? false;
 
   // Sync local starred state when channel data loads
   useEffect(() => {
     if (channel && localIsStarred === null) {
-      setLocalIsStarred((channel as any).isStarred ?? false);
+      setLocalIsStarred(channel.isStarred ?? false);
     }
   }, [channel, localIsStarred]);
 
@@ -122,26 +185,9 @@ export default function DMPage() {
     if (!channel?.members || !currentUser) {
       return [];
     }
-    // Cast members to any[] to handle various member formats from API
-    const members = channel.members as any[];
-    return members
-      .filter(m => {
-        const memberId = m.userId || m.user?.id || m.id;
-        return memberId !== currentUser.id;
-      })
-      .map(m => ({
-        id: m.userId || m.user?.id || m.id,
-        name:
-          m.displayName ||
-          m.name ||
-          m.user?.displayName ||
-          m.user?.name ||
-          'Unknown',
-        email: m.email || m.user?.email || '',
-        image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
-        status: 'online' as const,
-        isOrchestrator: m.isOrchestrator || m.user?.isOrchestrator || false,
-      }));
+    return channel.members
+      .map(m => normalizeChannelMember(m, currentUser))
+      .filter(user => user.id !== currentUser.id);
   }, [channel, currentUser]);
 
   // Get all members for details panel (including current user)
@@ -149,20 +195,7 @@ export default function DMPage() {
     if (!channel?.members || !currentUser) {
       return [];
     }
-    const members = channel.members as any[];
-    return members.map(m => ({
-      id: m.userId || m.user?.id || m.id,
-      name:
-        m.displayName ||
-        m.name ||
-        m.user?.displayName ||
-        m.user?.name ||
-        'Unknown',
-      email: m.email || m.user?.email || '',
-      image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
-      status: 'online' as const,
-      isOrchestrator: m.isOrchestrator || m.user?.isOrchestrator || false,
-    }));
+    return channel.members.map(m => normalizeChannelMember(m, currentUser));
   }, [channel, currentUser]);
 
   // Check if there's an active huddle for this conversation

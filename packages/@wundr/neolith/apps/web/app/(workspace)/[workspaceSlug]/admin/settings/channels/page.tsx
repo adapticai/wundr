@@ -6,31 +6,54 @@ import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
+// Type definitions for channel settings
+type WhoCanCreate = 'everyone' | 'admins' | 'members';
+type AllowedCharacters = 'alphanumeric' | 'alphanumeric-dash' | 'any';
+type PostingPermission = 'everyone' | 'admins-only' | 'approved-members';
+type WhoCanArchive = 'everyone' | 'channel-creator' | 'admins';
+
 interface ChannelSettings {
   // Channel Creation Permissions
-  whoCanCreatePublic: 'everyone' | 'admins' | 'members';
-  whoCanCreatePrivate: 'everyone' | 'admins' | 'members';
+  whoCanCreatePublic: WhoCanCreate;
+  whoCanCreatePrivate: WhoCanCreate;
 
   // Naming Conventions
   enforceNamingConvention: boolean;
   namingPattern?: string;
   requiredPrefix?: string;
-  allowedCharacters: 'alphanumeric' | 'alphanumeric-dash' | 'any';
+  allowedCharacters: AllowedCharacters;
 
   // Posting Permissions
-  defaultPostingPermission: 'everyone' | 'admins-only' | 'approved-members';
+  defaultPostingPermission: PostingPermission;
   allowThreads: boolean;
   allowReactions: boolean;
 
   // Archival Settings
   autoArchiveInactiveDays: number;
-  whoCanArchive: 'everyone' | 'channel-creator' | 'admins';
+  whoCanArchive: WhoCanArchive;
   archiveRequiresConfirmation: boolean;
 
   // Channel Limits
   maxChannelNameLength: number;
   maxChannelsPerWorkspace?: number;
   maxPrivateChannelsPerUser?: number;
+}
+
+// Type guards
+function isWhoCanCreate(value: string): value is WhoCanCreate {
+  return ['everyone', 'admins', 'members'].includes(value);
+}
+
+function isAllowedCharacters(value: string): value is AllowedCharacters {
+  return ['alphanumeric', 'alphanumeric-dash', 'any'].includes(value);
+}
+
+function isPostingPermission(value: string): value is PostingPermission {
+  return ['everyone', 'admins-only', 'approved-members'].includes(value);
+}
+
+function isWhoCanArchive(value: string): value is WhoCanArchive {
+  return ['everyone', 'channel-creator', 'admins'].includes(value);
 }
 
 export default function ChannelSettingsPage() {
@@ -204,9 +227,12 @@ function CreationPermissionsSection({
           <select
             id='createPublic'
             value={settings.whoCanCreatePublic}
-            onChange={e =>
-              onSave({ whoCanCreatePublic: e.target.value as any })
-            }
+            onChange={e => {
+              const value = e.target.value;
+              if (isWhoCanCreate(value)) {
+                onSave({ whoCanCreatePublic: value });
+              }
+            }}
             disabled={isSaving}
             className={cn(
               'block w-full rounded-md border border-input bg-background',
@@ -231,9 +257,12 @@ function CreationPermissionsSection({
           <select
             id='createPrivate'
             value={settings.whoCanCreatePrivate}
-            onChange={e =>
-              onSave({ whoCanCreatePrivate: e.target.value as any })
-            }
+            onChange={e => {
+              const value = e.target.value;
+              if (isWhoCanCreate(value)) {
+                onSave({ whoCanCreatePrivate: value });
+              }
+            }}
             disabled={isSaving}
             className={cn(
               'block w-full rounded-md border border-input bg-background',
@@ -380,9 +409,12 @@ function NamingConventionsSection({
               <select
                 id='allowedChars'
                 value={settings.allowedCharacters}
-                onChange={e =>
-                  onSave({ allowedCharacters: e.target.value as any })
-                }
+                onChange={e => {
+                  const value = e.target.value;
+                  if (isAllowedCharacters(value)) {
+                    onSave({ allowedCharacters: value });
+                  }
+                }}
                 disabled={isSaving}
                 className={cn(
                   'block w-full rounded-md border border-input bg-background',
@@ -440,9 +472,12 @@ function PostingPermissionsSection({
           <select
             id='postingPerm'
             value={settings.defaultPostingPermission}
-            onChange={e =>
-              onSave({ defaultPostingPermission: e.target.value as any })
-            }
+            onChange={e => {
+              const value = e.target.value;
+              if (isPostingPermission(value)) {
+                onSave({ defaultPostingPermission: value });
+              }
+            }}
             disabled={isSaving}
             className={cn(
               'block w-full rounded-md border border-input bg-background',
@@ -554,7 +589,12 @@ function ArchivalSettingsSection({ settings, onSave, isSaving }: SectionProps) {
           <select
             id='whoArchive'
             value={settings.whoCanArchive}
-            onChange={e => onSave({ whoCanArchive: e.target.value as any })}
+            onChange={e => {
+              const value = e.target.value;
+              if (isWhoCanArchive(value)) {
+                onSave({ whoCanArchive: value });
+              }
+            }}
             disabled={isSaving}
             className={cn(
               'block w-full rounded-md border border-input bg-background',

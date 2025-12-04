@@ -147,7 +147,10 @@ export default function MembersSettingsPage() {
   );
 
   const handleSelectChange = useCallback(
-    async (key: keyof MemberSettings, value: string | number) => {
+    async (
+      key: keyof MemberSettings,
+      value: string | number | string[]
+    ) => {
       const currentValue = settings[key];
 
       setSettings(prev => ({ ...prev, [key]: value }));
@@ -440,7 +443,7 @@ export default function MembersSettingsPage() {
                     .split(',')
                     .map(d => d.trim())
                     .filter(Boolean);
-                  handleSelectChange('allowedDomains', domains as any);
+                  handleSelectChange('allowedDomains', domains);
                 }}
                 placeholder='example.com, company.org'
                 className={cn(

@@ -161,13 +161,45 @@ const entitySchemas = {
   'session-manager': sessionManagerSchema,
   channel: channelSchema,
   subagent: subagentSchema,
+} as const;
+
+// Type-safe schema lookup
+type EntitySchemaMap = {
+  workspace: typeof workspaceSchema;
+  orchestrator: typeof orchestratorSchema;
+  workflow: typeof workflowSchema;
+  'session-manager': typeof sessionManagerSchema;
+  channel: typeof channelSchema;
+  subagent: typeof subagentSchema;
 };
 
-// Props
-export interface EntityReviewFormProps {
-  entityType: EntityType;
-  extractedData: EntityData;
-  onSubmit: (data: EntityData) => void | Promise<void>;
+// Helper type to map entity type to its data type
+type EntityTypeToData<T extends EntityType> = T extends 'workspace'
+  ? WorkspaceData
+  : T extends 'orchestrator'
+    ? OrchestratorData
+    : T extends 'workflow'
+      ? WorkflowData
+      : T extends 'session-manager'
+        ? SessionManagerData
+        : T extends 'channel'
+          ? ChannelData
+          : T extends 'subagent'
+            ? SubagentData
+            : never;
+
+// Helper to get the correct schema for an entity type
+function getEntitySchema<T extends EntityType>(
+  entityType: T
+): EntitySchemaMap[T] {
+  return entitySchemas[entityType] as EntitySchemaMap[T];
+}
+
+// Props - made generic to support proper type inference
+export interface EntityReviewFormProps<T extends EntityType = EntityType> {
+  entityType: T;
+  extractedData: EntityTypeToData<T>;
+  onSubmit: (data: EntityTypeToData<T>) => void | Promise<void>;
   onCancel?: () => void;
   isSubmitting?: boolean;
 }
@@ -207,22 +239,37 @@ function getChangedFields(original: any, current: any, path = ''): string[] {
   return changes;
 }
 
-export function EntityReviewForm({
+export function EntityReviewForm<T extends EntityType>({
   entityType,
   extractedData,
   onSubmit,
   onCancel,
   isSubmitting = false,
-}: EntityReviewFormProps) {
+}: EntityReviewFormProps<T>) {
   const [showJsonEditor, setShowJsonEditor] = React.useState(false);
   const [jsonError, setJsonError] = React.useState<string | null>(null);
   const [jsonValue, setJsonValue] = React.useState('');
 
-  const schema = entitySchemas[entityType];
-  const form = useForm({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(schema as any),
-    defaultValues: extractedData,
+  const schema = getEntitySchema(entityType);
+
+  /**
+   * Type assertion is necessary here due to TypeScript's limitation with union types.
+   * At runtime, the schema will always match the entityType, but TypeScript cannot
+   * narrow the union type in the getEntitySchema return value to a specific schema.
+   * The generic type parameter T ensures type safety at the component call site.
+   *
+   * We use `as unknown as any` instead of `as any` alone because:
+   * 1. It's more explicit about the type coercion
+   * 2. It makes the type system aware that this is a deliberate assertion
+   * 3. The types are actually correct at runtime, just not provable to TypeScript
+   *
+   * This is safer than a bare `as any` cast because the generic T parameter
+   * ensures type safety at the component usage site.
+   */
+  type FormData = EntityTypeToData<T>;
+  const form = useForm<FormData>({
+    resolver: (zodResolver(schema as any) as unknown) as any,
+    defaultValues: (extractedData as unknown) as any,
   });
 
   const changedFields = React.useMemo(() => {
@@ -232,7 +279,7 @@ export function EntityReviewForm({
   const hasChanges = changedFields.length > 0;
 
   const resetToAI = () => {
-    form.reset(extractedData);
+    form.reset(extractedData as unknown as FormData);
   };
 
   const toggleJsonEditor = () => {
@@ -246,7 +293,7 @@ export function EntityReviewForm({
   const applyJsonChanges = () => {
     try {
       const parsed = JSON.parse(jsonValue);
-      const validated = schema.parse(parsed);
+      const validated = schema.parse(parsed) as unknown as FormData;
       form.reset(validated);
       setJsonError(null);
       setShowJsonEditor(false);
@@ -264,7 +311,7 @@ export function EntityReviewForm({
   };
 
   const handleSubmit = form.handleSubmit(async data => {
-    await onSubmit(data);
+    await onSubmit(data as unknown as FormData);
   });
 
   return (

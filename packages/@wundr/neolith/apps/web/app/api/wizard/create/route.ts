@@ -18,11 +18,17 @@ import { auth } from '@/lib/auth';
 
 import type { EntityType } from '@/lib/ai';
 import type { NextRequest } from 'next/server';
+import type { Prisma } from '@neolith/database';
 
 interface CreateEntityRequest {
   entityType: EntityType;
   data: Record<string, unknown>;
 }
+
+/**
+ * Infer types from Zod schemas for type safety
+ */
+type CreateWorkflowInput = z.infer<typeof createWorkflowSchema>;
 
 /**
  * Validation schemas for creating each entity type
@@ -334,7 +340,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Create charter data
-        const charterData = {
+        const charterData: Prisma.InputJsonObject = {
           name: validated.name,
           responsibilities: validated.responsibilities,
           context: validated.context || '',
@@ -348,7 +354,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             name: validated.name,
             description: validated.responsibilities,
             charterId: `charter-${Date.now()}`,
-            charterData: charterData as any,
+            charterData,
             orchestratorId,
             status: 'INACTIVE',
           },
@@ -384,6 +390,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           );
         }
 
+        // Prepare workflow data with proper JSON typing
+        const triggerData: Prisma.InputJsonObject = {
+          type: validated.trigger.type,
+          ...(validated.trigger.config && {
+            config: validated.trigger.config as Prisma.InputJsonObject,
+          }),
+        };
+
+        const actionsData: Prisma.InputJsonArray = validated.actions.map(
+          (action) =>
+            ({
+              action: action.action,
+              description: action.description,
+            }) satisfies Prisma.InputJsonObject
+        );
+
         // Create workflow
         const workflow = await prisma.workflow.create({
           data: {
@@ -392,8 +414,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             workspaceId: validated.workspaceId,
             createdBy: session.user.id,
             status: 'DRAFT',
-            trigger: validated.trigger as any,
-            actions: validated.actions as any,
+            trigger: triggerData,
+            actions: actionsData,
           },
         });
 
