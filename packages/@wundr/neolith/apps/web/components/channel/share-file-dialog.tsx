@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Hash,
   User,
@@ -12,7 +11,9 @@ import {
   X,
   Bot,
 } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useIsDesktop } from '@/hooks/use-media-query';
 
@@ -187,7 +187,9 @@ export function ShareFileDialog({
         // Filter out current user from results
         if (currentUserId) {
           results = results.filter((r: SearchResult) => {
-            if (r.type === 'user') return r.id !== currentUserId;
+            if (r.type === 'user') {
+              return r.id !== currentUserId;
+            }
             return true;
           });
         }
@@ -227,7 +229,9 @@ export function ShareFileDialog({
       const isAlreadySelected = prev.some(
         d => d.type === result.type && d.id === result.id
       );
-      if (isAlreadySelected) return prev;
+      if (isAlreadySelected) {
+        return prev;
+      }
       return [...prev, result];
     });
     setSearchQuery('');
@@ -251,7 +255,9 @@ export function ShareFileDialog({
 
   // Copy link to clipboard
   const handleCopyLink = useCallback(async () => {
-    if (!file?.url) return;
+    if (!file?.url) {
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(file.url);
@@ -263,7 +269,9 @@ export function ShareFileDialog({
 
   // Share the file to all selected destinations
   const handleShare = useCallback(async () => {
-    if (!file || selectedDestinations.length === 0) return;
+    if (!file || selectedDestinations.length === 0) {
+      return;
+    }
 
     setIsSharing(true);
     setError(null);
@@ -367,8 +375,12 @@ export function ShareFileDialog({
 
   // Format file size
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
@@ -515,7 +527,9 @@ export function ShareFileDialog({
 
   // Render selected destination chips
   const renderSelectedDestinations = () => {
-    if (selectedDestinations.length === 0) return null;
+    if (selectedDestinations.length === 0) {
+      return null;
+    }
 
     return (
       <div className='flex flex-wrap gap-1.5'>
@@ -551,7 +565,9 @@ export function ShareFileDialog({
     );
   };
 
-  if (!file) return null;
+  if (!file) {
+    return null;
+  }
 
   // Shared content for both Dialog and Drawer
   const sharedContent = (

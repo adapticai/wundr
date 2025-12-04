@@ -1,7 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
 import {
   Key,
   Copy,
@@ -10,6 +8,8 @@ import {
   BarChart3,
   AlertCircle,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
 
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';

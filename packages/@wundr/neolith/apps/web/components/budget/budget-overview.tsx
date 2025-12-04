@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -9,7 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export interface BudgetUsage {
@@ -67,14 +68,22 @@ const formatTimeRemaining = (exhaustionDate: Date): string => {
 };
 
 const getUsageColor = (percentage: number): string => {
-  if (percentage >= 90) return 'destructive';
-  if (percentage >= 75) return 'warning';
+  if (percentage >= 90) {
+    return 'destructive';
+  }
+  if (percentage >= 75) {
+    return 'warning';
+  }
   return 'success';
 };
 
 const getUsageColorClass = (percentage: number): string => {
-  if (percentage >= 90) return 'bg-destructive';
-  if (percentage >= 75) return 'bg-yellow-500';
+  if (percentage >= 90) {
+    return 'bg-destructive';
+  }
+  if (percentage >= 75) {
+    return 'bg-yellow-500';
+  }
   return 'bg-green-500';
 };
 

@@ -10,15 +10,18 @@
  * @module lib/auth
  */
 
+import crypto from 'crypto';
+
 import { avatarService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
-import { CustomPrismaAdapter } from './prisma-adapter';
-import crypto from 'crypto';
-import type { DefaultSession } from 'next-auth';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 import Google from 'next-auth/providers/google';
+
+import { CustomPrismaAdapter } from './prisma-adapter';
+
+import type { DefaultSession } from 'next-auth';
 
 /**
  * Check if OAuth providers are configured
@@ -740,7 +743,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error';
           console.error(
-            `Failed to upload avatar for linked account:`,
+            'Failed to upload avatar for linked account:',
             errorMessage
           );
         }

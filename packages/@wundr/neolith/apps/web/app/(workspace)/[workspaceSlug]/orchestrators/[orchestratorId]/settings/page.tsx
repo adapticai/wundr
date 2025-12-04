@@ -7,14 +7,16 @@
  * @module app/(workspace)/[workspaceSlug]/orchestrators/[orchestratorId]/settings/page
  */
 
-import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { auth } from '@/lib/auth';
 import { prisma } from '@neolith/database';
+import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+
+import { auth } from '@/lib/auth';
 
 import { OrchestratorSettingsForm } from './components/OrchestratorSettingsForm';
 import { SettingsSkeleton } from './components/SettingsSkeleton';
+
+import type { Metadata } from 'next';
 
 interface PageProps {
   params: Promise<{

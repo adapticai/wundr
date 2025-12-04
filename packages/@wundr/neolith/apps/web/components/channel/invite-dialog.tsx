@@ -3,8 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 
-import { useWorkspaceUsers } from '@/hooks/use-channel';
-import { cn, getInitials } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -19,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { useWorkspaceUsers } from '@/hooks/use-channel';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 

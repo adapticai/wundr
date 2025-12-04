@@ -539,7 +539,7 @@ API routes access environment variables without validation:
 ```typescript
 // Vulnerable
 const cdnDomain = process.env.CDN_DOMAIN;
-const region = process.env.AWS_REGION ?? 'us-east-1';
+const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 const apiKey = process.env.LIVEKIT_API_KEY;
 ```
 
@@ -559,7 +559,7 @@ const requiredEnvVars = ['DATABASE_URL', 'NEXTAUTH_SECRET', 'NEXTAUTH_URL', 'DAE
 
 const optionalEnvVars = {
   CDN_DOMAIN: 'cdn.example.com',
-  AWS_REGION: 'us-east-1',
+  MY_AWS_REGION: 'us-east-1',
   LIVEKIT_URL: 'wss://localhost:7880',
   LOG_LEVEL: 'info',
 };
@@ -602,7 +602,7 @@ export const env = {
   nextauth_url: process.env.NEXTAUTH_URL!,
   daemon_jwt_secret: process.env.DAEMON_JWT_SECRET!,
   cdn_domain: process.env.CDN_DOMAIN ?? optionalEnvVars.CDN_DOMAIN,
-  aws_region: process.env.AWS_REGION ?? optionalEnvVars.AWS_REGION,
+  MY_AWS_REGION: process.env.MY_AWS_REGION ?? optionalEnvVars.MY_AWS_REGION,
   livekit_url: process.env.LIVEKIT_URL ?? optionalEnvVars.LIVEKIT_URL,
   livekit_api_key: process.env.LIVEKIT_API_KEY,
   livekit_api_secret: process.env.LIVEKIT_API_SECRET,

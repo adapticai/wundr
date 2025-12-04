@@ -1,17 +1,6 @@
 'use client';
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import type { Channel, ChannelPermissions } from '@/types/channel';
-import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
-import { useMultiplePresence } from '@/hooks/use-presence';
-import {
   Bell,
   ChevronDown,
   Copy,
@@ -30,10 +19,24 @@ import {
   Video,
   Workflow,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useCallback, useState, useMemo } from 'react';
+
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useMultiplePresence } from '@/hooks/use-presence';
+import { cn } from '@/lib/utils';
+
 import { HeaderTabs, StarButton, DEFAULT_TABS } from './shared';
+
 import type { ConversationTab } from './shared';
+import type { Channel, ChannelPermissions } from '@/types/channel';
 
 /**
  * Channel header tabs - using shared type

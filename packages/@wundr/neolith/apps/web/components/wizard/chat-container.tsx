@@ -1,11 +1,14 @@
 'use client';
 
-import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { ChatMessage } from './chat-message';
-import type { ChatMessageProps } from './chat-message';
-import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles } from 'lucide-react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+import { ChatMessage } from './chat-message';
+
+import type { ChatMessageProps } from './chat-message';
 
 export interface Message extends Omit<ChatMessageProps, 'timestamp'> {
   id: string;
@@ -44,7 +47,9 @@ export function ChatContainer({
 
   // Detect if user scrolled up
   const handleScroll = React.useCallback(() => {
-    if (!scrollRef.current) return;
+    if (!scrollRef.current) {
+      return;
+    }
 
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;

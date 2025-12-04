@@ -15,11 +15,11 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-import type { NextRequest } from 'next/server';
 import type {
   CreateDeploymentInput,
   DeploymentFilters,
 } from '@/types/deployment';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspaceId parameter

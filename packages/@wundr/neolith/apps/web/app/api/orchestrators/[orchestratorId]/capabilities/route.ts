@@ -15,15 +15,15 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  updateCapabilitiesSchema,
-  createDefaultOrchestratorConfig,
-  ORCHESTRATOR_CONFIG_ERROR_CODES,
-} from '@/lib/validations/orchestrator-config';
-import {
   orchestratorIdParamSchema,
   createErrorResponse,
   ORCHESTRATOR_ERROR_CODES,
 } from '@/lib/validations/orchestrator';
+import {
+  updateCapabilitiesSchema,
+  createDefaultOrchestratorConfig,
+  ORCHESTRATOR_CONFIG_ERROR_CODES,
+} from '@/lib/validations/orchestrator-config';
 
 import type { UpdateCapabilitiesInput } from '@/lib/validations/orchestrator-config';
 import type { NextRequest } from 'next/server';

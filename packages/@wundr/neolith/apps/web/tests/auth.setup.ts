@@ -8,8 +8,9 @@
  *   npx playwright test auth.setup.ts --project=setup
  */
 
-import { test as setup, expect } from '@playwright/test';
 import * as path from 'path';
+
+import { test as setup, expect } from '@playwright/test';
 
 const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -8,6 +7,10 @@ import {
   TrendingDown,
   Minus,
 } from 'lucide-react';
+import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -15,10 +18,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { type OrchestratorCharter } from '@/types/orchestrator';
+
+import type { OrchestratorCharter } from '@/types/orchestrator';
 
 /**
  * Props for CharterDiff component
@@ -148,8 +150,12 @@ function computeCharterDiff(
     'Vision'
   );
 
-  if (missionDiff) missionVisionChanges.push(missionDiff);
-  if (visionDiff) missionVisionChanges.push(visionDiff);
+  if (missionDiff) {
+    missionVisionChanges.push(missionDiff);
+  }
+  if (visionDiff) {
+    missionVisionChanges.push(visionDiff);
+  }
 
   if (missionVisionChanges.length > 0) {
     sections.push({
@@ -201,10 +207,18 @@ function computeCharterDiff(
     'Background'
   );
 
-  if (traitsDiff) personalityChanges.push(traitsDiff);
-  if (commStyleDiff) personalityChanges.push(commStyleDiff);
-  if (decisionStyleDiff) personalityChanges.push(decisionStyleDiff);
-  if (backgroundDiff) personalityChanges.push(backgroundDiff);
+  if (traitsDiff) {
+    personalityChanges.push(traitsDiff);
+  }
+  if (commStyleDiff) {
+    personalityChanges.push(commStyleDiff);
+  }
+  if (decisionStyleDiff) {
+    personalityChanges.push(decisionStyleDiff);
+  }
+  if (backgroundDiff) {
+    personalityChanges.push(backgroundDiff);
+  }
 
   if (personalityChanges.length > 0) {
     sections.push({
@@ -256,10 +270,18 @@ function computeCharterDiff(
     'Use Emoji'
   );
 
-  if (toneDiff) commPrefChanges.push(toneDiff);
-  if (lengthDiff) commPrefChanges.push(lengthDiff);
-  if (formalityDiff) commPrefChanges.push(formalityDiff);
-  if (emojiDiff) commPrefChanges.push(emojiDiff);
+  if (toneDiff) {
+    commPrefChanges.push(toneDiff);
+  }
+  if (lengthDiff) {
+    commPrefChanges.push(lengthDiff);
+  }
+  if (formalityDiff) {
+    commPrefChanges.push(formalityDiff);
+  }
+  if (emojiDiff) {
+    commPrefChanges.push(emojiDiff);
+  }
 
   if (commPrefChanges.length > 0) {
     sections.push({
@@ -308,12 +330,24 @@ function computeCharterDiff(
     'Escalation Threshold'
   );
 
-  if (workHoursStartDiff) opSettingsChanges.push(workHoursStartDiff);
-  if (workHoursEndDiff) opSettingsChanges.push(workHoursEndDiff);
-  if (timezoneDiff) opSettingsChanges.push(timezoneDiff);
-  if (responseTargetDiff) opSettingsChanges.push(responseTargetDiff);
-  if (autoEscalationDiff) opSettingsChanges.push(autoEscalationDiff);
-  if (escalationThresholdDiff) opSettingsChanges.push(escalationThresholdDiff);
+  if (workHoursStartDiff) {
+    opSettingsChanges.push(workHoursStartDiff);
+  }
+  if (workHoursEndDiff) {
+    opSettingsChanges.push(workHoursEndDiff);
+  }
+  if (timezoneDiff) {
+    opSettingsChanges.push(timezoneDiff);
+  }
+  if (responseTargetDiff) {
+    opSettingsChanges.push(responseTargetDiff);
+  }
+  if (autoEscalationDiff) {
+    opSettingsChanges.push(autoEscalationDiff);
+  }
+  if (escalationThresholdDiff) {
+    opSettingsChanges.push(escalationThresholdDiff);
+  }
 
   if (opSettingsChanges.length > 0) {
     sections.push({
@@ -336,9 +370,13 @@ function computeStats(changes: DiffChange[]): {
 } {
   return changes.reduce(
     (acc, change) => {
-      if (change.type === 'added') acc.added++;
-      else if (change.type === 'removed') acc.removed++;
-      else if (change.type === 'modified') acc.modified++;
+      if (change.type === 'added') {
+        acc.added++;
+      } else if (change.type === 'removed') {
+        acc.removed++;
+      } else if (change.type === 'modified') {
+        acc.modified++;
+      }
       return acc;
     },
     { added: 0, removed: 0, modified: 0 }
@@ -353,7 +391,9 @@ function DiffChangeItem({ change }: { change: DiffChange }) {
     value: string | string[] | undefined,
     type: 'old' | 'new'
   ) => {
-    if (!value) return null;
+    if (!value) {
+      return null;
+    }
 
     const isOld = type === 'old';
     const bgColor = isOld ? 'bg-red-50' : 'bg-green-50';

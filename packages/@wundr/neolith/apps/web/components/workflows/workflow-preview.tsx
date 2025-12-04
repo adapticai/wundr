@@ -4,8 +4,9 @@
  */
 'use client';
 
-import type { TriggerConfig, ActionConfig } from '@/types/workflow';
 import { TRIGGER_TYPE_CONFIG, ACTION_TYPE_CONFIG } from '@/types/workflow';
+
+import type { TriggerConfig, ActionConfig } from '@/types/workflow';
 
 interface WorkflowPreviewProps {
   name: string;

@@ -17,8 +17,8 @@ import {
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
-import type { HuddleResponse } from '@/lib/validations/call';
 
+import type { HuddleResponse } from '@/lib/validations/call';
 import type { NextRequest } from 'next/server';
 
 /**

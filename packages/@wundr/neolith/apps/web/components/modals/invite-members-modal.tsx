@@ -3,6 +3,11 @@
 import * as React from 'react';
 import { useState, useCallback, useEffect } from 'react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -11,7 +16,6 @@ import {
   ResponsiveModalDescription,
   ResponsiveModalFooter,
 } from '@/components/ui/responsive-modal';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -19,12 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, getInitials } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
@@ -185,7 +185,9 @@ export function InviteMembersModal({
       setError(null);
       try {
         const params = new URLSearchParams();
-        if (query) params.append('q', query);
+        if (query) {
+          params.append('q', query);
+        }
 
         const response = await fetch(
           `/api/workspaces/${workspaceId}/users?${params.toString()}`
@@ -341,7 +343,7 @@ export function InviteMembersModal({
         };
       case 'dm':
         return {
-          title: title || `Add people to conversation`,
+          title: title || 'Add people to conversation',
           description: description || 'Invite more people to this conversation',
           workspaceTabLabel: 'From Workspace',
           submitLabel: 'Add to Conversation',

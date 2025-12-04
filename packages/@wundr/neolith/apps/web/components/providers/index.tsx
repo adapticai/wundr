@@ -4,6 +4,7 @@ import { SessionProvider, useSession } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
 import { FilePreviewProvider } from '@/components/file-preview';
+
 import { PresenceProvider } from './presence-provider';
 
 import type { ReactNode } from 'react';

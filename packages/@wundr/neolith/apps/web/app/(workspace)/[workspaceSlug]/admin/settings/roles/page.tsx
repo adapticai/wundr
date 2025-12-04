@@ -1,21 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
-
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Loader2,
   Shield,
@@ -27,6 +11,22 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface Permission {
   id: string;
@@ -169,7 +169,9 @@ export default function RolesSettingsPage() {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/admin/roles`
         );
-        if (!response.ok) throw new Error('Failed to load roles');
+        if (!response.ok) {
+          throw new Error('Failed to load roles');
+        }
         const data = await response.json();
         setRoles(data.roles || []);
       } catch (error) {
@@ -229,7 +231,9 @@ export default function RolesSettingsPage() {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to create role');
+      if (!response.ok) {
+        throw new Error('Failed to create role');
+      }
 
       const { role } = await response.json();
       setRoles(prev => [...prev, role]);
@@ -281,7 +285,9 @@ export default function RolesSettingsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to update role');
+        if (!response.ok) {
+          throw new Error('Failed to update role');
+        }
 
         const { role } = await response.json();
         setRoles(prev => prev.map(r => (r.id === roleId ? role : r)));
@@ -330,7 +336,9 @@ export default function RolesSettingsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to delete role');
+        if (!response.ok) {
+          throw new Error('Failed to delete role');
+        }
 
         setRoles(prev => prev.filter(r => r.id !== roleId));
 
@@ -355,7 +363,9 @@ export default function RolesSettingsPage() {
   const handlePriorityChange = useCallback(
     async (roleId: string, direction: 'up' | 'down') => {
       const role = roles.find(r => r.id === roleId);
-      if (!role) return;
+      if (!role) {
+        return;
+      }
 
       const newPriority =
         direction === 'up' ? role.priority - 1 : role.priority + 1;
@@ -371,7 +381,9 @@ export default function RolesSettingsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to update priority');
+        if (!response.ok) {
+          throw new Error('Failed to update priority');
+        }
 
         const { role: updatedRole } = await response.json();
         setRoles(prev =>

@@ -10,6 +10,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+
 import type { HuddleResponse, JoinResponse } from '@/lib/validations/call';
 
 interface UseChannelHuddleOptions {
@@ -186,7 +187,9 @@ export function useChannelHuddle({
 
   // Auto-poll huddle status
   useEffect(() => {
-    if (!autoPoll) return;
+    if (!autoPoll) {
+      return;
+    }
 
     // Initial fetch
     refreshStatus();

@@ -1,10 +1,9 @@
 'use client';
 
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from 'lucide-react';
 import * as React from 'react';
-
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';

@@ -1,11 +1,13 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { UserAvatar } from '@/components/ui/user-avatar';
-import type { User } from '@/types/chat';
+import { cn } from '@/lib/utils';
+
 import { ReactionPickerTrigger } from './reaction-picker';
+
+import type { User } from '@/types/chat';
 
 /**
  * Props for the MessageInput component
@@ -166,7 +168,9 @@ export function MessageInput({
   const insertMention = useCallback(
     (user: User) => {
       const textarea = textareaRef.current;
-      if (!textarea) return;
+      if (!textarea) {
+        return;
+      }
 
       const cursorPosition = textarea.selectionStart;
       const textBeforeCursor = content.slice(0, cursorPosition);
@@ -198,7 +202,9 @@ export function MessageInput({
   const applyFormatting = useCallback(
     (format: string) => {
       const textarea = textareaRef.current;
-      if (!textarea) return;
+      if (!textarea) {
+        return;
+      }
 
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
@@ -279,8 +285,12 @@ export function MessageInput({
       attachments.length,
       attachments.map(f => f.name)
     );
-    if (!trimmedContent && attachments.length === 0) return;
-    if (disabled) return;
+    if (!trimmedContent && attachments.length === 0) {
+      return;
+    }
+    if (disabled) {
+      return;
+    }
 
     console.log(
       '[MessageInput.handleSend] calling onSend with attachments:',
@@ -359,7 +369,7 @@ export function MessageInput({
 
     return [
       {
-        label: `Monday at 09:00`,
+        label: 'Monday at 09:00',
         getTime: () => nextMonday,
       },
     ];
@@ -453,7 +463,9 @@ export function MessageInput({
   const handleEmojiSelect = useCallback(
     (emoji: string) => {
       const textarea = textareaRef.current;
-      if (!textarea) return;
+      if (!textarea) {
+        return;
+      }
 
       const cursorPosition = textarea.selectionStart;
       const newContent =
@@ -474,7 +486,9 @@ export function MessageInput({
   // Trigger @ mention
   const triggerMention = useCallback(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
     const cursorPosition = textarea.selectionStart;
     const newContent =
@@ -1050,8 +1064,12 @@ function AttachmentPreview({ file, onRemove }: AttachmentPreviewProps) {
   }, [file]);
 
   const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 

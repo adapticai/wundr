@@ -1,8 +1,10 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import type { SystemOverview as SystemOverviewType } from '@neolith/core/types';
 import { Activity, Users, Coins, AlertTriangle } from 'lucide-react';
+
+import { Card, CardContent } from '@/components/ui/card';
+
+import type { SystemOverview as SystemOverviewType } from '@neolith/core/types';
 
 interface SystemOverviewProps {
   data: SystemOverviewType;

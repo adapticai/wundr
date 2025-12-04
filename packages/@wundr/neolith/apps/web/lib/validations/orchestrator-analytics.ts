@@ -245,7 +245,7 @@ export function parseDateRange(input: AnalyticsDateRangeInput): {
   end: Date;
 } {
   const now = new Date();
-  let end = new Date(now);
+  const end = new Date(now);
   let start = new Date(now);
 
   // If custom dates are provided, use them

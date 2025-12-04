@@ -5,10 +5,13 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Session } from 'next-auth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { auth } from '@/lib/auth';
+
 import { POST } from '../route';
+
+import type { Session } from 'next-auth';
 
 // Mock dependencies
 vi.mock('@/lib/auth', () => ({

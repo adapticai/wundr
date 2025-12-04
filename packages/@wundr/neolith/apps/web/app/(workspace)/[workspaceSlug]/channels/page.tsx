@@ -1,9 +1,9 @@
 'use client';
 
+import { formatDistanceToNow } from 'date-fns';
 import { Hash, Lock, Plus, Users, MessageSquare, Clock } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { usePageHeader } from '@/contexts/page-header-context';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,8 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useChannels } from '@/hooks/use-channel';
-import { formatDistanceToNow } from 'date-fns';
 
 import type { Channel } from '@/types/channel';
 

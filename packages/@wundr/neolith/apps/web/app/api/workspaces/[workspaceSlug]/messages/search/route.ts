@@ -19,8 +19,8 @@ import {
   MESSAGE_ERROR_CODES,
 } from '@/lib/validations/message';
 import { messageSearchSchema } from '@/lib/validations/search';
-import type { MessageSearchQuery } from '@/lib/validations/search';
 
+import type { MessageSearchQuery } from '@/lib/validations/search';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 

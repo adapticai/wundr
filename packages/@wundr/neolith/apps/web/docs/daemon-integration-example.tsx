@@ -10,6 +10,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useDaemon, useSessionMonitor } from '@/hooks/use-daemon';
 
 // =============================================================================
@@ -59,7 +60,9 @@ export function SessionManagerExample() {
   const [isSpawning, setIsSpawning] = useState(false);
 
   const handleSpawnSession = async () => {
-    if (!connected) return;
+    if (!connected) {
+      return;
+    }
 
     setIsSpawning(true);
     try {
@@ -173,7 +176,9 @@ export function StreamingOutputExample() {
   });
 
   const handleExecuteTask = () => {
-    if (!connected) return;
+    if (!connected) {
+      return;
+    }
 
     executeTask({
       sessionId,

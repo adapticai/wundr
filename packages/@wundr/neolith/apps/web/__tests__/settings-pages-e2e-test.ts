@@ -190,7 +190,9 @@ export async function runSettingsPageTests(page: any) {
     let switchesFound = 0;
     for (const selector of switchSelectors) {
       const visible = await isElementVisible(page, selector);
-      if (visible) switchesFound++;
+      if (visible) {
+        switchesFound++;
+      }
     }
 
     if (switchesFound === switchSelectors.length) {
@@ -220,7 +222,9 @@ export async function runSettingsPageTests(page: any) {
     let togglesFound = 0;
     for (const selector of toggleSelectors) {
       const visible = await isElementVisible(page, selector);
-      if (visible) togglesFound++;
+      if (visible) {
+        togglesFound++;
+      }
     }
 
     if (togglesFound === toggleSelectors.length) {

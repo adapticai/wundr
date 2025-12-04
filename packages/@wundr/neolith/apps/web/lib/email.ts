@@ -187,7 +187,9 @@ export function verifyUnsubscribeToken(
   try {
     const decoded = Buffer.from(token, 'base64url').toString();
     const parts = decoded.split(':');
-    if (parts.length !== 4) return null;
+    if (parts.length !== 4) {
+      return null;
+    }
 
     const [userId, emailType, timestamp, signature] = parts;
     const secret = process.env.AUTH_SECRET || 'development-secret';
@@ -196,11 +198,15 @@ export function verifyUnsubscribeToken(
     hmac.update(payload);
     const expectedSignature = hmac.digest('hex');
 
-    if (signature !== expectedSignature) return null;
+    if (signature !== expectedSignature) {
+      return null;
+    }
 
     // Token valid for 30 days
     const tokenAge = Date.now() - parseInt(timestamp, 10);
-    if (tokenAge > 30 * 24 * 60 * 60 * 1000) return null;
+    if (tokenAge > 30 * 24 * 60 * 60 * 1000) {
+      return null;
+    }
 
     return { userId, emailType: emailType as EmailType };
   } catch {

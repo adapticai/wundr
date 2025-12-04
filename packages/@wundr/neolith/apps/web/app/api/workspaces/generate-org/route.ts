@@ -15,24 +15,25 @@
  * @module app/api/workspaces/generate-org/route
  */
 
-import { prisma } from '@neolith/database';
-import { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
-import {
-  createGenesisErrorResponse,
-  GENESIS_ERROR_CODES,
-} from '@/lib/validations/workspace-genesis';
 import {
   generateOrgInputSchema,
   type GenerateOrgInput as WizardInput,
 } from '@/lib/validations/org-genesis';
+import {
+  createGenesisErrorResponse,
+  GENESIS_ERROR_CODES,
+} from '@/lib/validations/workspace-genesis';
+
 import type {
   AgentApiResponse,
   DisciplineApiResponse,
   OrchestratorApiResponse,
 } from '@/types/api';
+import type { NextRequest } from 'next/server';
 
 // Dynamic imports for org-genesis packages to avoid build-time resolution issues
 // These packages are loaded at runtime when the API is called

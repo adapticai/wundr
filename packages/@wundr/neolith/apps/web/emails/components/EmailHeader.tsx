@@ -5,6 +5,7 @@
 
 import { Section, Text } from '@react-email/components';
 import * as React from 'react';
+
 import { colors } from './email-styles';
 
 interface EmailHeaderProps {

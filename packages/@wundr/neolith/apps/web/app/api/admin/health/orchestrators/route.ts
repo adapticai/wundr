@@ -15,9 +15,10 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest } from 'next/server';
 
 interface OrchestratorHealthStatus {
   id: string;
@@ -183,7 +184,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
 
     // Transform to health status objects
-    let healthStatuses: OrchestratorHealthStatus[] = orchestrators.map(
+    const healthStatuses: OrchestratorHealthStatus[] = orchestrators.map(
       orchestrator => {
         const tokenUsed = tokenUsageMap.get(orchestrator.id) || 0;
         const tokenLimit = orchestrator.budgetConfig?.hourlyLimit || 100000;

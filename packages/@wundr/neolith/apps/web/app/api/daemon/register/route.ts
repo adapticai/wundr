@@ -9,9 +9,10 @@
  * @module app/api/daemon/register/route
  */
 
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
+import type { NextRequest } from 'next/server';
 
 // =============================================================================
 // Validation Schemas

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { TRIGGER_TYPE_CONFIG } from '@/types/workflow';
+
 import type {
   TriggerConfig,
   TriggerType,
@@ -14,7 +16,6 @@ import type {
   MentionTrigger,
   WebhookTrigger,
 } from '@/types/workflow';
-import { TRIGGER_TYPE_CONFIG } from '@/types/workflow';
 
 /**
  * Default trigger configurations for each trigger type

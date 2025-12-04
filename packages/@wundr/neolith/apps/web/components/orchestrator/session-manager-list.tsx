@@ -6,7 +6,11 @@
 
 'use client';
 
+import { Plus, Settings, Play, Pause, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -14,10 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Settings, Play, Pause, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SessionManager {
@@ -68,7 +69,9 @@ export function SessionManagerList({
       const response = await fetch(
         `/api/orchestrators/${orchestratorId}/session-managers`
       );
-      if (!response.ok) throw new Error('Failed to fetch session managers');
+      if (!response.ok) {
+        throw new Error('Failed to fetch session managers');
+      }
       const { data } = await response.json();
       setSessionManagers(data);
     } catch (err) {
@@ -84,7 +87,9 @@ export function SessionManagerList({
       const response = await fetch(`/api/session-managers/${id}/${action}`, {
         method: 'POST',
       });
-      if (!response.ok) throw new Error(`Failed to ${action} session manager`);
+      if (!response.ok) {
+        throw new Error(`Failed to ${action} session manager`);
+      }
       await fetchSessionManagers();
     } catch (err) {
       console.error(`Failed to ${action} session manager:`, err);

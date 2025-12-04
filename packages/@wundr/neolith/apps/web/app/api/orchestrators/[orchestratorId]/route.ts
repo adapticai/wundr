@@ -11,8 +11,7 @@
  * @module app/api/orchestrators/[id]/route
  */
 
-import { prisma } from '@neolith/database';
-import { Prisma } from '@neolith/database';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';

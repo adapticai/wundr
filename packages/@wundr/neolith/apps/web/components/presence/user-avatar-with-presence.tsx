@@ -1,8 +1,8 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn, getInitials } from '@/lib/utils';
 import { useUserPresence } from '@/hooks/use-presence';
+import { cn, getInitials } from '@/lib/utils';
 
 import { PresenceIndicator } from './presence-indicator';
 

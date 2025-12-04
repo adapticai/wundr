@@ -985,12 +985,21 @@ export async function GET(
       allResults.sort((a, b) => {
         // Helper to get name for any result type
         const getName = (result: SearchResult): string | null => {
-          if (result.type === 'channel') return result.name;
-          if (result.type === 'file') return result.originalName;
-          if (result.type === 'user') return result.name ?? result.displayName;
-          if (result.type === 'orchestrator')
+          if (result.type === 'channel') {
+            return result.name;
+          }
+          if (result.type === 'file') {
+            return result.originalName;
+          }
+          if (result.type === 'user') {
             return result.name ?? result.displayName;
-          if (result.type === 'dm') return result.name;
+          }
+          if (result.type === 'orchestrator') {
+            return result.name ?? result.displayName;
+          }
+          if (result.type === 'dm') {
+            return result.name;
+          }
           return null;
         };
 
@@ -1011,8 +1020,12 @@ export async function GET(
 
         // Helper to get date for any result type
         const getDate = (result: SearchResult): Date | null => {
-          if ('createdAt' in result) return result.createdAt;
-          if ('lastMessageAt' in result) return result.lastMessageAt;
+          if ('createdAt' in result) {
+            return result.createdAt;
+          }
+          if ('lastMessageAt' in result) {
+            return result.lastMessageAt;
+          }
           return null;
         };
 

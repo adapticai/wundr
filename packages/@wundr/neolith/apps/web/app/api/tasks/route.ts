@@ -10,20 +10,21 @@
  * @module app/api/tasks/route
  */
 
-import { prisma } from '@neolith/database';
-import type { TaskPriority, TaskStatus } from '@neolith/database';
-import { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
 import { validateTaskDependencies } from '@/lib/services/task-service';
-import type { CreateTaskInput, TaskFiltersInput } from '@/lib/validations/task';
 import {
   createErrorResponse,
   createTaskSchema,
   TASK_ERROR_CODES,
   taskFiltersSchema,
 } from '@/lib/validations/task';
+
+import type { CreateTaskInput, TaskFiltersInput } from '@/lib/validations/task';
+import type { TaskPriority, TaskStatus } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * GET /api/tasks

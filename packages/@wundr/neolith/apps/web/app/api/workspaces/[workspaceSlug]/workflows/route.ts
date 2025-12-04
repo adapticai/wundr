@@ -10,8 +10,7 @@
  * @module app/api/workspaces/[workspaceId]/workflows/route
  */
 
-import { prisma, WorkflowStatus } from '@neolith/database';
-import { Prisma } from '@neolith/database';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -26,6 +25,7 @@ import type {
   CreateWorkflowInput,
   WorkflowFiltersInput,
 } from '@/lib/validations/workflow';
+import type { WorkflowStatus } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

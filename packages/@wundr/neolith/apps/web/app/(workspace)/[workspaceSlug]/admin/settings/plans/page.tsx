@@ -1,19 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   CreditCard,
   Users,
@@ -25,6 +11,20 @@ import {
   TrendingUp,
   Clock,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface Plan {
   id: string;
@@ -123,7 +123,9 @@ export default function PlansUsagePage() {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/billing/plan`
         );
-        if (!response.ok) throw new Error('Failed to load plan data');
+        if (!response.ok) {
+          throw new Error('Failed to load plan data');
+        }
         const data = await response.json();
         setCurrentPlan(data);
       } catch (error) {

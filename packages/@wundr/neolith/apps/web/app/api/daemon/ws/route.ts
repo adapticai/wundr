@@ -8,8 +8,9 @@
  * @module app/api/daemon/ws/route
  */
 
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+import type { NextRequest } from 'next/server';
 
 /**
  * GET /api/daemon/ws - WebSocket Upgrade Endpoint

@@ -1607,7 +1607,7 @@ backend-engineer (5), software-engineer (3), devops-engineer (2)
 ```typescript
 async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<void> {
   const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
-  const client = new S3Client({ region: process.env.AWS_REGION });
+  const client = new S3Client({ region: process.env.MY_AWS_REGION });
 
   await client.send(
     new DeleteObjectCommand({

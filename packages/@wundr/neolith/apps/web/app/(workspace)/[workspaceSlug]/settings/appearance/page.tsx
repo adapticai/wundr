@@ -3,8 +3,9 @@
  * @module app/(workspace)/[workspaceId]/settings/appearance/page
  */
 
-import type { Metadata } from 'next';
 import { AppearanceSettings } from '@/components/settings/appearance-settings';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Appearance Settings',

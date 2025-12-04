@@ -18,8 +18,9 @@
  * @requires Playwright and authenticated session
  */
 
-import { test, expect } from '@playwright/test';
 import * as path from 'path';
+
+import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 

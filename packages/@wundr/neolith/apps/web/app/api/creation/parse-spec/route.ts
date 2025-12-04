@@ -104,7 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Validate spec based on entity type
     let parseResult;
-    let warnings: string[] = [];
+    const warnings: string[] = [];
 
     switch (entityType) {
       case 'orchestrator':

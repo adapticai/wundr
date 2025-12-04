@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+
 import { useSidebar } from '@/components/ui/sidebar';
 
 interface AdminLayoutClientProps {

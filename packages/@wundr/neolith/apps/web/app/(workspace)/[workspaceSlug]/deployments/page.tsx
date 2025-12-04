@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
-
+import { CreateDeploymentModal } from '@/components/deployments/create-deployment-modal';
 import {
   DeploymentCard,
   DeploymentCardSkeleton,
 } from '@/components/deployments/deployment-card';
-import { CreateDeploymentModal } from '@/components/deployments/create-deployment-modal';
 import { DeploymentLogsPanel } from '@/components/deployments/deployment-logs-panel';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useDeployments, useDeploymentLogs } from '@/hooks/use-deployments';
 
 import type {

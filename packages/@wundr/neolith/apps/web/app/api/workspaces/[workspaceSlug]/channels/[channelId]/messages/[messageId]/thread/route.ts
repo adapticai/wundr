@@ -16,12 +16,12 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { createErrorResponse } from '@/lib/validations/message';
 import {
   createThreadReplySchema,
   threadQuerySchema,
   THREAD_ERROR_CODES,
 } from '@/lib/validations/threads';
-import { createErrorResponse } from '@/lib/validations/message';
 
 import type { NextRequest } from 'next/server';
 

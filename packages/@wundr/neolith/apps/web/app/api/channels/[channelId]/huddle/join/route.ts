@@ -14,14 +14,14 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  createErrorResponse,
-  ORG_ERROR_CODES,
-} from '@/lib/validations/organization';
-import {
   joinHuddleSchema,
   CALL_ERROR_CODES,
   type JoinResponse,
 } from '@/lib/validations/call';
+import {
+  createErrorResponse,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
 
 import type { NextRequest } from 'next/server';
 

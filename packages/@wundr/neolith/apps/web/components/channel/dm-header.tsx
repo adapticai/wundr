@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import {
   Headphones,
   Link2,
@@ -19,9 +18,11 @@ import {
   Settings,
   Star,
 } from 'lucide-react';
+import { useState, useCallback } from 'react';
+
+import { DMCallButton } from '@/components/call/dm-call-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DMCallButton } from '@/components/call/dm-call-button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +37,9 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { cn, getInitials } from '@/lib/utils';
+
 import { HeaderTabs, StarButton, DEFAULT_TABS } from './shared';
+
 import type { ConversationTab } from './shared';
 
 // Types

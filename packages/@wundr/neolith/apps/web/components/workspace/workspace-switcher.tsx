@@ -1,5 +1,9 @@
 'use client';
 
+import { AlertCircle, Building2, ChevronsUpDown, Plus } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import * as React from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -18,9 +22,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserWorkspaces } from '@/hooks/use-workspaces';
-import { AlertCircle, Building2, ChevronsUpDown, Plus } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import * as React from 'react';
 
 export interface Workspace {
   id: string;

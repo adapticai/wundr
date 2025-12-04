@@ -4,8 +4,9 @@
  */
 'use client';
 
-import * as React from 'react';
 import { Activity } from 'lucide-react';
+import * as React from 'react';
+
 import { EmptyState } from '@/components/ui/empty-state';
 
 export function EmptyActivity() {

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
 
 import { useWorkspaceUsers } from '@/hooks/use-channel';
 import { cn, getInitials } from '@/lib/utils';

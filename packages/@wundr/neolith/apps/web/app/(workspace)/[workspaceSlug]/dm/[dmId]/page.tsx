@@ -4,19 +4,20 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 
+import { AddPeopleDialog } from '@/components/channel/add-people-dialog';
+import { ConversationDetailsDialog } from '@/components/channel/conversation-details-dialog';
+import { DMDetailsPanel } from '@/components/channel/dm-details-panel';
+import { DMHeader } from '@/components/channel/dm-header';
+import { FilesTab } from '@/components/channel/files-tab';
 import {
   MessageList,
   MessageInput,
   ThreadPanel,
   TypingIndicator,
 } from '@/components/chat';
-import { DMHeader } from '@/components/channel/dm-header';
-import { DMDetailsPanel } from '@/components/channel/dm-details-panel';
-import { AddPeopleDialog } from '@/components/channel/add-people-dialog';
-import { ConversationDetailsDialog } from '@/components/channel/conversation-details-dialog';
-import { FilesTab } from '@/components/channel/files-tab';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
+import { useHuddle } from '@/hooks/use-call';
 import {
   useMessages,
   useSendMessage,
@@ -24,7 +25,6 @@ import {
   useTypingIndicator,
   useThread,
 } from '@/hooks/use-chat';
-import { useHuddle } from '@/hooks/use-call';
 
 import type { Message, User } from '@/types/chat';
 
@@ -119,7 +119,9 @@ export default function DMPage() {
 
   // Get all participants (other users in the DM, excluding current user)
   const participants = useMemo(() => {
-    if (!channel?.members || !currentUser) return [];
+    if (!channel?.members || !currentUser) {
+      return [];
+    }
     // Cast members to any[] to handle various member formats from API
     const members = channel.members as any[];
     return members
@@ -144,7 +146,9 @@ export default function DMPage() {
 
   // Get all members for details panel (including current user)
   const allMembers = useMemo(() => {
-    if (!channel?.members || !currentUser) return [];
+    if (!channel?.members || !currentUser) {
+      return [];
+    }
     const members = channel.members as any[];
     return members.map(m => ({
       id: m.userId || m.user?.id || m.id,
@@ -163,7 +167,9 @@ export default function DMPage() {
 
   // Check if there's an active huddle for this conversation
   const conversationHuddle = useMemo(() => {
-    if (!activeHuddle) return null;
+    if (!activeHuddle) {
+      return null;
+    }
     // Check if the huddle is for this DM channel
     if (activeHuddle.channelId === dmId) {
       return activeHuddle;
@@ -594,7 +600,9 @@ export default function DMPage() {
 
   // Handle star toggle
   const handleToggleStar = useCallback(async () => {
-    if (isStarring) return;
+    if (isStarring) {
+      return;
+    }
 
     const previousValue = isStarred;
     const newValue = !isStarred;

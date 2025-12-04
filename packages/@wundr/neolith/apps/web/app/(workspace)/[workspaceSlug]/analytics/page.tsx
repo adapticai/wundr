@@ -3,8 +3,8 @@
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
 import { AnalyticsDashboard } from '@/components/analytics/analytics-dashboard';
+import { usePageHeader } from '@/contexts/page-header-context';
 
 export default function AnalyticsPage(): JSX.Element {
   const params = useParams();

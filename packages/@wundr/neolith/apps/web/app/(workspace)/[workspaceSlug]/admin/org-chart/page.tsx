@@ -5,9 +5,10 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { OrgChart } from '@/components/org-chart';
-import type { OrgNode } from '@/components/org-chart/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
+import type { OrgNode } from '@/components/org-chart/types';
 import type { VPApiResponse } from '@/types/api';
 
 interface Workspace {

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { format } from 'date-fns';
 import {
   CalendarIcon,
@@ -12,17 +11,18 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from 'lucide-react';
+import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 export interface AuditEvent {

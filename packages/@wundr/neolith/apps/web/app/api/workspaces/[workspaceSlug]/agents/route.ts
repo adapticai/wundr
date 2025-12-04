@@ -16,6 +16,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
+import { isAvailableTool, DEFAULT_MODEL_CONFIGS } from '@/types/agent';
+
 import type {
   Agent,
   AgentType,
@@ -24,10 +26,7 @@ import type {
   AgentModelConfig,
   AvailableTool,
 } from '@/types/agent';
-import { isAvailableTool } from '@/types/agent';
-import { DEFAULT_MODEL_CONFIGS } from '@/types/agent';
 import type { Prisma } from '@neolith/database';
-
 import type { NextRequest } from 'next/server';
 
 /**

@@ -1,8 +1,10 @@
 'use client';
 
+import { Mic, MicOff, Minimize2, X, Video as VideoIcon } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { cn, getInitials } from '@/lib/utils';
-import { Mic, MicOff, Minimize2, X, Video as VideoIcon } from 'lucide-react';
+
 import type { CallParticipant } from '@/lib/validations/call';
 
 interface HuddleBarProps {

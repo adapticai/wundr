@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
-import type { PresenceStatus } from '@/components/presence/presence-indicator';
 import type {
   DaemonHealthStatus,
   OrchestratorHealthMetrics,
   OrchestratorStatusData,
 } from '@/components/presence/orchestrator-status-card';
+import type { PresenceStatus } from '@/components/presence/presence-indicator';
 
 // Types
 export interface UserPresence {

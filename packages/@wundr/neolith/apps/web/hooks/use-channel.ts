@@ -1291,9 +1291,15 @@ export function useWorkspaceMembersForDM(
     const withDM = otherMembers
       .filter(m => m.existingDMId)
       .sort((a, b) => {
-        if (!a.lastMessageAt && !b.lastMessageAt) return 0;
-        if (!a.lastMessageAt) return 1;
-        if (!b.lastMessageAt) return -1;
+        if (!a.lastMessageAt && !b.lastMessageAt) {
+          return 0;
+        }
+        if (!a.lastMessageAt) {
+          return 1;
+        }
+        if (!b.lastMessageAt) {
+          return -1;
+        }
         return b.lastMessageAt.getTime() - a.lastMessageAt.getTime();
       });
 

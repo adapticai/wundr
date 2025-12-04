@@ -1,10 +1,6 @@
 'use client';
 
 import { Button } from '@neolith/ui';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
-
 import {
   CheckCircle2,
   XCircle,
@@ -12,6 +8,9 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 /**
  * Verification status types

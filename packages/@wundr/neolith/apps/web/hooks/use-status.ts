@@ -11,7 +11,6 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
-import type { PresenceStatusType } from '@/lib/validations/presence';
 import {
   getStatusService,
   type UserStatus,
@@ -19,6 +18,8 @@ import {
   type AutoAwayConfig,
   type StatusUpdateOptions,
 } from '@/lib/services/status-service';
+
+import type { PresenceStatusType } from '@/lib/validations/presence';
 
 // =============================================================================
 // useUserStatus Hook
@@ -350,14 +351,18 @@ export function useStatusStream(options: {
       const eventSource = new EventSource(`/api/presence/stream?${params}`);
 
       eventSource.onopen = () => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
         setIsConnected(true);
         setError(null);
       };
 
       // Handle presence updates
       eventSource.addEventListener('presence:update', event => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         try {
           const data = JSON.parse(event.data);
@@ -379,7 +384,9 @@ export function useStatusStream(options: {
 
       // Handle channel presence
       eventSource.addEventListener('channel:presence', event => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         try {
           const data = JSON.parse(event.data);
@@ -401,7 +408,9 @@ export function useStatusStream(options: {
       });
 
       eventSource.onerror = () => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         setIsConnected(false);
         setError(new Error('Connection lost'));

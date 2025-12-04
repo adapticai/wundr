@@ -17,7 +17,6 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { processingJobs } from '@/lib/services/processing-stores';
-import type { ProcessingJob } from '@/lib/services/processing-stores';
 import {
   createJobSchema,
   jobListQuerySchema,
@@ -28,6 +27,7 @@ import {
   supportsConversion,
 } from '@/lib/validations/processing';
 
+import type { ProcessingJob } from '@/lib/services/processing-stores';
 import type {
   CreateJobInput,
   JobListInput,

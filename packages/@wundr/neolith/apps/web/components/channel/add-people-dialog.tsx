@@ -1,5 +1,8 @@
 'use client';
 
+import { ArrowLeft, Bot, ChevronRight, Mail, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,8 +15,6 @@ import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, Bot, ChevronRight, Mail, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Recipient {
   id: string;
@@ -97,8 +98,12 @@ export function AddPeopleDialog({
           if (responseData.data && Array.isArray(responseData.data)) {
             for (const item of responseData.data) {
               // Exclude existing members and already selected
-              if (existingMemberIds.includes(item.id)) continue;
-              if (recipients.some(r => r.id === item.id)) continue;
+              if (existingMemberIds.includes(item.id)) {
+                continue;
+              }
+              if (recipients.some(r => r.id === item.id)) {
+                continue;
+              }
 
               if (item.type === 'user') {
                 results.push({
@@ -203,7 +208,9 @@ export function AddPeopleDialog({
 
   const handleSubmit = useCallback(
     async (includeHistory: boolean) => {
-      if (recipients.length === 0) return;
+      if (recipients.length === 0) {
+        return;
+      }
 
       setIsSubmitting(true);
       try {

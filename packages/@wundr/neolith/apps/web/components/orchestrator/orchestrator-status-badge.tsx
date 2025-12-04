@@ -7,8 +7,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { OrchestratorStatus } from '@/types/orchestrator';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
+
+import type { OrchestratorStatus } from '@/types/orchestrator';
 
 interface OrchestratorStatusBadgeProps {
   status: OrchestratorStatus;

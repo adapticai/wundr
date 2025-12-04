@@ -1,9 +1,10 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { AlertCircle, Monitor, Smartphone, Tablet } from 'lucide-react';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export interface Session {
   id: string;

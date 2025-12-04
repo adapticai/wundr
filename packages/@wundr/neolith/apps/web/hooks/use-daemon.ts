@@ -11,6 +11,8 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react';
 
+import { getDaemonClient } from '@/lib/daemon-client';
+
 import type {
   DaemonClient,
   DaemonStatus,
@@ -20,7 +22,6 @@ import type {
   StreamChunk,
   ToolCallInfo,
 } from '@/lib/daemon-client';
-import { getDaemonClient } from '@/lib/daemon-client';
 
 // =============================================================================
 // Types
@@ -205,7 +206,9 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
   // Setup event listeners
   useEffect(() => {
     const client = clientRef.current;
-    if (!client) return;
+    if (!client) {
+      return;
+    }
 
     const onConnected = () => {
       setState(prev => ({
@@ -367,7 +370,9 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
   }, []);
 
   const disconnect = useCallback(() => {
-    if (!clientRef.current) return;
+    if (!clientRef.current) {
+      return;
+    }
     clientRef.current.disconnect();
     setState(prev => ({ ...prev, sessions: [] }));
   }, []);

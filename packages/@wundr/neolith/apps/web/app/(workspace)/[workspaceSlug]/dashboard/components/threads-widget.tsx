@@ -1,6 +1,10 @@
 'use client';
 
+import { MessageSquare, Hash, User } from 'lucide-react';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -8,10 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Hash, User } from 'lucide-react';
-import Link from 'next/link';
 
 interface Thread {
   id: string;
@@ -130,9 +131,15 @@ function ThreadItem({ thread, workspaceSlug }: ThreadItemProps) {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffMins < 1) {
+      return 'Just now';
+    }
+    if (diffMins < 60) {
+      return `${diffMins}m ago`;
+    }
+    if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    }
     return date.toLocaleDateString();
   };
 

@@ -2,6 +2,7 @@ import { prisma } from '@neolith/database';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
+
 import { AdminLayoutClient } from './admin-layout-client';
 
 import type { Metadata } from 'next';

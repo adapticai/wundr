@@ -12,17 +12,18 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 
-import type { UpdateDisciplineInput } from '@/lib/validations/organization';
+import { auth } from '@/lib/auth';
 import {
   createErrorResponse,
   disciplineIdParamSchema,
   ORG_ERROR_CODES,
   updateDisciplineSchema,
 } from '@/lib/validations/organization';
+
+import type { UpdateDisciplineInput } from '@/lib/validations/organization';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with discipline ID parameter

@@ -18,8 +18,9 @@
  * @requires Playwright MCP tools or @playwright/test
  */
 
-import { test, expect } from '@playwright/test';
 import * as path from 'path';
+
+import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
@@ -1098,7 +1099,9 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
           const observer = new PerformanceObserver(list => {
             for (const entry of list.getEntries()) {
-              if ((entry as any).hadRecentInput) continue;
+              if ((entry as any).hadRecentInput) {
+                continue;
+              }
               clsValue += (entry as any).value;
             }
           });

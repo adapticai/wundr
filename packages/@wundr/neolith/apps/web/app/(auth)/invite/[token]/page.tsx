@@ -68,7 +68,9 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   // Fetch invitation details
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      return;
+    }
 
     const fetchInvitation = async () => {
       try {

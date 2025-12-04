@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { X, UserPlus, Users, Mail, Bot, MessageSquare } from 'lucide-react';
+import { useState, useCallback } from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { cn, getInitials } from '@/lib/utils';
-import { DMAddPeopleModal } from './dm-add-people-modal';
 import { useToast } from '@/hooks/use-toast';
+import { cn, getInitials } from '@/lib/utils';
+
+import { DMAddPeopleModal } from './dm-add-people-modal';
 
 interface DMUser {
   id: string;
@@ -56,7 +58,9 @@ export function DMDetailsPanel({
   const { toast } = useToast();
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const statusColors = {
     online: 'bg-green-500',

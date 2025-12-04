@@ -245,7 +245,9 @@ export function useRealtimeSidebar({
   }, [initialDirectMessages, hasInitialized]);
 
   const connect = useCallback(() => {
-    if (!enabled || !workspaceSlug) return;
+    if (!enabled || !workspaceSlug) {
+      return;
+    }
 
     // Close existing connection
     if (eventSourceRef.current) {
@@ -411,9 +413,15 @@ export function useRealtimeSidebar({
                 a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
               const bDate =
                 b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
-              if (!aDate && !bDate) return 0;
-              if (!aDate) return 1;
-              if (!bDate) return -1;
+              if (!aDate && !bDate) {
+                return 0;
+              }
+              if (!aDate) {
+                return 1;
+              }
+              if (!bDate) {
+                return -1;
+              }
               return new Date(bDate).getTime() - new Date(aDate).getTime();
             });
             onDirectMessagesUpdateRef.current?.(updated);

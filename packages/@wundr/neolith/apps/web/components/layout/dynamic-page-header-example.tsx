@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { usePageHeader } from '@/contexts/page-header-context';
 
 /**

@@ -11,15 +11,17 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma, TaskPriority, TaskStatus } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { TaskPollingInput } from '@/lib/validations/task';
+
 import {
   createErrorResponse,
   TASK_ERROR_CODES,
   taskPollingSchema,
 } from '@/lib/validations/task';
+
+import type { TaskPollingInput } from '@/lib/validations/task';
+import type { Prisma, TaskPriority, TaskStatus } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * POST /api/tasks/poll

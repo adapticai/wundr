@@ -1,8 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Eye,
   Copy,
@@ -14,12 +11,12 @@ import {
   EyeOff,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
-import { ChannelListSkeleton } from '@/components/skeletons';
-import { UserAvatar } from '@/components/ui/user-avatar';
 import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
-import { cn } from '@/lib/utils';
-import { useWorkspaceUsers } from '@/hooks/use-channel';
+import { ChannelListSkeleton } from '@/components/skeletons';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -30,6 +27,9 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { useWorkspaceUsers } from '@/hooks/use-channel';
+import { cn } from '@/lib/utils';
 
 import { CreateChannelDialog } from './create-channel-dialog';
 
@@ -252,7 +252,9 @@ export function ChannelList({
   const { selfDM, sortedDMs, filteredDMs } = useMemo(() => {
     // Find self-DM (where isSelfDM is true or only participant is current user)
     const selfDM = directMessages.find(dm => {
-      if (dm.isSelfDM) return true;
+      if (dm.isSelfDM) {
+        return true;
+      }
       // Check if all participants are the current user
       const otherParticipants = dm.participants.filter(p => {
         const participantId = (p as any).id || (p as any).user?.id;
@@ -268,9 +270,15 @@ export function ChannelList({
     const sorted = [...otherDMs].sort((a, b) => {
       const aDate = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
       const bDate = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
-      if (!aDate && !bDate) return 0;
-      if (!aDate) return 1;
-      if (!bDate) return -1;
+      if (!aDate && !bDate) {
+        return 0;
+      }
+      if (!aDate) {
+        return 1;
+      }
+      if (!bDate) {
+        return -1;
+      }
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 

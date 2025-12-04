@@ -8,8 +8,11 @@
 'use client';
 
 import { useState } from 'react';
-import { CharterCapabilities } from './charter-capabilities';
+
 import { Button } from '@/components/ui/button';
+
+import { CharterCapabilities } from './charter-capabilities';
+
 import type { OrchestratorCapability } from '@/types/charter-capabilities';
 
 export function CharterCapabilitiesExample() {

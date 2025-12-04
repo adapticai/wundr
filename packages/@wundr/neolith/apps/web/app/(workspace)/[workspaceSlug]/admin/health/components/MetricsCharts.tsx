@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import type { MetricsChartData } from '@neolith/core/types';
+import { format } from 'date-fns';
 import {
   LineChart,
   Line,
@@ -22,7 +15,16 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { format } from 'date-fns';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
+import type { MetricsChartData } from '@neolith/core/types';
 
 interface MetricsChartsProps {
   data: MetricsChartData;

@@ -243,7 +243,7 @@ if (!JWT_SECRET) {
 - **Files:** API routes accessing environment variables
 - **Examples:**
   - `process.env.CDN_DOMAIN` (used without fallback)
-  - `process.env.AWS_REGION` (has fallback but not validated)
+  - `process.env.MY_AWS_REGION` (has fallback but not validated)
   - `process.env.NEXTAUTH_URL` (has origin fallback - could be security risk)
 - **Issue:** Missing env vars could cause runtime failures or wrong behavior
 - **Recommendation:** Validate all env vars at server startup

@@ -1,7 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import { Users, Activity, Coins, AlertTriangle } from 'lucide-react';
+import * as React from 'react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -94,21 +95,35 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
     | 'neutral' => {
     const percentage =
       (data.orchestrators.active / data.orchestrators.total) * 100;
-    if (percentage >= 90) return 'success';
-    if (percentage >= 70) return 'warning';
-    if (percentage < 70) return 'error';
+    if (percentage >= 90) {
+      return 'success';
+    }
+    if (percentage >= 70) {
+      return 'warning';
+    }
+    if (percentage < 70) {
+      return 'error';
+    }
     return 'neutral';
   };
 
   const getSessionStatus = (): 'success' | 'warning' | 'error' | 'neutral' => {
-    if (data.sessions.active === 0) return 'neutral';
-    if (data.sessions.active >= data.sessions.total * 0.8) return 'warning';
+    if (data.sessions.active === 0) {
+      return 'neutral';
+    }
+    if (data.sessions.active >= data.sessions.total * 0.8) {
+      return 'warning';
+    }
     return 'success';
   };
 
   const getTokenStatus = (): 'success' | 'warning' | 'error' | 'neutral' => {
-    if (data.tokens.percentage >= 90) return 'error';
-    if (data.tokens.percentage >= 75) return 'warning';
+    if (data.tokens.percentage >= 90) {
+      return 'error';
+    }
+    if (data.tokens.percentage >= 75) {
+      return 'warning';
+    }
     return 'success';
   };
 
@@ -117,8 +132,12 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
     | 'warning'
     | 'error'
     | 'neutral' => {
-    if (data.errorRate.rate >= data.errorRate.threshold) return 'error';
-    if (data.errorRate.rate >= data.errorRate.threshold * 0.7) return 'warning';
+    if (data.errorRate.rate >= data.errorRate.threshold) {
+      return 'error';
+    }
+    if (data.errorRate.rate >= data.errorRate.threshold * 0.7) {
+      return 'warning';
+    }
     return 'success';
   };
 

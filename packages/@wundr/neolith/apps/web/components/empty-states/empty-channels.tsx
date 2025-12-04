@@ -4,8 +4,9 @@
  */
 'use client';
 
-import * as React from 'react';
 import { Hash } from 'lucide-react';
+import * as React from 'react';
+
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface EmptyChannelsProps {

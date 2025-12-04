@@ -1,5 +1,6 @@
 'use client';
 
+import { OrchestratorStatusBadge } from '@/components/orchestrator/orchestrator-status-badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -8,7 +9,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { OrchestratorStatusBadge } from '@/components/orchestrator/orchestrator-status-badge';
 
 import {
   DISCIPLINE_COLORS,

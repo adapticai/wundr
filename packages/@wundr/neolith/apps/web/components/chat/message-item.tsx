@@ -1,18 +1,21 @@
 'use client';
 
 import { memo, useCallback, useMemo, useState } from 'react';
-import { GroupAvatar } from '@/components/ui/user-avatar';
-import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
-import { useFilePreview } from '@/components/file-preview';
-import { cn } from '@/lib/utils';
-import type { Message, User } from '@/types/chat';
-import { ReactionDisplay } from './reaction-display';
-import { ReactionPickerTrigger } from './reaction-picker';
+
 import {
   ShareFileDialog,
   type ShareFileData,
 } from '@/components/channel/share-file-dialog';
+import { useFilePreview } from '@/components/file-preview';
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
+import { GroupAvatar } from '@/components/ui/user-avatar';
+import { cn } from '@/lib/utils';
+
 import { DeleteMessageDialog } from './delete-message-dialog';
+import { ReactionDisplay } from './reaction-display';
+import { ReactionPickerTrigger } from './reaction-picker';
+
+import type { Message, User } from '@/types/chat';
 
 /**
  * Props for the MessageItem component
@@ -129,7 +132,9 @@ export const MessageItem = memo(function MessageItem({
   }, [message.content]);
 
   const handleSaveForLater = useCallback(async () => {
-    if (isSaving || !workspaceSlug) return;
+    if (isSaving || !workspaceSlug) {
+      return;
+    }
     setIsSaving(true);
 
     try {
@@ -603,7 +608,9 @@ function AttachmentPreview({
   const handleSaveForLater = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isSaving || !workspaceSlug) return;
+    if (isSaving || !workspaceSlug) {
+      return;
+    }
     setIsSaving(true);
 
     try {
@@ -727,7 +734,9 @@ function AttachmentPreview({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
             setIsHovered(false);
-            if (!showMenu) setShowMenu(false);
+            if (!showMenu) {
+              setShowMenu(false);
+            }
           }}
         >
           {/* Filename label */}
@@ -792,7 +801,9 @@ function AttachmentPreview({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setIsHovered(false);
-          if (!showMenu) setShowMenu(false);
+          if (!showMenu) {
+            setShowMenu(false);
+          }
         }}
       >
         <button

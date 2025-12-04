@@ -10,8 +10,8 @@
  */
 
 import { prisma } from '@neolith/database';
-import { NextResponse } from 'next/server';
 import { AccessToken } from 'livekit-server-sdk';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { callIdParamSchema, CALL_ERROR_CODES } from '@/lib/validations/call';

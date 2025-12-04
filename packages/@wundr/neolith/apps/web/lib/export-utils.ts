@@ -193,7 +193,9 @@ export function convertToCSV<T extends Record<string, unknown>>(
     includeHeaders,
   });
 
-  if (data.length === 0) return '';
+  if (data.length === 0) {
+    return '';
+  }
 
   const headers = columns || Object.keys(data[0] || {});
   const csvRows: string[] = [];

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { format } from 'date-fns';
 import {
   ChevronDownIcon,
@@ -10,8 +9,11 @@ import {
   SearchIcon,
   XIcon,
 } from 'lucide-react';
+import * as React from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Card,
   CardContent,
@@ -20,6 +22,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -35,14 +42,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+
 import { AuditLogEntry } from './audit-log-entry';
 
 export interface AuditEvent {

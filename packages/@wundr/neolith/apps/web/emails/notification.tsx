@@ -13,6 +13,7 @@ import {
   Section,
 } from '@react-email/components';
 import * as React from 'react';
+
 import {
   EmailHeader,
   EmailFooter,

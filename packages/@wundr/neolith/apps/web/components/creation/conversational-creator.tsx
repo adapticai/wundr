@@ -5,12 +5,15 @@
  */
 'use client';
 
-import * as React from 'react';
 import { Send, ArrowRight } from 'lucide-react';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+
 import { ChatMessage } from './chat-message';
 import { useConversationalCreation } from './hooks/useConversationalCreation';
+
 import type { EntityType, EntitySpec } from './types';
 
 export interface ConversationalCreatorProps {

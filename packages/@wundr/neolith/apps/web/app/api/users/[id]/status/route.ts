@@ -11,13 +11,13 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
   createPresenceErrorResponse,
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
-import { z } from 'zod';
 
 import type { NextRequest } from 'next/server';
 

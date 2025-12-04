@@ -172,13 +172,18 @@ function AuthenticationSection({
   );
 
   useEffect(() => {
-    if (settings?.twoFactorRequired !== undefined)
+    if (settings?.twoFactorRequired !== undefined) {
       setTwoFactorRequired(settings.twoFactorRequired);
-    if (settings?.ssoEnabled !== undefined) setSsoEnabled(settings.ssoEnabled);
-    if (settings?.ssoProvider !== undefined)
+    }
+    if (settings?.ssoEnabled !== undefined) {
+      setSsoEnabled(settings.ssoEnabled);
+    }
+    if (settings?.ssoProvider !== undefined) {
       setSsoProvider(settings.ssoProvider ?? null);
-    if (settings?.allowedAuthMethods !== undefined)
+    }
+    if (settings?.allowedAuthMethods !== undefined) {
       setAllowedAuthMethods(settings.allowedAuthMethods);
+    }
   }, [settings]);
 
   const handleSubmit = useCallback(
@@ -329,12 +334,15 @@ function SessionPoliciesSection({
   );
 
   useEffect(() => {
-    if (settings?.sessionTimeout !== undefined)
+    if (settings?.sessionTimeout !== undefined) {
       setSessionTimeout(settings.sessionTimeout);
-    if (settings?.requireReauthForSensitive !== undefined)
+    }
+    if (settings?.requireReauthForSensitive !== undefined) {
       setRequireReauthForSensitive(settings.requireReauthForSensitive);
-    if (settings?.maxConcurrentSessions !== undefined)
+    }
+    if (settings?.maxConcurrentSessions !== undefined) {
       setMaxConcurrentSessions(settings.maxConcurrentSessions);
+    }
   }, [settings]);
 
   const handleSubmit = useCallback(
@@ -467,12 +475,15 @@ function DomainEmailSection({
   );
 
   useEffect(() => {
-    if (settings?.allowedEmailDomains !== undefined)
+    if (settings?.allowedEmailDomains !== undefined) {
       setAllowedEmailDomains(settings.allowedEmailDomains.join(', '));
-    if (settings?.blockedEmailDomains !== undefined)
+    }
+    if (settings?.blockedEmailDomains !== undefined) {
       setBlockedEmailDomains(settings.blockedEmailDomains.join(', '));
-    if (settings?.emailVerificationRequired !== undefined)
+    }
+    if (settings?.emailVerificationRequired !== undefined) {
       setEmailVerificationRequired(settings.emailVerificationRequired);
+    }
   }, [settings]);
 
   const handleSubmit = useCallback(
@@ -616,16 +627,21 @@ function DataPrivacySection({
   );
 
   useEffect(() => {
-    if (settings?.dataRetentionDays !== undefined)
+    if (settings?.dataRetentionDays !== undefined) {
       setDataRetentionDays(settings.dataRetentionDays);
-    if (settings?.messageEditWindow !== undefined)
+    }
+    if (settings?.messageEditWindow !== undefined) {
       setMessageEditWindow(settings.messageEditWindow);
-    if (settings?.messageDeleteWindow !== undefined)
+    }
+    if (settings?.messageDeleteWindow !== undefined) {
       setMessageDeleteWindow(settings.messageDeleteWindow);
-    if (settings?.fileRetentionDays !== undefined)
+    }
+    if (settings?.fileRetentionDays !== undefined) {
       setFileRetentionDays(settings.fileRetentionDays);
-    if (settings?.dataExportEnabled !== undefined)
+    }
+    if (settings?.dataExportEnabled !== undefined) {
       setDataExportEnabled(settings.dataExportEnabled);
+    }
   }, [settings]);
 
   const handleSubmit = useCallback(
@@ -829,12 +845,15 @@ function AuditComplianceSection({
   );
 
   useEffect(() => {
-    if (settings?.activityLogRetentionDays !== undefined)
+    if (settings?.activityLogRetentionDays !== undefined) {
       setActivityLogRetentionDays(settings.activityLogRetentionDays);
-    if (settings?.auditLogsEnabled !== undefined)
+    }
+    if (settings?.auditLogsEnabled !== undefined) {
       setAuditLogsEnabled(settings.auditLogsEnabled);
-    if (settings?.complianceMode !== undefined)
+    }
+    if (settings?.complianceMode !== undefined) {
       setComplianceMode(settings.complianceMode ?? 'none');
+    }
   }, [settings]);
 
   const handleSubmit = useCallback(
@@ -980,12 +999,15 @@ function ApiIntegrationsSection({
   );
 
   useEffect(() => {
-    if (settings?.apiRateLimit !== undefined)
+    if (settings?.apiRateLimit !== undefined) {
       setApiRateLimit(settings.apiRateLimit);
-    if (settings?.allowedOAuthScopes !== undefined)
+    }
+    if (settings?.allowedOAuthScopes !== undefined) {
       setAllowedOAuthScopes(settings.allowedOAuthScopes);
-    if (settings?.webhookSignatureRequired !== undefined)
+    }
+    if (settings?.webhookSignatureRequired !== undefined) {
       setWebhookSignatureRequired(settings.webhookSignatureRequired);
+    }
   }, [settings]);
 
   const handleSubmit = useCallback(

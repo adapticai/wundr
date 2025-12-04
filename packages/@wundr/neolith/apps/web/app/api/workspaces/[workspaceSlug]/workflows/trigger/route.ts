@@ -10,21 +10,23 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
+import {
+  createErrorResponse,
+  triggerWorkflowsSchema,
+  WORKFLOW_ERROR_CODES,
+} from '@/lib/validations/workflow';
+
 import type {
   TriggerWorkflowsInput,
   WorkflowAction,
   WorkflowStepResult,
   WorkflowTrigger,
 } from '@/lib/validations/workflow';
-import {
-  createErrorResponse,
-  triggerWorkflowsSchema,
-  WORKFLOW_ERROR_CODES,
-} from '@/lib/validations/workflow';
+import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspaceId parameter
@@ -39,7 +41,9 @@ interface RouteContext {
 function isValidCondition(
   value: unknown
 ): value is { field: string; operator: string; value?: unknown } {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
   const obj = value as Record<string, unknown>;
   return typeof obj.field === 'string' && typeof obj.operator === 'string';
 }

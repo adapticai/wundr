@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
-
 import { prisma } from '@neolith/database';
+import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
 

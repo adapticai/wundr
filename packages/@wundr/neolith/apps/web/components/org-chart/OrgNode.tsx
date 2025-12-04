@@ -8,6 +8,7 @@ import {
   User,
 } from 'lucide-react';
 import React from 'react';
+
 import { OrchestratorStatusDot } from '@/components/orchestrator/orchestrator-status-badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -21,12 +22,12 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
+import { OrchestratorDetailsPopover } from './OrchestratorDetailsPopover';
 import {
   DISCIPLINE_COLORS,
   type OrgHierarchyNode,
   type OrgNodeProps,
 } from './types';
-import { OrchestratorDetailsPopover } from './OrchestratorDetailsPopover';
 
 /**
  * Individual node component in the org hierarchy tree

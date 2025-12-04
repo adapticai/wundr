@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -49,11 +48,11 @@ import {
   PlusIcon,
   TrendingUpIcon,
 } from 'lucide-react';
+import * as React from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -100,6 +99,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const schema = z.object({
   id: z.number(),

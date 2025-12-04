@@ -14,12 +14,13 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { CreateAgentInput, AgentType, AvailableTool } from '@/types/agent';
 import {
   AGENT_TYPE_METADATA,
   AVAILABLE_TOOLS,
   DEFAULT_MODEL_CONFIGS,
 } from '@/types/agent';
+
+import type { CreateAgentInput, AgentType, AvailableTool } from '@/types/agent';
 
 interface CreateAgentModalProps {
   isOpen: boolean;

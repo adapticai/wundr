@@ -6,7 +6,11 @@
  * Configure third-party integrations and webhooks for the orchestrator.
  */
 
+import { Plus, X, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -14,11 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Plus, X, ExternalLink } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 interface IntegrationSettingsProps {
   config: any;

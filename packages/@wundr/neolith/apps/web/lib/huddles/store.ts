@@ -279,7 +279,9 @@ export function getWorkspaceHuddles(workspaceId: string) {
  */
 export function endHuddle(huddleId: string): boolean {
   const huddle = huddlesStore.get(huddleId);
-  if (!huddle) return false;
+  if (!huddle) {
+    return false;
+  }
   huddle.status = 'ended';
   huddle.endedAt = new Date();
   huddlesStore.set(huddleId, huddle);
@@ -295,7 +297,9 @@ export function joinHuddle(
   participant: Participant
 ): boolean {
   const huddle = huddlesStore.get(huddleId);
-  if (!huddle || huddle.status !== 'active') return false;
+  if (!huddle || huddle.status !== 'active') {
+    return false;
+  }
   if (!huddle.participants.some(p => p.id === participant.id)) {
     huddle.participants.push(participant);
     huddlesStore.set(huddleId, huddle);
@@ -313,7 +317,9 @@ export function joinHuddle(
  */
 export function leaveHuddle(huddleId: string, participantId: string): boolean {
   const huddle = huddlesStore.get(huddleId);
-  if (!huddle) return false;
+  if (!huddle) {
+    return false;
+  }
   huddle.participants = huddle.participants.filter(p => p.id !== participantId);
   huddlesStore.set(huddleId, huddle);
   console.log(
@@ -333,9 +339,13 @@ export function leaveHuddle(huddleId: string, participantId: string): boolean {
  */
 export function toggleMute(huddleId: string, participantId: string): boolean {
   const huddle = huddlesStore.get(huddleId);
-  if (!huddle) return false;
+  if (!huddle) {
+    return false;
+  }
   const participant = huddle.participants.find(p => p.id === participantId);
-  if (!participant) return false;
+  if (!participant) {
+    return false;
+  }
   participant.isMuted = !participant.isMuted;
   huddlesStore.set(huddleId, huddle);
   console.log(
@@ -356,9 +366,13 @@ export function updateSpeaking(
   isSpeaking: boolean
 ): boolean {
   const huddle = huddlesStore.get(huddleId);
-  if (!huddle) return false;
+  if (!huddle) {
+    return false;
+  }
   const participant = huddle.participants.find(p => p.id === participantId);
-  if (!participant) return false;
+  if (!participant) {
+    return false;
+  }
   participant.isSpeaking = isSpeaking;
   huddlesStore.set(huddleId, huddle);
   return true;

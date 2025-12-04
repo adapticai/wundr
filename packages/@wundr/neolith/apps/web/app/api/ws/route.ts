@@ -13,8 +13,9 @@
  * @module api/ws/route
  */
 
-import { NextRequest } from 'next/server';
 import { getWebSocketServer } from '../../../lib/realtime/server';
+
+import type { NextRequest } from 'next/server';
 import type { WebSocketServer } from 'ws';
 
 /**
@@ -32,7 +33,9 @@ const ALLOWED_ORIGINS = [
  * Checks if the request origin is allowed
  */
 function isOriginAllowed(origin: string | null): boolean {
-  if (!origin) return true; // Allow same-origin requests
+  if (!origin) {
+    return true;
+  } // Allow same-origin requests
 
   return ALLOWED_ORIGINS.some(allowed => {
     if (allowed.includes('*')) {

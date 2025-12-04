@@ -5,7 +5,6 @@
  */
 'use client';
 
-import * as React from 'react';
 import {
   MessageSquare,
   Edit3,
@@ -15,14 +14,17 @@ import {
   Save,
   AlertCircle,
 } from 'lucide-react';
-import { Card, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import * as React from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+
 import {
   ConversationalWizard,
   type Message,
@@ -214,7 +216,9 @@ export function DualModeEditor({
    * Ask AI for help with a specific field
    */
   const handleAskAI = async (field: string) => {
-    if (!onAskAI) return;
+    if (!onAskAI) {
+      return;
+    }
 
     setIsAILoading(prev => ({ ...prev, [field]: true }));
 
@@ -254,7 +258,9 @@ export function DualModeEditor({
    */
   const handleExplainField = async (field: string) => {
     const fieldConfig = defaultFieldConfigs.find(f => f.key === field);
-    if (!onAskAI) return;
+    if (!onAskAI) {
+      return;
+    }
 
     setIsAILoading(prev => ({ ...prev, [`explain-${field}`]: true }));
 
@@ -280,7 +286,9 @@ export function DualModeEditor({
    * Ask AI to suggest improvements for all fields
    */
   const handleSuggestImprovements = async () => {
-    if (!onAskAI) return;
+    if (!onAskAI) {
+      return;
+    }
 
     setIsAILoading(prev => ({ ...prev, improvements: true }));
 

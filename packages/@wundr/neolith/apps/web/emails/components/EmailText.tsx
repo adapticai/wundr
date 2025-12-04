@@ -5,6 +5,7 @@
 
 import { Text as ReactEmailText } from '@react-email/components';
 import * as React from 'react';
+
 import { text, textSmall, h1, h2, colors } from './email-styles';
 
 interface EmailTextProps {

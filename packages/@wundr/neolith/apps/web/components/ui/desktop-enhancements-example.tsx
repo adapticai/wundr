@@ -8,20 +8,21 @@
  */
 'use client';
 
+import { Copy, Edit, Trash, Share } from 'lucide-react';
 import * as React from 'react';
-import { CommandPalette } from '@/components/ui/command-palette';
-import { KeyboardShortcutsTrigger } from '@/components/ui/keyboard-shortcuts';
+
 import { MultiPanelLayout } from '@/components/layout/multi-panel-layout';
-import {
-  DragDropUpload,
-  type UploadedFile,
-} from '@/components/ui/drag-drop-upload';
+import { CommandPalette } from '@/components/ui/command-palette';
 import {
   ContextMenuWrapper,
   type ContextMenuAction,
 } from '@/components/ui/context-menu-wrapper';
+import {
+  DragDropUpload,
+  type UploadedFile,
+} from '@/components/ui/drag-drop-upload';
+import { KeyboardShortcutsTrigger } from '@/components/ui/keyboard-shortcuts';
 import { useDesktopNotifications } from '@/hooks/use-desktop-notifications';
-import { Copy, Edit, Trash, Share } from 'lucide-react';
 
 /**
  * Example: Command Palette Integration

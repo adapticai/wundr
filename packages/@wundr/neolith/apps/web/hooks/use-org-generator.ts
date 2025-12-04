@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useState } from 'react';
+
 import type { GenerateOrgInput } from '@/lib/validations/workspace-genesis';
 
 /**

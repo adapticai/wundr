@@ -297,8 +297,12 @@ export function useMembers(
   const queryParams = new URLSearchParams();
   queryParams.set('page', String(page));
   queryParams.set('limit', String(limit));
-  if (options.status) queryParams.set('status', options.status);
-  if (options.search) queryParams.set('search', options.search);
+  if (options.status) {
+    queryParams.set('status', options.status);
+  }
+  if (options.search) {
+    queryParams.set('search', options.search);
+  }
 
   const { data, error, isLoading, mutate } = useSWR<{
     members: Member[];
@@ -884,8 +888,12 @@ export function useAdminActivity(
   const queryParams = new URLSearchParams();
   queryParams.set('offset', String(offset));
   queryParams.set('limit', String(limit));
-  if (options.type) queryParams.set('action', options.type);
-  if (options.actorId) queryParams.set('actorId', options.actorId);
+  if (options.type) {
+    queryParams.set('action', options.type);
+  }
+  if (options.actorId) {
+    queryParams.set('actorId', options.actorId);
+  }
 
   const { data, error, isLoading, mutate } = useSWR<{
     actions: AdminAction[];

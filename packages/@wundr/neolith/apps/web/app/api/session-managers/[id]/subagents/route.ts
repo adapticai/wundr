@@ -11,10 +11,12 @@
  */
 
 import { prisma } from '@neolith/database';
+import { NextResponse } from 'next/server';
+
+import { auth } from '@/lib/auth';
+
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 
 /**
  * Route context with session manager ID parameter

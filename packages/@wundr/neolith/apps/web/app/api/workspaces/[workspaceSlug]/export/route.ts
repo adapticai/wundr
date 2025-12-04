@@ -16,9 +16,9 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
 import { auth } from '@/lib/auth';
 import {
   convertToCSV,
@@ -27,6 +27,8 @@ import {
   getExportContentType,
   shouldUseAsyncExport,
 } from '@/lib/export-utils';
+
+import type { NextRequest } from 'next/server';
 
 /**
  * Zod schema for export request validation
@@ -622,11 +624,23 @@ function convertExportToCSV(exportData: ExportData, type: string): string {
  */
 function countRecords(exportData: ExportData): number {
   let count = 0;
-  if (exportData.channels) count += exportData.channels.length;
-  if (exportData.messages) count += exportData.messages.length;
-  if (exportData.tasks) count += exportData.tasks.length;
-  if (exportData.members) count += exportData.members.length;
-  if (exportData.orchestrators) count += exportData.orchestrators.length;
-  if (exportData.workflows) count += exportData.workflows.length;
+  if (exportData.channels) {
+    count += exportData.channels.length;
+  }
+  if (exportData.messages) {
+    count += exportData.messages.length;
+  }
+  if (exportData.tasks) {
+    count += exportData.tasks.length;
+  }
+  if (exportData.members) {
+    count += exportData.members.length;
+  }
+  if (exportData.orchestrators) {
+    count += exportData.orchestrators.length;
+  }
+  if (exportData.workflows) {
+    count += exportData.workflows.length;
+  }
   return count;
 }

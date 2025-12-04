@@ -85,8 +85,12 @@ export function GridView({
   // Determine tile size based on grid
   const tileSize = useMemo(() => {
     const count = participants.length;
-    if (count <= 1) return 'large';
-    if (count <= 4) return 'medium';
+    if (count <= 1) {
+      return 'large';
+    }
+    if (count <= 4) {
+      return 'medium';
+    }
     return 'small';
   }, [participants.length]);
 

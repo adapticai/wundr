@@ -2,8 +2,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
-import { useWorkspaceUsers } from '@/hooks/use-channel';
-import { cn, getInitials } from '@/lib/utils';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -12,6 +10,8 @@ import {
   ResponsiveModalDescription,
   ResponsiveModalFooter,
 } from '@/components/ui/responsive-modal';
+import { useWorkspaceUsers } from '@/hooks/use-channel';
+import { cn, getInitials } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 

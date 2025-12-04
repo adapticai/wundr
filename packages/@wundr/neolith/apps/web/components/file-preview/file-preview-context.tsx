@@ -82,7 +82,9 @@ export function FilePreviewProvider({ children }: { children: ReactNode }) {
       <FilePreviewModal
         open={isOpen}
         onOpenChange={open => {
-          if (!open) closePreview();
+          if (!open) {
+            closePreview();
+          }
         }}
         file={currentFile}
         files={fileList}

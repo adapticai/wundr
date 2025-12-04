@@ -1,9 +1,19 @@
 'use client';
 
+import {
+  Download,
+  Filter,
+  Search,
+  User,
+  Calendar,
+  Globe,
+  Shield,
+  Loader2,
+} from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -12,7 +22,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -28,16 +37,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Download,
-  Filter,
-  Search,
-  User,
-  Calendar,
-  Globe,
-  Shield,
-  Loader2,
-} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface AuditLog {
   id: string;
@@ -99,7 +100,9 @@ export default function AuditLogsPage() {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/audit-logs?${params}`
         );
-        if (!response.ok) throw new Error('Failed to fetch audit logs');
+        if (!response.ok) {
+          throw new Error('Failed to fetch audit logs');
+        }
 
         const data = await response.json();
         setLogs(data.logs || []);
@@ -144,7 +147,9 @@ export default function AuditLogsPage() {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/audit-logs?${params}`
       );
-      if (!response.ok) throw new Error('Failed to export audit logs');
+      if (!response.ok) {
+        throw new Error('Failed to export audit logs');
+      }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

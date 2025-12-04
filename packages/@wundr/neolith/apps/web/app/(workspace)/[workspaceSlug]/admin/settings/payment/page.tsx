@@ -1,27 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
-
-import { useToast } from '@/hooks/use-toast';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Loader2,
   CreditCard,
@@ -31,6 +9,28 @@ import {
   Download,
   Receipt,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethod {
   id: string;
@@ -89,7 +89,9 @@ export default function PaymentMethodsPage() {
 
   // Fetch payment methods and invoices
   const fetchData = useCallback(async () => {
-    if (!workspaceSlug) return;
+    if (!workspaceSlug) {
+      return;
+    }
 
     setIsLoading(true);
     try {

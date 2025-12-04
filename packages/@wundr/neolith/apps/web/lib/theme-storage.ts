@@ -4,7 +4,9 @@
  */
 
 export async function getStoredTheme(): Promise<string | null> {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   // Check if running in Capacitor
   if ('Capacitor' in window) {
@@ -21,7 +23,9 @@ export async function getStoredTheme(): Promise<string | null> {
 }
 
 export async function setStoredTheme(theme: string): Promise<void> {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {
+    return;
+  }
 
   // Check if running in Capacitor
   if ('Capacitor' in window) {

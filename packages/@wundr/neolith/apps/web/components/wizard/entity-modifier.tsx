@@ -5,15 +5,18 @@
  */
 'use client';
 
-import * as React from 'react';
 import { Sparkles, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import * as React from 'react';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChatMessage } from './chat-message';
-import { ChatInput } from './chat-input';
 import { cn } from '@/lib/utils';
+
+import { ChatInput } from './chat-input';
+import { ChatMessage } from './chat-message';
+
 import type { EntityType } from '@/components/creation/types';
 
 /**

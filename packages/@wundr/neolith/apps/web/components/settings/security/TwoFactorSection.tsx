@@ -1,10 +1,10 @@
 'use client';
 
+import { ShieldCheck, Copy, Download } from 'lucide-react';
 import { useState } from 'react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Copy, Download } from 'lucide-react';
 
 interface TwoFactorSectionProps {
   enabled: boolean;

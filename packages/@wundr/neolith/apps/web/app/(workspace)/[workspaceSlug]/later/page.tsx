@@ -540,7 +540,9 @@ function SavedMessageCard({
   const [copySuccess, setCopySuccess] = useState(false);
   const message = item.message;
 
-  if (!message) return null;
+  if (!message) {
+    return null;
+  }
 
   const channelUrl =
     message.channel.type === 'DM'
@@ -813,7 +815,9 @@ function SavedFileCard({
   const { openPreview } = useFilePreview();
   const file = item.file;
 
-  if (!file) return null;
+  if (!file) {
+    return null;
+  }
 
   const handlePreview = async () => {
     try {
@@ -843,28 +847,40 @@ function SavedFileCard({
 
   const formatFileSize = (bytes: number) => {
     const size = Number(bytes);
-    if (size < 1024) return `${size} B`;
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    if (size < 1024) {
+      return `${size} B`;
+    }
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    }
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   // Get appropriate icon for file type
   const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith('image/')) return Image;
-    if (mimeType.startsWith('video/')) return Video;
-    if (mimeType.startsWith('audio/')) return Music;
+    if (mimeType.startsWith('image/')) {
+      return Image;
+    }
+    if (mimeType.startsWith('video/')) {
+      return Video;
+    }
+    if (mimeType.startsWith('audio/')) {
+      return Music;
+    }
     if (
       mimeType.includes('pdf') ||
       mimeType.includes('document') ||
       mimeType.includes('text')
-    )
+    ) {
       return FileText;
+    }
     if (
       mimeType.includes('zip') ||
       mimeType.includes('tar') ||
       mimeType.includes('rar')
-    )
+    ) {
       return ArchiveIcon;
+    }
     return FileIcon;
   };
 
@@ -1207,11 +1223,21 @@ function formatRelativeTime(timestamp: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  if (diffMins < 1) {
+    return 'Just now';
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
+  if (diffDays < 30) {
+    return `${Math.floor(diffDays / 7)}w ago`;
+  }
 
   return date.toLocaleDateString();
 }

@@ -3,12 +3,11 @@
 import { useParams } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
-
 import {
   OrchestratorStatusCard,
   OrchestratorStatusCardSkeleton,
 } from '@/components/presence/orchestrator-status-card';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useWorkspaceOrchestratorHealthList } from '@/hooks/use-presence';
 import { cn } from '@/lib/utils';
 

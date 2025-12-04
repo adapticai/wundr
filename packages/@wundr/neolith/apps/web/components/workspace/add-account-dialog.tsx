@@ -1,5 +1,8 @@
 'use client';
 
+import { Mail } from 'lucide-react';
+
+import { GitHubIcon, GoogleIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,8 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { GitHubIcon, GoogleIcon } from '@/components/icons';
-import { Mail } from 'lucide-react';
 
 interface AddAccountDialogProps {
   isOpen: boolean;

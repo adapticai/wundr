@@ -5,8 +5,9 @@
  */
 'use client';
 
-import * as React from 'react';
 import { Bot, User } from 'lucide-react';
+import * as React from 'react';
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 

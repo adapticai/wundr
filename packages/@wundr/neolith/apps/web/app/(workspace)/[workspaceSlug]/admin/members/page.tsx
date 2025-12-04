@@ -3,8 +3,6 @@
 import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
-import { UserAvatar } from '@/components/ui/user-avatar';
-import { usePageHeader } from '@/contexts/page-header-context';
 import { Button } from '@/components/ui/button';
 import {
   ResponsiveModal,
@@ -21,7 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useMembers, useInvites, useRoles, type Role } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
@@ -679,7 +678,9 @@ function EditMemberModal({
     }
   };
 
-  if (!member) return null;
+  if (!member) {
+    return null;
+  }
 
   return (
     <ResponsiveModal open={!!member} onOpenChange={onClose}>

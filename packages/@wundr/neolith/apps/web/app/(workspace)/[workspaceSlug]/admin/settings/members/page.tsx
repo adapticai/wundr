@@ -1,8 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
-import Link from 'next/link';
 
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
@@ -81,7 +81,9 @@ export default function MembersSettingsPage() {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/admin/settings/members`
         );
-        if (!response.ok) throw new Error('Failed to load settings');
+        if (!response.ok) {
+          throw new Error('Failed to load settings');
+        }
         const data = await response.json();
         setSettings(data);
       } catch (error) {

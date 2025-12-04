@@ -65,7 +65,9 @@ export default function ChannelSettingsPage() {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/admin/settings/channels`
         );
-        if (!response.ok) throw new Error('Failed to load settings');
+        if (!response.ok) {
+          throw new Error('Failed to load settings');
+        }
         const data = await response.json();
         setSettings(data);
       } catch (error) {

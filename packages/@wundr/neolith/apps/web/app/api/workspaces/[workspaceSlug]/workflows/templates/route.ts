@@ -11,22 +11,24 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
 import { auth } from '@/lib/auth';
-import type {
-  CreateFromTemplateInput,
-  TemplateFiltersInput,
-  WorkflowTemplate,
-} from '@/lib/validations/workflow';
 import {
   createErrorResponse,
   createFromTemplateSchema,
   templateFiltersSchema,
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
+
+import type {
+  CreateFromTemplateInput,
+  TemplateFiltersInput,
+  WorkflowTemplate,
+} from '@/lib/validations/workflow';
+import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspaceId parameter

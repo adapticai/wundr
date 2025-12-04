@@ -1,6 +1,9 @@
 'use client';
 
+import { Mail, Shield, Loader2 } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,10 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -28,13 +29,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useNotificationSettings,
   usePushNotifications,
 } from '@/hooks/use-notifications';
+import { useToast } from '@/hooks/use-toast';
+
 import type { NotificationType } from '@/types/notification';
-import { Mail, Shield, Loader2 } from 'lucide-react';
 
 const NOTIFICATION_TYPE_LABELS: Record<
   NotificationType,
@@ -135,7 +137,9 @@ export default function NotificationsSettingsPage() {
   });
 
   const handleToggleEnabled = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
     await updateSettings({ enabled: !settings.enabled });
   }, [settings, updateSettings]);
 
@@ -152,12 +156,16 @@ export default function NotificationsSettingsPage() {
   }, [doNotDisturb, toast]);
 
   const handleToggleSound = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
     await updateSettings({ sound: !settings.sound });
   }, [settings, updateSettings]);
 
   const handleToggleDesktop = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
 
     if (!settings.desktop && !pushEnabled) {
       const granted = await requestPermission();
@@ -182,18 +190,24 @@ export default function NotificationsSettingsPage() {
   ]);
 
   const handleToggleMobile = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
     await updateSettings({ mobile: !settings.mobile });
   }, [settings, updateSettings]);
 
   const handleToggleEmail = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
     await updateSettings({ email: !settings.email });
   }, [settings, updateSettings]);
 
   const handleDigestChange = useCallback(
     async (value: string) => {
-      if (!settings) return;
+      if (!settings) {
+        return;
+      }
       await updateSettings({
         digestFrequency: value as typeof settings.digestFrequency,
       });
@@ -202,7 +216,9 @@ export default function NotificationsSettingsPage() {
   );
 
   const handleQuietHoursToggle = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
     await updateSettings({
       quietHours: {
         ...settings.quietHours,
@@ -213,7 +229,9 @@ export default function NotificationsSettingsPage() {
 
   const handleQuietHoursChange = useCallback(
     async (field: 'start' | 'end', value: string) => {
-      if (!settings?.quietHours) return;
+      if (!settings?.quietHours) {
+        return;
+      }
       await updateSettings({
         quietHours: {
           ...settings.quietHours,
@@ -229,7 +247,9 @@ export default function NotificationsSettingsPage() {
       type: NotificationType,
       channel: 'enabled' | 'sound' | 'desktop'
     ) => {
-      if (!settings) return;
+      if (!settings) {
+        return;
+      }
 
       const currentPrefs = settings.preferences[type];
       await updateSettings({

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   AlertTriangleIcon,
   CreditCardIcon,
@@ -9,7 +8,9 @@ import {
   TrendingUpIcon,
   UsersIcon,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -17,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 import { DashboardStatsCard } from './dashboard-stats-card';
 

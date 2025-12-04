@@ -1,6 +1,10 @@
 'use client';
 
+import { formatDistanceToNow } from 'date-fns';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -9,14 +13,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Progress } from '@/components/ui/progress';
 import {
   Select,
@@ -26,13 +26,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
 import type { OrchestratorHealthStatus } from '@neolith/core/types';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 interface OrchestratorListProps {
   orchestrators: OrchestratorHealthStatus[];
@@ -60,7 +62,9 @@ export function OrchestratorList({ orchestrators }: OrchestratorListProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const filteredOrchestrators = orchestrators.filter(orch => {
-    if (statusFilter === 'all') return true;
+    if (statusFilter === 'all') {
+      return true;
+    }
     return orch.status === statusFilter;
   });
 

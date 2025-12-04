@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-
+import { Plus } from 'lucide-react';
 import { useParams } from 'next/navigation';
-
-import { usePageHeader } from '@/contexts/page-header-context';
+import { useState, useCallback, useEffect } from 'react';
 
 import { AgentCard } from '@/components/agents/agent-card';
 import { AgentDetailPanel } from '@/components/agents/agent-detail-panel';
@@ -19,9 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useAgents, useAgentMutations } from '@/hooks/use-agents';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+
 import type { Agent, AgentType, AgentStatus } from '@/types/agent';
 
 export default function AgentsPage() {

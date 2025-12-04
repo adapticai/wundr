@@ -224,7 +224,9 @@ function loadFromLocalStorage(): Partial<WizardState> | null {
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
+    if (!stored) {
+      return null;
+    }
 
     const data: StoredWizardState = JSON.parse(stored);
     const age = Date.now() - data.timestamp;

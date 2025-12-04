@@ -8,13 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { AGENT_TYPE_METADATA, AVAILABLE_TOOLS } from '@/types/agent';
+
 import type {
   Agent,
   AgentType,
   UpdateAgentInput,
   AvailableTool,
 } from '@/types/agent';
-import { AGENT_TYPE_METADATA, AVAILABLE_TOOLS } from '@/types/agent';
 
 interface AgentDetailPanelProps {
   agent: Agent;

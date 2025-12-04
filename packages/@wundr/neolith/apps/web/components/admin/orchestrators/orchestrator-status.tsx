@@ -1,9 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import type { OrchestratorStatus } from '@/types/orchestrator';
+import { cn } from '@/lib/utils';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
+
+import type { OrchestratorStatus } from '@/types/orchestrator';
 
 interface OrchestratorStatusProps {
   status: OrchestratorStatus;

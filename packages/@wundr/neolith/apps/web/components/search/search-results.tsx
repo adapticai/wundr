@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { useFilePreview } from '@/components/file-preview';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /**

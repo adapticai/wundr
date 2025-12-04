@@ -11,11 +11,11 @@
  */
 'use client';
 
-import * as React from 'react';
 import { CheckCircle2, XCircle, Loader2, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import * as React from 'react';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -24,7 +24,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+
 import type {
   GenerationState,
   GenerationStep,

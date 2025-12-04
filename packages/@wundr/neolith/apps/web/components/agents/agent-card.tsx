@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Agent } from '@/types/agent';
 import { AGENT_TYPE_METADATA } from '@/types/agent';
+
+import type { Agent } from '@/types/agent';
 
 interface AgentCardProps {
   agent: Agent;

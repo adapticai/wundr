@@ -1,7 +1,9 @@
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { Prisma } from '@neolith/database';
 
 /**
  * Route context with workspace ID parameter
@@ -129,9 +131,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     // Prepare updates for workspace table
     const workspaceUpdates: Record<string, unknown> = {};
-    if (updates.name !== undefined) workspaceUpdates.name = updates.name;
-    if (updates.description !== undefined)
+    if (updates.name !== undefined) {
+      workspaceUpdates.name = updates.name;
+    }
+    if (updates.description !== undefined) {
       workspaceUpdates.description = updates.description;
+    }
 
     // Prepare settings JSON updates
     const currentSettings =

@@ -3,22 +3,21 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
+import { ChannelHeader } from '@/components/channel';
+import { CanvasTab } from '@/components/channel/canvas-tab';
+import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel';
+import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
+import { FilesTab } from '@/components/channel/files-tab';
+import { InviteDialog } from '@/components/channel/invite-dialog';
+import { NotificationsDialog } from '@/components/channel/notifications-dialog';
 import {
   MessageList,
   MessageInput,
   ThreadPanel,
   TypingIndicator,
 } from '@/components/chat';
-import { ChannelHeader } from '@/components/channel';
-import { CanvasTab } from '@/components/channel/canvas-tab';
-import { FilesTab } from '@/components/channel/files-tab';
-import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
-import { NotificationsDialog } from '@/components/channel/notifications-dialog';
-import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel';
-import { InviteDialog } from '@/components/channel/invite-dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
 import {
   useMessages,
   useSendMessage,
@@ -26,10 +25,11 @@ import {
   useTypingIndicator,
   useThread,
 } from '@/hooks/use-chat';
+import { useToast } from '@/hooks/use-toast';
 
-import type { Message, User } from '@/types/chat';
-import type { Channel, ChannelPermissions } from '@/types/channel';
 import type { ConversationTab } from '@/components/channel/shared';
+import type { Channel, ChannelPermissions } from '@/types/channel';
+import type { Message, User } from '@/types/chat';
 
 // For channels, we currently support a subset of tabs
 type ChannelTab = Extract<ConversationTab, 'messages' | 'canvas' | 'files'>;

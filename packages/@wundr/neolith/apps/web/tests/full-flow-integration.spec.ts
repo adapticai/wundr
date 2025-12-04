@@ -13,8 +13,9 @@
  * and takes screenshots at key points.
  */
 
-import { expect, type Page, test } from '@playwright/test';
 import * as path from 'path';
+
+import { expect, type Page, test } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 const SCREENSHOTS_DIR = path.join(

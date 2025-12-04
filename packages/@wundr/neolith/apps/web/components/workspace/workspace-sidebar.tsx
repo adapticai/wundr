@@ -1,8 +1,5 @@
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
 import {
   LayoutDashboard,
   Users,
@@ -20,17 +17,22 @@ import {
   Palette,
   User,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useParams } from 'next/navigation';
+import * as React from 'react';
 
-import { WorkspaceSwitcher } from './workspace-switcher';
 import { ChannelList, CollapsedChannelIcons } from '@/components/channel';
 import { CreateChannelDialog } from '@/components/channel/create-channel-dialog';
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
 import {
-  useChannels,
-  useDirectMessages,
-  useChannelMutations,
-} from '@/hooks/use-channel';
-import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
-import { useUserPresence, usePresenceHeartbeat } from '@/hooks/use-presence';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -44,17 +46,16 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
+import {
+  useChannels,
+  useDirectMessages,
+  useChannelMutations,
+} from '@/hooks/use-channel';
+import { useUserPresence, usePresenceHeartbeat } from '@/hooks/use-presence';
+import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
+
+import { WorkspaceSwitcher } from './workspace-switcher';
 
 interface WorkspaceSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user?: {

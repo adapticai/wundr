@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { type LucideIcon } from 'lucide-react';
 
 import {
   SidebarGroup,
@@ -10,6 +9,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+
+import type { LucideIcon } from 'lucide-react';
 
 export function NavSecondary({
   items,

@@ -12,11 +12,11 @@
  */
 
 import { prisma } from '@neolith/database';
-import { SavedItemStatus } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
+import type { SavedItemStatus } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -23,6 +22,7 @@ import {
 } from '@/lib/validations/session-manager';
 
 import type { CreateSessionManagerInput } from '@/lib/validations/session-manager';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

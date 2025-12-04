@@ -4,8 +4,6 @@
  */
 'use client';
 
-import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import {
   Send,
   ArrowRight,
@@ -14,6 +12,8 @@ import {
   AlertCircle,
   CheckCircle,
 } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -169,7 +169,9 @@ export default function ConversationalWorkflowCreationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading) {
+      return;
+    }
 
     await sendMessage(input);
   };

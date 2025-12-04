@@ -10,14 +10,14 @@
  * @module app/api/workspaces/[workspaceSlug]/saved-items/route
  */
 
-import { prisma } from '@neolith/database';
-import { Prisma, SavedItemStatus, SavedItemType } from '@neolith/database';
-import { NextResponse } from 'next/server';
+import { prisma, Prisma } from '@neolith/database';
 import { nanoid } from 'nanoid';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { generateFileUrl } from '@/lib/validations/upload';
 
+import type { SavedItemStatus, SavedItemType } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

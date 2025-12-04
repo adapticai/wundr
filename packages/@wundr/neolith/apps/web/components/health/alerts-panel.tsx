@@ -1,10 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import * as React from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +13,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export type AlertSeverity = 'critical' | 'warning' | 'info';
@@ -88,10 +89,18 @@ const AlertItem: React.FC<AlertItemProps> = ({ alert, onAcknowledge }) => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) {
+      return 'Just now';
+    }
+    if (diffMins < 60) {
+      return `${diffMins}m ago`;
+    }
+    if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    }
+    if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    }
 
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -185,7 +194,9 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
   >('all');
 
   const filteredAlerts = React.useMemo(() => {
-    if (selectedSeverity === 'all') return alerts;
+    if (selectedSeverity === 'all') {
+      return alerts;
+    }
     return alerts.filter(alert => alert.severity === selectedSeverity);
   }, [alerts, selectedSeverity]);
 

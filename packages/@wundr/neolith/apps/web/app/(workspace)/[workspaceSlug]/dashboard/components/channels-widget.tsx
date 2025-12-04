@@ -1,6 +1,9 @@
 'use client';
 
+import { Hash, Star } from 'lucide-react';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
+
 import {
   Card,
   CardContent,
@@ -9,8 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Hash, Star } from 'lucide-react';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 interface Channel {

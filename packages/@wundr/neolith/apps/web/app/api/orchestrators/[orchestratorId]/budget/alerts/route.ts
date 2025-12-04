@@ -11,9 +11,8 @@
  * @module app/api/orchestrators/[orchestratorId]/budget/alerts/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -23,11 +22,14 @@ import {
   BUDGET_ERROR_CODES,
   alertStatusEnum,
 } from '@/lib/validations/token-budget';
+
 import type {
   ConfigureAlertsInput,
   Alert,
   AlertStatus,
 } from '@/lib/validations/token-budget';
+import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with orchestrator ID parameter
@@ -379,7 +381,7 @@ export async function POST(
     }
 
     // Get or create active charter version
-    let charter = await prisma.charterVersion.findFirst({
+    const charter = await prisma.charterVersion.findFirst({
       where: {
         orchestratorId: orchestrator.id,
         isActive: true,

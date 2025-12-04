@@ -30,10 +30,13 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
-
-import { Button } from '@/components/ui/button';
+import { CharterEditor, CharterDiff } from '@/components/charter';
+import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
+import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
+import { SubagentCreate } from '@/components/orchestrator/subagent-create';
+import { SubagentList } from '@/components/orchestrator/subagent-list';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -41,19 +44,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
+
 import {
   useOrchestrator,
   useOrchestratorMutations,
 } from '@/hooks/use-orchestrator';
 import { cn } from '@/lib/utils';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
-import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
-import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
-import { SubagentList } from '@/components/orchestrator/subagent-list';
-import { SubagentCreate } from '@/components/orchestrator/subagent-create';
-import { CharterEditor, CharterDiff } from '@/components/charter';
 import {
   Dialog,
   DialogContent,
@@ -129,7 +129,9 @@ export default function OrchestratorDetailPage() {
   }, []);
 
   const handleSaveChanges = useCallback(async () => {
-    if (!orchestrator) return;
+    if (!orchestrator) {
+      return;
+    }
 
     const result = await updateOrchestrator(orchestrator.id, editFormData);
     if (result) {
@@ -152,13 +154,17 @@ export default function OrchestratorDetailPage() {
   }, [orchestrator]);
 
   const handleToggleStatus = useCallback(async () => {
-    if (!orchestrator) return;
+    if (!orchestrator) {
+      return;
+    }
     await toggleOrchestratorStatus(orchestrator.id, orchestrator.status);
     refetch();
   }, [orchestrator, toggleOrchestratorStatus, refetch]);
 
   const handlePause = useCallback(async () => {
-    if (!orchestrator) return;
+    if (!orchestrator) {
+      return;
+    }
     await updateOrchestrator(orchestrator.id, { status: 'BUSY' });
     refetch();
   }, [orchestrator, updateOrchestrator, refetch]);
@@ -178,7 +184,9 @@ export default function OrchestratorDetailPage() {
 
   const handleSaveCharter = useCallback(
     async (charter: OrchestratorCharter) => {
-      if (!orchestrator) return;
+      if (!orchestrator) {
+        return;
+      }
       await updateOrchestrator(orchestrator.id, { charter });
       setIsCharterEditorOpen(false);
       refetch();
@@ -188,7 +196,9 @@ export default function OrchestratorDetailPage() {
 
   // Fetch charter versions
   const fetchCharterVersions = useCallback(async () => {
-    if (!orchestratorId) return;
+    if (!orchestratorId) {
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -206,16 +216,22 @@ export default function OrchestratorDetailPage() {
   // Rollback to a specific charter version
   const handleRollbackCharter = useCallback(
     async (version: number) => {
-      if (!orchestrator) return;
+      if (!orchestrator) {
+        return;
+      }
 
       const confirmRollback = window.confirm(
         `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`
       );
 
-      if (!confirmRollback) return;
+      if (!confirmRollback) {
+        return;
+      }
 
       const versionData = charterVersions.find(v => v.version === version);
-      if (!versionData) return;
+      if (!versionData) {
+        return;
+      }
 
       await updateOrchestrator(orchestrator.id, {
         charter: versionData.charter,
@@ -854,10 +870,18 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffSecs < 60) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffSecs < 60) {
+      return 'Just now';
+    }
+    if (diffMins < 60) {
+      return `${diffMins}m ago`;
+    }
+    if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    }
+    if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    }
 
     return date.toLocaleDateString(undefined, {
       month: 'short',
@@ -872,7 +896,9 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
    */
   const fetchActivities = useCallback(
     async (append = false) => {
-      if (!workspaceSlug || !orchestratorId) return;
+      if (!workspaceSlug || !orchestratorId) {
+        return;
+      }
 
       if (!append) {
         setIsLoading(true);
@@ -926,7 +952,9 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
    * Load more activities (pagination)
    */
   const handleLoadMore = useCallback(() => {
-    if (!hasMore || isLoadingMore) return;
+    if (!hasMore || isLoadingMore) {
+      return;
+    }
     fetchActivities(true);
   }, [hasMore, isLoadingMore, fetchActivities]);
 
@@ -1270,7 +1298,9 @@ function CharterTab({
 
   // Calculate charter stats
   const charterStats = React.useMemo(() => {
-    if (!charter) return null;
+    if (!charter) {
+      return null;
+    }
 
     return {
       concurrentSessions: charter.operationalSettings?.autoEscalation

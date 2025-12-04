@@ -5,7 +5,6 @@
  */
 'use client';
 
-import * as React from 'react';
 import {
   Bot,
   Workflow,
@@ -14,6 +13,9 @@ import {
   Users,
   GitBranch,
 } from 'lucide-react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -21,8 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
 import type { EntityType } from './types';
 
 export interface EntityTypeInfo {

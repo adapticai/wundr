@@ -21,13 +21,13 @@
 import { render } from '@react-email/render';
 import { NextResponse } from 'next/server';
 
-import { auth } from '@/lib/auth';
-import { WelcomeEmail } from '@/emails/welcome';
-import { PasswordResetEmail } from '@/emails/password-reset';
-import { VerificationEmail } from '@/emails/verification';
 import { InvitationEmail } from '@/emails/invitation';
 import { NotificationEmail } from '@/emails/notification';
 import { PasswordChangedEmail } from '@/emails/password-changed';
+import { PasswordResetEmail } from '@/emails/password-reset';
+import { VerificationEmail } from '@/emails/verification';
+import { WelcomeEmail } from '@/emails/welcome';
+import { auth } from '@/lib/auth';
 
 import type { NextRequest } from 'next/server';
 

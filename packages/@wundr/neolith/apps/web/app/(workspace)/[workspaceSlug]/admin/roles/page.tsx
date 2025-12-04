@@ -4,7 +4,6 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
 import { usePageHeader } from '@/contexts/page-header-context';
-
 import { useRoles, type Role, type RolePermission } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 

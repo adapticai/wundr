@@ -12,20 +12,22 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
-import type {
-  MarkMentionsHandledInput,
-  OrchestratorMentionsFiltersInput,
-} from '@/lib/validations/orchestrator-conversation';
 import {
   createErrorResponse,
   markMentionsHandledSchema,
   ORCHESTRATOR_CONVERSATION_ERROR_CODES,
   orchestratorMentionsFiltersSchema,
 } from '@/lib/validations/orchestrator-conversation';
+
+import type {
+  MarkMentionsHandledInput,
+  OrchestratorMentionsFiltersInput,
+} from '@/lib/validations/orchestrator-conversation';
+import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace and OrchestratorID parameters

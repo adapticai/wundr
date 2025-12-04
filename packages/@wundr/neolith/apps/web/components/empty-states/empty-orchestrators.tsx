@@ -4,8 +4,9 @@
  */
 'use client';
 
-import * as React from 'react';
 import { Bot } from 'lucide-react';
+import * as React from 'react';
+
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface EmptyOrchestratorsProps {

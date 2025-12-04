@@ -543,7 +543,9 @@ export function useMetricsChart(
 
   // Transform data for recharts compatibility
   const chartData = useMemo<ChartDataPoint[]>(() => {
-    if (!data) return [];
+    if (!data) {
+      return [];
+    }
 
     return data.map(point => ({
       time: formatTimestamp(point.timestamp, timeRange),
@@ -746,8 +748,12 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
 
   const filterBySeverity = useCallback(
     (severity?: HealthAlertSeverity): HealthAlert[] => {
-      if (!data) return [];
-      if (!severity) return data;
+      if (!data) {
+        return [];
+      }
+      if (!severity) {
+        return data;
+      }
       return data.filter(alert => alert.severity === severity);
     },
     [data]

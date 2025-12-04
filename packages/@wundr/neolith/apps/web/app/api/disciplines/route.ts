@@ -11,20 +11,22 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
-import type {
-  CreateDisciplineInput,
-  DisciplineFiltersInput,
-} from '@/lib/validations/organization';
 import {
   createDisciplineSchema,
   createErrorResponse,
   disciplineFiltersSchema,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
+
+import type {
+  CreateDisciplineInput,
+  DisciplineFiltersInput,
+} from '@/lib/validations/organization';
+import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * GET /api/disciplines

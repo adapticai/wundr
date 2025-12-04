@@ -9,8 +9,9 @@ import {
 } from '@livekit/components-react';
 import { clsx } from 'clsx';
 import { Track } from 'livekit-client';
-import { getInitials } from '@/lib/utils';
 import { useRef, useCallback, useMemo } from 'react';
+
+import { getInitials } from '@/lib/utils';
 
 import type { TrackReferenceOrPlaceholder } from '@livekit/components-react';
 import type { Participant } from 'livekit-client';

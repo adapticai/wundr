@@ -12,13 +12,13 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 
 import { useLocalMedia, useCallDuration } from '@/hooks/use-call';
 
+import { AddParticipantModal } from './add-participant-modal';
 import { CallControls } from './call-controls';
 import { CallHeader } from './call-header';
-import { ParticipantTile } from './participant-tile';
 import { GridView } from './grid-view';
-import { SpeakerView } from './speaker-view';
 import { ParticipantList } from './participant-list';
-import { AddParticipantModal } from './add-participant-modal';
+import { ParticipantTile } from './participant-tile';
+import { SpeakerView } from './speaker-view';
 
 export type LayoutMode = 'grid' | 'spotlight' | 'sidebar';
 
@@ -231,7 +231,9 @@ function VideoRoomInner({
   // Handle invite participants
   const handleInviteParticipants = useCallback(
     async (userIds: string[], message?: string) => {
-      if (!callId) return;
+      if (!callId) {
+        return;
+      }
 
       try {
         const response = await fetch(`/api/calls/${callId}/invite`, {
@@ -254,7 +256,9 @@ function VideoRoomInner({
   // Handle mute participant (host only)
   const handleMuteParticipant = useCallback(
     async (participantId: string) => {
-      if (!isHost || !room) return;
+      if (!isHost || !room) {
+        return;
+      }
 
       // Use LiveKit's API to mute remote participant
       // This requires server-side implementation
@@ -266,7 +270,9 @@ function VideoRoomInner({
   // Handle kick participant (host only)
   const handleKickParticipant = useCallback(
     async (participantId: string) => {
-      if (!isHost || !callId) return;
+      if (!isHost || !callId) {
+        return;
+      }
 
       try {
         const response = await fetch(`/api/calls/${callId}/kick`, {

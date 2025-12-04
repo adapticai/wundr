@@ -1,21 +1,13 @@
 'use client';
 
+import { ArrowLeft, Pause, Play, Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
-import { ArrowLeft, Pause, Play, Trash2 } from 'lucide-react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { OrchestratorActivity } from '@/components/admin/orchestrators/orchestrator-activity';
+import { OrchestratorConfig } from '@/components/admin/orchestrators/orchestrator-config';
+import { OrchestratorMetrics } from '@/components/admin/orchestrators/orchestrator-metrics';
+import { OrchestratorStatusBadge } from '@/components/admin/orchestrators/orchestrator-status';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,16 +18,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-import { OrchestratorStatusBadge } from '@/components/admin/orchestrators/orchestrator-status';
-import { OrchestratorMetrics } from '@/components/admin/orchestrators/orchestrator-metrics';
-import { OrchestratorActivity } from '@/components/admin/orchestrators/orchestrator-activity';
-import { OrchestratorConfig } from '@/components/admin/orchestrators/orchestrator-config';
-
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
 import {
   useOrchestrator,
   useOrchestratorMutations,
 } from '@/hooks/use-orchestrator';
+
 import type { Orchestrator } from '@/types/orchestrator';
 
 export default function AdminOrchestratorDetailPage() {
@@ -71,14 +70,18 @@ export default function AdminOrchestratorDetailPage() {
   }, [router, workspaceSlug]);
 
   const handleToggleStatus = useCallback(async () => {
-    if (!orchestrator) return;
+    if (!orchestrator) {
+      return;
+    }
     await toggleOrchestratorStatus(orchestrator.id, orchestrator.status);
     refetch();
   }, [orchestrator, toggleOrchestratorStatus, refetch]);
 
   const handleSaveConfig = useCallback(
     async (updates: Partial<Orchestrator>) => {
-      if (!orchestrator) return;
+      if (!orchestrator) {
+        return;
+      }
       // Convert Orchestrator partial to UpdateOrchestratorInput
       const updateInput = {
         title: updates.title,
@@ -95,7 +98,9 @@ export default function AdminOrchestratorDetailPage() {
   );
 
   const handleDelete = useCallback(async () => {
-    if (!orchestrator) return;
+    if (!orchestrator) {
+      return;
+    }
     await deleteOrchestrator(orchestrator.id);
     router.push(`/${workspaceSlug}/admin/orchestrators`);
   }, [orchestrator, deleteOrchestrator, router, workspaceSlug]);

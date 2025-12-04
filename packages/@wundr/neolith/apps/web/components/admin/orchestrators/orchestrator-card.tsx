@@ -1,11 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { OrchestratorStatusBadge } from './orchestrator-status';
 import { MessageSquare, Clock, Settings } from 'lucide-react';
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+
+import { OrchestratorStatusBadge } from './orchestrator-status';
+
 import type { Orchestrator } from '@/types/orchestrator';
 
 interface OrchestratorCardProps {
@@ -16,17 +19,27 @@ interface OrchestratorCardProps {
 }
 
 function formatRelativeTime(date: Date | null): string {
-  if (!date) return 'Never';
+  if (!date) {
+    return 'Never';
+  }
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) {
+    return 'Just now';
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
   return date.toLocaleDateString();
 }
 

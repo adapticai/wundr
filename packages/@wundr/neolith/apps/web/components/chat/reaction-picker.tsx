@@ -49,7 +49,9 @@ export function ReactionPicker({
 
   // Filter emojis by search
   const filteredCategories = useMemo(() => {
-    if (!search) return categories;
+    if (!search) {
+      return categories;
+    }
 
     const searchLower = search.toLowerCase();
     return categories

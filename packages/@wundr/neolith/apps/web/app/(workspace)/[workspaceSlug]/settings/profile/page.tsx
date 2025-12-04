@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { Loader2, Upload, Info } from 'lucide-react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +16,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -21,9 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Info } from 'lucide-react';
-import Link from 'next/link';
 
 interface ProfileData {
   name: string;
@@ -100,7 +101,9 @@ export default function ProfileSettingsPage() {
       }
 
       saveTimeoutRef.current = setTimeout(async () => {
-        if (!session?.user?.id) return;
+        if (!session?.user?.id) {
+          return;
+        }
 
         try {
           const response = await fetch('/api/users/me', {
@@ -154,7 +157,9 @@ export default function ProfileSettingsPage() {
   };
 
   const uploadAvatar = async (file: File) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+      return;
+    }
 
     const error = validateFile(file);
     if (error) {
@@ -224,7 +229,9 @@ export default function ProfileSettingsPage() {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     uploadAvatar(file);
   };
 

@@ -1,16 +1,16 @@
 'use client';
 
+import { X, Users, Bot, Mail, Check, Hash, BellOff } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { X, Users, Bot, Mail, Check, Hash, BellOff } from 'lucide-react';
 
 import { MessageInput } from '@/components/chat';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { cn, getInitials } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { cn, getInitials } from '@/lib/utils';
 
 /**
  * Result types for the search dropdown
@@ -73,7 +73,9 @@ export default function NewMessagePage() {
 
   // Convert auth user to local User type
   const currentUser = useMemo(() => {
-    if (!authUser) return null;
+    if (!authUser) {
+      return null;
+    }
     return {
       id: authUser.id,
       name: authUser.name || 'Unknown User',
@@ -85,7 +87,9 @@ export default function NewMessagePage() {
 
   // Load initial suggestions (channels, recent DMs, users)
   useEffect(() => {
-    if (!workspaceSlug || recipients.length > 0) return;
+    if (!workspaceSlug || recipients.length > 0) {
+      return;
+    }
 
     const loadInitialSuggestions = async () => {
       try {
@@ -105,7 +109,9 @@ export default function NewMessagePage() {
             .slice(0, 3);
           for (const channel of channels) {
             const uniqueKey = `channel-${channel.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             seenIds.add(uniqueKey);
             results.push({
               id: uniqueKey,
@@ -124,7 +130,9 @@ export default function NewMessagePage() {
             .slice(0, 3);
           for (const dm of dms) {
             const uniqueKey = `dm-${dm.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             if (dm.participants && dm.participants.length > 1) {
               seenIds.add(uniqueKey);
               const names = dm.participants
@@ -147,9 +155,13 @@ export default function NewMessagePage() {
             .filter((item: any) => item.type === 'user')
             .slice(0, 5);
           for (const user of users) {
-            if (user.id === currentUser?.id) continue;
+            if (user.id === currentUser?.id) {
+              continue;
+            }
             const uniqueKey = `user-${user.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             seenIds.add(uniqueKey);
             results.push({
               id: uniqueKey,
@@ -170,7 +182,9 @@ export default function NewMessagePage() {
             .slice(0, 3);
           for (const orch of orchestrators) {
             const uniqueKey = `orchestrator-${orch.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             seenIds.add(uniqueKey);
             results.push({
               id: uniqueKey,
@@ -224,7 +238,9 @@ export default function NewMessagePage() {
           );
           for (const channel of channels) {
             const uniqueKey = `channel-${channel.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             seenIds.add(uniqueKey);
             results.push({
               id: uniqueKey,
@@ -241,7 +257,9 @@ export default function NewMessagePage() {
           const dms = searchData.filter((item: any) => item.type === 'dm');
           for (const dm of dms) {
             const uniqueKey = `dm-${dm.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             const participants = dm.participants || [];
             if (participants.length > 1) {
               seenIds.add(uniqueKey);
@@ -263,10 +281,16 @@ export default function NewMessagePage() {
           // Filter users from search results
           const users = searchData.filter((item: any) => item.type === 'user');
           for (const user of users) {
-            if (user.id === currentUser?.id) continue;
-            if (recipients.some(r => r.id === user.id)) continue;
+            if (user.id === currentUser?.id) {
+              continue;
+            }
+            if (recipients.some(r => r.id === user.id)) {
+              continue;
+            }
             const uniqueKey = `user-${user.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             seenIds.add(uniqueKey);
 
             results.push({
@@ -288,9 +312,13 @@ export default function NewMessagePage() {
             (item: any) => item.type === 'orchestrator'
           );
           for (const orch of orchestrators) {
-            if (recipients.some(r => r.id === orch.id)) continue;
+            if (recipients.some(r => r.id === orch.id)) {
+              continue;
+            }
             const uniqueKey = `orchestrator-${orch.id}`;
-            if (seenIds.has(uniqueKey)) continue;
+            if (seenIds.has(uniqueKey)) {
+              continue;
+            }
             seenIds.add(uniqueKey);
 
             results.push({
@@ -416,7 +444,9 @@ export default function NewMessagePage() {
   // Handle sending message
   const handleSendMessage = useCallback(
     async (content: string, mentions: string[], _attachments: File[]) => {
-      if (recipients.length === 0 || !currentUser) return;
+      if (recipients.length === 0 || !currentUser) {
+        return;
+      }
 
       try {
         const recipientIds = recipients

@@ -18,9 +18,10 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest } from 'next/server';
 
 type HealthAlertType =
   | 'budget_exhaustion'

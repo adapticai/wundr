@@ -8,6 +8,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { useIsTablet, useOrientation } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 
@@ -184,7 +185,9 @@ function MetricCard({ metric }: { metric: DashboardMetric }) {
   }
 
   const getTrendAriaLabel = () => {
-    if (!metric.trend || !metric.trendValue) return '';
+    if (!metric.trend || !metric.trendValue) {
+      return '';
+    }
     const direction =
       metric.trend === 'up'
         ? 'increased'

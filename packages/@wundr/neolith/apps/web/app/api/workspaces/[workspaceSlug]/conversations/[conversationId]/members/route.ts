@@ -516,7 +516,7 @@ export async function POST(
               invitationUrl,
               role: invite.role,
               message:
-                invite.message || `You've been invited to join a conversation`,
+                invite.message || "You've been invited to join a conversation",
             });
 
             emailResults.push({

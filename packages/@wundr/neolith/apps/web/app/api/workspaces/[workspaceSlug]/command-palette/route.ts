@@ -379,11 +379,17 @@ export async function GET(
     const transformedPeople: PersonSuggestion[] = [];
 
     for (const message of recentPeople) {
-      if (message.channel.type !== 'DM') continue;
+      if (message.channel.type !== 'DM') {
+        continue;
+      }
 
       for (const member of message.channel.channelMembers) {
-        if (seenPeople.has(member.user.id)) continue;
-        if (transformedPeople.length >= personLimit) break;
+        if (seenPeople.has(member.user.id)) {
+          continue;
+        }
+        if (transformedPeople.length >= personLimit) {
+          break;
+        }
 
         seenPeople.add(member.user.id);
         transformedPeople.push({

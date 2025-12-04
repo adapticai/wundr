@@ -1,6 +1,17 @@
 'use client';
 
+import {
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Settings,
+  Check,
+  X,
+} from 'lucide-react';
 import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,8 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -21,14 +30,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  Settings,
-  Check,
-  X,
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';
@@ -89,9 +90,15 @@ const formatRelativeTime = (date: Date): string => {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
+  if (days > 0) {
+    return `${days}d ago`;
+  }
+  if (hours > 0) {
+    return `${hours}h ago`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ago`;
+  }
   return 'Just now';
 };
 
@@ -112,7 +119,9 @@ export function BudgetAlerts({
       const severityOrder = { critical: 0, warning: 1, info: 2 };
       const severityDiff =
         severityOrder[a.severity] - severityOrder[b.severity];
-      if (severityDiff !== 0) return severityDiff;
+      if (severityDiff !== 0) {
+        return severityDiff;
+      }
 
       // Then by acknowledged status
       if (a.acknowledged !== b.acknowledged) {

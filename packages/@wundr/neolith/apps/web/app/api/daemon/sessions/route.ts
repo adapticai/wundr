@@ -16,9 +16,9 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
 import type {
   DaemonErrorResponse,
   Session,
@@ -29,6 +29,7 @@ import type {
   SessionUpdate,
   SessionUpdateResponse,
 } from '@/types/daemon';
+import type { NextRequest } from 'next/server';
 
 // =============================================================================
 // Configuration

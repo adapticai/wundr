@@ -1,12 +1,12 @@
 'use client';
 
+import { VideoRoom } from '@/components/call/video-room';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { VideoRoom } from '@/components/call/video-room';
 
 interface HuddleDialogProps {
   /** Whether the dialog is open */

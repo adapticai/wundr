@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
   X,
   Download,
@@ -20,6 +19,7 @@ import {
   Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -71,10 +71,18 @@ function getFileCategory(
   | 'code'
   | 'archive'
   | 'other' {
-  if (mimeType.startsWith('image/')) return 'image';
-  if (mimeType.startsWith('video/')) return 'video';
-  if (mimeType.startsWith('audio/')) return 'audio';
-  if (mimeType === 'application/pdf') return 'pdf';
+  if (mimeType.startsWith('image/')) {
+    return 'image';
+  }
+  if (mimeType.startsWith('video/')) {
+    return 'video';
+  }
+  if (mimeType.startsWith('audio/')) {
+    return 'audio';
+  }
+  if (mimeType === 'application/pdf') {
+    return 'pdf';
+  }
   if (
     mimeType.includes('document') ||
     mimeType.includes('word') ||
@@ -82,24 +90,27 @@ function getFileCategory(
     mimeType.includes('spreadsheet') ||
     mimeType.includes('powerpoint') ||
     mimeType.includes('presentation')
-  )
+  ) {
     return 'document';
+  }
   if (
     mimeType.startsWith('text/') ||
     mimeType.includes('json') ||
     mimeType.includes('xml') ||
     mimeType.includes('javascript') ||
     mimeType.includes('typescript')
-  )
+  ) {
     return 'code';
+  }
   if (
     mimeType.includes('zip') ||
     mimeType.includes('tar') ||
     mimeType.includes('rar') ||
     mimeType.includes('7z') ||
     mimeType.includes('gzip')
-  )
+  ) {
     return 'archive';
+  }
   return 'other';
 }
 
@@ -131,10 +142,15 @@ function getFileIcon(category: string) {
  * Format file size for display
  */
 function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  if (bytes < 1024 * 1024 * 1024) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -395,7 +411,9 @@ export function FilePreviewModal({
 
   // Handle keyboard navigation
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -434,7 +452,9 @@ export function FilePreviewModal({
     };
   }, [open]);
 
-  if (!open || !file) return null;
+  if (!open || !file) {
+    return null;
+  }
 
   const category = getFileCategory(file.mimeType);
   const currentIndex = files.findIndex(f => f.id === file.id);

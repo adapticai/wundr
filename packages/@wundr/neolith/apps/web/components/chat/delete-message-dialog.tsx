@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useState, useCallback } from 'react';
 
+import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,8 +17,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
-import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
 import { useIsDesktop } from '@/hooks/use-media-query';
 
 import type { Message, User } from '@/types/chat';
@@ -69,7 +69,9 @@ export function DeleteMessageDialog({
     : '';
 
   const handleDelete = useCallback(async () => {
-    if (!message) return;
+    if (!message) {
+      return;
+    }
 
     setIsDeleting(true);
     try {
@@ -82,7 +84,9 @@ export function DeleteMessageDialog({
     }
   }, [message, onConfirm, onOpenChange]);
 
-  if (!message) return null;
+  if (!message) {
+    return null;
+  }
 
   // Shared content for both Dialog and Drawer
   const sharedContent = (

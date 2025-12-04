@@ -2,8 +2,8 @@
 
 import { AppHeader } from '@/components/layout/app-header';
 import { DynamicPageHeader } from '@/components/layout/dynamic-page-header';
-import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { PageHeaderProvider } from '@/contexts/page-header-context';
 
 interface WorkspaceLayoutClientProps {

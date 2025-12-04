@@ -1,8 +1,8 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { useMemo, useState } from 'react';
 import { Track } from 'livekit-client';
+import { useMemo, useState } from 'react';
 
 import { getInitials } from '@/lib/utils';
 
@@ -283,12 +283,20 @@ export function ParticipantList({
   const sortedParticipants = useMemo(() => {
     return [...participants].sort((a, b) => {
       // Local participant first
-      if (a.isLocal && !b.isLocal) return -1;
-      if (!a.isLocal && b.isLocal) return 1;
+      if (a.isLocal && !b.isLocal) {
+        return -1;
+      }
+      if (!a.isLocal && b.isLocal) {
+        return 1;
+      }
 
       // Speaking participants next
-      if (a.isSpeaking && !b.isSpeaking) return -1;
-      if (!a.isSpeaking && b.isSpeaking) return 1;
+      if (a.isSpeaking && !b.isSpeaking) {
+        return -1;
+      }
+      if (!a.isSpeaking && b.isSpeaking) {
+        return 1;
+      }
 
       // Then alphabetically by name
       const nameA = a.name || a.identity;

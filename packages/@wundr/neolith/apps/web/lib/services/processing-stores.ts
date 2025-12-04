@@ -200,7 +200,9 @@ export const processingJobs = {
     updates: Partial<ProcessingJob>
   ): ProcessingJob | undefined {
     const job = jobsStore.get(jobId);
-    if (!job) return undefined;
+    if (!job) {
+      return undefined;
+    }
     const updated = { ...job, ...updates, updatedAt: new Date() };
     jobsStore.set(jobId, updated);
     return updated;

@@ -15,12 +15,15 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ChannelHeader } from './channel-header';
-import { HuddleButton } from './huddle-button';
-import { HuddleBar } from './huddle-bar';
-import { HuddlePip } from './huddle-pip';
-import { HuddleDialog } from './huddle-dialog';
+
 import { useChannelHuddle } from '@/hooks/use-channel-huddle';
+
+import { ChannelHeader } from './channel-header';
+import { HuddleBar } from './huddle-bar';
+import { HuddleButton } from './huddle-button';
+import { HuddleDialog } from './huddle-dialog';
+import { HuddlePip } from './huddle-pip';
+
 import type { Channel, ChannelPermissions } from '@/types/channel';
 
 interface ChannelWithHuddleProps {

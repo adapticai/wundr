@@ -4,9 +4,8 @@ import { Workflow as WorkflowLucideIcon } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
-
 import { EmptyState } from '@/components/ui/empty-state';
+import { usePageHeader } from '@/contexts/page-header-context';
 import {
   useWorkflows,
   useWorkflowTemplates,

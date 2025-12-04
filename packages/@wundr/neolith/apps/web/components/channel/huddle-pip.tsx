@@ -1,9 +1,11 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { cn, getInitials } from '@/lib/utils';
 import { Maximize2, Mic, MicOff, Video, X } from 'lucide-react';
 import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn, getInitials } from '@/lib/utils';
+
 import type { CallParticipant } from '@/lib/validations/call';
 
 interface HuddlePipProps {

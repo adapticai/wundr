@@ -8,7 +8,7 @@
 'use client';
 
 import * as React from 'react';
-import { cn } from '@/lib/utils';
+
 import {
   Card,
   CardContent,
@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 /**
  * Props for the SettingsSection component

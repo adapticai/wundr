@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   X,
   Settings,
@@ -14,6 +13,7 @@ import {
   ShieldCheck,
   Shield,
 } from 'lucide-react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,9 +23,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useMultiplePresence } from '@/hooks/use-presence';
+import { cn } from '@/lib/utils';
 
 import type {
   Channel,
@@ -123,7 +123,9 @@ export function ChannelDetailsPanel({
     [onChangeMemberRole]
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className='fixed inset-y-0 right-0 z-50 w-full max-w-md border-l bg-background shadow-xl'>

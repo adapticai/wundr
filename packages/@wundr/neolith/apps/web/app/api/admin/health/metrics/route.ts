@@ -18,9 +18,10 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest } from 'next/server';
 
 interface TimeSeriesMetric {
   timestamp: string;
@@ -113,7 +114,9 @@ function groupByTimeBuckets<T extends { createdAt: Date }>(
  * Calculate percentile from sorted array
  */
 function percentile(values: number[], p: number): number {
-  if (values.length === 0) return 0;
+  if (values.length === 0) {
+    return 0;
+  }
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.ceil((p / 100) * sorted.length) - 1;
   return sorted[Math.max(0, index)];

@@ -9,19 +9,19 @@
  * @module app/api/workspaces/[workspaceId]/tasks/[taskId]/assign/route
  */
 
-import { prisma } from '@neolith/database';
-import { Prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
 import { NotificationService } from '@/lib/services/notification-service';
 import { createErrorResponse, TASK_ERROR_CODES } from '@/lib/validations/task';
-
-import type { AssignTaskInput } from '@/lib/validations/task-backlog';
 import {
   assignTaskSchema,
   BACKLOG_ERROR_CODES,
 } from '@/lib/validations/task-backlog';
+
+import type { AssignTaskInput } from '@/lib/validations/task-backlog';
+import type { NextRequest } from 'next/server';
 
 /**
  * POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign

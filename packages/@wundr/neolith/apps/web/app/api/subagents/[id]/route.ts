@@ -6,9 +6,12 @@
  * DELETE /api/subagents/[id] - Delete subagent
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@neolith/database';
+import { NextResponse } from 'next/server';
+
+import { auth } from '@/lib/auth';
+
+import type { NextRequest } from 'next/server';
 
 interface RouteParams {
   params: Promise<{ id: string }>;

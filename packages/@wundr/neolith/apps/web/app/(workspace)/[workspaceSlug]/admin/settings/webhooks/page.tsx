@@ -1,36 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Loader2,
   Plus,
@@ -42,6 +11,38 @@ import {
   XCircle,
   Globe,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface Webhook {
   id: string;
@@ -112,7 +113,9 @@ export default function WebhooksSettingsPage() {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/workspaces/${workspaceSlug}/webhooks`);
-      if (!response.ok) throw new Error('Failed to load webhooks');
+      if (!response.ok) {
+        throw new Error('Failed to load webhooks');
+      }
       const data = await response.json();
       setWebhooks(data.webhooks || []);
     } catch (error) {
@@ -199,7 +202,9 @@ export default function WebhooksSettingsPage() {
   };
 
   const handleDeleteWebhook = async (webhookId: string) => {
-    if (!confirm('Are you sure you want to delete this webhook?')) return;
+    if (!confirm('Are you sure you want to delete this webhook?')) {
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -270,7 +275,9 @@ export default function WebhooksSettingsPage() {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/deliveries`
       );
-      if (!response.ok) throw new Error('Failed to load delivery logs');
+      if (!response.ok) {
+        throw new Error('Failed to load delivery logs');
+      }
       const data = await response.json();
       setDeliveryLogs(data.deliveries || []);
     } catch (error) {

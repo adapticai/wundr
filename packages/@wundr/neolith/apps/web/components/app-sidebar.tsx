@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-import { useSession } from 'next-auth/react';
 import {
   AudioWaveform,
   BookOpen,
@@ -14,6 +12,8 @@ import {
   Settings2,
   SquareTerminal,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import * as React from 'react';
 
 import { NavMain } from '@/components/nav-main';
 import { NavProjects } from '@/components/nav-projects';

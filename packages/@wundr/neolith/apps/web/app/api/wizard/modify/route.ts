@@ -313,7 +313,7 @@ async function callOpenAI(
   const result = await response.json();
   const choice = result.choices?.[0];
 
-  let message = choice?.message?.content || '';
+  const message = choice?.message?.content || '';
   let suggestedChanges: SuggestedChanges | undefined;
   let needsMoreInfo = true;
   const clarifyingQuestions: string[] = [];

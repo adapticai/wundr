@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+
 import { useWizard } from '@/contexts/wizard-context';
+
 import type { Message, ExtractedEntityData } from '@/contexts/wizard-context';
 
 // API Response types
@@ -89,7 +91,9 @@ export function useWizardChat(options: UseWizardChatOptions = {}) {
         while (true) {
           const { done, value } = await reader.read();
 
-          if (done) break;
+          if (done) {
+            break;
+          }
 
           const chunk = decoder.decode(value);
           const lines = chunk.split('\n').filter(line => line.trim());
@@ -292,7 +296,9 @@ export function useWizardSuggestions() {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchSuggestions = useCallback(async () => {
-    if (!state.entityType) return;
+    if (!state.entityType) {
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -335,7 +341,9 @@ export function useWizardValidation() {
   >({});
 
   const validate = useCallback(async () => {
-    if (!state.entityType) return false;
+    if (!state.entityType) {
+      return false;
+    }
 
     try {
       const response = await fetch('/api/wizard/validate', {

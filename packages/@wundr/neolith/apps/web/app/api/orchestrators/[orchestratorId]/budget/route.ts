@@ -11,9 +11,8 @@
  * @module app/api/orchestrators/[orchestratorId]/budget/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -23,11 +22,14 @@ import {
   BUDGET_ERROR_CODES,
   timeWindowEnum,
 } from '@/lib/validations/token-budget';
+
 import type {
   UpdateBudgetLimitsInput,
   BudgetStatus,
   TimeWindow,
 } from '@/lib/validations/token-budget';
+import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with orchestrator ID parameter
@@ -132,7 +134,9 @@ async function calculateWindowUsage(
   window: TimeWindow,
   limit: number | null
 ): Promise<BudgetStatus | null> {
-  if (!limit) return null;
+  if (!limit) {
+    return null;
+  }
 
   const { start, end } = getTimeWindowBounds(window);
 
@@ -391,7 +395,7 @@ export async function PATCH(
     }
 
     // Get or create active charter version
-    let charter = await prisma.charterVersion.findFirst({
+    const charter = await prisma.charterVersion.findFirst({
       where: {
         orchestratorId: orchestrator.id,
         isActive: true,

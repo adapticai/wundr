@@ -88,7 +88,9 @@ export function useHuddles(
 
   // Connect to SSE stream
   const connect = useCallback(() => {
-    if (!workspaceSlug) return;
+    if (!workspaceSlug) {
+      return;
+    }
 
     // Clean up existing connection
     if (eventSourceRef.current) {
@@ -236,7 +238,9 @@ export function useHuddles(
   );
 
   const leaveHuddle = useCallback(async (): Promise<boolean> => {
-    if (!activeHuddle) return false;
+    if (!activeHuddle) {
+      return false;
+    }
 
     try {
       const response = await fetch(`/api/workspaces/${workspaceSlug}/huddles`, {
@@ -259,7 +263,9 @@ export function useHuddles(
   }, [workspaceSlug, activeHuddle]);
 
   const endHuddle = useCallback(async (): Promise<boolean> => {
-    if (!activeHuddle) return false;
+    if (!activeHuddle) {
+      return false;
+    }
 
     try {
       const response = await fetch(`/api/workspaces/${workspaceSlug}/huddles`, {
@@ -282,7 +288,9 @@ export function useHuddles(
   }, [workspaceSlug, activeHuddle]);
 
   const toggleMute = useCallback(async (): Promise<boolean> => {
-    if (!activeHuddle) return false;
+    if (!activeHuddle) {
+      return false;
+    }
 
     try {
       const response = await fetch(`/api/workspaces/${workspaceSlug}/huddles`, {
@@ -306,7 +314,9 @@ export function useHuddles(
 
   const updateSpeaking = useCallback(
     async (isSpeaking: boolean): Promise<boolean> => {
-      if (!activeHuddle) return false;
+      if (!activeHuddle) {
+        return false;
+      }
 
       try {
         const response = await fetch(

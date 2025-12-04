@@ -1,9 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import {
   Mail,
   Send,
@@ -16,6 +12,11 @@ import {
   Clock,
   XCircle,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface Invitation {
   id: string;
@@ -63,7 +64,9 @@ export default function InvitationsSettingsPage() {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/invites`
       );
-      if (!response.ok) throw new Error('Failed to load invitations');
+      if (!response.ok) {
+        throw new Error('Failed to load invitations');
+      }
       const data = await response.json();
       setInvitations(data.invitations || []);
       setInviteLink(
@@ -92,7 +95,9 @@ export default function InvitationsSettingsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to resend invitation');
+        if (!response.ok) {
+          throw new Error('Failed to resend invitation');
+        }
 
         toast({
           title: 'Success',
@@ -127,7 +132,9 @@ export default function InvitationsSettingsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to revoke invitation');
+        if (!response.ok) {
+          throw new Error('Failed to revoke invitation');
+        }
 
         toast({
           title: 'Success',
@@ -186,7 +193,9 @@ export default function InvitationsSettingsPage() {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to send invitations');
+      if (!response.ok) {
+        throw new Error('Failed to send invitations');
+      }
 
       const result = await response.json();
       toast({
@@ -226,7 +235,9 @@ export default function InvitationsSettingsPage() {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to regenerate link');
+      if (!response.ok) {
+        throw new Error('Failed to regenerate link');
+      }
 
       const result = await response.json();
       setInviteLink(result.inviteLink);

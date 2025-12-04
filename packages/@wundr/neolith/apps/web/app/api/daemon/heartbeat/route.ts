@@ -12,9 +12,10 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
+import type { NextRequest } from 'next/server';
 
 /**
  * Schema for heartbeat request body

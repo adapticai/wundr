@@ -6,11 +6,14 @@
 'use client';
 
 import * as React from 'react';
+
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChatMessage } from './chat-message';
+
 import { ChatInput } from './chat-input';
+import { ChatMessage } from './chat-message';
 import { EntityReviewForm } from './entity-review-form';
+
 import type { EntityType } from '@/components/creation/types';
 
 /**

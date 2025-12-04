@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, memo, useCallback } from 'react';
 import { Smile } from 'lucide-react';
+import { useState, memo, useCallback } from 'react';
 
 import {
   ResponsiveModal,

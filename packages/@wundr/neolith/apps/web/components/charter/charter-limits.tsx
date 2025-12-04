@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -117,7 +118,9 @@ export function CharterLimits({
     inputValue: string
   ) => {
     const numValue = parseInt(inputValue, 10);
-    if (isNaN(numValue)) return;
+    if (isNaN(numValue)) {
+      return;
+    }
 
     const { min, max } = LIMITS[field];
     const clampedValue = Math.max(min, Math.min(max, numValue));

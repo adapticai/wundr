@@ -9,7 +9,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-import { UserAvatar, type UserStatus } from '@/components/ui/user-avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { UserAvatar, type UserStatus } from '@/components/ui/user-avatar';
 
 export function NavUser({
   user,

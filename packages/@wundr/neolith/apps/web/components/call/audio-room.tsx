@@ -98,8 +98,12 @@ function AudioRoomInner({
 
     return Array.from(participantMap.values()).sort((a, b) => {
       // Local participant first
-      if (a.isLocal) return -1;
-      if (b.isLocal) return 1;
+      if (a.isLocal) {
+        return -1;
+      }
+      if (b.isLocal) {
+        return 1;
+      }
       // Then by name
       return (a.name ?? '').localeCompare(b.name ?? '');
     });

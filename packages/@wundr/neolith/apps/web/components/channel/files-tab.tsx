@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ShareFileDialog, type ShareFileData } from './share-file-dialog';
+
 import { DeleteFileDialog } from './delete-file-dialog';
 import { FileCard, type FileCardItem } from './file-card';
+import { ShareFileDialog, type ShareFileData } from './share-file-dialog';
 
 /**
  * File type filter
@@ -131,7 +132,9 @@ export function FilesTab({
 
   const fetchFiles = useCallback(
     async (loadMore = false) => {
-      if (!channelId) return;
+      if (!channelId) {
+        return;
+      }
 
       setIsLoading(true);
       setError(null);

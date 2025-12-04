@@ -1,17 +1,17 @@
+import { prisma } from '@neolith/database';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { AppHeader } from '@/components/layout/app-header';
 import { GlobalSearchBar } from '@/components/layout/global-search-bar';
-import { WorkspaceSidebar } from '@/components/workspace';
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { WorkspaceSidebar } from '@/components/workspace';
 import { PageHeaderProvider } from '@/contexts/page-header-context';
 import { auth } from '@/lib/auth';
-import { prisma } from '@neolith/database';
 
 import type { Metadata } from 'next';
 

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { format, subDays } from 'date-fns';
 import {
   AlertTriangleIcon,
@@ -12,6 +11,7 @@ import {
   ActivityIcon,
   TrendingUpIcon,
 } from 'lucide-react';
+import * as React from 'react';
 import {
   Area,
   AreaChart,
@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+
 import { AuditLogEntry } from './audit-log-entry';
 
 export interface SecurityEvent {
@@ -140,9 +141,12 @@ export function SecurityDashboard({
   };
 
   const getTrendIcon = (trend: number) => {
-    if (trend > 0) return <TrendingUpIcon className='h-4 w-4 text-red-500' />;
-    if (trend < 0)
+    if (trend > 0) {
+      return <TrendingUpIcon className='h-4 w-4 text-red-500' />;
+    }
+    if (trend < 0) {
       return <TrendingUpIcon className='h-4 w-4 rotate-180 text-green-500' />;
+    }
     return null;
   };
 

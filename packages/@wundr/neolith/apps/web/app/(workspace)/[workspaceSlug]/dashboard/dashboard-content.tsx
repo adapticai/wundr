@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,9 +14,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
-import { useAuth } from '@/hooks/use-auth';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardContentProps {
   workspaceId: string;
@@ -87,8 +87,12 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
   // Get greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
+    if (hour < 12) {
+      return 'Good morning';
+    }
+    if (hour < 18) {
+      return 'Good afternoon';
+    }
     return 'Good evening';
   };
 

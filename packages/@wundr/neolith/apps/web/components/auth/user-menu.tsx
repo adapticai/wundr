@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
 
-import { useAuth } from '@/hooks/use-auth';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 
 interface UserMenuProps {

@@ -7,9 +7,10 @@
  * Contains multiple sections with tabs for different settings categories.
  */
 
-import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useTransition } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -17,15 +18,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
-import { GeneralSettings } from './GeneralSettings';
 import { CapabilitySettings } from './CapabilitySettings';
-import { TriggerSettings } from './TriggerSettings';
-import { ResponseTemplates } from './ResponseTemplates';
-import { ModelSelector } from './ModelSelector';
+import { GeneralSettings } from './GeneralSettings';
 import { IntegrationSettings } from './IntegrationSettings';
+import { ModelSelector } from './ModelSelector';
+import { ResponseTemplates } from './ResponseTemplates';
+import { TriggerSettings } from './TriggerSettings';
 
 import type { Prisma } from '@neolith/database';
 

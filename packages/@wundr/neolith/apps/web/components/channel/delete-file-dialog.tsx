@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import {
   FileIcon,
   FileText,
@@ -11,7 +10,9 @@ import {
   Archive,
   AlertTriangle,
 } from 'lucide-react';
+import { useState, useCallback } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
 import { useIsDesktop } from '@/hooks/use-media-query';
 
 /**
@@ -67,21 +67,29 @@ interface DeleteFileDialogProps {
  * Get file type icon based on MIME type
  */
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return Image;
-  if (mimeType.startsWith('video/')) return Video;
-  if (mimeType.startsWith('audio/')) return Music;
+  if (mimeType.startsWith('image/')) {
+    return Image;
+  }
+  if (mimeType.startsWith('video/')) {
+    return Video;
+  }
+  if (mimeType.startsWith('audio/')) {
+    return Music;
+  }
   if (
     mimeType.includes('pdf') ||
     mimeType.includes('document') ||
     mimeType.includes('text')
-  )
+  ) {
     return FileText;
+  }
   if (
     mimeType.includes('zip') ||
     mimeType.includes('tar') ||
     mimeType.includes('rar')
-  )
+  ) {
     return Archive;
+  }
   return FileIcon;
 }
 
@@ -89,8 +97,12 @@ function getFileIcon(mimeType: string) {
  * Format file size for display
  */
 function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
@@ -113,7 +125,9 @@ export function DeleteFileDialog({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = useCallback(async () => {
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     setIsDeleting(true);
     try {
@@ -126,7 +140,9 @@ export function DeleteFileDialog({
     }
   }, [file, onConfirm, onOpenChange]);
 
-  if (!file) return null;
+  if (!file) {
+    return null;
+  }
 
   const FileTypeIcon = getFileIcon(file.mimeType);
   const isImage = file.mimeType.startsWith('image/');

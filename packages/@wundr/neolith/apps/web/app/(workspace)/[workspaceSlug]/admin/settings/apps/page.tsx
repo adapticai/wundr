@@ -1,20 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Loader2,
   Puzzle,
@@ -26,6 +11,21 @@ import {
   Shield,
   AlertCircle,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface InstalledApp {
   id: string;
@@ -65,7 +65,9 @@ export default function InstalledAppsPage() {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/integrations`
         );
-        if (!response.ok) throw new Error('Failed to load apps');
+        if (!response.ok) {
+          throw new Error('Failed to load apps');
+        }
         const data = await response.json();
         setApps(data.integrations || []);
       } catch (error) {
@@ -107,7 +109,9 @@ export default function InstalledAppsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to update app status');
+        if (!response.ok) {
+          throw new Error('Failed to update app status');
+        }
 
         toast({
           title: 'Success',
@@ -156,7 +160,9 @@ export default function InstalledAppsPage() {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to remove app');
+        if (!response.ok) {
+          throw new Error('Failed to remove app');
+        }
 
         setApps(prev => prev.filter(app => app.id !== appId));
 

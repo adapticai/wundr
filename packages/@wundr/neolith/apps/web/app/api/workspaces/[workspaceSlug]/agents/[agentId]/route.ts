@@ -16,6 +16,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
+import { isAvailableTool } from '@/types/agent';
+
 import type {
   Agent,
   UpdateAgentInput,
@@ -23,9 +25,7 @@ import type {
   AgentStatus,
   AvailableTool,
 } from '@/types/agent';
-import { isAvailableTool } from '@/types/agent';
 import type { Prisma } from '@neolith/database';
-
 import type { NextRequest } from 'next/server';
 
 /**
@@ -258,17 +258,24 @@ export async function PATCH(
       updateData.tools = input.tools;
     }
     if (input.config) {
-      if (input.config.model !== undefined)
+      if (input.config.model !== undefined) {
         updateData.model = input.config.model;
-      if (input.config.temperature !== undefined)
+      }
+      if (input.config.temperature !== undefined) {
         updateData.temperature = input.config.temperature;
-      if (input.config.maxTokens !== undefined)
+      }
+      if (input.config.maxTokens !== undefined) {
         updateData.maxTokens = input.config.maxTokens;
-      if (input.config.topP !== undefined) updateData.topP = input.config.topP;
-      if (input.config.frequencyPenalty !== undefined)
+      }
+      if (input.config.topP !== undefined) {
+        updateData.topP = input.config.topP;
+      }
+      if (input.config.frequencyPenalty !== undefined) {
         updateData.frequencyPenalty = input.config.frequencyPenalty;
-      if (input.config.presencePenalty !== undefined)
+      }
+      if (input.config.presencePenalty !== undefined) {
         updateData.presencePenalty = input.config.presencePenalty;
+      }
     }
 
     // Update agent in database

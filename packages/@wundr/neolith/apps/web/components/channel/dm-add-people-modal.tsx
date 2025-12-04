@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
 import { X, Search, Mail, UserPlus, Loader2 } from 'lucide-react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -11,11 +15,7 @@ import {
   ResponsiveModalDescription,
   ResponsiveModalFooter,
 } from '@/components/ui/responsive-modal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { useWorkspaceUsers } from '@/hooks/use-channel';
 import { getInitials } from '@/lib/utils';
 
@@ -119,7 +119,9 @@ export function DMAddPeopleModal({
 
   const handleAddEmail = useCallback(() => {
     const email = emailInput.trim();
-    if (!email) return;
+    if (!email) {
+      return;
+    }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -153,7 +155,9 @@ export function DMAddPeopleModal({
   );
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting) return;
+    if (isSubmitting) {
+      return;
+    }
 
     setError(null);
 
@@ -206,7 +210,9 @@ export function DMAddPeopleModal({
   }, [activeTab, selectedUsers.length, emailList.length, onInviteByEmail]);
 
   const submitButtonText = useMemo(() => {
-    if (isSubmitting) return 'Adding...';
+    if (isSubmitting) {
+      return 'Adding...';
+    }
 
     if (activeTab === 'workspace') {
       const count = selectedUsers.length;

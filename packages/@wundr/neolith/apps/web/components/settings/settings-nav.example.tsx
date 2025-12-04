@@ -3,8 +3,6 @@
  * @module components/settings/settings-nav
  */
 
-import { SettingsNav, MobileSettingsNav } from './settings-nav';
-import type { NavSection } from './settings-nav';
 import {
   Settings,
   User,
@@ -17,6 +15,10 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
+
+import { SettingsNav, MobileSettingsNav } from './settings-nav';
+
+import type { NavSection } from './settings-nav';
 
 /**
  * Example 1: Basic Usage with Default Sections

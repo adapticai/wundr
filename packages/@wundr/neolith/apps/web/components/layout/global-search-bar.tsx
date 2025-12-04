@@ -22,6 +22,7 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useFilePreview } from '@/components/file-preview';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   CommandDialog,
@@ -33,7 +34,6 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
-import { useFilePreview } from '@/components/file-preview';
 import { cn, getInitials } from '@/lib/utils';
 
 /**
@@ -188,7 +188,9 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
 
   // Fetch personalized suggestions when dialog opens
   const fetchSuggestions = useCallback(async () => {
-    if (!workspaceSlug || suggestionsLoadedRef.current) return;
+    if (!workspaceSlug || suggestionsLoadedRef.current) {
+      return;
+    }
 
     setIsSuggestionsLoading(true);
     try {
@@ -630,22 +632,32 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
 
   // Helper function to get file icon based on mime type
   const getFileIcon = useCallback((mimeType?: string) => {
-    if (!mimeType) return File;
-    if (mimeType.startsWith('image/')) return Image;
-    if (mimeType.startsWith('video/')) return Video;
-    if (mimeType.startsWith('audio/')) return Music;
+    if (!mimeType) {
+      return File;
+    }
+    if (mimeType.startsWith('image/')) {
+      return Image;
+    }
+    if (mimeType.startsWith('video/')) {
+      return Video;
+    }
+    if (mimeType.startsWith('audio/')) {
+      return Music;
+    }
     if (
       mimeType.includes('pdf') ||
       mimeType.includes('document') ||
       mimeType.includes('text')
-    )
+    ) {
       return FileText;
+    }
     if (
       mimeType.includes('zip') ||
       mimeType.includes('tar') ||
       mimeType.includes('rar')
-    )
+    ) {
       return Archive;
+    }
     return File;
   }, []);
 

@@ -5,10 +5,13 @@
 'use client';
 
 import * as React from 'react';
-import { ConversationalWizard } from './conversational-wizard';
-import type { EntityData, Message } from './conversational-wizard';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+
+import { ConversationalWizard } from './conversational-wizard';
+
+import type { EntityData, Message } from './conversational-wizard';
 
 /**
  * Example 1: Basic Usage with Default Mock Handler

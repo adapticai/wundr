@@ -11,8 +11,8 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
 import { calculateChannelRelevance } from '@/lib/services/channel-intelligence-service';
 import {
@@ -20,6 +20,8 @@ import {
   calculateRelevanceSchema,
   createChannelIntelligenceError,
 } from '@/lib/validations/channel-intelligence';
+
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace and channel ID parameters

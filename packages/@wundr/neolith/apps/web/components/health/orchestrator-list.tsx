@@ -1,7 +1,11 @@
 'use client';
 
-import * as React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   Table,
   TableBody,
@@ -10,9 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export type OrchestratorStatus = 'active' | 'idle' | 'error' | 'maintenance';
@@ -82,8 +83,12 @@ const TokenBudgetProgress: React.FC<{
   percentage: number;
 }> = ({ used, total, percentage }) => {
   const getProgressColor = () => {
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 75) return 'bg-yellow-500';
+    if (percentage >= 90) {
+      return 'bg-red-500';
+    }
+    if (percentage >= 75) {
+      return 'bg-yellow-500';
+    }
     return 'bg-green-500';
   };
 
@@ -151,14 +156,20 @@ export const OrchestratorList: React.FC<OrchestratorListProps> = ({
           return 0;
       }
 
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      if (aValue < bValue) {
+        return sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
       return 0;
     });
   }, [orchestrators, sortField, sortDirection]);
 
   const SortIcon: React.FC<{ field: SortField }> = ({ field }) => {
-    if (sortField !== field) return null;
+    if (sortField !== field) {
+      return null;
+    }
     return sortDirection === 'asc' ? (
       <ChevronUp className='ml-1 h-4 w-4 inline' />
     ) : (

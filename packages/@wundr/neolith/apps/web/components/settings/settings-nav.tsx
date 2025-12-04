@@ -4,10 +4,6 @@
  */
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import {
   Settings,
   User,
@@ -18,6 +14,12 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+
+import { cn } from '@/lib/utils';
+
 import type { LucideIcon } from 'lucide-react';
 
 /**

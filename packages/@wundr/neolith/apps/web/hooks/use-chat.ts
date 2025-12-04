@@ -238,15 +238,23 @@ export function useMessages(
         const getAttachmentType = (
           mimeType: string
         ): 'image' | 'video' | 'audio' | 'file' => {
-          if (mimeType.startsWith('image/')) return 'image';
-          if (mimeType.startsWith('video/')) return 'video';
-          if (mimeType.startsWith('audio/')) return 'audio';
+          if (mimeType.startsWith('image/')) {
+            return 'image';
+          }
+          if (mimeType.startsWith('video/')) {
+            return 'video';
+          }
+          if (mimeType.startsWith('audio/')) {
+            return 'audio';
+          }
           return 'file';
         };
 
         // Helper to generate file URL
         const getFileUrl = (file: ApiMessageAttachment['file']): string => {
-          if (!file) return '';
+          if (!file) {
+            return '';
+          }
           // Use s3Key for local storage (direct path access)
           if (file.s3Bucket === 'local' && file.s3Key) {
             return file.s3Key; // Local path like /uploads/...
@@ -259,7 +267,9 @@ export function useMessages(
         const transformAttachments = (
           messageAttachments?: ApiMessageAttachment[]
         ): Attachment[] => {
-          if (!messageAttachments || messageAttachments.length === 0) return [];
+          if (!messageAttachments || messageAttachments.length === 0) {
+            return [];
+          }
           return messageAttachments
             .filter(ma => ma.file !== null)
             .map(ma => ({
@@ -605,15 +615,23 @@ export function useThread(parentId: string): UseThreadReturn {
       const getAttachmentType = (
         mimeType: string
       ): 'image' | 'video' | 'audio' | 'file' => {
-        if (mimeType.startsWith('image/')) return 'image';
-        if (mimeType.startsWith('video/')) return 'video';
-        if (mimeType.startsWith('audio/')) return 'audio';
+        if (mimeType.startsWith('image/')) {
+          return 'image';
+        }
+        if (mimeType.startsWith('video/')) {
+          return 'video';
+        }
+        if (mimeType.startsWith('audio/')) {
+          return 'audio';
+        }
         return 'file';
       };
 
       // Helper to generate file URL
       const getFileUrl = (file: ApiThreadMessageAttachment['file']): string => {
-        if (!file) return '';
+        if (!file) {
+          return '';
+        }
         // Use s3Key for local storage (direct path access)
         if (file.s3Bucket === 'local' && file.s3Key) {
           return file.s3Key; // Local path like /uploads/...
@@ -626,7 +644,9 @@ export function useThread(parentId: string): UseThreadReturn {
       const transformAttachments = (
         messageAttachments?: ApiThreadMessageAttachment[]
       ): Attachment[] => {
-        if (!messageAttachments || messageAttachments.length === 0) return [];
+        if (!messageAttachments || messageAttachments.length === 0) {
+          return [];
+        }
         return messageAttachments
           .filter(ma => ma.file !== null)
           .map(ma => ({
@@ -758,9 +778,15 @@ export function useSendMessage(): UseSendMessageReturn {
         const getAttachmentType = (
           mimeType: string
         ): 'image' | 'video' | 'audio' | 'file' => {
-          if (mimeType.startsWith('image/')) return 'image';
-          if (mimeType.startsWith('video/')) return 'video';
-          if (mimeType.startsWith('audio/')) return 'audio';
+          if (mimeType.startsWith('image/')) {
+            return 'image';
+          }
+          if (mimeType.startsWith('video/')) {
+            return 'video';
+          }
+          if (mimeType.startsWith('audio/')) {
+            return 'audio';
+          }
           return 'file';
         };
 
@@ -768,7 +794,9 @@ export function useSendMessage(): UseSendMessageReturn {
         const getFileUrl = (
           file: { id: string; s3Key?: string; s3Bucket?: string } | null
         ): string => {
-          if (!file) return '';
+          if (!file) {
+            return '';
+          }
           // Use s3Key for local storage (direct path access)
           if (file.s3Bucket === 'local' && file.s3Key) {
             return file.s3Key; // Local path like /uploads/...
@@ -795,7 +823,9 @@ export function useSendMessage(): UseSendMessageReturn {
         const transformAttachments = (
           messageAttachments?: ApiSendMessageAttachment[]
         ): Attachment[] => {
-          if (!messageAttachments || messageAttachments.length === 0) return [];
+          if (!messageAttachments || messageAttachments.length === 0) {
+            return [];
+          }
           return messageAttachments
             .filter(ma => ma.file !== null)
             .map(ma => ({

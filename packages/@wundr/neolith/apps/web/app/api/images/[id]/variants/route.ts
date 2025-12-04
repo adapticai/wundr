@@ -47,7 +47,7 @@ function generateStandardVariants(
   originalHeight: number
 ): ImageVariant[] {
   const cdnDomain = process.env.CDN_DOMAIN;
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
   const baseUrl = cdnDomain
     ? `https://${cdnDomain}`

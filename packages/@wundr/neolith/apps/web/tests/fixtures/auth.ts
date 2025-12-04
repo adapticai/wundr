@@ -15,8 +15,9 @@
  * ```
  */
 
-import type { Page } from '@playwright/test';
 import { test as base } from '@playwright/test';
+
+import type { Page } from '@playwright/test';
 
 /**
  * Test user for authenticated sessions

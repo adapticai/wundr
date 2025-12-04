@@ -5,6 +5,7 @@
 
 import { Section, Text, Link, Hr } from '@react-email/components';
 import * as React from 'react';
+
 import { colors, link } from './email-styles';
 
 interface EmailFooterProps {

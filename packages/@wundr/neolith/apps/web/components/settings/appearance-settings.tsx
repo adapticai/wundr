@@ -4,8 +4,6 @@
  */
 'use client';
 
-import * as React from 'react';
-import { useTheme } from 'next-themes';
 import {
   Monitor,
   Moon,
@@ -18,7 +16,10 @@ import {
   RotateCcw,
   Sidebar,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -28,7 +29,6 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -36,10 +36,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface AppearancePreferences {
   // Sidebar

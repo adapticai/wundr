@@ -1,13 +1,14 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import { useState, useCallback } from 'react';
 
 import { NotificationCenter } from '@/components/notifications/notification-center';
 import { useNotifications } from '@/hooks/use-notifications';
-import { ThemeToggle } from './theme-toggle';
 import { getInitials } from '@/lib/utils';
+
+import { ThemeToggle } from './theme-toggle';
 
 import type { Notification } from '@/types/notification';
 

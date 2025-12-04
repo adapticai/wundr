@@ -6,12 +6,13 @@
 'use client';
 
 import * as React from 'react';
+
 import {
   DualModeEditor,
   type EntityData,
   type Message,
   type FieldConfig,
-} from './';
+} from '.';
 
 /**
  * Example usage of DualModeEditor for creating a workspace
@@ -45,7 +46,7 @@ export function WorkspaceCreatorExample() {
     }
 
     if (field === 'improvements') {
-      return `Consider adding more specific details about the workspace purpose, team size, and primary use cases.`;
+      return 'Consider adding more specific details about the workspace purpose, team size, and primary use cases.';
     }
 
     return 'AI suggestion generated based on context.';

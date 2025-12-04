@@ -12,10 +12,12 @@
  */
 
 import { prisma } from '@neolith/database';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
 import { auth } from '@/lib/auth';
+
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter

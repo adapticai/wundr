@@ -1,9 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import {
+  User,
+  Bell,
+  Palette,
+  Shield,
+  Plug,
+  CheckCircle2,
+  AlertCircle,
+  Mail,
+  ChevronRight,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -16,17 +27,6 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageHeader } from '@/contexts/page-header-context';
-import {
-  User,
-  Bell,
-  Palette,
-  Shield,
-  Plug,
-  CheckCircle2,
-  AlertCircle,
-  Mail,
-  ChevronRight,
-} from 'lucide-react';
 
 interface SettingsCardProps {
   title: string;

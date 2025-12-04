@@ -116,7 +116,9 @@ export function AddParticipantModal({
 
   // Handle invite
   const handleInvite = useCallback(async () => {
-    if (selectedUsers.size === 0) return;
+    if (selectedUsers.size === 0) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -134,7 +136,9 @@ export function AddParticipantModal({
     }
   }, [selectedUsers, message, onInvite, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div

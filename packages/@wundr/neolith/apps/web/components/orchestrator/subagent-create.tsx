@@ -6,7 +6,11 @@
 
 'use client';
 
+import { Loader2, X } from 'lucide-react';
 import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,11 +19,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -27,9 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 interface SubagentCreateProps {
   sessionManagerId: string;
@@ -143,7 +144,9 @@ export function SubagentCreate({
         }
       );
 
-      if (!response.ok) throw new Error('Failed to create subagent');
+      if (!response.ok) {
+        throw new Error('Failed to create subagent');
+      }
 
       toast({ title: 'Success', description: 'Subagent created successfully' });
       onOpenChange(false);

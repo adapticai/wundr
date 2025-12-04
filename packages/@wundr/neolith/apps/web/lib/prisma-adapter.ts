@@ -8,8 +8,8 @@
  * so we need to transform the OAuth account data before inserting.
  */
 
-import type { Adapter, AdapterAccount } from 'next-auth/adapters';
 import type { PrismaClient } from '@neolith/database';
+import type { Adapter, AdapterAccount } from 'next-auth/adapters';
 
 /**
  * Custom Prisma adapter that properly maps OAuth account fields
@@ -37,7 +37,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
 
     async getUser(id) {
       const user = await prisma.user.findUnique({ where: { id } });
-      if (!user) return null;
+      if (!user) {
+        return null;
+      }
       return {
         id: user.id,
         email: user.email,
@@ -49,7 +51,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
 
     async getUserByEmail(email) {
       const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) return null;
+      if (!user) {
+        return null;
+      }
       return {
         id: user.id,
         email: user.email,
@@ -67,7 +71,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         },
         include: { user: true },
       });
-      if (!account?.user) return null;
+      if (!account?.user) {
+        return null;
+      }
       return {
         id: account.user.id,
         email: account.user.email,
@@ -153,7 +159,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         where: { sessionToken },
         include: { user: true },
       });
-      if (!session) return null;
+      if (!session) {
+        return null;
+      }
       return {
         session: {
           sessionToken: session.sessionToken,
@@ -223,7 +231,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
       const account = await prisma.account.findFirst({
         where: { provider, providerAccountId },
       });
-      if (!account) return null;
+      if (!account) {
+        return null;
+      }
       return {
         userId: account.userId,
         type: account.type as AdapterAccount['type'],

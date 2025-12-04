@@ -4,10 +4,13 @@
  * GET /api/session-managers/global - List all global session managers
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@neolith/database';
+import { NextResponse } from 'next/server';
+
+import { auth } from '@/lib/auth';
+
 import type { Prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 
 /**
  * Error codes for session manager operations

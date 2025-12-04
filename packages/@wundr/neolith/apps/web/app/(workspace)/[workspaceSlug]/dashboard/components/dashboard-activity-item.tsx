@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,9 @@ interface DashboardActivityItemProps {
  * Get initials from a name
  */
 function getInitials(name: string | null): string {
-  if (!name) return '?';
+  if (!name) {
+    return '?';
+  }
 
   const parts = name.trim().split(' ');
   if (parts.length === 1) {

@@ -75,7 +75,7 @@ interface WorkflowData {
     type: string;
     config?: Record<string, unknown>;
   };
-  steps: Array<{
+  actions: Array<{
     action: string;
     description: string;
   }>;
@@ -124,7 +124,7 @@ const workflowSchema = z.object({
     type: z.string(),
     config: z.record(z.unknown()).optional(),
   }),
-  steps: z.array(
+  actions: z.array(
     z.object({
       action: z.string(),
       description: z.string(),
@@ -205,9 +205,9 @@ Extract workflow data with these fields:
 - trigger (required): Trigger configuration
   - type (required): Trigger type (schedule/event/manual/webhook)
   - config (optional): Additional trigger configuration
-- steps (required): Array of workflow steps
+- actions (required): Array of workflow actions
   - action (required): Action type
-  - description (required): What this step does
+  - description (required): What this action does
 
 Return JSON matching this schema:
 {
@@ -217,7 +217,7 @@ Return JSON matching this schema:
     "type": "schedule" | "event" | "manual" | "webhook",
     "config": {}
   },
-  "steps": [
+  "actions": [
     {
       "action": "string",
       "description": "string"

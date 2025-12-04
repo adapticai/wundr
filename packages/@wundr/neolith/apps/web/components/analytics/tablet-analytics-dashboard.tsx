@@ -11,6 +11,7 @@ import { useState } from 'react';
 
 import { useIsTablet, useOrientation } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
+
 import type { ChartDataPoint } from '@/types/api';
 
 export interface AnalyticsMetric {

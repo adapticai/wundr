@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePageHeader } from '@/contexts/page-header-context';
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,6 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { usePageHeader } from '@/contexts/page-header-context';
 
 export function DynamicPageHeader() {
   const { title, subtitle, breadcrumbs } = usePageHeader();

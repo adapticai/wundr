@@ -3,6 +3,8 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { ACTION_TYPE_CONFIG, DEFAULT_ACTION_CONFIGS } from '@/types/workflow';
+
 import type {
   ActionConfig,
   ActionType,
@@ -10,7 +12,6 @@ import type {
   ChannelType,
   ConditionConfig,
 } from '@/types/workflow';
-import { ACTION_TYPE_CONFIG, DEFAULT_ACTION_CONFIGS } from '@/types/workflow';
 
 /**
  * Loose config type for form access - allows accessing any property on config objects
@@ -698,7 +699,9 @@ interface ConditionConfigProps {
 function ConditionConfig({ config, onChange }: ConditionConfigProps) {
   // Type guard to check if config.condition is a valid ConditionConfig
   const isConditionConfig = (value: unknown): value is ConditionConfig => {
-    if (!value || typeof value !== 'object') return false;
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
     const obj = value as Record<string, unknown>;
     return (
       typeof obj.field === 'string' &&

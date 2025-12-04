@@ -1,7 +1,10 @@
 'use client';
 
-import * as React from 'react';
 import { Save, X, AlertCircle, Loader2, Lightbulb } from 'lucide-react';
+import * as React from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,12 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import {
   type OrchestratorCharter,
@@ -160,7 +161,9 @@ export function CharterEditor({
 
   // Auto-save draft to localStorage
   React.useEffect(() => {
-    if (!isDirty) return;
+    if (!isDirty) {
+      return;
+    }
 
     const draft = {
       mission,
@@ -436,7 +439,9 @@ export function CharterEditor({
       const confirmCancel = window.confirm(
         'You have unsaved changes. Are you sure you want to cancel?'
       );
-      if (!confirmCancel) return;
+      if (!confirmCancel) {
+        return;
+      }
     }
     onCancel();
   }, [isDirty, onCancel]);

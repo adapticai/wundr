@@ -21,9 +21,9 @@ import {
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
-import type { Prisma } from '@neolith/database';
 
 import type { CreateChannelInput } from '@/lib/validations/organization';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -319,7 +319,9 @@ export async function GET(
       const unreadCounts = await Promise.all(
         channels.map(async channel => {
           const membership = channel.channelMembers[0];
-          if (!membership) return { channelId: channel.id, count: 0 };
+          if (!membership) {
+            return { channelId: channel.id, count: 0 };
+          }
 
           const lastReadAt = membership.lastReadAt;
           const count = await prisma.message.count({

@@ -7,6 +7,8 @@
  */
 
 import { useState, useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -14,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { CapabilityToggle } from './CapabilityToggle';
 
 import type { CapabilityConfig } from '@/lib/validations/orchestrator-config';

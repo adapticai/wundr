@@ -368,7 +368,9 @@ export function isQueuedActionType(value: unknown): value is QueuedActionType {
  * Type guard to validate a complete Notification object
  */
 export function isNotification(value: unknown): value is Notification {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
 
   const n = value as Partial<Notification>;
 

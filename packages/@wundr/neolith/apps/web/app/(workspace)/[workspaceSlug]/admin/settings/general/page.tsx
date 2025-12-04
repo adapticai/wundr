@@ -1,31 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { mutate } from 'swr';
-
-import { useToast } from '@/hooks/use-toast';
-import { useWorkspaceSettings } from '@/hooks/use-admin';
-import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Loader2,
   Upload,
@@ -35,6 +9,32 @@ import {
   Users,
   Calendar,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { mutate } from 'swr';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useWorkspaceSettings } from '@/hooks/use-admin';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 /**
  * General Workspace Settings Page
@@ -107,7 +107,9 @@ export default function GeneralSettingsPage() {
   const handleIconChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file || !workspaceSlug) return;
+      if (!file || !workspaceSlug) {
+        return;
+      }
 
       if (file.size > 5 * 1024 * 1024) {
         toast({

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, memo } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef, memo } from 'react';
 
-import { cn } from '@/lib/utils';
-import { useThread } from '@/hooks/use-thread';
 import { MessageItem } from '@/components/chat/message-item';
+import { useThread } from '@/hooks/use-thread';
+import { cn } from '@/lib/utils';
 
 import type { Message, User } from '@/types/chat';
 

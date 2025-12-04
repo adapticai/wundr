@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   ArrowUpDown,
   Check,
@@ -12,6 +11,8 @@ import {
   Calendar as CalendarIcon,
   X,
 } from 'lucide-react';
+import * as React from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,14 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import {
   Pagination,
   PaginationContent,
@@ -40,7 +34,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
 /**
@@ -213,8 +214,12 @@ export function CharterVersionHistory({
           return 0;
       }
 
-      if (aVal < bVal) return sortConfig.order === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortConfig.order === 'asc' ? 1 : -1;
+      if (aVal < bVal) {
+        return sortConfig.order === 'asc' ? -1 : 1;
+      }
+      if (aVal > bVal) {
+        return sortConfig.order === 'asc' ? 1 : -1;
+      }
       return 0;
     });
 

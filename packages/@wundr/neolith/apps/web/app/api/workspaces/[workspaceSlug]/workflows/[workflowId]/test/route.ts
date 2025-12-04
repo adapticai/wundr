@@ -42,7 +42,9 @@ interface RouteContext {
 function isValidCondition(
   value: unknown
 ): value is { field: string; operator: string; value?: unknown } {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
   const obj = value as Record<string, unknown>;
   return typeof obj.field === 'string' && typeof obj.operator === 'string';
 }

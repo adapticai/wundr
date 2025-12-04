@@ -6,9 +6,12 @@
 'use client';
 
 import * as React from 'react';
+
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+
 import { ConversationalCreator } from './ConversationalCreator';
 import { SpecReviewForm } from './spec-review-form';
+
 import type { EntityType, EntitySpec } from './types';
 
 export type CreationMode = 'conversation' | 'form';

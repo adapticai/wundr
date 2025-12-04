@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   FileIcon,
   FileText,
@@ -19,9 +18,10 @@ import {
   Loader2,
   Eye,
 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { useFilePreview } from '@/components/file-preview';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /**
@@ -73,8 +73,12 @@ interface FileCardProps {
  */
 function formatFileSize(bytes: number): string {
   const size = Number(bytes);
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  if (size < 1024) {
+    return `${size} B`;
+  }
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
@@ -82,21 +86,29 @@ function formatFileSize(bytes: number): string {
  * Get file type icon based on MIME type
  */
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return Image;
-  if (mimeType.startsWith('video/')) return Video;
-  if (mimeType.startsWith('audio/')) return Music;
+  if (mimeType.startsWith('image/')) {
+    return Image;
+  }
+  if (mimeType.startsWith('video/')) {
+    return Video;
+  }
+  if (mimeType.startsWith('audio/')) {
+    return Music;
+  }
   if (
     mimeType.includes('pdf') ||
     mimeType.includes('document') ||
     mimeType.includes('text')
-  )
+  ) {
     return FileText;
+  }
   if (
     mimeType.includes('zip') ||
     mimeType.includes('tar') ||
     mimeType.includes('rar')
-  )
+  ) {
     return Archive;
+  }
   return FileIcon;
 }
 
@@ -111,11 +123,21 @@ function formatRelativeTime(timestamp: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  if (diffMins < 1) {
+    return 'Just now';
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
+  if (diffDays < 30) {
+    return `${Math.floor(diffDays / 7)}w ago`;
+  }
 
   return date.toLocaleDateString();
 }
@@ -227,7 +249,9 @@ export function FileCard({
   };
 
   const handleSaveForLater = async () => {
-    if (isSaving) return;
+    if (isSaving) {
+      return;
+    }
     setIsSaving(true);
 
     try {

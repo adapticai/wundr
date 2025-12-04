@@ -1,7 +1,9 @@
 'use client';
 
-import * as React from 'react';
 import { Trash2, Plus, Info } from 'lucide-react';
+import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,7 +15,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -68,9 +69,15 @@ function formatResponseTime(ms: number): string {
  */
 function getPercentageColor(value: number, max: number = 100): string {
   const percent = (value / max) * 100;
-  if (percent >= 90) return 'bg-green-500';
-  if (percent >= 70) return 'bg-yellow-500';
-  if (percent >= 50) return 'bg-orange-500';
+  if (percent >= 90) {
+    return 'bg-green-500';
+  }
+  if (percent >= 70) {
+    return 'bg-yellow-500';
+  }
+  if (percent >= 50) {
+    return 'bg-orange-500';
+  }
   return 'bg-red-500';
 }
 
@@ -82,13 +89,21 @@ function getMetricBadgeVariant(
   type: 'completion' | 'quality'
 ): 'default' | 'secondary' | 'outline' {
   if (type === 'completion') {
-    if (value >= 95) return 'default';
-    if (value >= 80) return 'secondary';
+    if (value >= 95) {
+      return 'default';
+    }
+    if (value >= 80) {
+      return 'secondary';
+    }
     return 'outline';
   }
   // quality
-  if (value >= 90) return 'default';
-  if (value >= 75) return 'secondary';
+  if (value >= 90) {
+    return 'default';
+  }
+  if (value >= 75) {
+    return 'secondary';
+  }
   return 'outline';
 }
 
@@ -120,7 +135,9 @@ export function CharterObjectives({
     inputValue: string
   ) => {
     const numValue = parseInt(inputValue, 10);
-    if (isNaN(numValue)) return;
+    if (isNaN(numValue)) {
+      return;
+    }
 
     const { min, max } =
       OBJECTIVES_LIMITS[field as keyof typeof OBJECTIVES_LIMITS];
@@ -131,10 +148,14 @@ export function CharterObjectives({
   };
 
   const handleAddCustomMetric = () => {
-    if (!newMetricName.trim()) return;
+    if (!newMetricName.trim()) {
+      return;
+    }
 
     const numValue = parseFloat(newMetricValue);
-    if (isNaN(numValue)) return;
+    if (isNaN(numValue)) {
+      return;
+    }
 
     const updatedValues = {
       ...localValues,
@@ -163,7 +184,9 @@ export function CharterObjectives({
 
   const handleCustomMetricChange = (metricName: string, inputValue: string) => {
     const numValue = parseFloat(inputValue);
-    if (isNaN(numValue)) return;
+    if (isNaN(numValue)) {
+      return;
+    }
 
     const updatedValues = {
       ...localValues,

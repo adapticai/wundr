@@ -1,6 +1,16 @@
 'use client';
 
+import { Shield, Eye, Bell, Chrome, Github } from 'lucide-react';
 import { useState } from 'react';
+
+import { DangerZone } from '@/components/settings/security/DangerZone';
+import { PasswordSection } from '@/components/settings/security/PasswordSection';
+import {
+  SessionsList,
+  type Session,
+} from '@/components/settings/security/SessionsList';
+import { TwoFactorSection } from '@/components/settings/security/TwoFactorSection';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,7 +19,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -18,16 +27,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { PasswordSection } from '@/components/settings/security/PasswordSection';
-import { TwoFactorSection } from '@/components/settings/security/TwoFactorSection';
-import {
-  SessionsList,
-  type Session,
-} from '@/components/settings/security/SessionsList';
-import { DangerZone } from '@/components/settings/security/DangerZone';
-import { Shield, Eye, Bell, Chrome, Github } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function SecuritySettingsPage() {
   const { toast } = useToast();

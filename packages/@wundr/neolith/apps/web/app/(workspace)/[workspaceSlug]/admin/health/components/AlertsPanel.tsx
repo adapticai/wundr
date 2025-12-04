@@ -1,6 +1,11 @@
 'use client';
 
+import { formatDistanceToNow } from 'date-fns';
+import { Check, AlertTriangle, Info, XCircle } from 'lucide-react';
 import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,8 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -17,11 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { HealthAlert, AlertSeverity } from '@neolith/core/types';
 import { useHealthAlerts as useAlerts } from '@/hooks/use-health-dashboard';
 import { useToast } from '@/hooks/use-toast';
-import { Check, AlertTriangle, Info, XCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+
+import type { HealthAlert, AlertSeverity } from '@neolith/core/types';
 
 interface AlertsPanelProps {
   alerts: HealthAlert[];
@@ -60,7 +62,9 @@ export function AlertsPanel({ alerts }: AlertsPanelProps) {
   const { toast } = useToast();
 
   const filteredAlerts = alerts.filter(alert => {
-    if (severityFilter === 'all') return true;
+    if (severityFilter === 'all') {
+      return true;
+    }
     return alert.severity === severityFilter;
   });
 

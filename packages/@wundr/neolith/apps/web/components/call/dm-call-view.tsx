@@ -4,10 +4,10 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { VideoRoom } from './video-room';
-
 import { useCallDuration } from '@/hooks/use-call';
 import { useToast } from '@/hooks/use-toast';
+
+import { VideoRoom } from './video-room';
 
 /**
  * Call information

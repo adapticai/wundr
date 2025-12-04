@@ -2,6 +2,17 @@
 
 import * as React from 'react';
 import {
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+
+import { Badge } from '@/components/ui/badge';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -13,16 +24,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Badge } from '@/components/ui/badge';
-import {
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 import { cn } from '@/lib/utils';
 
 export interface UsageDataPoint {
@@ -87,7 +88,9 @@ export function UsageChart({
   }, [data]);
 
   const comparisonData = React.useMemo(() => {
-    if (!previousPeriodData || !showComparison) return null;
+    if (!previousPeriodData || !showComparison) {
+      return null;
+    }
     return previousPeriodData.map(point => ({
       timestamp: point.timestamp.getTime(),
       totalTokens: point.totalTokens,
@@ -148,7 +151,9 @@ export function UsageChart({
           {/* Legend */}
           <div className='flex flex-wrap gap-4 text-sm'>
             {Object.entries(chartConfig).map(([key, config]) => {
-              if (key === 'previousTotal' && !showComparison) return null;
+              if (key === 'previousTotal' && !showComparison) {
+                return null;
+              }
 
               return (
                 <button

@@ -45,7 +45,7 @@ function generateThumbnailUrl(
   height: number = 200
 ): string {
   const cdnDomain = process.env.CDN_DOMAIN;
-  const region = process.env.AWS_REGION ?? 'us-east-1';
+  const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
   if (cdnDomain) {
     // If using an image transformation CDN
