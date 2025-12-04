@@ -195,9 +195,9 @@ export async function POST(req: Request) {
 
     // Determine which model to use based on environment
     // IMPORTANT: Tool calling requires Anthropic or OpenAI - DeepSeek does NOT support tools
-    // Supported providers: 'anthropic' (default), 'openai'
+    // Supported providers: 'openai' (default), 'anthropic'
     // DeepSeek is NOT supported for this endpoint due to no tool support
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
+    const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
     console.log(`[POST /api/wizard/chat] Using provider: ${provider}`);
 
     // Validate API key for selected provider
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
     // Select model - only Anthropic and OpenAI support tool calling
     const model =
       provider === 'openai'
-        ? openai(process.env.OPENAI_MODEL || 'gpt-4o')
+        ? openai(process.env.OPENAI_MODEL || 'gpt-4o-mini')
         : anthropic(process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514');
 
     // Stream the response
