@@ -17,17 +17,11 @@
  */
 
 import { anthropic } from '@ai-sdk/anthropic';
-import { createDeepSeek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, streamText, tool, zodSchema } from 'ai';
 import { z } from 'zod';
 
 import type { UIMessage } from '@ai-sdk/react';
-
-// Create DeepSeek provider using official AI SDK package
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-});
 
 import { getEntityPrompt, type EntityType } from '@/lib/ai';
 import { auth } from '@/lib/auth';
@@ -200,18 +194,13 @@ export async function POST(req: Request) {
     const tools = getToolsForEntity(entityType);
 
     // Determine which model to use based on environment
-    // Supported providers: 'deepseek', 'openai', 'anthropic'
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'deepseek';
+    // IMPORTANT: Tool calling requires Anthropic or OpenAI - DeepSeek does NOT support tools
+    // Supported providers: 'anthropic' (default), 'openai'
+    // DeepSeek is NOT supported for this endpoint due to no tool support
+    const provider = process.env.DEFAULT_LLM_PROVIDER || 'anthropic';
     console.log(`[POST /api/wizard/chat] Using provider: ${provider}`);
 
     // Validate API key for selected provider
-    if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) {
-      console.error('[POST /api/wizard/chat] DEEPSEEK_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'DeepSeek API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
       console.error('[POST /api/wizard/chat] OPENAI_API_KEY not configured');
       return new Response(
@@ -219,7 +208,7 @@ export async function POST(req: Request) {
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+    if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
       console.error('[POST /api/wizard/chat] ANTHROPIC_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'Anthropic API key not configured' }),
@@ -227,22 +216,11 @@ export async function POST(req: Request) {
       );
     }
 
-    let model;
-    switch (provider) {
-      case 'deepseek':
-        // DeepSeek models: 'deepseek-chat', 'deepseek-coder', 'deepseek-reasoner'
-        model = deepseek(process.env.DEEPSEEK_MODEL || 'deepseek-chat');
-        break;
-      case 'openai':
-        model = openai(process.env.OPENAI_MODEL || 'gpt-4o');
-        break;
-      case 'anthropic':
-      default:
-        model = anthropic(
-          process.env.DEFAULT_LLM_MODEL || 'claude-sonnet-4-20250514'
-        );
-        break;
-    }
+    // Select model - only Anthropic and OpenAI support tool calling
+    const model =
+      provider === 'openai'
+        ? openai(process.env.OPENAI_MODEL || 'gpt-4o')
+        : anthropic(process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514');
 
     // Stream the response
     const result = streamText({
