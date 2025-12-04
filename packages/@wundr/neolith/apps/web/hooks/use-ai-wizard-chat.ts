@@ -13,6 +13,15 @@ export interface UseWizardChatOptions {
   onDataExtracted?: (data: Record<string, unknown>) => void;
 }
 
+// Create a stable initial message for hydration consistency
+function createInitialMessage(greeting: string): UIMessage {
+  return {
+    id: 'greeting',
+    role: 'assistant',
+    parts: [{ type: 'text', text: greeting }],
+  } as UIMessage;
+}
+
 // Helper to extract text content from a UIMessage
 export function getMessageContent(message: UIMessage): string {
   if (!message.parts) {
@@ -72,7 +81,14 @@ export function useAIWizardChat({
     Record<string, unknown>[]
   >([]);
 
+  // Create stable initial messages to avoid hydration mismatch
+  const initialMessages = React.useMemo(
+    () => (initialGreeting ? [createInitialMessage(initialGreeting)] : []),
+    [initialGreeting]
+  );
+
   const chat = useChat({
+    initialMessages,
     transport: new DefaultChatTransport({
       api: '/api/wizard/chat',
       body: { entityType, workspaceSlug },
@@ -89,20 +105,6 @@ export function useAIWizardChat({
       }
     },
   });
-
-  // Add initial greeting message if needed
-  React.useEffect(() => {
-    if (initialGreeting && chat.messages.length === 0) {
-      // Directly set messages via the messages property
-      chat.messages = [
-        {
-          id: 'greeting',
-          role: 'assistant',
-          parts: [{ type: 'text', text: initialGreeting }],
-        } as UIMessage,
-      ];
-    }
-  }, [initialGreeting, chat.messages.length, chat]);
 
   const handleSubmit = React.useCallback(
     async (e?: React.FormEvent) => {

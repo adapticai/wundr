@@ -54,7 +54,7 @@ export default function NewWorkspacePage() {
   React.useEffect(() => {
     async function fetchOrganization() {
       try {
-        const response = await fetch('/api/user/organizations');
+        const response = await fetch('/api/organizations');
         if (response.ok) {
           const data = await response.json();
           if (data.data && data.data.length > 0) {
