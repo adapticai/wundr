@@ -66,7 +66,11 @@ type ParticipantStructure = DirectMessageParticipant | FlatParticipant;
 function hasNestedUser(
   participant: ParticipantStructure
 ): participant is DirectMessageParticipant {
-  return 'user' in participant && participant.user !== null && participant.user !== undefined;
+  return (
+    'user' in participant &&
+    participant.user !== null &&
+    participant.user !== undefined
+  );
 }
 
 /**
@@ -943,11 +947,12 @@ function DirectMessageItem({
     // Type-safe handling of nested vs flat structure
     if (hasNestedUser(participant)) {
       // Nested structure: { id, user: {...}, isOrchestrator }
+      // User type has: name (not displayName), image (not avatarUrl)
       const user = participant.user;
       return {
         id: user.id,
-        name: user.displayName || user.name || 'Unknown',
-        avatarUrl: user.avatarUrl || user.image,
+        name: user.name || 'Unknown',
+        avatarUrl: user.image,
         status: user.status,
         isOrchestrator: participant.isOrchestrator,
       };
@@ -956,7 +961,10 @@ function DirectMessageItem({
     // Flat structure: { id, name, avatarUrl, status, isOrchestrator }
     return {
       id: participant.id,
-      name: (participant as FlatParticipant).displayName || (participant as FlatParticipant).name || 'Unknown',
+      name:
+        (participant as FlatParticipant).displayName ||
+        (participant as FlatParticipant).name ||
+        'Unknown',
       avatarUrl: (participant as FlatParticipant).avatarUrl,
       status: (participant as FlatParticipant).status,
       isOrchestrator: participant.isOrchestrator,

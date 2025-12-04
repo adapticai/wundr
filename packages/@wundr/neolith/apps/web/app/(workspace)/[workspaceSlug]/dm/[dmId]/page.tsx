@@ -46,7 +46,10 @@ function normalizeChannelMember(
   const memberId =
     'userId' in member
       ? member.userId
-      : 'user' in member && typeof member.user === 'object' && member.user !== null && 'id' in member.user
+      : 'user' in member &&
+          typeof member.user === 'object' &&
+          member.user !== null &&
+          'id' in member.user
         ? member.user.id
         : 'id' in member
           ? member.id

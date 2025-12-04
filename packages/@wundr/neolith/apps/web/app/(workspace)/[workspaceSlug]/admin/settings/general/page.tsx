@@ -643,14 +643,13 @@ export default function GeneralSettingsPage() {
                     createdAt?: string | Date;
                   };
                   if (extendedSettings.createdAt) {
-                    return new Date(extendedSettings.createdAt).toLocaleDateString(
-                      'en-US',
-                      {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      }
-                    );
+                    return new Date(
+                      extendedSettings.createdAt
+                    ).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
                   }
                   return 'Unknown';
                 })()}

@@ -268,8 +268,8 @@ export function EntityReviewForm<T extends EntityType>({
    */
   type FormData = EntityTypeToData<T>;
   const form = useForm<FormData>({
-    resolver: (zodResolver(schema as any) as unknown) as any,
-    defaultValues: (extractedData as unknown) as any,
+    resolver: zodResolver(schema as any) as unknown as any,
+    defaultValues: extractedData as unknown as any,
   });
 
   const changedFields = React.useMemo(() => {

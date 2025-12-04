@@ -399,7 +399,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         };
 
         const actionsData: Prisma.InputJsonArray = validated.actions.map(
-          (action) =>
+          action =>
             ({
               action: action.action,
               description: action.description,

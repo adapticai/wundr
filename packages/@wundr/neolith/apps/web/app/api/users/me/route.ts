@@ -214,7 +214,8 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         select: { preferences: true },
       });
 
-      const currentPrefs = (currentUser?.preferences as Record<string, unknown>) || {};
+      const currentPrefs =
+        (currentUser?.preferences as Record<string, unknown>) || {};
       updateData.preferences = {
         ...currentPrefs,
         ...input.preferences,

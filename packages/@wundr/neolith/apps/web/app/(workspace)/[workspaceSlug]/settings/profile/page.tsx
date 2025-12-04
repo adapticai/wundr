@@ -148,7 +148,15 @@ export default function ProfileSettingsPage() {
 
         try {
           // Separate core fields from preference fields
-          const { name, fullName, title, pronouns, customPronouns, statusMessage, ...coreFields } = data;
+          const {
+            name,
+            fullName,
+            title,
+            pronouns,
+            customPronouns,
+            statusMessage,
+            ...coreFields
+          } = data;
 
           // Build the request payload
           const payload: Record<string, unknown> = { ...coreFields };
@@ -163,8 +171,10 @@ export default function ProfileSettingsPage() {
           if (fullName !== undefined) preferencesToUpdate.fullName = fullName;
           if (title !== undefined) preferencesToUpdate.title = title;
           if (pronouns !== undefined) preferencesToUpdate.pronouns = pronouns;
-          if (customPronouns !== undefined) preferencesToUpdate.customPronouns = customPronouns;
-          if (statusMessage !== undefined) preferencesToUpdate.statusMessage = statusMessage;
+          if (customPronouns !== undefined)
+            preferencesToUpdate.customPronouns = customPronouns;
+          if (statusMessage !== undefined)
+            preferencesToUpdate.statusMessage = statusMessage;
 
           // If we have preferences to update, add them to the payload
           if (Object.keys(preferencesToUpdate).length > 0) {

@@ -147,10 +147,7 @@ export default function MembersSettingsPage() {
   );
 
   const handleSelectChange = useCallback(
-    async (
-      key: keyof MemberSettings,
-      value: string | number | string[]
-    ) => {
+    async (key: keyof MemberSettings, value: string | number | string[]) => {
       const currentValue = settings[key];
 
       setSettings(prev => ({ ...prev, [key]: value }));

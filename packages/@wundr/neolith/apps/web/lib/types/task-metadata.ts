@@ -68,7 +68,9 @@ export function hasAssignmentHistory(
     typeof metadata === 'object' &&
     metadata !== null &&
     'assignmentHistory' in metadata &&
-    Array.isArray((metadata as { assignmentHistory: unknown }).assignmentHistory)
+    Array.isArray(
+      (metadata as { assignmentHistory: unknown }).assignmentHistory
+    )
   );
 }
 

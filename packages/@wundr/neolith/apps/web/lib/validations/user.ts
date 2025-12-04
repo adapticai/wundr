@@ -81,18 +81,20 @@ export const userProfileSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export const userPreferencesSchema = z.object({
-  theme: z.enum(['light', 'dark', 'system']).optional(),
-  language: z.string().optional(),
-  notifications: z.record(z.boolean()).optional(),
-  privacy: z.record(z.boolean()).optional(),
-  // Profile fields
-  fullName: z.string().optional(),
-  title: z.string().optional(),
-  pronouns: z.string().optional(),
-  customPronouns: z.string().optional(),
-  statusMessage: z.string().optional(),
-}).passthrough(); // Allow additional fields not explicitly defined
+export const userPreferencesSchema = z
+  .object({
+    theme: z.enum(['light', 'dark', 'system']).optional(),
+    language: z.string().optional(),
+    notifications: z.record(z.boolean()).optional(),
+    privacy: z.record(z.boolean()).optional(),
+    // Profile fields
+    fullName: z.string().optional(),
+    title: z.string().optional(),
+    pronouns: z.string().optional(),
+    customPronouns: z.string().optional(),
+    statusMessage: z.string().optional(),
+  })
+  .passthrough(); // Allow additional fields not explicitly defined
 
 /**
  * Create standardized user error response
