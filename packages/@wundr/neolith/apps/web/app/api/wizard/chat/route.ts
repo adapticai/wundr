@@ -223,12 +223,12 @@ export async function POST(req: Request) {
         : anthropic(process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514');
 
     // Stream the response
+    // Note: temperature omitted as AI SDK shows false warning for gpt-4o-mini
     const result = streamText({
       model,
       system: systemPrompt,
       messages: modelMessages,
       tools,
-      temperature: parseFloat(process.env.DEFAULT_TEMPERATURE || '0.7'),
     });
 
     // Return streaming response compatible with useChat hook
