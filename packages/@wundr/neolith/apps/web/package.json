@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.53",
+    "@ai-sdk/deepseek": "^1.0.31",
     "@ai-sdk/openai": "^2.0.77",
     "@apollo/client": "^3.8.8",
     "@apollo/server": "^4.10.0",

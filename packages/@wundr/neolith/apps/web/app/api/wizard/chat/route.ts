@@ -17,19 +17,16 @@
  */
 
 import { anthropic } from '@ai-sdk/anthropic';
-import { createOpenAI, openai } from '@ai-sdk/openai';
+import { createDeepSeek } from '@ai-sdk/deepseek';
+import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, streamText, tool, zodSchema } from 'ai';
 import { z } from 'zod';
 
 import type { UIMessage } from '@ai-sdk/react';
 
-// Create DeepSeek provider using OpenAI-compatible API
-// Note: compatibility: 'compatible' forces using Chat Completions API (/chat/completions)
-// instead of the newer Responses API (/responses) which DeepSeek doesn't support
-const deepseek = createOpenAI({
-  baseURL: 'https://api.deepseek.com',
+// Create DeepSeek provider using official AI SDK package
+const deepseek = createDeepSeek({
   apiKey: process.env.DEEPSEEK_API_KEY,
-  compatibility: 'compatible',
 });
 
 import { getEntityPrompt, type EntityType } from '@/lib/ai';
