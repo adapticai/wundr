@@ -3,11 +3,21 @@
 import {
   ArrowLeft,
   Bell,
+  Circle,
+  CreditCard,
+  Database,
   Eye,
+  Globe,
+  Keyboard,
+  Lock,
   Menu,
+  MessageSquare,
   Palette,
+  Settings,
   Shield,
+  Terminal,
   User,
+  Video,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -28,10 +38,20 @@ interface SettingsLayoutClientProps {
 
 const iconMap: Record<string, LucideIcon> = {
   User,
+  Circle,
   Shield,
+  Lock,
+  CreditCard,
+  Settings,
   Bell,
+  MessageSquare,
   Palette,
+  Video,
   Eye,
+  Globe,
+  Keyboard,
+  Database,
+  Terminal,
 };
 
 export function SettingsLayoutClient({

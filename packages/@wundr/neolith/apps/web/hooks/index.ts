@@ -417,6 +417,74 @@ export type {
 } from './use-health-dashboard';
 
 // =============================================================================
+// Security Hooks
+// =============================================================================
+export { useSessions } from './use-sessions';
+export type { UseSessionsReturn } from './use-sessions';
+
+export { useConnectedAccounts } from './use-connected-accounts';
+export type {
+  ConnectedAccount,
+  UseConnectedAccountsReturn,
+} from './use-connected-accounts';
+
+export { useLoginHistory } from './use-login-history';
+export type { UseLoginHistoryReturn } from './use-login-history';
+
+export { useSecurityAudit } from './use-security-audit';
+export type { UseSecurityAuditReturn } from './use-security-audit';
+
+export { useSecurityQuestions } from './use-security-questions';
+export type { UseSecurityQuestionsReturn } from './use-security-questions';
+
+export { useRecoveryOptions } from './use-recovery-options';
+export type { UseRecoveryOptionsReturn } from './use-recovery-options';
+
+// =============================================================================
+// Settings Hooks
+// =============================================================================
+export {
+  useUserSettings,
+  useSettingsUpdate,
+  useNotificationPreferences,
+  useThemeSettings,
+  usePrivacySettings,
+  useAccessibilitySettings,
+  useSecuritySettings,
+  useBillingInfo,
+  useSettingsSync,
+  useSettingsValidation,
+} from './settings';
+export type {
+  UseUserSettingsOptions,
+  UseUserSettingsReturn,
+  UseSettingsUpdateOptions,
+  UseSettingsUpdateReturn,
+  UseNotificationPreferencesReturn,
+  UseThemeSettingsReturn,
+  ResolvedTheme,
+  UsePrivacySettingsReturn,
+  UseAccessibilitySettingsReturn,
+  UseSecuritySettingsReturn,
+  SessionInfo,
+  TwoFactorStatus,
+  SecuritySettings,
+  UseBillingInfoReturn,
+  SubscriptionPlan,
+  SubscriptionStatus,
+  PaymentMethod,
+  Invoice as BillingInvoice,
+  SubscriptionInfo,
+  BillingInfo as UserBillingInfo,
+  UseSettingsSyncOptions,
+  UseSettingsSyncReturn,
+  UseSettingsValidationOptions,
+  UseSettingsValidationReturn,
+  ValidationError,
+  ValidationResult,
+} from './settings';
+
+// =============================================================================
 // Re-exports from next-auth/react for convenience
 // =============================================================================
 export { signIn, signOut, useSession } from 'next-auth/react';

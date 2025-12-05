@@ -102,9 +102,24 @@ export default async function SettingsLayout({
           icon: 'User',
         },
         {
+          href: `/${workspaceSlug}/settings/status`,
+          label: 'Status & Availability',
+          icon: 'Circle',
+        },
+        {
           href: `/${workspaceSlug}/settings/security`,
           label: 'Security',
           icon: 'Shield',
+        },
+        {
+          href: `/${workspaceSlug}/settings/privacy`,
+          label: 'Privacy & Data',
+          icon: 'Lock',
+        },
+        {
+          href: `/${workspaceSlug}/settings/billing`,
+          label: 'Billing & Subscription',
+          icon: 'CreditCard',
         },
       ],
     },
@@ -112,9 +127,19 @@ export default async function SettingsLayout({
       title: 'Preferences',
       items: [
         {
+          href: `/${workspaceSlug}/settings/workspace-preferences`,
+          label: 'Workspace',
+          icon: 'Settings',
+        },
+        {
           href: `/${workspaceSlug}/settings/notifications`,
           label: 'Notifications',
           icon: 'Bell',
+        },
+        {
+          href: `/${workspaceSlug}/settings/messages`,
+          label: 'Messages & Chat',
+          icon: 'MessageSquare',
         },
         {
           href: `/${workspaceSlug}/settings/appearance`,
@@ -122,9 +147,44 @@ export default async function SettingsLayout({
           icon: 'Palette',
         },
         {
+          href: `/${workspaceSlug}/settings/audio-video`,
+          label: 'Audio & Video',
+          icon: 'Video',
+        },
+        {
           href: `/${workspaceSlug}/settings/accessibility`,
           label: 'Accessibility',
           icon: 'Eye',
+        },
+        {
+          href: `/${workspaceSlug}/settings/language`,
+          label: 'Language & Region',
+          icon: 'Globe',
+        },
+        {
+          href: `/${workspaceSlug}/settings/keyboard-shortcuts`,
+          label: 'Keyboard Shortcuts',
+          icon: 'Keyboard',
+        },
+      ],
+    },
+    {
+      title: 'Data Management',
+      items: [
+        {
+          href: `/${workspaceSlug}/settings/import-export`,
+          label: 'Import/Export & Backup',
+          icon: 'Database',
+        },
+      ],
+    },
+    {
+      title: 'Advanced',
+      items: [
+        {
+          href: `/${workspaceSlug}/settings/advanced`,
+          label: 'Developer Settings',
+          icon: 'Terminal',
         },
       ],
     },

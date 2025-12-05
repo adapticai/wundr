@@ -583,6 +583,7 @@ model workspaceMember {
   workspaceId String        @map("workspace_id")
   userId      String        @map("user_id")
   joinedAt    DateTime      @default(now()) @map("joined_at")
+  settings    Json          @default("{}") // Workspace-specific user settings
   user        user          @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace   workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
