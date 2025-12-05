@@ -1,9 +1,19 @@
 'use client';
 
-import { clsx } from 'clsx';
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { Check, X, Search } from 'lucide-react';
 
-import { getInitials } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 import type { User } from '@/types/chat';
 
@@ -44,7 +54,7 @@ function UserSearchItem({
   return (
     <button
       onClick={() => onSelect(user)}
-      className={clsx(
+      className={cn(
         'w-full flex items-center gap-3 p-2 rounded-lg',
         'transition-colors',
         isSelected
@@ -55,7 +65,7 @@ function UserSearchItem({
       aria-selected={isSelected}
     >
       <div
-        className={clsx(
+        className={cn(
           'w-8 h-8 rounded-full flex items-center justify-center',
           'bg-stone-500/10 text-stone-700 dark:text-stone-300 font-medium'
         )}
@@ -77,18 +87,7 @@ function UserSearchItem({
         <p className='text-xs text-muted-foreground truncate'>{user.email}</p>
       </div>
       {isSelected && (
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          className='w-5 h-5 text-stone-700 dark:text-stone-300'
-        >
-          <polyline points='20 6 9 17 4 12' />
-        </svg>
+        <Check className='w-5 h-5 text-stone-700 dark:text-stone-300' />
       )}
     </button>
   );
@@ -106,7 +105,7 @@ function SelectedUserChip({
 }) {
   return (
     <div
-      className={clsx(
+      className={cn(
         'inline-flex items-center gap-1.5 px-2 py-1',
         'bg-stone-500/10 text-stone-700 dark:text-stone-300 rounded-full'
       )}
@@ -117,19 +116,7 @@ function SelectedUserChip({
         className='hover:bg-stone-500/20 rounded-full p-0.5 transition-colors'
         aria-label={`Remove ${user.name || user.email}`}
       >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          className='w-3 h-3'
-        >
-          <line x1='18' x2='6' y1='6' y2='18' />
-          <line x1='6' x2='18' y1='6' y2='18' />
-        </svg>
+        <X className='w-3 h-3' />
       </button>
     </div>
   );
@@ -154,7 +141,6 @@ export function CallInviteDialog({
   const [sendNotification, setSendNotification] = useState(true);
   const [copySuccess, setCopySuccess] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
 
   // Focus search input when dialog opens
   useEffect(() => {
@@ -255,130 +241,36 @@ export function CallInviteDialog({
     }
   }, [selectedUsers, sendNotification, onInvite, onClose]);
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  // Handle click outside
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dialogRef.current &&
-        !dialogRef.current.contains(event.target as Node)
-      ) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div
-      className={clsx(
-        'fixed inset-0 z-50',
-        'flex items-center justify-center',
-        'bg-background/80 backdrop-blur-sm',
-        className
-      )}
-      role='dialog'
-      aria-modal='true'
-      aria-labelledby='invite-dialog-title'
-    >
-      <div
-        ref={dialogRef}
-        className={clsx(
-          'w-full max-w-md',
-          'bg-card border border-border rounded-xl',
-          'shadow-lg',
-          'animate-scale-in'
-        )}
-      >
-        {/* Header */}
-        <div className='flex items-center justify-between px-4 py-3 border-b border-border'>
-          <h2
-            id='invite-dialog-title'
-            className='text-lg font-semibold text-foreground'
-          >
-            Invite to call
-          </h2>
-          <button
-            onClick={onClose}
-            className={clsx(
-              'w-8 h-8 rounded-lg flex items-center justify-center',
-              'hover:bg-muted transition-colors',
-              'text-muted-foreground hover:text-foreground'
-            )}
-            aria-label='Close dialog'
-          >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='w-5 h-5'
-            >
-              <line x1='18' x2='6' y1='6' y2='18' />
-              <line x1='6' x2='18' y1='6' y2='18' />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className={cn('max-w-md', className)}>
+        <DialogHeader>
+          <DialogTitle>Invite to call</DialogTitle>
+          <DialogDescription>
+            Share the link or search for users to invite to this call
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Content */}
-        <div className='p-4 space-y-4'>
+        <div className='space-y-4'>
           {/* Copy link section */}
           <div className='space-y-2'>
             <label className='text-sm font-medium text-foreground'>
               Invite link
             </label>
             <div className='flex gap-2'>
-              <input
+              <Input
                 type='text'
                 value={inviteLink}
                 readOnly
-                className={clsx(
-                  'flex-1 px-3 py-2 rounded-lg',
-                  'bg-muted border border-border',
-                  'text-sm text-muted-foreground',
-                  'truncate'
-                )}
+                className='flex-1 text-sm text-muted-foreground'
               />
-              <button
+              <Button
                 onClick={handleCopyLink}
-                className={clsx(
-                  'px-4 py-2 rounded-lg',
-                  'bg-muted hover:bg-muted/80',
-                  'text-sm font-medium',
-                  'transition-colors',
-                  copySuccess && 'text-green-500'
-                )}
+                variant='outline'
+                className={cn(copySuccess && 'text-green-500')}
               >
                 {copySuccess ? 'Copied!' : 'Copy'}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -400,32 +292,15 @@ export function CallInviteDialog({
               Search users
             </label>
             <div className='relative'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground'
-              >
-                <circle cx='11' cy='11' r='8' />
-                <path d='m21 21-4.3-4.3' />
-              </svg>
-              <input
+              <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground' />
+              <Input
                 ref={searchInputRef}
                 id='user-search'
                 type='text'
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder='Search by name or email...'
-                className={clsx(
-                  'w-full pl-10 pr-4 py-2 rounded-lg',
-                  'bg-muted border border-border',
-                  'text-foreground placeholder:text-muted-foreground',
-                  'focus:outline-none focus:ring-2 focus:ring-stone-500'
-                )}
+                className='pl-10'
               />
             </div>
           </div>
@@ -468,11 +343,9 @@ export function CallInviteDialog({
           {/* Send notification option */}
           {selectedUsers.length > 0 && (
             <label className='flex items-center gap-2 cursor-pointer'>
-              <input
-                type='checkbox'
+              <Checkbox
                 checked={sendNotification}
-                onChange={e => setSendNotification(e.target.checked)}
-                className='w-4 h-4 rounded border-border text-stone-700 dark:text-stone-600 focus:ring-stone-500'
+                onCheckedChange={checked => setSendNotification(checked as boolean)}
               />
               <span className='text-sm text-foreground'>
                 Send notification to invited users
@@ -482,34 +355,20 @@ export function CallInviteDialog({
         </div>
 
         {/* Footer */}
-        <div className='flex justify-end gap-2 px-4 py-3 border-t border-border'>
-          <button
-            onClick={onClose}
-            className={clsx(
-              'px-4 py-2 rounded-lg',
-              'bg-muted hover:bg-muted/80',
-              'text-sm font-medium text-foreground',
-              'transition-colors'
-            )}
-          >
+        <div className='flex justify-end gap-2 pt-4'>
+          <Button onClick={onClose} variant='outline'>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleInvite}
             disabled={selectedUsers.length === 0}
-            className={clsx(
-              'px-4 py-2 rounded-lg',
-              'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
-              'text-sm font-medium text-white',
-              'transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
+            className='bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700'
           >
             Invite {selectedUsers.length > 0 && `(${selectedUsers.length})`}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

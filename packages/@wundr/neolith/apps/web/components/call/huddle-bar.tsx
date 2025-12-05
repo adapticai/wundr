@@ -1,9 +1,15 @@
 'use client';
 
-import { clsx } from 'clsx';
+import { Mic, MicOff, Maximize2, PhoneOff } from 'lucide-react';
 import { useState, useCallback } from 'react';
 
-import { getInitials } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import type { Huddle, HuddleParticipant } from '@/types/call';
 
@@ -44,7 +50,7 @@ function ParticipantAvatar({
 
   return (
     <div
-      className={clsx(
+      className={cn(
         'rounded-full bg-stone-500/10 flex items-center justify-center',
         'text-stone-700 dark:text-stone-300 font-medium',
         'border-2 border-background',
@@ -92,7 +98,7 @@ function StackedAvatars({
       ))}
       {remainingCount > 0 && (
         <div
-          className={clsx(
+          className={cn(
             'w-6 h-6 rounded-full',
             'bg-muted flex items-center justify-center',
             'text-xs font-medium text-foreground',
@@ -134,22 +140,23 @@ export function HuddleBar({
   const speakingParticipants = huddle.participants.filter(p => p.isSpeaking);
 
   return (
-    <div
-      className={clsx(
-        'fixed bottom-4 left-1/2 -translate-x-1/2',
-        'flex items-center gap-3 px-4 py-2',
-        'bg-card/95 backdrop-blur-sm',
-        'border border-border rounded-full',
-        'shadow-lg',
-        'transition-all duration-200',
-        isHovered && 'scale-105',
-        className
-      )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      role='region'
-      aria-label={`Active huddle: ${huddle.name}`}
-    >
+    <TooltipProvider>
+      <div
+        className={cn(
+          'fixed bottom-4 left-1/2 -translate-x-1/2',
+          'flex items-center gap-3 px-4 py-2',
+          'bg-card/95 backdrop-blur-sm',
+          'border border-border rounded-full',
+          'shadow-lg',
+          'transition-all duration-200',
+          isHovered && 'scale-105',
+          className
+        )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        role='region'
+        aria-label={`Active huddle: ${huddle.name}`}
+      >
       {/* Speaking indicator / Wave animation */}
       <div className='flex items-center gap-1'>
         {speakingParticipants.length > 0 ? (
@@ -179,7 +186,7 @@ export function HuddleBar({
       <button
         onClick={onExpand}
         onKeyDown={e => handleKeyDown(e, onExpand)}
-        className={clsx(
+        className={cn(
           'text-sm font-medium text-foreground',
           'hover:text-stone-700 dark:hover:text-stone-300 transition-colors',
           'truncate max-w-[120px]'
@@ -204,108 +211,75 @@ export function HuddleBar({
       <div className='w-px h-4 bg-border' />
 
       {/* Mute toggle */}
-      <button
-        onClick={onToggleMute}
-        onKeyDown={e => handleKeyDown(e, onToggleMute)}
-        className={clsx(
-          'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-          isMuted
-            ? 'bg-red-500 hover:bg-red-600 text-white'
-            : 'bg-muted hover:bg-muted/80 text-foreground'
-        )}
-        aria-label={isMuted ? 'Unmute' : 'Mute'}
-        aria-pressed={isMuted}
-      >
-        {isMuted ? (
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='w-4 h-4'
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onToggleMute}
+            onKeyDown={e => handleKeyDown(e, onToggleMute)}
+            className={cn(
+              'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+              isMuted
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-muted hover:bg-muted/80 text-foreground'
+            )}
+            aria-label={isMuted ? 'Unmute' : 'Mute'}
+            aria-pressed={isMuted}
           >
-            <line x1='2' x2='22' y1='2' y2='22' />
-            <path d='M18.89 13.23A7.12 7.12 0 0 0 19 12v-2' />
-            <path d='M5 10v2a7 7 0 0 0 12 5' />
-            <path d='M15 9.34V5a3 3 0 0 0-5.68-1.33' />
-            <path d='M9 9v3a3 3 0 0 0 5.12 2.12' />
-            <line x1='12' x2='12' y1='19' y2='22' />
-          </svg>
-        ) : (
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='w-4 h-4'
-          >
-            <path d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z' />
-            <path d='M19 10v2a7 7 0 0 1-14 0v-2' />
-            <line x1='12' x2='12' y1='19' y2='22' />
-          </svg>
-        )}
-      </button>
+            {isMuted ? (
+              <MicOff className='w-4 h-4' />
+            ) : (
+              <Mic className='w-4 h-4' />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{isMuted ? 'Unmute' : 'Mute'}</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Expand button */}
-      <button
-        onClick={onExpand}
-        onKeyDown={e => handleKeyDown(e, onExpand)}
-        className={clsx(
-          'w-8 h-8 rounded-full flex items-center justify-center',
-          'bg-muted hover:bg-muted/80 text-foreground',
-          'transition-colors'
-        )}
-        aria-label='Expand to full view'
-      >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          className='w-4 h-4'
-        >
-          <path d='M15 3h6v6' />
-          <path d='M9 21H3v-6' />
-          <path d='m21 3-7 7' />
-          <path d='m3 21 7-7' />
-        </svg>
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onExpand}
+            onKeyDown={e => handleKeyDown(e, onExpand)}
+            className={cn(
+              'w-8 h-8 rounded-full flex items-center justify-center',
+              'bg-muted hover:bg-muted/80 text-foreground',
+              'transition-colors'
+            )}
+            aria-label='Expand to full view'
+          >
+            <Maximize2 className='w-4 h-4' />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Expand to full view</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Leave button */}
-      <button
-        onClick={onLeave}
-        onKeyDown={e => handleKeyDown(e, onLeave)}
-        className={clsx(
-          'w-8 h-8 rounded-full flex items-center justify-center',
-          'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
-          'transition-colors'
-        )}
-        aria-label='Leave huddle'
-      >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          className='w-4 h-4'
-        >
-          <path d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z' />
-          <line x1='1' x2='23' y1='1' y2='23' />
-        </svg>
-      </button>
-    </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onLeave}
+            onKeyDown={e => handleKeyDown(e, onLeave)}
+            className={cn(
+              'w-8 h-8 rounded-full flex items-center justify-center',
+              'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
+              'transition-colors'
+            )}
+            aria-label='Leave huddle'
+          >
+            <PhoneOff className='w-4 h-4' />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Leave huddle</p>
+        </TooltipContent>
+      </Tooltip>
+      </div>
+    </TooltipProvider>
   );
 }
 
@@ -323,7 +297,7 @@ export function HuddleInviteToast({
 }) {
   return (
     <div
-      className={clsx(
+      className={cn(
         'fixed bottom-4 right-4',
         'flex items-center gap-3 p-4',
         'bg-card border border-border rounded-lg',
@@ -344,7 +318,7 @@ export function HuddleInviteToast({
       <div className='flex gap-2'>
         <button
           onClick={onDismiss}
-          className={clsx(
+          className={cn(
             'px-3 py-1.5 rounded-lg',
             'bg-muted hover:bg-muted/80',
             'text-sm text-foreground',
@@ -355,7 +329,7 @@ export function HuddleInviteToast({
         </button>
         <button
           onClick={onJoin}
-          className={clsx(
+          className={cn(
             'px-3 py-1.5 rounded-lg',
             'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
             'text-sm text-white',

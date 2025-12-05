@@ -1,9 +1,17 @@
 'use client';
 
-import { clsx } from 'clsx';
 import { useState, useCallback, useMemo } from 'react';
+import { Search, Check } from 'lucide-react';
 
-import { getInitials } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 /**
  * User search result type
@@ -136,86 +144,25 @@ export function AddParticipantModal({
     }
   }, [selectedUsers, message, onInvite, onClose]);
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div
-      className='fixed inset-0 z-50 flex items-center justify-center'
-      role='dialog'
-      aria-modal='true'
-      aria-labelledby='invite-modal-title'
-    >
-      {/* Backdrop */}
-      <div
-        className='absolute inset-0 bg-black/50 backdrop-blur-sm'
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div
-        className={clsx(
-          'relative w-full max-w-md mx-4',
-          'bg-card border border-border rounded-lg shadow-lg',
-          'flex flex-col max-h-[80vh]',
-          className
-        )}
-      >
-        {/* Header */}
-        <div className='p-4 border-b border-border flex items-center justify-between'>
-          <h2 id='invite-modal-title' className='text-lg font-semibold'>
-            Add people to call
-          </h2>
-          <button
-            onClick={onClose}
-            className='p-1 rounded hover:bg-muted transition-colors'
-            aria-label='Close'
-          >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='w-5 h-5'
-            >
-              <line x1='18' y1='6' x2='6' y2='18' />
-              <line x1='6' y1='6' x2='18' y2='18' />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className={cn('max-w-md max-h-[80vh] flex flex-col p-0', className)}>
+        <DialogHeader className='p-4 border-b border-border'>
+          <DialogTitle>Add people to call</DialogTitle>
+        </DialogHeader>
 
         {/* Search */}
         <div className='p-4 border-b border-border'>
           <div className='relative'>
-            <input
+            <Search className='w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground' />
+            <Input
               type='text'
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder='Search by name or email...'
-              className={clsx(
-                'w-full pl-10 pr-4 py-2 rounded-lg',
-                'bg-muted border border-border',
-                'focus:outline-none focus:ring-2 focus:ring-stone-700 dark:focus:ring-stone-600'
-              )}
+              className='pl-10'
               aria-label='Search users'
             />
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'
-            >
-              <circle cx='11' cy='11' r='8' />
-              <path d='m21 21-4.3-4.3' />
-            </svg>
           </div>
         </div>
 
@@ -231,7 +178,7 @@ export function AddParticipantModal({
                 <button
                   key={user.id}
                   onClick={() => toggleUser(user.id)}
-                  className={clsx(
+                  className={cn(
                     'w-full flex items-center gap-3 p-3 rounded-lg transition-colors',
                     selectedUsers.has(user.id)
                       ? 'bg-stone-700/10 dark:bg-stone-600/10'
@@ -240,7 +187,7 @@ export function AddParticipantModal({
                 >
                   {/* Checkbox */}
                   <div
-                    className={clsx(
+                    className={cn(
                       'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                       selectedUsers.has(user.id)
                         ? 'bg-stone-700 dark:bg-stone-600 border-stone-700 dark:border-stone-600'
@@ -248,18 +195,7 @@ export function AddParticipantModal({
                     )}
                   >
                     {selectedUsers.has(user.id) && (
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeWidth='3'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        className='w-3 h-3 text-white'
-                      >
-                        <polyline points='20 6 9 17 4 12' />
-                      </svg>
+                      <Check className='w-3 h-3 text-white' />
                     )}
                   </div>
 
@@ -301,12 +237,7 @@ export function AddParticipantModal({
               onChange={e => setMessage(e.target.value)}
               placeholder='Add an optional message...'
               rows={2}
-              className={clsx(
-                'w-full px-3 py-2 rounded-lg resize-none',
-                'bg-muted border border-border',
-                'focus:outline-none focus:ring-2 focus:ring-stone-700 dark:focus:ring-stone-600',
-                'text-sm'
-              )}
+              className='w-full px-3 py-2 rounded-lg resize-none bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-stone-700 dark:focus:ring-stone-600 text-sm'
               maxLength={500}
             />
           </div>
@@ -318,28 +249,25 @@ export function AddParticipantModal({
             {selectedUsers.size} selected
           </div>
           <div className='flex items-center gap-2'>
-            <button
+            <Button
               onClick={onClose}
-              className='px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors'
+              variant='ghost'
+              size='sm'
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleInvite}
               disabled={selectedUsers.size === 0 || isLoading}
-              className={clsx(
-                'px-4 py-2 text-sm rounded-lg transition-colors',
-                'bg-stone-700 dark:bg-stone-600 text-white',
-                'hover:bg-stone-800 dark:hover:bg-stone-700',
-                'disabled:opacity-50 disabled:cursor-not-allowed'
-              )}
+              size='sm'
+              className='bg-stone-700 dark:bg-stone-600 hover:bg-stone-800 dark:hover:bg-stone-700'
             >
               {isLoading ? 'Inviting...' : 'Invite'}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

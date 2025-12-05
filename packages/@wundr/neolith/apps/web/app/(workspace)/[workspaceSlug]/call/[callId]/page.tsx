@@ -1,10 +1,11 @@
 'use client';
 
-import { clsx } from 'clsx';
+import { AlertCircle, Phone } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 
 import { VideoRoom, PreJoin, CallInviteDialog } from '@/components/call';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
 interface CallDetails {
@@ -39,48 +40,19 @@ function CallError({
     <div className='min-h-screen flex items-center justify-center bg-background p-4'>
       <div className='text-center space-y-4 max-w-md'>
         <div className='w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='w-8 h-8 text-destructive'
-          >
-            <circle cx='12' cy='12' r='10' />
-            <line x1='12' x2='12' y1='8' y2='12' />
-            <line x1='12' x2='12.01' y1='16' y2='16' />
-          </svg>
+          <AlertCircle className='w-8 h-8 text-destructive' />
         </div>
         <h1 className='text-xl font-bold text-foreground'>
           Unable to join call
         </h1>
         <p className='text-muted-foreground'>{error}</p>
         <div className='flex justify-center gap-3'>
-          <button
-            onClick={onLeave}
-            className={clsx(
-              'px-4 py-2 rounded-lg',
-              'bg-muted hover:bg-muted/80',
-              'text-foreground font-medium',
-              'transition-colors'
-            )}
-          >
+          <Button variant='outline' onClick={onLeave}>
             Leave
-          </button>
-          <button
-            onClick={onRetry}
-            className={clsx(
-              'px-4 py-2 rounded-lg',
-              'bg-primary hover:bg-primary/90',
-              'text-primary-foreground font-medium',
-              'transition-colors'
-            )}
-          >
+          </Button>
+          <Button variant='default' onClick={onRetry}>
             Try again
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -115,44 +87,17 @@ function CallEnded({
     <div className='min-h-screen flex items-center justify-center bg-background p-4'>
       <div className='text-center space-y-4 max-w-md'>
         <div className='w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='w-8 h-8 text-primary'
-          >
-            <path d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z' />
-          </svg>
+          <Phone className='w-8 h-8 text-primary' />
         </div>
         <h1 className='text-xl font-bold text-foreground'>Call ended</h1>
         <p className='text-muted-foreground'>You have left the call.</p>
         <div className='flex justify-center gap-3'>
-          <button
-            onClick={onLeave}
-            className={clsx(
-              'px-4 py-2 rounded-lg',
-              'bg-muted hover:bg-muted/80',
-              'text-foreground font-medium',
-              'transition-colors'
-            )}
-          >
+          <Button variant='outline' onClick={onLeave}>
             Back to workspace
-          </button>
-          <button
-            onClick={onRejoin}
-            className={clsx(
-              'px-4 py-2 rounded-lg',
-              'bg-primary hover:bg-primary/90',
-              'text-primary-foreground font-medium',
-              'transition-colors'
-            )}
-          >
+          </Button>
+          <Button variant='default' onClick={onRejoin}>
             Rejoin call
-          </button>
+          </Button>
         </div>
       </div>
     </div>

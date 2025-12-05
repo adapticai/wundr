@@ -6,11 +6,12 @@ import {
   useTracks,
   useRoomContext,
 } from '@livekit/components-react';
-import { clsx } from 'clsx';
 import { Track, RoomEvent } from 'livekit-client';
+import { Mic, MicOff } from 'lucide-react';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 import { useLocalMedia, useCallDuration } from '@/hooks/use-call';
+import { cn } from '@/lib/utils';
 
 import { CallControls } from './call-controls';
 import { CallHeader } from './call-header';
@@ -171,7 +172,7 @@ function AudioRoomInner({
               {[...Array(20)].map((_, i) => (
                 <div
                   key={i}
-                  className={clsx(
+                  className={cn(
                     'w-2 bg-gradient-to-t from-stone-700 to-stone-500 dark:from-stone-400 dark:to-stone-200 rounded-full transition-all duration-200',
                     participants.some(p => p.isSpeaking)
                       ? 'animate-pulse'
@@ -228,43 +229,16 @@ function AudioRoomInner({
                     {/* Microphone status */}
                     <div className='flex items-center gap-2'>
                       {participant.isMuted ? (
-                        <svg
-                          xmlns='http://www.w3.org/2000/svg'
-                          viewBox='0 0 24 24'
-                          fill='none'
-                          stroke='currentColor'
-                          strokeWidth='2'
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          className='w-5 h-5 text-muted-foreground'
-                        >
-                          <line x1='1' y1='1' x2='23' y2='23' />
-                          <path d='M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6' />
-                          <path d='M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23' />
-                          <line x1='12' y1='19' x2='12' y2='23' />
-                          <line x1='8' y1='23' x2='16' y2='23' />
-                        </svg>
+                        <MicOff className='w-5 h-5 text-muted-foreground' />
                       ) : (
-                        <svg
-                          xmlns='http://www.w3.org/2000/svg'
-                          viewBox='0 0 24 24'
-                          fill='none'
-                          stroke='currentColor'
-                          strokeWidth='2'
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          className={clsx(
+                        <Mic
+                          className={cn(
                             'w-5 h-5',
                             participant.isSpeaking
                               ? 'text-green-500'
                               : 'text-muted-foreground'
                           )}
-                        >
-                          <path d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z' />
-                          <path d='M19 10v2a7 7 0 0 1-14 0v-2' />
-                          <line x1='12' y1='19' x2='12' y2='23' />
-                          <line x1='8' y1='23' x2='16' y2='23' />
-                        </svg>
+                        />
                       )}
                     </div>
                   </div>
@@ -313,7 +287,7 @@ export function AudioRoom({
   className,
 }: AudioRoomProps) {
   return (
-    <div className={clsx('h-full w-full', className)}>
+    <div className={cn('h-full w-full', className)}>
       <LiveKitRoom
         token={token}
         serverUrl={serverUrl}
